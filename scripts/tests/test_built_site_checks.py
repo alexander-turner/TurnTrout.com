@@ -10,6 +10,13 @@ import requests  # type: ignore[import]
 from bs4 import BeautifulSoup
 
 from .. import utils as script_utils
+from ..utils import (
+    LEFT_SINGLE_QUOTE,
+    NBSP,
+    RIGHT_SINGLE_QUOTE,
+    ZERO_WIDTH_NBSP,
+    ZERO_WIDTH_SPACE,
+)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -147,12 +154,14 @@ def sample_html() -> str:
     return """
     <html>
     <body>
+        <a href="#center-content" class="skip-to-content">Skip to main content</a>
         <a href="http://localhost:8000">Localhost Link</a>
         <a href="https://turntrout.com">Turntrout Link</a>
         <a href="/other-page#invalid-anchor">Turntrout Link with Anchor</a>
         <a href="#valid-anchor" class="internal same-page-link">Valid Anchor</a>
         <a href="#invalid-anchor">Invalid Anchor</a>
         <div id="valid-anchor">Valid Anchor Content</div>
+        <main id="center-content">Main content</main>
         <p>Normal paragraph</p>
         <p>Table: This is a table description</p>
         <p>This is a delayed-paragraph Table: </p>
@@ -1314,26 +1323,26 @@ def test_check_problematic_paragraphs_with_headings(html, expected):
                 "Problematic paragraph: Heading Table: This should also be flagged",
             ],
         ),
-        # Canary patterns with non-breaking space (\u00A0) should still be caught
+        # Canary patterns with non-breaking space should still be caught
         (
-            "<p>Table:\u00a0caption text</p>",
-            ["Problematic paragraph: Table:\u00a0caption text"],
+            f"<p>Table:{NBSP}caption text</p>",
+            [f"Problematic paragraph: Table:{NBSP}caption text"],
         ),
         (
-            "<p>Figure:\u00a0image description</p>",
-            ["Problematic paragraph: Figure:\u00a0image description"],
+            f"<p>Figure:{NBSP}image description</p>",
+            [f"Problematic paragraph: Figure:{NBSP}image description"],
         ),
         (
-            "<p>>\u00a0[!note] Callout with nbsp</p>",
-            ["Problematic paragraph: >\u00a0[!note] Callout with nbsp"],
+            f"<p>>{NBSP}[!note] Callout with nbsp</p>",
+            [f"Problematic paragraph: >{NBSP}[!note] Callout with nbsp"],
         ),
         (
-            "<li>[\u00a0] Checkbox with nbsp</li>",
-            ["Problematic paragraph: [\u00a0] Checkbox with nbsp"],
+            f"<li>[{NBSP}] Checkbox with nbsp</li>",
+            [f"Problematic paragraph: [{NBSP}] Checkbox with nbsp"],
         ),
         (
-            "<p>:\u00a0Description with nbsp</p>",
-            ["Problematic paragraph: :\u00a0Description with nbsp"],
+            f"<p>:{NBSP}Description with nbsp</p>",
+            [f"Problematic paragraph: :{NBSP}Description with nbsp"],
         ),
     ],
 )
@@ -1358,6 +1367,8 @@ def test_check_problematic_paragraphs_comprehensive(html, expected):
         ),
         # Percentage cases (should be ignored)
         ("<p>Text with ___ % coverage</p>", []),
+        # Percentage with non-breaking space (should also be ignored)
+        (f"<p>Text with ___{NBSP}% coverage</p>", []),
         # Mixed cases
         (
             "<p>Mixed *emphasis* with _100% value_</p>",
@@ -1867,6 +1878,16 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
         # Test with nested elements - should be ignored since Some is whitelisted
         (
             "<p>Some<i><strong>one</strong></i> else</p>",
+            [],
+        ),
+        # Smart apostrophe possessive after emphasis - should be allowed
+        (
+            f"<p>The <em>tl</em>{RIGHT_SINGLE_QUOTE}s value</p>",
+            [],
+        ),
+        # Smart opening quote before emphasis - should be allowed
+        (
+            f"<p>He said {LEFT_SINGLE_QUOTE}<em>hello</em>{RIGHT_SINGLE_QUOTE} to them</p>",
             [],
         ),
     ],
@@ -2489,11 +2510,11 @@ def test_check_iframe_embeds(
         ),
         # Non-breaking space before/after links should be accepted
         (
-            "<p>text\u00a0<a href='#'>link</a> more</p>",
+            f"<p>text{NBSP}<a href='#'>link</a> more</p>",
             [],
         ),
         (
-            "<p>text <a href='#'>link</a>\u00a0more</p>",
+            f"<p>text <a href='#'>link</a>{NBSP}more</p>",
             [],
         ),
     ],
@@ -5397,9 +5418,12 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         ("<article><p>   </p></article>", []),
         ("<article><p>\n\t  \n</p></article>", []),
         # Paragraphs with only zero-width spaces should be skipped
-        ("<article><p>\u200b</p></article>", []),
-        ("<article><p>\ufeff</p></article>", []),
-        ("<article><p>\u200b\ufeff  </p></article>", []),
+        (f"<article><p>{ZERO_WIDTH_SPACE}</p></article>", []),
+        (f"<article><p>{ZERO_WIDTH_NBSP}</p></article>", []),
+        (
+            f"<article><p>{ZERO_WIDTH_SPACE}{ZERO_WIDTH_NBSP}  </p></article>",
+            [],
+        ),
         # Footnote references should be removed before checking
         (
             '<article><p>Text with footnote.<a id="user-content-fnref-1" href="#fn-1">1</a></p></article>',
@@ -5415,8 +5439,8 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             [],
         ),
         # Text ending with punctuation after zero-width spaces
-        ("<article><p>Text.\u200b</p></article>", []),
-        ("<article><p>Text.\ufeff</p></article>", []),
+        (f"<article><p>Text.{ZERO_WIDTH_SPACE}</p></article>", []),
+        (f"<article><p>Text.{ZERO_WIDTH_NBSP}</p></article>", []),
         # Text ending with trim characters (should be stripped)
         ("<article><p>Text.↗</p></article>", []),
         ("<article><p>Text.✓</p></article>", []),
