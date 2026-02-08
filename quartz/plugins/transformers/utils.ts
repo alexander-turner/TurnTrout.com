@@ -187,6 +187,19 @@ export function hasAncestor(
   return ancestors.some((anc) => ancestorPredicate(anc as Element))
 }
 
+/**
+ * Creates a word joiner span element that prevents line breaks
+ * without polluting clipboard content (user-select: none).
+ */
+export function createWordJoinerSpan(): Element {
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: "word-joiner", ariaHidden: "true" },
+    children: [{ type: "text", value: "\u2060" } as Text],
+  }
+}
+
 // Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
   // Check both className and class properties (hastscript uses class)

@@ -10,8 +10,8 @@ import remarkGfm from "remark-gfm"
 import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
-import { WORD_JOINER } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"
+import { createWordJoinerSpan } from "./utils"
 
 export interface Options {
   enableSmartyPants: boolean
@@ -395,5 +395,5 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
   }
 
   // Append word joiner + back arrow to prevent line-break orphaning
-  lastParagraph.children.push({ type: "text", value: WORD_JOINER } as Text, backArrow)
+  lastParagraph.children.push(createWordJoinerSpan(), backArrow)
 }

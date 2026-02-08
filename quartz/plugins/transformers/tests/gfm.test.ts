@@ -5,7 +5,6 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../cfg"
-import { WORD_JOINER } from "../../../components/constants"
 import {
   slugify,
   resetSlugger,
@@ -129,7 +128,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text here" })
-    expect(paragraph.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
@@ -141,7 +144,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    expect(paragraph.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
@@ -157,7 +164,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     const lastParagraph = node.children[1] as Element
     expect(lastParagraph.children).toHaveLength(3) // text + word joiner + back arrow
     expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph" })
-    expect(lastParagraph.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(lastParagraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect(lastParagraph.children[2]).toBe(mockBackArrow)
   })
 
@@ -212,7 +223,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     // Old back arrow removed, text preserved, word joiner + new back arrow appended
     expect(secondPara.children).toHaveLength(3) // text + word joiner + back arrow
     expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragraph." })
-    expect(secondPara.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(secondPara.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect(secondPara.children[2]).toBe(mockBackArrow)
   })
 
@@ -569,7 +584,11 @@ describe("gfmVisitor function", () => {
     const paragraph = footnoteItem.children[0] as Element
     expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote text" })
-    expect(paragraph.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
@@ -623,7 +642,11 @@ describe("gfmVisitor function", () => {
     const paragraph = footnoteItem.children[0] as Element
     expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
     expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    expect(paragraph.children[1]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
@@ -670,7 +693,11 @@ describe("gfmVisitor function", () => {
     })
     expect((paragraph.children[1] as Element).tagName).toBe("em")
     expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
-    expect(paragraph.children[3]).toEqual({ type: "text", value: WORD_JOINER })
+    expect(paragraph.children[3]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
     expect((paragraph.children[4] as Element).tagName).toBe("a")
   })
 })

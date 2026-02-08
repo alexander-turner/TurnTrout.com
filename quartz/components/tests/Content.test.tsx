@@ -266,10 +266,14 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    // text + word joiner + favicon
+    // text + word joiner span + favicon
     expect(children.length).toBe(3)
     expect(typeof children[0]).toBe("string")
-    expect(children[1]).toBe("\u2060")
+
+    const wordJoiner = children[1] as JSX.Element
+    assertJSXElement(wordJoiner)
+    expect(wordJoiner.type).toBe("span")
+    expect(wordJoiner.props.class).toBe("word-joiner")
 
     const favicon = children[2]
     assertJSXElement(favicon)
@@ -282,10 +286,14 @@ describe("createLinkWithFavicon", () => {
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // text + word joiner + favicon
+    // text + word joiner span + favicon
     expect(children.length).toBe(3)
     expect(children[0]).toBe("Test text")
-    expect(children[1]).toBe("\u2060")
+
+    const wordJoiner = children[1] as JSX.Element
+    assertJSXElement(wordJoiner)
+    expect(wordJoiner.type).toBe("span")
+    expect(wordJoiner.props.class).toBe("word-joiner")
 
     const favicon = children[2]
     assertJSXElement(favicon)

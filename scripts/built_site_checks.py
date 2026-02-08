@@ -1118,6 +1118,61 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
+    """Check if favicon has an ancestor with .no-favicon-span class."""
+    return any(
+        "no-favicon-span" in script_utils.get_classes(parent)
+        for parent in favicon.parents
+        if isinstance(parent, Tag)
+    )
+
+
+def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
+    """Get all favicons that should be checked (excluding .no-favicon-span)."""
+    all_favicons = soup.select("img.favicon, svg.favicon")
+    return [
+        favicon
+        for favicon in all_favicons
+        if not _has_no_favicon_span_ancestor(favicon)
+    ]
+
+
+def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all favicons are preceded by a word joiner span element.
+
+    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
+    the favicon from orphaning onto a new line. Every favicon should have this
+    span as its immediately preceding sibling, unless it's inside a
+    .no-favicon-span container (used for demo/decorative favicons).
+
+    Returns:
+        list of strings describing favicons missing word joiner spans.
+    """
+    issues: list[str] = []
+
+    for favicon in _get_favicons_to_check(soup):
+        prev_sibling = favicon.previous_sibling
+        if isinstance(prev_sibling, Tag):
+            classes = script_utils.get_classes(prev_sibling)
+            if "word-joiner" in classes:
+                continue
+
+        # Identify the favicon for the error message
+        if favicon.name == "img":
+            context = favicon.get("src", "unknown source")
+        else:
+            context = favicon.get("data-domain", "unknown domain")
+
+        _append_to_list(
+            issues,
+            f"Favicon ({context}) missing word-joiner span as "
+            f"previous sibling",
+        )
+
+    return issues
+
+
 def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     """
     Check that all favicons are svg.favicon elements with mask-url pointing to
@@ -1488,6 +1543,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
+        "missing_word_joiner": check_favicon_word_joiner(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),

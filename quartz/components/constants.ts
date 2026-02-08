@@ -44,10 +44,6 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
-// Word joiner (U+2060) prevents line breaks between adjacent characters.
-// Inserted before favicons to prevent them from orphaning onto a new line.
-export const WORD_JOINER = "\u2060"
-
 // Private Use Area marker characters (U+F000 range to avoid conflict with Tengwar fonts at U+E000)
 export const markerChar = "\uF000" // Used for text transformation markers
 export const hatTipPlaceholder = "\uF010" // Used for h/t placeholder

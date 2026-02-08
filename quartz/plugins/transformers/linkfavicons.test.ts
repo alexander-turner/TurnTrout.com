@@ -22,7 +22,6 @@ import {
   localTroutFaviconBasename,
   specialFaviconPaths,
   defaultPath,
-  WORD_JOINER,
 } from "../../components/constants"
 import { faviconUrlsFile } from "../../components/constants.server"
 import { hasClass } from "./utils"
@@ -51,7 +50,11 @@ afterEach(async () => {
   await fsExtra.remove(tempDir)
 })
 
-const wordJoinerNode = { type: "text", value: WORD_JOINER }
+const wordJoinerNode = {
+  type: "element",
+  tagName: "span",
+  properties: { className: "word-joiner", ariaHidden: "true" },
+}
 
 const createExpectedFavicon = (
   imgPath: string,

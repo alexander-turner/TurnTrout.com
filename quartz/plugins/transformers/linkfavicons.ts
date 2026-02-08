@@ -16,11 +16,10 @@ import {
   specialFaviconPaths,
   defaultPath,
   specialDomainMappings,
-  WORD_JOINER,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import { createWinstonLogger } from "../../util/log"
-import { hasClass } from "./utils"
+import { createWordJoinerSpan, hasClass } from "./utils"
 
 const {
   minFaviconCount,
@@ -740,7 +739,7 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
   }
 
   // Append word joiner + favicon to prevent line-break orphaning
-  node.children.push({ type: "text", value: WORD_JOINER } as Text, imgNodeToAppend)
+  node.children.push(createWordJoinerSpan(), imgNodeToAppend)
 }
 
 /**
