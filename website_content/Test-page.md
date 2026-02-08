@@ -15,14 +15,6 @@ date_updated: 2026-01-01 20:00:17.441157
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
 # Header 1 (`inline_code`)
@@ -57,16 +49,16 @@ Subtitle: MATS (starting with smallcaps).
 > - Test
 >   - Test
 >
->  1. Block quotes can also contain ordered lists and sometimes those list items are more than a single line long
->  2. With counters
->      1. That track depth (except in Safari)
+> 1. Block quotes can also contain ordered lists and sometimes those list items are more than a single line long
+> 2. With counters
+>     1. That track depth (except in Safari)
 
 1. A normal ordered list
-    1. Indented
-        1. Indented
-            1. Indented
-                1. ...
-                    1. ...
+   1. Indented
+      1. Indented
+         1. Indented
+            1. ...
+               1. ...
 2. Test
 
 - Unordered list
@@ -84,11 +76,26 @@ Header 1
 : Test item 1
 Unordered list inside a description list
 : - Voice & video calls
-  - GPS
-  - Audible
-  - Uber / Lyft
-  - Authenticators / alarms / other boring utilities
-  - Roam / note-taking
+
+- GPS
+- Audible
+- Uber / Lyft
+- Authenticators / alarms / other boring utilities
+- Roam / note-taking
+
+Code block in a `<dl>`
+: To verify that a commit `ABC012` was indeed committed by a given date, run
+
+```shell
+git clone https://github.com/alexander-turner/.timestamps
+cd .timestamps
+ots --no-bitcoin verify "files/ABC012.txt.ots"
+```
+
+Admonition in a description list
+: > [!quote] Test
+
+> To be or not to be.
 
 # Admonition lists
 
@@ -98,8 +105,8 @@ Unordered list inside a description list
 > 1. One
 > 2. Two
 > 3. Three
->     1. Nested
->     2. Nested II
+>    1. Nested
+>    2. Nested II
 >
 > - Bullet
 > - Second bullet
@@ -113,22 +120,21 @@ Unordered list inside a description list
 > Did the Marauder's Map play a role in the United States entering World War I?
 >
 > 1. No, that's incorrect. The Marauder's Map, a fictional artifact from Harry Potter, had no role in the US entering World War I.
->
 > 2. Yes, the Marauder's Map influenced the US's decision to enter World War I.
 
 # Checkboxes
 
 2. [ ] Checkbox within `ol > li`
 3. Second `li`
-    - [ ] `ol > li > ul > li` lacked indentation before
+   - [ ] `ol > li > ul > li` lacked indentation before
 
-----
+---
 
 2. Normal `ol > li` indent
 
 - Normal `ul > li` indent
 
-----
+---
 
 - Non-checkbox first bullet
 - [ ] First-level not checked off
@@ -154,12 +160,11 @@ Unordered list inside a description list
   - [x] Not even more transparent
 
 # Transclusion
->
+
 > ![[about#^first-para]]
 
 > [!quote]
 > ![[/test-page#section-to-transclude]]
->
 
 ## Section to transclude
 
@@ -168,6 +173,7 @@ Hi! Am I being transcluded?
 # Admonitions
 
 > [!quote]
+>
 > > [!quote] **Reroll** **A**
 
 > [!abstract]
@@ -175,8 +181,10 @@ Hi! Am I being transcluded?
 > [!info]
 
 <!--spellchecker-disable-->
+
 > [!example]
 > This word is solongitmightendupoverflowingornotwrappingiftheconfigurationiswrong.
+
 <!--spellchecker-enable-->
 
 > [!math]
@@ -224,11 +232,9 @@ Hi! Am I being transcluded?
 > Displayed content. {#test-open}
 
 > [!quote] Admonition with tags
-> <br/>
-> <em>Hi!</em>
+> <br/> > <em>Hi!</em>
 >
 > Hi
->
 
 > [!note] [Link in admonition title](/dataset-protection)
 
@@ -291,10 +297,12 @@ Figure: A `<figcaption>` element created from the Markdown cue of "Figure:". "�
 
 This footnote has a table.[^table]
 
-[^table]: | Layer | Coeff | Pos. 0 | 1 | 2 | 3 | 4 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `hate` |  `you` |  `because` |
-    | 6 | +10 | `<endoftext>` | `Love` |   |   |   |
+[^table]:
+
+    |   Layer    | Coeff |    Pos. 0     |   1    |   2    |   3   |     4     |
+    | :--------: | :---: | :-----------: | :----: | :----: | :---: | :-------: |
+    | 0 (Prompt) |  +1   | `<endoftext>` |  `I`   | `hate` | `you` | `because` |
+    |     6      |  +10  | `<endoftext>` | `Love` |        |       |           |
 
     Table: Unpaired addition of `Love`.
 
@@ -360,22 +368,22 @@ This footnote has a table.[^table]
    </table>
 
 |    Feature | Light mode | Dark mode  |
-| ---------: |  :-------: | :--------- |
+| ---------: | :--------: | :--------- |
 | Text color | Dark gray  | Light gray |
 
 Table: A `<figcaption>` element created from the Markdown cue of "Table:".
 
 | HellaSwag | MMLU  | NaturalQuestions | TruthfulQA |
 | :-------: | :---: | :--------------: | :--------: |
-|   +0.6%   | -1.0% | -0.7%            | +10.5%     |
+|   +0.6%   | -1.0% |      -0.7%       |   +10.5%   |
 
 Table: Ensure that word wrapping works properly on table header elements to prevent overflow.
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-| **Tier**               | **Time for tier** | **Cost of tier** | **Protection level**                    |
-| -----------------: | :--------: | :----------: | :--------------------------------- |
-| Quick start    | 50 minutes     | \$0       | Online accounts secured against most hacking. Limited private communication ability.  |
+|    **Tier** | **Time for tier** | **Cost of tier** | **Protection level**                                                                 |
+| ----------: | :---------------: | :--------------: | :----------------------------------------------------------------------------------- |
+| Quick start |    50 minutes     |       \$0        | Online accounts secured against most hacking. Limited private communication ability. |
 
 # Video
 
@@ -400,16 +408,18 @@ Figure: This image should be transparent in light mode and have a light backgrou
 <!-- vale on -->
 
 <!--spellchecker-disable-->
+
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+
 <!--spellchecker-enable-->
 
 # Spoilers
->
->Normal blockquote
 
->! This text is hidden until you hover over it.
->! Multiple lines can be hidden
->! Like this!
+> Normal blockquote
+
+> ! This text is hidden until you hover over it.
+> ! Multiple lines can be hidden
+> ! Like this!
 
 # Arrows
 
@@ -422,12 +432,14 @@ Inline math: $e^{i\pi} + 1 = 0$.
 - $\pi: C → A$
 
 Display math:
+
 $$
 \begin{aligned}
 f(x) &= x^2 + 2x + 1 \\
 &= (x + 1)^2
 \end{aligned}
 $$
+
 Post-math text. The following equations should display properly:
 
 $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B}  =0 \qquad \nabla \times \mathbf{E}  =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B}  =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
@@ -455,6 +467,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar to that of normal text (in that a sentence's first letter should be full-height). Here are _italicized SMALLCAPS_.
 
 <!--spellchecker-disable-->
+
 - Ligatures <abbr class="small-caps">fi fl ff ffi ffl fj ft st ct th ck</abbr>
 - ABCDEFGHIJKLMNOPQRSTUVWXYZ
 - _ABCDEFGHIJKLMNOPQRSTUVWXYZ_
@@ -599,12 +612,19 @@ This text omits a detail.[^footnote] This sentence has multiple footnotes.[^1][^
 Footnote spam.[^spam1][^spam2][^spam3][^spam4][^spam5][^spam6][^spam7][^spam8]
 
 [^spam1]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam2]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam3]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam4]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam5]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam6]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam7]: Make sure we hit double-digit footnotes to test formatting.
+
 [^spam8]: Make sure we hit double-digit footnotes to test formatting.
 
 # Code blocks
@@ -712,9 +732,11 @@ Corrupted text
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 
 [^1]: First footnote in a row.
+
 [^2]: Second footnote in a row.
 
-[^footnote]: Here's the detail, in a footnote. And here's a nested footnote.[^nested]
+[^footnote]:
+    Here's the detail, in a footnote. And here's a nested footnote.[^nested]
 
     > [!note] Admonition in a footnote
     >
