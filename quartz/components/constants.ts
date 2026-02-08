@@ -43,6 +43,9 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
+export const markerChar = "\uF000" // Used for text transformation markers
+export const hatTipPlaceholder = "\uF010" // Used for h/t placeholder
+
 // Computed constants
 export const faviconUrl = `/${localTroutFaviconBasenameDefault}.${localTroutFaviconExtensionDefault}`
 

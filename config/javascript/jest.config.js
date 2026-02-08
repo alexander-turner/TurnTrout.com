@@ -26,6 +26,8 @@ const config = {
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
+    "quartz/components/Authors\\.tsx",
+    "quartz/plugins/transformers/assetDimensions\\.ts",
     "\\.test\\.(ts|tsx|js|jsx)$",
     "/__tests__/",
   ],

@@ -178,39 +178,21 @@ Stepwise inaction seems not to impose any perverse incentives.[^3] I think it's 
 I think AUP<sub>conceptual</sub> provides the concepts needed for a solution to impact measurement: penalize the agent for changing its power. But there are still some design choices to be made to make that happen.
 
 Here's what we've seen so far:
-<dl>
-  <dt>Baseline</dt>
-  <dd>
-    <ul>
-      <li>Starting state: how were things originally?</li>
-      <li>Inaction: how would things have been had I never done anything?</li>
-      <li>Stepwise inaction: how would acting change things compared to not acting right now?</li>
-    </ul>
-  </dd>
+Baseline
+: - Starting state: how were things originally?
+  - Inaction: how would things have been had I never done anything?
+  - Stepwise inaction: how would acting change things compared to not acting right now?
 
-  <dt>Deviation used for penalty term</dt>
-  <dd>
-    <ul>
-      <li>Decrease-only: penalize decrease in auxiliary AUs</li>
-      <li>Absolute value: penalize absolute change in auxiliary AUs</li>
-    </ul>
-  </dd>
+Deviation used for penalty term
+: - Decrease-only: penalize decrease in auxiliary AUs
+  - Absolute value: penalize absolute change in auxiliary AUs
 
-  <dt>Inaction rollouts</dt>
-  <dd>
-    <ul>
-      <li>One-step (model-free)</li>
-      <li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>-step: compare acting and then waiting <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> turns versus waiting <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> turns</li>
-    </ul>
-  </dd>
+Inaction rollouts
+: - One-step (model-free)
+  - $n$-step: compare acting and then waiting $n-1$ turns versus waiting $n$ turns
 
-  <dt>Auxiliary goals</dt>
-  <dd>
-    <ul>
-      <li>Randomly selected</li>
-    </ul>
-  </dd>
-</dl>
+Auxiliary goals
+: - Randomly selected
 
 |                    | `Options` | `Damage` | `Correction` | `Offset` | `Interference` |
 | -----------------: | :-------: | :------: | :----------: | :------: | :------------: |

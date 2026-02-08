@@ -27,7 +27,7 @@ export interface FrontmatterData {
   "next-post-slug"?: string
   "next-post-title"?: string
   "lw-linkpost-url"?: string
-  authors?: string
+  authors?: string[]
   created?: string | Date
   children?: string[]
   [key: string]: unknown

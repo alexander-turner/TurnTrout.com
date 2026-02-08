@@ -143,36 +143,53 @@ em {
 .elvish {
   font-family: Elvish, serif;
   line-height: 2.2;
-  position: relative;
-  cursor: text;
+  cursor: pointer;
 
-  & a {
-    cursor: pointer;
-  }
+  // Gentle indicator that text is interactive - subtle dotted underline
+  // Using 50% opacity for WCAG contrast compliance
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 50%, transparent);
+  text-underline-offset: 0.3em;
 
+  // Tengwar Artano only has one style, so use it for em too
   & em,
   em & {
-    font-family: ElvishItalic, serif;
+    font-family: Elvish, serif;
+    font-style: normal; // Tengwar doesn't have italic
   }
 
-  // Show underlying English text
-  transition:
-    opacity 600ms,
-    color 300ms;
-
+  // Hover state - show hint that clicking will reveal translation
   &:hover {
-    color: transparent;
+    text-decoration-color: color-mix(in srgb, var(--foreground) 70%, transparent);
+  }
 
-    &::after {
-      position: absolute;
-      left: 0;
-      width: max-content;
-      content: attr(data-content);
-      color: var(--foreground);
-      font-family: var(--font-main);
-      opacity: 1;
-      text-shadow: 0 0 10px color-mix(in srgb, var(--yellow) 50%, transparent);
+  // Focus state for keyboard users
+  &:focus-visible {
+    outline: 2px solid var(--foreground);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  // When toggled to show translation
+  &.show-translation {
+    font-family: var(--font-main);
+
+    // Keep same line-height to prevent layout shift when toggling
+
+    // Hide the Tengwar text and show translation
+    .elvish-tengwar {
+      display: none;
     }
+
+    .elvish-translation {
+      display: inline;
+    }
+  }
+
+  // Default: show Tengwar, hide translation
+  .elvish-translation {
+    display: none;
   }
 }
 
@@ -337,7 +354,9 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   }
 }
 
-// Avoid sidebars
+// Body text ordinals (like "21st place") use lining-nums for visual consistency.
+// Date ordinals (.date-ordinal-num) intentionally have no styling so they
+// inherit oldstyle-nums from body to match the year (e.g., "October 8th, 2025").
 article .ordinal-num {
   font-variant-numeric: lining-nums;
 }
