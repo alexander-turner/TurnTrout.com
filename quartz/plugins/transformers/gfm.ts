@@ -201,12 +201,12 @@ export function fixDefinitionList(dlElement: Element): Element {
     lastWasDt = result.newLastWasDt
   }
 
-  // If no valid dt/dd pairs remain, replace <dl> with <div>
-  const hasValidPairs = hasValidDtDdPairs(dlElement)
+  // Check the FIXED children for valid pairs, not the original
+  const fixedDl = { ...dlElement, children: fixedChildren }
+  const hasValidPairs = hasValidDtDdPairs(fixedDl)
   return {
-    ...dlElement,
+    ...fixedDl,
     tagName: hasValidPairs ? "dl" : "div",
-    children: fixedChildren,
   }
 }
 
@@ -306,15 +306,19 @@ export function fixDefinitionListsPlugin() {
       }
     })
 
-    // Add <track kind="captions"> to <video> elements that don't have one.
-    // Uses an empty WebVTT data URI to satisfy the axe video-caption rule for
-    // muted/decorative videos that have no audio requiring captions.
+    // Ensure all <video> elements have a valid <track kind="captions"> with src.
+    // OFM may create tracks without src; replace those and add missing ones.
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "video") return
-      const hasTrack = node.children.some(
-        (child) => child.type === "element" && child.tagName === "track",
+      const hasValidTrack = node.children.some(
+        (child) => child.type === "element" && child.tagName === "track" && child.properties?.src,
       )
-      if (!hasTrack) {
+      if (!hasValidTrack) {
+        // Remove any invalid tracks (no src) before adding a valid one
+        node.children = node.children.filter(
+          (child) =>
+            !(child.type === "element" && child.tagName === "track" && !child.properties?.src),
+        )
         node.children.push({
           type: "element",
           tagName: "track",

@@ -984,16 +984,30 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect(trackChild.properties?.label).toBe("No audio")
   })
 
-  it("does not add duplicate <track> to video elements that already have one", () => {
+  it("does not add duplicate <track> to video elements that already have a valid one", () => {
     const video = h("video", { controls: true }, [
       h("source", { src: "test.mp4", type: "video/mp4" }),
-      h("track", { kind: "captions", label: "No audio" }),
+      h("track", { kind: "captions", src: "captions.vtt", label: "English" }),
     ])
     const tree: Root = { type: "root", children: [video] }
     runPlugin(tree)
 
     const tracks = video.children.filter((c) => c.type === "element" && c.tagName === "track")
     expect(tracks).toHaveLength(1)
+    expect((tracks[0] as Element).properties?.src).toBe("captions.vtt")
+  })
+
+  it("replaces invalid <track> (no src) with a valid one", () => {
+    const video = h("video", { controls: true }, [
+      h("source", { src: "test.mp4", type: "video/mp4" }),
+      h("track", { kind: "captions" }),
+    ])
+    const tree: Root = { type: "root", children: [video] }
+    runPlugin(tree)
+
+    const tracks = video.children.filter((c) => c.type === "element" && c.tagName === "track")
+    expect(tracks).toHaveLength(1)
+    expect((tracks[0] as Element).properties?.src).toBe("data:text/vtt,WEBVTT")
   })
 
   it("skips non-video elements for track insertion", () => {

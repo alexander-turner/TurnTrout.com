@@ -371,7 +371,7 @@ p:has(+ .subtitle),
 }
 
 .subtitle {
-  color: var(--midground);
+  color: var(--midground-strong);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
 
@@ -897,7 +897,6 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-  font-weight: 200;
 }
 
 // Specific graph in design doc has too much whitespace in light
