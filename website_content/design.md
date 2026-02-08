@@ -684,7 +684,14 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well.
+To tackle this, the favicon transformation inserts a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) character (U+2060) immediately before the favicon element. The word joiner is a zero-width invisible character that prevents line breaks at its position. This keeps the favicon glued to the preceding text without any extra DOM elements.
+
+<details>
+<summary>Previous implementation</summary>
+
+The previous approach used a "favicon sandwich": a `<span class="favicon-span">` wrapping the last few characters of the link text and the favicon, with `white-space: nowrap` to prevent wrapping. The word joiner approach is simpler (no extra DOM elements or CSS) and achieves the same result.
+
+</details>
 
 ### I only include recognizable favicons
 
@@ -1057,8 +1064,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 2. Failure to inline critical CSS;
 >
 > **Favicon validation:**
-> 1. Favicons which are not sandwiched within `span.favicon-span` tags will wrap on their own, [which is awkward](#inline-favicons);
-> 2. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 1. Favicons that aren't SVG elements with proper `mask-url` styling;
 >
 > **Common Markdown rendering errors:**
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
