@@ -50,8 +50,10 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   updatePosition()
 
+  // Footnote popovers persist through scroll (dismissed only via X button);
+  // regular popovers close on scroll since they're hover-triggered and ephemeral.
   const handleScroll = () => {
-    if (activePopoverRemover) {
+    if (activePopoverRemover && !popoverElement.classList.contains("footnote-popover")) {
       activePopoverRemover()
     }
   }
@@ -188,26 +190,4 @@ document.addEventListener("nav", () => {
       )
     }
   }
-
-  // Close footnote popovers when clicking outside
-  document.addEventListener(
-    "click",
-    (e: MouseEvent) => {
-      const footnotePopover = document.querySelector(
-        ".popover.footnote-popover",
-      ) as HTMLElement | null
-      if (!footnotePopover) return
-
-      const target = e.target as HTMLElement
-      // Don't close if clicking on the popover itself
-      if (footnotePopover.contains(target)) return
-      // Don't close if clicking on a footnote ref link (handled by toggle logic above)
-      if (target.closest('a[href^="#user-content-fn-"]')) return
-
-      if (activePopoverRemover) {
-        activePopoverRemover()
-      }
-    },
-    { signal },
-  )
 })

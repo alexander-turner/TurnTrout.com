@@ -460,7 +460,7 @@ base.describe("Footnote popover on mobile", () => {
     await expect(popover).toBeHidden()
   })
 
-  base("Tapping outside closes footnote popover", async ({ page }) => {
+  base("Tapping outside does NOT close footnote popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -468,9 +468,9 @@ base.describe("Footnote popover on mobile", () => {
     const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
-    // Tap somewhere else on the page
+    // Tap somewhere else on the page - popover should persist
     await page.locator("body").click({ position: { x: 10, y: 10 } })
-    await expect(popover).toBeHidden()
+    await expect(popover).toBeVisible()
   })
 
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {

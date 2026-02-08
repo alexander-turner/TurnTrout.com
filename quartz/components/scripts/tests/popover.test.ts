@@ -177,6 +177,32 @@ describe("createPopover", () => {
     expect(popoverInner?.textContent).toContain("Named footnote content here.")
   })
 
+  it("should strip can-trigger-popover from links inside footnote popovers", async () => {
+    const footnoteHtml = `
+      <section class="footnotes">
+        <ol>
+          <li id="user-content-fn-1">See <a href="/other" class="can-trigger-popover internal">other page</a>.</li>
+        </ol>
+      </section>
+    `
+    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
+        },
+        text: () => Promise.resolve(footnoteHtml),
+      } as unknown as Response),
+    )
+
+    options.linkElement.setAttribute("href", "#user-content-fn-1")
+    const popover = await createPopover(options)
+    const innerLink = popover.querySelector(".popover-inner a")
+    expect(innerLink).not.toBeNull()
+    expect(innerLink?.classList.contains("can-trigger-popover")).toBe(false)
+  })
+
   it("should throw error when footnote element is not found", async () => {
     const footnoteHtml = `
       <div class="previewable"><h1>Article</h1></div>
@@ -516,6 +542,23 @@ describe("attachPopoverEventListeners", () => {
     popoverElement.dispatchEvent(new MouseEvent("mouseleave"))
     jest.advanceTimersByTime(300)
     expect(popoverElement.classList.contains("visible")).toBe(false)
+  })
+
+  it("should not remove footnote popover on link mouseleave", () => {
+    popoverElement.classList.add("footnote-popover")
+    popoverElement.classList.add("popover-visible")
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    jest.advanceTimersByTime(300)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(true)
+  })
+
+  it("should not remove footnote popover on popover mouseleave", () => {
+    popoverElement.classList.add("footnote-popover")
+    popoverElement.classList.add("popover-visible")
+    popoverElement.dispatchEvent(new MouseEvent("mouseenter"))
+    popoverElement.dispatchEvent(new MouseEvent("mouseleave"))
+    jest.advanceTimersByTime(300)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(true)
   })
 
   it.each`

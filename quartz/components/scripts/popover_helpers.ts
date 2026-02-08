@@ -44,6 +44,11 @@ function processFootnoteForPopover(
   }
   modifyElementIds([clonedFootnote], "-popover")
 
+  // Prevent meta-popovers: strip popover triggers from links inside footnote content
+  for (const link of clonedFootnote.querySelectorAll(".can-trigger-popover")) {
+    link.classList.remove("can-trigger-popover")
+  }
+
   // Extract the content from the <li> wrapper and return as a fragment
   const fragment = html.createDocumentFragment()
   while (clonedFootnote.firstChild) {
@@ -286,14 +291,19 @@ export function attachPopoverEventListeners(
     },
     mouseleaveLink: () => {
       isMouseOverLink = false
-      removePopover()
+      // Footnote popovers persist until explicitly closed via X button
+      if (!popoverElement.classList.contains("footnote-popover")) {
+        removePopover()
+      }
     },
     mouseenterPopover: () => {
       isMouseOverPopover = true
     },
     mouseleavePopover: () => {
       isMouseOverPopover = false
-      removePopover()
+      if (!popoverElement.classList.contains("footnote-popover")) {
+        removePopover()
+      }
     },
     clickPopover: (e: MouseEvent) => {
       const clickedLink = (e.target as HTMLElement).closest("a")
