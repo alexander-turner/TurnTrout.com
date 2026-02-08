@@ -835,6 +835,11 @@ Spoilers hide text until hovered
 
 : >! Have you heard? Snape kills Dumbledore.
 
+Scroll indicators for overflowing content
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
+
+  ![[https://assets.turntrout.com/static/images/posts/design-02072026.avif|A long set of equations stretches off to the side. The right edge smoothly fades away.]]
+
 Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 

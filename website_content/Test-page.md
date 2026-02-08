@@ -381,9 +381,45 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 - [ ] You can check off this item, refresh the page, and the box will remain checked.
 
-|    **Tier** | **Time for tier** | **Cost of tier** | **Protection level**                                                                 |
-| ----------: | :---------------: | :--------------: | :----------------------------------------------------------------------------------- |
-| Quick start |    50 minutes     |       \$0        | Online accounts secured against most hacking. Limited private communication ability. |
+| **Tier** | **Time for tier** | **Cost of tier** | **Protection level** |
+| -----------------: | :--------: | :----------: | :--------------------------------- |
+| Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
+
+# Scroll indicators
+
+Wide tables and equations show a fade gradient at the scrollable edges.
+
+<!--spellchecker-disable-->
+
+| Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+| Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
+| En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+| Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
+| Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+
+> [!note] Admonition with scrollable table
+>
+> The fade gradient should match the admonition tint, not the page background.
+>
+> | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
+> | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+> | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+> | Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+> | Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
+> | En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
+> | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
+> | Multiplication | ✓ | ✗ | ✗ | ✗ | ✗ | ✓ | ✗ |
+
+<!--spellchecker-enable-->
+
+> [!warning] Admonition with scrollable equation
+>
+> $$
+> \nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} = 0 \qquad \nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} = \mu_0\left(\mathbf{J} + \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right) \qquad \mathcal{L} = -\frac{1}{4}F_{\mu\nu}F^{\mu\nu} + \bar{\psi}(i\gamma^\mu D_\mu - m)\psi \qquad S = \int d^4x\,\sqrt{-g}\left(\frac{R}{16\pi G} + \mathcal{L}_{\mathrm{matter}}\right)
+> $$
 
 # Video
 
