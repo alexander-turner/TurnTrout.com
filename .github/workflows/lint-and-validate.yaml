@@ -114,8 +114,9 @@ jobs:
   eslint:
     needs: detect-changes
     if: >
-      (needs.detect-changes.outputs.code == 'true' && !startsWith(github.head_ref, 'deepsource-'))
-      || github.event_name == 'schedule'
+      always() &&
+      ((needs.detect-changes.outputs.code == 'true' && !startsWith(github.head_ref, 'deepsource-'))
+      || github.event_name == 'schedule')
     name: Run eslint scanning
     runs-on: ubuntu-24.04
     permissions:

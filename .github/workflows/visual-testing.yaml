@@ -17,12 +17,6 @@ on:
   pull_request:
     branches: ["main"]
     types: [labeled, synchronize, opened, reopened]
-    paths:
-      - "**/*.spec.ts"
-      - "quartz/components/scripts/**"
-      - "quartz/components/styles/**"
-      - "config/playwright/**"
-      - "config/lostpixel/**"
   merge_group:
 
 permissions:
@@ -32,6 +26,7 @@ permissions:
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present
   should-run:
+    name: visual-should-run
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
@@ -49,6 +44,7 @@ jobs:
           fi
 
   build:
+    name: visual-testing-build
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04

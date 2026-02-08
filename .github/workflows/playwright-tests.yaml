@@ -16,12 +16,6 @@ on:
   pull_request:
     branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
-    paths:
-      - "**/*.spec.ts"
-      - "quartz/components/scripts/**"
-      - "quartz/static/scripts/**"
-      - "quartz/components/styles/**"
-      - "config/playwright/**"
   merge_group:
 
 permissions:
@@ -31,6 +25,7 @@ permissions:
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present
   should-run:
+    name: playwright-should-run
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
@@ -48,6 +43,7 @@ jobs:
           fi
 
   build:
+    name: playwright-build
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
