@@ -11,6 +11,15 @@
   position: relative;
   overflow: hidden;
 
+  // Hide native scrollbar — the fade gradients serve as scroll indicators
+  > * {
+    scrollbar-width: none; // Firefox
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome, Safari, Brave
+    }
+  }
+
   &::before,
   &::after {
     content: "";
