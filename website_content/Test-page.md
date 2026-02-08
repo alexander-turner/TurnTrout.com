@@ -669,10 +669,8 @@ This is a plain code block without a language specified.
 
 ## Special fonts
 
-Elvish
-
 <!-- spellchecker-disable -->
-
+Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 
 : <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
