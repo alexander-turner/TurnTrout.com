@@ -246,7 +246,8 @@ Hi! Am I being transcluded?
 > Displayed content. {#test-open}
 
 > [!quote] Admonition with tags
-> <br/> > <em>Hi!</em>
+> <br/>
+> <em>Hi!</em>
 >
 > Hi
 
