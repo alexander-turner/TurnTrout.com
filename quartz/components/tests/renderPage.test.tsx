@@ -687,6 +687,7 @@ describe("renderPage helpers", () => {
     expect(anchor.tagName).toBe("a")
     expect(anchor.properties.href).toBe("/target")
     expect(anchor.properties.class).toEqual(["internal", "transclude-src"])
+    expect(anchor.properties.ariaLabel).toBe("Source: /target")
   })
 
   it("setBlockTransclusion replaces children with normalized block", () => {

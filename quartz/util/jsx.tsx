@@ -21,7 +21,7 @@ const customComponents: Partial<Components> = {
       props.defaultValue = defaultValue.toString()
     }
     return (
-      <div className="table-container">
+      <div className="table-container" tabIndex={0} role="region" aria-label="Scrollable table">
         <table {...tableProps} />
       </div>
     )

@@ -20,6 +20,7 @@ import {
   convertDdToParagraph,
   processDefinitionListChild,
   fixDefinitionList,
+  hasValidDtDdPairs,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -780,6 +781,25 @@ describe("processDefinitionListChild", () => {
   })
 })
 
+describe("hasValidDtDdPairs", () => {
+  it.each([
+    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], true],
+    ["single orphaned dd", [h("dd", ["Orphan"])], false],
+    ["only dt without dd", [h("dt", ["Term"])], false],
+    ["empty dl", [], false],
+    [
+      "orphaned dd before valid pair",
+      [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
+      true,
+    ],
+    ["text nodes only", [{ type: "text" as const, value: "Text" }], false],
+    ["non-dt/dd elements", [h("div", ["Content"])], false],
+  ])("%s", (_desc, children, expected) => {
+    const dl = h("dl", children)
+    expect(hasValidDtDdPairs(dl)).toBe(expected)
+  })
+})
+
 describe("fixDefinitionList", () => {
   it("returns unchanged dl when empty", () => {
     const dl = h("dl", [])
@@ -789,20 +809,22 @@ describe("fixDefinitionList", () => {
   })
 
   it.each([
-    ["single orphaned dd", [h("dd", ["Orphan"])], ["p"]],
-    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], ["dt", "dd"]],
+    ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["p"]],
+    ["valid dt/dd pair → dl", [h("dt", ["Term"]), h("dd", ["Desc"])], "dl", ["dt", "dd"]],
     [
-      "orphaned dd before valid pair",
+      "orphaned dd before valid pair → dl",
       [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
+      "dl",
       ["p", "dt", "dd"],
     ],
     [
-      "multiple consecutive dd after dt",
+      "multiple consecutive dd after dt → dl",
       [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
+      "dl",
       ["dt", "dd", "p"],
     ],
     [
-      "complex mixed structure",
+      "complex mixed structure → dl",
       [
         h("dd", ["Orphan 1"]),
         h("dt", ["Term 1"]),
@@ -811,14 +833,17 @@ describe("fixDefinitionList", () => {
         h("dt", ["Term 2"]),
         h("dd", ["Valid 2"]),
       ],
+      "dl",
       ["p", "dt", "dd", "p", "dt", "dd"],
     ],
-  ])("fixes %s correctly", (_desc, children, expectedTags) => {
+    ["all orphaned dd → div", [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])], "div", ["p", "p"]],
+  ])("fixes %s correctly", (_desc, children, expectedTag, expectedChildTags) => {
     const dl = h("dl", children)
     const result = fixDefinitionList(dl)
 
-    expect(result.children).toHaveLength(expectedTags.length)
-    expectedTags.forEach((tag, i) => {
+    expect(result.tagName).toBe(expectedTag)
+    expect(result.children).toHaveLength(expectedChildTags.length)
+    expectedChildTags.forEach((tag, i) => {
       expect((result.children[i] as Element).tagName).toBe(tag)
     })
   })
@@ -833,23 +858,26 @@ describe("fixDefinitionList", () => {
 })
 
 describe("fixDefinitionListsPlugin (integration)", () => {
-  const runPlugin = (dl: Element): void => {
-    const tree: Root = { type: "root", children: [dl] }
+  const runPlugin = (tree: Root): void => {
     const plugin = fixDefinitionListsPlugin()
     plugin(tree)
   }
 
-  it("fixes orphaned dd elements in dl", () => {
+  it("fixes orphaned dd in dl and converts dl to div", () => {
     const dl = h("dl", [h("dd", ["Orphan"])])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("div")
     expect((dl.children[0] as Element).tagName).toBe("p")
   })
 
-  it("preserves valid dt/dd pairs", () => {
+  it("preserves valid dt/dd pairs as dl", () => {
     const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("dl")
     expect((dl.children[0] as Element).tagName).toBe("dt")
     expect((dl.children[1] as Element).tagName).toBe("dd")
   })
@@ -861,9 +889,66 @@ describe("fixDefinitionListsPlugin (integration)", () => {
       h("dd", ["Valid"]),
       h("dd", ["Another orphan"]),
     ])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("dl")
     const tags = dl.children.map((c) => (c as Element).tagName)
     expect(tags).toEqual(["p", "dt", "dd", "p"])
+  })
+
+  it("converts orphaned dd outside dl to p", () => {
+    const dd = h("dd", ["Orphaned content"])
+    const tree: Root = {
+      type: "root",
+      children: [h("div", [dd])],
+    }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("p")
+  })
+
+  it("converts orphaned dt outside dl to p", () => {
+    const dt = h("dt", ["Orphaned term"])
+    const tree: Root = {
+      type: "root",
+      children: [h("div", [dt])],
+    }
+    runPlugin(tree)
+
+    expect(dt.tagName).toBe("p")
+  })
+
+  it("preserves dd inside dl", () => {
+    const dd = h("dd", ["Valid description"])
+    const dl = h("dl", [h("dt", ["Term"]), dd])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("dd")
+  })
+
+  it("adds tabindex to pre elements", () => {
+    const pre = h("pre", [h("code", ["const x = 1"])])
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(pre.properties.tabIndex).toBe(0)
+  })
+
+  it("adds tabindex to pre elements without existing properties", () => {
+    const pre = h("pre", [h("code", ["const x = 1"])])
+    delete (pre as unknown as Record<string, unknown>).properties
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(pre.properties.tabIndex).toBe(0)
+  })
+
+  it("handles elements without children in orphaned dd/dt check", () => {
+    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
+    const tree: Root = { type: "root", children: [brokenNode] }
+    // Should not throw
+    expect(() => runPlugin(tree)).not.toThrow()
   })
 })

@@ -158,10 +158,30 @@ export function processDefinitionListChild(
 }
 
 /**
+ * Checks whether a definition list has any valid <dt>/<dd> pairs.
+ */
+export function hasValidDtDdPairs(dlElement: Element): boolean {
+  let lastWasDt = false
+  for (const child of dlElement.children) {
+    if (child.type !== "element") continue
+    if (child.tagName === "dt") {
+      lastWasDt = true
+    } else if (child.tagName === "dd" && lastWasDt) {
+      return true
+    } else {
+      lastWasDt = false
+    }
+  }
+  return false
+}
+
+/**
  * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
+ * If no valid <dt>/<dd> pairs remain, replaces the <dl> tag with <div> to avoid
+ * invalid HTML (a <dl> must only contain <dt>, <dd>, <div>, <script>, <template>).
  *
  * @param dlElement - The <dl> element to fix
- * @returns The fixed <dl> element with updated children
+ * @returns The fixed element (either <dl> or <div>) with updated children
  */
 export function fixDefinitionList(dlElement: Element): Element {
   if (!dlElement.children || dlElement.children.length === 0) {
@@ -177,8 +197,11 @@ export function fixDefinitionList(dlElement: Element): Element {
     lastWasDt = result.newLastWasDt
   }
 
+  // If no valid dt/dd pairs remain, replace <dl> with <div>
+  const hasValidPairs = hasValidDtDdPairs(dlElement)
   return {
     ...dlElement,
+    tagName: hasValidPairs ? "dl" : "div",
     children: fixedChildren,
   }
 }
@@ -248,11 +271,35 @@ export function fixDefinitionListsPlugin() {
     // istanbul ignore next --- defensive
     if (!tree) return
 
+    // Fix <dl> elements with orphaned <dd>
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "dl") return
 
       const fixed = fixDefinitionList(node)
+      node.tagName = fixed.tagName
       node.children = fixed.children
+    })
+
+    // Fix orphaned <dd>/<dt> elements outside of <dl>
+    visit(tree, "element", (node: Element) => {
+      if (!node.children) return
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i]
+        if (child.type !== "element") continue
+        if (child.tagName === "dd" && node.tagName !== "dl") {
+          child.tagName = "p"
+        } else if (child.tagName === "dt" && node.tagName !== "dl") {
+          child.tagName = "p"
+        }
+      }
+    })
+
+    // Make scrollable code blocks keyboard accessible
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName === "pre") {
+        node.properties = node.properties || {}
+        node.properties.tabIndex = 0
+      }
     })
   }
 }
