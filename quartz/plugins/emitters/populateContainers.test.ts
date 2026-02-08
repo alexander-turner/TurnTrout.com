@@ -762,7 +762,7 @@ describe("PopulateContainers", () => {
       it("should count commits for a specific author", async () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.commitCount}\n`)
 
-        const count = await populateModule.countGitCommits("Alex Turner")
+        const count = await populateModule.countGitCommits({ author: "Alex Turner" })
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -771,34 +771,35 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle whitespace in output", async () => {
-        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
-
-        const count = await populateModule.countGitCommits("Test Author")
-
-        expect(count).toBe(MOCK_STATS.jsTestCount)
-      })
-    })
-
-    describe("countAICommits", () => {
-      it("should count commits with claude.ai/code/session in message", async () => {
+      it("should count commits matching a grep pattern", async () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.aiCommitCount}\n`)
 
-        const count = await populateModule.countAICommits()
+        const count = await populateModule.countGitCommits({ grep: "claude.ai/code/session" })
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'git log --all --oneline --grep="claude.ai/code/session" | wc -l',
+          'git rev-list --all --count --grep="claude.ai/code/session"',
           { encoding: "utf-8" },
         )
       })
 
-      it("should handle zero AI commits", async () => {
-        mockExecSync.mockReturnValue("0\n")
+      it("should handle whitespace in output", async () => {
+        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
 
-        const count = await populateModule.countAICommits()
+        const count = await populateModule.countGitCommits({ author: "Test Author" })
 
-        expect(count).toBe(0)
+        expect(count).toBe(MOCK_STATS.jsTestCount)
+      })
+
+      it("should count all commits when no options provided", async () => {
+        mockExecSync.mockReturnValue("1000\n")
+
+        const count = await populateModule.countGitCommits()
+
+        expect(count).toBe(1000)
+        expect(mockExecSync).toHaveBeenCalledWith("git rev-list --all --count", {
+          encoding: "utf-8",
+        })
       })
     })
 

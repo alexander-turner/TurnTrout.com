@@ -84,19 +84,17 @@ export const generateTestCountContent = (): ContentGenerator => {
   }
 }
 
-// skipcq: JS-D1001
-export async function countGitCommits(author: string): Promise<number> {
-  const output = execSync(`git rev-list --all --count --author="${author}"`, {
-    encoding: "utf-8",
-  })
-  return parseInt(output.trim(), 10)
+interface GitCountOptions {
+  author?: string
+  grep?: string
 }
 
 // skipcq: JS-D1001
-export async function countAICommits(): Promise<number> {
-  const output = execSync('git log --all --oneline --grep="claude.ai/code/session" | wc -l', {
-    encoding: "utf-8",
-  })
+export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  let cmd = "git rev-list --all --count"
+  if (options.author) cmd += ` --author="${options.author}"`
+  if (options.grep) cmd += ` --grep="${options.grep}"`
+  const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -157,8 +155,8 @@ export interface RepoStats {
 export async function computeRepoStats(): Promise<RepoStats> {
   const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits("Alex Turner"),
-      countAICommits(),
+      countGitCommits({ author: "Alex Turner" }),
+      countGitCommits({ grep: "claude.ai/code/session" }),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
