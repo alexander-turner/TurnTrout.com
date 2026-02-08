@@ -750,16 +750,27 @@ img.emoji {
   }
 }
 
-.spoiler-container:focus .spoiler-overlay,
+.spoiler-container:focus-visible .spoiler-overlay,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:focus .spoiler-content,
+.spoiler-container:focus-visible .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
+}
+
+// Override hover/focus when explicitly closed via click toggle
+.spoiler-container.force-hidden .spoiler-overlay {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.spoiler-container.force-hidden .spoiler-content {
+  filter: blur(4px) !important;
+  opacity: 0.5 !important;
 }
 
 // Make sure the bullet points don't feel choked

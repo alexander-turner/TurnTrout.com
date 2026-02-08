@@ -572,8 +572,6 @@ test.describe("Spoilers", () => {
 
       // Click again to close
       await spoiler.click()
-      await page.mouse.click(0, 0) // Click away to remove focus
-
       await expect(spoiler).not.toHaveClass(/revealed/)
     })
   }
