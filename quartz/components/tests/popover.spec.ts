@@ -433,37 +433,30 @@ test.describe("Footnote popovers", () => {
   })
 })
 
-test.describe("Footnote popover on mobile", () => {
-  test.beforeEach(async ({ page }) => {
+// Use base (not test) so mobile tests don't inherit the desktop-only skip from the
+// file-level test.beforeEach. These tests explicitly set a mobile viewport.
+base.describe("Footnote popover on mobile", () => {
+  base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
     await page.reload()
     await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
   })
 
-  test("Tapping footnote shows popover on mobile", async ({ page }) => {
+  base("Tapping footnote toggles popover on and off", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
-    await footnoteRef.click()
-    const popover = page.locator(".popover.footnote-popover")
-    await expect(popover).toBeVisible()
-  })
-
-  test("Tapping footnote again closes popover on mobile", async ({ page }) => {
-    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
-    await footnoteRef.scrollIntoViewIfNeeded()
-
-    // Open
+    // Tap to open
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
-    // Close
+    // Tap again to close
     await footnoteRef.click()
     await expect(popover).toBeHidden()
   })
 
-  test("Tapping outside closes footnote popover on mobile", async ({ page }) => {
+  base("Tapping outside closes footnote popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -476,16 +469,10 @@ test.describe("Footnote popover on mobile", () => {
     await expect(popover).toBeHidden()
   })
 
-  test("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
-    // Regular internal links should NOT show popovers on mobile
-    const regularLink = page.locator("#center-content .can-trigger-popover").first()
-    const href = await regularLink.getAttribute("href")
-
-    // Skip if the first link happens to be a footnote
-    if (href?.includes("#user-content-fn-")) {
-      return
-    }
-
+  base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
+    const regularLink = page
+      .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')
+      .first()
     await regularLink.scrollIntoViewIfNeeded()
     await regularLink.click()
     const popover = page.locator(".popover:not(.footnote-popover)")

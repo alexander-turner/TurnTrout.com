@@ -65,6 +65,7 @@ describe("createPopover", () => {
     const popover = await createPopover(options)
     expect(popover).toBeInstanceOf(HTMLElement)
     expect(popover?.classList.contains("popover")).toBe(true)
+    expect(popover?.classList.contains("footnote-popover")).toBe(false)
   })
 
   it("should handle HTML content", async () => {
@@ -104,33 +105,6 @@ describe("createPopover", () => {
     )
   })
 
-  it("should add footnote-popover class for footnote forward links", async () => {
-    const footnoteHtml = `
-      <section class="footnotes">
-        <ol><li id="user-content-fn-1">Footnote text.</li></ol>
-      </section>
-    `
-    ;(window.fetch as jest.MockedFunction<typeof fetch>) = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        headers: {
-          get: (header: string) => (header === "Content-Type" ? "text/html" : null),
-        },
-        text: () => Promise.resolve(footnoteHtml),
-      } as unknown as Response),
-    )
-
-    options.linkElement.setAttribute("href", "#user-content-fn-1")
-    const popover = await createPopover(options)
-    expect(popover.classList.contains("footnote-popover")).toBe(true)
-  })
-
-  it("should not add footnote-popover class for non-footnote links", async () => {
-    const popover = await createPopover(options)
-    expect(popover.classList.contains("footnote-popover")).toBe(false)
-  })
-
   it("should show only footnote content for footnote forward links", async () => {
     const footnoteHtml = `
       <div class="previewable" id="article-title"><h1>Full Article Title</h1></div>
@@ -156,6 +130,7 @@ describe("createPopover", () => {
     const popover = await createPopover(options)
     const popoverInner = popover.querySelector(".popover-inner")
 
+    expect(popover.classList.contains("footnote-popover")).toBe(true)
     // Should NOT contain the li wrapper (content is unwrapped)
     expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
     // Should NOT contain the back arrow link
@@ -538,74 +513,35 @@ describe("attachPopoverEventListeners", () => {
     expect(popoverElement.classList.contains("visible")).toBe(false)
   })
 
-  it("should handle click on popover", () => {
-    const mockHref = "http://example.com/"
-    linkElement.href = mockHref
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    })
+  it.each`
+    isFootnote | clickInnerLink | expectedHref
+    ${false}   | ${false}       | ${"http://example.com/"}
+    ${false}   | ${true}        | ${"http://clicked-link.com/"}
+    ${true}    | ${false}       | ${""}
+    ${true}    | ${true}        | ${"http://clicked-link.com/"}
+  `(
+    "click navigates to $expectedHref (isFootnote=$isFootnote, clickInnerLink=$clickInnerLink)",
+    ({ isFootnote, clickInnerLink, expectedHref }) => {
+      linkElement.href = "http://example.com/"
+      if (isFootnote) popoverElement.classList.add("footnote-popover")
 
-    popoverElement.dispatchEvent(new MouseEvent("click"))
-    expect(window.location.href).toBe(mockHref)
-  })
+      Object.defineProperty(window, "location", { value: { href: "" }, writable: true })
 
-  it("should handle click on link within popover", () => {
-    const linkElementHref = "http://main-link.com/"
-    linkElement.href = linkElementHref
+      let clickEvent: MouseEvent
+      if (clickInnerLink) {
+        const innerLink = document.createElement("a")
+        innerLink.href = "http://clicked-link.com/"
+        popoverElement.appendChild(innerLink)
+        clickEvent = new MouseEvent("click", { bubbles: true })
+        Object.defineProperty(clickEvent, "target", { value: innerLink })
+      } else {
+        clickEvent = new MouseEvent("click")
+      }
 
-    // Create a link element inside the popover
-    const clickedLinkHref = "http://clicked-link.com/"
-    const clickedLink = document.createElement("a")
-    clickedLink.href = clickedLinkHref
-    popoverElement.appendChild(clickedLink)
-
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    })
-
-    // Create a click event on the clicked link
-    const clickEvent = new MouseEvent("click", { bubbles: true })
-    Object.defineProperty(clickEvent, "target", { value: clickedLink })
-
-    popoverElement.dispatchEvent(clickEvent)
-    expect(window.location.href).toBe(clickedLinkHref)
-  })
-
-  it("should not navigate when clicking body of footnote popover", () => {
-    const mockHref = "http://example.com/"
-    linkElement.href = mockHref
-    popoverElement.classList.add("footnote-popover")
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    })
-
-    popoverElement.dispatchEvent(new MouseEvent("click"))
-    expect(window.location.href).toBe("")
-  })
-
-  it("should still navigate when clicking a link inside footnote popover", () => {
-    popoverElement.classList.add("footnote-popover")
-    linkElement.href = "http://main-link.com/"
-
-    const clickedLinkHref = "http://clicked-link.com/"
-    const clickedLink = document.createElement("a")
-    clickedLink.href = clickedLinkHref
-    popoverElement.appendChild(clickedLink)
-
-    Object.defineProperty(window, "location", {
-      value: { href: "" },
-      writable: true,
-    })
-
-    const clickEvent = new MouseEvent("click", { bubbles: true })
-    Object.defineProperty(clickEvent, "target", { value: clickedLink })
-
-    popoverElement.dispatchEvent(clickEvent)
-    expect(window.location.href).toBe(clickedLinkHref)
-  })
+      popoverElement.dispatchEvent(clickEvent)
+      expect(window.location.href).toBe(expectedHref)
+    },
+  )
 })
 
 describe("escapeLeadingIdNumber", () => {

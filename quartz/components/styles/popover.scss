@@ -146,10 +146,6 @@
 
   &.footnote-popover {
     cursor: auto;
-
-    & > .popover-inner {
-      cursor: auto;
-    }
   }
 
   @media all and (width <= $max-mobile-width) {
