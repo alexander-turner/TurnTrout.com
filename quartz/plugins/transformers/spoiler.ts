@@ -14,7 +14,7 @@ const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
  * @returns JavaScript code as a string for the onclick handler
  */
 function toggleSpoilerJs(className: string): string {
-  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}') } else { this.classList.add('${className}') }`
+  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}'); var e=this; e.style.pointerEvents='none'; setTimeout(function(){e.style.pointerEvents=''},10) } else { this.classList.add('${className}') }`
 }
 
 /**
