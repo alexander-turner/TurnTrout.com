@@ -2,16 +2,26 @@ const SCROLL_THRESHOLD = 1
 let observers: ResizeObserver[] = []
 let abortController: AbortController | null = null
 
+function getScrollMetrics(el: HTMLElement) {
+  const { scrollLeft, scrollWidth, clientWidth } = el
+  // For elements like .katex-display where scrollWidth doesn't reflect
+  // nested overflow, measure the first child's width directly
+  const firstChild = el.firstElementChild as HTMLElement | null
+  const contentWidth =
+    firstChild && firstChild.scrollWidth > scrollWidth ? firstChild.scrollWidth : scrollWidth
+  return { scrollLeft, contentWidth, clientWidth }
+}
+
 function updateIndicator(wrapper: HTMLElement, scrollable: HTMLElement) {
-  const { scrollLeft, scrollWidth, clientWidth } = scrollable
-  if (scrollWidth <= clientWidth) {
+  const { scrollLeft, contentWidth, clientWidth } = getScrollMetrics(scrollable)
+  if (contentWidth <= clientWidth) {
     wrapper.classList.remove("can-scroll-left", "can-scroll-right")
     return
   }
   wrapper.classList.toggle("can-scroll-left", scrollLeft > SCROLL_THRESHOLD)
   wrapper.classList.toggle(
     "can-scroll-right",
-    scrollLeft + clientWidth < scrollWidth - SCROLL_THRESHOLD,
+    scrollLeft + clientWidth < contentWidth - SCROLL_THRESHOLD,
   )
 }
 
