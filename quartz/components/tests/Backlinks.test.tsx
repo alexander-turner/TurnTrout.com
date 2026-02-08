@@ -10,6 +10,8 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { FrontmatterData, type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
@@ -133,7 +135,7 @@ describe("Backlinks", () => {
       'class="admonition link admonition-metadata is-collapsible is-collapsed"',
     )
     expect(html).toContain("Links to this page")
-    expect(html).toContain("Linking Page")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
   })
 
   // Test self-referential links are excluded
@@ -185,8 +187,8 @@ describe("Backlinks", () => {
     expect(element).toBeTruthy()
 
     const html = render(element)
-    expect(html).toContain("Link 1")
-    expect(html).toContain("Link 2")
+    expect(normalizeNbsp(html)).toContain("Link 1")
+    expect(normalizeNbsp(html)).toContain("Link 2")
     expect(html.match(/<li/g)?.length).toBe(2)
   })
 

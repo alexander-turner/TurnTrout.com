@@ -10,6 +10,8 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
@@ -216,8 +218,8 @@ describe("PageList", () => {
     const props = createProps(files[0], files)
     const html = render(preactH(PageList, props))
 
-    expect(html).toContain("Page 1")
-    expect(html).toContain("Page 2")
+    expect(normalizeNbsp(html)).toContain("Page 1")
+    expect(normalizeNbsp(html)).toContain("Page 2")
     expect(html).toContain("tag1")
     expect(html).toContain("tag2")
   })

@@ -5,6 +5,7 @@
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { NBSP } from "../../components/constants"
 import { mdLinkRegex } from "./utils"
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
@@ -140,7 +141,7 @@ export const formattingImprovement = (text: string) => {
   }
 
   // Format the content (non-YAML part)
-  let newContent = content.replaceAll(/(?:\u00A0|&nbsp;)/gu, " ") // Remove NBSP
+  let newContent = content.replaceAll(new RegExp(`(?:${NBSP}|&nbsp;)`, "gu"), " ") // Remove NBSP
 
   newContent = improveFootnoteFormatting(newContent)
   newContent = newContent.replace(/ *,/g, ",") // Remove space before commas

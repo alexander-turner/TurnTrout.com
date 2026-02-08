@@ -11,6 +11,16 @@ import git
 from bs4 import BeautifulSoup, NavigableString, Tag
 from ruamel.yaml import YAML, YAMLError
 
+# Unicode typography constants (mirrors quartz/components/constants.ts)
+NBSP = "\u00a0"
+LEFT_SINGLE_QUOTE = "\u2018"
+RIGHT_SINGLE_QUOTE = "\u2019"
+LEFT_DOUBLE_QUOTE = "\u201c"
+RIGHT_DOUBLE_QUOTE = "\u201d"
+ELLIPSIS = "\u2026"
+ZERO_WIDTH_SPACE = "\u200b"
+ZERO_WIDTH_NBSP = "\ufeff"
+
 
 def load_shared_constants() -> dict:  # pragma: no cover
     """Load shared constants from config/constants.json."""

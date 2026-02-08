@@ -44,6 +44,18 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
+// Unicode typography constants
+export const NBSP = "\u00A0"
+export const LEFT_SINGLE_QUOTE = "\u2018"
+export const RIGHT_SINGLE_QUOTE = "\u2019"
+export const LEFT_DOUBLE_QUOTE = "\u201C"
+export const RIGHT_DOUBLE_QUOTE = "\u201D"
+
+/** Normalize non-breaking spaces to regular spaces */
+export function normalizeNbsp(s: string): string {
+  return s.replace(new RegExp(NBSP, "g"), " ")
+}
+
 // Private Use Area marker characters (U+F000 range to avoid conflict with Tengwar fonts at U+E000)
 export const markerChar = "\uF000" // Used for text transformation markers
 export const hatTipPlaceholder = "\uF010" // Used for h/t placeholder

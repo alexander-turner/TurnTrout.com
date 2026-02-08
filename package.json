@@ -126,7 +126,7 @@
     "pretty-bytes": "6.1.1",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "^1.4.2",
+    "punctilio": "github:alexander-turner/punctilio",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "reading-time": "1.5.0",
