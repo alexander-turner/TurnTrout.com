@@ -206,7 +206,7 @@ const createAdmonitionContent = (contentChildren: ElementContent[]): Element | n
 /** Creates a video element for embedding. */
 const createVideoElement = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<span class="video-container"><video src="${url}" controls></video></span>`,
+  value: `<span class="video-container"><video src="${url}" controls><track kind="captions"></video></span>`,
 })
 
 /** Creates an audio element for embedding. */

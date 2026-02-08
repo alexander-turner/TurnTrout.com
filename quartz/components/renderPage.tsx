@@ -73,6 +73,7 @@ export function createTranscludeSourceAnchor(href: string): Element {
     properties: {
       href,
       class: ["internal", "transclude-src"],
+      ariaLabel: `Source: ${href}`,
     },
     children: [] as ElementContent[],
   }

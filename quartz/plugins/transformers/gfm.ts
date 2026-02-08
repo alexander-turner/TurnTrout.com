@@ -158,10 +158,30 @@ export function processDefinitionListChild(
 }
 
 /**
+ * Checks whether a definition list has any valid <dt>/<dd> pairs.
+ */
+export function hasValidDtDdPairs(dlElement: Element): boolean {
+  let lastWasDt = false
+  for (const child of dlElement.children) {
+    if (child.type !== "element") continue
+    if (child.tagName === "dt") {
+      lastWasDt = true
+    } else if (child.tagName === "dd" && lastWasDt) {
+      return true
+    } else {
+      lastWasDt = false
+    }
+  }
+  return false
+}
+
+/**
  * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
+ * If no valid <dt>/<dd> pairs remain, replaces the <dl> tag with <div> to avoid
+ * invalid HTML (a <dl> must only contain <dt>, <dd>, <div>, <script>, <template>).
  *
  * @param dlElement - The <dl> element to fix
- * @returns The fixed <dl> element with updated children
+ * @returns The fixed element (either <dl> or <div>) with updated children
  */
 export function fixDefinitionList(dlElement: Element): Element {
   if (!dlElement.children || dlElement.children.length === 0) {
@@ -177,8 +197,11 @@ export function fixDefinitionList(dlElement: Element): Element {
     lastWasDt = result.newLastWasDt
   }
 
+  // If no valid dt/dd pairs remain, replace <dl> with <div>
+  const hasValidPairs = hasValidDtDdPairs(dlElement)
   return {
     ...dlElement,
+    tagName: hasValidPairs ? "dl" : "div",
     children: fixedChildren,
   }
 }
@@ -248,13 +271,133 @@ export function fixDefinitionListsPlugin() {
     // istanbul ignore next --- defensive
     if (!tree) return
 
+    // Fix <dl> elements with orphaned <dd>
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "dl") return
 
       const fixed = fixDefinitionList(node)
+      node.tagName = fixed.tagName
       node.children = fixed.children
     })
+
+    // Fix orphaned <dd>/<dt> elements outside of <dl>
+    visit(tree, "element", (node: Element) => {
+      if (!node.children) return
+      for (let i = 0; i < node.children.length; i++) {
+        const child = node.children[i]
+        if (child.type !== "element") continue
+        if (child.tagName === "dd" && node.tagName !== "dl") {
+          child.tagName = "p"
+        } else if (child.tagName === "dt" && node.tagName !== "dl") {
+          child.tagName = "p"
+        }
+      }
+    })
+
+    // Make scrollable code blocks keyboard accessible
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName === "pre") {
+        node.properties = node.properties || {}
+        node.properties.tabIndex = 0
+      }
+    })
+
+    // Add <track kind="captions"> to <video> elements that don't have one
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "video") return
+      const hasTrack = node.children.some(
+        (child) => child.type === "element" && child.tagName === "track",
+      )
+      if (!hasTrack) {
+        node.children.push({
+          type: "element",
+          tagName: "track",
+          properties: { kind: "captions" },
+          children: [],
+        })
+      }
+    })
+
+    // Deduplicate SVG internal IDs to prevent axe duplicate-id errors
+    deduplicateSvgIds(tree)
   }
+}
+
+/**
+ * Makes SVG internal IDs unique by adding a per-SVG prefix.
+ * When multiple SVGs are inlined (e.g., Mermaid diagrams), their internal IDs
+ * (markers, clipPaths, etc.) can collide. This function prefixes each SVG's IDs
+ * with a unique identifier based on its position in the document.
+ */
+export function deduplicateSvgIds(tree: Root): void {
+  let svgIndex = 0
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+
+    const prefix = `svg-${svgIndex++}-`
+    const idMap = new Map<string, string>()
+
+    // First pass: collect all IDs and create mappings
+    visit(node, "element", (child: Element) => {
+      if (child.properties?.id) {
+        const oldId = String(child.properties.id)
+        const newId = `${prefix}${oldId}`
+        idMap.set(oldId, newId)
+        child.properties.id = newId
+      }
+    })
+
+    if (idMap.size === 0) return
+
+    // Second pass: update all references to those IDs
+    visit(node, "element", (child: Element) => {
+      if (!child.properties) return
+
+      for (const [key, value] of Object.entries(child.properties)) {
+        if (typeof value !== "string") continue
+
+        // Handle href="#id" and xlink:href="#id"
+        if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
+          const refId = value.slice(1)
+          if (idMap.has(refId)) {
+            child.properties[key] = `#${idMap.get(refId)}`
+          }
+        }
+
+        // Handle url(#id) in style, clip-path, marker-end, marker-start, fill, mask, filter
+        if (value.includes("url(#")) {
+          child.properties[key] = value.replace(
+            /url\(#(?<urlId>[^)]+)\)/g,
+            (match, _urlId, _offset, _str, { urlId }) => {
+              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+            },
+          )
+        }
+      }
+    })
+
+    // Also handle <style> elements inside SVGs
+    visit(node, "element", (child: Element) => {
+      if (child.tagName !== "style") return
+      for (const textChild of child.children) {
+        if (textChild.type !== "text") continue
+
+        if (textChild.value.includes("url(#")) {
+          textChild.value = textChild.value.replace(
+            /url\(#(?<urlId>[^)]+)\)/g,
+            (match, _urlId, _offset, _str, { urlId }) => {
+              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+            },
+          )
+        }
+
+        // Also handle #id references in CSS selectors
+        for (const [oldId, newId] of idMap) {
+          textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
+        }
+      }
+    })
+  })
 }
 
 /**

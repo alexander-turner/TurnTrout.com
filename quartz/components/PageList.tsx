@@ -84,11 +84,13 @@ export function createTagsElement(tags: string[], fileDataSlug: FullSlug): Eleme
   return h(
     "ul.tags",
     tags.map((tag) =>
-      h(
-        "a.internal.tag-link.can-trigger-popover",
-        { href: resolveRelative(fileDataSlug, `tags/${tag}` as FullSlug) },
-        formatTag(tag),
-      ),
+      h("li", [
+        h(
+          "a.internal.tag-link.can-trigger-popover",
+          { href: resolveRelative(fileDataSlug, `tags/${tag}` as FullSlug) },
+          formatTag(tag),
+        ),
+      ]),
     ),
   )
 }
@@ -151,11 +153,11 @@ export function createPageItemElement(
  *         <time class="meta">date</time>
  *         <div class="desc">
  *           <p class="page-listing-title"><a>title</a></p>
- *           <ul class="tags"><a>tag</a></ul>
+ *           <ul class="tags"><li><a>tag</a></li></ul>
  *         </div>
  *       </div>
+ *       <hr class="page-divider" />
  *     </li>
- *     <hr class="page-divider" />
  *     ...
  *   </ul>
  * </div>
@@ -178,8 +180,10 @@ export function createPageListHast(
       "ul.section-ul",
       list
         .map((page: QuartzPluginData, index: number) => [
-          h("li.section-li", [createPageItemElement(page, fileDataSlug, cfg)]),
-          index < list.length - 1 ? h("hr.page-divider") : null,
+          h("li.section-li", [
+            createPageItemElement(page, fileDataSlug, cfg),
+            ...(index < list.length - 1 ? [h("hr.page-divider")] : []),
+          ]),
         ])
         .flat()
         .filter(Boolean),

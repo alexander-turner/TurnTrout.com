@@ -20,6 +20,8 @@ import {
   convertDdToParagraph,
   processDefinitionListChild,
   fixDefinitionList,
+  hasValidDtDdPairs,
+  deduplicateSvgIds,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -780,6 +782,25 @@ describe("processDefinitionListChild", () => {
   })
 })
 
+describe("hasValidDtDdPairs", () => {
+  it.each([
+    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], true],
+    ["single orphaned dd", [h("dd", ["Orphan"])], false],
+    ["only dt without dd", [h("dt", ["Term"])], false],
+    ["empty dl", [], false],
+    [
+      "orphaned dd before valid pair",
+      [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
+      true,
+    ],
+    ["text nodes only", [{ type: "text" as const, value: "Text" }], false],
+    ["non-dt/dd elements", [h("div", ["Content"])], false],
+  ])("%s", (_desc, children, expected) => {
+    const dl = h("dl", children)
+    expect(hasValidDtDdPairs(dl)).toBe(expected)
+  })
+})
+
 describe("fixDefinitionList", () => {
   it("returns unchanged dl when empty", () => {
     const dl = h("dl", [])
@@ -789,20 +810,22 @@ describe("fixDefinitionList", () => {
   })
 
   it.each([
-    ["single orphaned dd", [h("dd", ["Orphan"])], ["p"]],
-    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], ["dt", "dd"]],
+    ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["p"]],
+    ["valid dt/dd pair → dl", [h("dt", ["Term"]), h("dd", ["Desc"])], "dl", ["dt", "dd"]],
     [
-      "orphaned dd before valid pair",
+      "orphaned dd before valid pair → dl",
       [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
+      "dl",
       ["p", "dt", "dd"],
     ],
     [
-      "multiple consecutive dd after dt",
+      "multiple consecutive dd after dt → dl",
       [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
+      "dl",
       ["dt", "dd", "p"],
     ],
     [
-      "complex mixed structure",
+      "complex mixed structure → dl",
       [
         h("dd", ["Orphan 1"]),
         h("dt", ["Term 1"]),
@@ -811,14 +834,17 @@ describe("fixDefinitionList", () => {
         h("dt", ["Term 2"]),
         h("dd", ["Valid 2"]),
       ],
+      "dl",
       ["p", "dt", "dd", "p", "dt", "dd"],
     ],
-  ])("fixes %s correctly", (_desc, children, expectedTags) => {
+    ["all orphaned dd → div", [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])], "div", ["p", "p"]],
+  ])("fixes %s correctly", (_desc, children, expectedTag, expectedChildTags) => {
     const dl = h("dl", children)
     const result = fixDefinitionList(dl)
 
-    expect(result.children).toHaveLength(expectedTags.length)
-    expectedTags.forEach((tag, i) => {
+    expect(result.tagName).toBe(expectedTag)
+    expect(result.children).toHaveLength(expectedChildTags.length)
+    expectedChildTags.forEach((tag, i) => {
       expect((result.children[i] as Element).tagName).toBe(tag)
     })
   })
@@ -833,23 +859,26 @@ describe("fixDefinitionList", () => {
 })
 
 describe("fixDefinitionListsPlugin (integration)", () => {
-  const runPlugin = (dl: Element): void => {
-    const tree: Root = { type: "root", children: [dl] }
+  const runPlugin = (tree: Root): void => {
     const plugin = fixDefinitionListsPlugin()
     plugin(tree)
   }
 
-  it("fixes orphaned dd elements in dl", () => {
+  it("fixes orphaned dd in dl and converts dl to div", () => {
     const dl = h("dl", [h("dd", ["Orphan"])])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("div")
     expect((dl.children[0] as Element).tagName).toBe("p")
   })
 
-  it("preserves valid dt/dd pairs", () => {
+  it("preserves valid dt/dd pairs as dl", () => {
     const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("dl")
     expect((dl.children[0] as Element).tagName).toBe("dt")
     expect((dl.children[1] as Element).tagName).toBe("dd")
   })
@@ -861,9 +890,347 @@ describe("fixDefinitionListsPlugin (integration)", () => {
       h("dd", ["Valid"]),
       h("dd", ["Another orphan"]),
     ])
-    runPlugin(dl)
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
 
+    expect(dl.tagName).toBe("dl")
     const tags = dl.children.map((c) => (c as Element).tagName)
     expect(tags).toEqual(["p", "dt", "dd", "p"])
+  })
+
+  it("converts orphaned dd outside dl to p", () => {
+    const dd = h("dd", ["Orphaned content"])
+    const tree: Root = {
+      type: "root",
+      children: [h("div", [dd])],
+    }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("p")
+  })
+
+  it("converts orphaned dt outside dl to p", () => {
+    const dt = h("dt", ["Orphaned term"])
+    const tree: Root = {
+      type: "root",
+      children: [h("div", [dt])],
+    }
+    runPlugin(tree)
+
+    expect(dt.tagName).toBe("p")
+  })
+
+  it("preserves dd inside dl", () => {
+    const dd = h("dd", ["Valid description"])
+    const dl = h("dl", [h("dt", ["Term"]), dd])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("dd")
+  })
+
+  it("adds tabindex to pre elements", () => {
+    const pre = h("pre", [h("code", ["const x = 1"])])
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(pre.properties.tabIndex).toBe(0)
+  })
+
+  it("adds tabindex to pre elements without existing properties", () => {
+    const pre = h("pre", [h("code", ["const x = 1"])])
+    delete (pre as unknown as Record<string, unknown>).properties
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(pre.properties.tabIndex).toBe(0)
+  })
+
+  it("handles elements without children in orphaned dd/dt check", () => {
+    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
+    const tree: Root = { type: "root", children: [brokenNode] }
+    // Should not throw
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("adds <track kind='captions'> to video elements without one", () => {
+    const video = h("video", { controls: true }, [
+      h("source", { src: "test.mp4", type: "video/mp4" }),
+    ])
+    const tree: Root = { type: "root", children: [video] }
+    runPlugin(tree)
+
+    const trackChild = video.children.find(
+      (c) => c.type === "element" && c.tagName === "track",
+    ) as Element
+    expect(trackChild).toBeDefined()
+    expect(trackChild.properties?.kind).toBe("captions")
+  })
+
+  it("does not add duplicate <track> to video elements that already have one", () => {
+    const video = h("video", { controls: true }, [
+      h("source", { src: "test.mp4", type: "video/mp4" }),
+      h("track", { kind: "captions", label: "No audio" }),
+    ])
+    const tree: Root = { type: "root", children: [video] }
+    runPlugin(tree)
+
+    const tracks = video.children.filter((c) => c.type === "element" && c.tagName === "track")
+    expect(tracks).toHaveLength(1)
+  })
+
+  it("skips non-video elements for track insertion", () => {
+    const div = h("div", ["content"])
+    const tree: Root = { type: "root", children: [div] }
+    runPlugin(tree)
+
+    expect(div.children).toHaveLength(1)
+  })
+})
+
+describe("deduplicateSvgIds", () => {
+  it("prefixes IDs in a single SVG", () => {
+    const marker = h("marker", { id: "flowchart-pointEnd" })
+    const svg = h("svg", [marker])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(marker.properties?.id).toBe("svg-0-flowchart-pointEnd")
+  })
+
+  it("uses different prefixes for multiple SVGs", () => {
+    const marker1 = h("marker", { id: "pointEnd" })
+    const marker2 = h("marker", { id: "pointEnd" })
+    const svg1 = h("svg", [marker1])
+    const svg2 = h("svg", [marker2])
+    const tree: Root = { type: "root", children: [svg1, svg2] }
+    deduplicateSvgIds(tree)
+
+    expect(marker1.properties?.id).toBe("svg-0-pointEnd")
+    expect(marker2.properties?.id).toBe("svg-1-pointEnd")
+  })
+
+  it("updates href references to prefixed IDs", () => {
+    const marker = h("marker", { id: "arrow" })
+    const use = h("use", { href: "#arrow" })
+    const svg = h("svg", [marker, use])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(use.properties?.href).toBe("#svg-0-arrow")
+  })
+
+  it("updates xlinkHref references", () => {
+    const gradient = h("linearGradient", { id: "grad1" })
+    const rect: Element = {
+      type: "element",
+      tagName: "rect",
+      properties: { xlinkHref: "#grad1" },
+      children: [],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [gradient, rect],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(rect.properties?.xlinkHref).toBe("#svg-0-grad1")
+  })
+
+  it("updates url(#id) references in properties", () => {
+    const clipPath = h("clipPath", { id: "clip1" })
+    const rect = h("rect", { "clip-path": "url(#clip1)" })
+    const svg = h("svg", [clipPath, rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(rect.properties?.["clip-path"]).toBe("url(#svg-0-clip1)")
+  })
+
+  it("updates url(#id) in <style> text content", () => {
+    const clipPath = h("clipPath", { id: "clip1" })
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: ".cls { clip-path: url(#clip1); }" }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [clipPath, style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(
+      ".cls { clip-path: url(#svg-0-clip1); }",
+    )
+  })
+
+  it("updates #id CSS selector references in <style>", () => {
+    const node = h("g", { id: "myNode" })
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: "#myNode { fill: red; }" }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [node, style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(
+      "#svg-0-myNode { fill: red; }",
+    )
+  })
+
+  it("skips SVGs without any IDs", () => {
+    const rect = h("rect", { width: 100, height: 50 })
+    const svg = h("svg", [rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // Should not modify anything
+    expect(rect.properties?.width).toBe(100)
+    expect(rect.properties?.id).toBeUndefined()
+  })
+
+  it("skips non-SVG elements", () => {
+    const div = h("div", { id: "should-not-change" })
+    const tree: Root = { type: "root", children: [div] }
+    deduplicateSvgIds(tree)
+
+    expect(div.properties?.id).toBe("should-not-change")
+  })
+
+  it("handles href that doesn't match any known ID", () => {
+    const marker = h("marker", { id: "arrow" })
+    const use = h("use", { href: "#unknown-ref" })
+    const svg = h("svg", [marker, use])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // The unknown ref should stay unchanged
+    expect(use.properties?.href).toBe("#unknown-ref")
+  })
+
+  it("handles url(#id) that doesn't match any known ID", () => {
+    const marker = h("marker", { id: "arrow" })
+    const rect = h("rect", { fill: "url(#unknown-gradient)" })
+    const svg = h("svg", [marker, rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(rect.properties?.fill).toBe("url(#unknown-gradient)")
+  })
+
+  it("skips non-text children of style elements", () => {
+    const node = h("g", { id: "myNode" })
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [h("span", ["not text"])],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [node, style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+
+    // Should not throw
+    expect(() => deduplicateSvgIds(tree)).not.toThrow()
+  })
+
+  it("handles elements without properties in reference update pass", () => {
+    const marker = h("marker", { id: "arrow" })
+    const emptyElement = {
+      type: "element" as const,
+      tagName: "g",
+      properties: undefined,
+      children: [],
+    } as unknown as Element
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [marker, emptyElement],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+
+    expect(() => deduplicateSvgIds(tree)).not.toThrow()
+  })
+
+  it("handles numeric property values (non-string) in reference update", () => {
+    const marker = h("marker", { id: "arrow" })
+    const rect = h("rect", { id: "box", width: 100, height: 50 })
+    const svg = h("svg", [marker, rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // Numeric values should remain unchanged
+    expect(rect.properties?.width).toBe(100)
+    expect(rect.properties?.height).toBe(50)
+  })
+
+  it("handles style element with no url(#) content", () => {
+    const node = h("g", { id: "myNode" })
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: ".cls { fill: red; }" }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [node, style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // The #myNode selector ref should still be updated
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(".cls { fill: red; }")
+  })
+
+  it("handles unknown url(#id) references in style elements", () => {
+    const node = h("g", { id: "knownId" })
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [
+        { type: "text", value: ".cls { clip-path: url(#unknownId); fill: url(#knownId); }" },
+      ],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [node, style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // unknownId stays as-is, knownId gets prefixed
+    expect((style.children[0] as { type: "text"; value: string }).value).toContain(
+      "url(#unknownId)",
+    )
+    expect((style.children[0] as { type: "text"; value: string }).value).toContain(
+      "url(#svg-0-knownId)",
+    )
   })
 })
