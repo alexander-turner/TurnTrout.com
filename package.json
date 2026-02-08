@@ -324,6 +324,9 @@
     "onlyBuiltDependencies": [
       "citation-js",
       "punctilio"
-    ]
+    ],
+    "patchedDependencies": {
+      "pa11y@9.0.1": "patches/pa11y@9.0.1.patch"
+    }
   }
 }

@@ -1,0 +1,19 @@
+diff --git a/lib/runners/axe.js b/lib/runners/axe.js
+index b18b02ab4b0f832d9c4adafe29f787b538a4ead0..2fc07ad7bf18e769b15d6313f8bb89fa5931cab9 100644
+--- a/lib/runners/axe.js
++++ b/lib/runners/axe.js
+@@ -44,9 +44,12 @@ runner.run = async options => {
+ 			getAxeContext(),
+ 			getAxeOptions()
+ 		);
++		// Only report definitive violations. Axe "incomplete" results are items
++		// that need manual review (e.g. non-text characters, SVG foreignObject
++		// backgrounds, overlapping floats). Including them produces false
++		// positives that can't be resolved via CSS.
+ 		return [].concat(
+-			...result.violations.map(processViolation),
+-			...result.incomplete.map(processIncomplete)
++			...result.violations.map(processViolation)
+ 		);
+ 	}
+ 

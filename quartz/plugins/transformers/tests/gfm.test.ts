@@ -893,4 +893,24 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     const tags = dl.children.map((c) => (c as Element).tagName)
     expect(tags).toEqual(["p", "dt", "dd", "dd"])
   })
+
+  it("adds tabindex to pre and code elements", () => {
+    const code = h("code", ["const x = 1"])
+    const pre = h("pre", [code])
+    runPlugin(pre)
+
+    expect(pre.properties.tabIndex).toBe(0)
+    expect(code.properties.tabIndex).toBe(0)
+  })
+
+  it("adds tabindex to pre and code elements without existing properties", () => {
+    const code = h("code", ["const x = 1"])
+    const pre = h("pre", [code])
+    delete (pre as unknown as Record<string, unknown>).properties
+    delete (code as unknown as Record<string, unknown>).properties
+    runPlugin(pre)
+
+    expect(pre.properties.tabIndex).toBe(0)
+    expect(code.properties.tabIndex).toBe(0)
+  })
 })

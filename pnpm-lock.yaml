@@ -28,6 +28,11 @@ overrides:
   '@eslint/plugin-kit': 0.3.4
   qs: 6.14.1
 
+patchedDependencies:
+  pa11y@9.0.1:
+    hash: 17795671f62461b5c4006f992e82053a74db73dcf9cdcf8fd99f07fdd8c81b8e
+    path: patches/pa11y@9.0.1.patch
+
 importers:
 
   .:
@@ -470,7 +475,7 @@ importers:
         version: 3.3.2
       pa11y:
         specifier: 9.0.1
-        version: 9.0.1(typescript@5.7.3)
+        version: 9.0.1(patch_hash=17795671f62461b5c4006f992e82053a74db73dcf9cdcf8fd99f07fdd8c81b8e)(typescript@5.7.3)
       pa11y-ci:
         specifier: 4.0.1
         version: 4.0.1(typescript@5.7.3)
@@ -18235,7 +18240,7 @@ snapshots:
       kleur: 4.1.5
       lodash: 4.17.23
       node-fetch: 2.7.0
-      pa11y: 9.0.1(typescript@5.7.3)
+      pa11y: 9.0.1(patch_hash=17795671f62461b5c4006f992e82053a74db73dcf9cdcf8fd99f07fdd8c81b8e)(typescript@5.7.3)
       protocolify: 3.0.0
       puppeteer: 24.15.0(typescript@5.7.3)
       wordwrap: 1.0.0
@@ -18249,7 +18254,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  pa11y@9.0.1(typescript@5.7.3):
+  pa11y@9.0.1(patch_hash=17795671f62461b5c4006f992e82053a74db73dcf9cdcf8fd99f07fdd8c81b8e)(typescript@5.7.3):
     dependencies:
       axe-core: 4.10.3
       bfj: 9.1.2
