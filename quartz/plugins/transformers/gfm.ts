@@ -301,7 +301,99 @@ export function fixDefinitionListsPlugin() {
         node.properties.tabIndex = 0
       }
     })
+
+    // Add <track kind="captions"> to <video> elements that don't have one
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "video") return
+      const hasTrack = node.children.some(
+        (child) => child.type === "element" && child.tagName === "track",
+      )
+      if (!hasTrack) {
+        node.children.push({
+          type: "element",
+          tagName: "track",
+          properties: { kind: "captions" },
+          children: [],
+        })
+      }
+    })
+
+    // Deduplicate SVG internal IDs to prevent axe duplicate-id errors
+    deduplicateSvgIds(tree)
   }
+}
+
+/**
+ * Makes SVG internal IDs unique by adding a per-SVG prefix.
+ * When multiple SVGs are inlined (e.g., Mermaid diagrams), their internal IDs
+ * (markers, clipPaths, etc.) can collide. This function prefixes each SVG's IDs
+ * with a unique identifier based on its position in the document.
+ */
+export function deduplicateSvgIds(tree: Root): void {
+  let svgIndex = 0
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+
+    const prefix = `svg-${svgIndex++}-`
+    const idMap = new Map<string, string>()
+
+    // First pass: collect all IDs and create mappings
+    visit(node, "element", (child: Element) => {
+      if (child.properties?.id) {
+        const oldId = String(child.properties.id)
+        const newId = `${prefix}${oldId}`
+        idMap.set(oldId, newId)
+        child.properties.id = newId
+      }
+    })
+
+    if (idMap.size === 0) return
+
+    // Second pass: update all references to those IDs
+    visit(node, "element", (child: Element) => {
+      if (!child.properties) return
+
+      for (const [key, value] of Object.entries(child.properties)) {
+        if (typeof value !== "string") continue
+
+        // Handle href="#id" and xlink:href="#id"
+        if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
+          const refId = value.slice(1)
+          if (idMap.has(refId)) {
+            child.properties[key] = `#${idMap.get(refId)}`
+          }
+        }
+
+        // Handle url(#id) in style, clip-path, marker-end, marker-start, fill, mask, filter
+        if (value.includes("url(#")) {
+          child.properties[key] = value.replace(/url\(#(?<urlId>[^)]+)\)/g, (...args) => {
+            const { urlId } = args.at(-1) as { urlId: string }
+            return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : args[0]
+          })
+        }
+      }
+    })
+
+    // Also handle <style> elements inside SVGs
+    visit(node, "element", (child: Element) => {
+      if (child.tagName !== "style") return
+      for (const textChild of child.children) {
+        if (textChild.type !== "text") continue
+
+        if (textChild.value.includes("url(#")) {
+          textChild.value = textChild.value.replace(/url\(#(?<urlId>[^)]+)\)/g, (...args) => {
+            const { urlId } = args.at(-1) as { urlId: string }
+            return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : args[0]
+          })
+        }
+
+        // Also handle #id references in CSS selectors
+        for (const [oldId, newId] of idMap) {
+          textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
+        }
+      }
+    })
+  })
 }
 
 /**

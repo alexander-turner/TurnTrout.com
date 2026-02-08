@@ -55,11 +55,21 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         strategy: "inline-svg",
         mermaidConfig: {
           theme: "default",
-          themeVariables: { lineColor: "var(--gray)" },
+          themeVariables: {
+            lineColor: "var(--gray)",
+            primaryTextColor: "#4c4f69",
+            nodeTextColor: "#4c4f69",
+            labelTextColor: "#4c4f69",
+          },
         },
         dark: {
           theme: "dark",
-          themeVariables: { lineColor: "var(--gray)" },
+          themeVariables: {
+            lineColor: "var(--gray)",
+            primaryTextColor: "#d6deff",
+            nodeTextColor: "#d6deff",
+            labelTextColor: "#d6deff",
+          },
         },
       })
       // HTML plugins
