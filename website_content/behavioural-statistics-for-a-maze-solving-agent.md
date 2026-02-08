@@ -19,9 +19,7 @@ af-num-comments-on-upload: 10
 title: Behavioural statistics for a maze-solving agent
 lw-latest-edit: 2023-06-07T01:24:40.249000Z
 lw-is-linkpost: "false"
-authors:
-  - Peli Grietzer
-  - Alex Turner
+authors: Peli Grietzer and Alex Turner
 tags:
   - AI
   - mats-program

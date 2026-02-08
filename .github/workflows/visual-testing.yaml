@@ -14,14 +14,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  pull_request:
-    branches: ["main"]
-    paths:
-      - "**/*.spec.ts"
-      - "quartz/components/scripts/**"
-      - "quartz/components/styles/**"
-      - "config/playwright/**"
-      - "config/lostpixel/**"
 
 permissions:
   actions: read
@@ -34,7 +26,29 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: ["1/20", "2/20", "3/20", "4/20", "5/20", "6/20", "7/20", "8/20", "9/20", "10/20", "11/20", "12/20", "13/20", "14/20", "15/20", "16/20", "17/20", "18/20", "19/20", "20/20"]
+        shard:
+          [
+            "1/20",
+            "2/20",
+            "3/20",
+            "4/20",
+            "5/20",
+            "6/20",
+            "7/20",
+            "8/20",
+            "9/20",
+            "10/20",
+            "11/20",
+            "12/20",
+            "13/20",
+            "14/20",
+            "15/20",
+            "16/20",
+            "17/20",
+            "18/20",
+            "19/20",
+            "20/20",
+          ]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

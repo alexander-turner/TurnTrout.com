@@ -5,8 +5,7 @@ no_dropcap: "false"
 tags:
   - AI
 description: When models are trained on texts about AI misalignment, models may internalize those predictions—creating the exact risks described in their training data.
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/IPuyShg.jpg
 aliases:
