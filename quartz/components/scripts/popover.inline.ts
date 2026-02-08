@@ -5,6 +5,7 @@ import {
   PopoverOptions,
   escapeLeadingIdNumber,
   createPopover,
+  footnoteForwardRefRegex,
 } from "./popover_helpers"
 
 // Module-level state
@@ -138,5 +139,60 @@ document.addEventListener("nav", () => {
 
     link.addEventListener("mouseenter", handleMouseEnter, { signal })
     link.addEventListener("mouseleave", handleMouseLeave, { signal })
+
+    // Add click toggle for footnote reference links
+    const href = link.getAttribute("href") || ""
+    if (footnoteForwardRefRegex.test(href)) {
+      link.addEventListener(
+        "click",
+        (e: MouseEvent) => {
+          e.preventDefault()
+
+          // Clear any pending hover timer
+          if (pendingPopoverTimer) {
+            clearTimeout(pendingPopoverTimer)
+            pendingPopoverTimer = null
+          }
+
+          // Toggle: if popover for this link is already showing, close it
+          const existingPopover = document.querySelector(".popover") as HTMLElement | null
+          if (existingPopover && existingPopover.dataset.linkHref === link.href) {
+            if (activePopoverRemover) {
+              activePopoverRemover()
+            }
+            return
+          }
+
+          // Close any existing popover and show new one
+          if (activePopoverRemover) {
+            activePopoverRemover()
+          }
+          mouseEnterHandler.call(link)
+        },
+        { signal },
+      )
+    }
   }
+
+  // Close footnote popovers when clicking outside
+  document.addEventListener(
+    "click",
+    (e: MouseEvent) => {
+      const footnotePopover = document.querySelector(
+        ".popover.footnote-popover",
+      ) as HTMLElement | null
+      if (!footnotePopover) return
+
+      const target = e.target as HTMLElement
+      // Don't close if clicking on the popover itself
+      if (footnotePopover.contains(target)) return
+      // Don't close if clicking on a footnote ref link (handled by toggle logic above)
+      if (target.closest('a[href^="#user-content-fn-"]')) return
+
+      if (activePopoverRemover) {
+        activePopoverRemover()
+      }
+    },
+    { signal },
+  )
 })

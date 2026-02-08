@@ -126,6 +126,7 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   if (footnoteMatch?.groups) {
     const footnoteId = footnoteMatch.groups.footnoteId
     renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
+    popoverElement.classList.add("footnote-popover")
   } else {
     renderFullPageContent(popoverInner, html, targetUrl)
   }
@@ -291,7 +292,9 @@ export function attachPopoverEventListeners(
       const clickedLink = (e.target as HTMLElement).closest("a")
       if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
         window.location.href = clickedLink.href
-      } else {
+      } else if (!popoverElement.classList.contains("footnote-popover")) {
+        // For non-footnote popovers, clicking body navigates to the link target.
+        // For footnote popovers, clicking body does nothing (content is just readable text).
         window.location.href = linkElement.href
       }
     },

@@ -400,6 +400,97 @@ test.describe("Footnote popovers", () => {
     // Table footnote should be significantly taller than simple footnote
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
+
+  test("Clicking footnote link toggles popover on desktop", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    // Click to open
+    await footnoteRef.click()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    await expect(popover).toHaveClass(/footnote-popover/)
+
+    // Click again to close
+    await footnoteRef.click()
+    await expect(popover).toBeHidden()
+  })
+
+  test("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    const scrollBefore = await page.evaluate(() => window.scrollY)
+    await footnoteRef.click()
+
+    // Give the browser time to potentially scroll
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await page.waitForTimeout(300)
+    const scrollAfter = await page.evaluate(() => window.scrollY)
+
+    // Page should NOT have scrolled to the footnote section
+    expect(Math.abs(scrollAfter - scrollBefore)).toBeLessThan(50)
+  })
+})
+
+test.describe("Footnote popover on mobile", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.reload()
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  })
+
+  test("Tapping footnote shows popover on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+  })
+
+  test("Tapping footnote again closes popover on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    // Open
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Close
+    await footnoteRef.click()
+    await expect(popover).toBeHidden()
+  })
+
+  test("Tapping outside closes footnote popover on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Tap somewhere else on the page
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
+    await expect(popover).toBeHidden()
+  })
+
+  test("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
+    // Regular internal links should NOT show popovers on mobile
+    const regularLink = page.locator("#center-content .can-trigger-popover").first()
+    const href = await regularLink.getAttribute("href")
+
+    // Skip if the first link happens to be a footnote
+    if (href?.includes("#user-content-fn-")) {
+      return
+    }
+
+    await regularLink.scrollIntoViewIfNeeded()
+    await regularLink.click()
+    const popover = page.locator(".popover:not(.footnote-popover)")
+    await expect(popover).toBeHidden()
+  })
 })
 
 test.describe("Popover checkbox state preservation", () => {

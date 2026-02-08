@@ -144,8 +144,22 @@
     opacity 0.15s ease,
     visibility 0.15s ease;
 
+  &.footnote-popover {
+    cursor: auto;
+
+    & > .popover-inner {
+      cursor: auto;
+    }
+  }
+
   @media all and (width <= $max-mobile-width) {
-    display: none !important;
+    &:not(.footnote-popover) {
+      display: none !important;
+    }
+
+    &.footnote-popover > .popover-inner {
+      width: min(20rem, calc(100vw - 2rem));
+    }
   }
 }
 
