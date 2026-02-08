@@ -263,12 +263,16 @@ describe("Asset Dimensions Plugin", () => {
 
       // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        expect.stringMatching(
+          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+        ),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
       expect(renameSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        expect.stringMatching(
+          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+        ),
         actualAssetDimensionsFilePath,
       )
       expect(assetProcessor["needToSaveCache"]).toBe(false)
@@ -1076,7 +1080,9 @@ describe("Asset Dimensions Plugin", () => {
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
       // Temp file includes process.pid and timestamp for uniqueness
-      const tempFilePattern = new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)
+      const tempFilePattern = new RegExp(
+        `^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`,
+      )
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringMatching(tempFilePattern),
         expect.any(String),

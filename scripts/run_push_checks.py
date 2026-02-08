@@ -695,6 +695,21 @@ def get_check_steps(
             shell=True,
             interactive=True,
         ),
+        CheckStep(
+            name="Checking accessibility (WCAG AA)",
+            command=[
+                "pnpm",
+                "pa11y-ci",
+                "--config",
+                f"{git_root_path}/config/pa11y/.pa11yci",
+                "--sitemap",
+                "http://localhost:8080/sitemap.xml",
+                "--sitemap-find",
+                "https://turntrout.com",
+                "--sitemap-replace",
+                "http://localhost:8080",
+            ],
+        ),
     ]
 
     return steps_before_server, steps_after_server
