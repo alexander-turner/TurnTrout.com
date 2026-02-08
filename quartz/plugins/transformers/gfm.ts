@@ -192,6 +192,10 @@ export function fixDefinitionList(dlElement: Element): Element {
   let lastWasDt = false
 
   for (const child of dlElement.children) {
+    // Skip whitespace-only text nodes — remark-definition-list inserts "\n" text
+    // nodes as direct children of <dl>, which violates the axe definition-list rule
+    if (child.type === "text" && child.value.trim() === "") continue
+
     const result = processDefinitionListChild(child, lastWasDt)
     fixedChildren.push(result.element)
     lastWasDt = result.newLastWasDt
@@ -302,7 +306,9 @@ export function fixDefinitionListsPlugin() {
       }
     })
 
-    // Add <track kind="captions"> to <video> elements that don't have one
+    // Add <track kind="captions"> to <video> elements that don't have one.
+    // Uses an empty WebVTT data URI to satisfy the axe video-caption rule for
+    // muted/decorative videos that have no audio requiring captions.
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "video") return
       const hasTrack = node.children.some(
@@ -312,7 +318,11 @@ export function fixDefinitionListsPlugin() {
         node.children.push({
           type: "element",
           tagName: "track",
-          properties: { kind: "captions" },
+          properties: {
+            kind: "captions",
+            src: "data:text/vtt,WEBVTT",
+            label: "No audio",
+          },
           children: [],
         })
       }

@@ -849,7 +849,22 @@ describe("fixDefinitionList", () => {
     })
   })
 
-  it("preserves non-element nodes", () => {
+  it("strips whitespace-only text nodes from dl children", () => {
+    const dl = h("dl", [
+      { type: "text", value: "\n" },
+      h("dt", ["Term"]),
+      { type: "text", value: "\n" },
+      h("dd", ["Desc"]),
+      { type: "text", value: "\n" },
+    ])
+    const result = fixDefinitionList(dl)
+
+    expect(result.children).toHaveLength(2)
+    expect((result.children[0] as Element).tagName).toBe("dt")
+    expect((result.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it("preserves non-whitespace text nodes", () => {
     const dl = h("dl", [{ type: "text", value: "Text" }, h("dt", ["Term"]), h("dd", ["Desc"])])
     const result = fixDefinitionList(dl)
 
@@ -953,7 +968,7 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect(() => runPlugin(tree)).not.toThrow()
   })
 
-  it("adds <track kind='captions'> to video elements without one", () => {
+  it("adds <track kind='captions'> with data URI to video elements without one", () => {
     const video = h("video", { controls: true }, [
       h("source", { src: "test.mp4", type: "video/mp4" }),
     ])
@@ -965,6 +980,8 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     ) as Element
     expect(trackChild).toBeDefined()
     expect(trackChild.properties?.kind).toBe("captions")
+    expect(trackChild.properties?.src).toBe("data:text/vtt,WEBVTT")
+    expect(trackChild.properties?.label).toBe("No audio")
   })
 
   it("does not add duplicate <track> to video elements that already have one", () => {

@@ -6,15 +6,28 @@ code[data-theme*=" "] span {
   color: var(--shiki-light);
 }
 
-// Override Shiki github-light colors that fail WCAG AA contrast on #fcfcff
-// Red keywords (import, return, def, etc.): #D73A49 → #cf222e (4.47:1 → 5.23:1)
+// Override Shiki github-light colors that fail WCAG AA contrast (4.5:1)
+// on code block background #f2f3f7 (= color-mix(in srgb, #fcfcff 90%, #9ca0b0)).
+// Must set `color` directly — overriding the CSS custom property doesn't work
+// because inline styles (set by Shiki on each <span>) have higher specificity.
+// Red keywords (import, return, def, etc.): #D73A49 (4.13:1) → #c11e2a (5.43:1)
 code[data-theme*=" "] span[style*="--shiki-light:#D73A49"] {
-  --shiki-light: #cf222e;
+  color: #c11e2a;
 }
 
-// Orange parameters/attributes: #E36209 → #a24100 (3.41:1 → 6.23:1)
+// Orange parameters/attributes: #E36209 (3.15:1) → #a24100 (5.75:1)
 code[data-theme*=" "] span[style*="--shiki-light:#E36209"] {
-  --shiki-light: #a24100;
+  color: #a24100;
+}
+
+// Gray comments: #6A737D (4.34:1) → #57606a (5.76:1)
+code[data-theme*=" "] span[style*="--shiki-light:#6A737D"] {
+  color: #57606a;
+}
+
+// Green strings/literals: #22863A (4.17:1) → #116329 (6.67:1)
+code[data-theme*=" "] span[style*="--shiki-light:#22863A"] {
+  color: #116329;
 }
 
 [data-theme="dark"] code[data-theme*=" "] {
