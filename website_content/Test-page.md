@@ -246,7 +246,7 @@ Hi! Am I being transcluded?
 > [!quote] Jacob Goldman-Wetzler
 > Subtitle: MATS 6.0, [Gradient Routing](/gradient-routing)
 >
-> ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-4.avif|A young man in a dress shirt smiles at the camera.]]{.float-right,.testimonial-maybe-negative-margin}
+> ![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-4.avif|A young man in a dress shirt smiles at the camera.]]{.float-right .testimonial-maybe-negative-margin}
 >
 > Being a member of Team Shard helped me grow tremendously as a researcher. It gave me the necessary skills and confidence to work in AI Safety full-time.
 
