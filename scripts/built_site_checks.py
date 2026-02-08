@@ -134,6 +134,7 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+PRESENTATIONAL_TAGS = ("span", "br")
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -153,6 +154,15 @@ def check_top_level_paragraphs_end_with_punctuation(
                 "subtitle" in classes
                 or "page-listing-title" in classes
                 or p.find(class_="transclude")
+            ):
+                continue
+
+            # Skip paragraphs that only contain inline styling elements
+            # (e.g. typography examples like <span class="h2">Header 2</span>)
+            if all(
+                (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
+                or (isinstance(c, NavigableString) and not c.strip())
+                for c in p.children
             ):
                 continue
 
@@ -1265,7 +1275,17 @@ def _check_populate_commit_count(
 
 
 _SELF_CONTAINED_ELEMENTS = frozenset(
-    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+    {
+        "svg",
+        "img",
+        "video",
+        "audio",
+        "iframe",
+        "object",
+        "embed",
+        "canvas",
+        "picture",
+    }
 )
 
 
