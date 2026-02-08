@@ -14,7 +14,7 @@ const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
  * @returns JavaScript code as a string for the onclick handler
  */
 function toggleSpoilerJs(className: string): string {
-  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}') } else { this.classList.add('${className}') }`
+  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}'); this.classList.add('force-hidden') } else { this.classList.remove('force-hidden'); this.classList.add('${className}') }`
 }
 
 /**
@@ -36,6 +36,7 @@ export function createSpoilerNode(content: string | Element[]): Element {
     {
       className: ["spoiler-container"],
       onclick: toggleSpoilerJs("revealed"),
+      onmouseenter: "this.classList.remove('force-hidden')",
     },
     [
       h("span", { className: ["spoiler-overlay"] }),

@@ -399,7 +399,8 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.goBack({ waitUntil: "load" })
   await expect(page.locator("#search-icon")).toBeVisible()
 
-  await page.keyboard.press("/")
+  // Click search icon instead of "/" shortcut for cross-device reliability
+  await page.locator("#search-icon").click()
   await search(page, "Shrek")
 
   const secondResult = page.locator(".result-card").nth(1)

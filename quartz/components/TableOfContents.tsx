@@ -59,7 +59,7 @@ export const CreateTableOfContents: QuartzComponent = ({
   }
 
   return (
-    <div id="table-of-contents" className="desktop-only">
+    <nav id="table-of-contents" className="desktop-only" aria-label="Table of contents">
       <h1 id="toc-title" className="h6">
         <button className="internal same-page-link">
           {formatTitle(fileData.frontmatter?.title || "Table of Contents")}
@@ -68,7 +68,7 @@ export const CreateTableOfContents: QuartzComponent = ({
       <div id="toc-content">
         <ol>{toc}</ol>
       </div>
-    </div>
+    </nav>
   )
 }
 

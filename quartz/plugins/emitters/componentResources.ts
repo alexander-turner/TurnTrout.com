@@ -52,7 +52,11 @@ function getComponentResources(ctx: BuildCtx): ComponentResources {
       componentResources.beforeDOMLoaded.add(beforeDOMLoaded)
     }
     if (afterDOMLoaded) {
-      componentResources.afterDOMLoaded.add(afterDOMLoaded)
+      // Components can declare multiple scripts as an array; each gets its own IIFE in joinScripts
+      const scripts = Array.isArray(afterDOMLoaded) ? afterDOMLoaded : [afterDOMLoaded]
+      for (const script of scripts) {
+        componentResources.afterDOMLoaded.add(script)
+      }
     }
   }
 

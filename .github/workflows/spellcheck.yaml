@@ -1,8 +1,12 @@
 name: Spellcheck
 
+concurrency:
+  group: spellcheck-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "website_content/**"
       - "config/spellcheck/**"

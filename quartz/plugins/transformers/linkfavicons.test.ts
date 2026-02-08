@@ -324,6 +324,57 @@ describe("Favicon Utilities", () => {
         "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
       )
     })
+    describe("unnormalized SVG fallback", () => {
+      const subdomainHost = "open.spotify.com"
+
+      beforeEach(() => {
+        linkfavicons.urlCache.clear()
+      })
+
+      it("should find SVG locally via unnormalized hostname", async () => {
+        jest
+          .spyOn(fs.promises, "stat")
+          // Normalized SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+          // Unnormalized SVG found
+          .mockResolvedValueOnce({ size: 1000 } as fs.Stats)
+
+        // Normalized CDN SVG 404
+        jest
+          .spyOn(global, "fetch")
+          .mockResolvedValueOnce(
+            new Response("", { status: 404, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+
+        const result = await linkfavicons.MaybeSaveFavicon(subdomainHost)
+        expect(result).toBe("/static/images/external-favicons/open_spotify_com.svg")
+      })
+
+      it("should find SVG on CDN via unnormalized hostname", async () => {
+        jest
+          .spyOn(fs.promises, "stat")
+          // Normalized SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+          // Unnormalized local SVG not found
+          .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
+
+        jest
+          .spyOn(global, "fetch")
+          // Normalized CDN SVG 404
+          .mockResolvedValueOnce(
+            new Response("", { status: 404, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+          // Unnormalized CDN SVG 200
+          .mockResolvedValueOnce(
+            new Response("SVG", { status: 200, headers: { "Content-Type": "image/svg+xml" } }),
+          )
+
+        const result = await linkfavicons.MaybeSaveFavicon(subdomainHost)
+        expect(result).toBe(
+          "https://assets.turntrout.com/static/images/external-favicons/open_spotify_com.svg",
+        )
+      })
+    })
   })
 
   describe("GetQuartzPath", () => {
@@ -502,7 +553,7 @@ describe("Favicon Utilities", () => {
     describe("favicon blacklist", () => {
       it.each(
         faviconSubstringBlacklist.map((blacklistEntry: string) => [
-          `/static/images/external-favicons/${blacklistEntry}.png`,
+          `/static/images/external-favicons/${linkfavicons.normalizeFaviconListEntry(blacklistEntry)}.png`,
         ]),
       )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
         const faviconCounts = new Map<string, number>()
@@ -515,7 +566,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should exclude favicons with blacklisted substring in middle of path", () => {
-        const blacklistEntry = faviconSubstringBlacklist[0]
+        const blacklistEntry = linkfavicons.normalizeFaviconListEntry(faviconSubstringBlacklist[0])
         const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
         const faviconCounts = new Map<string, number>()
         // Counts are stored without extensions (format-agnostic)
@@ -1671,7 +1722,7 @@ describe("transformUrl", () => {
 
   it.each(
     faviconSubstringBlacklist.map((blacklistEntry: string) => [
-      `/static/images/external-favicons/${blacklistEntry}.png`,
+      `/static/images/external-favicons/${linkfavicons.normalizeFaviconListEntry(blacklistEntry)}.png`,
       defaultPath,
     ]),
   )("should return defaultPath if blacklisted: %s", (input, expected) => {
@@ -1769,6 +1820,17 @@ describe("normalizeHostname", () => {
   })
 })
 
+describe("normalizeFaviconListEntry", () => {
+  it.each([
+    ["playpen_icomtek_csir_co_za", "csir_co_za", "strips subdomains with multi-part TLD"],
+    ["incompleteideas_net", "incompleteideas_net", "already normalized"],
+    ["blog_example_com", "example_com", "strips subdomain"],
+    ["developer_mozilla_org", "mozilla_org", "strips subdomain"],
+  ])("should normalize %s to %s (%s)", (input, expected) => {
+    expect(linkfavicons.normalizeFaviconListEntry(input)).toBe(expected)
+  })
+})
+
 describe("getQuartzPath hostname normalization", () => {
   it.each([
     ["blog.openai.com", "/static/images/external-favicons/openai_com.png"],
@@ -1816,9 +1878,15 @@ describe("getQuartzPath hostname normalization", () => {
       // Counts are stored without extensions (format-agnostic)
       faviconCounts.set(linkfavicons.normalizePathForCounting(normalizedPath), minFaviconCount + 1)
 
-      // Mock SVG check (404), then AVIF check (200)
+      // Mock fetch: normalized SVG (404), unnormalized SVG (404), AVIF (200)
       jest
         .spyOn(global, "fetch")
+        .mockResolvedValueOnce(
+          new Response("", {
+            status: 404,
+            headers: { "Content-Type": "image/svg+xml" },
+          }),
+        )
         .mockResolvedValueOnce(
           new Response("", {
             status: 404,
@@ -1832,9 +1900,10 @@ describe("getQuartzPath hostname normalization", () => {
           }),
         )
 
-      // Mock fs.promises.stat: SVG not found, PNG not found
+      // Mock fs.promises.stat: normalized SVG not found, unnormalized SVG not found, PNG not found
       jest
         .spyOn(fs.promises, "stat")
+        .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
         .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
         .mockRejectedValueOnce(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
 
@@ -1980,7 +2049,7 @@ describe("maybeSpliceText edge cases", () => {
 
 describe("shouldIncludeFavicon edge cases", () => {
   it("should exclude blacklisted favicon even if whitelisted", () => {
-    const blacklistEntry = faviconSubstringBlacklist[0]
+    const blacklistEntry = linkfavicons.normalizeFaviconListEntry(faviconSubstringBlacklist[0])
     const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
     const faviconCounts = new Map<string, number>()
     // Counts are stored without extensions (format-agnostic)

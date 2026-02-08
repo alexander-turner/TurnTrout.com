@@ -3,9 +3,13 @@
 
 name: Node tests
 
+concurrency:
+  group: node-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
       - "config/**"

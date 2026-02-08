@@ -10,6 +10,7 @@
     "no-descending-specificity": null,
     "function-no-unknown": null,
     "scss/function-no-unknown": true,
-    "custom/scss-custom-property-interpolation": true
+    "custom/scss-custom-property-interpolation": true,
+    "prettier/prettier": [true, { "printWidth": 100, "tabWidth": 2, "semi": false }]
   }
 }

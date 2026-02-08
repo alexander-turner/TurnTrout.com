@@ -109,7 +109,15 @@ class AssetProcessor {
       try {
         await fs.rename(tempFilePath, paths.assetDimensions)
       } catch (error) {
-        await fs.unlink(tempFilePath).catch(() => {})
+        // Clean up temp file on failure (ignore errors - file may already be gone)
+        await fs.unlink(tempFilePath).catch(() => undefined)
+        // ENOENT means another worker may have saved successfully, or there was a race
+        // In either case, the cache should be saved, so we can continue
+        // istanbul ignore next -- race condition that's hard to reliably test
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          this.needToSaveCache = false
+          return
+        }
         throw error
       }
       this.needToSaveCache = false
@@ -427,6 +435,7 @@ export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
     htmlPlugins(ctx: BuildCtx) {
+      /* istanbul ignore next -- defensive default for offline flag */
       const offline = ctx.argv.offline ?? false
       return [
         () => {

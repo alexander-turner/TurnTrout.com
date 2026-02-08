@@ -151,7 +151,7 @@ _See also_ the [Reframing Impact sequence.](/posts#reframing-impact)
 
 Subtitle: Fall 2019 through June 2022
 
-I don't want to die. Animals try to avoid dying. Why was this behavior selected into so many different kinds of animals? While the question may seem facile, it is not. For nearly all biological "subgoals" (like "find food" or "impress a potential mate"), a dead animal cannot accomplish any of those goals. Otherwise put: Certain strategies (like "staying alive") are pre-requisite for _almost all goals._ This observation is called "instrumental convergence."[^instr]
+I don't want to die. Animals try to avoid dying. Why was this behavior selected into so many different kinds of animals? While the question may seem facile, it is not. For nearly all biological "subgoals" (like "find food" or "impress a potential mate"), a dead animal cannot accomplish any of those goals. Otherwise put: Certain strategies (like "staying alive") are prerequisite for _almost all goals._ This observation is called "instrumental convergence."[^instr]
 
 In 2019, [I had a keen sense](/problem-relaxation-as-a-tactic) that instrumental convergence ought to be mathematically provable. To date, [only one paper](./toy-instrumental-convergence-paper-walkthrough) had tried such a formalization - and that only in a toy setting. I figured I should be able to say what actions were instrumentally convergent in a tiny Markov decision process. Easy, right?
 

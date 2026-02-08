@@ -120,50 +120,31 @@ The point is that these apps which are [out to get you](https://www.lesswrong.co
 
 I went by a whitelist[^2] in order to ensure there wasn’t a way to weasel around the rules. Here’s what I let myself do:
 
-<dl>
-   <dt>Phone</dt>
-   <dd><ul>
-      <li>Voice & video calls</li>
-      <li><abbr class="small-caps">Gps</abbr></li>
-      <li>Audible</li>
-      <li>Uber / Lyft</li>
-      <li>Authenticators / alarms / other boring utilities</li>
-      <li>Roam / note-taking</li>
-      </ul>
-   </dd>
+Phone
+: - Voice & video calls
+  - GPS
+  - Audible
+  - Uber / Lyft
+  - Authenticators / alarms / other boring utilities
+  - Roam / note-taking
 
-   <dt>iPad</dt>
-   <dd>
-     <ul>
-       <li>Note-taking</li>
-       <li>Reading</li>
-       <li>Drawing</li>
-     </ul>
-   </dd>
+iPad
+: - Note-taking
+  - Reading
+  - Drawing
 
-   <dt>Computer</dt>
-   <dd>
-     <ul>
-       <li>Anything offline (except music or video games)</li>
-       <li>Textbooks and Wikipedia and Arxiv / Google Scholar</li>
-       <li>Overleaf for writing papers</li>
-       <li>Amazon and Upwork (for managing contracted-out labor)</li>
-       <li>Zoom for weekly meetings</li>
-       <li>Anki and Roam</li>
-       <li>Check email at noon on Mondays and Thursdays
-    <ul>
-    <li>I told people to call me if it was important. I didn’t get any calls.</li>
-    <li>I later let myself send emails without looking at my inbox. I recommend <a href="https://inboxwhenready.org/">Inbox When Ready</a>, which hides your inbox by default and prevents you from being attention-sniped.</li>
-  </ul>
- </li>
-       <li>Groceries / other mundane things
-         <ul>
-           <li>No Wealthfront—no reason for me to see how my portfolio is doing.</li>
-         </ul>
-       </li>
-     </ul>
-   </dd>
-   </dl>
+Computer
+: - Anything offline (except music or video games)
+  - Textbooks and Wikipedia and Arxiv / Google Scholar
+  - Overleaf for writing papers
+  - Amazon and Upwork (for managing contracted-out labor)
+  - Zoom for weekly meetings
+  - Anki and Roam
+  - Check email at noon on Mondays and Thursdays
+    - I told people to call me if it was important. I didn't get any calls.
+    - I later let myself send emails without looking at my inbox. I recommend [Inbox When Ready](https://inboxwhenready.org/), which hides your inbox by default and prevents you from being attention-sniped.
+  - Groceries / other mundane things
+    - No Wealthfront—no reason for me to see how my portfolio is doing.
 
 That’s it. No music (see appendix), no messaging, no Facebook, no Twitter, no Slack, no Discord, no anxious email checking, no Youtube, no nothing. I even bought a cheap watch so that I wouldn’t have to check my phone for the time. If I needed an exception, I’d first write a note explaining what I did, to be read by my girlfriend, Emma, who started her declutter soon after.
 

@@ -24,7 +24,7 @@ import type { FilePath } from "../../util/path"
 
 import { specialFaviconPaths } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
-import { countAllFavicons, getFaviconCounts } from "./countFavicons"
+import { countAllFavicons, faviconCounter, getFaviconCounts } from "./countFavicons"
 import { getQuartzPath } from "./linkfavicons"
 
 let tempDir: string
@@ -354,9 +354,79 @@ describe("countAllLinks", () => {
 
     errorSpy.mockRestore()
   })
+
+  it.each([
+    {
+      name: "string transform",
+      transform: (_ctx: BuildCtx, src: string | Buffer) => {
+        const content = typeof src === "string" ? src : src.toString()
+        return content.replace(
+          "PLACEHOLDER",
+          "[link1](https://example.com/page1)\n[link2](https://example.com/page2)",
+        )
+      },
+    },
+    {
+      name: "Buffer transform",
+      transform: (_ctx: BuildCtx, src: string | Buffer) => {
+        const content = typeof src === "string" ? src : src.toString()
+        return Buffer.from(
+          content.replace(
+            "PLACEHOLDER",
+            "[link1](https://example.com/page1)\n[link2](https://example.com/page2)",
+          ),
+        )
+      },
+    },
+  ])("should apply text transforms before counting links ($name)", async ({ transform }) => {
+    const filePath = await createTestFile("Some text PLACEHOLDER more text")
+
+    const ctxWithTransform = {
+      ...mockCtx,
+      cfg: {
+        ...mockCtx.cfg,
+        plugins: {
+          ...mockCtx.cfg.plugins,
+          transformers: [{ name: "testTransform", textTransform: transform }],
+        },
+      },
+    } as unknown as BuildCtx
+
+    await countAllFavicons(ctxWithTransform, [filePath])
+
+    const counts = getWrittenCounts()
+    const examplePath = getQuartzPath("example.com").replace(/\.png$/, "")
+    expect(counts.get(examplePath)).toBe(2)
+  })
+
+  it("should handle text transform returning undefined gracefully", async () => {
+    const filePath = await createTestFile("[link](mailto:test@example.com)")
+
+    const ctxWithTransform = {
+      ...mockCtx,
+      cfg: {
+        ...mockCtx.cfg,
+        plugins: {
+          ...mockCtx.cfg.plugins,
+          transformers: [
+            { name: "nullTransform", textTransform: () => undefined as unknown as string },
+          ],
+        },
+      },
+    } as unknown as BuildCtx
+
+    await countAllFavicons(ctxWithTransform, [filePath])
+
+    const counts = getWrittenCounts()
+    expect(counts.get(specialFaviconPaths.mail)).toBe(1)
+  })
 })
 
 describe("getFaviconCounts", () => {
+  beforeEach(() => {
+    faviconCounter.clear()
+  })
+
   it("should read from file when in-memory map is empty", () => {
     // Mock file system to return valid favicon counts as JSON
     jest.spyOn(fs, "existsSync").mockReturnValue(true)

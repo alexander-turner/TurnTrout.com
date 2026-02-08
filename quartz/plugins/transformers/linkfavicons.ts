@@ -37,12 +37,6 @@ const logger = createWinstonLogger("linkFavicons")
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-const faviconCountWhitelistComputed = [
-  ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
 // istanbul ignore if
 if (!fs.existsSync(faviconUrlsFile)) {
   try {
@@ -161,6 +155,35 @@ function normalizeHostname(hostname: string): string {
   }
   return parsed.domain
 }
+
+/**
+ * Normalize an underscore-separated hostname entry through the same PSL pipeline
+ * used for real hostnames, so entries like "playpen_icomtek_csir_co_za" are
+ * automatically reduced to "csir_co_za" — matching what getQuartzPath produces.
+ */
+export function normalizeFaviconListEntry(entry: string): string {
+  const hostname = entry.replaceAll("_", ".")
+  const normalized = normalizeHostname(hostname)
+  return normalized.replaceAll(".", "_")
+}
+
+/**
+ * Whitelist uses substring matching, so raw entries work fine (e.g., "apple_com"
+ * matches any path containing that substring). No PSL normalization needed.
+ */
+const faviconCountWhitelistComputed = [
+  ...Object.values(specialFaviconPaths),
+  ...faviconCountWhitelist,
+  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
+]
+
+/**
+ * Blacklist entries are normalized through the same PSL pipeline as hostnames,
+ * so entries with full subdomains (e.g., "playpen_icomtek_csir_co_za") are
+ * reduced to their registered domain form (e.g., "csir_co_za") to match
+ * what getQuartzPath produces.
+ */
+const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeFaviconListEntry)
 
 /**
  * Normalizes a favicon path for counting by removing format-specific extensions.
@@ -352,7 +375,7 @@ export function getFaviconUrl(faviconPath: string): string {
  * @returns The favicon path, or defaultPath if blacklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) =>
+  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
     faviconPath.includes(entry),
   )
   if (isBlacklisted) {
@@ -499,7 +522,7 @@ async function downloadFromGoogle(
       return faviconPath
     }
   } catch (downloadErr) {
-    logger.error(`Failed to download favicon for ${hostname}: ${downloadErr}`)
+    logger.warn(`Failed to download favicon for ${hostname}: ${downloadErr}`)
     urlCache.set(faviconPath, defaultPath) // Cache the failure
   }
   return null
@@ -545,6 +568,17 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
 
   const cdnSvg = await checkCdnSvg(svgPath, updatedPath, hostname)
   if (cdnSvg !== null) return cdnSvg
+
+  // Check un-normalized hostname for SVG (e.g., open_spotify_com.svg when normalized is spotify_com.svg)
+  const unnormalizedHostname = hostname.replace(/^www\./, "").replace(/\./g, "_")
+  const unnormalizedSvgPath = `/${faviconFolder}/${unnormalizedHostname}.svg`
+  if (unnormalizedSvgPath !== svgPath) {
+    const unnormalizedLocalSvg = await checkLocalSvg(unnormalizedSvgPath, updatedPath, hostname)
+    if (unnormalizedLocalSvg !== null) return unnormalizedLocalSvg
+
+    const unnormalizedCdnSvg = await checkCdnSvg(unnormalizedSvgPath, updatedPath, hostname)
+    if (unnormalizedCdnSvg !== null) return unnormalizedCdnSvg
+  }
 
   // Return cached AVIF if we have it and no SVG was found
   if (cached !== null) return cached
@@ -870,7 +904,9 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: Map<string, number>,
 ): boolean {
-  const isBlacklisted = faviconSubstringBlacklist.some((entry: string) => imgPath.includes(entry))
+  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+    imgPath.includes(entry),
+  )
   if (isBlacklisted) return false
 
   // Normalize countKey (remove extension) to match format-agnostic counts

@@ -739,12 +739,12 @@ describe("processDefinitionListChild", () => {
   })
 
   describe("dd elements", () => {
-    it("preserves dd when lastWasDt is true", () => {
+    it("preserves dd when lastWasDt is true and keeps state true for subsequent dd", () => {
       const dd = h("dd", ["Description"])
       const result = processDefinitionListChild(dd, true)
 
       expect(result.element).toBe(dd)
-      expect(result.newLastWasDt).toBe(false)
+      expect(result.newLastWasDt).toBe(true)
     })
 
     it("converts dd to p when lastWasDt is false", () => {
@@ -770,9 +770,17 @@ describe("processDefinitionListChild", () => {
   })
 
   describe("non-element nodes", () => {
-    it("preserves text nodes and resets state", () => {
+    it("preserves text nodes and preserves state", () => {
       const textNode = { type: "text" as const, value: "Some text" }
       const result = processDefinitionListChild(textNode, true)
+
+      expect(result.element).toBe(textNode)
+      expect(result.newLastWasDt).toBe(true)
+    })
+
+    it("preserves text nodes with false state", () => {
+      const textNode = { type: "text" as const, value: "Some text" }
+      const result = processDefinitionListChild(textNode, false)
 
       expect(result.element).toBe(textNode)
       expect(result.newLastWasDt).toBe(false)
@@ -797,9 +805,9 @@ describe("fixDefinitionList", () => {
       ["p", "dt", "dd"],
     ],
     [
-      "multiple consecutive dd after dt",
+      "multiple consecutive dd after dt (all valid)",
       [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
-      ["dt", "dd", "p"],
+      ["dt", "dd", "dd"],
     ],
     [
       "complex mixed structure",
@@ -807,11 +815,11 @@ describe("fixDefinitionList", () => {
         h("dd", ["Orphan 1"]),
         h("dt", ["Term 1"]),
         h("dd", ["Valid 1"]),
-        h("dd", ["Orphan 2"]),
-        h("dt", ["Term 2"]),
         h("dd", ["Valid 2"]),
+        h("dt", ["Term 2"]),
+        h("dd", ["Valid 3"]),
       ],
-      ["p", "dt", "dd", "p", "dt", "dd"],
+      ["p", "dt", "dd", "dd", "dt", "dd"],
     ],
   ])("fixes %s correctly", (_desc, children, expectedTags) => {
     const dl = h("dl", children)
@@ -829,6 +837,25 @@ describe("fixDefinitionList", () => {
 
     expect(result.children).toHaveLength(3)
     expect(result.children[0]).toEqual({ type: "text", value: "Text" })
+  })
+
+  it("preserves dd after dt even with whitespace text nodes between them", () => {
+    const dl: Element = {
+      type: "element",
+      tagName: "dl",
+      properties: {},
+      children: [
+        h("dt", ["Term"]),
+        { type: "text", value: "\n  " },
+        h("dd", ["First"]),
+        { type: "text", value: "\n  " },
+        h("dd", ["Second"]),
+      ],
+    }
+    const result = fixDefinitionList(dl)
+
+    const elements = result.children.filter((c) => c.type === "element")
+    expect(elements.map((e) => (e as Element).tagName)).toEqual(["dt", "dd", "dd"])
   })
 })
 
@@ -858,12 +885,12 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     const dl = h("dl", [
       h("dd", ["Orphan"]),
       h("dt", ["Term"]),
-      h("dd", ["Valid"]),
-      h("dd", ["Another orphan"]),
+      h("dd", ["Valid 1"]),
+      h("dd", ["Valid 2"]),
     ])
     runPlugin(dl)
 
     const tags = dl.children.map((c) => (c as Element).tagName)
-    expect(tags).toEqual(["p", "dt", "dd", "p"])
+    expect(tags).toEqual(["p", "dt", "dd", "dd"])
   })
 })

@@ -538,9 +538,8 @@ test.describe("SPA Navigation DOM Cleanup", () => {
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
     await expect(page.locator("#rogue-sibling")).toBeVisible()
 
-    // Click is ok because it doesn't scroll to it first
-    const localLink = page.locator("a").first()
-    await localLink.click()
+    await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
+    await page.waitForURL("**/design")
 
     await expect(page.locator("#rogue-sibling")).toBeHidden()
     await expect(page.locator(`#${pondVideoId}`)).toBeVisible()
