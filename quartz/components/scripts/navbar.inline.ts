@@ -5,6 +5,7 @@ import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
 const autoplayKey = "pond-video-autoplay"
+let pondVideoCleanupController: AbortController | null = null
 
 function getAutoplayEnabled(): boolean {
   const saved = localStorage.getItem(autoplayKey)
@@ -64,8 +65,16 @@ function handleVideoToggle(): void {
 }
 
 function setupPondVideo(): void {
+  // Clean up listeners from previous invocations to prevent accumulation
+  if (pondVideoCleanupController) {
+    pondVideoCleanupController.abort()
+  }
+
   const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
   if (!videoElement) return
+
+  pondVideoCleanupController = new AbortController()
+  const { signal } = pondVideoCleanupController
 
   const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
   const autoplayEnabled = getAutoplayEnabled()
@@ -102,7 +111,7 @@ function setupPondVideo(): void {
     restoreVideoState()
   } else {
     console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
-    videoElement.addEventListener("canplay", restoreVideoState, { once: true })
+    videoElement.addEventListener("canplay", restoreVideoState, { once: true, signal })
   }
 
   // Save timestamp before page unload/refresh
@@ -111,13 +120,17 @@ function setupPondVideo(): void {
     console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
   }
 
-  window.addEventListener("beforeunload", saveTimestamp)
-  window.addEventListener("pagehide", saveTimestamp)
+  window.addEventListener("beforeunload", saveTimestamp, { signal })
+  window.addEventListener("pagehide", saveTimestamp, { signal })
 
   // Save timestamp periodically during playback
-  videoElement.addEventListener("timeupdate", () => {
-    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-  })
+  videoElement.addEventListener(
+    "timeupdate",
+    () => {
+      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    },
+    { signal },
+  )
 }
 
 // Initial setup
