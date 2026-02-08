@@ -159,6 +159,10 @@ export function processDefinitionListChild(
 
 /**
  * Checks whether a definition list has any valid <dt>/<dd> pairs.
+ *
+ * Scans children left-to-right with a `lastWasDt` flag. When we see a <dt>,
+ * set the flag. When we see a <dd> with the flag set, that's a valid pair.
+ * Any other element resets the flag, so non-adjacent dt/dd don't count.
  */
 export function hasValidDtDdPairs(dlElement: Element): boolean {
   let lastWasDt = false
@@ -266,6 +270,46 @@ export function fixDefinitionList(dlElement: Element): Element {
  *
  * @returns A rehype plugin function that transforms the HTML tree
  */
+/** Converts orphaned <dd>/<dt> elements outside <dl> containers to <p>. */
+function convertOrphanedDefinitionElements(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (!node.children) return
+    for (const child of node.children) {
+      if (child.type !== "element") continue
+      if ((child.tagName === "dd" || child.tagName === "dt") && node.tagName !== "dl") {
+        child.tagName = "p"
+      }
+    }
+  })
+}
+
+/** Adds `tabindex="0"` to <pre> elements for keyboard scrollability. */
+function makePreElementsKeyboardAccessible(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "pre") return
+    node.properties = node.properties || {}
+    node.properties.tabIndex = 0
+  })
+}
+
+/** Adds `<track kind="captions">` to <video> elements that lack one. */
+function ensureVideoCaptionTracks(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "video") return
+    const hasTrack = node.children.some(
+      (child) => child.type === "element" && child.tagName === "track",
+    )
+    if (!hasTrack) {
+      node.children.push({
+        type: "element",
+        tagName: "track",
+        properties: { kind: "captions" },
+        children: [],
+      })
+    }
+  })
+}
+
 export function fixDefinitionListsPlugin() {
   return (tree: Root) => {
     // istanbul ignore next --- defensive
@@ -274,53 +318,76 @@ export function fixDefinitionListsPlugin() {
     // Fix <dl> elements with orphaned <dd>
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "dl") return
-
       const fixed = fixDefinitionList(node)
       node.tagName = fixed.tagName
       node.children = fixed.children
     })
 
-    // Fix orphaned <dd>/<dt> elements outside of <dl>
-    visit(tree, "element", (node: Element) => {
-      if (!node.children) return
-      for (let i = 0; i < node.children.length; i++) {
-        const child = node.children[i]
-        if (child.type !== "element") continue
-        if (child.tagName === "dd" && node.tagName !== "dl") {
-          child.tagName = "p"
-        } else if (child.tagName === "dt" && node.tagName !== "dl") {
-          child.tagName = "p"
-        }
-      }
-    })
-
-    // Make scrollable code blocks keyboard accessible
-    visit(tree, "element", (node: Element) => {
-      if (node.tagName === "pre") {
-        node.properties = node.properties || {}
-        node.properties.tabIndex = 0
-      }
-    })
-
-    // Add <track kind="captions"> to <video> elements that don't have one
-    visit(tree, "element", (node: Element) => {
-      if (node.tagName !== "video") return
-      const hasTrack = node.children.some(
-        (child) => child.type === "element" && child.tagName === "track",
-      )
-      if (!hasTrack) {
-        node.children.push({
-          type: "element",
-          tagName: "track",
-          properties: { kind: "captions" },
-          children: [],
-        })
-      }
-    })
-
-    // Deduplicate SVG internal IDs to prevent axe duplicate-id errors
+    convertOrphanedDefinitionElements(tree)
+    makePreElementsKeyboardAccessible(tree)
+    ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
   }
+}
+
+/** Replaces `url(#oldId)` references using an ID mapping. */
+function remapUrlIdReferences(text: string, idMap: Map<string, string>): string {
+  return text.replace(/url\(#(?<urlId>[^)]+)\)/g, (match, _urlId, _offset, _str, { urlId }) => {
+    return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+  })
+}
+
+/** Collects all element IDs within an SVG and renames them with a prefix. */
+function collectAndPrefixIds(svg: Element, prefix: string): Map<string, string> {
+  const idMap = new Map<string, string>()
+  visit(svg, "element", (child: Element) => {
+    if (child.properties?.id) {
+      const oldId = String(child.properties.id)
+      idMap.set(oldId, `${prefix}${oldId}`)
+      child.properties.id = `${prefix}${oldId}`
+    }
+  })
+  return idMap
+}
+
+/** Updates href, xlinkHref, and url(#id) attribute references. */
+function updatePropertyReferences(svg: Element, idMap: Map<string, string>): void {
+  visit(svg, "element", (child: Element) => {
+    if (!child.properties) return
+
+    for (const [key, value] of Object.entries(child.properties)) {
+      if (typeof value !== "string") continue
+
+      if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
+        const refId = value.slice(1)
+        if (idMap.has(refId)) {
+          child.properties[key] = `#${idMap.get(refId)}`
+        }
+      }
+
+      if (value.includes("url(#")) {
+        child.properties[key] = remapUrlIdReferences(value, idMap)
+      }
+    }
+  })
+}
+
+/** Updates ID references inside inline `<style>` elements. */
+function updateStyleReferences(svg: Element, idMap: Map<string, string>): void {
+  visit(svg, "element", (child: Element) => {
+    if (child.tagName !== "style") return
+    for (const textChild of child.children) {
+      if (textChild.type !== "text") continue
+
+      if (textChild.value.includes("url(#")) {
+        textChild.value = remapUrlIdReferences(textChild.value, idMap)
+      }
+
+      for (const [oldId, newId] of idMap) {
+        textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
+      }
+    }
+  })
 }
 
 /**
@@ -334,69 +401,11 @@ export function deduplicateSvgIds(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "svg") return
 
-    const prefix = `svg-${svgIndex++}-`
-    const idMap = new Map<string, string>()
-
-    // First pass: collect all IDs and create mappings
-    visit(node, "element", (child: Element) => {
-      if (child.properties?.id) {
-        const oldId = String(child.properties.id)
-        const newId = `${prefix}${oldId}`
-        idMap.set(oldId, newId)
-        child.properties.id = newId
-      }
-    })
-
+    const idMap = collectAndPrefixIds(node, `svg-${svgIndex++}-`)
     if (idMap.size === 0) return
 
-    // Second pass: update all references to those IDs
-    visit(node, "element", (child: Element) => {
-      if (!child.properties) return
-
-      for (const [key, value] of Object.entries(child.properties)) {
-        if (typeof value !== "string") continue
-
-        // Handle href="#id" and xlink:href="#id"
-        if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
-          const refId = value.slice(1)
-          if (idMap.has(refId)) {
-            child.properties[key] = `#${idMap.get(refId)}`
-          }
-        }
-
-        // Handle url(#id) in style, clip-path, marker-end, marker-start, fill, mask, filter
-        if (value.includes("url(#")) {
-          child.properties[key] = value.replace(
-            /url\(#(?<urlId>[^)]+)\)/g,
-            (match, _urlId, _offset, _str, { urlId }) => {
-              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
-            },
-          )
-        }
-      }
-    })
-
-    // Also handle <style> elements inside SVGs
-    visit(node, "element", (child: Element) => {
-      if (child.tagName !== "style") return
-      for (const textChild of child.children) {
-        if (textChild.type !== "text") continue
-
-        if (textChild.value.includes("url(#")) {
-          textChild.value = textChild.value.replace(
-            /url\(#(?<urlId>[^)]+)\)/g,
-            (match, _urlId, _offset, _str, { urlId }) => {
-              return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
-            },
-          )
-        }
-
-        // Also handle #id references in CSS selectors
-        for (const [oldId, newId] of idMap) {
-          textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
-        }
-      }
-    })
+    updatePropertyReferences(node, idMap)
+    updateStyleReferences(node, idMap)
   })
 }
 
