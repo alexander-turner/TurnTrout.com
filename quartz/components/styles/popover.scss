@@ -146,6 +146,25 @@
 
   &.footnote-popover {
     cursor: auto;
+
+    .popover-close {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      z-index: 1;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      padding: 0 0.3rem;
+      color: var(--foreground);
+      opacity: 0.4;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 
   @media all and (width <= $max-mobile-width) {

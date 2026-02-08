@@ -73,6 +73,17 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   popoverElement.classList.add("popover-visible")
 
+  // Wire up close button for footnote popovers
+  const closeBtn = popoverElement.querySelector(".popover-close")
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation()
+      if (activePopoverRemover) {
+        activePopoverRemover()
+      }
+    })
+  }
+
   // Handle hash scrolling
   if (hash !== "") {
     hash = `${hash}-popover`

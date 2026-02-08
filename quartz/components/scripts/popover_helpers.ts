@@ -127,6 +127,13 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
     const footnoteId = footnoteMatch.groups.footnoteId
     renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
     popoverElement.classList.add("footnote-popover")
+
+    const closeBtn = document.createElement("button")
+    closeBtn.classList.add("popover-close")
+    closeBtn.setAttribute("aria-label", "Close footnote")
+    closeBtn.setAttribute("type", "button")
+    closeBtn.textContent = "\u00d7" // × multiplication sign
+    popoverInner.appendChild(closeBtn)
   } else {
     renderFullPageContent(popoverInner, html, targetUrl)
   }

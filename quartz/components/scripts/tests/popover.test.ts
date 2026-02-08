@@ -66,6 +66,7 @@ describe("createPopover", () => {
     expect(popover).toBeInstanceOf(HTMLElement)
     expect(popover?.classList.contains("popover")).toBe(true)
     expect(popover?.classList.contains("footnote-popover")).toBe(false)
+    expect(popover?.querySelector(".popover-close")).toBeNull()
   })
 
   it("should handle HTML content", async () => {
@@ -131,6 +132,10 @@ describe("createPopover", () => {
     const popoverInner = popover.querySelector(".popover-inner")
 
     expect(popover.classList.contains("footnote-popover")).toBe(true)
+    // Should contain a close button
+    const closeBtn = popoverInner?.querySelector(".popover-close")
+    expect(closeBtn).not.toBeNull()
+    expect(closeBtn?.getAttribute("aria-label")).toBe("Close footnote")
     // Should NOT contain the li wrapper (content is unwrapped)
     expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
     // Should NOT contain the back arrow link

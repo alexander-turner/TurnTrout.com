@@ -401,18 +401,21 @@ test.describe("Footnote popovers", () => {
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 
-  test("Clicking footnote link toggles popover on desktop", async ({ page }) => {
+  test("Clicking footnote link opens popover with close button", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
-    // Click to open
     await footnoteRef.click()
     const popover = page.locator(".popover")
     await expect(popover).toBeVisible()
     await expect(popover).toHaveClass(/footnote-popover/)
 
-    // Click again to close
-    await footnoteRef.click()
+    // Close button should be visible
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+
+    // Clicking X closes the popover
+    await closeBtn.click()
     await expect(popover).toBeHidden()
   })
 
@@ -442,17 +445,18 @@ base.describe("Footnote popover on mobile", () => {
     await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
   })
 
-  base("Tapping footnote toggles popover on and off", async ({ page }) => {
+  base("Tapping footnote opens popover, close button dismisses it", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
-    // Tap to open
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
-    // Tap again to close
-    await footnoteRef.click()
+    // Close via X button
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+    await closeBtn.click()
     await expect(popover).toBeHidden()
   })
 
