@@ -1118,70 +1118,6 @@ def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
-    """Check if favicon has an ancestor with .no-favicon-span class."""
-    return any(
-        "no-favicon-span" in script_utils.get_classes(parent)
-        for parent in favicon.parents
-        if isinstance(parent, Tag)
-    )
-
-
-def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
-    """Get all favicons that should be checked (excluding .no-favicon-span)."""
-    all_favicons = soup.select("img.favicon, svg.favicon")
-    return [
-        favicon
-        for favicon in all_favicons
-        if not _has_no_favicon_span_ancestor(favicon)
-    ]
-
-
-def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
-    """
-    Check that all img.favicon and svg.favicon elements are direct children of
-    span elements.
-
-    Returns:
-        list of strings describing favicons that are not direct
-         children of span elements.
-    """
-    problematic_favicons: list[str] = []
-
-    favicons_to_check = _get_favicons_to_check(soup)
-
-    contexts = [
-        (
-            (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
-            if favicon.name == "img"
-            else (
-                favicon.get("data-domain", "unknown domain"),
-                "SVG favicon ({ctx})",
-                favicon,
-            )
-        )
-        for favicon in favicons_to_check
-    ]
-
-    for context, info_template, favicon in contexts:
-        parent = favicon.parent
-        if (
-            not parent
-            or parent.name != "span"
-            or "favicon-span" not in script_utils.get_classes(parent)
-        ):
-            info = (
-                info_template.format(ctx=context)
-                + " is not a direct child of a span.favicon-span."
-            )
-            if parent:
-                info += " Instead, it's a child of "
-                info += f"<{parent.name}>: {parent.get_text()}"
-            problematic_favicons.append(info)
-
-    return problematic_favicons
-
-
 def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     """
     Check that all favicons are svg.favicon elements with mask-url pointing to
@@ -1551,7 +1487,6 @@ def check_file_for_issues(
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
-        "invalid_favicon_parents": check_favicon_parent_elements(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup

@@ -2598,93 +2598,6 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Test favicon directly under span with correct class (valid)
-        (
-            '<span class="favicon-span"><img class="favicon" src="test.ico"></span>',
-            [],
-        ),
-        # Test favicon without parent span (invalid)
-        (
-            '<div><img class="favicon" src="test.ico"></div>',
-            [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test favicon nested deeper (invalid)
-        (
-            '<span class="favicon-span"><div><img class="favicon" src="test.ico"></div></span>',
-            [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test multiple favicons
-        (
-            """
-            <div>
-                <span class="favicon-span"><img class="favicon" src="valid.ico"></span>
-                <div><img class="favicon" src="invalid.ico"></div>
-            </div>
-            """,
-            [
-                "Favicon (invalid.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test favicon with no parent
-        (
-            '<img class="favicon" src="orphan.ico">',
-            [
-                "Favicon (orphan.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <[document]>: "
-            ],
-        ),
-        # Test non-favicon images (should be ignored)
-        (
-            '<div><img src="regular.png"></div>',
-            [],
-        ),
-        # Test favicon under span but missing required class (invalid)
-        (
-            '<span><img class="favicon" src="test.ico"></span>',
-            [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <span>: "
-            ],
-        ),
-        # Test favicon inside .no-favicon-span (should be ignored)
-        (
-            '<div class="no-favicon-span"><img class="favicon" src="test.ico"></div>',
-            [],
-        ),
-        # Test svg.favicon inside .no-favicon-span (should be ignored)
-        (
-            '<div class="no-favicon-span"><svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
-            [],
-        ),
-        # Test mixed: favicon in .no-favicon-span ignored, other favicon reported
-        (
-            """
-            <div>
-                <div class="no-favicon-span"><img class="favicon" src="ignored.ico"></div>
-                <div><img class="favicon" src="reported.ico"></div>
-            </div>
-            """,
-            [
-                "Favicon (reported.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test nested .no-favicon-span (should be ignored)
-        (
-            '<div class="no-favicon-span"><span><img class="favicon" src="test.ico"></span></div>',
-            [],
-        ),
-    ],
-)
-def test_check_favicon_parent_elements(html, expected):
-    soup = BeautifulSoup(html, "html.parser")
-    assert built_site_checks.check_favicon_parent_elements(soup) == expected
-
-
-@pytest.mark.parametrize(
-    "html,expected",
-    [
         # No favicons
         ("<div><p>No favicons here</p></div>", []),
         # img.favicon with SVG (invalid - should be svg.favicon with mask-url)
@@ -5040,7 +4953,7 @@ description: Test description
         ),
         # Element with child SVG element but no text (valid - used for favicons)
         (
-            '<span id="populate-turntrout-favicon"><span class="favicon-span"><svg class="favicon"></svg></span></span>',
+            '<span id="populate-turntrout-favicon"><svg class="favicon"></svg></span>',
             [],
         ),
         # Element with child img element but no text (valid)
@@ -5056,8 +4969,8 @@ description: Test description
         # Multiple favicon populate elements with SVG children (valid)
         (
             """
-            <span id="populate-turntrout-favicon"><span class="favicon-span"><svg></svg></span></span>
-            <span id="populate-anchor-favicon"><span class="favicon-span"><svg></svg></span></span>
+            <span id="populate-turntrout-favicon"><svg></svg></span>
+            <span id="populate-anchor-favicon"><svg></svg></span>
             """,
             [],
         ),
@@ -5116,7 +5029,7 @@ def test_check_populate_elements_nonempty_non_string_id():
         # Element with iframe child (self-contained, has content)
         ("<div><iframe src='test.html'></iframe></div>", True),
         # Element with nested structure containing SVG
-        ("<span><span class='favicon-span'><svg></svg></span></span>", True),
+        ("<span><svg></svg></span>", True),
         # Element with only NavigableString children (newlines/whitespace)
         ("<div>\n</div>", False),
         # Element with both text and child element

@@ -545,13 +545,7 @@ describe("PopulateContainers", () => {
         const elements = await generator()
         expect(elements).toHaveLength(1)
 
-        const wrapperSpan = elements[0]
-        expect(wrapperSpan).toMatchObject({
-          tagName: "span",
-          properties: { className: expect.arrayContaining(["favicon-span"]) },
-        })
-
-        const faviconElement = wrapperSpan.children[0] as Element
+        const faviconElement = elements[0]
         expect(faviconElement).toMatchObject({
           tagName: "svg",
           properties: {
@@ -570,7 +564,7 @@ describe("PopulateContainers", () => {
         const elements = await generator()
         expect(elements).toHaveLength(1)
 
-        const faviconElement = elements[0].children[0] as Element
+        const faviconElement = elements[0]
         expect(faviconElement).toMatchObject({
           tagName: "svg",
           properties: {

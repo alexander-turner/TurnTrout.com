@@ -257,7 +257,7 @@ describe("createLinkWithFavicon", () => {
     expect(result.props["data-slug"]).toBe("another-page")
   })
 
-  it("should include favicon-span in link children", () => {
+  it("should include word joiner and favicon in link children", () => {
     const result = createLinkWithFavicon(
       "Link with favicon",
       "/page",
@@ -266,29 +266,29 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    expect(children.length).toBeGreaterThan(0)
+    // text + word joiner + favicon
+    expect(children.length).toBe(3)
+    expect(typeof children[0]).toBe("string")
+    expect(children[1]).toBe("\u2060")
 
-    // The last child should be a span.favicon-span containing the favicon
-    const lastChild = children[children.length - 1]
-    assertJSXElement(lastChild)
-    expect(lastChild.type).toBe("span")
-    expect(lastChild.props.class).toBe("favicon-span")
+    const favicon = children[2]
+    assertJSXElement(favicon)
+    expect(favicon.props.class).toContain("favicon")
   })
 
-  it("should handle text splicing correctly with maybeSpliceText", () => {
+  it("should preserve full text with word joiner before favicon", () => {
     const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // Should have text before the favicon-span
-    expect(children.length).toBeGreaterThan(1)
-    expect(typeof children[0]).toBe("string")
+    // text + word joiner + favicon
+    expect(children.length).toBe(3)
+    expect(children[0]).toBe("Test text")
+    expect(children[1]).toBe("\u2060")
 
-    // Last child should be the favicon-span with spliced text + favicon
-    const faviconSpan = children[children.length - 1]
-    assertJSXElement(faviconSpan)
-    expect(faviconSpan.type).toBe("span")
-    expect(faviconSpan.props.class).toBe("favicon-span")
+    const favicon = children[2]
+    assertJSXElement(favicon)
+    expect(favicon.props.class).toContain("favicon")
   })
 })

@@ -1,9 +1,5 @@
 @use "./variables.scss" as *;
 
-.favicon-span {
-  white-space: nowrap;
-}
-
 .favicon {
   --size-decrease: 0rem; // Decrease in width and height of favicon size -- set this to a positive value to decrease the size
   --base-vertical-adjustment: calc(0.5 * #{$base-margin});

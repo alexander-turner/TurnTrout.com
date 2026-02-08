@@ -202,7 +202,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [h("span", { className: "favicon-span" }, [faviconElement])]
+    return [faviconElement]
   }
 }
 

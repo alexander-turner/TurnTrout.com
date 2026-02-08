@@ -4,13 +4,13 @@ import type { Plugin as UnifiedPlugin, PluggableList } from "unified"
 import GithubSlugger from "github-slugger"
 import { headingRank } from "hast-util-heading-rank"
 import { toString } from "hast-util-to-string"
-import { h } from "hastscript"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeSlug from "rehype-slug"
 import remarkGfm from "remark-gfm"
 import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
+import { WORD_JOINER } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"
 
 export interface Options {
@@ -394,22 +394,6 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     return
   }
 
-  const text = lastTextNode.value
-  const textIndex = Math.max(0, text.length - 4) // ensures splitIndex is never negative
-
-  // Update the original text node if there's text before the split
-  if (textIndex > 0) {
-    lastTextNode.value = text.slice(0, textIndex)
-  } else {
-    // Remove the original text node if we're wrapping all text
-    lastParagraph.children = []
-  }
-
-  // Add the favicon span with remaining text and back arrow
-  lastParagraph.children.push(
-    h("span", { className: "favicon-span" }, [
-      { type: "text", value: text.slice(textIndex) },
-      backArrow,
-    ]),
-  )
+  // Append word joiner + back arrow to prevent line-break orphaning
+  lastParagraph.children.push({ type: "text", value: WORD_JOINER } as Text, backArrow)
 }
