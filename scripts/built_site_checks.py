@@ -27,13 +27,16 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
-
-# Unicode typography constants
-NBSP = "\u00a0"
-LEFT_SINGLE_QUOTE = "\u2018"
-RIGHT_SINGLE_QUOTE = "\u2019"
-LEFT_DOUBLE_QUOTE = "\u201c"
-RIGHT_DOUBLE_QUOTE = "\u201d"
+from scripts.utils import (
+    ELLIPSIS,
+    LEFT_DOUBLE_QUOTE,
+    LEFT_SINGLE_QUOTE,
+    NBSP,
+    RIGHT_DOUBLE_QUOTE,
+    RIGHT_SINGLE_QUOTE,
+    ZERO_WIDTH_NBSP,
+    ZERO_WIDTH_SPACE,
+)
 
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
@@ -179,8 +182,8 @@ def check_top_level_paragraphs_end_with_punctuation(
                 continue
 
             # Strip zero-width spaces and other invisible characters
-            text = text.replace("\u200b", "")  # zero-width space
-            text = text.replace("\ufeff", "")  # zero-width no-break space
+            text = text.replace(ZERO_WIDTH_SPACE, "")
+            text = text.replace(ZERO_WIDTH_NBSP, "")
             text = text.strip()
             if not text:
                 continue
@@ -387,7 +390,8 @@ _CANARY_BAD_ANYWHERE = (
 _CANARY_BAD_PREFIXES = (
     rf":{_S}",  # Unrendered description
     r"#",  # Unrendered heading
-    r"\[(\s|\u200B)*\]",  # image alt declaration, may contain 0width space
+    # image alt declaration, may contain 0width space
+    rf"\[(\s|{ZERO_WIDTH_SPACE})*\]",
 )
 
 
@@ -824,7 +828,7 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         stripped_text = script_utils.get_non_code_text(text_elt)
 
         if stripped_text and (
-            re.search(r"\*|\_(?!\_*[ \u00a0]+\%)", stripped_text)
+            re.search(rf"\*|\_(?!\_*[ {NBSP}]+\%)", stripped_text)
         ):
             _append_to_list(
                 problematic_texts,
@@ -1049,7 +1053,10 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r"(?!\.\.\?)\.[\u0022\u201c\u201d]*\.", str(element)):
+            if re.search(
+                rf'(?!\.\.\?)\.["{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]*\.',
+                str(element),
+            ):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1731,8 +1738,17 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×\u201c\u2018=+' \n\t\r\u00a0"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+\u201d\u2019\u2026=' \n\t\r\u00a0"
+ALLOWED_ELT_PRECEDING_CHARS = (
+    "[({-—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r" + NBSP
+)
+ALLOWED_ELT_FOLLOWING_CHARS = (
+    "])}.,;!?:-—~×+"
+    + RIGHT_DOUBLE_QUOTE
+    + RIGHT_SINGLE_QUOTE
+    + ELLIPSIS
+    + "=' \n\t\r"
+    + NBSP
+)
 
 
 def _check_element_spacing(
