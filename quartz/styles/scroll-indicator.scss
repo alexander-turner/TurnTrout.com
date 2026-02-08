@@ -1,3 +1,12 @@
+// Make .katex shrink-wrap to content width so .katex-display's
+// overflow: auto creates a proper scroll context. Without this,
+// .katex is display: block (same width as parent), and the inline
+// math content overflows .katex internally without triggering
+// .katex-display's scroll.
+.scroll-indicator > .katex-display > .katex {
+  display: inline-block;
+}
+
 .scroll-indicator {
   position: relative;
   overflow: hidden;
