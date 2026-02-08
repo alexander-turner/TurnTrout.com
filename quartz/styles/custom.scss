@@ -797,13 +797,15 @@ img.emoji {
   }
 }
 
-#mermaid-0,
-#mermaid-1,
-#mermaid-2 {
+// Ensure all mermaid diagram text has sufficient contrast
+[id^="mermaid-"] {
   font-size: 14px !important;
 
   & span,
-  & .label {
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
   }
@@ -897,6 +899,7 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
+  color: var(--foreground);
 }
 
 // Specific graph in design doc has too much whitespace in light

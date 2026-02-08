@@ -1144,6 +1144,16 @@ describe("deduplicateSvgIds", () => {
     expect(div.properties?.id).toBe("should-not-change")
   })
 
+  it("does not prefix the SVG element's own ID", () => {
+    const marker = h("marker", { id: "arrow" })
+    const svg = h("svg", { id: "mermaid-0" }, [marker])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(svg.properties?.id).toBe("mermaid-0")
+    expect(marker.properties?.id).toBe("svg-0-arrow")
+  })
+
   it("handles href that doesn't match any known ID", () => {
     const marker = h("marker", { id: "arrow" })
     const use = h("use", { href: "#unknown-ref" })

@@ -351,8 +351,9 @@ export function deduplicateSvgIds(tree: Root): void {
     const prefix = `svg-${svgIndex++}-`
     const idMap = new Map<string, string>()
 
-    // First pass: collect all IDs and create mappings
+    // First pass: collect all IDs and create mappings (skip SVG element itself)
     visit(node, "element", (child: Element) => {
+      if (child === node) return
       if (child.properties?.id) {
         const oldId = String(child.properties.id)
         const newId = `${prefix}${oldId}`
@@ -425,7 +426,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin(), fixDefinitionListsPlugin()]
+      const plugins: PluggableList = [footnoteBacklinkPlugin, fixDefinitionListsPlugin]
 
       if (opts.linkHeadings) {
         plugins.push(returnAddIdsToHeadingsFn, [

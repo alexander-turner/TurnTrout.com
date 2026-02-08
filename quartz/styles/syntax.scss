@@ -30,6 +30,13 @@ code[data-theme*=" "] span[style*="--shiki-light:#22863A"] {
   color: #116329;
 }
 
+// Blue constants/builtins: #005CC5 (5.68:1) → #0550ae (7.25:1)
+// Passes WCAG AA numerically, but axe flags it inside admonitions with
+// color-mix() backgrounds that it cannot fully resolve.
+code[data-theme*=" "] span[style*="--shiki-light:#005CC5"] {
+  color: #0550ae;
+}
+
 [data-theme="dark"] code[data-theme*=" "] {
   color: var(--shiki-dark);
 }
