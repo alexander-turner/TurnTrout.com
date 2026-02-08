@@ -261,4 +261,7 @@
 
   // MD058/blanks-around-tables : Tables should be surrounded by blank lines : https://github.com/DavidAnson/markdownlint/blob/v0.36.1/doc/md058.md
   "MD058": true,
+
+  // MD060/table-column-style : Table column style : https://github.com/DavidAnson/markdownlint/blob/main/doc/md060.md
+  "MD060": false,
 }

@@ -419,19 +419,14 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 
 : Stop trying to write complicated long sentences in terms of outer objectives. **Just, stop**. Let’s find a new language. (Do you really think a future alignment textbook would say “And then, to everyone’s amazement, outer alignment scheme #7,513 succeeded!”)
 
-: Now, I can legitimately point out that outer and inner alignment aren’t a good framing for alignment, _without_ offering an alternative better framing. That said, I [recently wrote](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=xwJfX45CvaKXFFtCS):[^11] [^12]
+: Now, I can legitimately point out that outer and inner alignment aren't a good framing for alignment, _without_ offering an alternative better framing. That said, I [recently wrote](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=xwJfX45CvaKXFFtCS):[^11] [^12]
 
-<dd>
-<blockquote class="admonition quote" data-admonition="quote">
-<div class="admonition-title">
-    <div class="admonition-icon"></div>
-  <div class="admonition-title-inner"><p>Quote</p></div>
-</div>
-<p>Shard theory suggests that goals are more natural to specify/inculcate in their shard forms (e.g. if around trash and a trash can, then put the trash away), and not in their (presumably) final form of globally activated optimization of a coherent utility function which is the reflective equilibrium of inter-shard value-handshakes (e.g. a utility function over the agent’s internal plan-ontology whose optimization leads to trash getting put away, among other utility-level reflections of initial shards).</p>
-<p>I <em>could</em> (and <a href="/attainable-utility-preservation-scaling-to-superhuman" class="internal" data-slug="/attainable-utility-preservation-scaling-to-superhuman"><em>did</em></a>) hope that I could specify a utility function which is safe to maximize because it penalizes power-seeking. I may as well have hoped to jump off of a building and float to the ground. On my model, that’s just not how goals work in intelligent minds. If we’ve had anything at all beaten into our heads by our alignment thought experiments, it’s that <em>goals are hard to specify in their final form of utility functions.</em></p>
-<p>I think it’s time to think in a different specification language.
-</blockquote>
-</dd>
+  > [!quote]
+  > Shard theory suggests that goals are more natural to specify/inculcate in their shard forms (e.g. if around trash and a trash can, then put the trash away), and not in their (presumably) final form of globally activated optimization of a coherent utility function which is the reflective equilibrium of inter-shard value-handshakes (e.g. a utility function over the agent's internal plan-ontology whose optimization leads to trash getting put away, among other utility-level reflections of initial shards).
+  >
+  > I _could_ (and [_did_](/attainable-utility-preservation-scaling-to-superhuman)) hope that I could specify a utility function which is safe to maximize because it penalizes power-seeking. I may as well have hoped to jump off of a building and float to the ground. On my model, that's just not how goals work in intelligent minds. If we've had anything at all beaten into our heads by our alignment thought experiments, it's that _goals are hard to specify in their final form of utility functions._
+  >
+  > I think it's time to think in a different specification language.
 
 **Alex's model of an outer alignment enjoyer**
 : Bah, “shard theory of human values.” We didn’t build planes with flapping wings. Who cares if human values come from inner alignment failures—Why does that suggest that we shouldn’t solve inner alignment for AI? _AI will not be like you._
@@ -453,13 +448,9 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 **Alex**
 : That strategy seems unwise for the target motivational structures I have in mind (e.g. "protect humanity" or "do alignment research").
 
-<dd>
-<ol>
-<li><a href="#i-robust-grading-is-unnecessary-extremely-hard-and-unnatural" class="internal alias same-page-link">Section I</a> (robust grading is unnecessary): This plan requires an <a href="../dont-design-agents-which-exploit-adversarial-inputs" class="internal alias" data-slug="dont-design-agents-which-exploit-adversarial-inputs">unrealistic invariant.</a> The invariant is that the outer objective must “properly grade” every possible plan the agent is smart enough to consider. How are you possibly going to fulfill that invariant? Why would you <em>want</em> to choose a scheme where you have to fulfill such an onerous invariant? <br/><br/>For more detail on the concurrent-improvement case, see <a href="/dont-design-agents-which-exploit-adversarial-inputs#appendix-maybe-we-just" class="internal alias" data-slug="dont-design-agents-which-exploit-adversarial-inputs">the appendix</a> of <a href="../dont-design-agents-which-exploit-adversarial-inputs" class="internal alias" data-slug="dont-design-agents-which-exploit-adversarial-inputs">Don’t design agents which exploit adversarial inputs.</a></li>
-<li><a href="#ii-loss-functions-chisel-circuits-into-networks" class="internal alias same-page-link">Section II</a> (loss is like a chisel) applies: You’re constraining the chisel to look like the statue. Why consider such a narrow class of approaches?</li>
-<li><a href="#iii-outer-inner-just-isn-t-how-alignment-works-in-people" class="internal alias same-page-link">Section III</a> (inner/outer is anti-natural) applies: That strategy seems <em>anti-natural</em> as a way of getting cognitive work out of an agent.</li>
-</ol>
-</dd>
+  1. [Section I](#i-robust-grading-is-unnecessary-extremely-hard-and-unnatural) (robust grading is unnecessary): This plan requires an [unrealistic invariant.](/dont-design-agents-which-exploit-adversarial-inputs) The invariant is that the outer objective must "properly grade" every possible plan the agent is smart enough to consider. How are you possibly going to fulfill that invariant? Why would you _want_ to choose a scheme where you have to fulfill such an onerous invariant? For more detail on the concurrent-improvement case, see [the appendix](/dont-design-agents-which-exploit-adversarial-inputs#appendix-maybe-we-just) of [Don't design agents which exploit adversarial inputs.](/dont-design-agents-which-exploit-adversarial-inputs)
+  2. [Section II](#ii-loss-functions-chisel-circuits-into-networks) (loss is like a chisel) applies: You're constraining the chisel to look like the statue. Why consider such a narrow class of approaches?
+  3. [Section III](#iii-outer-inner-just-isn-t-how-alignment-works-in-people) (inner/outer is anti-natural) applies: That strategy seems _anti-natural_ as a way of getting cognitive work out of an agent.
 
 **Alex's model of an outer alignment enjoyer**
 : It’s easy to talk big talk. It’s harder to propose concrete directions which aren’t, you know, _doomed_.
@@ -507,14 +498,9 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 
 : More broadly, I perceive a motte and bailey:
 
-<dd>
-<ul>
-<li><em>Bailey</em>: We should solve outer alignment by specifying a reward signal which can’t reasonably be gamed and which expresses what we want ／is aligned with our values. This reward signal should return good outputs far outside of the normal distribution of human experience, such that it doesn’t have bad maxima.</li>
-<li><em>Motte</em>: All else equal, it’s better to reward the agent for doing good things (like making someone smile) and to penalize it for doing bad things (like hurting people).</li>
-</ul>
-</dd>
-
-<dd>I think that the bailey is wrong and the motte is right.</dd>
+  - _Bailey_: We should solve outer alignment by specifying a reward signal which can't reasonably be gamed and which expresses what we want ／is aligned with our values. This reward signal should return good outputs far outside of the normal distribution of human experience, such that it doesn't have bad maxima.
+  - _Motte_: All else equal, it's better to reward the agent for doing good things (like making someone smile) and to penalize it for doing bad things (like hurting people).
+: I think that the bailey is wrong and the motte is right.
 
 **Alex's model of an outer alignment enjoyer**
 : You keep wanting to focus on the “quantum mechanics” of loss-as-chisel. I agree that, in principle, if we really knew what we were doing—if we deeply understood SGD dynamics—we could skillfully ensure the network generalizes in the desired way (e.g. makes diamonds). You criticize the “skulls” visible on the “robust grader” research paths, while seemingly ignoring the skulls dotting the “just understand SGD” paths.

@@ -82,18 +82,13 @@ Subtitle: MATS (starting with smallcaps).
 
 Header 1
 : Test item 1
-<dl>
-<dt>Unordered list inside a description list</dt>
-<dd><ul>
-   <li>Voice &amp; video calls</li>
-   <li><abbr class="small-caps">Gps</abbr></li>
-   <li>Audible</li>
-   <li>Uber / Lyft</li>
-   <li>Authenticators / alarms / other boring utilities</li>
-   <li>Roam / note-taking</li>
-   </ul>
-</dd>
-</dl>
+Unordered list inside a description list
+: - Voice & video calls
+  - GPS
+  - Audible
+  - Uber / Lyft
+  - Authenticators / alarms / other boring utilities
+  - Roam / note-taking
 
 # Admonition lists
 
