@@ -34,8 +34,20 @@ jobs:
         uses: ./.github/actions/setup-build-env
       - name: Build site
         run: pnpm build
-      - name: Serve site and run accessibility checks
+      - name: Start server and run accessibility checks
         run: |
-          pnpm serve public -l 8080 &
-          npx wait-on http://localhost:8080 --timeout 420000
+          # Start server in background
+          pnpm exec serve public -l 8080 &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
           pnpm test:a11y
+
+          kill $SERVER_PID 2>/dev/null || true
