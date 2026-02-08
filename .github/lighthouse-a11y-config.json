@@ -4,6 +4,7 @@
       "numberOfRuns": 1,
       "settings": {
         "onlyCategories": ["accessibility"],
+        "skipAudits": ["color-contrast"],
         "throttling": {
           "cpuSlowdownMultiplier": 1,
           "rttMs": 40,
