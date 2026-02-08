@@ -835,7 +835,7 @@ Spoilers hide text until hovered
 : >! Have you heard? Snape kills Dumbledore.
 
 Scroll indicators for overflowing content
-: When a table or $\KaTeX$ equation is too wide for its container, subtle fade gradients appear at the scrollable edges, signaling that the reader can scroll horizontally. Inside admonitions, the gradient color matches the admonition's tinted background.
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
 Server-side math rendering via $\KaTeX$
 : I initially chose [$\KaTeX$](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
