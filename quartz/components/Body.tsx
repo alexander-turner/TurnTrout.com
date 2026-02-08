@@ -10,6 +10,9 @@ import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import smallCapsCopyScript from "./scripts/smallcaps-copy.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
+import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
 import clipboardStyle from "./styles/clipboard.scss"
 import {
   type QuartzComponent,
@@ -45,7 +48,12 @@ const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
   )
 }
 
-Body.afterDOMLoaded = [clipboardScript, elvishToggleScript, smallCapsCopyScript]
+Body.afterDOMLoaded = [
+  clipboardScript,
+  elvishToggleScript,
+  smallCapsCopyScript,
+  scrollIndicatorScript,
+]
 Body.css = clipboardStyle
 
 export default (() => Body) satisfies QuartzComponentConstructor
