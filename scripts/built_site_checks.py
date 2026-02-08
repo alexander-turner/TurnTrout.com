@@ -695,6 +695,33 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for class names that contain commas or start with dots.
+
+    These indicate CSS selector syntax was incorrectly used as HTML class
+    attribute values (e.g. ``class="float-right,.bar"`` instead of
+    ``class="float-right bar"``).
+
+    Returns:
+        list of strings describing invalid class names
+    """
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(class_=True)):
+        classes = script_utils.get_classes(element)
+        for cls in classes:
+            if "," in cls or cls.startswith("."):
+                tag_preview = str(element)[:120]
+                _append_to_list(
+                    issues,
+                    f"Invalid class name '{cls}' on <{element.name}>:"
+                    f" {tag_preview}",
+                )
+
+    return issues
+
+
 def check_katex_elements_for_errors(soup: BeautifulSoup) -> list[str]:
     """Check for KaTeX elements with color #cc0000."""
     problematic_katex: list[str] = []
@@ -1549,6 +1576,7 @@ def check_file_for_issues(
             soup
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
+        "invalid_class_names": check_invalid_class_names(soup),
     }
 
     if should_check_fonts:

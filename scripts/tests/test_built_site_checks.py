@@ -5608,6 +5608,52 @@ def test_find_duplicate_citations_no_duplicates():
     assert result == []
 
 
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Valid: space-separated classes
+        (
+            '<img class="float-right testimonial" src="x.avif" width="1" height="1">',
+            [],
+        ),
+        # Valid: single class
+        (
+            '<div class="container"><p>ok</p></div>',
+            [],
+        ),
+        # Invalid: comma-separated classes (CSS selector syntax)
+        (
+            '<img class="float-right,.testimonial-maybe-negative-margin" src="x.avif" width="1" height="1">',
+            [
+                "Invalid class name 'float-right,.testimonial-maybe-negative-margin'"
+                " on <img>:"
+            ],
+        ),
+        # Invalid: class name starting with a dot
+        (
+            '<div class=".highlighted"><p>text</p></div>',
+            ["Invalid class name '.highlighted' on <div>:"],
+        ),
+        # Invalid: multiple comma-separated classes
+        (
+            '<span class="a,b,c">text</span>',
+            ["Invalid class name 'a,b,c' on <span>:"],
+        ),
+        # No class attribute at all
+        (
+            "<p>No class here</p>",
+            [],
+        ),
+    ],
+)
+def test_check_invalid_class_names(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_invalid_class_names(soup)
+    assert len(result) == len(expected)
+    for issue, exp in zip(result, expected):
+        assert issue.startswith(exp)
+
+
 def test_find_duplicate_citations_with_duplicates():
     """Test that duplicate citations are detected."""
     citation_to_files = {
