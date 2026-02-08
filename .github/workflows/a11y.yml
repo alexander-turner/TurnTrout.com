@@ -1,0 +1,42 @@
+name: Accessibility
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+  pull_request:
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  a11y:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+      - name: Build site
+        run: pnpm build
+      - name: Serve site and run accessibility checks
+        run: |
+          pnpm serve public -l 8080 &
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -sf http://localhost:8080 > /dev/null; do sleep 1; done'
+          pnpm test:a11y
