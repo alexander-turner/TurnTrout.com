@@ -435,7 +435,7 @@ export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
     htmlPlugins(ctx: BuildCtx) {
-      // istanbul ignore next -- simple default value
+      /* istanbul ignore next -- defensive default for offline flag */
       const offline = ctx.argv.offline ?? false
       return [
         () => {

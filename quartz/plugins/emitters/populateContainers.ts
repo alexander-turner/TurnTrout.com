@@ -84,11 +84,17 @@ export const generateTestCountContent = (): ContentGenerator => {
   }
 }
 
+interface GitCountOptions {
+  author?: string
+  grep?: string
+}
+
 // skipcq: JS-D1001
-export async function countGitCommits(author: string): Promise<number> {
-  const output = execSync(`git rev-list --all --count --author="${author}"`, {
-    encoding: "utf-8",
-  })
+export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  let cmd = "git rev-list --all --count"
+  if (options.author) cmd += ` --author="${options.author}"`
+  if (options.grep) cmd += ` --grep="${options.grep}"`
+  const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -138,6 +144,7 @@ export async function countLinesOfCode(): Promise<number> {
 
 export interface RepoStats {
   commitCount: number
+  aiCommitCount: number
   jsTestCount: number
   playwrightTestCount: number
   pytestCount: number
@@ -146,16 +153,17 @@ export interface RepoStats {
 
 // skipcq: JS-D1001
 export async function computeRepoStats(): Promise<RepoStats> {
-  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits("Alex Turner"),
+      countGitCommits({ author: "Alex Turner" }),
+      countGitCommits({ grep: "claude.ai/code/session" }),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
       countLinesOfCode(),
     ])
 
-  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -355,6 +363,10 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",
