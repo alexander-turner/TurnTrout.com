@@ -56,7 +56,7 @@ export function toSkip(node: Element): boolean {
  * Regular \b matches at word/non-word transitions, but markers (non-word chars)
  * can create false boundaries between text that should be connected.
  *
- * Example: "xReLU" has no word boundary before 'R', but "x\uE000ReLU" (with marker)
+ * Example: "xReLU" has no word boundary before 'R', but "x\uF000ReLU" (with marker)
  * would have a false boundary. These patterns reject boundaries caused by markers.
  *
  * A "false" start boundary: word_char + marker(s) + word_char (markers between word chars)
@@ -75,7 +75,7 @@ const wbe = `\\b(?!${markerChar}*\\w)`
  * @returns The text with slashes spaced out
  */
 export function spacesAroundSlashes(text: string): string {
-  // First replace h/t with the placeholder character
+  // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
   text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
   // Apply the normal slash spacing rule
@@ -129,6 +129,7 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
 // transform(text_with_markers) == transform(text_without_markers) does not hold.
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
+  // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
   (text: string) => primeMarks(text, { separator: markerChar }),
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
@@ -180,12 +181,13 @@ export function formatLNumbers(tree: Root): void {
     const newNodes: (Text | Element)[] = []
 
     while ((match = l_pRegex.exec(node.value)) !== null) {
-      const { prefix, number } = match.groups as { prefix: string; number: string }
-
       // Add text before the match
       if (match.index > lastIndex) {
         newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
       }
+
+      // The regex guarantees these named groups always exist
+      const { prefix, number } = match.groups as { prefix: string; number: string }
 
       // Add the space/start of line
       newNodes.push({ type: "text", value: prefix })
@@ -519,6 +521,7 @@ const massTransforms: [RegExp, string][] = [
   // Model naming standardization
   [new RegExp(`${wb}LLAMA(?=-\\d)`, "g"), "Llama"], // LLAMA-2 → Llama-2
   [new RegExp(`${wb}GPT-4-o${wbe}`, "gi"), "GPT-4o"], // GPT-4-o → GPT-4o
+  [new RegExp(`${wb}bibtex${wbe}`, "gi"), "BibTeX"], // Normalize BibTeX capitalization
 ]
 
 export function massTransformText(text: string): string {

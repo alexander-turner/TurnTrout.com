@@ -11,3 +11,4 @@ htmlcov/
 .vale-styles
 .logs/
 test-results/
+pnpm-lock.yaml

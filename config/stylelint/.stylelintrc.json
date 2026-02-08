@@ -2,10 +2,6 @@
   "plugins": ["stylelint-declaration-strict-value", "./scss-custom-property-interpolation.js"],
   "extends": ["stylelint-config-standard-scss", "stylelint-prettier/recommended"],
   "rules": {
-    "prettier/prettier": [
-      true,
-      { "printWidth": 100, "tabWidth": 2, "semi": false, "trailingComma": "all" }
-    ],
     "no-invalid-double-slash-comments": null,
     "no-descending-specificity": null,
     "function-no-unknown": null,

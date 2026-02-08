@@ -21,7 +21,7 @@ import {
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb } = simpleConstants
+const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -265,6 +265,15 @@ export const generateFaviconContent = (): ContentGenerator => {
 }
 
 /**
+ * Converts an HTML file path to a slug by removing the .html extension.
+ * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
+ * @returns The slug (e.g., "design" or "posts/foo")
+ */
+export function htmlFileToSlug(htmlFile: string): string {
+  return htmlFile.replace(/\.html$/, "")
+}
+
+/**
  * Configuration for populating an element by ID or class with generated content.
  */
 export interface ElementPopulatorConfig {
@@ -362,6 +371,11 @@ const createPopulatorMap = (
     [
       "populate-playwright-test-count",
       generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-playwright-configs", generateConstantContent(playwrightConfigs.toLocaleString())],
+    [
+      "populate-playwright-total-tests",
+      generateConstantContent((stats.playwrightTestCount * playwrightConfigs).toLocaleString()),
     ],
     ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
     ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],
