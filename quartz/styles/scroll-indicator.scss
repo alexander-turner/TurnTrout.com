@@ -16,7 +16,7 @@
     content: "";
     position: absolute;
     top: 0;
-    bottom: 0;
+    bottom: var(--scrollbar-height, 0);
     width: 2rem;
     pointer-events: none;
     z-index: 1;
