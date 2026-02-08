@@ -85,6 +85,15 @@ if is_root; then
 fi
 
 #######################################
+# Clean up stale state from previous sessions
+#######################################
+
+# Remove stop-hook retry counter for THIS project so a new session starts fresh
+# (keyed on project dir hash, matching verify_ci.py's _retry_file)
+PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
+rm -f "/tmp/claude-stop-attempts-${PROJ_HASH}"
+
+#######################################
 # Git setup
 #######################################
 
