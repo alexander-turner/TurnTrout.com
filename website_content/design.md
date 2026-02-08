@@ -424,7 +424,7 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
 <div class="centered" style="font-size:4rem;line-height:1.4 !important;">
-<span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
+<span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 </div>
   
@@ -828,7 +828,7 @@ Spoilers hide text until hovered
 : >! Have you heard? Snape kills Dumbledore.
 
 Server-side math rendering via $\KaTeX$
-: I initially chose [$\KaTeX$](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+: I initially chose [KaTeX](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:

@@ -57,9 +57,9 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
           theme: "default",
           themeVariables: {
             lineColor: "var(--gray)",
-            primaryTextColor: "#4c4f69",
-            nodeTextColor: "#4c4f69",
-            labelTextColor: "#4c4f69",
+            primaryTextColor: "#1e1e2e",
+            nodeTextColor: "#1e1e2e",
+            labelTextColor: "#1e1e2e",
           },
         },
         dark: {

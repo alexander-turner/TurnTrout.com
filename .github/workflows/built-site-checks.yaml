@@ -47,7 +47,7 @@ jobs:
           # Filter out known false positives and check if any real issues remain
           WARNINGS=$(pnpm exec stylelint public/index.css \
             --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
-            | grep -vE 'shiki|problems|public/index.css' \
+            | grep -vE 'shiki|problem|public/index.css' \
             | grep . || true)
 
           if [ -n "$WARNINGS" ]; then
