@@ -47,7 +47,6 @@ date_updated: 2025-12-30 14:46:20.403471
 next-post-slug: insights-from-physiology
 next-post-title: Insights from "The Manga Guide to Physiology"
 card_image_alt: 'The front of a dissertation entitled: "On Avoiding Power-Seeking By Artificial Intelligence".'
-createBibtex: true
 ---
 
 

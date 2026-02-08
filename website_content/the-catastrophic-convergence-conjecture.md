@@ -42,7 +42,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
-createBibtex: true
 ---
 
 

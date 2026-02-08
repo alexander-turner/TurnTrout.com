@@ -1145,6 +1145,9 @@ describe("Asset Dimensions Plugin", () => {
         children: [h("img", { src: cdnImgSrc }) as Element],
       }
 
+      // Ensure empty cache so dimensions aren't loaded from disk
+      assetProcessor.setDirectCache({})
+
       const pluginInstance = addAssetDimensionsFromSrc()
       const mockCtx = { argv: { offline: true } } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()

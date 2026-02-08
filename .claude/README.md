@@ -11,7 +11,7 @@ This directory contains configuration and skills for Claude Code.
 │   ├── session-setup.sh       # Runs on session start (installs tools, configures git)
 │   ├── lib-checks.sh          # Shared helpers for hook scripts
 │   ├── pre-push-check.sh     # Runs before git push / gh pr (build, lint, typecheck)
-│   └── verify-ci-on-stop.sh  # Runs on session stop (blocks if checks fail)
+│   └── verify_ci.py           # Runs on session stop (blocks if checks fail, max 3 retries)
 └── skills/
     └── pr-creation/       # PR creation workflow with self-critique
         ├── SKILL.md       # Main skill entrypoint
@@ -44,11 +44,13 @@ Only runs scripts that are actually configured in `package.json` — skips place
 
 ### Stop Hook
 
-When Claude finishes a session, `verify-ci-on-stop.sh` blocks completion if any checks fail:
+When Claude finishes a session, `verify_ci.py` blocks completion if any checks fail:
 
 - Runs test, lint, and typecheck (superset of pre-push checks — adds tests)
 - Returns `decision: "block"` with failure details so Claude continues fixing issues
 - Returns `decision: "approve"` if all checks pass
+- **Retry limit**: After 3 failed attempts (configurable via `MAX_STOP_RETRIES`), approves anyway with a warning to prevent infinite token burn
+- Written in Python for reliability — reads `package.json` directly, no `jq` dependency
 
 ### Skills
 
@@ -65,8 +67,8 @@ Skills are automatically available to Claude Code when working in this repositor
 Edit `hooks/session-setup.sh` to add more tools:
 
 ```bash
-# Via pip
-pip_install_if_missing mycommand mypackage
+# Via uv
+uv_install_if_missing mycommand mypackage
 
 # Via webi (https://webinstall.dev)
 webi_install_if_missing mytool

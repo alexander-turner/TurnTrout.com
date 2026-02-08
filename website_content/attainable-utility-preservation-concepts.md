@@ -41,7 +41,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/KPv2beS.jpg
 description: "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact."
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: "Title text reads: \"This approach is called Attainable Utility Preservation.\" A diagram shows a robot's reach being stopped by a blue energy field. Beside it, three status bars labeled \"Human\", \"Trout\", and \"AI\" all show high attainable utility levels."
-createBibtex: true
 ---
 
 

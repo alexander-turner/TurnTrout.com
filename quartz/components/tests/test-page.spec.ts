@@ -9,6 +9,7 @@ import {
   setTheme,
   waitForTransitionEnd,
   isDesktopViewport,
+  isFirefox,
   getH1Screenshots,
   isElementChecked,
 } from "./visual_utils"

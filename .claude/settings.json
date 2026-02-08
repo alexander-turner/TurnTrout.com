@@ -29,7 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== WAITING FOR CI ===' && sleep 600 && gh pr checks --watch 2>&1"
+            "command": "echo '=== WAITING FOR CI ===' && sleep 10 && timeout 300 gh pr checks --watch 2>&1 || echo 'CI watch timed out or no PR found — check status manually'",
+            "timeout": 360
           }
         ]
       }
@@ -40,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-ci-on-stop.sh",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify_ci.py",
             "timeout": 300
           }
         ]

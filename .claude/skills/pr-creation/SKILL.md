@@ -75,7 +75,7 @@ Do NOT skip reading the resource file — it contains the detailed checklist the
 
 1. For each issue raised, determine if it's valid
 2. Make necessary fixes and commit them
-3. If you fixed more than 3 issues or made structural changes, re-run the critique
+3. If you fixed more than 3 issues or made structural changes, re-run the critique (max 2 re-runs total — if issues persist after 2 rounds of critique, proceed to validation rather than looping indefinitely)
 
 ### Step 4: Run Validation
 
