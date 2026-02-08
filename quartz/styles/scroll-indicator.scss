@@ -1,5 +1,6 @@
 .scroll-indicator {
   position: relative;
+  overflow: hidden;
 
   &::before,
   &::after {
