@@ -87,6 +87,7 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 1. Push the branch: `git push -u origin HEAD`
 2. Create the PR using `gh pr create` with the template from the resource file
+3. **CI label**: If the PR includes code changes that should be validated by Playwright/visual regression tests, add the `ci:full-tests` label: `gh pr edit --add-label "ci:full-tests"`. Without this label, expensive test suites (Playwright, visual testing) are skipped on PRs to save compute. They will still run in the merge queue before merging.
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
