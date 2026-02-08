@@ -838,7 +838,11 @@ Spoilers hide text until hovered
 Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
-  ![[https://assets.turntrout.com/static/images/posts/design-02072026.avif|A long set of equations stretches off to the side. The right edge smoothly fades away.]]
+  For example:
+
+  $$
+  e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+  $$
 
 Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
