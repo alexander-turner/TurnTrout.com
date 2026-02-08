@@ -120,6 +120,18 @@ describe("FixFootnotes helpers", () => {
       expect(hasFootnoteHeading(section)).toBe(true)
       expect(section.children.length).toBe(initialLength)
     })
+
+    it("upgrades h2 to h1", () => {
+      const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
+        h("h2", { id: "footnote-label" }, ["Footnotes"]),
+        footnoteList(),
+      ]) as Element
+      addHeadingToSection(section)
+      const heading = section.children[0] as Element
+      expect(heading.tagName).toBe("h1")
+      expect(heading.properties?.className).toContain("sr-only")
+      expect(section.children.length).toBe(2)
+    })
   })
 
   describe("isAlreadyWrapped", () => {
@@ -226,6 +238,16 @@ describe("FixFootnotes plugin", () => {
         </ol>
       </section>
     `,
+    wrappedWithH2: `
+      <section data-footnotes class="footnotes">
+        <h2 id="footnote-label">Footnotes</h2>
+        <ol>
+          <li id="user-content-fn-1">
+            <p>Footnote content <a href="#user-content-fnref-1">↩</a></p>
+          </li>
+        </ol>
+      </section>
+    `,
     iframeWithFootnotes: `
       <iframe src="https://example.com">Footnotes</iframe>
       <ol>
@@ -269,6 +291,16 @@ describe("FixFootnotes plugin", () => {
         expect(h1Count).toBe(1)
       },
       "does not modify already properly wrapped footnotes",
+    ],
+    [
+      fixtures.wrappedWithH2,
+      (result: string) => {
+        expect(result).toContain("<h1")
+        expect(result).not.toContain("<h2")
+        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain("sr-only")
+      },
+      "upgrades h2 heading to h1",
     ],
     [
       fixtures.iframeWithFootnotes,
