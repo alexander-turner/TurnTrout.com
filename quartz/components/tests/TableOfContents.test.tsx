@@ -551,9 +551,10 @@ describe("CreateTableOfContents", () => {
     ) as JSX.Element | null
 
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
     expect(result?.props.className).toBe("desktop-only")
+    expect(result?.props["aria-label"]).toBe("Table of contents")
 
     // Verify header structure and content
     const header = result?.props.children[0]
@@ -693,7 +694,7 @@ describe("CreateTableOfContents", () => {
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
 
     // Verify the title is correct
@@ -731,7 +732,7 @@ describe("CreateTableOfContents", () => {
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
 
     // Verify TOC content structure exists
