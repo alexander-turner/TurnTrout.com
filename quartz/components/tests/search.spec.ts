@@ -381,6 +381,26 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
+test("Search matching title text does not scroll down the page", async ({ page }) => {
+  const initialUrl = page.url()
+  // "Testing site" appears in the title of the test page
+  await search(page, "Testing site")
+
+  const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toBeVisible()
+
+  await page.keyboard.press("Enter")
+  await page.waitForURL((url) => url.toString() !== initialUrl)
+
+  // Title match should be highlighted
+  const titleMatch = page.locator("#article-title .search-match")
+  await expect(titleMatch.first()).toBeAttached()
+
+  // Page should stay at the top, not scroll down
+  const scrollY = await page.evaluate(() => window.scrollY)
+  expect(scrollY).toBe(0)
+})
+
 test("Search URL updates as we select different results", async ({ page }) => {
   test.skip(!showingPreview(page))
 
