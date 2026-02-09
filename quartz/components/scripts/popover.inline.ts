@@ -15,6 +15,10 @@ let linkListenerController: AbortController | null = null
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
+// Generation counter to detect stale async calls to mouseEnterHandler.
+// Incremented synchronously at call start; checked after await to bail
+// out if a newer call has started.
+let popoverGeneration = 0
 
 /**
  * Handles the mouse enter event for link elements
@@ -24,6 +28,12 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   if (!parentOfPopover || this.dataset.noPopover === "true") {
     return
   }
+
+  // Capture state synchronously before the await so concurrent calls
+  // don't share or leak the pinned flag across popovers.
+  const shouldPin = nextPopoverPinned
+  nextPopoverPinned = false
+  const thisGeneration = ++popoverGeneration
 
   const thisUrl = new URL(document.location.href)
   thisUrl.hash = ""
@@ -40,15 +50,21 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   }
 
   const popoverElement = await createPopover(popoverOptions)
+
+  // A newer call to mouseEnterHandler started while we were fetching —
+  // discard this stale popover so we don't end up with duplicates.
+  if (thisGeneration !== popoverGeneration) {
+    return
+  }
+
   if (!popoverElement) {
     throw new Error("Failed to create popover")
   }
   // Used by the click toggle logic to detect "is this popover already open for this link?"
   popoverElement.dataset.linkHref = this.href
 
-  if (nextPopoverPinned) {
+  if (shouldPin) {
     popoverElement.dataset.pinned = "true"
-    nextPopoverPinned = false
   }
 
   parentOfPopover.prepend(popoverElement)
@@ -141,51 +157,71 @@ document.addEventListener("nav", () => {
     { signal },
   )
 
+  // Click outside dismisses footnote popovers
+  document.addEventListener(
+    "click",
+    (e: MouseEvent) => {
+      const popover = document.querySelector(".popover.footnote-popover") as HTMLElement | null
+      if (!popover || !activePopoverRemover) return
+
+      const target = e.target as HTMLElement
+      if (popover.contains(target)) return
+
+      activePopoverRemover()
+    },
+    { signal },
+  )
+
   // Re-attach event listeners to all links that can trigger a popover
   const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
   for (const link of links) {
-    const handleMouseEnter = () => {
-      // Clear any pending timer to show a popover for another link
-      if (pendingPopoverTimer) {
-        clearTimeout(pendingPopoverTimer)
-        pendingPopoverTimer = null
-      }
+    const href = link.getAttribute("href") || ""
+    const isFootnoteLink = footnoteForwardRefRegex.test(href)
 
-      // Don't do anything if hovering over the link for the currently visible popover
-      const existingPopover = document.querySelector(".popover") as HTMLElement | null
-      if (existingPopover && existingPopover.dataset.linkHref === link.href) {
-        return
-      }
-
-      pendingPopoverTimer = window.setTimeout(() => {
-        // Don't let hover replace a pinned (click-triggered) popover
-        const currentPopover = document.querySelector(".popover") as HTMLElement | null
-        if (currentPopover?.dataset.pinned) {
+    // Footnote links are click-only: no hover listeners
+    if (!isFootnoteLink) {
+      const handleMouseEnter = () => {
+        // Clear any pending timer to show a popover for another link
+        if (pendingPopoverTimer) {
+          clearTimeout(pendingPopoverTimer)
           pendingPopoverTimer = null
+        }
+
+        // Don't do anything if hovering over the link for the currently visible popover
+        const existingPopover = document.querySelector(".popover") as HTMLElement | null
+        if (existingPopover && existingPopover.dataset.linkHref === link.href) {
           return
         }
 
-        if (activePopoverRemover) {
-          activePopoverRemover()
-        }
-        mouseEnterHandler.call(link) // Show the new popover
-        pendingPopoverTimer = null
-      }, 300)
-    }
+        pendingPopoverTimer = window.setTimeout(() => {
+          // Don't let hover replace a pinned (click-triggered) popover
+          const currentPopover = document.querySelector(".popover") as HTMLElement | null
+          if (currentPopover?.dataset.pinned) {
+            pendingPopoverTimer = null
+            return
+          }
 
-    const handleMouseLeave = () => {
-      if (pendingPopoverTimer) {
-        clearTimeout(pendingPopoverTimer)
-        pendingPopoverTimer = null
+          if (activePopoverRemover) {
+            activePopoverRemover()
+          }
+          mouseEnterHandler.call(link) // Show the new popover
+          pendingPopoverTimer = null
+        }, 300)
       }
+
+      const handleMouseLeave = () => {
+        if (pendingPopoverTimer) {
+          clearTimeout(pendingPopoverTimer)
+          pendingPopoverTimer = null
+        }
+      }
+
+      link.addEventListener("mouseenter", handleMouseEnter, { signal })
+      link.addEventListener("mouseleave", handleMouseLeave, { signal })
     }
 
-    link.addEventListener("mouseenter", handleMouseEnter, { signal })
-    link.addEventListener("mouseleave", handleMouseLeave, { signal })
-
-    // Add click toggle for footnote reference links
-    const href = link.getAttribute("href") || ""
-    if (footnoteForwardRefRegex.test(href)) {
+    // Click toggle for footnote reference links
+    if (isFootnoteLink) {
       link.addEventListener(
         "click",
         (e: MouseEvent) => {
@@ -193,13 +229,8 @@ document.addEventListener("nav", () => {
           // Stop propagation so the SPA router's document-level click handler
           // doesn't intercept this and navigate to the hash (which scrolls the
           // page and dispatches a nav event that would clean up the popover).
+          // Also prevents the click-outside handler from immediately closing.
           e.stopPropagation()
-
-          // Clear any pending hover timer
-          if (pendingPopoverTimer) {
-            clearTimeout(pendingPopoverTimer)
-            pendingPopoverTimer = null
-          }
 
           // Toggle: if popover for this link is already showing, close it
           const existingPopover = document.querySelector(".popover") as HTMLElement | null

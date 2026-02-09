@@ -540,19 +540,16 @@ describe("PopulateContainers", () => {
       it.each([
         ["turntrout", specialFaviconPaths.turntrout],
         ["anchor", specialFaviconPaths.anchor],
-      ])("should generate %s favicon element", async (_name, faviconPath) => {
+      ])("should generate %s favicon element with word joiner", async (_name, faviconPath) => {
         const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
-        expect(elements).toHaveLength(1)
+        expect(elements).toHaveLength(2)
 
-        const wrapperSpan = elements[0]
-        expect(wrapperSpan).toMatchObject({
+        expect(elements[0]).toMatchObject({
           tagName: "span",
-          properties: { className: expect.arrayContaining(["favicon-span"]) },
+          properties: { className: "word-joiner" },
         })
-
-        const faviconElement = wrapperSpan.children[0] as Element
-        expect(faviconElement).toMatchObject({
+        expect(elements[1]).toMatchObject({
           tagName: "svg",
           properties: {
             class: expect.stringContaining("favicon"),
@@ -568,9 +565,9 @@ describe("PopulateContainers", () => {
           altText,
         )
         const elements = await generator()
-        expect(elements).toHaveLength(1)
+        expect(elements).toHaveLength(2)
 
-        const faviconElement = elements[0].children[0] as Element
+        const faviconElement = elements[1]
         expect(faviconElement).toMatchObject({
           tagName: "svg",
           properties: {

@@ -154,7 +154,14 @@
     }
 
     & > .popover-inner {
-      border: 2px solid var(--midground);
+      border: 1px solid var(--midground-fainter);
+    }
+
+    // Instant appearance — no hover-style fade-in delay
+    &.popover-visible {
+      animation: none;
+      visibility: visible;
+      opacity: 1;
     }
   }
 

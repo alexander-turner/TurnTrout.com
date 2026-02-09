@@ -120,17 +120,20 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     mockBackArrow = h("a", { className: "data-footnote-backref" })
   })
 
-  test("should wrap last four characters with backref in nowrap span", () => {
+  test("should append word joiner + back arrow after text", () => {
     const node = h("li", [h("p", ["Long text here"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text " })
-
-    const span = paragraph.children[1] as Element
-    expect(span).toEqual(h("span", { className: "favicon-span" }, ["here", mockBackArrow]))
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text here" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle text shorter than 4 characters", () => {
@@ -139,8 +142,14 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    const span = paragraph.children[0] as Element
-    expect(span).toEqual(h("span", { className: "favicon-span" }, ["Hi", mockBackArrow]))
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle multiple paragraphs", () => {
@@ -153,11 +162,14 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
     const lastParagraph = node.children[1] as Element
-    expect(lastParagraph.children).toHaveLength(2)
-    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
-    expect(lastParagraph.children[1]).toEqual(
-      h("span", { className: "favicon-span" }, ["raph", mockBackArrow]),
-    )
+    expect(lastParagraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph" })
+    expect(lastParagraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(lastParagraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle empty paragraph", () => {
@@ -206,17 +218,17 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstPara.children).toHaveLength(1)
     expect(firstPara.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
-    // Check second paragraph has the text split and back arrow properly appended
+    // Check second paragraph has the back arrow appended with word joiner
     const secondPara = node.children[1] as Element
-    expect(secondPara.children).toHaveLength(2)
-    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragr" })
-
-    const nowrapSpan = secondPara.children[1] as Element
-    expect(nowrapSpan.tagName).toBe("span")
-    expect(nowrapSpan.properties).toEqual({ className: ["favicon-span"] })
-    expect(nowrapSpan.children).toHaveLength(2)
-    expect(nowrapSpan.children[0]).toEqual({ type: "text", value: "aph." })
-    expect(nowrapSpan.children[1]).toBe(mockBackArrow)
+    // Old back arrow removed, text preserved, word joiner + new back arrow appended
+    expect(secondPara.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragraph." })
+    expect(secondPara.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(secondPara.children[2]).toBe(mockBackArrow)
   })
 
   test("should ignore <li> ending with an image", () => {
@@ -568,14 +580,16 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + wrapped back arrow
+    // Should have processed the footnote - text + word joiner + back arrow
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + span with back arrow
-
-    // Check that the back arrow is wrapped in a span
-    const lastChild = paragraph.children[1] as Element
-    expect(lastChild.tagName).toBe("span")
-    expect(lastChild.properties?.className).toEqual(["favicon-span"])
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote text" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
   it.each([
@@ -624,15 +638,16 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote
+    // Should have processed the footnote - text + word joiner + back arrow
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(1) // just the span with all text + back arrow
-
-    // Check that all text is wrapped with the back arrow
-    const span = paragraph.children[0] as Element
-    expect(span.tagName).toBe("span")
-    expect(span.properties?.className).toEqual(["favicon-span"])
-    expect(span.children).toHaveLength(2) // text + back arrow
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
   test("should handle footnote with empty paragraph", () => {
@@ -670,13 +685,20 @@ describe("gfmVisitor function", () => {
 
     // Should have processed the footnote
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(4) // original content + span with last text + back arrow
-
-    // Check that the last part is wrapped
-    const lastChild = paragraph.children[3] as Element
-    expect(lastChild.tagName).toBe("span")
-    expect(lastChild.properties?.className).toEqual(["favicon-span"])
-    expect(lastChild.children).toHaveLength(2) // text + back arrow
+    // original content (text, em, text) + word joiner + back arrow
+    expect(paragraph.children).toHaveLength(5)
+    expect(paragraph.children[0]).toEqual({
+      type: "text",
+      value: "This is a complex footnote with ",
+    })
+    expect((paragraph.children[1] as Element).tagName).toBe("em")
+    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
+    expect(paragraph.children[3]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[4] as Element).tagName).toBe("a")
   })
 })
 
