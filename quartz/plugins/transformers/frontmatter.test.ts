@@ -250,8 +250,11 @@ describe("FrontMatter Plugin", () => {
 
   it("parses TOML frontmatter", () => {
     const transformer = FrontMatter({ language: "toml", delimiters: "+++" })
-    const markdownPlugins = transformer.markdownPlugins!({} as never)
-    const processor = (markdownPlugins[1] as () => (tree: HastRoot, file: MockFile) => void)()
+    const { markdownPlugins } = transformer
+    if (!markdownPlugins) throw new Error("markdownPlugins not defined")
+    const processor = (
+      markdownPlugins({} as never)[1] as () => (tree: HastRoot, file: MockFile) => void
+    )()
     const file = createMockFile('+++\ntitle = "TOML Post"\n+++\nContent')
     processor(emptyTree, file)
     expect(file.data.frontmatter?.title).toBe("TOML Post")

@@ -50,7 +50,9 @@ const createMedia = (tagName: string, src: string): Root => ({
 
 const getProcessor = (opts?: Parameters<typeof CrawlLinks>[0], ctx?: BuildCtx) => {
   const plugin = CrawlLinks(opts)
-  const plugins = plugin.htmlPlugins!(ctx ?? createMockCtx())
+  const { htmlPlugins } = plugin
+  if (!htmlPlugins) throw new Error("htmlPlugins not defined")
+  const plugins = htmlPlugins(ctx ?? createMockCtx())
   return (plugins[0] as () => (tree: Root, file: MockFile) => void)()
 }
 
