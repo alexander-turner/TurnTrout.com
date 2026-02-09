@@ -2294,6 +2294,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
                         link.decompose()
 
             text = script_utils.get_non_code_text(el_copy).strip()
+            # Normalize smart quotes to ASCII so spellchecker treats
+            # contractions like "I've" as single words instead of "I"+"ve"
+            text = text.replace("\u2019", "'").replace("\u2018", "'")
             if text:
                 paragraphs.append(text)
     return paragraphs

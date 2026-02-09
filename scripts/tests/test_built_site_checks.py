@@ -2647,6 +2647,24 @@ def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
     assert "word" in result[0]
 
 
+def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
+    """Smart quotes are replaced with ASCII apostrophes so contractions
+    like "I\u2019ve" are kept as single words for the spellchecker."""
+    html = """<article>
+    <p>I\u2019ve found the opposite.</p>
+    <p>You\u2019re not \u2018wrong\u2019 about this.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert "I've" in result[0]
+    assert "You're" in result[1]
+    # No Unicode smart quotes remain
+    assert "\u2019" not in result[0]
+    assert "\u2018" not in result[1]
+    assert "\u2019" not in result[1]
+
+
 def test_build_case_insensitive_wordlist(tmp_path):
     """Temp wordlist includes lowercased and uppercased variants."""
     wordlist = tmp_path / "wordlist.txt"
