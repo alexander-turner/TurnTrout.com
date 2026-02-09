@@ -236,6 +236,9 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
     // Create a static list of headers to iterate over
     const headers = Array.from(document.querySelectorAll("article > h1"))
 
+    const isFootnoteSection = (el: Node): boolean =>
+      el instanceof HTMLElement && el.tagName === "SECTION" && el.hasAttribute("data-footnotes")
+
     for (const header of headers) {
       const parent = header.parentElement
 
@@ -257,12 +260,37 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
       span.appendChild(header)
 
       // Move all subsequent siblings into the span until we hit the next h1
+      // or a footnote section (which gets its own span)
       let nextSibling = span.nextSibling
-      while (nextSibling && headers.indexOf(nextSibling as Element) === -1) {
+      while (
+        nextSibling &&
+        headers.indexOf(nextSibling as Element) === -1 &&
+        !isFootnoteSection(nextSibling)
+      ) {
         const toMove = nextSibling
         nextSibling = toMove.nextSibling
         span.appendChild(toMove)
       }
+    }
+
+    // Wrap footnote sections in their own spans
+    const footnoteSections = document.querySelectorAll("article > section[data-footnotes]")
+    for (const section of footnoteSections) {
+      const parent = section.parentElement
+      if (!parent) continue
+
+      // Skip if already wrapped
+      if (parent.tagName === "SPAN" && parent.id.startsWith("h1-span-")) {
+        continue
+      }
+
+      const heading = section.querySelector("h1")
+      const headingId = heading?.id || "footnote-label"
+
+      const span = document.createElement("span")
+      span.id = `h1-span-${headingId}`
+      parent.insertBefore(span, section)
+      span.appendChild(section)
     }
   }
 
