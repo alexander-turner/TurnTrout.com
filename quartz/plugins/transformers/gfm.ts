@@ -121,6 +121,18 @@ function makePreElementsKeyboardAccessible(tree: Root): void {
   })
 }
 
+/** Adds keyboard accessibility to mermaid-rendered inline SVGs. */
+function makeMermaidSvgsAccessible(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+    if (!node.properties?.id?.toString().startsWith("mermaid")) return
+
+    node.properties.tabIndex = 0
+    node.properties.role = "img"
+    node.properties.ariaLabel = "Mermaid diagram"
+  })
+}
+
 /** Adds `<track kind="captions">` to <video> elements that lack one. */
 function ensureVideoCaptionTracks(tree: Root): void {
   visit(tree, "element", (node: Element) => {
@@ -137,6 +149,42 @@ function ensureVideoCaptionTracks(tree: Root): void {
       })
     }
   })
+}
+
+const VALID_DL_CHILD_TAGS = new Set(["dt", "dd", "div", "script", "template"])
+
+/**
+ * Validates that a <dl> element's structure complies with the axe definition-list rule:
+ * - All direct element children must be <dt>, <dd>, <div>, <script>, or <template>
+ * - Every <dt> group must be followed by at least one <dd> (no trailing/interrupted groups)
+ * - Every <dd> must be preceded by at least one <dt> (no orphaned <dd>)
+ */
+export function isValidDlStructure(children: Element["children"]): boolean {
+  let state: "none" | "dt" | "dd" = "none"
+  let hasPairs = false
+
+  for (const child of children) {
+    if (child.type !== "element") continue
+
+    if (!VALID_DL_CHILD_TAGS.has(child.tagName)) return false
+
+    if (child.tagName === "dt") {
+      state = "dt"
+    } else if (child.tagName === "dd") {
+      if (state !== "dt" && state !== "dd") return false
+      state = "dd"
+      hasPairs = true
+    } else {
+      // div/script/template: dt before this without dd is orphaned
+      if (state === "dt") return false
+      state = "none"
+    }
+  }
+
+  // Trailing <dt> without <dd> is invalid
+  if (state === "dt") return false
+
+  return hasPairs
 }
 
 /**
@@ -235,7 +283,17 @@ export function htmlAccessibilityPlugin() {
     if (!tree) return
 
     fixOrphanedDefinitionLists(tree)
+
+    // Validate remaining <dl> elements and demote invalid ones
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName !== "dl") return
+      if (!isValidDlStructure(node.children)) {
+        node.tagName = "div"
+      }
+    })
+
     makePreElementsKeyboardAccessible(tree)
+    makeMermaidSvgsAccessible(tree)
     ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
   }

@@ -1058,6 +1058,29 @@ test.describe("Scroll indicators", () => {
     const scrollIndicator = footnoteTableContainer.locator("..")
     await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
   })
+
+  test("Left fade appears after scrolling a wide element right", async ({ page }) => {
+    // Target the scroll-indicator wrapping the wide Maxwell's equations
+    const scrollIndicator = page.locator(".scroll-indicator").filter({ hasText: "∇" }).first()
+    const scrollable = scrollIndicator.locator(".katex-display")
+    await scrollable.scrollIntoViewIfNeeded()
+
+    // Scroll to the middle of the element
+    await scrollable.evaluate((el) => {
+      el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+    })
+
+    await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+
+    // Verify the ::before pseudo-element reaches full opacity after transition
+    await expect(async () => {
+      const beforeOpacity = await scrollIndicator.evaluate((el) => {
+        return window.getComputedStyle(el, "::before").opacity
+      })
+      expect(beforeOpacity).toBe("1")
+    }).toPass()
+  })
 })
 
 test.describe("Popovers on different page types", () => {

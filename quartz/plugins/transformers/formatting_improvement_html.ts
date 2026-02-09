@@ -15,7 +15,7 @@ import {
   hatTipPlaceholder,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex } from "./utils"
+import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -157,10 +157,6 @@ export function applyTextTransforms(text: string): string {
   }
 
   return text
-}
-
-export function isCode(node: Element): boolean {
-  return node.tagName === "code"
 }
 
 export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
@@ -486,7 +482,10 @@ export function plusToAmpersand(text: string): string {
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
 // At the end, watch out for double periods
 // Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
-const amPmRegex = new RegExp(`(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`, "gi")
+const amPmRegex = new RegExp(
+  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?![a-zA-Z])`,
+  "gi",
+)
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
     const groups = args[args.length - 1] as { time: string }

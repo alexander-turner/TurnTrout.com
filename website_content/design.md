@@ -823,7 +823,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. For footnotes, the popover isolates the content.
+: Quartz comes with interactive popover previews for internal links. Desktop users can view popovers by hovering over an internal link. Like the [Elvish text](#font-selection), footnote numbers have a dotted border to signal interactivity; clicking them opens a popover with the footnote content, which dismisses on click-outside.
 
 Search
 : My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.

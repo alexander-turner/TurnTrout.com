@@ -1,8 +1,6 @@
-import type { Element, Parent, Root, Text } from "hast"
+import type { Element, Parent, Text } from "hast"
 
-import { visit } from "unist-util-visit"
-
-import type { QuartzTransformerPlugin } from "../types"
+import { createElementVisitorPlugin } from "./utils"
 
 export const SUBTITLE_REGEX = /^Subtitle:\s*(?<subtitleText>.*)/
 
@@ -78,13 +76,4 @@ export function modifyNode(
  * into styled subtitle elements with the "subtitle" class.
  */
 /* istanbul ignore next -- Quartz calls this plugin via integration (not unit tests) */
-export const rehypeCustomSubtitle: QuartzTransformerPlugin = () => ({
-  name: "customSubtitle",
-  htmlPlugins() {
-    return [
-      () => (tree: Root) => {
-        visit(tree, "element", modifyNode)
-      },
-    ]
-  },
-})
+export const rehypeCustomSubtitle = createElementVisitorPlugin("customSubtitle", modifyNode)

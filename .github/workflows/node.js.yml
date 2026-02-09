@@ -44,4 +44,4 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
-      - run: pnpm test -- -u
+      - run: pnpm test -u
