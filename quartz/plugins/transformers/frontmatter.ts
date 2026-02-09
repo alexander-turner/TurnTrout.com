@@ -29,7 +29,7 @@ const defaultOptions: Options = {
  * Gathers text from all text nodes plus any content nested inside <code> blocks.
  * Returns a single string that you can store for indexing.
  */
-function gatherAllText(tree: Root): string {
+export function gatherAllText(tree: Root): string {
   let allText = ""
   visit(tree, (node) => {
     if (
@@ -44,7 +44,7 @@ function gatherAllText(tree: Root): string {
   return allText
 }
 
-function coalesceAliases(data: { [key: string]: string[] }, aliases: string[]) {
+export function coalesceAliases(data: { [key: string]: string[] }, aliases: string[]) {
   for (const alias of aliases) {
     if (data[alias] !== undefined && data[alias] !== null) return data[alias]
   }
@@ -52,14 +52,14 @@ function coalesceAliases(data: { [key: string]: string[] }, aliases: string[]) {
 }
 
 // I don't want tags to be case-sensitive
-function transformTag(tag: string): string {
+export function transformTag(tag: string): string {
   const trimmedTag = tag.trim()
   if (trimmedTag === "AI") return trimmedTag
   const newTag = tag.toLowerCase().trim().replace(/\s+/g, "-")
   return newTag
 }
 
-function coerceToArray(input: string | string[], lowercase = true): string[] | undefined {
+export function coerceToArray(input: string | string[], lowercase = true): string[] | undefined {
   if (input === undefined || input === null) return undefined
 
   // coerce to array
