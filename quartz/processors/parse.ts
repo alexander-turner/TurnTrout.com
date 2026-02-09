@@ -56,19 +56,19 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         mermaidConfig: {
           theme: "default",
           themeVariables: {
-            lineColor: "var(--gray)",
-            primaryTextColor: "#4c4f69",
-            nodeTextColor: "#4c4f69",
-            labelTextColor: "#4c4f69",
+            lineColor: "var(--midground)",
+            primaryTextColor: "var(--foreground)",
+            nodeTextColor: "var(--foreground)",
+            labelTextColor: "var(--foreground)",
           },
         },
         dark: {
           theme: "dark",
           themeVariables: {
-            lineColor: "var(--gray)",
-            primaryTextColor: "#d6deff",
-            nodeTextColor: "#d6deff",
-            labelTextColor: "#d6deff",
+            lineColor: "var(--midground)",
+            primaryTextColor: "var(--foreground)",
+            nodeTextColor: "var(--foreground)",
+            labelTextColor: "var(--foreground)",
           },
         },
       })
