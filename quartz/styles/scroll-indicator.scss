@@ -9,7 +9,7 @@
 
 .scroll-indicator {
   position: relative;
-  overflow: hidden;
+  overflow: clip;
 
   &::before,
   &::after {
