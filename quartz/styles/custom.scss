@@ -721,7 +721,7 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Click to show";
+    content: "Click or press Enter to reveal";
   }
 }
 
@@ -798,6 +798,7 @@ img.emoji {
 // Ensure all mermaid diagram text has sufficient contrast
 [id^="mermaid-"] {
   font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
 
   & span,
   & p,
@@ -807,11 +808,6 @@ img.emoji {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
   }
-}
-
-#mermaid-1 {
-  // Needed to ensure arrowheads are visible
-  fill: var(--midground-faint) !important;
 }
 
 .flowchart-link {

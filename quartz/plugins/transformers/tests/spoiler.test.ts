@@ -34,6 +34,7 @@ describe("rehype-custom-spoiler", () => {
     expect(output).toContain('<span class="spoiler-overlay"></span>')
     expect(output).not.toContain("<blockquote>")
     expect(output).toMatch(/onclick="[^"]*"/)
+    expect(output).toContain('role="button"')
   })
 
   it.each([
@@ -67,6 +68,13 @@ describe("rehype-custom-spoiler", () => {
     expect((node.children[0] as Element).properties?.className).toContain("spoiler-overlay")
     expect((node.children[1] as Element).tagName).toBe("span")
     expect((node.children[1] as Element).properties?.className).toContain("spoiler-content")
+
+    // Accessibility attributes
+    expect(node.properties?.role).toBe("button")
+    expect(node.properties?.tabIndex).toBe(0)
+    expect(node.properties?.ariaExpanded).toBe("false")
+    expect(node.properties?.ariaLabel).toContain("Spoiler")
+    expect(node.properties?.onKeyDown).toBeDefined()
   })
 
   describe("processParagraph function", () => {
