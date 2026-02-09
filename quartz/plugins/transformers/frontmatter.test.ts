@@ -49,22 +49,6 @@ describe("gatherAllText", () => {
     expect(gatherAllText(tree)).toBe("Use  const x = 1 ")
   })
 
-  it("ignores non-text, non-inlineCode nodes", () => {
-    const tree: HastRoot = {
-      type: "root",
-      children: [
-        {
-          type: "element",
-          tagName: "div",
-          properties: {},
-          children: [{ type: "text", value: "nested" }],
-        },
-      ],
-    }
-    // The "element" and "root" nodes are visited but skipped; only "text" is collected
-    expect(gatherAllText(tree)).toBe("nested ")
-  })
-
   it("returns empty string for tree with no text", () => {
     const tree: HastRoot = {
       type: "root",
@@ -75,23 +59,13 @@ describe("gatherAllText", () => {
 })
 
 describe("coalesceAliases", () => {
-  it("returns first matching alias value", () => {
-    const data = { tags: ["a", "b"], tag: ["c"] }
-    expect(coalesceAliases(data, ["tags", "tag"])).toEqual(["a", "b"])
-  })
-
-  it("falls back to second alias if first is undefined", () => {
-    const data = { tag: ["fallback"] } as Record<string, string[]>
-    expect(coalesceAliases(data, ["tags", "tag"])).toEqual(["fallback"])
-  })
-
-  it("returns empty array if no aliases match", () => {
-    expect(coalesceAliases({}, ["tags", "tag"])).toEqual([])
-  })
-
-  it("skips null values", () => {
-    const data = { tags: null, tag: ["found"] } as unknown as Record<string, string[]>
-    expect(coalesceAliases(data, ["tags", "tag"])).toEqual(["found"])
+  it.each([
+    ["returns first matching alias", { tags: ["a", "b"], tag: ["c"] }, ["a", "b"]],
+    ["falls back to second alias", { tag: ["fallback"] }, ["fallback"]],
+    ["returns [] if no aliases match", {}, []],
+    ["skips null values", { tags: null, tag: ["found"] }, ["found"]],
+  ])("%s", (_, data, expected) => {
+    expect(coalesceAliases(data as Record<string, string[]>, ["tags", "tag"])).toEqual(expected)
   })
 })
 
@@ -109,38 +83,21 @@ describe("transformTag", () => {
 })
 
 describe("coerceToArray", () => {
-  it("returns undefined for undefined input", () => {
-    expect(coerceToArray(undefined as unknown as string)).toBeUndefined()
-  })
-
-  it("returns undefined for null input", () => {
-    expect(coerceToArray(null as unknown as string)).toBeUndefined()
-  })
-
-  it("splits comma-separated string and lowercases", () => {
-    expect(coerceToArray("Tag1,Tag2,Tag3")).toEqual(["tag1", "tag2", "tag3"])
-  })
-
-  it("splits comma-separated string without lowercasing", () => {
-    expect(coerceToArray("Alice, Bob", false)).toEqual(["Alice", "Bob"])
-  })
-
-  it("passes through arrays unchanged", () => {
-    expect(coerceToArray(["a", "b"])).toEqual(["a", "b"])
-  })
-
-  it("filters out non-string non-number values", () => {
-    const mixed = ["valid", 42, true, null, undefined] as unknown as string[]
-    expect(coerceToArray(mixed)).toEqual(["valid", "42"])
-  })
-
-  it("converts number elements to strings", () => {
-    const nums = [1, 2, 3] as unknown as string[]
-    expect(coerceToArray(nums)).toEqual(["1", "2", "3"])
-  })
-
-  it("coerces non-string input via toString before splitting", () => {
-    expect(coerceToArray(42 as unknown as string)).toEqual(["42"])
+  it.each([
+    ["undefined input", undefined, true, undefined],
+    ["null input", null, true, undefined],
+    ["comma string lowercased", "Tag1,Tag2,Tag3", true, ["tag1", "tag2", "tag3"]],
+    ["comma string not lowercased", "Alice, Bob", false, ["Alice", "Bob"]],
+    ["array passthrough", ["a", "b"], true, ["a", "b"]],
+    [
+      "filters non-string/number and converts numbers",
+      ["valid", 42, true, null],
+      true,
+      ["valid", "42"],
+    ],
+    ["non-string via toString", 42, true, ["42"]],
+  ])("handles %s", (_, input, lowercase, expected) => {
+    expect(coerceToArray(input as unknown as string, lowercase as boolean)).toEqual(expected)
   })
 })
 
@@ -152,7 +109,6 @@ describe("FrontMatter Plugin", () => {
     const markdownPlugins = transformer.markdownPlugins
     if (!markdownPlugins) throw new Error("markdownPlugins not defined")
     const plugins = markdownPlugins({} as never)
-    // The second plugin is our custom processor (first is remarkFrontmatter)
     return (plugins[1] as () => (tree: HastRoot, file: MockFile) => void)()
   }
 
@@ -165,8 +121,7 @@ describe("FrontMatter Plugin", () => {
   const emptyTree: HastRoot = { type: "root", children: [] }
 
   it("returns transformer with correct name", () => {
-    const transformer = FrontMatter()
-    expect(transformer.name).toBe("FrontMatter")
+    expect(FrontMatter().name).toBe("FrontMatter")
   })
 
   it("parses YAML frontmatter and sets title", () => {
@@ -193,10 +148,7 @@ describe("FrontMatter Plugin", () => {
   it("uses default title when file stem is also missing", () => {
     const processor = getProcessor()
     // Use a plain object mock since VFile's stem is a getter that can't be deleted
-    const file = {
-      value: "---\ndraft: false\n---\nContent",
-      data: {},
-    } as unknown as MockFile
+    const file = { value: "---\ndraft: false\n---\nContent", data: {} } as unknown as MockFile
     processor(emptyTree, file)
     expect(file.data.frontmatter?.title).toBe(uiStrings.propertyDefaults.title)
   })
@@ -208,18 +160,13 @@ describe("FrontMatter Plugin", () => {
     expect(file.data.frontmatter?.title).toBe("42")
   })
 
-  it("processes tags from frontmatter", () => {
+  it("processes and deduplicates tags", () => {
     const processor = getProcessor()
-    const file = createMockFile("---\ntags:\n  - AI\n  - Machine Learning\n---\n")
+    const file = createMockFile(
+      "---\ntags:\n  - AI\n  - Machine Learning\n  - Test\n  - test\n---\n",
+    )
     processor(emptyTree, file)
-    expect(file.data.frontmatter?.tags).toEqual(["AI", "machine-learning"])
-  })
-
-  it("deduplicates tags", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\ntags:\n  - test\n  - Test\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.tags).toHaveLength(1)
+    expect(file.data.frontmatter?.tags).toEqual(["AI", "machine-learning", "test"])
   })
 
   it("processes aliases from frontmatter", () => {
@@ -236,22 +183,11 @@ describe("FrontMatter Plugin", () => {
     expect(file.data.frontmatter?.cssclasses).toEqual(["custom-class"])
   })
 
-  it("processes authors from frontmatter without lowercasing", () => {
+  it("processes authors without lowercasing", () => {
     const processor = getProcessor()
     const file = createMockFile("---\nauthors: Alice, Bob\n---\n")
     processor(emptyTree, file)
     expect(file.data.frontmatter?.authors).toEqual(["Alice", "Bob"])
-  })
-
-  it("gathers text content from tree", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\ntitle: Test\n---\n")
-    const tree: HastRoot = {
-      type: "root",
-      children: [{ type: "text", value: "Hello world" }],
-    }
-    processor(tree, file)
-    expect(file.data.text).toContain("Hello world")
   })
 
   it("escapes HTML in gathered text", () => {
@@ -292,37 +228,20 @@ describe("FrontMatter Plugin", () => {
     expect(file.data.frontmatter?.title).toBe("empty")
   })
 
-  it("supports singular tag field", () => {
+  it.each([
+    ["tag", "tag:\n  - solo", "tags", ["solo"]],
+    ["alias", "alias:\n  - alt-name", "aliases", ["alt-name"]],
+    ["cssclass", "cssclass:\n  - my-style", "cssclasses", ["my-style"]],
+    ["author", "author: Jane", "authors", ["Jane"]],
+  ])("supports singular %s field", (_, yaml, field, expected) => {
     const processor = getProcessor()
-    const file = createMockFile("---\ntag:\n  - solo\n---\n")
+    const file = createMockFile(`---\n${yaml}\n---\n`)
     processor(emptyTree, file)
-    expect(file.data.frontmatter?.tags).toContain("solo")
-  })
-
-  it("supports singular alias field", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\nalias:\n  - alt-name\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.aliases).toEqual(["alt-name"])
-  })
-
-  it("supports singular cssclass field", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\ncssclass:\n  - my-style\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.cssclasses).toEqual(["my-style"])
-  })
-
-  it("supports singular author field", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\nauthor: Jane\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.authors).toEqual(["Jane"])
+    expect(file.data.frontmatter?.[field]).toEqual(expected)
   })
 
   it("accepts custom delimiters option", () => {
-    const transformer = FrontMatter({ delimiters: "+++" })
-    expect(transformer.name).toBe("FrontMatter")
+    expect(FrontMatter({ delimiters: "+++" }).name).toBe("FrontMatter")
   })
 
   it("parses TOML frontmatter", () => {
@@ -334,32 +253,13 @@ describe("FrontMatter Plugin", () => {
     expect(file.data.frontmatter?.title).toBe("TOML Post")
   })
 
-  it("handles falsy tags value with || [] fallback", () => {
-    const processor = getProcessor()
-    // tags: false produces a falsy value from coalesceAliases, triggering || []
-    const file = createMockFile("---\ntags: false\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.tags).toEqual([])
-  })
-
-  it("handles falsy aliases value with || [] fallback", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\naliases: false\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.aliases).toEqual([])
-  })
-
-  it("handles falsy cssclasses value with || [] fallback", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\ncssclasses: false\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.cssclasses).toEqual([])
-  })
-
-  it("handles falsy authors value with || [] fallback", () => {
-    const processor = getProcessor()
-    const file = createMockFile("---\nauthors: false\n---\n")
-    processor(emptyTree, file)
-    expect(file.data.frontmatter?.authors).toEqual([])
-  })
+  it.each(["tags", "aliases", "cssclasses", "authors"])(
+    "handles falsy %s value with || [] fallback",
+    (field) => {
+      const processor = getProcessor()
+      const file = createMockFile(`---\n${field}: false\n---\n`)
+      processor(emptyTree, file)
+      expect(file.data.frontmatter?.[field]).toEqual([])
+    },
+  )
 })

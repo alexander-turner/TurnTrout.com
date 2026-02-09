@@ -12,8 +12,7 @@ const getTransform = (opts?: Parameters<typeof OxHugoFlavouredMarkdown>[0]) => {
 
 describe("OxHugoFlavouredMarkdown", () => {
   it("returns plugin with correct name", () => {
-    const plugin = OxHugoFlavouredMarkdown()
-    expect(plugin.name).toBe("OxHugoFlavouredMarkdown")
+    expect(OxHugoFlavouredMarkdown().name).toBe("OxHugoFlavouredMarkdown")
   })
 
   describe("wikilinks (relref conversion)", () => {
@@ -27,19 +26,18 @@ describe("OxHugoFlavouredMarkdown", () => {
         '[A]({{< relref "a" >}}) and [B]({{< relref "b" >}})',
         "[A](a) and [B](b)",
       ],
+      [
+        "non-relref links unchanged",
+        "[Normal link](https://example.com)",
+        "[Normal link](https://example.com)",
+      ],
     ])("converts %s", (_, input, expected) => {
       expect(transform(input)).toBe(expected)
     })
 
-    it("leaves non-relref links untouched", () => {
-      const input = "[Normal link](https://example.com)"
-      expect(transform(input)).toBe(input)
-    })
-
-    it("does nothing when wikilinks disabled", () => {
+    it("does nothing when disabled", () => {
       const transform = getTransform({ wikilinks: false, removeHugoShortcode: false })
-      const input = '[Link]({{< relref "page" >}})'
-      expect(transform(input)).toBe(input)
+      expect(transform('[Link]({{< relref "page" >}})')).toBe('[Link]({{< relref "page" >}})')
     })
   })
 
@@ -56,8 +54,7 @@ describe("OxHugoFlavouredMarkdown", () => {
 
     it("does nothing when disabled", () => {
       const transform = getTransform({ removePredefinedAnchor: false })
-      const input = "## Heading {#anchor}"
-      expect(transform(input)).toBe(input)
+      expect(transform("## Heading {#anchor}")).toBe("## Heading {#anchor}")
     })
   })
 
@@ -73,8 +70,7 @@ describe("OxHugoFlavouredMarkdown", () => {
 
     it("does nothing when disabled", () => {
       const transform = getTransform({ removeHugoShortcode: false })
-      const input = "{{shortcode}}"
-      expect(transform(input)).toBe(input)
+      expect(transform("{{shortcode}}")).toBe("{{shortcode}}")
     })
   })
 
@@ -91,8 +87,7 @@ describe("OxHugoFlavouredMarkdown", () => {
 
     it("does nothing when disabled", () => {
       const transform = getTransform({ replaceFigureWithMdImg: false })
-      const input = '<figure src="image.png">'
-      expect(transform(input)).toBe(input)
+      expect(transform('<figure src="image.png">')).toBe('<figure src="image.png">')
     })
   })
 
@@ -100,51 +95,32 @@ describe("OxHugoFlavouredMarkdown", () => {
     const transform = getTransform()
 
     it.each([
-      ["inline LaTeX \\\\(...\\\\)", "\\\\(x + y\\\\)", "$x + y$"],
-      ["block LaTeX \\\\[...\\\\]", "\\\\[x + y\\\\]", "$$x + y$$"],
-      [
-        "block LaTeX \\begin{equation}...\\end{equation}",
-        "\\begin{equation}E = mc^2\\end{equation}",
-        "$$E = mc^2$$",
-      ],
+      ["inline \\\\(...\\\\)", "\\\\(x + y\\\\)", "$x + y$"],
+      ["block \\\\[...\\\\]", "\\\\[x + y\\\\]", "$$x + y$$"],
+      ["block \\begin{equation}", "\\begin{equation}E = mc^2\\end{equation}", "$$E = mc^2$$"],
+      ["multiline block", "\\\\[\na + b\n= c\n\\\\]", "$$\na + b\n= c\n$$"],
+      ["unescape underscores inline", "$x\\_i + y\\_j$", "$x_i + y_j$"],
+      ["unescape underscores block", "$$\\sum\\_i x\\_i$$", "$$\\sum_i x_i$$"],
     ])("converts %s", (_, input, expected) => {
       expect(transform(input)).toBe(expected)
     })
 
-    it("converts multiline block LaTeX", () => {
-      const input = "\\\\[\na + b\n= c\n\\\\]"
-      expect(transform(input)).toBe("$$\na + b\n= c\n$$")
-    })
-
-    it("unescapes underscores in inline LaTeX", () => {
-      const result = transform("$x\\_i + y\\_j$")
-      expect(result).toBe("$x_i + y_j$")
-    })
-
-    it("unescapes underscores in block LaTeX", () => {
-      const result = transform("$$\\sum\\_i x\\_i$$")
-      expect(result).toBe("$$\\sum_i x_i$$")
-    })
-
     it("does nothing when disabled", () => {
       const transform = getTransform({ replaceOrgLatex: false })
-      const input = "\\\\(x + y\\\\)"
-      expect(transform(input)).toBe(input)
+      expect(transform("\\\\(x + y\\\\)")).toBe("\\\\(x + y\\\\)")
     })
   })
 
-  describe("all options disabled", () => {
-    it("returns source unchanged", () => {
-      const transform = getTransform({
-        wikilinks: false,
-        removePredefinedAnchor: false,
-        removeHugoShortcode: false,
-        replaceFigureWithMdImg: false,
-        replaceOrgLatex: false,
-      })
-      const input =
-        '[Link]({{< relref "page" >}}) ## Heading {#id} {{shortcode}} <figure src="img.png"> \\\\(x\\\\)'
-      expect(transform(input)).toBe(input)
+  it("returns source unchanged when all options disabled", () => {
+    const transform = getTransform({
+      wikilinks: false,
+      removePredefinedAnchor: false,
+      removeHugoShortcode: false,
+      replaceFigureWithMdImg: false,
+      replaceOrgLatex: false,
     })
+    const input =
+      '[Link]({{< relref "page" >}}) ## Heading {#id} {{shortcode}} <figure src="img.png"> \\\\(x\\\\)'
+    expect(transform(input)).toBe(input)
   })
 })

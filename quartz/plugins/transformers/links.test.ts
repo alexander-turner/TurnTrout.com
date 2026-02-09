@@ -27,7 +27,7 @@ const createLink = (
   href: string,
   children: Element["children"] = [],
   parent?: Partial<Element>,
-): { tree: Root; node: Element; parent: Element } => {
+): Root => {
   const linkNode: Element = {
     type: "element",
     tagName: "a",
@@ -40,274 +40,161 @@ const createLink = (
     properties: parent?.properties ?? {},
     children: [linkNode],
   }
-  const tree: Root = { type: "root", children: [parentNode] }
-  return { tree, node: linkNode, parent: parentNode }
+  return { type: "root", children: [parentNode] }
 }
 
 const createMedia = (tagName: string, src: string): Root => ({
   type: "root",
-  children: [
-    {
-      type: "element",
-      tagName,
-      properties: { src },
-      children: [],
-    },
-  ],
+  children: [{ type: "element", tagName, properties: { src }, children: [] }],
 })
 
 const getProcessor = (opts?: Parameters<typeof CrawlLinks>[0], ctx?: BuildCtx) => {
   const plugin = CrawlLinks(opts)
-  const htmlPlugins = plugin.htmlPlugins
-  if (!htmlPlugins) throw new Error("htmlPlugins not defined")
-  const plugins = htmlPlugins(ctx ?? createMockCtx())
+  const plugins = plugin.htmlPlugins!(ctx ?? createMockCtx())
   return (plugins[0] as () => (tree: Root, file: MockFile) => void)()
+}
+
+/** Process a link tree and return the link element + file for assertions. */
+const processLink = (
+  href: string,
+  {
+    opts,
+    children,
+    parentTag,
+  }: {
+    opts?: Parameters<typeof CrawlLinks>[0]
+    children?: Element["children"]
+    parentTag?: string
+  } = {},
+) => {
+  const tree = createLink(href, children, parentTag ? { tagName: parentTag } : undefined)
+  const file = createMockFile()
+  getProcessor(opts)(tree, file)
+  return {
+    link: (tree.children[0] as Element).children[0] as Element,
+    file,
+  }
 }
 
 describe("CrawlLinks", () => {
   it("returns plugin with correct name", () => {
-    const plugin = CrawlLinks()
-    expect(plugin.name).toBe("LinkProcessing")
+    expect(CrawlLinks().name).toBe("LinkProcessing")
   })
 
   describe("external links", () => {
-    it("adds external class to absolute URLs", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("external")).toBe(true)
-    })
-
-    it("sets target=_blank when openLinksInNewTab is true", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor({ openLinksInNewTab: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+    it("adds external class, target=_blank, rel, and no icon by default", () => {
+      const { link } = processLink("https://example.com")
+      expect(link.properties.className).toContain("external")
       expect(link.properties.target).toBe("_blank")
+      expect(link.properties.rel).toBe("noopener noreferrer")
+      expect(
+        link.children.find((c) => c.type === "element" && (c as Element).tagName === "svg"),
+      ).toBeUndefined()
     })
 
     it("does not set target=_blank when openLinksInNewTab is false", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor({ openLinksInNewTab: false })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+      const { link } = processLink("https://example.com", { opts: { openLinksInNewTab: false } })
       expect(link.properties.target).toBeUndefined()
     })
 
-    it("sets rel=noopener noreferrer on external links", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties.rel).toBe("noopener noreferrer")
+    it.each([
+      ["prepends https:// to bare domains", "example.com/page", "https://example.com/page"],
+      ["keeps mailto: links unchanged", "mailto:user@example.com", "mailto:user@example.com"],
+      ["keeps http:// links unchanged", "http://example.com", "http://example.com"],
+    ])("%s", (_, href, expectedHref) => {
+      const { link } = processLink(href)
+      expect(link.properties.href).toBe(expectedHref)
     })
 
-    it("prepends https:// to external links without protocol", () => {
-      const { tree } = createLink("example.com/page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties.href).toBe("https://example.com/page")
-    })
-
-    it("does not prepend https:// to mailto links", () => {
-      const { tree } = createLink("mailto:user@example.com")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties.href).toBe("mailto:user@example.com")
-    })
-
-    it("does not prepend https:// to http links", () => {
-      const { tree } = createLink("http://example.com")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties.href).toBe("http://example.com")
-    })
-
-    it("adds external link icon when enabled", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor({ externalLinkIcon: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const svgChild = link.children.find(
+    it("adds external link icon SVG when enabled", () => {
+      const { link } = processLink("https://example.com", { opts: { externalLinkIcon: true } })
+      const svg = link.children.find(
         (c) => c.type === "element" && (c as Element).tagName === "svg",
-      ) as Element | undefined
-      expect(svgChild).toBeDefined()
-      expect(svgChild?.properties.class).toBe("external-icon")
-    })
-
-    it("does not add external link icon when disabled (default)", () => {
-      const { tree } = createLink("https://example.com")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const svgChild = link.children.find(
-        (c) => c.type === "element" && (c as Element).tagName === "svg",
-      )
-      expect(svgChild).toBeUndefined()
+      ) as Element
+      expect(svg?.properties.class).toBe("external-icon")
     })
   })
 
   describe("internal links", () => {
     it("adds internal and can-trigger-popover classes to relative links", () => {
-      const { tree } = createLink("./other-page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+      const { link } = processLink("./other-page")
       const classes = link.properties.className as string[]
       expect(classes).toContain("internal")
       expect(classes).toContain("can-trigger-popover")
     })
 
     it("transforms internal link and sets data-slug", () => {
-      const { tree } = createLink("./other-page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+      const { link, file } = processLink("./other-page")
       expect(link.properties["data-slug"]).toBe("other-page")
-    })
-
-    it("tracks outgoing internal links", () => {
-      const { tree } = createLink("./other-page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
       expect(file.data.links).toEqual(["other-page"])
     })
 
     it("appends index to folder paths in data-slug", () => {
-      const { tree } = createLink("./folder/")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+      const { link } = processLink("./folder/")
       expect(link.properties["data-slug"]).toBe("folder/index")
     })
 
     it("handles links starting with /", () => {
-      const { tree } = createLink("/absolute-path")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
+      const { link } = processLink("/absolute-path")
       expect(link.properties.className as string[]).toContain("internal")
     })
   })
 
   describe("same-page links", () => {
-    it("adds same-page-link class for # links", () => {
-      const { tree } = createLink("#section")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("same-page-link")).toBe(true)
-    })
-
-    it("does not transform same-page anchor links", () => {
-      const { tree } = createLink("#heading")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties.href).toBe("#heading")
+    it("adds same-page-link class and preserves href", () => {
+      const { link } = processLink("#section")
+      expect(link.properties.className as string[]).toContain("same-page-link")
+      expect(link.properties.href).toBe("#section")
     })
   })
 
   describe("pretty links", () => {
     it("strips folder paths from link text when prettyLinks is on", () => {
-      const { tree } = createLink("./folder/my-page", [{ type: "text", value: "folder/my-page" }])
-      const file = createMockFile()
-      const processor = getProcessor({ prettyLinks: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const textChild = link.children[0] as { type: string; value: string }
-      expect(textChild.value).toBe("my-page")
+      const { link } = processLink("./folder/my-page", {
+        opts: { prettyLinks: true },
+        children: [{ type: "text", value: "folder/my-page" }],
+      })
+      expect((link.children[0] as { value: string }).value).toBe("my-page")
     })
 
     it("does not modify link text when prettyLinks is off", () => {
-      const { tree } = createLink("./folder/my-page", [{ type: "text", value: "folder/my-page" }])
-      const file = createMockFile()
-      const processor = getProcessor({ prettyLinks: false })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const textChild = link.children[0] as { type: string; value: string }
-      expect(textChild.value).toBe("folder/my-page")
+      const { link } = processLink("./folder/my-page", {
+        opts: { prettyLinks: false },
+        children: [{ type: "text", value: "folder/my-page" }],
+      })
+      expect((link.children[0] as { value: string }).value).toBe("folder/my-page")
     })
 
     it("does not prettify links with # prefix in text", () => {
-      const { tree } = createLink("./page", [{ type: "text", value: "#section" }])
-      const file = createMockFile()
-      const processor = getProcessor({ prettyLinks: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const textChild = link.children[0] as { type: string; value: string }
-      expect(textChild.value).toBe("#section")
+      const { link } = processLink("./page", {
+        opts: { prettyLinks: true },
+        children: [{ type: "text", value: "#section" }],
+      })
+      expect((link.children[0] as { value: string }).value).toBe("#section")
     })
 
     it("does not prettify external links", () => {
-      const { tree } = createLink("https://example.com/path", [
-        { type: "text", value: "https://example.com/path" },
-      ])
-      const file = createMockFile()
-      const processor = getProcessor({ prettyLinks: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const textChild = link.children[0] as { type: string; value: string }
-      expect(textChild.value).toBe("https://example.com/path")
+      const { link } = processLink("https://example.com/path", {
+        opts: { prettyLinks: true },
+        children: [{ type: "text", value: "https://example.com/path" }],
+      })
+      expect((link.children[0] as { value: string }).value).toBe("https://example.com/path")
     })
 
     it("does not prettify links with multiple children", () => {
-      const { tree } = createLink("./folder/page", [
-        { type: "text", value: "some " },
-        {
-          type: "element",
-          tagName: "strong",
-          properties: {},
-          children: [{ type: "text", value: "bold" }],
-        },
-      ])
-      const file = createMockFile()
-      const processor = getProcessor({ prettyLinks: true })
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      const textChild = link.children[0] as { type: string; value: string }
-      expect(textChild.value).toBe("some ")
+      const { link } = processLink("./folder/page", {
+        opts: { prettyLinks: true },
+        children: [
+          { type: "text", value: "some " },
+          {
+            type: "element",
+            tagName: "strong",
+            properties: {},
+            children: [{ type: "text", value: "bold" }],
+          },
+        ],
+      })
+      expect((link.children[0] as { value: string }).value).toBe("some ")
     })
   })
 
@@ -315,31 +202,22 @@ describe("CrawlLinks", () => {
     it.each(["img", "video", "audio", "iframe"])("adds lazy loading to %s elements", (tagName) => {
       const tree = createMedia(tagName, "./media/file.mp4")
       const file = createMockFile()
-      const processor = getProcessor({ lazyLoad: true })
-      processor(tree, file)
-
-      const el = tree.children[0] as Element
-      expect(el.properties.loading).toBe("lazy")
+      getProcessor({ lazyLoad: true })(tree, file)
+      expect((tree.children[0] as Element).properties.loading).toBe("lazy")
     })
 
     it("does not add lazy loading when disabled", () => {
       const tree = createMedia("img", "./image.png")
       const file = createMockFile()
-      const processor = getProcessor({ lazyLoad: false })
-      processor(tree, file)
-
-      const el = tree.children[0] as Element
-      expect(el.properties.loading).toBeUndefined()
+      getProcessor({ lazyLoad: false })(tree, file)
+      expect((tree.children[0] as Element).properties.loading).toBeUndefined()
     })
 
     it("transforms relative media src via transformLink", () => {
       const tree = createMedia("img", "./images/photo.png")
       const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
+      getProcessor()(tree, file)
       const el = tree.children[0] as Element
-      // transformLink is called on relative src; result is still a string
       expect(typeof el.properties.src).toBe("string")
       expect(el.properties.loading).toBe("lazy")
     })
@@ -347,108 +225,62 @@ describe("CrawlLinks", () => {
     it("does not transform absolute media src", () => {
       const tree = createMedia("img", "https://cdn.example.com/photo.png")
       const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const el = tree.children[0] as Element
-      expect(el.properties.src).toBe("https://cdn.example.com/photo.png")
+      getProcessor()(tree, file)
+      expect((tree.children[0] as Element).properties.src).toBe("https://cdn.example.com/photo.png")
     })
   })
 
   describe("edge cases", () => {
-    it("handles elements without href", () => {
+    it.each([
+      ["without href", {}],
+      ["with non-string href", { href: 42 }],
+    ])("handles anchor elements %s", (_, properties) => {
       const tree: Root = {
         type: "root",
         children: [
           {
             type: "element",
             tagName: "a",
-            properties: {},
-            children: [{ type: "text", value: "no href" }],
+            properties,
+            children: [{ type: "text", value: "text" }],
           },
         ],
       }
       const file = createMockFile()
-      const processor = getProcessor()
-      // Should not throw
-      processor(tree, file)
+      getProcessor()(tree, file)
     })
 
-    it("handles elements with non-string href", () => {
-      const tree: Root = {
-        type: "root",
-        children: [
-          {
-            type: "element",
-            tagName: "a",
-            properties: { href: 42 },
-            children: [{ type: "text", value: "numeric href" }],
-          },
-        ],
-      }
+    it.each([
+      [
+        "non-link elements",
+        {
+          type: "element" as const,
+          tagName: "div",
+          properties: {},
+          children: [{ type: "text" as const, value: "text" }],
+        },
+      ],
+      ["text nodes only", { type: "text" as const, value: "plain text" }],
+    ])("handles %s with no link tracking", (_, child) => {
+      const tree: Root = { type: "root", children: [child as Root["children"][0]] }
       const file = createMockFile()
-      const processor = getProcessor()
-      // Should not throw
-      processor(tree, file)
-    })
-
-    it("handles non-link, non-media elements", () => {
-      const tree: Root = {
-        type: "root",
-        children: [
-          {
-            type: "element",
-            tagName: "div",
-            properties: {},
-            children: [{ type: "text", value: "just a div" }],
-          },
-        ],
-      }
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-      // No links should be tracked
-      expect(file.data.links).toEqual([])
-    })
-
-    it("handles tree with text nodes only", () => {
-      const tree: Root = {
-        type: "root",
-        children: [{ type: "text", value: "plain text" }],
-      }
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
+      getProcessor()(tree, file)
       expect(file.data.links).toEqual([])
     })
 
     it("handles img without src property", () => {
       const tree: Root = {
         type: "root",
-        children: [
-          {
-            type: "element",
-            tagName: "img",
-            properties: {},
-            children: [],
-          },
-        ],
+        children: [{ type: "element", tagName: "img", properties: {}, children: [] }],
       }
       const file = createMockFile()
-      const processor = getProcessor()
-      // Should not throw
-      processor(tree, file)
+      getProcessor()(tree, file)
     })
 
     it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
       "adds internal but not can-trigger-popover for links inside %s",
       (heading) => {
-        const { tree } = createLink("./page", [], { tagName: heading })
-        const file = createMockFile()
-        const processor = getProcessor()
-        processor(tree, file)
-
-        const link = (tree.children[0] as Element).children[0] as Element
+        const { link } = processLink("./page", { parentTag: heading })
         const classes = link.properties.className as string[]
         expect(classes).toContain("internal")
         expect(classes).not.toContain("can-trigger-popover")
