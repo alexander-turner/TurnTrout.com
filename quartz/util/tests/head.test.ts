@@ -12,6 +12,7 @@ import {
   faviconMimeType,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../../styles/variables"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
@@ -71,6 +72,13 @@ describe("renderHead", () => {
 
       expect(result).toContain("<title>My Test Article</title>")
       expect(result).toContain('<meta name="description" content="This is a test description">')
+      expect(result).toContain('<link rel="canonical" href="https://turntrout.com/test-article" />')
+      expect(result).toContain(
+        `<meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />`,
+      )
+      expect(result).toContain(
+        `<meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />`,
+      )
       expect(result).toContain('<meta property="og:title" content="My Test Article" />')
       expect(result).toContain('<meta property="og:type" content="article" />')
       expect(result).toContain('<meta property="og:site_name" content="The Pond" />')
@@ -128,6 +136,9 @@ describe("renderHead", () => {
       // Verify all major sections are present
       expect(result).toContain("<title>Complete Test</title>")
       expect(result).toContain('<meta name="description" content="Complete description">')
+      expect(result).toContain(
+        '<link rel="canonical" href="https://turntrout.com/complete-test" />',
+      )
 
       // Open Graph tags
       expect(result).toContain('<meta property="og:title" content="Complete Test" />')
@@ -166,6 +177,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta property="og:url" content="https://example.com/test-page" />')
+      expect(result).toContain('<link rel="canonical" href="https://example.com/test-page" />')
     })
 
     it("should handle redirect URLs correctly", () => {

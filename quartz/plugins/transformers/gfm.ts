@@ -256,6 +256,22 @@ export function fixDefinitionListsPlugin() {
       const fixed = fixDefinitionList(node)
       node.children = fixed.children
     })
+
+    // Make scrollable code blocks keyboard accessible.
+    // Shiki adds display:grid to <code>, making it the scroll container,
+    // so both <pre> and its <code> child need tabindex.
+    visit(tree, "element", (node: Element) => {
+      if (node.tagName === "pre") {
+        node.properties = node.properties || {}
+        node.properties.tabIndex = 0
+        for (const child of node.children) {
+          if (child.type === "element" && child.tagName === "code") {
+            child.properties = child.properties || {}
+            child.properties.tabIndex = 0
+          }
+        }
+      }
+    })
   }
 }
 

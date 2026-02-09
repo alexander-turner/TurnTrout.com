@@ -172,7 +172,7 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel, and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
 
-During the build process, I convert all naive CSS assignments of `color:red` (<span style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
+During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
 I color [inline favicons](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
@@ -341,15 +341,15 @@ Exponential font sizing
 : After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
 : <span class="h1">Header 1</span>
-<span class="h2">Header 2</span>
-<span class="h3">Header 3</span>
-<span class="h4">Header 4</span>
-<span class="h5">Header 5</span>
+  <span class="h2">Header 2</span>
+  <span class="h3">Header 3</span>
+  <span class="h4">Header 4</span>
+  <span class="h5">Header 5</span>
 
 : <span>Normal text</span>
-<span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-<span style="font-size:var(--font-size-minus-2)">Smaller text</span>
-<span style="font-size:var(--font-size-minus-3)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
 
 All spacing is a simple multiple of a base measurement
 : If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
@@ -431,7 +431,7 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
 <div class="centered" style="font-size:4rem;line-height:1.4 !important;">
-<span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
+<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 </div>
   

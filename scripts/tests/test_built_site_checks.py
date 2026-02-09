@@ -5469,6 +5469,30 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             "<article><p>Emoji 😀</p></article>",
             ["Paragraph ends with invalid character '😀' Emoji 😀"],
         ),
+        # Span-only paragraphs (typography examples) should be skipped
+        (
+            '<article><p><span class="h2">Header 2</span></p></article>',
+            [],
+        ),
+        (
+            '<article><p><span style="font-size:var(--font-size-minus-1)">Smaller text</span></p></article>',
+            [],
+        ),
+        # Multiple spans with whitespace should also be skipped
+        (
+            '<article><p><span class="h2">Header 2</span> <span class="h3">Header 3</span></p></article>',
+            [],
+        ),
+        # Spans with <br> between them should be skipped
+        (
+            '<article><p><span class="h1">Header 1</span><br><span class="h2">Header 2</span></p></article>',
+            [],
+        ),
+        # But paragraphs with mixed text and spans should still be checked
+        (
+            '<article><p>Text with <span class="h2">Header 2</span></p></article>',
+            ["Paragraph ends with invalid character '2' Text withHeader 2"],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
@@ -5545,6 +5569,13 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         (
             '<img width="100" height="50">',
             [],
+        ),
+        # Long URL should be truncated
+        (
+            '<img src="https://example.com/very/long/path/to/image/that/exceeds/eighty/characters/in/total/length.png">',
+            [
+                "<img> missing width, height: https://example.com/very/long/path/to/im...eighty/characters/in/total/length.png"
+            ],
         ),
     ],
 )

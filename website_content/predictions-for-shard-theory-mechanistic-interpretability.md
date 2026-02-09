@@ -20,10 +20,7 @@ af-num-comments-on-upload: 6
 title: Predictions for shard theory mechanistic interpretability results
 lw-latest-edit: 2023-03-03T21:31:03.903000Z
 lw-is-linkpost: 'false'
-authors:
-  - Alex Turner
-  - Ulisse Mini
-  - Peli Grietzer
+authors: Alex Turner, Ulisse Mini, and Peli Grietzer
 tags:
   - AI
   - mats-program
@@ -46,7 +43,6 @@ skip_import: true
 description: Predictions about a cheese-finding AI model's internal workings, before
   the results are revealed. Will it prefer cheese or the top-right corner? 🧀🤖
 date_updated: 2025-11-22 00:21:52.667251
-createBibtex: true
 ---
 
 
