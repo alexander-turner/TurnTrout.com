@@ -2239,13 +2239,16 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             for abbr in el_copy.select("abbr.small-caps"):
                 abbr.string = abbr.get_text().upper()
 
-            # Insert spaces around inline elements that cause
-            # word concatenation (e.g. "bounds<sub>reasonable</sub>"
-            # → "bounds reasonable").
+            # Fix inline element word boundaries:
+            # - <br> → space (prevents "state<br>while" → "statewhile")
+            # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
+            # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
             for br in el_copy.find_all("br"):
                 br.replace_with(" ")
-            for tag in el_copy.find_all(["sub", "sup"]):
-                tag.insert_before(" ")
+            for sub in el_copy.find_all("sub"):
+                sub.insert_before(" ")
+            for sup in el_copy.find_all("sup"):
+                sup.unwrap()
 
             # Remove footnote ref links to avoid "word1" concatenation
             for link in el_copy.find_all("a", id=True):
@@ -2446,7 +2449,9 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 # skipcq: PTC-W6004
                 with open(file_path, encoding="utf-8") as f:
                     soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-                if not script_utils.is_redirect(soup_for_paras):
+                if not script_utils.is_redirect(
+                    soup_for_paras
+                ) and not soup_for_paras.find("div", class_="page-listing"):
                     paras = _extract_flat_paragraph_texts(soup_for_paras)
                     if paras:
                         rel = str(file_path.relative_to(public_dir))

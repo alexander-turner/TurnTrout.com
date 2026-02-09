@@ -2587,15 +2587,17 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
 
 
 def test_extract_flat_paragraph_texts_spaces_sub_br():
-    """Subscript and <br> elements get spaces to avoid word concatenation."""
+    """Subscript gets space, <br> gets space, <sup> is unwrapped."""
     html = """<article>
-    <p>bounds<sub>reasonable</sub> and state<br>while</p>
+    <p>bounds<sub>reasonable</sub> and state<br>while and 2<sup>nd</sup></p>
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1
     assert "bounds reasonable" in result[0]
     assert "state while" in result[0]
+    # <sup> is unwrapped (not spaced), preserving "2nd" as one word
+    assert "2nd" in result[0]
 
 
 def test_extract_flat_paragraph_texts_strips_footnote_refs():
