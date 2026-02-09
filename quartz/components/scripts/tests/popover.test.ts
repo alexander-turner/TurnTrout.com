@@ -576,8 +576,12 @@ describe("attachPopoverEventListeners", () => {
   `(
     "click navigates to $expectedHref (isFootnote=$isFootnote, clickInnerLink=$clickInnerLink)",
     ({ isFootnote, clickInnerLink, expectedHref }) => {
-      linkElement.href = "http://example.com/"
+      // Need a fresh popover+cleanup since isFootnote changes class before attaching
+      cleanup()
+      popoverElement = document.createElement("div")
       if (isFootnote) popoverElement.classList.add("footnote-popover")
+      linkElement.href = "http://example.com/"
+      cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {})
 
       Object.defineProperty(window, "location", { value: { href: "" }, writable: true })
 
@@ -596,6 +600,44 @@ describe("attachPopoverEventListeners", () => {
       expect(window.location.href).toBe(expectedHref)
     },
   )
+})
+
+describe("attachPopoverEventListeners (footnote popover)", () => {
+  let popoverElement: HTMLElement
+  let linkElement: HTMLLinkElement
+  let cleanup: () => void
+
+  beforeEach(() => {
+    popoverElement = document.createElement("div")
+    popoverElement.classList.add("footnote-popover")
+    linkElement = document.createElement("a") as unknown as HTMLLinkElement
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {})
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
+
+  it("should NOT show popover-visible on link mouseenter", () => {
+    linkElement.dispatchEvent(new MouseEvent("mouseenter"))
+    expect(popoverElement.classList.contains("popover-visible")).toBe(false)
+  })
+
+  it("should NOT remove popover-visible on link mouseleave", () => {
+    popoverElement.classList.add("popover-visible")
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    jest.advanceTimersByTime(300)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(true)
+  })
+
+  it("should NOT respond to popover mouseenter/mouseleave", () => {
+    popoverElement.classList.add("popover-visible")
+    popoverElement.dispatchEvent(new MouseEvent("mouseenter"))
+    popoverElement.dispatchEvent(new MouseEvent("mouseleave"))
+    jest.advanceTimersByTime(300)
+    // Still visible because hover listeners are not attached
+    expect(popoverElement.classList.contains("popover-visible")).toBe(true)
+  })
 })
 
 describe("escapeLeadingIdNumber", () => {

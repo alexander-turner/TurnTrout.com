@@ -347,9 +347,9 @@ test.describe("Footnote popovers", () => {
   test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
-    await footnoteRef.hover()
+    await footnoteRef.click()
 
-    const popover = page.locator(".popover")
+    const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
     const popoverInner = popover.locator(".popover-inner")
@@ -374,24 +374,24 @@ test.describe("Footnote popovers", () => {
     // Find the footnote with a table (should be larger)
     const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
     await tableFootnoteRef.scrollIntoViewIfNeeded()
-    await tableFootnoteRef.hover()
+    await tableFootnoteRef.click()
 
-    const tablePopover = page.locator(".popover")
+    const tablePopover = page.locator(".popover.footnote-popover")
     await expect(tablePopover).toBeVisible()
     const tablePopoverBox = await tablePopover.boundingBox()
     assertDefined(tablePopoverBox)
     const tableHeight = tablePopoverBox.height
 
-    // Move mouse away to close popover
-    await page.mouse.move(0, 0)
+    // Click again to close (toggle)
+    await tableFootnoteRef.click()
     await expect(tablePopover).toBeHidden()
 
     // Find a simple footnote (should be smaller)
     const simpleFootnoteRef = page.locator('a[href="#user-content-fn-nested"]')
     await simpleFootnoteRef.scrollIntoViewIfNeeded()
-    await simpleFootnoteRef.hover()
+    await simpleFootnoteRef.click()
 
-    const simplePopover = page.locator(".popover")
+    const simplePopover = page.locator(".popover.footnote-popover")
     await expect(simplePopover).toBeVisible()
     const simplePopoverBox = await simplePopover.boundingBox()
     assertDefined(simplePopoverBox)
@@ -445,17 +445,25 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toBeHidden()
   })
 
-  test("Hover-triggered footnote popover closes on mouseleave", async ({ page }) => {
+  test("Hovering footnote link does NOT open popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
     await footnoteRef.hover()
-    const popover = page.locator(".popover")
-    await expect(popover).toBeVisible()
-    // Hover-triggered: should NOT be pinned
-    await expect(popover).not.toHaveAttribute("data-pinned")
+    // Verify no popover appears even after the hover delay (300ms)
+    await expect(page.locator(".popover")).toHaveCount(0)
+  })
 
-    await page.mouse.move(0, 0)
+  test("Clicking outside closes footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Click somewhere outside the popover
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
     await expect(popover).toBeHidden()
   })
 
@@ -501,7 +509,7 @@ base.describe("Footnote popover on mobile", () => {
     await expect(popover).toBeHidden()
   })
 
-  base("Tapping outside does NOT close footnote popover", async ({ page }) => {
+  base("Tapping outside closes footnote popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -509,9 +517,9 @@ base.describe("Footnote popover on mobile", () => {
     const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
-    // Tap somewhere else on the page - popover should persist
+    // Tap somewhere else on the page - popover should close
     await page.locator("body").click({ position: { x: 10, y: 10 } })
-    await expect(popover).toBeVisible()
+    await expect(popover).toBeHidden()
   })
 
   base("Close button is fully visible within viewport on mobile", async ({ page }) => {
