@@ -16,11 +16,8 @@ import {
   isFootnoteListItem,
   findFootnoteBackArrow,
   appendArrowToFootnoteListItemVisitor,
-  fixDefinitionListsPlugin,
-  convertDdToParagraph,
-  processDefinitionListChild,
-  fixDefinitionList,
-  hasValidDtDdPairs,
+  htmlAccessibilityPlugin,
+  adoptPrecedingSiblingAsDt,
   deduplicateSvgIds,
 } from "../gfm"
 
@@ -704,216 +701,58 @@ describe("gfmVisitor function", () => {
   })
 })
 
-/**
- * Tests for definition list fixing helpers and plugin
- *
- * PROBLEM CONTEXT:
- * The remark-gfm plugin converts Markdown lines starting with ": " into HTML <dd> elements.
- * This is intended for creating definition lists, but when used in contexts like blockquotes
- * without a preceding term, it creates invalid HTML: <dl><dd>content</dd></dl>
- *
- * This violates WCAG accessibility standards which require <dd> elements to be preceded by
- * <dt> elements within <dl> containers. Pa11y accessibility checker flags these as errors:
- * "<dl> elements must only directly contain properly-ordered <dt> and <dd> groups"
- *
- * REAL-WORLD EXAMPLE:
- * Markdown like this in a blockquote:
- *   > User
- *   >
- *   > : Develop a social media bot...
- *
- * Gets converted by remark-gfm to:
- *   <blockquote><p>User</p><dl><dd>Develop a social media bot...</dd></dl></blockquote>
- *
- * THE FIX:
- * Helper functions process definition list children and convert orphaned <dd> elements
- * (those without a preceding <dt>) into <p> elements, maintaining semantic correctness.
- */
+describe("adoptPrecedingSiblingAsDt", () => {
+  it("adopts preceding <p> as <dt>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), dl]
 
-describe("convertDdToParagraph", () => {
-  it("converts dd element to p element preserving children", () => {
-    const dd = h("dd", ["Description text"])
-    const result = convertDdToParagraph(dd)
-
-    expect(result.tagName).toBe("p")
-    expect(result.type).toBe("element")
-    expect(result.properties).toEqual({})
-    expect(result.children).toEqual(dd.children)
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(true)
+    expect(children).toHaveLength(1)
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
   })
 
-  it("preserves nested elements in children", () => {
-    const dd = h("dd", ["Text with ", h("strong", ["bold"]), " content"])
-    const result = convertDdToParagraph(dd)
+  it("adopts past whitespace text nodes", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), { type: "text", value: "\n" }, dl]
 
-    expect(result.tagName).toBe("p")
-    expect(result.children).toHaveLength(3)
-    expect((result.children[1] as Element).tagName).toBe("strong")
+    expect(adoptPrecedingSiblingAsDt(dl, 2, children)).toBe(true)
+    expect(children).toHaveLength(1) // <p> and whitespace removed
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+  })
+
+  it("returns false when no preceding element", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    expect(adoptPrecedingSiblingAsDt(dl, 0, [dl])).toBe(false)
+  })
+
+  it("returns false when preceding element is not <p>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("h2", ["Heading"]), dl]
+
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(false)
+    expect(children).toHaveLength(2) // unchanged
   })
 })
 
-describe("processDefinitionListChild", () => {
-  describe("dt elements", () => {
-    it("preserves dt and sets state to true", () => {
-      const dt = h("dt", ["Term"])
-      const result = processDefinitionListChild(dt, false)
-
-      expect(result.element).toBe(dt)
-      expect(result.newLastWasDt).toBe(true)
-    })
-  })
-
-  describe("dd elements", () => {
-    it("preserves dd when lastWasDt is true and keeps state true for subsequent dd", () => {
-      const dd = h("dd", ["Description"])
-      const result = processDefinitionListChild(dd, true)
-
-      expect(result.element).toBe(dd)
-      expect(result.newLastWasDt).toBe(true)
-    })
-
-    it("converts dd to p when lastWasDt is false", () => {
-      const dd = h("dd", ["Orphaned"])
-      const result = processDefinitionListChild(dd, false)
-
-      expect((result.element as Element).tagName).toBe("p")
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-
-  describe("other elements", () => {
-    it.each([
-      ["div", h("div", ["Content"])],
-      ["script", h("script", ["code"])],
-      ["template", h("template", ["template content"])],
-    ])("preserves %s and resets state", (_name, element) => {
-      const result = processDefinitionListChild(element, true)
-
-      expect(result.element).toBe(element)
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-
-  describe("non-element nodes", () => {
-    it("preserves text nodes and preserves state", () => {
-      const textNode = { type: "text" as const, value: "Some text" }
-      const result = processDefinitionListChild(textNode, true)
-
-      expect(result.element).toBe(textNode)
-      expect(result.newLastWasDt).toBe(true)
-    })
-
-    it("preserves text nodes with false state", () => {
-      const textNode = { type: "text" as const, value: "Some text" }
-      const result = processDefinitionListChild(textNode, false)
-
-      expect(result.element).toBe(textNode)
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-})
-
-describe("hasValidDtDdPairs", () => {
-  it.each([
-    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], true],
-    ["single orphaned dd", [h("dd", ["Orphan"])], false],
-    ["only dt without dd", [h("dt", ["Term"])], false],
-    ["empty dl", [], false],
-    [
-      "orphaned dd before valid pair",
-      [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
-      true,
-    ],
-    ["text nodes only", [{ type: "text" as const, value: "Text" }], false],
-    ["non-dt/dd elements", [h("div", ["Content"])], false],
-  ])("%s", (_desc, children, expected) => {
-    const dl = h("dl", children)
-    expect(hasValidDtDdPairs(dl)).toBe(expected)
-  })
-})
-
-describe("fixDefinitionList", () => {
-  it("returns unchanged dl when empty", () => {
-    const dl = h("dl", [])
-    const result = fixDefinitionList(dl)
-
-    expect(result.children).toHaveLength(0)
-  })
-
-  it.each([
-    ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["p"]],
-    ["valid dt/dd pair → dl", [h("dt", ["Term"]), h("dd", ["Desc"])], "dl", ["dt", "dd"]],
-    [
-      "orphaned dd before valid pair → div (mixed orphaned+valid is invalid in dl)",
-      [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
-      "div",
-      ["p", "dt", "dd"],
-    ],
-    [
-      "multiple consecutive dd after dt (all valid)",
-      [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
-      "dl",
-      ["dt", "dd", "dd"],
-    ],
-    [
-      "complex mixed structure → div",
-      [
-        h("dd", ["Orphan 1"]),
-        h("dt", ["Term 1"]),
-        h("dd", ["Valid 1"]),
-        h("dd", ["Valid 2"]),
-        h("dt", ["Term 2"]),
-        h("dd", ["Valid 3"]),
-      ],
-      "div",
-      ["p", "dt", "dd", "dd", "dt", "dd"],
-    ],
-    ["all orphaned dd → div", [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])], "div", ["p", "p"]],
-  ])("fixes %s correctly", (_desc, children, expectedTag, expectedChildTags) => {
-    const dl = h("dl", children)
-    const result = fixDefinitionList(dl)
-
-    expect(result.tagName).toBe(expectedTag)
-    expect(result.children).toHaveLength(expectedChildTags.length)
-    expectedChildTags.forEach((tag, i) => {
-      expect((result.children[i] as Element).tagName).toBe(tag)
-    })
-  })
-
-  it("preserves non-element nodes", () => {
-    const dl = h("dl", [{ type: "text", value: "Text" }, h("dt", ["Term"]), h("dd", ["Desc"])])
-    const result = fixDefinitionList(dl)
-
-    expect(result.children).toHaveLength(3)
-    expect(result.children[0]).toEqual({ type: "text", value: "Text" })
-  })
-
-  it("preserves dd after dt even with whitespace text nodes between them", () => {
-    const dl: Element = {
-      type: "element",
-      tagName: "dl",
-      properties: {},
-      children: [
-        h("dt", ["Term"]),
-        { type: "text", value: "\n  " },
-        h("dd", ["First"]),
-        { type: "text", value: "\n  " },
-        h("dd", ["Second"]),
-      ],
-    }
-    const result = fixDefinitionList(dl)
-
-    const elements = result.children.filter((c) => c.type === "element")
-    expect(elements.map((e) => (e as Element).tagName)).toEqual(["dt", "dd", "dd"])
-  })
-})
-
-describe("fixDefinitionListsPlugin (integration)", () => {
+describe("htmlAccessibilityPlugin (integration)", () => {
   const runPlugin = (tree: Root): void => {
-    const plugin = fixDefinitionListsPlugin()
+    const plugin = htmlAccessibilityPlugin()
     plugin(tree)
   }
 
-  it("fixes orphaned dd in dl and converts dl to div", () => {
+  it("adopts preceding <p> as <dt> for orphaned <dl>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const tree: Root = { type: "root", children: [h("p", ["Term"]), dl] }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(1)
+    expect(dl.tagName).toBe("dl")
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it("falls back to <div>/<p> when no preceding <p>", () => {
     const dl = h("dl", [h("dd", ["Orphan"])])
     const tree: Root = { type: "root", children: [dl] }
     runPlugin(tree)
@@ -922,7 +761,7 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect((dl.children[0] as Element).tagName).toBe("p")
   })
 
-  it("preserves valid dt/dd pairs as dl", () => {
+  it("preserves valid <dl> with <dt>/<dd> pairs", () => {
     const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
     const tree: Root = { type: "root", children: [dl] }
     runPlugin(tree)
@@ -932,41 +771,44 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect((dl.children[1] as Element).tagName).toBe("dd")
   })
 
-  it("handles complex nested structures (mixed orphaned+valid → div, dt/dd become p)", () => {
-    const dl = h("dl", [
-      h("dd", ["Orphan"]),
-      h("dt", ["Term"]),
-      h("dd", ["Valid 1"]),
-      h("dd", ["Valid 2"]),
-    ])
-    const tree: Root = { type: "root", children: [dl] }
-    runPlugin(tree)
-
-    // dl becomes div (mixed orphaned+valid), then convertOrphanedDefinitionElements
-    // converts remaining dt/dd (now outside any dl) to p
-    expect(dl.tagName).toBe("div")
-    const tags = dl.children.map((c) => (c as Element).tagName)
-    expect(tags).toEqual(["p", "p", "p", "p"])
-  })
-
   it.each([
-    ["dd", "dd", "p"],
-    ["dt", "dt", "p"],
-  ])("converts orphaned <%s> outside dl to <%s>", (_label, tag, expectedTag) => {
+    ["dd", "dd"],
+    ["dt", "dt"],
+  ])("converts orphaned <%s> outside <dl> to <p>", (_label, tag) => {
     const element = h(tag, ["Orphaned content"])
     const tree: Root = { type: "root", children: [h("div", [element])] }
     runPlugin(tree)
 
-    expect(element.tagName).toBe(expectedTag)
+    expect(element.tagName).toBe("p")
   })
 
-  it("preserves dd inside dl", () => {
+  it("preserves <dd> inside valid <dl>", () => {
     const dd = h("dd", ["Valid description"])
     const dl = h("dl", [h("dt", ["Term"]), dd])
     const tree: Root = { type: "root", children: [dl] }
     runPlugin(tree)
 
     expect(dd.tagName).toBe("dd")
+  })
+
+  it("handles elements without children in orphaned dd/dt check", () => {
+    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
+    const tree: Root = { type: "root", children: [brokenNode] }
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("handles multiple consecutive orphaned <dl>s, each adopting its own <p>", () => {
+    const dl1 = h("dl", [h("dd", ["Def1"])])
+    const dl2 = h("dl", [h("dd", ["Def2"])])
+    const tree: Root = {
+      type: "root",
+      children: [h("p", ["Term1"]), dl1, h("p", ["Term2"]), dl2],
+    }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(2)
+    expect((dl1.children[0] as Element).tagName).toBe("dt")
+    expect((dl2.children[0] as Element).tagName).toBe("dt")
   })
 
   it.each([
@@ -996,13 +838,6 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     runPlugin(tree)
 
     expect(code.properties.tabIndex).toBe(0)
-  })
-
-  it("handles elements without children in orphaned dd/dt check", () => {
-    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
-    const tree: Root = { type: "root", children: [brokenNode] }
-    // Should not throw
-    expect(() => runPlugin(tree)).not.toThrow()
   })
 
   it.each([
