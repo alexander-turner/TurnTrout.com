@@ -2543,8 +2543,8 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # Smallcaps abbreviations are removed (original casing is lost)
-    assert "9 of strategies." in result[0]
+    # Smallcaps abbreviations are unwrapped (kept as lowercase text)
+    assert "9combinations of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
 
@@ -2586,6 +2586,18 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
     assert "Normal paragraph." in result[0]
 
 
+def test_extract_flat_paragraph_texts_spaces_sub_br():
+    """Subscript and <br> elements get spaces to avoid word concatenation."""
+    html = """<article>
+    <p>bounds<sub>reasonable</sub> and state<br>while</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "bounds reasonable" in result[0]
+    assert "state while" in result[0]
+
+
 def test_extract_flat_paragraph_texts_strips_footnote_refs():
     """Footnote reference links are removed to avoid 'word1' concatenation."""
     html = """<article>
@@ -2608,6 +2620,33 @@ def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
     assert len(result) == 1
     assert "2" not in result[0]
     assert "word" in result[0]
+
+
+def test_build_case_insensitive_wordlist(tmp_path):
+    """Temp wordlist includes lowercased variants of all entries."""
+    wordlist = tmp_path / "wordlist.txt"
+    wordlist.write_text("ReLU\nGPT-4o\nalready-lower\n")
+    result = built_site_checks._build_case_insensitive_wordlist(wordlist)
+    assert result is not None
+    try:
+        words = result.read_text(encoding="utf-8").splitlines()
+        assert "ReLU" in words
+        assert "relu" in words
+        assert "GPT-4o" in words
+        assert "gpt-4o" in words
+        assert "already-lower" in words
+    finally:
+        result.unlink(missing_ok=True)
+
+
+def test_build_case_insensitive_wordlist_missing(tmp_path):
+    """Returns None when wordlist doesn't exist."""
+    assert (
+        built_site_checks._build_case_insensitive_wordlist(
+            tmp_path / "missing.txt"
+        )
+        is None
+    )
 
 
 def test_spellcheck_flattened_paragraphs_empty():

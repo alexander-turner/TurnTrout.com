@@ -2209,46 +2209,44 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, and style content, then returns
-    ``get_text()`` for each paragraph (no separator, so adjacent
-    child-element text is concatenated — exactly what the browser
-    renders).
-
-    Abbreviation text (lowercased by the smallcaps transform) is
-    uppercased so that the spellchecker sees e.g. "LLM" instead of
-    "llm".
+    Strips code, KaTeX, script, style, and smallcaps abbreviation
+    content, then returns ``get_text()`` for each paragraph (no
+    separator, so adjacent child-element text is concatenated —
+    exactly what the browser renders).
     """
     paragraphs: list[str] = []
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
     for article in _tags_only(soup.find_all("article")):
         for element in _tags_only(article.find_all("p")):
-            if should_skip(element):
-                continue
-            # Skip paragraphs inside navigation / footer / header
-            if element.find_parent(["nav", "footer", "header"]):
-                continue
-            if any(
-                element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
+            if (
+                should_skip(element)
+                or element.find_parent(["nav", "footer", "header"])
+                or any(
+                    element.find_parent(class_=cls)
+                    for cls in _SKIP_PARENT_CLASSES
+                )
+                or element.find_parent(id="content-meta")
+                or "page-listing-title" in script_utils.get_classes(element)
             ):
-                continue
-            # Skip paragraphs inside metadata containers by ID
-            if element.find_parent(id="content-meta"):
-                continue
-            # Skip page-listing title paragraphs
-            classes = script_utils.get_classes(element)
-            if "page-listing-title" in classes:
                 continue
 
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            # Remove smallcaps abbreviations from spellcheck text.
+            # Unwrap smallcaps abbreviations (keep their lowercased text).
             # The smallcaps transform irreversibly lowercases acronyms
-            # (e.g. ReLU → relu), so we can't restore the original casing
-            # for case-sensitive dictionary matching. These terms are already
-            # spellchecked at the source-markdown level.
+            # (e.g. ReLU → relu), so we use a temp wordlist with
+            # lowercased variants for case-insensitive matching.
             for abbr in el_copy.select("abbr.small-caps"):
-                abbr.decompose()
+                abbr.unwrap()
+
+            # Insert spaces around inline elements that cause
+            # word concatenation (e.g. "bounds<sub>reasonable</sub>"
+            # → "bounds reasonable").
+            for br in el_copy.find_all("br"):
+                br.replace_with(" ")
+            for tag in el_copy.find_all(["sub", "sup"]):
+                tag.insert_before(" ")
 
             # Remove footnote ref links to avoid "word1" concatenation
             for link in el_copy.find_all("a", id=True):
@@ -2291,6 +2289,31 @@ def _write_paragraphs_to_tempfile(
         return Path(tmp.name), line_to_source
 
 
+def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
+    """
+    Create a temp wordlist that adds lowercased variants of every entry.
+
+    This lets the spellchecker accept smallcaps-lowered abbreviations
+    (e.g. ``relu`` from ``ReLU``) without needing separate entries.
+    Returns the temp file path, or *None* if *wordlist* doesn't exist.
+    """
+    if not wordlist.exists():
+        return None
+    original_words = wordlist.read_text(encoding="utf-8").splitlines()
+    lowered = {w.lower() for w in original_words if w}
+    all_words = sorted(set(original_words) | lowered)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-wordlist-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp_wl:
+        tmp_wl.write("\n".join(all_words) + "\n")
+        return Path(tmp_wl.name)
+
+
 def _spellcheck_flattened_paragraphs(
     paragraph_map: dict[str, list[str]],
 ) -> list[str]:
@@ -2313,9 +2336,15 @@ def _spellcheck_flattened_paragraphs(
 
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
     tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
+    tmp_wordlist = _build_case_insensitive_wordlist(wordlist)
     issues: list[str] = []
 
     try:
+        dict_args = (
+            ["--dictionaries", str(tmp_wordlist)]
+            if tmp_wordlist is not None
+            else []
+        )
         result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
             [
                 pnpm,
@@ -2327,11 +2356,7 @@ def _spellcheck_flattened_paragraphs(
                 str(tmp_path),
                 "--plugins",
                 "spell",
-                *(
-                    ["--dictionaries", str(wordlist)]
-                    if wordlist.exists()
-                    else []
-                ),
+                *dict_args,
             ],
             capture_output=True,
             text=True,
@@ -2355,6 +2380,8 @@ def _spellcheck_flattened_paragraphs(
                     issues.append(line)
     finally:
         tmp_path.unlink(missing_ok=True)
+        if tmp_wordlist is not None:
+            tmp_wordlist.unlink(missing_ok=True)
 
     return issues
 
