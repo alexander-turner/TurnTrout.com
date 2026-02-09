@@ -2562,14 +2562,22 @@ def test_extract_flat_paragraph_texts_skips_non_article():
 
 
 def test_extract_flat_paragraph_texts_skips_nav_footer():
-    """Paragraphs inside nav/footer/header/sequence-links/page-listing are
-    skipped."""
+    """Paragraphs inside nav/footer/header/sequence-links/page-listing and other
+    metadata containers are skipped."""
     html = """<article>
     <nav><p>PreviousLessons</p></nav>
     <footer><p>2025Apply</p></footer>
     <header><p>Site header text</p></header>
     <div class="sequence-links"><p><em>Previous</em>Reward is enough</p></div>
     <div class="page-listing"><p>ListingTitle tags dates</p></div>
+    <div class="authors"><p>AlexJanuary 2025</p></div>
+    <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
+    <div class="backlinks"><p>BacklinkTitle</p></div>
+    <span class="transclude"><p>Transcluded listing</p></span>
+    <div class="tag-container"><p>Tag text</p></div>
+    <div class="all-tags"><p>All tags</p></div>
+    <div id="content-meta"><p>Metadata</p></div>
+    <p class="page-listing-title">Page title</p>
     <p>Normal paragraph.</p>
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
@@ -2644,9 +2652,10 @@ def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
     wordlist.parent.mkdir(parents=True)
     wordlist.write_text("hello\n")
 
+    # spellchecker-cli output format: "- LINE:COL-LINE:COL  warning  `word` ..."
     stdout = (
         "Checking files...\n"
-        f'{tmp_path}/.spellcheck-rendered-abc.txt:1:7 - warning: "wrold" is misspelled\n'
+        "    - 1:7-1:12  warning  `wrold` is misspelt  retext-spell\n"
     )
     with (
         patch("shutil.which", return_value="/usr/bin/pnpm"),
