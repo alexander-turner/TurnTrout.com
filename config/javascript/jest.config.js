@@ -22,10 +22,13 @@ const config = {
     "/node_modules/",
     "quartz/cli/",
     "quartz/depgraph\\.ts",
+    "quartz/plugins/emitters/static\\.ts",
     "quartz/util/(glob|ctx|escape|log|path|perf|sourcemap|trace)\\.ts",
     "quartz/util/(jsx|resources)\\.tsx",
     "quartz/.*\\.min\\.ts",
     "quartz/components/constants\\.ts",
+    "quartz/components/Authors\\.tsx",
+    "quartz/plugins/transformers/assetDimensions\\.ts",
     "\\.test\\.(ts|tsx|js|jsx)$",
     "/__tests__/",
   ],
@@ -77,6 +80,7 @@ const config = {
     "\\.inline$": "<rootDir>/quartz/components/scripts/__mocks__/inlineScriptMock.ts",
   },
   testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(test).ts(x|)"],
+  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/public/"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation

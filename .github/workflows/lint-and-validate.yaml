@@ -1,0 +1,138 @@
+name: Lint and validate
+
+concurrency:
+  group: lint-validate-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+  merge_group:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      content: ${{ steps.changes.outputs.content }}
+      code: ${{ steps.changes.outputs.code }}
+      styles: ${{ steps.changes.outputs.styles }}
+      source-checks: ${{ steps.changes.outputs.source-checks }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: changes
+        with:
+          filters: |
+            content:
+              - 'website_content/**'
+              - 'config/spellcheck/**'
+              - 'config/vale/**'
+            code:
+              - 'quartz/**'
+              - 'config/javascript/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            styles:
+              - 'quartz/**/*.scss'
+              - 'config/stylelint/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            source-checks:
+              - 'website_content/**'
+              - 'quartz/**'
+              - 'scripts/source_file_checks.py'
+              - 'config/**'
+              - '.github/actions/**'
+
+  lint:
+    needs: detect-changes
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.content == 'true' ||
+       needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.source-checks == 'true')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Install Vale
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
+          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
+          sudo mv vale /usr/local/bin/
+
+      - name: Generate SCSS variables
+        if: >
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Add node_modules/.bin to PATH
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
+      - name: Run spellcheck
+        id: spellcheck
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec spellchecker \
+            --no-suggestions \
+            --quiet \
+            --dictionaries config/spellcheck/.wordlist.txt \
+            --files "website_content/**/*.md" \
+            --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
+            --plugins spell indefinite-article repeated-words syntax-urls frontmatter
+
+      - name: Run Vale
+        id: vale
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: vale --config config/vale/.vale.ini website_content
+
+      - name: Run ESLint
+        id: eslint
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint . --config config/javascript/eslint.config.js
+
+      - name: Run Stylelint
+        id: stylelint
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec stylelint \
+            --config config/stylelint/.stylelintrc.json \
+            "quartz/**/*.scss"
+
+      - name: Run source file checks
+        id: source-checks
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        continue-on-error: true
+        run: uv run python scripts/source_file_checks.py --check-publication-dates
+
+      - name: Check results
+        run: |
+          failed=""
+          if [[ "${{ steps.spellcheck.outcome }}" == "failure" ]]; then failed="$failed spellcheck"; fi
+          if [[ "${{ steps.vale.outcome }}" == "failure" ]]; then failed="$failed vale"; fi
+          if [[ "${{ steps.eslint.outcome }}" == "failure" ]]; then failed="$failed eslint"; fi
+          if [[ "${{ steps.stylelint.outcome }}" == "failure" ]]; then failed="$failed stylelint"; fi
+          if [[ "${{ steps.source-checks.outcome }}" == "failure" ]]; then failed="$failed source-file-checks"; fi
+          if [[ -n "$failed" ]]; then
+            echo "The following checks failed:$failed"
+            exit 1
+          fi

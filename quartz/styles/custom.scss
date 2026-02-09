@@ -3,6 +3,7 @@
 @use "table";
 @use "colors";
 @use "favicon";
+@use "scroll-indicator";
 
 body {
   min-height: 100vh;
@@ -80,7 +81,8 @@ a[id*="fnref-"] {
   scroll-margin-top: calc(2 * $base-margin);
 
   // Footnotes should be a bit easier to see
-  background-color: color-mix(in srgb, gray 10%, transparent);
+  border: 1px solid var(--midground-faint);
+  color: var(--foreground);
   padding: 0 0.1rem;
   border-radius: 5px;
 
@@ -715,13 +717,7 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Hover to show";
-  }
-
-  @media (max-width: $tablet-breakpoint) {
-    &::after {
-      content: "Tap to show";
-    }
+    content: "Click to show";
   }
 }
 
@@ -736,15 +732,13 @@ img.emoji {
   }
 }
 
-.spoiler-container:hover .spoiler-overlay,
-.spoiler-container:focus .spoiler-overlay,
+.spoiler-container:focus-visible .spoiler-overlay,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:hover .spoiler-content,
-.spoiler-container:focus .spoiler-content,
+.spoiler-container:focus-visible .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
@@ -831,7 +825,6 @@ foreignObject {
   overflow: visible !important;
 }
 
-// stylelint-
 .flowchart .nodeLabel,
 .flowchart .label,
 .flowchart .edgeLabel {

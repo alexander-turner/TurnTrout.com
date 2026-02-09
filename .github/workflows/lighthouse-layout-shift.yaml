@@ -2,23 +2,16 @@ name: Lighthouse Testing
 
 concurrency:
   group: lighthouse-testing-${{ github.event_name }}-${{ github.ref_name }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: true
 
 on:
   push:
     branches: ["main", "dev", "no-layout-shift"]
     paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
-  pull_request:
-    paths:
-      - "quartz/**"
-      - "website_content/**"
+      - "quartz/**/*.scss"
+      - "quartz/**/*.tsx"
+      - "quartz/**/*.ts"
+      - "quartz/static/**"
       - "config/**"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -27,7 +20,6 @@ on:
 
 jobs:
   build_and_deploy:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -98,6 +90,7 @@ jobs:
         with:
           name: lighthouse-reports-desktop
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          retention-days: 1
 
   lighthouse_mobile:
     runs-on: ubuntu-24.04
@@ -124,6 +117,7 @@ jobs:
         with:
           name: lighthouse-reports-mobile
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          retention-days: 1
 
   lighthouse_accessibility:
     runs-on: ubuntu-24.04
@@ -150,3 +144,4 @@ jobs:
         with:
           name: lighthouse-reports-accessibility
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          retention-days: 1

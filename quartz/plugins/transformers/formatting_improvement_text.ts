@@ -93,7 +93,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
   [/^(?! *>| +\S)(?<content>.*?\S.*?)\$\$ *$/gm, "$<content>\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
-  [/(?<= |^);\)(?= |$)/gi, "😉"], // Winking face
+  [/(?<= |^);\)(?= |$)/gm, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],

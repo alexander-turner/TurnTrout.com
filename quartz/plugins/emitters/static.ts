@@ -69,10 +69,11 @@ export const Static: QuartzEmitterPlugin = () => ({
       }
     }
 
-    // Copy everything else to /static/
+    // Copy everything else to /static/, excluding test files
     await fs.promises.cp(staticPath, joinSegments(argv.output, "static"), {
       recursive: true,
       dereference: true,
+      filter: (source: string) => !source.endsWith(".test.ts") && !source.endsWith(".test.js"),
     })
 
     // Add all other files to emitted files list

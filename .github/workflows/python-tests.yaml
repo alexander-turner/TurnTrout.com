@@ -1,8 +1,12 @@
 name: Python tests
 
+concurrency:
+  group: python-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "scripts/**"
       - "config/python/**"
@@ -16,6 +20,7 @@ on:
       - "pyproject.toml"
       - "uv.lock"
       - ".github/actions/**"
+  merge_group:
 
 permissions:
   actions: read

@@ -1,7 +1,9 @@
 import { type GlobalConfiguration } from "../cfg"
+import { formatAuthors } from "../components/Authors"
 import { formatTitle } from "../components/component_utils"
 import { simpleConstants, faviconUrl } from "../components/constants"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../styles/variables"
 import { escapeHTML } from "./escape"
 import { resolveRelative, type FullSlug } from "./path"
 
@@ -25,13 +27,14 @@ interface HeadProps {
 }
 
 // skipcq: JS-D1001
-function maybeRenderAuthorTags(authors: string | undefined): string {
-  if (!authors) {
+function maybeRenderAuthorTags(authors: string[] | undefined): string {
+  if (!authors || authors.length === 0) {
     return ""
   }
+  const authorsString = formatAuthors(authors)
   return `
     <meta name="twitter:label1" content="Written by" />
-    <meta name="twitter:data1" content="${escapeHTML(authors)}" />
+    <meta name="twitter:data1" content="${escapeHTML(authorsString)}" />
   `
 }
 
@@ -73,13 +76,16 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
   }
   const imageTags = renderImageTags(cardImageUrl, altCardText)
 
-  const authors = fileData.frontmatter?.authors as string | undefined
+  const authors = fileData.frontmatter?.authors
   const videoPreview = fileData.frontmatter?.video_preview_link as string | undefined
   const videoTags = videoPreview ? maybeProduceVideoTag(videoPreview) : ""
 
   return `
     <title>${escapeHTML(title)}</title>
     <meta name="description" content="${escapeHTML(description)}">
+    <link rel="canonical" href="${escapeHTML(pageUrl)}" />
+    <meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />
     <meta property="og:title" content="${escapeHTML(title)}" />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="${escapeHTML(redirUrl)}" />

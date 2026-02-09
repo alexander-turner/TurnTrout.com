@@ -1,0 +1,150 @@
+name: Site build checks
+
+concurrency:
+  group: site-build-checks-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/built_site_checks.py"
+      - "scripts/check_internal_links.py"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+  pull_request:
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/built_site_checks.py"
+      - "scripts/check_internal_links.py"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+  merge_group:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    name: site-checks-build
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
+          retention-days: 1
+
+  built-site-checks:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
+
+      - name: Check CSS variables
+        run: |
+          # Run stylelint to check for unknown CSS variables
+          # Filter out known false positives and check if any real issues remain
+          WARNINGS=$(pnpm exec stylelint public/index.css \
+            --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
+            | grep -vE 'shiki|problems|public/index.css' \
+            | grep . || true)
+
+          if [ -n "$WARNINGS" ]; then
+            echo "Error: Found unknown CSS variable(s):"
+            echo "$WARNINGS"
+            exit 1
+          fi
+
+      - name: Run built site checks
+        run: uv run python scripts/built_site_checks.py
+
+  linkchecker:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
+
+      - name: Install linkchecker
+        run: pip install linkchecker
+
+      - name: Start server and run linkchecker
+        run: |
+          # Start server in background
+          pnpm exec serve public -l 8080 &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          # Check internal links
+          echo "Checking internal links..."
+          linkchecker http://localhost:8080 --threads 50
+          INTERNAL_STATUS=$?
+
+          # Check external links (only assets.turntrout.com and github repo)
+          echo "Checking external links..."
+          linkchecker public/**/*.html \
+            --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
+            --check-extern \
+            --threads 30 \
+            --user-agent "linkchecker" \
+            --timeout 40
+          EXTERNAL_STATUS=$?
+
+          # Stop server
+          kill $SERVER_PID 2>/dev/null || true
+
+          # Exit with failure if any check failed
+          if [ $INTERNAL_STATUS -ne 0 ] || [ $EXTERNAL_STATUS -ne 0 ]; then
+            echo "Link checks failed:"
+            echo "Internal linkchecker: $INTERNAL_STATUS"
+            echo "External linkchecker: $EXTERNAL_STATUS"
+            exit 1
+          fi

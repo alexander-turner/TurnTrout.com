@@ -18,10 +18,11 @@ import {
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
+import { createWordJoinerSpan } from "../transformers/utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb } = simpleConstants
+const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -84,11 +85,17 @@ export const generateTestCountContent = (): ContentGenerator => {
   }
 }
 
+interface GitCountOptions {
+  author?: string
+  grep?: string
+}
+
 // skipcq: JS-D1001
-export async function countGitCommits(author: string): Promise<number> {
-  const output = execSync(`git rev-list --all --count --author="${author}"`, {
-    encoding: "utf-8",
-  })
+export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  let cmd = "git rev-list --all --count"
+  if (options.author) cmd += ` --author="${options.author}"`
+  if (options.grep) cmd += ` --grep="${options.grep}"`
+  const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -138,6 +145,7 @@ export async function countLinesOfCode(): Promise<number> {
 
 export interface RepoStats {
   commitCount: number
+  aiCommitCount: number
   jsTestCount: number
   playwrightTestCount: number
   pytestCount: number
@@ -146,16 +154,17 @@ export interface RepoStats {
 
 // skipcq: JS-D1001
 export async function computeRepoStats(): Promise<RepoStats> {
-  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits("Alex Turner"),
+      countGitCommits({ author: "Alex Turner" }),
+      countGitCommits({ grep: "claude.ai/code/session" }),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
       countLinesOfCode(),
     ])
 
-  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -194,7 +203,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [h("span", { className: "favicon-span" }, [faviconElement])]
+    return [createWordJoinerSpan(), faviconElement]
   }
 }
 
@@ -254,6 +263,15 @@ export const generateFaviconContent = (): ContentGenerator => {
 
     return [h("table", { class: "center-table-headings" }, tableRows)]
   }
+}
+
+/**
+ * Converts an HTML file path to a slug by removing the .html extension.
+ * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
+ * @returns The slug (e.g., "design" or "posts/foo")
+ */
+export function htmlFileToSlug(htmlFile: string): string {
+  return htmlFile.replace(/\.html$/, "")
 }
 
 /**
@@ -346,10 +364,19 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",
       generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-playwright-configs", generateConstantContent(playwrightConfigs.toLocaleString())],
+    [
+      "populate-playwright-total-tests",
+      generateConstantContent((stats.playwrightTestCount * playwrightConfigs).toLocaleString()),
     ],
     ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
     ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],

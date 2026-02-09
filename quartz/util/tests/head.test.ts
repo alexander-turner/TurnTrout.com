@@ -12,6 +12,7 @@ import {
   faviconMimeType,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../../styles/variables"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
@@ -71,6 +72,13 @@ describe("renderHead", () => {
 
       expect(result).toContain("<title>My Test Article</title>")
       expect(result).toContain('<meta name="description" content="This is a test description">')
+      expect(result).toContain('<link rel="canonical" href="https://turntrout.com/test-article" />')
+      expect(result).toContain(
+        `<meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />`,
+      )
+      expect(result).toContain(
+        `<meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />`,
+      )
       expect(result).toContain('<meta property="og:title" content="My Test Article" />')
       expect(result).toContain('<meta property="og:type" content="article" />')
       expect(result).toContain('<meta property="og:site_name" content="The Pond" />')
@@ -116,7 +124,7 @@ describe("renderHead", () => {
       const data = createMockData({
         title: "Complete Test",
         description: "Complete description",
-        authors: "Test Author",
+        authors: ["Test Author"],
       })
 
       const result = renderHead({
@@ -128,6 +136,9 @@ describe("renderHead", () => {
       // Verify all major sections are present
       expect(result).toContain("<title>Complete Test</title>")
       expect(result).toContain('<meta name="description" content="Complete description">')
+      expect(result).toContain(
+        '<link rel="canonical" href="https://turntrout.com/complete-test" />',
+      )
 
       // Open Graph tags
       expect(result).toContain('<meta property="og:title" content="Complete Test" />')
@@ -166,6 +177,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta property="og:url" content="https://example.com/test-page" />')
+      expect(result).toContain('<link rel="canonical" href="https://example.com/test-page" />')
     })
 
     it("should handle redirect URLs correctly", () => {
@@ -286,7 +298,7 @@ describe("renderHead", () => {
   describe("author handling", () => {
     it("should include author meta tags when authors are provided", () => {
       const data = createMockData({
-        authors: "John Doe, Jane Smith",
+        authors: ["John Doe", "Jane Smith"],
       })
 
       const result = renderHead({
@@ -296,7 +308,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta name="twitter:label1" content="Written by" />')
-      expect(result).toContain('<meta name="twitter:data1" content="John Doe, Jane Smith" />')
+      expect(result).toContain('<meta name="twitter:data1" content="John Doe and Jane Smith" />')
     })
 
     it("should not include author meta tags when authors are missing", () => {
@@ -457,7 +469,7 @@ describe("renderHead", () => {
 
   it("should escape special characters in author names", () => {
     const data = createMockData({
-      authors: "Author <Name>",
+      authors: ["Author <Name>"],
     })
 
     const result = renderHead({
