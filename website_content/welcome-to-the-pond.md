@@ -126,7 +126,7 @@ Analogies can be useful; analogies can be deadly. For an analogy to be useful, i
 Each post states when it was published and when it was last updated. The updated link points to the file on [my GitHub repo](https://github.com/alexander-turner/TurnTrout.com) where the edit history can be inspected.
 
 <figure style="max-width: min(90%, 370px); margin-left: auto; margin-right: auto;">
-<blockquote class="admonition admonition-metadata" data-admonition="info" style="text-align:left; color: var(--midground); background-color: var(--background);"><div class="admonition-title"><div class="admonition-icon"></div><div class="admonition-title-inner">About this post</div></div><div class="admonition-content"><div style="padding-left: 0px;"><p style="color:var(--midground);"><span class="reading-time">Read time: 8 minutes</span></p><p style="color:var(--midground);"><span class="publication-str">Published on <time datetime="2024-10-30 00:00:00">October 30<sup class="ordinal-suffix">th</sup>, 2024</time></span></p><p style="color:var(--midground);"><span class="last-updated-str"> <a href="https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/welcome-to-the-pond.md" class="external" style="color:var(--midground);" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-11-12 00:00:00">November 11<sup class="ordinal-suffix">th</sup>, 2024</time></span></p></div></div></blockquote>
+<div id="populate-metadata-admonition"></div>
 <figcaption>An example post information bubble.</figcaption>
 </figure>
 

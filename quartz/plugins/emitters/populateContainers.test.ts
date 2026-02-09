@@ -580,6 +580,29 @@ describe("PopulateContainers", () => {
       })
     })
 
+    describe("generateMetadataAdmonition", () => {
+      it("should generate a metadata admonition using renderPostStatistics", async () => {
+        const generator = populateModule.generateMetadataAdmonition()
+        const elements = await generator()
+
+        expect(elements).toHaveLength(1)
+        const blockquote = elements[0]
+        expect(blockquote.tagName).toBe("blockquote")
+        expect(blockquote.properties?.className).toEqual(
+          expect.arrayContaining(["admonition", "admonition-metadata"]),
+        )
+        expect(blockquote.properties?.dataAdmonition).toBe("info")
+      })
+
+      it("should strip the post-statistics ID to avoid duplicates", async () => {
+        const generator = populateModule.generateMetadataAdmonition()
+        const elements = await generator()
+
+        const blockquote = elements[0]
+        expect(blockquote.properties?.id).toBeUndefined()
+      })
+    })
+
     describe("populateElements", () => {
       it.each([
         [
