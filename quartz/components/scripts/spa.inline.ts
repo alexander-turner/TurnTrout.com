@@ -9,7 +9,7 @@ import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/pa
 import { simpleConstants } from "../constants"
 import { debounceWaitMs } from "../constants"
 import { debounce } from "./component_script_utils"
-import { matchHTML, getSearchMatchScrollPosition } from "./search"
+import { matchHTML } from "./search"
 import { isLocalUrl } from "./spa_utils"
 
 const { pondVideoId } = simpleConstants
@@ -117,7 +117,8 @@ function scrollToMatch(searchText: string): boolean {
   const firstMatch = matchedArticle.querySelector(".search-match") as HTMLElement | null
   if (!firstMatch) return false
 
-  const targetPos = getSearchMatchScrollPosition(firstMatch, document.documentElement, 0.25)
+  const targetPos =
+    firstMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
   window.scrollTo({ top: targetPos, behavior: "instant" })
   return true
 }
