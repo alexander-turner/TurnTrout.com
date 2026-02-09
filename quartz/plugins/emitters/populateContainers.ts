@@ -5,9 +5,12 @@ import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
+import { render } from "preact-render-to-string"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { renderPostStatistics } from "../../components/ContentMeta"
+import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -208,6 +211,42 @@ export const generateSpecialFaviconContent = (
 }
 
 /**
+ * Generates a metadata admonition ("About this post" box) with dummy data,
+ * using the same component that renders real post metadata.
+ */
+export const generateMetadataAdmonition = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const dummyProps = {
+      cfg: {},
+      fileData: {
+        text: "word ".repeat(1600), // ~8 minutes reading time
+        relativePath: "welcome-to-the-pond.md",
+        frontmatter: {
+          date_published: new Date("2024-10-30"),
+          date_updated: "2024-11-12",
+        },
+      },
+    } as unknown as QuartzComponentProps
+
+    const jsx = renderPostStatistics(dummyProps)
+    // istanbul ignore next
+    if (!jsx) return []
+
+    const html = render(jsx)
+    const root = fromHtml(html, { fragment: true })
+
+    // Strip the post-statistics ID to avoid duplicate IDs on the page
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "post-statistics") {
+        delete node.properties.id
+      }
+    })
+
+    return root.children.filter((c): c is Element => c.type === "element")
+  }
+}
+
+/**
  * Generates favicon elements based on favicon counts from the build process.
  */
 export const generateFaviconContent = (): ContentGenerator => {
@@ -351,6 +390,7 @@ const createPopulatorMap = (
 ): Map<string, ContentGenerator> => {
   return new Map([
     // IDs
+    ["populate-metadata-admonition", generateMetadataAdmonition()],
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
