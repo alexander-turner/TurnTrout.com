@@ -377,7 +377,7 @@ p:has(+ .subtitle),
 }
 
 .subtitle {
-  color: var(--midground-strong);
+  color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
 

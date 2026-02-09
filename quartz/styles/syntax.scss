@@ -1,3 +1,14 @@
+// WCAG AA-compliant overrides for Shiki github-light theme.
+// Contrast ratios measured against code block background #f2f3f7
+// (= color-mix(in srgb, #fcfcff 90%, #9ca0b0)).
+// Must set `color` directly — overriding the CSS custom property doesn't work
+// because inline styles (set by Shiki on each <span>) have higher specificity.
+$shiki-red: #c11e2a; // Keywords/operators: #D73A49 (4.13:1) → 5.43:1
+$shiki-orange: #a24100; // Parameters/attributes: #E36209 (3.15:1) → 5.75:1
+$shiki-gray: #57606a; // Comments: #6A737D (4.34:1) → 5.76:1
+$shiki-green: #116329; // Strings/literals: #22863A (4.17:1) → 6.67:1
+$shiki-blue: #0550ae; // Constants/builtins: #005CC5 (5.68:1) → 7.25:1
+
 code[data-theme*=" "] {
   color: var(--shiki-light);
 }
@@ -6,35 +17,24 @@ code[data-theme*=" "] span {
   color: var(--shiki-light);
 }
 
-// Override Shiki github-light colors that fail WCAG AA contrast (4.5:1)
-// on code block background #f2f3f7 (= color-mix(in srgb, #fcfcff 90%, #9ca0b0)).
-// Must set `color` directly — overriding the CSS custom property doesn't work
-// because inline styles (set by Shiki on each <span>) have higher specificity.
-// Red keywords (import, return, def, etc.): #D73A49 (4.13:1) → #c11e2a (5.43:1)
 code[data-theme*=" "] span[style*="--shiki-light:#D73A49"] {
-  color: #c11e2a;
+  color: $shiki-red;
 }
 
-// Orange parameters/attributes: #E36209 (3.15:1) → #a24100 (5.75:1)
 code[data-theme*=" "] span[style*="--shiki-light:#E36209"] {
-  color: #a24100;
+  color: $shiki-orange;
 }
 
-// Gray comments: #6A737D (4.34:1) → #57606a (5.76:1)
 code[data-theme*=" "] span[style*="--shiki-light:#6A737D"] {
-  color: #57606a;
+  color: $shiki-gray;
 }
 
-// Green strings/literals: #22863A (4.17:1) → #116329 (6.67:1)
 code[data-theme*=" "] span[style*="--shiki-light:#22863A"] {
-  color: #116329;
+  color: $shiki-green;
 }
 
-// Blue constants/builtins: #005CC5 (5.68:1) → #0550ae (7.25:1)
-// Passes WCAG AA numerically, but axe flags it inside admonitions with
-// color-mix() backgrounds that it cannot fully resolve.
 code[data-theme*=" "] span[style*="--shiki-light:#005CC5"] {
-  color: #0550ae;
+  color: $shiki-blue;
 }
 
 [data-theme="dark"] code[data-theme*=" "] {
