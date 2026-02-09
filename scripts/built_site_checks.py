@@ -2205,6 +2205,33 @@ _SKIP_PARENT_CLASSES = (
 )
 
 
+def _unwrap_smallcaps(el_copy: Tag) -> None:
+    """
+    Unwrap ``<abbr class="small-caps">`` elements in *el_copy*.
+
+    When an abbr is embedded in a larger word (its previous sibling
+    text node doesn't end with whitespace), the adjacent text is
+    lowercased so the full token matches the lowered wordlist entry.
+    For example ``3Blue<abbr>1brown</abbr>`` → ``3blue1brown``.
+    """
+    for abbr in el_copy.select("abbr.small-caps"):
+        prev = abbr.previous_sibling
+        if (
+            isinstance(prev, NavigableString)
+            and prev
+            and not prev[-1].isspace()
+        ):
+            text = str(prev)
+            # Find last word boundary
+            i = len(text) - 1
+            while i >= 0 and not text[i].isspace():
+                i -= 1
+            prev.replace_with(
+                NavigableString(text[: i + 1] + text[i + 1 :].lower())
+            )
+        abbr.unwrap()
+
+
 def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
@@ -2234,28 +2261,7 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            # Unwrap abbreviation elements (smallcaps lowercases them).
-            # The temp wordlist includes lowercased variants so that
-            # e.g. "relu" (from ReLU → <abbr>relu</abbr>) matches.
-            # When an abbr is part of a larger word (e.g. "3Blue" +
-            # <abbr>1brown</abbr>), also lowercase adjacent text so
-            # the full token matches the lowered wordlist entry.
-            for abbr in el_copy.select("abbr.small-caps"):
-                prev = abbr.previous_sibling
-                if (
-                    isinstance(prev, NavigableString)
-                    and prev
-                    and not prev[-1].isspace()
-                ):
-                    text = str(prev)
-                    # Find last word boundary
-                    i = len(text) - 1
-                    while i >= 0 and not text[i].isspace():
-                        i -= 1
-                    prev.replace_with(
-                        NavigableString(text[: i + 1] + text[i + 1 :].lower())
-                    )
-                abbr.unwrap()
+            _unwrap_smallcaps(el_copy)
 
             # Fix inline element word boundaries:
             # - <br> → space (prevents "state<br>while" → "statewhile")
