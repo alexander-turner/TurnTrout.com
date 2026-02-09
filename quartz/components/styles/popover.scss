@@ -147,6 +147,13 @@
     & > .popover-inner {
       border: 1px solid var(--midground-faint);
     }
+
+    // Instant appearance — no hover-style fade-in delay
+    &.popover-visible {
+      animation: none;
+      visibility: visible;
+      opacity: 1;
+    }
   }
 
   // Close button lives on .popover (not .popover-inner) so it doesn't

@@ -15,6 +15,10 @@ let linkListenerController: AbortController | null = null
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
+// Generation counter to detect stale async calls to mouseEnterHandler.
+// Incremented synchronously at call start; checked after await to bail
+// out if a newer call has started.
+let popoverGeneration = 0
 
 /**
  * Handles the mouse enter event for link elements
@@ -24,6 +28,12 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   if (!parentOfPopover || this.dataset.noPopover === "true") {
     return
   }
+
+  // Capture state synchronously before the await so concurrent calls
+  // don't share or leak the pinned flag across popovers.
+  const shouldPin = nextPopoverPinned
+  nextPopoverPinned = false
+  const thisGeneration = ++popoverGeneration
 
   const thisUrl = new URL(document.location.href)
   thisUrl.hash = ""
@@ -40,15 +50,21 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   }
 
   const popoverElement = await createPopover(popoverOptions)
+
+  // A newer call to mouseEnterHandler started while we were fetching —
+  // discard this stale popover so we don't end up with duplicates.
+  if (thisGeneration !== popoverGeneration) {
+    return
+  }
+
   if (!popoverElement) {
     throw new Error("Failed to create popover")
   }
   // Used by the click toggle logic to detect "is this popover already open for this link?"
   popoverElement.dataset.linkHref = this.href
 
-  if (nextPopoverPinned) {
+  if (shouldPin) {
     popoverElement.dataset.pinned = "true"
-    nextPopoverPinned = false
   }
 
   parentOfPopover.prepend(popoverElement)
