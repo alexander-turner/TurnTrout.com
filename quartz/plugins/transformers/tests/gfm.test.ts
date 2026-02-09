@@ -17,6 +17,7 @@ import {
   findFootnoteBackArrow,
   appendArrowToFootnoteListItemVisitor,
   htmlAccessibilityPlugin,
+  adoptPrecedingSiblingAsDt,
   deduplicateSvgIds,
 } from "../gfm"
 
@@ -700,11 +701,115 @@ describe("gfmVisitor function", () => {
   })
 })
 
+describe("adoptPrecedingSiblingAsDt", () => {
+  it("adopts preceding <p> as <dt>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), dl]
+
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(true)
+    expect(children).toHaveLength(1)
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it("adopts past whitespace text nodes", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), { type: "text", value: "\n" }, dl]
+
+    expect(adoptPrecedingSiblingAsDt(dl, 2, children)).toBe(true)
+    expect(children).toHaveLength(1) // <p> and whitespace removed
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+  })
+
+  it("returns false when no preceding element", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    expect(adoptPrecedingSiblingAsDt(dl, 0, [dl])).toBe(false)
+  })
+
+  it("returns false when preceding element is not <p>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("h2", ["Heading"]), dl]
+
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(false)
+    expect(children).toHaveLength(2) // unchanged
+  })
+})
+
 describe("htmlAccessibilityPlugin (integration)", () => {
   const runPlugin = (tree: Root): void => {
     const plugin = htmlAccessibilityPlugin()
     plugin(tree)
   }
+
+  it("adopts preceding <p> as <dt> for orphaned <dl>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const tree: Root = { type: "root", children: [h("p", ["Term"]), dl] }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(1)
+    expect(dl.tagName).toBe("dl")
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it("falls back to <div>/<p> when no preceding <p>", () => {
+    const dl = h("dl", [h("dd", ["Orphan"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+    expect((dl.children[0] as Element).tagName).toBe("p")
+  })
+
+  it("preserves valid <dl> with <dt>/<dd> pairs", () => {
+    const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("dl")
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it.each([
+    ["dd", "dd"],
+    ["dt", "dt"],
+  ])("converts orphaned <%s> outside <dl> to <p>", (_label, tag) => {
+    const element = h(tag, ["Orphaned content"])
+    const tree: Root = { type: "root", children: [h("div", [element])] }
+    runPlugin(tree)
+
+    expect(element.tagName).toBe("p")
+  })
+
+  it("preserves <dd> inside valid <dl>", () => {
+    const dd = h("dd", ["Valid description"])
+    const dl = h("dl", [h("dt", ["Term"]), dd])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("dd")
+  })
+
+  it("handles elements without children in orphaned dd/dt check", () => {
+    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
+    const tree: Root = { type: "root", children: [brokenNode] }
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("handles multiple consecutive orphaned <dl>s, each adopting its own <p>", () => {
+    const dl1 = h("dl", [h("dd", ["Def1"])])
+    const dl2 = h("dl", [h("dd", ["Def2"])])
+    const tree: Root = {
+      type: "root",
+      children: [h("p", ["Term1"]), dl1, h("p", ["Term2"]), dl2],
+    }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(2)
+    expect((dl1.children[0] as Element).tagName).toBe("dt")
+    expect((dl2.children[0] as Element).tagName).toBe("dt")
+  })
 
   it.each([
     ["with existing properties", false],

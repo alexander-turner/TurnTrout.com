@@ -139,11 +139,102 @@ function ensureVideoCaptionTracks(tree: Root): void {
   })
 }
 
+/**
+ * When a <dl> has only orphaned <dd> children (no <dt>), tries to adopt the
+ * immediately preceding <p> sibling as a <dt>, producing a valid definition
+ * list. This fixes the common pattern where a blank line between term and
+ * `: ` syntax breaks the remark-definition-list association:
+ *
+ *   Markdown:           HTML before fix:              HTML after fix:
+ *   Term                <p>Term</p>                   <dl>
+ *                       <dl><dd>Def</dd></dl>           <dt>Term</dt>
+ *   : Def                                               <dd>Def</dd>
+ *                                                     </dl>
+ *
+ * Mutates parentChildren in place (splices out the adopted <p>).
+ * @returns true if a <p> was successfully adopted as <dt>
+ */
+export function adoptPrecedingSiblingAsDt(
+  dl: Element,
+  dlIndex: number,
+  parentChildren: Element["children"],
+): boolean {
+  // Walk backwards past whitespace text nodes to find preceding element
+  let prevIdx = dlIndex - 1
+  while (prevIdx >= 0 && parentChildren[prevIdx].type !== "element") {
+    prevIdx--
+  }
+
+  if (prevIdx < 0) return false
+
+  const prev = parentChildren[prevIdx] as Element
+  if (prev.tagName !== "p") return false
+
+  // Convert <p> contents to <dt> and prepend to <dl>
+  const dt: Element = {
+    type: "element",
+    tagName: "dt",
+    properties: {},
+    children: prev.children,
+  }
+
+  // Remove <p> and any whitespace between it and <dl>
+  parentChildren.splice(prevIdx, dlIndex - prevIdx)
+  dl.children.unshift(dt)
+
+  return true
+}
+
+/**
+ * Fixes <dl> elements that have only orphaned <dd> (no <dt>) by either:
+ * 1. Adopting a preceding <p> sibling as a <dt> (preserves definition list semantics)
+ * 2. Falling back to <dl> → <div> and <dd> → <p> when no <p> is available
+ *
+ * Also converts stray <dd>/<dt> elements found outside any <dl> to <p>.
+ */
+function fixOrphanedDefinitionLists(tree: Root): void {
+  const dlNodes: Array<{ node: Element; index: number; parentChildren: Element["children"] }> = []
+
+  visit(tree, "element", (node: Element, index: number | undefined, parent) => {
+    if (node.tagName === "dl" && index !== undefined && parent) {
+      dlNodes.push({ node, index, parentChildren: parent.children as Element["children"] })
+    }
+  })
+
+  // Process in reverse so parent splices don't invalidate earlier indices
+  for (const { node: dl, index: dlIndex, parentChildren } of dlNodes.reverse()) {
+    const hasDt = dl.children.some((c) => c.type === "element" && c.tagName === "dt")
+    if (hasDt) continue
+
+    if (adoptPrecedingSiblingAsDt(dl, dlIndex, parentChildren)) continue
+
+    // Fallback: degrade to <div> with <p> children
+    dl.tagName = "div"
+    for (const child of dl.children) {
+      if (child.type === "element" && child.tagName === "dd") {
+        child.tagName = "p"
+      }
+    }
+  }
+
+  // Convert stray <dd>/<dt> outside any <dl> to <p>
+  visit(tree, "element", (node: Element) => {
+    if (!node.children) return
+    for (const child of node.children) {
+      if (child.type !== "element") continue
+      if ((child.tagName === "dd" || child.tagName === "dt") && node.tagName !== "dl") {
+        child.tagName = "p"
+      }
+    }
+  })
+}
+
 export function htmlAccessibilityPlugin() {
   return (tree: Root) => {
     // istanbul ignore next --- defensive
     if (!tree) return
 
+    fixOrphanedDefinitionLists(tree)
     makePreElementsKeyboardAccessible(tree)
     ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
