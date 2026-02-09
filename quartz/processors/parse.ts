@@ -16,6 +16,7 @@ import workerpool, { Promise as WorkerPromise } from "workerpool"
 import type { ProcessedContent } from "../plugins/vfile"
 import type { BuildCtx } from "../util/ctx"
 
+import { foregroundDark, foregroundLight, midgroundDark, midgroundLight } from "../styles/variables"
 import { createWinstonLogger } from "../util/log"
 import { type FilePath, QUARTZ, slugifyFilePath } from "../util/path"
 import { PerfTimer } from "../util/perf"
@@ -56,19 +57,19 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         mermaidConfig: {
           theme: "default",
           themeVariables: {
-            lineColor: "var(--midground)",
-            primaryTextColor: "var(--foreground)",
-            nodeTextColor: "var(--foreground)",
-            labelTextColor: "var(--foreground)",
+            lineColor: midgroundLight,
+            primaryTextColor: foregroundLight,
+            nodeTextColor: foregroundLight,
+            labelTextColor: foregroundLight,
           },
         },
         dark: {
           theme: "dark",
           themeVariables: {
-            lineColor: "var(--midground)",
-            primaryTextColor: "var(--foreground)",
-            nodeTextColor: "var(--foreground)",
-            labelTextColor: "var(--foreground)",
+            lineColor: midgroundDark,
+            primaryTextColor: foregroundDark,
+            nodeTextColor: foregroundDark,
+            labelTextColor: foregroundDark,
           },
         },
       })
