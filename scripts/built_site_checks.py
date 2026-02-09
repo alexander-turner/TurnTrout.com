@@ -132,8 +132,9 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}\u2019\u201d\u2026\u2014"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+WORD_JOINER = "\u2060"
 PRESENTATIONAL_TAGS = ("span", "br")
 
 
@@ -177,7 +178,7 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     # Strip zero-width spaces and other invisible characters
     text = text.replace("\u200b", "")  # zero-width space
     text = text.replace("\ufeff", "")  # zero-width no-break space
-    text = text.replace("\u2060", "")  # word joiner
+    text = text.replace(WORD_JOINER, "")
     return text.strip()
 
 

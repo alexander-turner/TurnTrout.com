@@ -187,6 +187,9 @@ export function hasAncestor(
   return ancestors.some((anc) => ancestorPredicate(anc as Element))
 }
 
+/** Unicode word joiner character (U+2060) — prevents line breaks without visible output. */
+export const WORD_JOINER = "\u2060"
+
 /**
  * Creates a word joiner span element that prevents line breaks
  * without polluting clipboard content (user-select: none).
@@ -195,7 +198,7 @@ const WORD_JOINER_SPAN = {
   type: "element" as const,
   tagName: "span",
   properties: { className: "word-joiner", ariaHidden: "true" },
-  children: [{ type: "text" as const, value: "\u2060" }],
+  children: [{ type: "text" as const, value: WORD_JOINER }],
 }
 
 export function createWordJoinerSpan(): Element {
