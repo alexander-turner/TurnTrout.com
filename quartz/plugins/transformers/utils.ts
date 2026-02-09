@@ -191,13 +191,19 @@ export function hasAncestor(
  * Creates a word joiner span element that prevents line breaks
  * without polluting clipboard content (user-select: none).
  */
+const WORD_JOINER_SPAN = {
+  type: "element" as const,
+  tagName: "span",
+  properties: { className: "word-joiner", ariaHidden: "true" },
+  children: [{ type: "text" as const, value: "\u2060" }],
+}
+
 export function createWordJoinerSpan(): Element {
   return {
-    type: "element",
-    tagName: "span",
-    properties: { className: "word-joiner", ariaHidden: "true" },
-    children: [{ type: "text", value: "\u2060" } as Text],
-  }
+    ...WORD_JOINER_SPAN,
+    properties: { ...WORD_JOINER_SPAN.properties },
+    children: [{ ...WORD_JOINER_SPAN.children[0] }],
+  } as Element
 }
 
 // Does node have a class that includes the given className?

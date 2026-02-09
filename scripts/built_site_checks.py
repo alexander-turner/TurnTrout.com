@@ -1153,10 +1153,10 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
 
     for favicon in _get_favicons_to_check(soup):
         prev_sibling = favicon.previous_sibling
-        if isinstance(prev_sibling, Tag):
-            classes = script_utils.get_classes(prev_sibling)
-            if "word-joiner" in classes:
-                continue
+        if isinstance(
+            prev_sibling, Tag
+        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            continue
 
         # Identify the favicon for the error message
         if favicon.name == "img":
