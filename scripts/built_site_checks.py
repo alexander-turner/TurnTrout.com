@@ -2209,8 +2209,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, and style content, uppercases
-    smallcaps abbreviation text, and inserts spaces around
+    Strips code, KaTeX, script, and style content, unwraps
+    smallcaps abbreviation elements (lowercasing adjacent text
+    when embedded in a word), and inserts spaces around
     ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
     for each paragraph.
     """
@@ -2233,11 +2234,28 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            # Uppercase abbreviation text (smallcaps lowercases them).
-            # The temp wordlist includes uppercased variants so that
-            # e.g. RELU (from ReLU → relu → RELU) matches.
+            # Unwrap abbreviation elements (smallcaps lowercases them).
+            # The temp wordlist includes lowercased variants so that
+            # e.g. "relu" (from ReLU → <abbr>relu</abbr>) matches.
+            # When an abbr is part of a larger word (e.g. "3Blue" +
+            # <abbr>1brown</abbr>), also lowercase adjacent text so
+            # the full token matches the lowered wordlist entry.
             for abbr in el_copy.select("abbr.small-caps"):
-                abbr.string = abbr.get_text().upper()
+                prev = abbr.previous_sibling
+                if (
+                    isinstance(prev, NavigableString)
+                    and prev
+                    and not prev[-1].isspace()
+                ):
+                    text = str(prev)
+                    # Find last word boundary
+                    i = len(text) - 1
+                    while i >= 0 and not text[i].isspace():
+                        i -= 1
+                    prev.replace_with(
+                        NavigableString(text[: i + 1] + text[i + 1 :].lower())
+                    )
+                abbr.unwrap()
 
             # Fix inline element word boundaries:
             # - <br> → space (prevents "state<br>while" → "statewhile")
@@ -2296,9 +2314,9 @@ def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
     Create a temp wordlist with lowercased *and* uppercased variants.
 
     The smallcaps transform lowercases abbreviations (``ReLU`` →
-    ``relu``), and the spellcheck extraction uppercases them back
-    (``relu`` → ``RELU``).  Adding both variants ensures that
-    mixed-case entries like ``ReLU`` also match as ``RELU``.
+    ``relu``), and the spellcheck extraction keeps them lowercase.
+    Adding both variants ensures that entries like ``ReLU`` also
+    match as ``relu`` in the extracted text.
     Returns the temp file path, or *None* if *wordlist* doesn't exist.
     """
     if not wordlist.exists():

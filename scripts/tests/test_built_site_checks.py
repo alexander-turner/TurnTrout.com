@@ -2543,10 +2543,22 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # Abbreviation text is uppercased (smallcaps lowercases them)
-    assert "9COMBINATIONS of strategies." in result[0]
+    # Abbreviation text kept as lowercase (smallcaps lowercases them)
+    assert "9combinations of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
+
+
+def test_extract_flat_paragraph_texts_partial_word_abbr():
+    """When an abbr is part of a larger word, adjacent text is lowercased so the
+    full token matches the lowered wordlist entry."""
+    html = """<article>
+    <p>3Blue<abbr class="small-caps">1brown</abbr>'s videos</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    # "3Blue" adjacent to abbr gets lowercased → "3blue1brown's"
+    assert "3blue1brown's" in result[0]
 
 
 def test_extract_flat_paragraph_texts_skips_non_article():

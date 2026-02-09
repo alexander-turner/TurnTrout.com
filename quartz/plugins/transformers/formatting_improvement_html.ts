@@ -482,7 +482,10 @@ export function plusToAmpersand(text: string): string {
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
 // At the end, watch out for double periods
 // Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
-const amPmRegex = new RegExp(`(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`, "gi")
+const amPmRegex = new RegExp(
+  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?![a-zA-Z])`,
+  "gi",
+)
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
     const groups = args[args.length - 1] as { time: string }
