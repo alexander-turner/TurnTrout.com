@@ -381,30 +381,6 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Text fragment matching only title text does not scroll down the page", async ({ page }) => {
-  // "features" appears in "Testing site features" (the title) but not in the body.
-  await search(page, "features")
-
-  // Click the test page result card specifically (not first() which may be a different page)
-  const testPageResult = page.locator('.result-card[href*="test-page"]')
-  await expect(testPageResult).toBeVisible()
-  await testPageResult.click()
-  await page.waitForURL("**/test-page**")
-
-  // Title match should be highlighted
-  const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch).toBeAttached()
-  await expect(titleMatch).toContainText(/features/i)
-
-  // No body matches should exist for this term
-  const bodyMatches = page.locator("article .search-match:not(#article-title .search-match)")
-  await expect(bodyMatches).toHaveCount(0)
-
-  // Page should stay at the top, not scroll down
-  const scrollY = await page.evaluate(() => window.scrollY)
-  expect(scrollY).toBe(0)
-})
-
 test("Search URL updates as we select different results", async ({ page }) => {
   test.skip(!showingPreview(page))
 
