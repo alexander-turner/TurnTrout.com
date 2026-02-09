@@ -19,7 +19,7 @@ import {
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import { createWinstonLogger } from "../../util/log"
-import { hasClass } from "./utils"
+import { createWordJoinerSpan, hasClass } from "./utils"
 
 const {
   minFaviconCount,
@@ -681,35 +681,27 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
   }
 
   const toAppend: FaviconNode = createFaviconElement(imgPath)
-
-  const maybeSpliceTextResult = maybeSpliceText(node, toAppend)
-  if (maybeSpliceTextResult) {
-    node.children.push(maybeSpliceTextResult)
-  } else {
-    // If maybeSpliceText returns null (e.g., when zooming into nested elements),
-    // the favicon was already added to the nested element, so we don't need to do anything
-    logger.debug("Favicon was added to nested element, skipping direct append")
-  }
+  appendFaviconWithWordJoiner(node, toAppend)
 }
 
 // Glyphs where top-right corner occupied
 export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'"]
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
-export const maxCharsToRead = 4
 
 /**
- * Attempts to splice text content with a favicon element.
+ * Appends a favicon to a node, preceded by a word joiner character (U+2060)
+ * to prevent line breaking between the text and the favicon.
  *
- * This function handles text nodes by:
- * 1. Taking the last few characters (up to maxCharsToRead)
- * 2. Creating a span containing those characters and the favicon
- * 3. Adjusting spacing if the last character needs extra margin
+ * This function:
+ * 1. Finds the last meaningful child node
+ * 2. Recurses into inline elements (code, em, strong, etc.)
+ * 3. Adds close-text class if the last character needs extra margin
+ * 4. Appends a word joiner + favicon
  *
  * @param node - The Element node to process
  * @param imgNodeToAppend - The favicon node to append
- * @returns A modified Element containing the spliced text and favicon, or just the favicon if no text was spliced. Returns null if the node is not a text node or has no text value.
  */
-export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): Element | null {
+export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: FaviconNode): void {
   // Find the last non-empty child
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = [...node.children]
@@ -719,70 +711,35 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   // If no valid last child found, just append the favicon
   if (!lastChild) {
     logger.debug("No valid last child found, appending favicon directly")
-    return imgNodeToAppend
-  }
-
-  // If the last child is a span.favicon-span, append the favicon directly to it
-  if (
-    lastChild.type === "element" &&
-    lastChild.tagName === "span" &&
-    hasClass(lastChild, "favicon-span")
-  ) {
-    logger.debug("Appending favicon to existing favicon-span")
-    lastChild.children.push(imgNodeToAppend)
-    return null
+    node.children.push(imgNodeToAppend)
+    return
   }
 
   // If the last child is a tag that should be zoomed into, recurse
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
     logger.debug(`Zooming into nested element ${lastChild.tagName}`)
-    const maybeSpliceTextResult = maybeSpliceText(lastChild as Element, imgNodeToAppend)
-    if (maybeSpliceTextResult) {
-      lastChild.children.push(maybeSpliceTextResult)
-    }
-    return null
+    appendFaviconWithWordJoiner(lastChild as Element, imgNodeToAppend)
+    return
   }
 
-  // If last child is not a text node or has no value, there's nothing to splice
+  // If last child is not a text node or has no value, just append
   if (lastChild.type !== "text" || !lastChild.value) {
     logger.debug("Appending favicon directly to node")
-    return imgNodeToAppend
+    node.children.push(imgNodeToAppend)
+    return
   }
 
-  const lastChildText = lastChild as Text
-  const textContent = lastChildText.value
   // Some characters render particularly close to the favicon, so we add a small margin
-  const lastChar = textContent.at(-1)
+  const lastChar = lastChild.value.at(-1)
   if (lastChar && charsToSpace.includes(lastChar)) {
-    // Adjust the style of the appended element
     logger.debug("Adding margin-left to appended element")
     // istanbul ignore next
     imgNodeToAppend.properties = imgNodeToAppend.properties || {}
     imgNodeToAppend.properties.class = "favicon close-text"
   }
 
-  // Take the last few characters (up to maxCharsToRead)
-  const charsToRead = Math.min(maxCharsToRead, textContent.length)
-  const lastChars = textContent.slice(-charsToRead)
-  lastChildText.value = textContent.slice(0, -charsToRead)
-
-  const span: Element = {
-    type: "element",
-    tagName: "span",
-    properties: {
-      className: "favicon-span",
-    },
-    children: [{ type: "text", value: lastChars } as Text, imgNodeToAppend],
-  }
-  const spanWithFavicon = span as FaviconNode
-
-  // Replace entire text with span if all text was moved
-  if (lastChars === textContent) {
-    node.children.pop()
-    logger.debug(`Replacing all ${charsToRead} chars with span`)
-  }
-
-  return spanWithFavicon
+  // Append word joiner + favicon to prevent line-break orphaning
+  node.children.push(createWordJoinerSpan(), imgNodeToAppend)
 }
 
 /**
