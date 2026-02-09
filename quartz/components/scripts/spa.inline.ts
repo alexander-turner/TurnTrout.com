@@ -101,13 +101,8 @@ function dispatchNavEvent(url: FullSlug) {
  * @returns `true` if we found and highlighted a match, `false` otherwise.
  */
 function scrollToMatch(searchText: string): boolean {
-  console.debug("[scrollToMatch] Called with searchText:", searchText)
   const article = document.querySelector("article") as HTMLElement | null
-  if (!article) {
-    console.debug("[scrollToMatch] No article found")
-    return false
-  }
-  console.debug("[scrollToMatch] Article found, matching...")
+  if (!article) return false
 
   // Use the exported search matcher to create `.search-match` spans.
   // matchHTML returns a cloned element with search matches, so we need to replace the original.

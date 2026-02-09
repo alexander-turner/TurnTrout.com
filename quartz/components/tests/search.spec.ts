@@ -383,19 +383,22 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
 
 test("Search matching title text stays at top even with body matches", async ({ page }) => {
   const initialUrl = page.url()
-  // "Testing" appears in both the title ("Testing Site Features") and body
-  // ("visual regression testing"), but when the title matches we stay at the top
-  await search(page, "Testing")
+  // "Testing site" matches the test page title ("Testing Site Features") and
+  // the sub-token "Testing" also appears in the body ("visual regression testing").
+  // When the title matches, the page should stay at the top.
+  await search(page, "Testing site")
 
-  const firstResult = page.locator(".result-card").first()
-  await expect(firstResult).toBeVisible()
+  // Click specifically on the test page result (not just Enter on the first
+  // result, which may differ across viewport sizes)
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.click()
 
-  await page.keyboard.press("Enter")
   await page.waitForURL((url) => url.toString() !== initialUrl)
 
-  // Matches should be highlighted
-  const matches = page.locator("article .search-match")
-  await expect(matches.first()).toBeAttached()
+  // The title should contain a highlighted match
+  const titleMatch = page.locator("#article-title .search-match")
+  await expect(titleMatch.first()).toBeAttached()
 
   // Page should stay at the top because the title contains a match
   const scrollY = await page.evaluate(() => window.scrollY)
