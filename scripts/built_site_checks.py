@@ -9,7 +9,7 @@ import re
 import subprocess
 import sys
 import urllib.parse
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
@@ -134,6 +134,50 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+PRESENTATIONAL_TAGS = ("span", "br")
+
+
+def _should_skip_paragraph(p: Tag) -> bool:
+    """Check if a paragraph should be skipped for punctuation checking."""
+    classes = script_utils.get_classes(p)
+    if (
+        "subtitle" in classes
+        or "page-listing-title" in classes
+        or p.find(class_="transclude")
+    ):
+        return True
+
+    # Skip paragraphs that only contain inline styling elements
+    # (e.g. typography examples like <span class="h2">Header 2</span>)
+    return all(
+        (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
+        or (isinstance(c, NavigableString) and not c.strip())
+        for c in p.children
+    )
+
+
+def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
+    """
+    Get cleaned text from a paragraph for punctuation checking.
+
+    Removes footnote references, trims special characters, and strips invisible
+    characters.
+    """
+    p_copy = copy.copy(p)
+    for link in p_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            link.decompose()
+
+    text = p_copy.get_text(strip=True).rstrip(
+        TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
+    )
+    # Strip zero-width spaces and other invisible characters
+    text = text.replace("\u200b", "")  # zero-width space
+    text = text.replace("\ufeff", "")  # zero-width no-break space
+    return text.strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -146,35 +190,10 @@ def check_top_level_paragraphs_end_with_punctuation(
     for article in soup.find_all("article"):
         paragraphs = article.find_all("p", recursive=False)
         for p in paragraphs:
-            if not isinstance(p, Tag):
-                continue
-            classes = script_utils.get_classes(p)
-            if (
-                "subtitle" in classes
-                or "page-listing-title" in classes
-                or p.find(class_="transclude")
-            ):
+            if not isinstance(p, Tag) or _should_skip_paragraph(p):
                 continue
 
-            # Remove footnote reference links
-            p_copy = copy.copy(p)
-            for link in p_copy.find_all("a", id=True):
-                link_id = link.get("id", "")
-                if isinstance(link_id, str) and link_id.startswith(
-                    "user-content-fnref-"
-                ):
-                    link.decompose()
-
-            text = p_copy.get_text(strip=True).rstrip(
-                TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
-            )
-            if not text:
-                continue
-
-            # Strip zero-width spaces and other invisible characters
-            text = text.replace("\u200b", "")  # zero-width space
-            text = text.replace("\ufeff", "")  # zero-width no-break space
-            text = text.strip()
+            text = _get_paragraph_text_for_punctuation_check(p)
             if not text:
                 continue
 
@@ -499,6 +518,39 @@ def check_unrendered_transclusions(soup: BeautifulSoup) -> list[str]:
     return unrendered_transclusions
 
 
+# ASCII emoticons that should be converted to twemoji by TextFormattingImprovement
+# Note: We use capturing groups instead of variable-width lookbehind since Python's
+# re module doesn't support `(?<= |^)` (alternation makes lookbehind variable-width)
+_UNRENDERED_EMOTICON_PATTERN = re.compile(
+    r"(?:^| )(;\)|:\)|:\()(?= |$)", re.MULTILINE
+)
+
+
+def check_unrendered_emoticons(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for ASCII emoticons that should have been converted to twemoji.
+
+    The TextFormattingImprovement transformer converts :), ;), and :( to their
+    corresponding Unicode emoji when surrounded by spaces or at string
+    boundaries.
+    """
+    unrendered_emoticons: list[str] = []
+
+    for element in soup.find_all(string=True):
+        if not isinstance(element, NavigableString):  # pragma: no cover
+            continue
+        if element.strip() and not should_skip(element):
+            matches = _UNRENDERED_EMOTICON_PATTERN.findall(str(element))
+            if matches:
+                _append_to_list(
+                    unrendered_emoticons,
+                    str(element),
+                    prefix=f"Unrendered emoticon {matches}: ",
+                )
+
+    return unrendered_emoticons
+
+
 def check_unrendered_subtitles(soup: BeautifulSoup) -> list[str]:
     """Check for unrendered subtitle lines."""
     unrendered_subtitles: list[str] = []
@@ -661,6 +713,33 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
                 missing.append("height")
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
+def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for class names that contain commas or start with dots.
+
+    These indicate CSS selector syntax was incorrectly used as HTML class
+    attribute values (e.g. ``class="float-right,.bar"`` instead of
+    ``class="float-right bar"``).
+
+    Returns:
+        list of strings describing invalid class names
+    """
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(class_=True)):
+        classes = script_utils.get_classes(element)
+        for cls in classes:
+            if "," in cls or cls.startswith("."):
+                tag_preview = str(element)[:120]
+                _append_to_list(
+                    issues,
+                    f"Invalid class name '{cls}' on <{element.name}>:"
+                    f" {tag_preview}",
+                )
 
     return issues
 
@@ -1009,7 +1088,7 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r'(?!\.\.\?)\.["“”]*\.', str(element)):
+            if re.search(r"(?!\.\.\?)\.[\u0022\u201c\u201d]*\.", str(element)):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1017,6 +1096,48 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
                 )
 
     return problematic_texts
+
+
+# Tengwar fonts use Private Use Area U+E000-U+E07F
+# Valid Tengwar text can also contain punctuation and whitespace
+_TENGWAR_VALID_PATTERN = re.compile(
+    r"^[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]*$"
+)
+
+
+def check_tengwar_characters(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that Quenya (lang="qya") text only contains valid Tengwar characters.
+
+    Tengwar fonts use Private Use Area characters U+E000-U+E07F.
+    If other characters appear (like arrows ⤴ or ⇔), it indicates
+    text processing corruption.
+
+    Returns:
+        list of strings describing invalid Tengwar text
+    """
+    issues: list[str] = []
+
+    # Find all elements with Quenya language attribute
+    for element in _tags_only(soup.find_all(attrs={"lang": "qya"})):
+        text = element.get_text()
+        if not text.strip() or _TENGWAR_VALID_PATTERN.match(text):
+            continue
+
+        # Find the invalid characters for debugging
+        invalid_chars = set()
+        for char in text:
+            if not re.match(r"[\uE000-\uE07F\s⸱:.!,;?'\"()\[\]<>—–-]", char):
+                invalid_chars.add(f"{char} (U+{ord(char):04X})")
+
+        # Sort for deterministic output
+        sorted_chars = sorted(invalid_chars)
+        _append_to_list(
+            issues,
+            f"Invalid chars {sorted_chars} in Tengwar: {text[:50]}...",
+        )
+
+    return issues
 
 
 def _has_no_favicon_span_ancestor(favicon: Tag) -> bool:
@@ -1163,7 +1284,17 @@ def _check_populate_commit_count(
 
 
 _SELF_CONTAINED_ELEMENTS = frozenset(
-    {"svg", "img", "video", "audio", "iframe", "object", "embed", "canvas", "picture"}
+    {
+        "svg",
+        "img",
+        "video",
+        "audio",
+        "iframe",
+        "object",
+        "embed",
+        "canvas",
+        "picture",
+    }
 )
 
 
@@ -1449,6 +1580,7 @@ def check_file_for_issues(
         ),
         "html_tags_in_text": check_html_tags_in_text(soup),
         "unrendered_transclusions": check_unrendered_transclusions(soup),
+        "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
@@ -1465,6 +1597,8 @@ def check_file_for_issues(
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),
+        "invalid_tengwar_characters": check_tengwar_characters(soup),
+        "invalid_class_names": check_invalid_class_names(soup),
     }
 
     if should_check_fonts:
@@ -1953,6 +2087,62 @@ def check_video_source_order_and_match(soup: BeautifulSoup) -> list[str]:
 
 REQUIRED_ROOT_FILES = ("robots.txt", "favicon.svg", "favicon.ico")
 
+# Pattern to match citation keys in BibTeX entries: @misc{CitationKey,
+_CITATION_KEY_PATTERN = re.compile(r"@misc\{([^,]+),")
+
+
+def extract_citation_keys_from_html(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract BibTeX citation keys from code blocks in HTML.
+
+    Looks for @misc{CitationKey, patterns in code elements.
+
+    Returns:
+        list of citation keys found in the page
+    """
+    citation_keys: list[str] = []
+
+    # BibTeX blocks are in code elements (after rehype-pretty-code processing)
+    for code_element in soup.find_all(["code", "pre"]):
+        text = code_element.get_text()
+        matches = _CITATION_KEY_PATTERN.findall(text)
+        citation_keys.extend(matches)
+
+    return citation_keys
+
+
+def _find_duplicate_citations(
+    citation_to_files: Dict[str, list[str]],
+) -> list[str]:
+    """Find citation keys that appear in multiple files."""
+    issues: list[str] = []
+    for key, files_list in sorted(citation_to_files.items()):
+        if len(files_list) > 1:
+            files_str = ", ".join(files_list)
+            issues.append(
+                f"Duplicate citation key '{key}' found in {len(files_list)} files: "
+                f"{files_str}"
+            )
+    return issues
+
+
+def _maybe_collect_citation_keys(
+    file_path: Path,
+    public_dir: Path,
+    citation_to_files: Dict[str, list[str]],
+) -> None:
+    """Extract citation keys from file and add to collection if not a
+    redirect."""
+    # skipcq: PTC-W6004 -- file_path comes from iterating over trusted local files
+    with open(file_path, encoding="utf-8") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+    if script_utils.is_redirect(soup):
+        return
+
+    rel_path = str(file_path.relative_to(public_dir))
+    for key in set(extract_citation_keys_from_html(soup)):
+        citation_to_files[key].append(rel_path)
+
 
 def check_root_files_location(base_dir: Path) -> list[str]:
     """Check that required files exist in the root directory."""
@@ -1966,7 +2156,7 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
-def _process_html_files(
+def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
     check_fonts: bool,
@@ -1977,6 +2167,7 @@ def _process_html_files(
     issues_found_in_html = False
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
+    citation_to_files: Dict[str, list[str]] = defaultdict(list)
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2012,6 +2203,16 @@ def _process_html_files(
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
 
+            _maybe_collect_citation_keys(
+                file_path, public_dir, citation_to_files
+            )
+
+    # Check for duplicate citation keys across all files
+    citation_issues = _find_duplicate_citations(citation_to_files)
+    if citation_issues:
+        _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
     return issues_found_in_html
 
 
@@ -2041,7 +2242,7 @@ def main() -> None:
     )
 
     if overall_issues_found or html_issues_found:
-        sys.exit(1)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

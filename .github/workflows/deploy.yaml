@@ -133,7 +133,7 @@ jobs:
           path: public/
 
       - name: Deploy to Cloudflare Pages (fast feedback for dev)
-        if: github.ref_name == 'dev'
+        if: github.event_name == 'push' && github.ref_name == 'dev'
         uses: ./.github/actions/deploy-to-cloudflare
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -143,16 +143,21 @@ jobs:
           branch: ${{ github.ref_name }}
 
       - name: Install subfont
+        if: github.event_name == 'push'
         run: pnpm add -g subfont
       - name: Make script executable
+        if: github.event_name == 'push'
         run: chmod +x ./scripts/subfont.sh
       - name: Subset fonts
+        if: github.event_name == 'push'
         run: sh ./scripts/subfont.sh
 
       - name: Run site checks
+        if: github.event_name == 'push'
         run: uv run python scripts/built_site_checks.py --check-fonts
 
       - name: Upload prepared site after subfont
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: public-dir

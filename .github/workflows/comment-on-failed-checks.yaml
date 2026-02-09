@@ -105,7 +105,7 @@ jobs:
                 '',
                 failureLines,
                 '',
-                'Please investigate and fix the issues.',
+                'Please investigate and fix the issues.'
               ].join('\n');
 
               if (trackerComment) {

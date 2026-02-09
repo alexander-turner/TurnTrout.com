@@ -78,7 +78,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook, which also detects the GitHub repo from proxy remotes and exports `GH_REPO` so `gh` CLI commands work in web sessions. Manual setup: `git config core.hooksPath .hooks`
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
@@ -104,6 +104,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
 - Visual regression tests use Playwright with `lost-pixel`
+- **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details
 

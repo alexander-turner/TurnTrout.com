@@ -60,12 +60,8 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
 
-<dd>
-<ol>
-<li>I didn’t realize how substantially equity contributes to the compensation package, and</li>
-<li>it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.</li>
-</ol>
-</dd>
+  1. I didn't realize how substantially equity contributes to the compensation package, and
+  2. it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.
 
 `habryka`
 

@@ -3,35 +3,33 @@ import { type Element, type ElementContent, type Parent, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { symbolTransform } from "punctilio"
+import {
+  getTextContent,
+  flattenTextNodes,
+  transformElement,
+  assertSmartQuotesMatch,
+  collectTransformableElements,
+  getFirstTextNode,
+} from "punctilio/rehype"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
-import { charsToMoveIntoLinkFromRight } from "../../../components/constants"
+import { charsToMoveIntoLinkFromRight, markerChar } from "../../../components/constants"
 import {
   massTransformText,
-  getTextContent,
-  flattenTextNodes,
   improveFormatting,
   spacesAroundSlashes,
-  transformElement,
-  assertSmartQuotesMatch,
   l_pRegex,
-  collectTransformableElements,
   identifyLinkNode,
   moveQuotesBeforeLink,
-  getFirstTextNode,
   replaceFractions,
   timeTransform,
   applyTextTransforms,
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
-  markerChar,
-  toSkip,
-  SKIP_TAGS,
-  FRACTION_SKIP_TAGS,
-  SKIP_CLASSES,
+  arrowsToWrap,
 } from "../formatting_improvement_html"
-import { arrowsToWrap } from "../formatting_improvement_html"
+import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
 // Unicode constants for readable test expectations
 // (punctilio exports these in constants.js but not from the main entry point)
@@ -445,6 +443,12 @@ describe("HTMLFormattingImprovement", () => {
       ["GPT-4-o", "GPT-4o"],
       ["gpt-4-o", "GPT-4o"],
       ["GPT-4o", "GPT-4o"], // Already correct, no change
+      // BibTeX capitalization
+      ["bibtex", "BibTeX"],
+      ["BIBTEX", "BibTeX"],
+      ["Bibtex", "BibTeX"],
+      ["BibTeX", "BibTeX"], // Already correct, no change
+      ["Use bibtex for citations", "Use BibTeX for citations"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = massTransformText(input)
       expect(result).toBe(expected)
@@ -701,7 +705,7 @@ describe("HTMLFormattingImprovement", () => {
       ["hi", 3],
     ])("should capitalize while respecting the marker", (before: string, numChildren: number) => {
       const node = _getParagraphNode(numChildren, before)
-      transformElement(node, capitalize)
+      transformElement(node, capitalize, () => false, markerChar)
 
       const targetNode = _getParagraphNode(numChildren, capitalize(before))
       expect(node).toEqual(targetNode)
@@ -718,7 +722,7 @@ describe("HTMLFormattingImprovement", () => {
       ["1.000-2.000", "1.000–2.000"],
       ["1-2 and 3-4", "1–2 and 3–4"],
       ["from 5-10 to 15-20", "from 5–10 to 15–20"],
-      ["1-2-3", "1–2-3"], // Only replace the first hyphen
+      ["1-2-3", "1-2-3"], // Ambiguous pattern (could be phone segment), preserved
       ["a-b", "a-b"], // Don't replace non-numeric ranges
       ["1a-2b", "1a-2b"], // Don't replace if not purely numeric
       ["a1-2b", "a1-2b"], // Don't replace if not purely numeric
@@ -1493,7 +1497,7 @@ describe("collectTransformableElements", () => {
     ],
     ["empty element", el("div"), []],
   ])("collects elements from %s", (_, input, expected) => {
-    const result = collectTransformableElements(input)
+    const result = collectTransformableElements(input, toSkip)
     expect(result.map((node) => [node.tagName, node.children.map(processNode)])).toEqual(expected)
   })
 })
@@ -1788,15 +1792,15 @@ describe("replaceFractions", () => {
 })
 
 describe("transformElement error conditions", () => {
-  it("should throw error when node has no children", () => {
+  it("should not throw when node has no children", () => {
     const nodeWithoutChildren = h("div") as Element
     nodeWithoutChildren.children = undefined as unknown as Element["children"]
 
     const transform = (text: string) => text.toUpperCase()
 
     expect(() => {
-      transformElement(nodeWithoutChildren, transform)
-    }).toThrow("Node has no children")
+      transformElement(nodeWithoutChildren, transform, () => false, markerChar)
+    }).not.toThrow()
   })
 
   it("should throw error when transformation alters number of text nodes", () => {
@@ -1807,7 +1811,7 @@ describe("transformElement error conditions", () => {
       text.replace("hello", `hello${markerChar}extra${markerChar}`)
 
     expect(() => {
-      transformElement(node, transform)
+      transformElement(node, transform, () => false, markerChar)
     }).toThrow("Transformation altered the number of text nodes")
   })
 })
