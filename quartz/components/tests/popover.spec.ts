@@ -347,9 +347,9 @@ test.describe("Footnote popovers", () => {
   test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
-    await footnoteRef.hover()
+    await footnoteRef.click()
 
-    const popover = page.locator(".popover")
+    const popover = page.locator(".popover.footnote-popover")
     await expect(popover).toBeVisible()
 
     const popoverInner = popover.locator(".popover-inner")
@@ -374,24 +374,24 @@ test.describe("Footnote popovers", () => {
     // Find the footnote with a table (should be larger)
     const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
     await tableFootnoteRef.scrollIntoViewIfNeeded()
-    await tableFootnoteRef.hover()
+    await tableFootnoteRef.click()
 
-    const tablePopover = page.locator(".popover")
+    const tablePopover = page.locator(".popover.footnote-popover")
     await expect(tablePopover).toBeVisible()
     const tablePopoverBox = await tablePopover.boundingBox()
     assertDefined(tablePopoverBox)
     const tableHeight = tablePopoverBox.height
 
-    // Move mouse away to close popover
-    await page.mouse.move(0, 0)
+    // Click again to close (toggle)
+    await tableFootnoteRef.click()
     await expect(tablePopover).toBeHidden()
 
     // Find a simple footnote (should be smaller)
     const simpleFootnoteRef = page.locator('a[href="#user-content-fn-nested"]')
     await simpleFootnoteRef.scrollIntoViewIfNeeded()
-    await simpleFootnoteRef.hover()
+    await simpleFootnoteRef.click()
 
-    const simplePopover = page.locator(".popover")
+    const simplePopover = page.locator(".popover.footnote-popover")
     await expect(simplePopover).toBeVisible()
     const simplePopoverBox = await simplePopover.boundingBox()
     assertDefined(simplePopoverBox)
@@ -399,6 +399,185 @@ test.describe("Footnote popovers", () => {
 
     // Table footnote should be significantly taller than simple footnote
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
+  })
+
+  test("Clicking footnote link opens pinned popover (lostpixel)", async ({ page }, testInfo) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover-pinned", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
+  test("Clicking footnote link opens pinned popover with close button", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+    await expect(popover).toHaveClass(/footnote-popover/)
+    await expect(popover).toHaveAttribute("data-pinned", "true")
+
+    // Close button should be visible
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+
+    // Clicking X closes the popover
+    await closeBtn.click()
+    await expect(popover).toBeHidden()
+  })
+
+  test("Pressing Escape closes pinned footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover")
+    await expect(popover).toBeVisible()
+
+    await page.keyboard.press("Escape")
+    await expect(popover).toBeHidden()
+  })
+
+  test("Hovering footnote link does NOT open popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.hover()
+    // Verify no popover appears even after the hover delay (300ms)
+    await expect(page.locator(".popover")).toHaveCount(0)
+  })
+
+  test("Clicking outside closes footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Click somewhere outside the popover
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
+    await expect(popover).toBeHidden()
+  })
+
+  test("Rapid clicks on different footnotes produce only one popover", async ({ page }) => {
+    // Delay the same-page fetch that popover creation uses, widening the
+    // race window so both clicks fire before either fetch resolves.
+    await page.route("**/test-page", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      await route.continue()
+    })
+
+    const firstRef = page.locator('a[href="#user-content-fn-1"]')
+    const secondRef = page.locator('a[href="#user-content-fn-2"]')
+    await firstRef.scrollIntoViewIfNeeded()
+
+    // Click both footnotes in quick succession (before either fetch completes)
+    await firstRef.click()
+    await secondRef.click()
+
+    // Wait for the popover to appear
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Only one popover should exist — without the generation counter fix,
+    // both fetches would complete and add their own popover to the DOM.
+    await expect(popover).toHaveCount(1)
+  })
+
+  test("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    const scrollBefore = await page.evaluate(() => window.scrollY)
+    await footnoteRef.click()
+
+    // Give the browser time to potentially scroll
+    // eslint-disable-next-line playwright/no-wait-for-timeout
+    await page.waitForTimeout(300)
+    const scrollAfter = await page.evaluate(() => window.scrollY)
+
+    // Page should NOT have scrolled to the footnote section
+    expect(Math.abs(scrollAfter - scrollBefore)).toBeLessThan(50)
+  })
+})
+
+// Use base (not test) so mobile tests don't inherit the desktop-only skip from the
+// file-level test.beforeEach. These tests explicitly set a mobile viewport.
+base.describe("Footnote popover on mobile", () => {
+  base.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 })
+    await page.reload()
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  })
+
+  base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+    await expect(popover).toHaveAttribute("data-pinned", "true")
+
+    // Close via X button
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+    await closeBtn.click()
+    await expect(popover).toBeHidden()
+  })
+
+  base("Tapping outside closes footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Tap somewhere else on the page - popover should close
+    await page.locator("body").click({ position: { x: 10, y: 10 } })
+    await expect(popover).toBeHidden()
+  })
+
+  base("Close button is fully visible within viewport on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+
+    const viewport = page.viewportSize()
+    assertDefined(viewport)
+    const btnBox = await closeBtn.boundingBox()
+    assertDefined(btnBox)
+
+    // Close button must be fully within the viewport
+    expect(btnBox.x).toBeGreaterThanOrEqual(0)
+    expect(btnBox.y).toBeGreaterThanOrEqual(0)
+    expect(btnBox.x + btnBox.width).toBeLessThanOrEqual(viewport.width)
+    expect(btnBox.y + btnBox.height).toBeLessThanOrEqual(viewport.height)
+  })
+
+  base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
+    const regularLink = page
+      .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')
+      .first()
+    await regularLink.scrollIntoViewIfNeeded()
+    await regularLink.click()
+    const popover = page.locator(".popover:not(.footnote-popover)")
+    await expect(popover).toBeHidden()
   })
 })
 

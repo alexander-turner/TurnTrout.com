@@ -140,12 +140,66 @@
 
   visibility: hidden;
   opacity: 0;
-  transition:
-    opacity 0.15s ease,
-    visibility 0.15s ease;
+
+  &.footnote-popover {
+    cursor: auto;
+
+    // Let clicks pass through the padding to the page below.
+    // Footnote popovers don't need the hover buffer (they're pinned).
+    pointer-events: none;
+
+    & > .popover-inner,
+    & > .popover-close {
+      pointer-events: auto;
+    }
+
+    & > .popover-inner {
+      border: 1px solid var(--midground-fainter);
+    }
+
+    // Instant appearance — no hover-style fade-in delay
+    &.popover-visible {
+      animation: none;
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+
+  // Close button lives on .popover (not .popover-inner) so it doesn't
+  // scroll with content. Positioned at top-right corner of .popover-inner.
+  .popover-close {
+    position: absolute;
+    top: calc(2 * $base-margin + 0.25rem);
+    right: calc(2 * $base-margin + 0.25rem);
+    z-index: 1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.3rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: var(--midground);
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
 
   @media all and (width <= $max-mobile-width) {
-    display: none !important;
+    &:not(.footnote-popover) {
+      display: none !important;
+    }
+
+    &.footnote-popover > .popover-inner {
+      width: min(20rem, calc(100vw - 2rem));
+    }
+
+    // Larger touch target on mobile
+    .popover-close {
+      padding: 0.5rem;
+      font-size: 1.3rem;
+    }
   }
 }
 
