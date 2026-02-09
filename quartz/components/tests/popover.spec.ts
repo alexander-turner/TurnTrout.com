@@ -501,6 +501,29 @@ base.describe("Footnote popover on mobile", () => {
     await expect(popover).toBeVisible()
   })
 
+  base("Close button is fully visible within viewport on mobile", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    const closeBtn = popover.locator(".popover-close")
+    await expect(closeBtn).toBeVisible()
+
+    const viewport = page.viewportSize()
+    assertDefined(viewport)
+    const btnBox = await closeBtn.boundingBox()
+    assertDefined(btnBox)
+
+    // Close button must be fully within the viewport
+    expect(btnBox.x).toBeGreaterThanOrEqual(0)
+    expect(btnBox.y).toBeGreaterThanOrEqual(0)
+    expect(btnBox.x + btnBox.width).toBeLessThanOrEqual(viewport.width)
+    expect(btnBox.y + btnBox.height).toBeLessThanOrEqual(viewport.height)
+  })
+
   base("Non-footnote popovers are still hidden on mobile", async ({ page }) => {
     const regularLink = page
       .locator('.can-trigger-popover:not([href^="#user-content-fn-"])')

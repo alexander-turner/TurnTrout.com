@@ -154,6 +154,7 @@
 
   // Close button lives on .popover (not .popover-inner) so it doesn't
   // scroll with content. Positioned at top-right corner of .popover-inner.
+  // Reuses the navbar .x bar pattern at a smaller scale.
   .popover-close {
     position: absolute;
     top: calc(2 * $base-margin + 0.25rem);
@@ -162,14 +163,28 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.1rem;
-    line-height: 1;
-    padding: 0.3rem;
-    color: var(--foreground);
+    padding: 0.4rem;
     opacity: 0.4;
 
     &:hover {
       opacity: 1;
+    }
+
+    // Bar styling matching navbar but smaller
+    span {
+      display: block;
+      height: 2px;
+      background-color: var(--midground);
+
+      &:not(:last-child) {
+        margin-bottom: 3px;
+      }
+    }
+
+    // Override global .x width for this smaller context
+    .x:nth-of-type(1),
+    .x:nth-of-type(3) {
+      width: 14px;
     }
   }
 
@@ -184,8 +199,7 @@
 
     // Larger touch target on mobile
     .popover-close {
-      padding: 0.5rem;
-      font-size: 1.3rem;
+      padding: 0.75rem;
     }
   }
 }

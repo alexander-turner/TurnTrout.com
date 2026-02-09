@@ -137,7 +137,12 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
     closeBtn.classList.add("popover-close")
     closeBtn.setAttribute("aria-label", "Close footnote")
     closeBtn.setAttribute("type", "button")
-    closeBtn.textContent = "\u00d7" // × multiplication sign
+    // Reuse the navbar hamburger-to-X pattern: 3 bars with .x class
+    for (let i = 0; i < 3; i++) {
+      const bar = document.createElement("span")
+      bar.classList.add("bar", "x")
+      closeBtn.appendChild(bar)
+    }
     // Append to outer .popover so it doesn't scroll with .popover-inner content
     popoverElement.appendChild(closeBtn)
   } else {

@@ -137,6 +137,9 @@ describe("createPopover", () => {
     expect(closeBtn).not.toBeNull()
     expect(closeBtn?.getAttribute("aria-label")).toBe("Close footnote")
     expect(closeBtn?.parentElement).toBe(popover)
+    // Uses 3 bars with .x class (navbar X pattern)
+    const bars = closeBtn?.querySelectorAll("span.bar.x")
+    expect(bars?.length).toBe(3)
     // Should NOT contain the li wrapper (content is unwrapped)
     expect(popoverInner?.querySelector("li#user-content-fn-1-popover")).toBeNull()
     // Should NOT contain the back arrow link
