@@ -144,6 +144,10 @@
   &.footnote-popover {
     cursor: auto;
 
+    & > .popover-inner {
+      border: 1px solid var(--midground-fainter);
+    }
+
     // Instant appearance — no hover-style fade-in delay
     &.popover-visible {
       animation: none;
