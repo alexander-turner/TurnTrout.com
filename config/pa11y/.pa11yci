@@ -22,9 +22,7 @@
       "color-contrast",
       "video-caption",
       "duplicate-id",
-      "definition-list",
-      "scrollable-region-focusable",
-      "list"
+      "scrollable-region-focusable"
     ],
     "concurrency": 1
   }

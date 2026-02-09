@@ -96,10 +96,11 @@ So what about:
 <dd>At present, I’m excited about this property because I suspect it has a simple core principle. But
 <ul>
 <li>Even if the system is responsive to correction (and non-manipulative, and whatever other properties we associate with corrigibility), what if we become <em>unable</em> to correct it as a result of early actions—if the agent “moves too quickly”, so to speak?</li>
-<li><a href="https://ai-alignment.com/corrigibility-3039e668638" class="external alias" target="_blank">Paul Christiano’s take on corrigibility</a> is much broader and an exception to this critique.</li>
+<li><a href="https://ai-alignment.com/corrigibility-3039e668638" class="external alias" target="_blank">Paul Christiano's take on corrigibility</a> is much broader and an exception to this critique.
 <ul>
 <li>What is the core principle?</li>
 </ul>
+</li>
 </ul>
 </dd>
 </dl>

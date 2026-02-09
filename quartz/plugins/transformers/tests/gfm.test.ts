@@ -813,19 +813,19 @@ describe("fixDefinitionList", () => {
     ["single orphaned dd → div", [h("dd", ["Orphan"])], "div", ["p"]],
     ["valid dt/dd pair → dl", [h("dt", ["Term"]), h("dd", ["Desc"])], "dl", ["dt", "dd"]],
     [
-      "orphaned dd before valid pair → dl",
+      "orphaned dd before valid pair → div (mixed orphaned+valid is invalid in dl)",
       [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
-      "dl",
+      "div",
       ["p", "dt", "dd"],
     ],
     [
-      "multiple consecutive dd after dt → dl",
+      "multiple consecutive dd after dt → div (second dd is orphaned)",
       [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
-      "dl",
+      "div",
       ["dt", "dd", "p"],
     ],
     [
-      "complex mixed structure → dl",
+      "complex mixed structure → div",
       [
         h("dd", ["Orphan 1"]),
         h("dt", ["Term 1"]),
@@ -834,7 +834,7 @@ describe("fixDefinitionList", () => {
         h("dt", ["Term 2"]),
         h("dd", ["Valid 2"]),
       ],
-      "dl",
+      "div",
       ["p", "dt", "dd", "p", "dt", "dd"],
     ],
     ["all orphaned dd → div", [h("dd", ["Orphan 1"]), h("dd", ["Orphan 2"])], "div", ["p", "p"]],
@@ -883,7 +883,7 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect((dl.children[1] as Element).tagName).toBe("dd")
   })
 
-  it("handles complex nested structures", () => {
+  it("handles complex nested structures (mixed orphaned+valid → div, dt/dd become p)", () => {
     const dl = h("dl", [
       h("dd", ["Orphan"]),
       h("dt", ["Term"]),
@@ -893,9 +893,11 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     const tree: Root = { type: "root", children: [dl] }
     runPlugin(tree)
 
-    expect(dl.tagName).toBe("dl")
+    // dl becomes div (mixed orphaned+valid), then convertOrphanedDefinitionElements
+    // converts remaining dt/dd (now outside any dl) to p
+    expect(dl.tagName).toBe("div")
     const tags = dl.children.map((c) => (c as Element).tagName)
-    expect(tags).toEqual(["p", "dt", "dd", "p"])
+    expect(tags).toEqual(["p", "p", "p", "p"])
   })
 
   it.each([

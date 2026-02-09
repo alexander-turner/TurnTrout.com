@@ -194,18 +194,23 @@ export function fixDefinitionList(dlElement: Element): Element {
 
   const fixedChildren: Element["children"] = []
   let lastWasDt = false
+  let hasOrphanedDd = false
 
   for (const child of dlElement.children) {
+    if (child.type === "element" && child.tagName === "dd" && !lastWasDt) {
+      hasOrphanedDd = true
+    }
     const result = processDefinitionListChild(child, lastWasDt)
     fixedChildren.push(result.element)
     lastWasDt = result.newLastWasDt
   }
 
-  // If no valid dt/dd pairs remain, replace <dl> with <div>
+  // Use <div> if no valid pairs, OR if there's a mix of orphaned and valid
+  // (since <p> converted from orphaned <dd> is invalid inside <dl>)
   const hasValidPairs = hasValidDtDdPairs(dlElement)
   return {
     ...dlElement,
-    tagName: hasValidPairs ? "dl" : "div",
+    tagName: hasValidPairs && !hasOrphanedDd ? "dl" : "div",
     children: fixedChildren,
   }
 }
