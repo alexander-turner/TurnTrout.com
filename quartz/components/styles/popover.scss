@@ -145,20 +145,7 @@
     cursor: auto;
 
     & > .popover-inner {
-      border: 1px dotted var(--midground-fainter);
-      border-radius: 5px;
-      padding: 0 calc(0.25 * $base-margin);
-      scroll-margin-top: calc(2 * $base-margin);
-      margin: calc(0.125 * $base-margin);
-
-      & h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6 {
-        color: unset;
-      }
+      border: 1px solid var(--midground-faint);
     }
 
     // Instant appearance — no hover-style fade-in delay

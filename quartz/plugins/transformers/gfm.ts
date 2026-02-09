@@ -394,8 +394,6 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     return
   }
 
-  // Append word joiner + nbsp + back arrow to prevent line-break orphaning
-  // and add visible spacing before the arrow
-  const nbsp: Text = { type: "text", value: "\u00A0" }
-  lastParagraph.children.push(createWordJoinerSpan(), nbsp, backArrow)
+  // Append word joiner + back arrow to prevent line-break orphaning
+  lastParagraph.children.push(createWordJoinerSpan(), backArrow)
 }
