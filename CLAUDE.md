@@ -32,6 +32,29 @@ pytest <path>               # Python tests (NOT python -m pytest)
 conda init && conda activate website
 ```
 
+### Running Playwright Tests Locally
+
+1. Install browsers and WebKit system dependencies:
+
+```bash
+npx playwright install chromium firefox
+npx playwright install-deps webkit
+npx playwright install webkit
+```
+
+2. Start the local server in offline mode (uses Playwright's Chromium for critical CSS generation):
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --serve --offline &
+```
+
+3. Wait for the server to be ready at `http://localhost:8080`, then run tests:
+
+```bash
+npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
+```
+
 ### Code Quality
 
 ```bash

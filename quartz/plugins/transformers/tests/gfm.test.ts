@@ -19,6 +19,7 @@ import {
   htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
   deduplicateSvgIds,
+  isValidDlStructure,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -879,6 +880,49 @@ describe("htmlAccessibilityPlugin (integration)", () => {
       assert(element)
     },
   )
+
+  it("adds tabindex, role, and aria-label to mermaid SVGs", () => {
+    const svg = h("svg", { id: "mermaid-1234" }, [h("rect", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBe(0)
+    expect(svg.properties?.role).toBe("img")
+    expect(svg.properties?.ariaLabel).toBe("Mermaid diagram")
+  })
+
+  it("skips non-mermaid SVGs", () => {
+    const svg = h("svg", { id: "icon-search" }, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBeUndefined()
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("skips SVGs without id", () => {
+    const svg = h("svg", {}, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("demotes dl with trailing dt to div", () => {
+    const dl = h("dl", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
+
+  it("demotes dl with invalid child to div", () => {
+    const dl = h("dl", [h("dt", ["T"]), h("p", ["Invalid"]), h("dd", ["D"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
 })
 
 describe("deduplicateSvgIds", () => {
@@ -1085,5 +1129,31 @@ describe("deduplicateSvgIds", () => {
     for (const substring of expectedSubstrings) {
       expect(result).toContain(substring)
     }
+  })
+})
+
+describe("isValidDlStructure", () => {
+  it.each([
+    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], true],
+    [
+      "multiple dt/dd pairs",
+      [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"]), h("dd", ["D2"])],
+      true,
+    ],
+    ["multiple dd after one dt", [h("dt", ["Term"]), h("dd", ["D1"]), h("dd", ["D2"])], true],
+    ["orphaned dd (no preceding dt)", [h("dd", ["Orphan"])], false],
+    ["trailing dt without dd", [h("dt", ["Term"])], false],
+    ["valid pair + trailing dt", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])], false],
+    ["invalid child element (p)", [h("dt", ["T"]), h("p", ["Bad"]), h("dd", ["D"])], false],
+    ["dt interrupted by div before dd", [h("dt", ["T"]), h("div", ["Mid"]), h("dd", ["D"])], false],
+    ["empty children", [], false],
+    [
+      "text nodes between dt and dd (valid)",
+      [h("dt", ["T"]), { type: "text" as const, value: "\n" }, h("dd", ["D"])],
+      true,
+    ],
+    ["dd after div (orphaned)", [h("div", ["X"]), h("dd", ["D"])], false],
+  ])("%s → %s", (_desc, children, expected) => {
+    expect(isValidDlStructure(children)).toBe(expected)
   })
 })

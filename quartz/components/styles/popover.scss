@@ -154,7 +154,17 @@
     }
 
     & > .popover-inner {
+      box-sizing: border-box;
       border: 1px solid var(--midground-fainter);
+      padding: 1rem;
+
+      & > :first-child {
+        margin-top: 0;
+      }
+
+      & > :last-child {
+        margin-bottom: 0;
+      }
     }
 
     // Instant appearance — no hover-style fade-in delay
