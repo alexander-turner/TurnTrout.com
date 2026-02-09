@@ -109,15 +109,23 @@ function scrollToMatch(searchText: string): boolean {
   const matchedArticle = matchHTML(searchText, article)
   article.replaceWith(matchedArticle)
 
-  const allMatches = Array.from(matchedArticle.querySelectorAll(".search-match"))
-  if (allMatches.length === 0) return false
+  // The title (<h1 id="article-title">) is outside <article>, so highlight it separately.
+  const titleEl = document.getElementById("article-title")
+  let hasTitleMatch = false
+  if (titleEl) {
+    const matchedTitle = matchHTML(searchText, titleEl)
+    hasTitleMatch = matchedTitle.querySelectorAll(".search-match").length > 0
+    titleEl.replaceWith(matchedTitle)
+  }
+
+  const bodyMatches = matchedArticle.querySelectorAll(".search-match")
+  if (bodyMatches.length === 0 && !hasTitleMatch) return false
 
   // If the search term matched in the article title, stay at the top of the page
   // — the title is already visible and scrolling down would be disorienting.
-  const hasTitleMatch = allMatches.some((m) => m.closest("#article-title"))
   if (hasTitleMatch) return true
 
-  const firstMatch = allMatches[0] as HTMLElement
+  const firstMatch = bodyMatches[0] as HTMLElement
   const targetPos =
     firstMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
   window.scrollTo({ top: targetPos, behavior: "instant" })
