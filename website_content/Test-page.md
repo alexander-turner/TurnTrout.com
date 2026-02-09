@@ -108,7 +108,7 @@ Code block in a `<dl>`
 
 Admonition in a description list
 : > [!quote] Test
-
+  >
   > To be or not to be.
 
 # Admonition lists
