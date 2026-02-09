@@ -2543,8 +2543,8 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # Abbreviation text should be uppercased
-    assert "9COMBINATIONS of strategies." in result[0]
+    # Smallcaps abbreviations are removed (original casing is lost)
+    assert "9 of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
 

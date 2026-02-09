@@ -2242,9 +2242,13 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            # Uppercase abbreviation text (smallcaps lowercases them)
+            # Remove smallcaps abbreviations from spellcheck text.
+            # The smallcaps transform irreversibly lowercases acronyms
+            # (e.g. ReLU → relu), so we can't restore the original casing
+            # for case-sensitive dictionary matching. These terms are already
+            # spellchecked at the source-markdown level.
             for abbr in el_copy.select("abbr.small-caps"):
-                abbr.string = abbr.get_text().upper()
+                abbr.decompose()
 
             # Remove footnote ref links to avoid "word1" concatenation
             for link in el_copy.find_all("a", id=True):
@@ -2426,14 +2430,13 @@ def _process_html_files(  # pylint: disable=too-many-locals
         issues_found_in_html = True
 
     # Spellcheck flattened paragraph text across all pages
-    # Non-blocking: log warnings but don't fail the build
-    # (too many pre-existing false positives from metadata/listing pages)
     spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
     if spelling_issues:
         _print_issues(
             public_dir,
-            {"rendered_text_spelling (non-blocking)": spelling_issues},
+            {"rendered_text_spelling": spelling_issues},
         )
+        issues_found_in_html = True
 
     return issues_found_in_html
 
