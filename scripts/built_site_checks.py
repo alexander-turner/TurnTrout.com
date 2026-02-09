@@ -2209,10 +2209,10 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, style, and smallcaps abbreviation
-    content, then returns ``get_text()`` for each paragraph (no
-    separator, so adjacent child-element text is concatenated —
-    exactly what the browser renders).
+    Strips code, KaTeX, script, and style content, uppercases
+    smallcaps abbreviation text, and inserts spaces around
+    ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
+    for each paragraph.
     """
     paragraphs: list[str] = []
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
@@ -2233,12 +2233,11 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            # Unwrap smallcaps abbreviations (keep their lowercased text).
-            # The smallcaps transform irreversibly lowercases acronyms
-            # (e.g. ReLU → relu), so we use a temp wordlist with
-            # lowercased variants for case-insensitive matching.
+            # Uppercase abbreviation text (smallcaps lowercases them).
+            # The temp wordlist includes uppercased variants so that
+            # e.g. RELU (from ReLU → relu → RELU) matches.
             for abbr in el_copy.select("abbr.small-caps"):
-                abbr.unwrap()
+                abbr.string = abbr.get_text().upper()
 
             # Insert spaces around inline elements that cause
             # word concatenation (e.g. "bounds<sub>reasonable</sub>"
@@ -2291,17 +2290,20 @@ def _write_paragraphs_to_tempfile(
 
 def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
     """
-    Create a temp wordlist that adds lowercased variants of every entry.
+    Create a temp wordlist with lowercased *and* uppercased variants.
 
-    This lets the spellchecker accept smallcaps-lowered abbreviations
-    (e.g. ``relu`` from ``ReLU``) without needing separate entries.
+    The smallcaps transform lowercases abbreviations (``ReLU`` →
+    ``relu``), and the spellcheck extraction uppercases them back
+    (``relu`` → ``RELU``).  Adding both variants ensures that
+    mixed-case entries like ``ReLU`` also match as ``RELU``.
     Returns the temp file path, or *None* if *wordlist* doesn't exist.
     """
     if not wordlist.exists():
         return None
     original_words = wordlist.read_text(encoding="utf-8").splitlines()
     lowered = {w.lower() for w in original_words if w}
-    all_words = sorted(set(original_words) | lowered)
+    uppered = {w.upper() for w in original_words if w}
+    all_words = sorted(set(original_words) | lowered | uppered)
     with tempfile.NamedTemporaryFile(
         mode="w",
         suffix=".txt",

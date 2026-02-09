@@ -2543,8 +2543,8 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # Smallcaps abbreviations are unwrapped (kept as lowercase text)
-    assert "9combinations of strategies." in result[0]
+    # Abbreviation text is uppercased (smallcaps lowercases them)
+    assert "9COMBINATIONS of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
 
@@ -2623,7 +2623,7 @@ def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
 
 
 def test_build_case_insensitive_wordlist(tmp_path):
-    """Temp wordlist includes lowercased variants of all entries."""
+    """Temp wordlist includes lowercased and uppercased variants."""
     wordlist = tmp_path / "wordlist.txt"
     wordlist.write_text("ReLU\nGPT-4o\nalready-lower\n")
     result = built_site_checks._build_case_insensitive_wordlist(wordlist)
@@ -2632,9 +2632,12 @@ def test_build_case_insensitive_wordlist(tmp_path):
         words = result.read_text(encoding="utf-8").splitlines()
         assert "ReLU" in words
         assert "relu" in words
+        assert "RELU" in words
         assert "GPT-4o" in words
         assert "gpt-4o" in words
+        assert "GPT-4O" in words
         assert "already-lower" in words
+        assert "ALREADY-LOWER" in words
     finally:
         result.unlink(missing_ok=True)
 
