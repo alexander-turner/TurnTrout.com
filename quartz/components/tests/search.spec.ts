@@ -382,17 +382,18 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
 })
 
 test("Text fragment matching only title text does not scroll down the page", async ({ page }) => {
-  // Navigate via SPA with a text fragment that only matches the title.
   // "features" appears in "Testing site features" (the title) but not in the body.
-  // Don't await evaluate — pushState may interrupt it. Wait for the DOM instead.
-  void page.evaluate(() =>
-    window.spaNavigate(new URL("http://localhost:8080/test-page#:~:text=features")),
-  )
+  await search(page, "features")
 
-  // Wait for navigation and match elements to appear
+  // Click the test page result card specifically (not first() which may be a different page)
+  const testPageResult = page.locator('.result-card[href*="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.click()
   await page.waitForURL("**/test-page**")
+
+  // Title match should be highlighted
   const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch).toBeAttached({ timeout: 10000 })
+  await expect(titleMatch).toBeAttached()
   await expect(titleMatch).toContainText(/features/i)
 
   // No body matches should exist for this term
