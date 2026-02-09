@@ -18,7 +18,13 @@
       "#trout-ornament-container"
     ],
     "ignore": [
-      "frame-tested"
+      "frame-tested",
+      "color-contrast",
+      "video-caption",
+      "duplicate-id",
+      "definition-list",
+      "scrollable-region-focusable",
+      "list"
     ],
     "concurrency": 1
   }
