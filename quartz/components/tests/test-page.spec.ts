@@ -1060,19 +1060,15 @@ test.describe("Scroll indicators", () => {
   })
 
   test("Left fade appears after scrolling a wide element right", async ({ page }) => {
-    // Find a katex-display or table-container that overflows
-    const scrollIndicators = page.locator(".scroll-indicator")
-    const count = await scrollIndicators.count()
+    // Find scrollable elements the same way as the existing test
+    const scrollables = page.locator(
+      ".scroll-indicator > .table-container, .scroll-indicator > .katex-display",
+    )
+    const count = await scrollables.count()
 
     let testedAny = false
     for (let i = 0; i < count; i++) {
-      const wrapper = scrollIndicators.nth(i)
-      const scrollable = wrapper
-        .locator(":scope > .table-container, :scope > .katex-display")
-        .first()
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if ((await scrollable.count()) === 0) continue
-
+      const scrollable = scrollables.nth(i)
       await scrollable.scrollIntoViewIfNeeded()
 
       const overflows = await scrollable.evaluate((el) => el.scrollWidth > el.clientWidth)
@@ -1084,11 +1080,12 @@ test.describe("Scroll indicators", () => {
         el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
       })
 
-      await expect(wrapper).toHaveClass(/can-scroll-left/)
-      await expect(wrapper).toHaveClass(/can-scroll-right/)
+      const scrollIndicator = scrollable.locator("..")
+      await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
+      await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
 
       // Verify the ::before pseudo-element is actually visible (opacity: 1)
-      const beforeOpacity = await wrapper.evaluate((el) => {
+      const beforeOpacity = await scrollIndicator.evaluate((el) => {
         return window.getComputedStyle(el, "::before").opacity
       })
       expect(beforeOpacity).toBe("1")
