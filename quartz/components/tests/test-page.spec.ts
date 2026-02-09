@@ -1060,43 +1060,25 @@ test.describe("Scroll indicators", () => {
   })
 
   test("Left fade appears after scrolling a wide element right", async ({ page }) => {
-    // Find scrollable elements the same way as the existing test
-    const scrollables = page.locator(
-      ".scroll-indicator > .table-container, .scroll-indicator > .katex-display",
-    )
-    const count = await scrollables.count()
+    const scrollIndicator = page.locator("#wide-equation + .scroll-indicator")
+    const scrollable = scrollIndicator.locator(".katex-display")
+    await scrollable.scrollIntoViewIfNeeded()
 
-    let testedAny = false
-    for (let i = 0; i < count; i++) {
-      const scrollable = scrollables.nth(i)
-      await scrollable.scrollIntoViewIfNeeded()
+    // Scroll to the middle of the element
+    await scrollable.evaluate((el) => {
+      el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+    })
 
-      const overflows = await scrollable.evaluate((el) => el.scrollWidth > el.clientWidth)
-      // eslint-disable-next-line playwright/no-conditional-in-test
-      if (!overflows) continue
+    await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
 
-      // Scroll to the middle of the element
-      await scrollable.evaluate((el) => {
-        el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+    // Verify the ::before pseudo-element reaches full opacity after transition
+    await expect(async () => {
+      const beforeOpacity = await scrollIndicator.evaluate((el) => {
+        return window.getComputedStyle(el, "::before").opacity
       })
-
-      const scrollIndicator = scrollable.locator("..")
-      await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
-      await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
-
-      // Verify the ::before pseudo-element reaches full opacity after transition
-      await expect(async () => {
-        const beforeOpacity = await scrollIndicator.evaluate((el) => {
-          return window.getComputedStyle(el, "::before").opacity
-        })
-        expect(beforeOpacity).toBe("1")
-      }).toPass()
-
-      testedAny = true
-      break
-    }
-
-    expect(testedAny).toBe(true)
+      expect(beforeOpacity).toBe("1")
+    }).toPass()
   })
 })
 
