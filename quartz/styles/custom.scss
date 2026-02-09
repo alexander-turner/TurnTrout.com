@@ -41,10 +41,6 @@ li > blockquote:first-child {
     padding-right: 0;
   }
 
-  & li {
-    max-width: 100%;
-  }
-
   // Ordered lists in footnotes should start at 1, 2, 3, etc.
   & > li > ol {
     counter-reset: list;
