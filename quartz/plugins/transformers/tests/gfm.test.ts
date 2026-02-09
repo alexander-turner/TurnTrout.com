@@ -909,24 +909,6 @@ describe("htmlAccessibilityPlugin (integration)", () => {
     expect(svg.properties?.role).toBeUndefined()
   })
 
-  it("adds tabindex and role to .katex-display spans", () => {
-    const katexSpan = h("span", { className: ["katex-display"] }, [h("span", ["math content"])])
-    const tree: Root = { type: "root", children: [katexSpan] }
-    runPlugin(tree)
-
-    expect(katexSpan.properties?.tabIndex).toBe(0)
-    expect(katexSpan.properties?.role).toBe("math")
-  })
-
-  it("skips spans without katex-display class", () => {
-    const regularSpan = h("span", { className: ["regular-class"] }, ["content"])
-    const tree: Root = { type: "root", children: [regularSpan] }
-    runPlugin(tree)
-
-    expect(regularSpan.properties?.tabIndex).toBeUndefined()
-    expect(regularSpan.properties?.role).toBeUndefined()
-  })
-
   it("demotes dl with trailing dt to div", () => {
     const dl = h("dl", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])])
     const tree: Root = { type: "root", children: [dl] }

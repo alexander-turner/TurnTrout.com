@@ -104,27 +104,19 @@ function footnoteBacklinkPlugin() {
   }
 }
 
-/** Adds `tabindex="0"` to scrollable elements (<pre>, <code>, .katex-display) for keyboard access. */
-function makeScrollableElementsKeyboardAccessible(tree: Root): void {
+/** Adds `tabindex="0"` to <pre> and their <code> children for keyboard scrollability. */
+function makePreElementsKeyboardAccessible(tree: Root): void {
   visit(tree, "element", (node: Element) => {
-    if (node.tagName === "pre") {
-      node.properties = node.properties || {}
-      node.properties.tabIndex = 0
-      for (const child of node.children) {
-        if (child.type === "element" && child.tagName === "code") {
-          child.properties = child.properties || {}
-          child.properties.tabIndex = 0
-        }
+    if (node.tagName !== "pre") return
+    node.properties = node.properties || {}
+    node.properties.tabIndex = 0
+    // Also make <code> children focusable since they may be the actual
+    // scrollable element (e.g. Shiki code blocks with display:grid)
+    for (const child of node.children) {
+      if (child.type === "element" && child.tagName === "code") {
+        child.properties = child.properties || {}
+        child.properties.tabIndex = 0
       }
-    }
-    // .katex-display spans have overflow:auto and may be scrollable
-    if (
-      node.tagName === "span" &&
-      Array.isArray(node.properties?.className) &&
-      (node.properties.className as string[]).includes("katex-display")
-    ) {
-      node.properties.tabIndex = 0
-      node.properties.role = "math"
     }
   })
 }
@@ -300,7 +292,7 @@ export function htmlAccessibilityPlugin() {
       }
     })
 
-    makeScrollableElementsKeyboardAccessible(tree)
+    makePreElementsKeyboardAccessible(tree)
     makeMermaidSvgsAccessible(tree)
     ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
@@ -438,7 +430,8 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin(), htmlAccessibilityPlugin()]
+      // Pass as attacher references (not called) so unified calls them correctly
+      const plugins: PluggableList = [footnoteBacklinkPlugin, htmlAccessibilityPlugin]
 
       if (opts.linkHeadings) {
         plugins.push(

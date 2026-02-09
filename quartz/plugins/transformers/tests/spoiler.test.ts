@@ -63,19 +63,21 @@ describe("rehype-custom-spoiler", () => {
 
     expect(node.tagName).toBe("div")
     expect(node.properties?.className).toContain("spoiler-container")
+    expect(node.properties?.onClick).toBeDefined() // container has click handler
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("span")
     expect((node.children[0] as Element).properties?.className).toContain("spoiler-overlay")
     expect((node.children[1] as Element).tagName).toBe("span")
     expect((node.children[1] as Element).properties?.className).toContain("spoiler-content")
 
-    // Accessibility attributes are on the overlay, not the container
+    // Accessibility attributes are on the overlay (role, aria-*), click handler on container
     const overlay = node.children[0] as Element
     expect(overlay.properties?.role).toBe("button")
     expect(overlay.properties?.tabIndex).toBe(0)
     expect(overlay.properties?.ariaExpanded).toBe("false")
     expect(overlay.properties?.ariaLabel).toContain("Spoiler")
     expect(overlay.properties?.onKeyDown).toBeDefined()
+    expect(overlay.properties?.onClick).toBeUndefined() // onclick is on container, not overlay
   })
 
   describe("processParagraph function", () => {
