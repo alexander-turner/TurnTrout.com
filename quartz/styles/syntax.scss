@@ -6,6 +6,17 @@ code[data-theme*=" "] span {
   color: var(--shiki-light);
 }
 
+// Override Shiki github-light colors that fail WCAG AA contrast on #fcfcff
+// Red keywords (import, return, def, etc.): #D73A49 → #cf222e (4.47:1 → 5.23:1)
+code[data-theme*=" "] span[style*="--shiki-light:#D73A49"] {
+  --shiki-light: #cf222e;
+}
+
+// Orange parameters/attributes: #E36209 → #a24100 (3.41:1 → 6.23:1)
+code[data-theme*=" "] span[style*="--shiki-light:#E36209"] {
+  --shiki-light: #a24100;
+}
+
 [data-theme="dark"] code[data-theme*=" "] {
   color: var(--shiki-dark);
 }

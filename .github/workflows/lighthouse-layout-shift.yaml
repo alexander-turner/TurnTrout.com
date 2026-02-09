@@ -118,3 +118,30 @@ jobs:
           name: lighthouse-reports-mobile
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
           retention-days: 1
+
+  lighthouse_accessibility:
+    runs-on: ubuntu-24.04
+    needs: build_and_deploy
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Run Lighthouse Accessibility Audit
+        id: lighthouse_a11y
+        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
+        with:
+          urls: |
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/about
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/research
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/posts
+          temporaryPublicStorage: true
+          configPath: ".github/lighthouse-a11y-config.json"
+
+      - name: Upload Lighthouse Accessibility reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: lighthouse-reports-accessibility
+          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          retention-days: 1
