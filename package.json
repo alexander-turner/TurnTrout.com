@@ -114,6 +114,7 @@
     "katex": "0.16.21",
     "lightningcss": "1.29.1",
     "lost-pixel": "3.22.0",
+    "markdownlint-cli": "^0.47.0",
     "mdast-util-find-and-replace": "3.0.2",
     "mdast-util-to-hast": "13.2.1",
     "micromorph": "0.4.5",

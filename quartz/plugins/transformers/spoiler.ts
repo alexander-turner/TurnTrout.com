@@ -8,12 +8,12 @@ import { createElementVisitorPlugin } from "./utils"
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
 /**
- * Generate inline JavaScript code to toggle a CSS class on click.
+ * Generate inline JavaScript code to toggle a CSS class on click and update aria-expanded.
  * @param className - The CSS class name to toggle
  * @returns JavaScript code as a string for the onclick handler
  */
 function toggleSpoilerJs(className: string): string {
-  return `this.classList.toggle('${className}')`
+  return `this.classList.toggle('${className}');this.setAttribute('aria-expanded',this.classList.contains('${className}'))`
 }
 
 /**
@@ -34,7 +34,12 @@ export function createSpoilerNode(content: string | Element[]): Element {
     "div",
     {
       className: ["spoiler-container"],
+      role: "button",
+      tabindex: 0,
+      ariaExpanded: "false",
+      ariaLabel: "Spoiler (click or press Enter to reveal)",
       onclick: toggleSpoilerJs("revealed"),
+      onkeydown: "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}",
     },
     [
       h("span", { className: ["spoiler-overlay"] }),
