@@ -218,6 +218,7 @@ a {
           max-width: $page-width;
           height: auto;
           overflow-y: visible;
+          pointer-events: none;
         }
       }
 
