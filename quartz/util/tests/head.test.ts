@@ -74,7 +74,9 @@ describe("renderHead", () => {
       const normalized = normalizeNbsp(result)
       expect(normalized).toContain("<title>My Test Article</title>")
       expect(normalized).toContain('<meta name="description" content="This is a test description">')
-      expect(normalized).toContain('<link rel="canonical" href="https://turntrout.com/test-article" />')
+      expect(normalized).toContain(
+        '<link rel="canonical" href="https://turntrout.com/test-article" />',
+      )
       expect(normalized).toContain(
         `<meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />`,
       )
