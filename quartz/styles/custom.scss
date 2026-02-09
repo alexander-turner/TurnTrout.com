@@ -377,7 +377,7 @@ p:has(+ .subtitle),
 }
 
 .subtitle {
-  color: var(--midground);
+  color: var(--midground-strong);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
 
@@ -727,12 +727,10 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
-  opacity: 0.5;
 
   // Safari needs this
   & > * {
     filter: inherit;
-    opacity: inherit;
   }
 }
 
@@ -797,13 +795,15 @@ img.emoji {
   }
 }
 
-#mermaid-0,
-#mermaid-1,
-#mermaid-2 {
+// Ensure all mermaid diagram text has sufficient contrast
+[id^="mermaid-"] {
   font-size: 14px !important;
 
   & span,
-  & .label {
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
   }
@@ -896,7 +896,7 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-  font-weight: 200;
+  color: var(--foreground);
 }
 
 // Specific graph in design doc has too much whitespace in light
