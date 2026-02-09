@@ -144,6 +144,15 @@
   &.footnote-popover {
     cursor: auto;
 
+    // Let clicks pass through the padding to the page below.
+    // Footnote popovers don't need the hover buffer (they're pinned).
+    pointer-events: none;
+
+    & > .popover-inner,
+    & > .popover-close {
+      pointer-events: auto;
+    }
+
     & > .popover-inner {
       border: 2px solid var(--midground);
     }
