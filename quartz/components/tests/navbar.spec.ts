@@ -224,14 +224,15 @@ test("Content behind hidden navbar is clickable on mobile", async ({ page }) => 
   // When hidden, navbar should also not intercept clicks
   await expect(navbar).toHaveCSS("pointer-events", "none")
 
-  // Find a link near the top of viewport and verify it's clickable
-  const firstVisibleLink = page.locator("article a[href]").first()
+  // Verify a link in the content area is clickable despite the sticky sidebar
+  const firstVisibleLink = page.locator("article a.internal[href]").first()
   await firstVisibleLink.scrollIntoViewIfNeeded()
-  const box = await firstVisibleLink.boundingBox()
-  expect(box).toBeTruthy()
+  const href = firstVisibleLink
+  await expect(href).toHaveAttribute("href")
 
-  // Use page.click at the exact coordinates to verify no overlay blocks it
-  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2)
+  const initialUrl = page.url()
+  await firstVisibleLink.click()
+  await page.waitForURL((url) => url.href !== initialUrl)
 })
 
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
