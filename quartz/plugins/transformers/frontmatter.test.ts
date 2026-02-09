@@ -218,6 +218,10 @@ describe("FrontMatter Plugin", () => {
     const file = createMockFile("Just plain content", "plain")
     processor(emptyTree, file)
     expect(file.data.frontmatter?.title).toBe("plain")
+    expect(file.data.frontmatter?.tags).toEqual([])
+    expect(file.data.frontmatter?.aliases).toEqual([])
+    expect(file.data.frontmatter?.cssclasses).toEqual([])
+    expect(file.data.frontmatter?.authors).toEqual([])
   })
 
   it("handles empty file value", () => {

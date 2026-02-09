@@ -83,13 +83,14 @@ describe("CrawlLinks", () => {
 
   describe("external links", () => {
     it("adds external class, target=_blank, rel, and no icon by default", () => {
-      const { link } = processLink("https://example.com")
+      const { link, file } = processLink("https://example.com")
       expect(link.properties.className).toContain("external")
       expect(link.properties.target).toBe("_blank")
       expect(link.properties.rel).toBe("noopener noreferrer")
       expect(
         link.children.find((c) => c.type === "element" && (c as Element).tagName === "svg"),
       ).toBeUndefined()
+      expect(file.data.links).toEqual([])
     })
 
     it("does not set target=_blank when openLinksInNewTab is false", () => {
@@ -138,13 +139,52 @@ describe("CrawlLinks", () => {
       const { link } = processLink("/absolute-path")
       expect(link.properties.className as string[]).toContain("internal")
     })
+
+    it("strips anchor from slug via splitAnchor", () => {
+      const { link, file } = processLink("./page#section")
+      expect(link.properties["data-slug"]).toBe("page")
+      expect(file.data.links).toEqual(["page"])
+    })
+
+    it("deduplicates outgoing links", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          {
+            type: "element",
+            tagName: "p",
+            properties: {},
+            children: [
+              {
+                type: "element",
+                tagName: "a",
+                properties: { href: "./target" },
+                children: [{ type: "text", value: "first" }],
+              },
+              {
+                type: "element",
+                tagName: "a",
+                properties: { href: "./target" },
+                children: [{ type: "text", value: "second" }],
+              },
+            ],
+          },
+        ],
+      }
+      const file = createMockFile()
+      getProcessor()(tree, file)
+      expect(file.data.links).toEqual(["target"])
+    })
   })
 
   describe("same-page links", () => {
-    it("adds same-page-link class and preserves href", () => {
-      const { link } = processLink("#section")
-      expect(link.properties.className as string[]).toContain("same-page-link")
+    it("adds same-page-link and internal classes, preserves href, no outgoing", () => {
+      const { link, file } = processLink("#section")
+      const classes = link.properties.className as string[]
+      expect(classes).toContain("same-page-link")
+      expect(classes).toContain("internal")
       expect(link.properties.href).toBe("#section")
+      expect(file.data.links).toEqual([])
     })
   })
 
@@ -218,7 +258,7 @@ describe("CrawlLinks", () => {
       const file = createMockFile()
       getProcessor()(tree, file)
       const el = tree.children[0] as Element
-      expect(typeof el.properties.src).toBe("string")
+      expect(el.properties.src).toBe("./images/photo.png")
       expect(el.properties.loading).toBe("lazy")
     })
 
@@ -248,6 +288,7 @@ describe("CrawlLinks", () => {
       }
       const file = createMockFile()
       getProcessor()(tree, file)
+      expect(file.data.links).toEqual([])
     })
 
     it.each([
