@@ -177,6 +177,7 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     # Strip zero-width spaces and other invisible characters
     text = text.replace("\u200b", "")  # zero-width space
     text = text.replace("\ufeff", "")  # zero-width no-break space
+    text = text.replace("\u2060", "")  # word joiner
     return text.strip()
 
 

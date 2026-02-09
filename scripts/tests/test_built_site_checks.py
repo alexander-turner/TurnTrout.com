@@ -5330,7 +5330,8 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         # Paragraphs with only zero-width spaces should be skipped
         ("<article><p>\u200b</p></article>", []),
         ("<article><p>\ufeff</p></article>", []),
-        ("<article><p>\u200b\ufeff  </p></article>", []),
+        ("<article><p>\u2060</p></article>", []),
+        ("<article><p>\u200b\ufeff\u2060  </p></article>", []),
         # Footnote references should be removed before checking
         (
             '<article><p>Text with footnote.<a id="user-content-fnref-1" href="#fn-1">1</a></p></article>',
@@ -5348,6 +5349,7 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         # Text ending with punctuation after zero-width spaces
         ("<article><p>Text.\u200b</p></article>", []),
         ("<article><p>Text.\ufeff</p></article>", []),
+        ("<article><p>Text.\u2060</p></article>", []),
         # Text ending with trim characters (should be stripped)
         ("<article><p>Text.↗</p></article>", []),
         ("<article><p>Text.✓</p></article>", []),

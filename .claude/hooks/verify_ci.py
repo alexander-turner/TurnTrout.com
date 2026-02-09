@@ -73,7 +73,7 @@ def _collect_node_checks(failures: list[str], outputs: list[str]) -> None:
     pkg_path = Path("package.json")
     if not pkg_path.exists():
         return
-    pkg = json.loads(pkg_path.read_text())
+    pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
     checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
     for script, label in checks:
         if _has_script(pkg, script):
@@ -155,6 +155,7 @@ def _emit_result(
 
 
 def main() -> None:
+    """Run CI checks and emit a JSON decision to stdout."""
     max_retries = _get_max_retries()
     project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
     os.chdir(project_dir)
