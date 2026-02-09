@@ -316,6 +316,11 @@ sup {
 figure:has(> .subfigure) {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+
+  > figcaption {
+    flex-basis: 100%;
+  }
 }
 
 figure {
