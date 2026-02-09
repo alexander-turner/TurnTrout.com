@@ -2391,14 +2391,16 @@ def _process_html_files(  # pylint: disable=too-many-locals
             )
 
             # Collect flattened paragraph text for spellcheck
-            # skipcq: PTC-W6004
-            with open(file_path, encoding="utf-8") as f:
-                soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-            if not script_utils.is_redirect(soup_for_paras):
-                paras = _extract_flat_paragraph_texts(soup_for_paras)
-                if paras:
-                    rel = str(file_path.relative_to(public_dir))
-                    paragraph_map[rel] = paras
+            # Skip test page (contains Lorem ipsum and other test strings)
+            if Path(file).stem != "test-page":
+                # skipcq: PTC-W6004
+                with open(file_path, encoding="utf-8") as f:
+                    soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+                if not script_utils.is_redirect(soup_for_paras):
+                    paras = _extract_flat_paragraph_texts(soup_for_paras)
+                    if paras:
+                        rel = str(file_path.relative_to(public_dir))
+                        paragraph_map[rel] = paras
 
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
