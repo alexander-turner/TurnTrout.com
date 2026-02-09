@@ -1,0 +1,272 @@
+From b9f07f77860a27736c82d9d1752b6e3da3778b0f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 9 Feb 2026 00:08:30 +0000
+Subject: [PATCH] feat: add --commit flag to issues list command
+
+Add support for listing issues from an analysis run for a specific
+commit SHA. This enables querying issues on PR branches and non-default
+branches via the run(commitOid:) GraphQL endpoint.
+
+Usage:
+  deepsource issues list --commit <SHA>
+---
+ command/issues/list/list.go                  |  35 +++--
+ deepsource/client.go                         |  18 +++
+ deepsource/issues/queries/list_run_issues.go | 142 +++++++++++++++++++
+ 3 files changed, 186 insertions(+), 9 deletions(-)
+ create mode 100644 deepsource/issues/queries/list_run_issues.go
+
+diff --git a/command/issues/list/list.go b/command/issues/list/list.go
+index fe89d117..1285efb3 100644
+--- a/command/issues/list/list.go
++++ b/command/issues/list/list.go
+@@ -22,6 +22,7 @@ const MAX_ISSUE_LIMIT = 100
+ type IssuesListOptions struct {
+ 	FileArg           []string
+ 	RepoArg           string
++	CommitArg         string
+ 	AnalyzerArg       []string
+ 	LimitArg          int
+ 	OutputFilenameArg string
+@@ -66,7 +67,10 @@ func NewCmdIssuesList() *cobra.Command {
+ 
+ 		To export listed issues to a SARIF file, use the %[14]s flag:
+ 		%[15]s
+-		`, utils.Cyan("deepsource issues list"), utils.Yellow("--repo"), utils.Cyan("deepsource issues list --repo repo_name"), utils.Yellow("--analyzer"), utils.Cyan("deepsource issues list --analyzer python"), utils.Yellow("--limit"), utils.Cyan("deepsource issues list --limit 100"), utils.Yellow("--output-file"), utils.Cyan("deepsource issues list --output-file file_name"), utils.Yellow("--json"), utils.Cyan("deepsource issues list --json --output-file example.json"), utils.Yellow("--csv"), utils.Cyan("deepsource issues list --csv --output-file example.csv"), utils.Yellow("--sarif"), utils.Cyan("deepsource issues list --sarif --output-file example.sarif"))
++
++		To list issues for a specific commit (e.g. on a PR branch), use the %[16]s flag:
++		%[17]s
++		`, utils.Cyan("deepsource issues list"), utils.Yellow("--repo"), utils.Cyan("deepsource issues list --repo repo_name"), utils.Yellow("--analyzer"), utils.Cyan("deepsource issues list --analyzer python"), utils.Yellow("--limit"), utils.Cyan("deepsource issues list --limit 100"), utils.Yellow("--output-file"), utils.Cyan("deepsource issues list --output-file file_name"), utils.Yellow("--json"), utils.Cyan("deepsource issues list --json --output-file example.json"), utils.Yellow("--csv"), utils.Cyan("deepsource issues list --csv --output-file example.csv"), utils.Yellow("--sarif"), utils.Cyan("deepsource issues list --sarif --output-file example.sarif"), utils.Yellow("--commit"), utils.Cyan("deepsource issues list --commit abc123def456"))
+ 
+ 	cmd := &cobra.Command{
+ 		Use:   "list",
+@@ -99,6 +103,9 @@ func NewCmdIssuesList() *cobra.Command {
+ 	// --sarif flag
+ 	cmd.Flags().BoolVar(&opts.SARIFArg, "sarif", false, "Output reported issues in SARIF format")
+ 
++	// --commit, -c flag
++	cmd.Flags().StringVarP(&opts.CommitArg, "commit", "c", "", "List issues from the analysis run for a specific commit SHA")
++
+ 	return cmd
+ }
+ 
+@@ -121,10 +128,12 @@ func (opts *IssuesListOptions) Run() (err error) {
+ 		return fmt.Errorf("The maximum allowed limit to fetch issues is 100. Found %d", opts.LimitArg)
+ 	}
+ 
+-	// Get the remote repository URL for which issues have to be listed
+-	opts.SelectedRemote, err = utils.ResolveRemote(opts.RepoArg)
+-	if err != nil {
+-		return err
++	// Get the remote repository URL (not needed when querying by commit)
++	if opts.CommitArg == "" {
++		opts.SelectedRemote, err = utils.ResolveRemote(opts.RepoArg)
++		if err != nil {
++			return err
++		}
+ 	}
+ 
+ 	// Fetch the list of issues using SDK (deepsource package) based on user input
+@@ -159,10 +168,18 @@ func (opts *IssuesListOptions) getIssuesData(ctx context.Context) (err error) {
+ 		return err
+ 	}
+ 
+-	// Fetch list of issues for the whole project
+-	opts.issuesData, err = deepsource.GetIssues(ctx, opts.SelectedRemote.Owner, opts.SelectedRemote.RepoName, opts.SelectedRemote.VCSProvider, opts.LimitArg)
+-	if err != nil {
+-		return err
++	// If --commit is specified, fetch issues from the analysis run for that commit
++	if opts.CommitArg != "" {
++		opts.issuesData, err = deepsource.GetIssuesByCommit(ctx, opts.CommitArg, opts.LimitArg)
++		if err != nil {
++			return err
++		}
++	} else {
++		// Fetch list of issues for the whole project (default branch)
++		opts.issuesData, err = deepsource.GetIssues(ctx, opts.SelectedRemote.Owner, opts.SelectedRemote.RepoName, opts.SelectedRemote.VCSProvider, opts.LimitArg)
++		if err != nil {
++			return err
++		}
+ 	}
+ 
+ 	var filteredIssues []issues.Issue
+diff --git a/deepsource/client.go b/deepsource/client.go
+index 75264ad4..71faa97d 100644
+--- a/deepsource/client.go
++++ b/deepsource/client.go
+@@ -164,6 +164,24 @@ func (c Client) GetIssues(ctx context.Context, owner, repoName, provider string,
+ 	return res, nil
+ }
+ 
++// Returns the list of issues found in an analysis run for a specific commit.
++// commitOID : The full commit SHA to look up
++// limit : The amount of issues to be listed. The default limit is 30 while the maximum limit is currently 100.
++func (c Client) GetIssuesByCommit(ctx context.Context, commitOID string, limit int) ([]issues.Issue, error) {
++	req := issuesQuery.RunIssuesListRequest{
++		Params: issuesQuery.RunIssuesListParams{
++			CommitOID: commitOID,
++			Limit:     limit,
++		},
++	}
++	res, err := req.Do(ctx, c)
++	if err != nil {
++		return nil, err
++	}
++
++	return res, nil
++}
++
+ // Returns the list of issues reported for a certain file in a certain repository whose data is sent as parameters.
+ // Owner : The username of the owner of the repository
+ // repoName : The name of the repository whose activation status has to be queried
+diff --git a/deepsource/issues/queries/list_run_issues.go b/deepsource/issues/queries/list_run_issues.go
+new file mode 100644
+index 00000000..8d09d83e
+--- /dev/null
++++ b/deepsource/issues/queries/list_run_issues.go
+@@ -0,0 +1,142 @@
++// Lists the issues found in an analysis run for a specific commit
++package issues
++
++import (
++	"context"
++	"fmt"
++
++	"github.com/deepsourcelabs/cli/deepsource/issues"
++	"github.com/deepsourcelabs/graphql"
++)
++
++const fetchRunIssuesQuery = `query GetRunIssues(
++  $commitOid: String!
++  $limit: Int!
++) {
++  run(commitOid: $commitOid) {
++    status
++    branchName
++    checks {
++      edges {
++        node {
++          analyzer {
++            name
++            shortcode
++          }
++          status
++          occurrences(first: $limit) {
++            edges {
++              node {
++                path
++                beginLine
++                endLine
++                issue {
++                  title
++                  shortcode
++                  category
++                  severity
++                  analyzer {
++                    name
++                    shortcode
++                  }
++                }
++              }
++            }
++          }
++        }
++      }
++    }
++  }
++}`
++
++type RunIssuesListParams struct {
++	CommitOID string
++	Limit     int
++}
++
++type RunIssuesListRequest struct {
++	Params RunIssuesListParams
++}
++
++type RunIssuesListResponse struct {
++	Run struct {
++		Status     string `json:"status"`
++		BranchName string `json:"branchName"`
++		Checks     struct {
++			Edges []struct {
++				Node struct {
++					Analyzer struct {
++						Name      string `json:"name"`
++						Shortcode string `json:"shortcode"`
++					} `json:"analyzer"`
++					Status      string `json:"status"`
++					Occurrences struct {
++						Edges []struct {
++							Node struct {
++								Path      string `json:"path"`
++								BeginLine int    `json:"beginLine"`
++								EndLine   int    `json:"endLine"`
++								Issue     struct {
++									Title     string `json:"title"`
++									Shortcode string `json:"shortcode"`
++									Category  string `json:"category"`
++									Severity  string `json:"severity"`
++									Analyzer  struct {
++										Name      string `json:"name"`
++										Shortcode string `json:"shortcode"`
++									} `json:"analyzer"`
++								} `json:"issue"`
++							} `json:"node"`
++						} `json:"edges"`
++					} `json:"occurrences"`
++				} `json:"node"`
++			} `json:"edges"`
++		} `json:"checks"`
++	} `json:"run"`
++}
++
++func (r RunIssuesListRequest) Do(ctx context.Context, client IGQLClient) ([]issues.Issue, error) {
++	req := graphql.NewRequest(fetchRunIssuesQuery)
++	req.Var("commitOid", r.Params.CommitOID)
++	req.Var("limit", r.Params.Limit)
++
++	// set header fields
++	req.Header.Set("Cache-Control", "no-cache")
++	tokenHeader := fmt.Sprintf("Bearer %s", client.GetToken())
++	req.Header.Add("Authorization", tokenHeader)
++
++	// run it and capture the response
++	var respData RunIssuesListResponse
++	if err := client.GQL().Run(ctx, req, &respData); err != nil {
++		return nil, err
++	}
++
++	if respData.Run.Status == "" {
++		return nil, fmt.Errorf("no analysis run found for commit %s", r.Params.CommitOID)
++	}
++
++	issuesData := []issues.Issue{}
++	for _, checkEdge := range respData.Run.Checks.Edges {
++		for _, occurrenceEdge := range checkEdge.Node.Occurrences.Edges {
++			issueData := issues.Issue{
++				IssueText:     occurrenceEdge.Node.Issue.Title,
++				IssueCode:     occurrenceEdge.Node.Issue.Shortcode,
++				IssueCategory: occurrenceEdge.Node.Issue.Category,
++				IssueSeverity: occurrenceEdge.Node.Issue.Severity,
++				Location: issues.Location{
++					Path: occurrenceEdge.Node.Path,
++					Position: issues.Position{
++						BeginLine: occurrenceEdge.Node.BeginLine,
++						EndLine:   occurrenceEdge.Node.EndLine,
++					},
++				},
++				Analyzer: issues.AnalyzerMeta{
++					Shortcode: occurrenceEdge.Node.Issue.Analyzer.Shortcode,
++				},
++			}
++			issuesData = append(issuesData, issueData)
++		}
++	}
++
++	return issuesData, nil
++}
+-- 
+2.43.0
+
