@@ -440,7 +440,7 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toHaveAttribute("data-pinned", "true")
 
     // Entire popover should be within the viewport
-    await expect(popover).toBeInViewport()
+    await expect(popover).toBeInViewport({ ratio: 1 })
   })
 
   test("Pressing Escape closes pinned footnote popover", async ({ page }) => {
