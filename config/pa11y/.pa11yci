@@ -19,10 +19,7 @@
     ],
     "ignore": [
       "frame-tested",
-      "color-contrast",
-      "video-caption",
-      "duplicate-id",
-      "scrollable-region-focusable"
+      "color-contrast"
     ],
     "concurrency": 1
   }

@@ -288,12 +288,20 @@ function convertOrphanedDefinitionElements(tree: Root): void {
   })
 }
 
-/** Adds `tabindex="0"` to <pre> elements for keyboard scrollability. */
+/** Adds `tabindex="0"` to <pre> and their <code> children for keyboard scrollability. */
 function makePreElementsKeyboardAccessible(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "pre") return
     node.properties = node.properties || {}
     node.properties.tabIndex = 0
+    // Also make <code> children focusable since they may be the actual
+    // scrollable element (e.g. Shiki code blocks with display:grid)
+    for (const child of node.children) {
+      if (child.type === "element" && child.tagName === "code") {
+        child.properties = child.properties || {}
+        child.properties.tabIndex = 0
+      }
+    }
   })
 }
 
@@ -308,7 +316,7 @@ function ensureVideoCaptionTracks(tree: Root): void {
       node.children.push({
         type: "element",
         tagName: "track",
-        properties: { kind: "captions" },
+        properties: { kind: "captions", src: "data:text/vtt,WEBVTT" },
         children: [],
       })
     }

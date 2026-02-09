@@ -934,6 +934,21 @@ describe("fixDefinitionListsPlugin (integration)", () => {
     expect(pre.properties.tabIndex).toBe(0)
   })
 
+  it.each([
+    ["with existing properties", false],
+    ["without existing properties", true],
+  ])("adds tabindex to code elements inside pre %s", (_desc, deleteProperties) => {
+    const code = h("code", { dataLanguage: "bibtex" }, ["@article{...}"])
+    if (deleteProperties) {
+      delete (code as unknown as Record<string, unknown>).properties
+    }
+    const pre = h("pre", [code])
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(code.properties.tabIndex).toBe(0)
+  })
+
   it("handles elements without children in orphaned dd/dt check", () => {
     const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
     const tree: Root = { type: "root", children: [brokenNode] }
@@ -951,6 +966,7 @@ describe("fixDefinitionListsPlugin (integration)", () => {
         ) as Element
         expect(track).toBeDefined()
         expect(track.properties?.kind).toBe("captions")
+        expect(track.properties?.src).toBe("data:text/vtt,WEBVTT")
       },
     ],
     [
