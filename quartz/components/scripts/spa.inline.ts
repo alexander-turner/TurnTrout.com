@@ -117,15 +117,14 @@ function scrollToMatch(searchText: string): boolean {
   const allMatches = Array.from(matchedArticle.querySelectorAll(".search-match"))
   if (allMatches.length === 0) return false
 
-  // Find the first match outside the article title — title matches don't need
-  // scrolling because the title is already visible at the top of the page.
-  const firstBodyMatch = allMatches.find((m) => !m.closest("#article-title")) as
-    | HTMLElement
-    | undefined
-  if (!firstBodyMatch) return true // matches exist only in the title; stay at top
+  // If the search term matched in the article title, stay at the top of the page
+  // — the title is already visible and scrolling down would be disorienting.
+  const hasTitleMatch = allMatches.some((m) => m.closest("#article-title"))
+  if (hasTitleMatch) return true
 
+  const firstMatch = allMatches[0] as HTMLElement
   const targetPos =
-    firstBodyMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
+    firstMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
   window.scrollTo({ top: targetPos, behavior: "instant" })
   return true
 }
