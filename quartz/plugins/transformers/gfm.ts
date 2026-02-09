@@ -104,19 +104,27 @@ function footnoteBacklinkPlugin() {
   }
 }
 
-/** Adds `tabindex="0"` to <pre> and their <code> children for keyboard scrollability. */
-function makePreElementsKeyboardAccessible(tree: Root): void {
+/** Adds `tabindex="0"` to scrollable elements (<pre>, <code>, .katex-display) for keyboard access. */
+function makeScrollableElementsKeyboardAccessible(tree: Root): void {
   visit(tree, "element", (node: Element) => {
-    if (node.tagName !== "pre") return
-    node.properties = node.properties || {}
-    node.properties.tabIndex = 0
-    // Also make <code> children focusable since they may be the actual
-    // scrollable element (e.g. Shiki code blocks with display:grid)
-    for (const child of node.children) {
-      if (child.type === "element" && child.tagName === "code") {
-        child.properties = child.properties || {}
-        child.properties.tabIndex = 0
+    if (node.tagName === "pre") {
+      node.properties = node.properties || {}
+      node.properties.tabIndex = 0
+      for (const child of node.children) {
+        if (child.type === "element" && child.tagName === "code") {
+          child.properties = child.properties || {}
+          child.properties.tabIndex = 0
+        }
       }
+    }
+    // .katex-display spans have overflow:auto and may be scrollable
+    if (
+      node.tagName === "span" &&
+      Array.isArray(node.properties?.className) &&
+      (node.properties.className as string[]).includes("katex-display")
+    ) {
+      node.properties.tabIndex = 0
+      node.properties.role = "math"
     }
   })
 }
@@ -292,7 +300,7 @@ export function htmlAccessibilityPlugin() {
       }
     })
 
-    makePreElementsKeyboardAccessible(tree)
+    makeScrollableElementsKeyboardAccessible(tree)
     makeMermaidSvgsAccessible(tree)
     ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
@@ -378,6 +386,43 @@ export function deduplicateSvgIds(tree: Root): void {
   })
 }
 
+/** Adds `aria-label` to heading links that have no direct text content (e.g. KaTeX-only headings). */
+export function ensureHeadingLinksHaveAccessibleNames() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (!headingRank(node)) return
+
+      const link = node.children.find(
+        (child) => child.type === "element" && child.tagName === "a",
+      ) as Element | undefined
+      if (!link) return
+
+      const hasDirectText = link.children.some(
+        (child) => child.type === "text" && child.value.trim().length > 0,
+      )
+      if (hasDirectText) return
+
+      // Extract label from KaTeX <annotation> elements (original LaTeX source)
+      const annotations: string[] = []
+      visit(link, "element", (child: Element) => {
+        if (child.tagName === "annotation") {
+          const text = toString(child).trim()
+          if (text) annotations.push(text)
+        }
+      })
+
+      const label =
+        annotations.join(" ") ||
+        String(node.properties?.id || "heading")
+          .replaceAll(/-+/g, " ")
+          .trim()
+
+      link.properties = link.properties || {}
+      link.properties.ariaLabel = label
+    })
+  }
+}
+
 /**
  * A plugin that transforms GitHub-flavored Markdown into HTML.
  *
@@ -396,16 +441,20 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       const plugins: PluggableList = [footnoteBacklinkPlugin(), htmlAccessibilityPlugin()]
 
       if (opts.linkHeadings) {
-        plugins.push(returnAddIdsToHeadingsFn, [
-          rehypeAutolinkHeadings as unknown as UnifiedPlugin,
-          {
-            behavior: "wrap",
-            properties: {
-              "data-no-popover": "true",
-              tabIndex: -1,
+        plugins.push(
+          returnAddIdsToHeadingsFn,
+          [
+            rehypeAutolinkHeadings as unknown as UnifiedPlugin,
+            {
+              behavior: "wrap",
+              properties: {
+                "data-no-popover": "true",
+                tabIndex: -1,
+              },
             },
-          },
-        ])
+          ],
+          ensureHeadingLinksHaveAccessibleNames,
+        )
       }
 
       return plugins

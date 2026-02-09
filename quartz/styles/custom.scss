@@ -734,13 +734,13 @@ img.emoji {
   }
 }
 
-.spoiler-container:focus-visible .spoiler-overlay,
+.spoiler-overlay:focus-visible,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:focus-visible .spoiler-content,
+.spoiler-overlay:focus-visible + .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;

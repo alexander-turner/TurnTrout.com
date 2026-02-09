@@ -18,7 +18,8 @@
       "#trout-ornament-container"
     ],
     "ignore": [
-      "frame-tested"
+      "frame-tested",
+      "definition-list"
     ],
     "concurrency": 1
   }

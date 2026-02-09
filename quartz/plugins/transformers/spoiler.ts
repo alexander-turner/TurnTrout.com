@@ -8,12 +8,13 @@ import { createElementVisitorPlugin } from "./utils"
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
 /**
- * Generate inline JavaScript code to toggle a CSS class on click and update aria-expanded.
- * @param className - The CSS class name to toggle
+ * Generate inline JavaScript to toggle a spoiler from the overlay element.
+ * Toggles class on the parent container and updates aria-expanded on the overlay.
+ * @param className - The CSS class name to toggle on the parent container
  * @returns JavaScript code as a string for the onclick handler
  */
-function toggleSpoilerJs(className: string): string {
-  return `this.classList.toggle('${className}');this.setAttribute('aria-expanded',this.classList.contains('${className}'))`
+function toggleSpoilerFromOverlayJs(className: string): string {
+  return `this.parentElement.classList.toggle('${className}');this.setAttribute('aria-expanded',this.parentElement.classList.contains('${className}'))`
 }
 
 /**
@@ -34,15 +35,17 @@ export function createSpoilerNode(content: string | Element[]): Element {
     "div",
     {
       className: ["spoiler-container"],
-      role: "button",
-      tabindex: 0,
-      ariaExpanded: "false",
-      ariaLabel: "Spoiler (click or press Enter to reveal)",
-      onclick: toggleSpoilerJs("revealed"),
-      onkeydown: "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}",
     },
     [
-      h("span", { className: ["spoiler-overlay"] }),
+      h("span", {
+        className: ["spoiler-overlay"],
+        role: "button",
+        tabindex: 0,
+        ariaExpanded: "false",
+        ariaLabel: "Spoiler (click or press Enter to reveal)",
+        onclick: toggleSpoilerFromOverlayJs("revealed"),
+        onkeydown: "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}",
+      }),
       h("span", { className: ["spoiler-content"] }, content),
     ],
   )
