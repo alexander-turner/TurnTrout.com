@@ -467,6 +467,31 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toBeHidden()
   })
 
+  test("Rapid clicks on different footnotes produce only one popover", async ({ page }) => {
+    // Delay the same-page fetch that popover creation uses, widening the
+    // race window so both clicks fire before either fetch resolves.
+    await page.route("**/test-page", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      await route.continue()
+    })
+
+    const firstRef = page.locator('a[href="#user-content-fn-1"]')
+    const secondRef = page.locator('a[href="#user-content-fn-2"]')
+    await firstRef.scrollIntoViewIfNeeded()
+
+    // Click both footnotes in quick succession (before either fetch completes)
+    await firstRef.click()
+    await secondRef.click()
+
+    // Wait for the popover to appear
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Only one popover should exist — without the generation counter fix,
+    // both fetches would complete and add their own popover to the DOM.
+    await expect(popover).toHaveCount(1)
+  })
+
   test("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
