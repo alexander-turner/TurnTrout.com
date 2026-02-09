@@ -154,6 +154,7 @@
     }
 
     & > .popover-inner {
+      box-sizing: border-box;
       border: 1px solid var(--midground-fainter);
       padding: 1rem;
 
