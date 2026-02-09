@@ -1085,6 +1085,7 @@ test.describe("Scroll indicators", () => {
       })
 
       await expect(wrapper).toHaveClass(/can-scroll-left/)
+      await expect(wrapper).toHaveClass(/can-scroll-right/)
 
       // Verify the ::before pseudo-element is actually visible (opacity: 1)
       const beforeOpacity = await wrapper.evaluate((el) => {
