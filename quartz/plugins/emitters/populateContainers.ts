@@ -18,6 +18,7 @@ import {
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
+import { createWordJoinerSpan } from "../transformers/utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
@@ -202,7 +203,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [faviconElement]
+    return [createWordJoinerSpan(), faviconElement]
   }
 }
 
