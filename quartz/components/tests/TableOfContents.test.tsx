@@ -9,6 +9,8 @@ import type { FunctionComponent } from "preact"
 import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 import { h } from "hastscript"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 

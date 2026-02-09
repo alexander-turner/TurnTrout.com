@@ -12,6 +12,8 @@ import { type GlobalConfiguration } from "../../cfg"
 
 import "@testing-library/jest-dom"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FilePath } from "../../util/path"
 import { normalizeNbsp } from "../constants"

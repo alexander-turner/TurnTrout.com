@@ -4,6 +4,9 @@
 import { describe, it, expect } from "@jest/globals"
 import { type Root, type Element } from "hast"
 import { h } from "hastscript"
+
+/** Normalize non-breaking spaces to regular spaces for text content assertions */
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
 // skipcq: JS-W1028
 import React from "react"
 
