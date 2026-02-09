@@ -275,7 +275,7 @@ His dad winked at his mom, and they both laughed at some joke which Bruce didn't
 
 They left the small opera room and entered the big outdoor room, which usually was beautiful and starry but was cloudy tonight. It was rather chilly for a summer night, if he thought about it. His dad looked around for their limo. Alfred had said he'd come pick them up. Maybe the opera had finished early. Bruce couldn't possibly believe that _that_ was true.
 
-His dad had spotted something else, however. Some<i>one</i> else, next to the building, another beggar. Bruce's gaze was steady. He wanted to make his dad proud of how he didn't look away.
+His dad had spotted something else, however. Some*one* else, next to the building, another beggar. Bruce's gaze was steady. He wanted to make his dad proud of how he didn't look away.
 
 The man was slumped against the opera house. It was too dark to really see him, but Bruce thought he had an empty jar next to him. That would be for any money people gave him.
 
