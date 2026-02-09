@@ -2207,35 +2207,19 @@ _SKIP_PARENT_CLASSES = (
 
 def _normalize_smallcaps(el_copy: Tag) -> None:
     """
-    Normalize ``<abbr class="small-caps">`` elements for spellcheck.
+    Replace ``<abbr class="small-caps">`` with its original text.
 
-    **Standalone** abbreviations (surrounded by whitespace/punctuation)
-    have their text uppercased so that sentence-start capitalization
-    (e.g. ``Relu``) maps back to the original form ``RELU``.
-
-    **Embedded** abbreviations (adjacent to non-space text, e.g.
-    ``3Blue<abbr>1brown</abbr>``) are unwrapped and the adjacent
-    text is lowercased, so ``3Blue1brown`` → ``3blue1brown`` matches
-    the lowered wordlist entry.
+    Each smallcaps ``<abbr>`` carries a ``data-original-text``
+    attribute holding the pre-transform text (e.g. ``ReLU``,
+    ``14B``).  This function substitutes the element with that
+    original text so the spellchecker sees source-faithful tokens.
     """
     for abbr in el_copy.select("abbr.small-caps"):
-        prev = abbr.previous_sibling
-        if (
-            isinstance(prev, NavigableString)
-            and prev
-            and not prev[-1].isspace()
-        ):
-            # Embedded in a larger word — lowercase adjacent text
-            text = str(prev)
-            i = len(text) - 1
-            while i >= 0 and not text[i].isspace():
-                i -= 1
-            prev.replace_with(
-                NavigableString(text[: i + 1] + text[i + 1 :].lower())
-            )
-            abbr.unwrap()
+        original = abbr.get("data-original-text")
+        if original:
+            abbr.replace_with(NavigableString(str(original)))
         else:
-            # Standalone — uppercase to match wordlist
+            # Fallback for legacy HTML without the attribute
             abbr.string = abbr.get_text().upper()
 
 
@@ -2243,9 +2227,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, and style content, unwraps
-    smallcaps abbreviation elements (lowercasing adjacent text
-    when embedded in a word), and inserts spaces around
+    Strips code, KaTeX, script, and style content, replaces
+    smallcaps abbreviation elements with their original text
+    (via ``data-original-text``), and inserts spaces around
     ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
     for each paragraph.
     """
@@ -2327,20 +2311,23 @@ def _write_paragraphs_to_tempfile(
 
 def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
     """
-    Create a temp wordlist with lowercased *and* uppercased variants.
+    Create a temp wordlist with case variants of every entry.
 
-    The smallcaps transform lowercases abbreviations (``ReLU`` →
-    ``relu``), and the spellcheck extraction keeps them lowercase.
-    Adding both variants ensures that entries like ``ReLU`` also
-    match as ``relu`` in the extracted text.
-    Returns the temp file path, or *None* if *wordlist* doesn't exist.
+    Adds lowercased, uppercased, and first-letter-capitalized forms
+    so that smallcaps-lowered text (``relu`` from ``ReLU``) and
+    sentence-start capitalized forms (``Conv`` from ``conv``) both
+    match.  Returns the temp file path, or *None* if *wordlist*
+    doesn't exist.
     """
     if not wordlist.exists():
         return None
     original_words = wordlist.read_text(encoding="utf-8").splitlines()
     lowered = {w.lower() for w in original_words if w}
     uppered = {w.upper() for w in original_words if w}
-    all_words = sorted(set(original_words) | lowered | uppered)
+    # First-letter-capitalized covers sentence-start forms (e.g.
+    # ``conv`` → ``Conv``, ``llms`` → ``Llms``).
+    cap_first = {w[0].upper() + w[1:] for w in lowered if w}
+    all_words = sorted(set(original_words) | lowered | uppered | cap_first)
     with tempfile.NamedTemporaryFile(
         mode="w",
         suffix=".txt",

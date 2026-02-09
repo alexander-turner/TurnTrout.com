@@ -2534,26 +2534,25 @@ def test_check_inline_formatting_spacing(html, expected):
 
 
 def test_extract_flat_paragraph_texts():
-    """Test flattened paragraph text extraction."""
+    """Test flattened paragraph text extraction with data-original-text."""
     html = """<article>
-    <p>9<abbr class="small-caps">combinations</abbr> of strategies.</p>
+    <p>9<abbr class="small-caps" data-original-text="9Combinations">9combinations</abbr> of strategies.</p>
     <p><code>skip_this</code> Normal text.</p>
     <p class="no-formatting">Skip this whole element.</p>
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # "9" is adjacent to abbr (embedded) → unwrap, keeping lowercase
-    assert "9combinations of strategies." in result[0]
+    # data-original-text restores the source form
+    assert "9Combinations of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
 
 
-def test_extract_flat_paragraph_texts_standalone_abbr_uppercased():
-    """Standalone abbreviations (surrounded by whitespace) are uppercased so
-    sentence-start capitalization (e.g. Relu) maps back to RELU."""
+def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr():
+    """Abbreviations with data-original-text are replaced with original text."""
     html = """<article>
-    <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
+    <p><abbr class="small-caps" data-original-text="RELU">Relu</abbr> is an activation function.</p>
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
@@ -2561,15 +2560,34 @@ def test_extract_flat_paragraph_texts_standalone_abbr_uppercased():
 
 
 def test_extract_flat_paragraph_texts_partial_word_abbr():
-    """When an abbr is part of a larger word, adjacent text is lowercased so the
-    full token matches the lowered wordlist entry."""
+    """Embedded abbreviations with data-original-text restore the original."""
     html = """<article>
-    <p>3Blue<abbr class="small-caps">1brown</abbr>'s videos</p>
+    <p>3Blue<abbr class="small-caps" data-original-text="1Brown">1brown</abbr>'s videos</p>
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
-    # "3Blue" adjacent to abbr gets lowercased → "3blue1brown's"
-    assert "3blue1brown's" in result[0]
+    assert "3Blue1Brown's" in result[0]
+
+
+def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling():
+    """Embedded abbreviation with data-original-text restores original
+    casing."""
+    html = """<article>
+    <p>Qwen-<abbr class="small-caps" data-original-text="14B">14b</abbr>-Chat is a model.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "Qwen-14B-Chat" in result[0]
+
+
+def test_extract_flat_paragraph_texts_fallback_without_data_attr():
+    """Without data-original-text, falls back to uppercasing."""
+    html = """<article>
+    <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function." in result[0]
 
 
 def test_extract_flat_paragraph_texts_skips_non_article():

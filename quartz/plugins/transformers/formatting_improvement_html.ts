@@ -483,8 +483,8 @@ export function plusToAmpersand(text: string): string {
 // At the end, watch out for double periods
 // Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
 const amPmRegex = new RegExp(
-  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?![a-zA-Z])`,
-  "gi",
+  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?!\\p{L})`,
+  "giu",
 )
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
