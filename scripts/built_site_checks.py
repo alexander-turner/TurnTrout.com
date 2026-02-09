@@ -2220,12 +2220,12 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
     """
     for abbr in el_copy.select("abbr.small-caps"):
         prev = abbr.previous_sibling
-        embedded = (
+        if (
             isinstance(prev, NavigableString)
             and prev
             and not prev[-1].isspace()
-        )
-        if embedded:
+        ):
+            # Embedded in a larger word — lowercase adjacent text
             text = str(prev)
             i = len(text) - 1
             while i >= 0 and not text[i].isspace():
@@ -2235,6 +2235,7 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
             )
             abbr.unwrap()
         else:
+            # Standalone — uppercase to match wordlist
             abbr.string = abbr.get_text().upper()
 
 
