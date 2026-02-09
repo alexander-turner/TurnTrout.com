@@ -111,6 +111,11 @@ describe("OxHugoFlavouredMarkdown", () => {
       expect(transform(input)).toBe(expected)
     })
 
+    it("converts multiline block LaTeX", () => {
+      const input = "\\\\[\na + b\n= c\n\\\\]"
+      expect(transform(input)).toBe("$$\na + b\n= c\n$$")
+    })
+
     it("unescapes underscores in inline LaTeX", () => {
       const result = transform("$x\\_i + y\\_j$")
       expect(result).toBe("$x_i + y_j$")

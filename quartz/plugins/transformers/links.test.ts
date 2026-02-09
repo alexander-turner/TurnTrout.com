@@ -170,55 +170,26 @@ describe("CrawlLinks", () => {
   })
 
   describe("internal links", () => {
-    it("adds internal class to relative links", () => {
+    it("adds internal and can-trigger-popover classes to relative links", () => {
       const { tree } = createLink("./other-page")
       const file = createMockFile()
       const processor = getProcessor()
       processor(tree, file)
 
       const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("internal")).toBe(true)
+      const classes = link.properties.className as string[]
+      expect(classes).toContain("internal")
+      expect(classes).toContain("can-trigger-popover")
     })
 
-    it("adds can-trigger-popover class to internal links", () => {
+    it("transforms internal link and sets data-slug", () => {
       const { tree } = createLink("./other-page")
       const file = createMockFile()
       const processor = getProcessor()
       processor(tree, file)
 
       const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("can-trigger-popover")).toBe(true)
-    })
-
-    it("does not add can-trigger-popover when link is in a header", () => {
-      const { tree } = createLink("./other-page", [], { tagName: "h2" })
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("internal")).toBe(true)
-      expect((link.properties.className as string[]).includes("can-trigger-popover")).toBe(false)
-    })
-
-    it("transforms internal link hrefs", () => {
-      const { tree } = createLink("./other-page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties["data-slug"]).toBeDefined()
-    })
-
-    it("sets data-slug on internal links", () => {
-      const { tree } = createLink("./my-page")
-      const file = createMockFile()
-      const processor = getProcessor()
-      processor(tree, file)
-
-      const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties["data-slug"]).toBeDefined()
+      expect(link.properties["data-slug"]).toBe("other-page")
     })
 
     it("tracks outgoing internal links", () => {
@@ -227,18 +198,17 @@ describe("CrawlLinks", () => {
       const processor = getProcessor()
       processor(tree, file)
 
-      expect(file.data.links).toBeDefined()
-      expect(file.data.links!.length).toBeGreaterThan(0)
+      expect(file.data.links).toEqual(["other-page"])
     })
 
-    it("handles internal link to path ending with /", () => {
+    it("appends index to folder paths in data-slug", () => {
       const { tree } = createLink("./folder/")
       const file = createMockFile()
       const processor = getProcessor()
       processor(tree, file)
 
       const link = (tree.children[0] as Element).children[0] as Element
-      expect(link.properties["data-slug"]).toBeDefined()
+      expect(link.properties["data-slug"]).toBe("folder/index")
     })
 
     it("handles links starting with /", () => {
@@ -248,7 +218,7 @@ describe("CrawlLinks", () => {
       processor(tree, file)
 
       const link = (tree.children[0] as Element).children[0] as Element
-      expect((link.properties.className as string[]).includes("internal")).toBe(true)
+      expect(link.properties.className as string[]).toContain("internal")
     })
   })
 
@@ -362,14 +332,16 @@ describe("CrawlLinks", () => {
       expect(el.properties.loading).toBeUndefined()
     })
 
-    it("transforms relative media src", () => {
+    it("transforms relative media src via transformLink", () => {
       const tree = createMedia("img", "./images/photo.png")
       const file = createMockFile()
       const processor = getProcessor()
       processor(tree, file)
 
       const el = tree.children[0] as Element
-      expect(el.properties.src).toBeDefined()
+      // transformLink is called on relative src; result is still a string
+      expect(typeof el.properties.src).toBe("string")
+      expect(el.properties.loading).toBe("lazy")
     })
 
     it("does not transform absolute media src", () => {
@@ -469,7 +441,7 @@ describe("CrawlLinks", () => {
     })
 
     it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
-      "does not add can-trigger-popover for links inside %s",
+      "adds internal but not can-trigger-popover for links inside %s",
       (heading) => {
         const { tree } = createLink("./page", [], { tagName: heading })
         const file = createMockFile()
@@ -477,7 +449,9 @@ describe("CrawlLinks", () => {
         processor(tree, file)
 
         const link = (tree.children[0] as Element).children[0] as Element
-        expect((link.properties.className as string[]).includes("can-trigger-popover")).toBe(false)
+        const classes = link.properties.className as string[]
+        expect(classes).toContain("internal")
+        expect(classes).not.toContain("can-trigger-popover")
       },
     )
   })

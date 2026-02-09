@@ -212,8 +212,7 @@ describe("FrontMatter Plugin", () => {
     const processor = getProcessor()
     const file = createMockFile("---\ntags:\n  - AI\n  - Machine Learning\n---\n")
     processor(emptyTree, file)
-    expect(file.data.frontmatter?.tags).toContain("AI")
-    expect(file.data.frontmatter?.tags).toContain("machine-learning")
+    expect(file.data.frontmatter?.tags).toEqual(["AI", "machine-learning"])
   })
 
   it("deduplicates tags", () => {
@@ -275,8 +274,7 @@ describe("FrontMatter Plugin", () => {
       children: [{ type: "text", value: "Visit (https://example.com/page)" }],
     }
     processor(tree, file)
-    expect(file.data.text).not.toContain("https://")
-    expect(file.data.text).toContain("example.com")
+    expect(file.data.text).toBe("Visit (example.com/page) ")
   })
 
   it("handles file with no frontmatter", () => {
