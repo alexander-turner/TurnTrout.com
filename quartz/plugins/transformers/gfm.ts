@@ -104,192 +104,6 @@ function footnoteBacklinkPlugin() {
   }
 }
 
-/**
- * Converts a <dd> element to a <p> element, preserving its children.
- * Used when a <dd> is orphaned (not preceded by a <dt>).
- *
- * @param ddElement - The <dd> element to convert
- * @returns A new <p> element with the same children
- */
-export function convertDdToParagraph(ddElement: Element): Element {
-  return {
-    type: "element",
-    tagName: "p",
-    properties: {},
-    children: ddElement.children,
-  }
-}
-
-/**
- * Processes a single child element within a definition list, determining whether
- * to keep it as-is, convert it, or update state tracking.
- *
- * @param child - The child element to process
- * @param lastWasDt - Whether the previous element was a <dt>
- * @returns An object containing the processed element and the new state
- */
-export function processDefinitionListChild(
-  child: Element["children"][number],
-  lastWasDt: boolean,
-): { element: Element["children"][number]; newLastWasDt: boolean } {
-  // Handle non-element nodes (text, comments, etc.) — preserve state so
-  // whitespace between <dt> and <dd> doesn't break valid groups
-  if (child.type !== "element") {
-    return { element: child, newLastWasDt: lastWasDt }
-  }
-
-  // Handle <dt> elements - set state for next <dd>
-  if (child.tagName === "dt") {
-    return { element: child, newLastWasDt: true }
-  }
-
-  // Handle <dd> elements - check if valid or orphaned
-  if (child.tagName === "dd") {
-    if (lastWasDt) {
-      // Valid <dd> following a <dt> - preserve it. Keep lastWasDt true so
-      // multiple <dd> elements after one <dt> are all preserved (valid HTML).
-      return { element: child, newLastWasDt: true }
-    } else {
-      // Orphaned <dd> without preceding <dt> - convert to paragraph
-      return { element: convertDdToParagraph(child), newLastWasDt: false }
-    }
-  }
-
-  // Handle other elements (div, script, template are allowed in <dl>)
-  return { element: child, newLastWasDt: false }
-}
-
-/**
- * Checks whether a definition list has any valid <dt>/<dd> pairs.
- *
- * Scans children left-to-right with a `lastWasDt` flag. When we see a <dt>,
- * set the flag. When we see a <dd> with the flag set, that's a valid pair.
- * Any other element resets the flag, so non-adjacent dt/dd don't count.
- */
-export function hasValidDtDdPairs(dlElement: Element): boolean {
-  let lastWasDt = false
-  for (const child of dlElement.children) {
-    if (child.type !== "element") continue
-    if (child.tagName === "dt") {
-      lastWasDt = true
-    } else if (child.tagName === "dd" && lastWasDt) {
-      return true
-    } else {
-      lastWasDt = false
-    }
-  }
-  return false
-}
-
-/**
- * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
- * If no valid <dt>/<dd> pairs remain, replaces the <dl> tag with <div> to avoid
- * invalid HTML (a <dl> must only contain <dt>, <dd>, <div>, <script>, <template>).
- *
- * @param dlElement - The <dl> element to fix
- * @returns The fixed element (either <dl> or <div>) with updated children
- */
-export function fixDefinitionList(dlElement: Element): Element {
-  if (!dlElement.children || dlElement.children.length === 0) {
-    return dlElement
-  }
-
-  const fixedChildren: Element["children"] = []
-  let lastWasDt = false
-  let hasOrphanedDd = false
-
-  for (const child of dlElement.children) {
-    if (child.type === "element" && child.tagName === "dd" && !lastWasDt) {
-      hasOrphanedDd = true
-    }
-    const result = processDefinitionListChild(child, lastWasDt)
-    fixedChildren.push(result.element)
-    lastWasDt = result.newLastWasDt
-  }
-
-  // Use <div> if no valid pairs, OR if there's a mix of orphaned and valid
-  // (since <p> converted from orphaned <dd> is invalid inside <dl>)
-  const hasValidPairs = hasValidDtDdPairs(dlElement)
-  return {
-    ...dlElement,
-    tagName: hasValidPairs && !hasOrphanedDd ? "dl" : "div",
-    children: fixedChildren,
-  }
-}
-
-/**
- * Fixes malformed definition lists to comply with WCAG accessibility standards.
- *
- * PROBLEM:
- * The remark-gfm plugin converts Markdown lines starting with ": " into HTML <dd> elements,
- * which is intended for creating definition lists. However, when this syntax is used in
- * contexts like blockquotes without a preceding term definition, it creates invalid HTML
- * structure that violates accessibility standards.
- *
- * Example problematic Markdown:
- * ```markdown
- * > User
- * >
- * > : Develop a social media bot...
- * ```
- *
- * Gets converted by remark-gfm to invalid HTML:
- * ```html
- * <blockquote>
- *   <p>User</p>
- *   <dl><dd>Develop a social media bot...</dd></dl>
- * </blockquote>
- * ```
- *
- * This violates WCAG 1.3.1 (Info and Relationships) because <dd> (description) elements
- * must be preceded by <dt> (term) elements within <dl> containers. Pa11y accessibility
- * checker flags these as errors:
- * "<dl> elements must only directly contain properly-ordered <dt> and <dd> groups"
- *
- * SOLUTION:
- * This plugin scans all <dl> elements and converts orphaned <dd> elements (those without
- * a preceding <dt>) into <p> elements. This maintains semantic correctness while preserving
- * the visual presentation and content structure.
- *
- * The plugin uses a state machine approach:
- * - Tracks whether we're in a valid dt/dd group using the `lastWasDt` flag
- * - When encountering a <dd>:
- *   - If lastWasDt is true: Keep as <dd> (valid group) and maintain state
- *   - If lastWasDt is false: Convert to <p> (orphaned)
- * - Non-element nodes (whitespace) preserve state; other elements reset it
- *
- * Valid structure (preserved):
- * ```html
- * <dl>
- *   <dt>Term</dt>
- *   <dd>Description</dd>
- * </dl>
- * ```
- *
- * Invalid structure (fixed):
- * ```html
- * <!-- Before -->
- * <dl><dd>Orphaned description</dd></dl>
- *
- * <!-- After -->
- * <dl><p>Orphaned description</p></dl>
- * ```
- *
- * @returns A rehype plugin function that transforms the HTML tree
- */
-/** Converts orphaned <dd>/<dt> elements outside <dl> containers to <p>. */
-function convertOrphanedDefinitionElements(tree: Root): void {
-  visit(tree, "element", (node: Element) => {
-    if (!node.children) return
-    for (const child of node.children) {
-      if (child.type !== "element") continue
-      if ((child.tagName === "dd" || child.tagName === "dt") && node.tagName !== "dl") {
-        child.tagName = "p"
-      }
-    }
-  })
-}
-
 /** Adds `tabindex="0"` to <pre> and their <code> children for keyboard scrollability. */
 function makePreElementsKeyboardAccessible(tree: Root): void {
   visit(tree, "element", (node: Element) => {
@@ -325,20 +139,11 @@ function ensureVideoCaptionTracks(tree: Root): void {
   })
 }
 
-export function fixDefinitionListsPlugin() {
+export function htmlAccessibilityPlugin() {
   return (tree: Root) => {
     // istanbul ignore next --- defensive
     if (!tree) return
 
-    // Fix <dl> elements with orphaned <dd>
-    visit(tree, "element", (node: Element) => {
-      if (node.tagName !== "dl") return
-      const fixed = fixDefinitionList(node)
-      node.tagName = fixed.tagName
-      node.children = fixed.children
-    })
-
-    convertOrphanedDefinitionElements(tree)
     makePreElementsKeyboardAccessible(tree)
     ensureVideoCaptionTracks(tree)
     deduplicateSvgIds(tree)
@@ -439,7 +244,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin(), fixDefinitionListsPlugin()]
+      const plugins: PluggableList = [footnoteBacklinkPlugin(), htmlAccessibilityPlugin()]
 
       if (opts.linkHeadings) {
         plugins.push(returnAddIdsToHeadingsFn, [
