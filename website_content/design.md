@@ -684,7 +684,10 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well.
+To tackle this, the favicon transformation inserts a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) character immediately before the favicon element. The word joiner basically glues the previous text to the favicon, preventing line breaks at its position.
+
+> [!note] My previous implementation: the "favicon sandwich"
+> I used to create a new `<span>` which packaged both the last few letters of the link text and then the favicon element. However, I realized that word joiners are simpler.
 
 ### I only include recognizable favicons
 
@@ -1057,8 +1060,8 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 2. Failure to inline critical CSS;
 >
 > **Favicon validation:**
-> 1. Favicons which are not sandwiched within `span.favicon-span` tags will wrap on their own, [which is awkward](#inline-favicons);
-> 2. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 1. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 2. Each favicon is preceded by a [word joiner](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
