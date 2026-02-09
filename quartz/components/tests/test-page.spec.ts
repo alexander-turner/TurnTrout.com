@@ -1058,6 +1058,46 @@ test.describe("Scroll indicators", () => {
     const scrollIndicator = footnoteTableContainer.locator("..")
     await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
   })
+
+  test("Left fade appears after scrolling a wide element right", async ({ page }) => {
+    // Find a katex-display or table-container that overflows
+    const scrollIndicators = page.locator(".scroll-indicator")
+    const count = await scrollIndicators.count()
+
+    let testedAny = false
+    for (let i = 0; i < count; i++) {
+      const wrapper = scrollIndicators.nth(i)
+      const scrollable = wrapper
+        .locator(":scope > .table-container, :scope > .katex-display")
+        .first()
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      if ((await scrollable.count()) === 0) continue
+
+      await scrollable.scrollIntoViewIfNeeded()
+
+      const overflows = await scrollable.evaluate((el) => el.scrollWidth > el.clientWidth)
+      // eslint-disable-next-line playwright/no-conditional-in-test
+      if (!overflows) continue
+
+      // Scroll to the middle of the element
+      await scrollable.evaluate((el) => {
+        el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+      })
+
+      await expect(wrapper).toHaveClass(/can-scroll-left/)
+
+      // Verify the ::before pseudo-element is actually visible (opacity: 1)
+      const beforeOpacity = await wrapper.evaluate((el) => {
+        return window.getComputedStyle(el, "::before").opacity
+      })
+      expect(beforeOpacity).toBe("1")
+
+      testedAny = true
+      break
+    }
+
+    expect(testedAny).toBe(true)
+  })
 })
 
 test.describe("Popovers on different page types", () => {
