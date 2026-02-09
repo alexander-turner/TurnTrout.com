@@ -1060,7 +1060,8 @@ test.describe("Scroll indicators", () => {
   })
 
   test("Left fade appears after scrolling a wide element right", async ({ page }) => {
-    const scrollIndicator = page.locator("#wide-equation + .scroll-indicator")
+    // Target the scroll-indicator wrapping the wide Maxwell's equations
+    const scrollIndicator = page.locator(".scroll-indicator").filter({ hasText: "∇" }).first()
     const scrollable = scrollIndicator.locator(".katex-display")
     await scrollable.scrollIntoViewIfNeeded()
 

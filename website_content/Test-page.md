@@ -479,8 +479,6 @@ $$
 
 Post-math text. The following equations should display properly:
 
-<span id="wide-equation"></span>
-
 $$\nabla \cdot \mathbf{E}  =\frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B}  =0 \qquad \nabla \times \mathbf{E}  =-\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B}  =\mu_0\left(\mathbf{J}+\varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right)$$
 
 [Flipped integer](/flip-integers) number: ↗142.2.
