@@ -2205,31 +2205,37 @@ _SKIP_PARENT_CLASSES = (
 )
 
 
-def _unwrap_smallcaps(el_copy: Tag) -> None:
+def _normalize_smallcaps(el_copy: Tag) -> None:
     """
-    Unwrap ``<abbr class="small-caps">`` elements in *el_copy*.
+    Normalize ``<abbr class="small-caps">`` elements for spellcheck.
 
-    When an abbr is embedded in a larger word (its previous sibling
-    text node doesn't end with whitespace), the adjacent text is
-    lowercased so the full token matches the lowered wordlist entry.
-    For example ``3Blue<abbr>1brown</abbr>`` → ``3blue1brown``.
+    **Standalone** abbreviations (surrounded by whitespace/punctuation)
+    have their text uppercased so that sentence-start capitalization
+    (e.g. ``Relu``) maps back to the original form ``RELU``.
+
+    **Embedded** abbreviations (adjacent to non-space text, e.g.
+    ``3Blue<abbr>1brown</abbr>``) are unwrapped and the adjacent
+    text is lowercased, so ``3Blue1brown`` → ``3blue1brown`` matches
+    the lowered wordlist entry.
     """
     for abbr in el_copy.select("abbr.small-caps"):
         prev = abbr.previous_sibling
-        if (
+        embedded = (
             isinstance(prev, NavigableString)
             and prev
             and not prev[-1].isspace()
-        ):
+        )
+        if embedded:
             text = str(prev)
-            # Find last word boundary
             i = len(text) - 1
             while i >= 0 and not text[i].isspace():
                 i -= 1
             prev.replace_with(
                 NavigableString(text[: i + 1] + text[i + 1 :].lower())
             )
-        abbr.unwrap()
+            abbr.unwrap()
+        else:
+            abbr.string = abbr.get_text().upper()
 
 
 def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
@@ -2261,7 +2267,7 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Work on a copy to avoid mutating the original soup
             el_copy = copy.copy(element)
 
-            _unwrap_smallcaps(el_copy)
+            _normalize_smallcaps(el_copy)
 
             # Fix inline element word boundaries:
             # - <br> → space (prevents "state<br>while" → "statewhile")

@@ -2543,10 +2543,21 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # Abbreviation text kept as lowercase (smallcaps lowercases them)
+    # "9" is adjacent to abbr (embedded) → unwrap, keeping lowercase
     assert "9combinations of strategies." in result[0]
     assert "Normal text." in result[1]
     assert "skip_this" not in result[1]
+
+
+def test_extract_flat_paragraph_texts_standalone_abbr_uppercased():
+    """Standalone abbreviations (surrounded by whitespace) are uppercased so
+    sentence-start capitalization (e.g. Relu) maps back to RELU."""
+    html = """<article>
+    <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function." in result[0]
 
 
 def test_extract_flat_paragraph_texts_partial_word_abbr():
