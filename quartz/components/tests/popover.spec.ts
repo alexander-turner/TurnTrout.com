@@ -414,6 +414,21 @@ test.describe("Footnote popovers", () => {
     })
   })
 
+  test("Footnote popover with rich content (lostpixel)", async ({ page }, testInfo) => {
+    // Target the footnote with paragraphs and an admonition for maximum content
+    const footnoteRef = page.locator('a[href="#user-content-fn-footnote"]')
+    await footnoteRef.scrollIntoViewIfNeeded()
+    await footnoteRef.click()
+
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover-rich-content", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
   test("Clicking footnote link opens pinned popover with close button", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
