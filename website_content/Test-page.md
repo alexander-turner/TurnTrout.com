@@ -74,28 +74,42 @@ Subtitle: MATS (starting with smallcaps).
 
 Header 1
 : Test item 1
+
 Unordered list inside a description list
 : - Voice & video calls
-
-- GPS
-- Audible
-- Uber / Lyft
-- Authenticators / alarms / other boring utilities
-- Roam / note-taking
+  - GPS
+  - Audible
+  - Uber / Lyft
+  - Authenticators / alarms / other boring utilities
+  - Roam / note-taking
 
 Code block in a `<dl>`
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
-```shell
-git clone https://github.com/alexander-turner/.timestamps
-cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots"
-```
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
+
+Admonition in a description list
+: > [!quote] Test
+  >
+  > To be or not to be.
+
+Code block in a `<dl>`
+: To verify that a commit `ABC012` was indeed committed by a given date, run
+
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
 
 Admonition in a description list
 : > [!quote] Test
 
-> To be or not to be.
+  > To be or not to be.
 
 # Admonition lists
 
@@ -232,7 +246,8 @@ Hi! Am I being transcluded?
 > Displayed content. {#test-open}
 
 > [!quote] Admonition with tags
-> <br/> > <em>Hi!</em>
+> <br/>
+> <em>Hi!</em>
 >
 > Hi
 

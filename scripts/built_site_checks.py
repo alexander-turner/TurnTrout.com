@@ -134,6 +134,50 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+PRESENTATIONAL_TAGS = ("span", "br")
+
+
+def _should_skip_paragraph(p: Tag) -> bool:
+    """Check if a paragraph should be skipped for punctuation checking."""
+    classes = script_utils.get_classes(p)
+    if (
+        "subtitle" in classes
+        or "page-listing-title" in classes
+        or p.find(class_="transclude")
+    ):
+        return True
+
+    # Skip paragraphs that only contain inline styling elements
+    # (e.g. typography examples like <span class="h2">Header 2</span>)
+    return all(
+        (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
+        or (isinstance(c, NavigableString) and not c.strip())
+        for c in p.children
+    )
+
+
+def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
+    """
+    Get cleaned text from a paragraph for punctuation checking.
+
+    Removes footnote references, trims special characters, and strips invisible
+    characters.
+    """
+    p_copy = copy.copy(p)
+    for link in p_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            link.decompose()
+
+    text = p_copy.get_text(strip=True).rstrip(
+        TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
+    )
+    # Strip zero-width spaces and other invisible characters
+    text = text.replace("\u200b", "")  # zero-width space
+    text = text.replace("\ufeff", "")  # zero-width no-break space
+    return text.strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -146,35 +190,10 @@ def check_top_level_paragraphs_end_with_punctuation(
     for article in soup.find_all("article"):
         paragraphs = article.find_all("p", recursive=False)
         for p in paragraphs:
-            if not isinstance(p, Tag):
-                continue
-            classes = script_utils.get_classes(p)
-            if (
-                "subtitle" in classes
-                or "page-listing-title" in classes
-                or p.find(class_="transclude")
-            ):
+            if not isinstance(p, Tag) or _should_skip_paragraph(p):
                 continue
 
-            # Remove footnote reference links
-            p_copy = copy.copy(p)
-            for link in p_copy.find_all("a", id=True):
-                link_id = link.get("id", "")
-                if isinstance(link_id, str) and link_id.startswith(
-                    "user-content-fnref-"
-                ):
-                    link.decompose()
-
-            text = p_copy.get_text(strip=True).rstrip(
-                TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
-            )
-            if not text:
-                continue
-
-            # Strip zero-width spaces and other invisible characters
-            text = text.replace("\u200b", "")  # zero-width space
-            text = text.replace("\ufeff", "")  # zero-width no-break space
-            text = text.strip()
+            text = _get_paragraph_text_for_punctuation_check(p)
             if not text:
                 continue
 
@@ -680,17 +699,20 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
         width = img.get("width")
         height = img.get("height")
 
-        if width and height:
-            continue
+        if not width or not height:
+            src = img.get("src", "unknown")
+            # Truncate long URLs for readability
+            src_str = str(src)
+            if len(src_str) > 80:
+                src_str = src_str[:40] + "..." + src_str[-37:]
 
-        missing = []
-        if not width:
-            missing.append("width")
-        if not height:
-            missing.append("height")
+            missing = []
+            if not width:
+                missing.append("width")
+            if not height:
+                missing.append("height")
 
-        src = img.get("src")
-        issues.append(f"<img> missing {', '.join(missing)}: {src}")
+            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
 
     return issues
 

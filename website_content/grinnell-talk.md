@@ -7,8 +7,7 @@ tags:
   - grinnell
   - talk-notes
 description: Could human-designed AI kill all humans? I spent my PhD on this and still worry.
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.jpg
 aliases:

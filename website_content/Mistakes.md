@@ -8,8 +8,7 @@ tags:
   - personal
 description: A list of some of my major conceptual mistakes.
 date-published:
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image:
 date_published: 2024-10-31 23:14:34.832290

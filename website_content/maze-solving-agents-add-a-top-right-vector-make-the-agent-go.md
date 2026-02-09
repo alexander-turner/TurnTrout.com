@@ -19,10 +19,7 @@ af-num-comments-on-upload: 7
 title: "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
 lw-latest-edit: 2023-04-17T00:53:43.463000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Peli Grietzer
-  - Lisa Thiergart
+authors: Alex Turner, Peli Grietzer, and Lisa Thiergart
 tags:
   - AI
   - activation-engineering
@@ -45,7 +42,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0
 description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
-createBibtex: true
 ---
 
 

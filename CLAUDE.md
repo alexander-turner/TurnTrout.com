@@ -12,12 +12,10 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build (SLOW: ~5+ minutes, avoid unless necessary)
+pnpm build        # Production build
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
 ```
-
-**Note**: `pnpm build` is slow. For validation, prefer running `pnpm test` and `pnpm check` instead.
 
 ### Testing
 
@@ -80,9 +78,9 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook, which also detects the GitHub repo from proxy remotes and exports `GH_REPO` so `gh` CLI commands work in web sessions. Manual setup: `git config core.hooksPath .hooks`
 
-**Pre-commit**: Runs lint-staged formatters/linters on changed files. **Never skip pre-commit hooks with `--no-verify`** - always fix the underlying issues instead.
+**Pre-commit**: Runs lint-staged formatters/linters on changed files
 
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
@@ -153,7 +151,7 @@ When pushing to main, these checks run automatically:
 5. Markdown link validation
 6. Frontmatter validation
 7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, Tengwar character validation, etc.)
+8. Built site checks (no localhost links, all favicons wrapped, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
 11. Publication date updates
@@ -201,21 +199,6 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
-
-### Imports and Exports
-
-- Never create re-exports for "backward compatibility" - update importers to use the canonical source
-- Constants should be imported from their defining module (e.g., `markerChar` from `constants.ts`)
-- When moving constants to a shared location, update all importers in the same commit
-
-### Quote Characters
-
-**WARNING**: Claude cannot visually distinguish between straight quotes (`"` U+0022) and curly quotes (`"` U+201C, `"` U+201D). When modifying code containing quote characters in regexes or strings:
-
-- Use explicit Unicode escapes (`\u201c`, `\u201d`) instead of literal curly quotes
-- Never use `sed` or similar tools to modify lines containing mixed quote types
-- Verify quote characters with `python3 -c "print(repr(line))"` before and after changes
-- The `check_consecutive_periods` regex in `built_site_checks.py` is particularly sensitive to this
 
 ### Testing
 

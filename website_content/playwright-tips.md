@@ -6,8 +6,7 @@ tags:
   - website
   - practical
 description: Hard-won best practices for stable visual regression testing.
-authors:
-  - Alex Turner
+authors: Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:

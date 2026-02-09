@@ -717,13 +717,7 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Tap to show";
-  }
-
-  @media (hover: hover) {
-    &::after {
-      content: "Hover or click to show";
-    }
+    content: "Click to show";
   }
 }
 
@@ -738,19 +732,6 @@ img.emoji {
   }
 }
 
-// Only apply hover reveal on devices with real hover (not touch where :hover sticks)
-@media (hover: hover) {
-  .spoiler-container:hover .spoiler-overlay {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .spoiler-container:hover .spoiler-content {
-    filter: blur(0);
-    opacity: 1;
-  }
-}
-
 .spoiler-container:focus-visible .spoiler-overlay,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
@@ -761,17 +742,6 @@ img.emoji {
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
-}
-
-// Override hover/focus when explicitly closed via click toggle
-.spoiler-container.force-hidden .spoiler-overlay {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-.spoiler-container.force-hidden .spoiler-content {
-  filter: blur(4px) !important;
-  opacity: 0.5 !important;
 }
 
 // Make sure the bullet points don't feel choked
