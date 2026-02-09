@@ -401,6 +401,19 @@ test.describe("Footnote popovers", () => {
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 
+  test("Clicking footnote link opens pinned popover (lostpixel)", async ({ page }, testInfo) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+    await takeRegressionScreenshot(page, testInfo, "footnote-popover-pinned", {
+      elementToScreenshot: popover,
+      preserveSiblings: true,
+    })
+  })
+
   test("Clicking footnote link opens pinned popover with close button", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()

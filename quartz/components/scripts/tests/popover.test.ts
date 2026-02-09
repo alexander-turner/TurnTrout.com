@@ -535,17 +535,19 @@ describe("attachPopoverEventListeners", () => {
     expect(popoverElement.classList.contains("popover-visible")).toBe(true)
   })
 
-  it("should remove popover on link mouseleave", () => {
+  it("should remove popover-visible on link mouseleave", () => {
+    popoverElement.classList.add("popover-visible")
     linkElement.dispatchEvent(new MouseEvent("mouseleave"))
     jest.advanceTimersByTime(300)
-    expect(popoverElement.classList.contains("visible")).toBe(false)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(false)
   })
 
-  it("should handle popover mouseenter and mouseleave", () => {
+  it("should remove popover-visible on popover mouseleave", () => {
+    popoverElement.classList.add("popover-visible")
     popoverElement.dispatchEvent(new MouseEvent("mouseenter"))
     popoverElement.dispatchEvent(new MouseEvent("mouseleave"))
     jest.advanceTimersByTime(300)
-    expect(popoverElement.classList.contains("visible")).toBe(false)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(false)
   })
 
   it("should not remove pinned popover on link mouseleave", () => {

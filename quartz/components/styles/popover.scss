@@ -140,9 +140,6 @@
 
   visibility: hidden;
   opacity: 0;
-  transition:
-    opacity 0.15s ease,
-    visibility 0.15s ease;
 
   &.footnote-popover {
     cursor: auto;

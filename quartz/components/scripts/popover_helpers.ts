@@ -276,8 +276,7 @@ export function attachPopoverEventListeners(
   let isMouseOverPopover = false
 
   const removePopover = () => {
-    popoverElement.classList.remove("visible")
-    // Use a short timeout to allow for potential CSS transitions
+    popoverElement.classList.remove("popover-visible")
     setTimeout(() => {
       if (!isMouseOverLink && !isMouseOverPopover) {
         popoverElement.remove()

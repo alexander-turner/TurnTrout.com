@@ -158,6 +158,13 @@ document.addEventListener("nav", () => {
       }
 
       pendingPopoverTimer = window.setTimeout(() => {
+        // Don't let hover replace a pinned (click-triggered) popover
+        const currentPopover = document.querySelector(".popover") as HTMLElement | null
+        if (currentPopover?.dataset.pinned) {
+          pendingPopoverTimer = null
+          return
+        }
+
         if (activePopoverRemover) {
           activePopoverRemover()
         }
