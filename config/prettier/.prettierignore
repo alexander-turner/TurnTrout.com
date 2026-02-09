@@ -10,5 +10,6 @@ htmlcov/
 .venv/
 .vale-styles
 .logs/
+.mypy_cache/
 test-results/
 pnpm-lock.yaml
