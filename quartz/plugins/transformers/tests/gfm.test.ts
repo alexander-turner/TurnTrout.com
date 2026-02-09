@@ -880,6 +880,49 @@ describe("htmlAccessibilityPlugin (integration)", () => {
       assert(element)
     },
   )
+
+  it("adds tabindex, role, and aria-label to mermaid SVGs", () => {
+    const svg = h("svg", { id: "mermaid-1234" }, [h("rect", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBe(0)
+    expect(svg.properties?.role).toBe("img")
+    expect(svg.properties?.ariaLabel).toBe("Mermaid diagram")
+  })
+
+  it("skips non-mermaid SVGs", () => {
+    const svg = h("svg", { id: "icon-search" }, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBeUndefined()
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("skips SVGs without id", () => {
+    const svg = h("svg", {}, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("demotes dl with trailing dt to div", () => {
+    const dl = h("dl", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
+
+  it("demotes dl with invalid child to div", () => {
+    const dl = h("dl", [h("dt", ["T"]), h("p", ["Invalid"]), h("dd", ["D"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
 })
 
 describe("deduplicateSvgIds", () => {
@@ -1112,62 +1155,5 @@ describe("isValidDlStructure", () => {
     ["dd after div (orphaned)", [h("div", ["X"]), h("dd", ["D"])], false],
   ])("%s → %s", (_desc, children, expected) => {
     expect(isValidDlStructure(children)).toBe(expected)
-  })
-})
-
-describe("makeMermaidSvgsAccessible (via plugin)", () => {
-  const runPlugin = (tree: Root): void => {
-    const plugin = htmlAccessibilityPlugin()
-    plugin(tree)
-  }
-
-  it("adds tabindex, role, and aria-label to mermaid SVGs", () => {
-    const svg = h("svg", { id: "mermaid-1234" }, [h("rect", {})])
-    const tree: Root = { type: "root", children: [svg] }
-    runPlugin(tree)
-
-    expect(svg.properties?.tabIndex).toBe(0)
-    expect(svg.properties?.role).toBe("img")
-    expect(svg.properties?.ariaLabel).toBe("Mermaid diagram")
-  })
-
-  it("skips non-mermaid SVGs", () => {
-    const svg = h("svg", { id: "icon-search" }, [h("path", {})])
-    const tree: Root = { type: "root", children: [svg] }
-    runPlugin(tree)
-
-    expect(svg.properties?.tabIndex).toBeUndefined()
-    expect(svg.properties?.role).toBeUndefined()
-  })
-
-  it("skips SVGs without id", () => {
-    const svg = h("svg", {}, [h("path", {})])
-    const tree: Root = { type: "root", children: [svg] }
-    runPlugin(tree)
-
-    expect(svg.properties?.role).toBeUndefined()
-  })
-})
-
-describe("isValidDlStructure (via plugin integration)", () => {
-  const runPlugin = (tree: Root): void => {
-    const plugin = htmlAccessibilityPlugin()
-    plugin(tree)
-  }
-
-  it("demotes dl with trailing dt to div", () => {
-    const dl = h("dl", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])])
-    const tree: Root = { type: "root", children: [dl] }
-    runPlugin(tree)
-
-    expect(dl.tagName).toBe("div")
-  })
-
-  it("demotes dl with invalid child to div", () => {
-    const dl = h("dl", [h("dt", ["T"]), h("p", ["Invalid"]), h("dd", ["D"])])
-    const tree: Root = { type: "root", children: [dl] }
-    runPlugin(tree)
-
-    expect(dl.tagName).toBe("div")
   })
 })
