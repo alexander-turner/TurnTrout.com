@@ -389,9 +389,16 @@ test("Text fragment matching only title text does not scroll down the page", asy
   )
   await page.waitForURL("**/test-page**")
 
-  // Title match should be highlighted
-  const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch.first()).toBeAttached()
+  // Verify we're on the right page
+  await expect(page.locator("#article-title")).toContainText("features")
+
+  // Title match should be highlighted with the search-match class
+  const titleMatch = page.locator('#article-title .search-match:text("features")')
+  await expect(titleMatch).toBeAttached()
+
+  // No body matches should exist for this term
+  const bodyMatches = page.locator("article .search-match:not(#article-title .search-match)")
+  await expect(bodyMatches).toHaveCount(0)
 
   // Page should stay at the top, not scroll down
   const scrollY = await page.evaluate(() => window.scrollY)
