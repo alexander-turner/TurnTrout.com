@@ -98,7 +98,7 @@ function dispatchNavEvent(url: FullSlug) {
  * This supports the `#:~:text=<query>` URL hash emitted by the search UI. Injects `.match` into the DOM.
  *
  * @param searchText - The raw search query (decoded from the hash).
- * @returns `true` if we found a match and scrolled, otherwise `false`.
+ * @returns `true` if we found and highlighted a match, `false` otherwise.
  */
 function scrollToMatch(searchText: string): boolean {
   console.debug("[scrollToMatch] Called with searchText:", searchText)
@@ -114,14 +114,14 @@ function scrollToMatch(searchText: string): boolean {
   const matchedArticle = matchHTML(searchText, article)
   article.replaceWith(matchedArticle)
 
-  const allMatches = matchedArticle.querySelectorAll(".search-match")
+  const allMatches = Array.from(matchedArticle.querySelectorAll(".search-match"))
   if (allMatches.length === 0) return false
 
   // Find the first match outside the article title — title matches don't need
   // scrolling because the title is already visible at the top of the page.
-  const firstBodyMatch = matchedArticle.querySelector(
-    ".search-match:not(#article-title .search-match)",
-  ) as HTMLElement | null
+  const firstBodyMatch = allMatches.find((m) => !m.closest("#article-title")) as
+    | HTMLElement
+    | undefined
   if (!firstBodyMatch) return true // matches exist only in the title; stay at top
 
   const targetPos =

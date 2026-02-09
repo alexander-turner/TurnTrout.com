@@ -381,10 +381,10 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text does not scroll down the page", async ({ page }) => {
+test("Search matching only title text does not scroll down the page", async ({ page }) => {
   const initialUrl = page.url()
-  // "Testing site" appears in the title of the test page
-  await search(page, "Testing site")
+  // "features" appears only in the title "Testing site features", not in the body
+  await search(page, "features")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
