@@ -381,16 +381,13 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching only title text does not scroll down the page", async ({ page }) => {
-  const initialUrl = page.url()
-  // "features" appears only in the title "Testing site features", not in the body
-  await search(page, "features")
-
-  const firstResult = page.locator(".result-card").first()
-  await expect(firstResult).toBeVisible()
-
-  await page.keyboard.press("Enter")
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+test("Text fragment matching only title text does not scroll down the page", async ({ page }) => {
+  // Navigate via SPA with a text fragment that only matches the title.
+  // "features" appears in "Testing site features" (the title) but not in the body.
+  await page.evaluate(() =>
+    window.spaNavigate(new URL("http://localhost:8080/test-page#:~:text=features")),
+  )
+  await page.waitForURL("**/test-page**")
 
   // Title match should be highlighted
   const titleMatch = page.locator("#article-title .search-match")
