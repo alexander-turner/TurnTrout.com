@@ -6,8 +6,13 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { isCode } from "./formatting_improvement_html"
-import { shouldCapitalizeNodeText, replaceRegex, gatherTextBeforeIndex, hasClass } from "./utils"
+import {
+  shouldCapitalizeNodeText,
+  replaceRegex,
+  gatherTextBeforeIndex,
+  hasClass,
+  isCode,
+} from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {

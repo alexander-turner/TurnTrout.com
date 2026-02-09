@@ -15,7 +15,7 @@ import {
   hatTipPlaceholder,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex } from "./utils"
+import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -157,10 +157,6 @@ export function applyTextTransforms(text: string): string {
   }
 
   return text
-}
-
-export function isCode(node: Element): boolean {
-  return node.tagName === "code"
 }
 
 export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g

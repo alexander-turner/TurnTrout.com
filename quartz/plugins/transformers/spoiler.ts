@@ -1,10 +1,9 @@
-import type { Element, Parent, Root, Text } from "hast"
+import type { Element, Parent, Text } from "hast"
 
 // skipcq: JS-0257
 import { h } from "hastscript"
-import { visit } from "unist-util-visit"
 
-import type { QuartzTransformerPlugin } from "../types"
+import { createElementVisitorPlugin } from "./utils"
 
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
@@ -127,13 +126,4 @@ export function processParagraph(paragraph: Element): Element | null {
  * interactive spoiler elements. Spoilers are marked with "! " at the start of
  * blockquote paragraphs.
  */
-export const rehypeCustomSpoiler: QuartzTransformerPlugin = () => ({
-  name: "customSpoiler",
-  htmlPlugins() {
-    return [
-      () => (tree: Root) => {
-        visit(tree, "element", modifyNode)
-      },
-    ]
-  },
-})
+export const rehypeCustomSpoiler = createElementVisitorPlugin("customSpoiler", modifyNode)

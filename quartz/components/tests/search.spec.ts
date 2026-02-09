@@ -363,7 +363,8 @@ test("Enter key navigates to first result", async ({ page }) => {
 // Enter and click used to have different navigation methods
 test("Enter key navigation scrolls to first match", async ({ page }) => {
   const initialUrl = page.url()
-  await search(page, "Testing site")
+  // Use a term that appears far down the test page so scrolling is required
+  await search(page, "Footnote spam")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
@@ -371,7 +372,6 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   await page.keyboard.press("Enter")
   await page.waitForURL((url) => url.toString() !== initialUrl)
 
-  // This works when clicking the preview, but not when pressing Enter
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
   await expect(firstMatch).toBeInViewport()
