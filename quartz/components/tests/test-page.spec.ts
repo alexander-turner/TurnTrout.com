@@ -1084,11 +1084,13 @@ test.describe("Scroll indicators", () => {
       await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
       await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
 
-      // Verify the ::before pseudo-element is actually visible (opacity: 1)
-      const beforeOpacity = await scrollIndicator.evaluate((el) => {
-        return window.getComputedStyle(el, "::before").opacity
-      })
-      expect(beforeOpacity).toBe("1")
+      // Verify the ::before pseudo-element reaches full opacity after transition
+      await expect(async () => {
+        const beforeOpacity = await scrollIndicator.evaluate((el) => {
+          return window.getComputedStyle(el, "::before").opacity
+        })
+        expect(beforeOpacity).toBe("1")
+      }).toPass()
 
       testedAny = true
       break
