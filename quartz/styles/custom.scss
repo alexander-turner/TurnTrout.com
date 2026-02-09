@@ -80,10 +80,9 @@ a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
 
-  // Footnotes should be a bit easier to see
-  border: 1px solid var(--midground-faint);
-  color: var(--foreground);
-  padding: 0 0.1rem;
+  // Dotted border signals "click for interaction" (same pattern as Elvish text)
+  border: 1px dotted var(--midground-fainter);
+  padding: 0 calc(0.25 * $base-margin);
   border-radius: 5px;
 
   @media all and (max-width: $max-mobile-width) {
