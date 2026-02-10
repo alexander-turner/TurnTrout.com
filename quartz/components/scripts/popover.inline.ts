@@ -138,8 +138,10 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
       removeFocusTrap()
       removeFocusTrap = null
     }
-    // Return focus to the link that triggered the popover
-    triggerElement.focus()
+    // Return focus to the link that triggered a pinned popover
+    if (shouldPin) {
+      triggerElement.focus()
+    }
   }
 
   const popoverCleanup = attachPopoverEventListeners(popoverElement, this, onPopoverRemove)
