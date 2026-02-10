@@ -46,13 +46,10 @@ li.section-li {
 .all-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1rem 0;
-
-  // Make the tag container look like a card
-  background-color: var(--midground-faintest);
-  border-radius: 5px;
-  padding: 15px;
+  gap: $base-margin;
+  margin: calc(2 * $base-margin) 0;
+  padding: $base-margin;
+  border: 3px dotted var(--midground-fainter);
 }
 
 .tag-container {
