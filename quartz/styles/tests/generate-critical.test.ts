@@ -57,10 +57,11 @@ describe("Critical SCSS Generation", () => {
       expect(content).not.toContain("3.95rem")
       expect(content).not.toContain("4.2rem")
 
-      // Verify data-theme is used (not saved-theme)
+      // Verify both data-theme and saved-theme are used
       expect(content).toContain('data-theme="light"')
       expect(content).toContain('data-theme="dark"')
-      expect(content).not.toContain("saved-theme")
+      expect(content).toContain('saved-theme="light"')
+      expect(content).toContain('saved-theme="dark"')
     })
 
     it("should include responsive layout styles", () => {

@@ -86,6 +86,24 @@ em {
   font-family: var(--font-italic-situational);
 }
 
+:root[saved-theme="dark"],
+.dark-mode {
+  --background: #303446;
+  --foreground: #c6d0f5;
+  --red: #de585a;
+  --green: #a6d189;
+  --blue: #8caaee;
+}
+
+:root[saved-theme="light"],
+.light-mode {
+  --background: #eff1f5;
+  --foreground: #4c4f69;
+  --red: #be415c;
+  --green: #22820d;
+  --blue: #3e6ccb;
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -170,12 +188,7 @@ export function generateCritical(): void {
 
 // Run generation if this is the main module
 /* istanbul ignore next */
-try {
-  if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    generateCritical()
-    console.log("Critical SCSS generated successfully!")
-  }
-} catch {
-  // Ignore any errors in the execution check
-  // This allows the module to be imported without issues
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  generateCritical()
+  console.log("Critical SCSS generated successfully!")
 }

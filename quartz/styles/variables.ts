@@ -33,7 +33,6 @@ export const midgroundFaintLight = "#9ca0b0"
 export const midgroundLight = "#74747b"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
-// Dropcap styling constants
 export const dropcapVerticalOffset = "0.15rem"
 export const dropcapFontSize = "3.95rem"
 export const dropcapMinHeight = "4.2rem"

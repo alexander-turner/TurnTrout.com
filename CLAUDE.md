@@ -225,6 +225,14 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
+### Error Handling
+
+- **Never use empty catch blocks** - errors should either be handled or propagated
+- Don't catch exceptions just to ignore them - if an error isn't expected to occur, let it fail loudly
+- Only catch specific errors you know how to handle; let unexpected errors propagate
+- If you must catch for cleanup, rethrow the error after cleanup
+- Don't use try/catch to silence errors unless there's a specific, documented reason
+
 ### Testing
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
