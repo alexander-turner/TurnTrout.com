@@ -2049,6 +2049,52 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
   })
 })
 
+describe("favicon must be inside word-joiner span (prevents line-break orphaning)", () => {
+  const imgPath = "/test/favicon.png"
+
+  it.each([
+    ["simple text", h("a", {}, ["Click here"])],
+    ["nested code element", h("a", {}, [h("code", {}, ["linkchecker"])])],
+    ["text ending with punctuation", h("a", {}, ["Hello!"])],
+    ["empty node", h("a", {}, [])],
+    ["non-text last child (div)", h("a", {}, [h("div")])],
+  ])("wraps favicon inside word-joiner span for %s", (_name, node) => {
+    linkfavicons.appendFaviconWithWordJoiner(
+      node as Element,
+      linkfavicons.createFaviconElement(imgPath),
+    )
+
+    // Find the word-joiner span anywhere in the tree
+    const findWordJoiner = (el: Element): Element | null => {
+      for (const child of el.children) {
+        if (child.type !== "element") continue
+        const elem = child as Element
+        if (hasClass(elem, "word-joiner")) return elem
+        const found = findWordJoiner(elem)
+        if (found) return found
+      }
+      return null
+    }
+
+    const wjSpan = findWordJoiner(node as Element)
+    expect(wjSpan).not.toBeNull()
+
+    // The favicon MUST be a child of the word-joiner span, not a sibling.
+    // With the old sibling approach, the favicon was next to the word-joiner
+    // span, and browsers could still insert line breaks before the favicon SVG.
+    const faviconChild = wjSpan!.children.find(
+      (c) => c.type === "element" && hasClass(c as Element, "favicon"),
+    )
+    expect(faviconChild).toBeDefined()
+
+    // Verify the favicon is NOT a direct child of the link (would mean sibling approach)
+    const directFavicon = (node as Element).children.find(
+      (c) => c.type === "element" && hasClass(c as Element, "favicon"),
+    )
+    expect(directFavicon).toBeUndefined()
+  })
+})
+
 describe("shouldIncludeFavicon edge cases", () => {
   it("should exclude blacklisted favicon even if whitelisted", () => {
     const blacklistEntry = linkfavicons.normalizeFaviconListEntry(faviconSubstringBlacklist[0])

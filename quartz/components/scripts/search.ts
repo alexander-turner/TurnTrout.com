@@ -216,11 +216,14 @@ export const matchTextNodes = (node: Node, term: string) => {
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
+    // Normalize NBSP (U+00A0) to regular space so multi-word search terms
+    // match across non-breaking spaces inserted by punctilio
+    const normalizedText = nodeText.replace(/\u00A0/g, " ")
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation
-    const parts = nodeText.split(regex)
+    const parts = normalizedText.split(regex)
     if (parts.length === 1) return // No matches
 
     const fragment = document.createDocumentFragment()
