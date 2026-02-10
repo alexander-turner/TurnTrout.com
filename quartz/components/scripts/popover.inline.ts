@@ -9,6 +9,43 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
+const focusableSelector =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+
+/**
+ * Traps keyboard focus within a popover element.
+ * Returns a cleanup function to remove the event listener.
+ */
+function trapFocusInPopover(popoverElement: HTMLElement): () => void {
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key !== "Tab") return
+
+    const focusableElements = [
+      ...popoverElement.querySelectorAll<HTMLElement>(focusableSelector),
+    ].filter((el) => el.offsetParent !== null) // only visible elements
+
+    if (focusableElements.length === 0) return
+
+    const first = focusableElements[0]
+    const last = focusableElements[focusableElements.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }
+
+  document.addEventListener("keydown", handleKeydown)
+  return () => document.removeEventListener("keydown", handleKeydown)
+}
+
 // Module-level state
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
@@ -87,11 +124,22 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
     }
   }
 
+  // Set up focus trap for pinned popovers; track the cleanup function
+  // and the element that triggered the popover so we can restore focus on close.
+  let removeFocusTrap: (() => void) | null = null
+  const triggerElement = this as HTMLElement
+
   const onPopoverRemove = () => {
     activePopoverRemover = null
     for (const obs of popoverObservers) obs.disconnect()
     window.removeEventListener("resize", updatePosition)
     window.removeEventListener("scroll", handleScroll)
+    if (removeFocusTrap) {
+      removeFocusTrap()
+      removeFocusTrap = null
+    }
+    // Return focus to the link that triggered the popover
+    triggerElement.focus()
   }
 
   const popoverCleanup = attachPopoverEventListeners(popoverElement, this, onPopoverRemove)
@@ -114,6 +162,16 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
         activePopoverRemover()
       }
     })
+  }
+
+  // For pinned popovers, trap focus and move it into the popover
+  if (shouldPin) {
+    removeFocusTrap = trapFocusInPopover(popoverElement)
+    // Focus the close button if available, otherwise the first focusable element
+    const initialFocus = closeBtn ?? popoverElement.querySelector<HTMLElement>(focusableSelector)
+    if (initialFocus) {
+      ;(initialFocus as HTMLElement).focus()
+    }
   }
 
   // Handle hash scrolling
