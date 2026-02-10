@@ -7,6 +7,7 @@ import {
   createPopover,
   footnoteForwardRefRegex,
 } from "./popover_helpers"
+import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Module-level state
 let activePopoverRemover: (() => void) | null = null
@@ -69,6 +70,9 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   parentOfPopover.prepend(popoverElement)
 
+  // Wrap any scrollable tables/katex in the popover with fade indicators
+  const popoverObservers = wrapScrollables(popoverElement)
+
   const updatePosition = () => {
     setPopoverPosition(popoverElement, this)
   }
@@ -85,6 +89,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   const onPopoverRemove = () => {
     activePopoverRemover = null
+    for (const obs of popoverObservers) obs.disconnect()
     window.removeEventListener("resize", updatePosition)
     window.removeEventListener("scroll", handleScroll)
   }
