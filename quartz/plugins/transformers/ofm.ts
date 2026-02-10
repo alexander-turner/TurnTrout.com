@@ -28,6 +28,7 @@ import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
+import { UNICODE_WORD_CHAR } from "../../util/regex"
 import { slugify as slugAnchor, resetSlugger } from "./gfm"
 
 const currentFilePath = fileURLToPath(import.meta.url)
@@ -58,10 +59,10 @@ const highlightRegex = new RegExp(/[=]{2}(?<content>[^=]+)[=]{2}/, "g")
 const commentRegex = new RegExp(/%%[\s\S]*?%%/, "g")
 
 /** Regular expression to match admonition syntax ([!type][fold]) */
-const admonitionRegex = new RegExp(/^\[!(?<type>\w+)\](?<collapse>[+-]?)/)
+const admonitionRegex = new RegExp(`^\\[!(?<type>${UNICODE_WORD_CHAR}+)\\](?<collapse>[+-]?)`, "u")
 
 /** Regular expression to match admonition lines in blockquotes */
-const admonitionLineRegex = new RegExp(/^> *\[!\w+\][+-]?.*$/, "gm")
+const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$`, "gmu")
 
 /** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
@@ -70,7 +71,7 @@ const tagRegex = new RegExp(
 )
 
 /** Regular expression to match block references (^blockid) */
-const blockReferenceRegex = new RegExp(/\^(?<blockId>[-_A-Za-z0-9]+)$/, "g")
+const blockReferenceRegex = new RegExp(`\\^(?<blockId>[-_\\p{L}\\d]+)$`, "gu")
 
 /** Regular expression to match YouTube video URLs */
 const ytLinkRegex = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)(?<videoId>[^#&?]*).*/
