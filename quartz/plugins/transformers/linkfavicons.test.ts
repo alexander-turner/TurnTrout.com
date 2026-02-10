@@ -2085,13 +2085,13 @@ describe("favicon must be inside word-joiner span (prevents line-break orphaning
     // With the old sibling approach, the favicon was next to the word-joiner
     // span, and browsers could still insert line breaks before the favicon SVG.
     const faviconChild = wjSpan.children.find(
-      (c) => c.type === "element" && hasClass(c as Element, "favicon"),
+      (child) => child.type === "element" && hasClass(child as Element, "favicon"),
     )
     expect(faviconChild).toBeDefined()
 
     // Verify the favicon is NOT a direct child of the link (would mean sibling approach)
     const directFavicon = (node as Element).children.find(
-      (c) => c.type === "element" && hasClass(c as Element, "favicon"),
+      (child) => child.type === "element" && hasClass(child as Element, "favicon"),
     )
     expect(directFavicon).toBeUndefined()
   })
