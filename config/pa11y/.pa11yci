@@ -15,7 +15,8 @@
     "hideElements": [
       ".ignore-pa11y",
       ".katex",
-      "#trout-ornament-container"
+      "#trout-ornament-container",
+      ".mermaid svg"
     ],
     "ignore": [
       "frame-tested"

@@ -38,6 +38,7 @@ original_url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-th
 skip_import: "true"
 description: "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition."
 date_updated: 2025-12-18 09:42:00.251916
+createBibtex: true
 ---
 
 

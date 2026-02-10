@@ -83,6 +83,11 @@ a.tag-link {
   & .tags {
     margin-bottom: 0;
     padding-left: 0;
+    list-style: none;
+
+    & li {
+      display: inline;
+    }
   }
 
   & h1 a,
