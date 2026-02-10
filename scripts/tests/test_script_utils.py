@@ -43,8 +43,8 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
     # Clear the executable cache to avoid stale values
     monkeypatch.setattr(script_utils, "_executable_cache", {})
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
-    # Mock subprocess.run in the scripts.utils module where it's used
-    monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
+    # Mock subprocess.run at the module level where it's imported
+    monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
     assert script_utils.get_git_root() == Path(expected_output)
 
 
@@ -61,8 +61,8 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(script_utils, "_executable_cache", {})
     # Mock both find_executable and subprocess.run
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
-    # Mock subprocess.run in the scripts.utils module where it's used
-    monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
+    # Mock subprocess.run at the module level where it's imported
+    monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
 
     with pytest.raises(subprocess.CalledProcessError):
         script_utils.get_git_root()

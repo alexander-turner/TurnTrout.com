@@ -47,12 +47,12 @@
       "shellcheck"
     ],
     "*.py": [
-      "ruff check --fix",
-      "autoflake --in-place",
-      "isort",
-      "autopep8 --in-place",
-      "black",
-      "ruff check --fix"
+      "uv run ruff check --fix",
+      "uv run autoflake --in-place",
+      "uv run isort",
+      "uv run autopep8 --in-place",
+      "uv run black",
+      "uv run ruff check --fix"
     ],
     "!(*.vale-styles)/**/*.md": [
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
