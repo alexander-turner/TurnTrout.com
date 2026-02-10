@@ -2683,33 +2683,36 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
     assert "\u2019" not in result[1]
 
 
-def test_build_case_insensitive_wordlist(tmp_path):
-    """Temp wordlist includes lowercased and uppercased variants."""
-    wordlist = tmp_path / "wordlist.txt"
-    wordlist.write_text("ReLU\nGPT-4o\nalready-lower\n")
-    result = built_site_checks._build_case_insensitive_wordlist(wordlist)
-    assert result is not None
-    try:
-        words = result.read_text(encoding="utf-8").splitlines()
-        assert "ReLU" in words
-        assert "relu" in words
-        assert "RELU" in words
-        assert "GPT-4o" in words
-        assert "gpt-4o" in words
-        assert "GPT-4O" in words
-        assert "already-lower" in words
-        assert "ALREADY-LOWER" in words
-    finally:
-        result.unlink(missing_ok=True)
-
-
-def test_build_case_insensitive_wordlist_missing(tmp_path):
-    """Returns None when wordlist doesn't exist."""
+@pytest.mark.parametrize(
+    "stdout,line_to_source,expected",
+    [
+        # Normal warning with line number (leading whitespace is stripped)
+        (
+            "    - 1:7-1:12  warning  `wrold` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [
+                "[page.html] - 1:7-1:12  warning  `wrold` is misspelt  retext-spell"
+            ],
+        ),
+        # Warning without line number format
+        ("some warning text", {}, ["some warning text"]),
+        # Non-warning lines are skipped
+        ("Checking files...\n", {}, []),
+        # Empty/blank lines are skipped
+        ("  \n\n", {}, []),
+        # Unknown line number maps to "unknown"
+        (
+            "    - 99:1-99:5  warning  `xyz`  retext-spell\n",
+            {1: "page.html"},
+            ["[unknown] - 99:1-99:5  warning  `xyz`  retext-spell"],
+        ),
+    ],
+)
+def test_parse_spellcheck_output(stdout, line_to_source, expected):
+    """Test parsing of spellchecker-cli output."""
     assert (
-        built_site_checks._build_case_insensitive_wordlist(
-            tmp_path / "missing.txt"
-        )
-        is None
+        built_site_checks._parse_spellcheck_output(stdout, line_to_source)
+        == expected
     )
 
 

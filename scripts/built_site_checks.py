@@ -2309,35 +2309,25 @@ def _write_paragraphs_to_tempfile(
         return Path(tmp.name), line_to_source
 
 
-def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
-    """
-    Create a temp wordlist with case variants of every entry.
-
-    Adds lowercased, uppercased, and first-letter-capitalized forms
-    so that smallcaps-lowered text (``relu`` from ``ReLU``) and
-    sentence-start capitalized forms (``Conv`` from ``conv``) both
-    match.  Returns the temp file path, or *None* if *wordlist*
-    doesn't exist.
-    """
-    if not wordlist.exists():
-        return None
-    original_words = wordlist.read_text(encoding="utf-8").splitlines()
-    lowered = {w.lower() for w in original_words if w}
-    uppered = {w.upper() for w in original_words if w}
-    # First-letter-capitalized covers sentence-start forms (e.g.
-    # ``conv`` → ``Conv``, ``llms`` → ``Llms``).
-    cap_first = {w[0].upper() + w[1:] for w in lowered if w}
-    all_words = sorted(set(original_words) | lowered | uppered | cap_first)
-    with tempfile.NamedTemporaryFile(
-        mode="w",
-        suffix=".txt",
-        dir=_GIT_ROOT,
-        prefix=".spellcheck-wordlist-",
-        delete=False,
-        encoding="utf-8",
-    ) as tmp_wl:
-        tmp_wl.write("\n".join(all_words) + "\n")
-        return Path(tmp_wl.name)
+def _parse_spellcheck_output(
+    stdout: str, line_to_source: dict[int, str]
+) -> list[str]:
+    """Parse spellchecker-cli output into issue strings with source
+    annotations."""
+    issues: list[str] = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line or "warning" not in line:
+            continue
+        # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
+        match = re.match(r".*?(\d+):\d+-\d+:\d+", line)
+        if not match:
+            issues.append(line)
+            continue
+        ln = int(match.group(1))
+        source = line_to_source.get(ln, "unknown")
+        issues.append(f"[{source}] {line}")
+    return issues
 
 
 def _spellcheck_flattened_paragraphs(
@@ -2350,8 +2340,10 @@ def _spellcheck_flattened_paragraphs(
     invokes the same spellchecker used for source markdown.  Returns a
     list of human-readable issue strings.
 
-    Args:
-        paragraph_map: Mapping from HTML file path to list of paragraph texts.
+    The wordlist is passed directly — ``data-original-text`` on
+    smallcaps elements means the extracted text already uses
+    source-faithful casing, so case-insensitive expansion is
+    unnecessary.
     """
     if not paragraph_map:
         return []
@@ -2362,15 +2354,9 @@ def _spellcheck_flattened_paragraphs(
 
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
     tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
-    tmp_wordlist = _build_case_insensitive_wordlist(wordlist)
-    issues: list[str] = []
 
+    dict_args = ["--dictionaries", str(wordlist)] if wordlist.exists() else []
     try:
-        dict_args = (
-            ["--dictionaries", str(tmp_wordlist)]
-            if tmp_wordlist is not None
-            else []
-        )
         result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
             [
                 pnpm,
@@ -2389,27 +2375,13 @@ def _spellcheck_flattened_paragraphs(
             check=False,
             cwd=str(_GIT_ROOT),
         )
-
-        if result.returncode != 0 and result.stdout:
-            for line in result.stdout.splitlines():
-                line = line.strip()
-                if not line or "warning" not in line:
-                    continue
-                # Try to extract line number and prepend source file
-                # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
-                match = re.match(r".*?(\d+):\d+-\d+:\d+", line)
-                if match:
-                    ln = int(match.group(1))
-                    source = line_to_source.get(ln, "unknown")
-                    issues.append(f"[{source}] {line}")
-                else:
-                    issues.append(line)
     finally:
         tmp_path.unlink(missing_ok=True)
-        if tmp_wordlist is not None:
-            tmp_wordlist.unlink(missing_ok=True)
 
-    return issues
+    if result.returncode == 0 or not result.stdout:
+        return []
+
+    return _parse_spellcheck_output(result.stdout, line_to_source)
 
 
 def _process_html_files(  # pylint: disable=too-many-locals
