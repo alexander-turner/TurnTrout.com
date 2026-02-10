@@ -13,6 +13,7 @@ import {
   faviconMimeType,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../../styles/variables"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
@@ -73,6 +74,15 @@ describe("renderHead", () => {
       const normalized = normalizeNbsp(result)
       expect(normalized).toContain("<title>My Test Article</title>")
       expect(normalized).toContain('<meta name="description" content="This is a test description">')
+      expect(normalized).toContain(
+        '<link rel="canonical" href="https://turntrout.com/test-article" />',
+      )
+      expect(normalized).toContain(
+        `<meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />`,
+      )
+      expect(normalized).toContain(
+        `<meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />`,
+      )
       expect(normalized).toContain('<meta property="og:title" content="My Test Article" />')
       expect(normalized).toContain('<meta property="og:type" content="article" />')
       expect(normalized).toContain('<meta property="og:site_name" content="The Pond" />')
@@ -135,6 +145,9 @@ describe("renderHead", () => {
       // Verify all major sections are present
       expect(normalized).toContain("<title>Complete Test</title>")
       expect(normalized).toContain('<meta name="description" content="Complete description">')
+      expect(normalized).toContain(
+        '<link rel="canonical" href="https://turntrout.com/complete-test" />',
+      )
 
       // Open Graph tags
       expect(normalized).toContain('<meta property="og:title" content="Complete Test" />')
@@ -177,6 +190,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta property="og:url" content="https://example.com/test-page" />')
+      expect(result).toContain('<link rel="canonical" href="https://example.com/test-page" />')
     })
 
     it("should handle redirect URLs correctly", () => {

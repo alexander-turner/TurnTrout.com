@@ -77,33 +77,23 @@ The safeguard proposal shouldn't have to say "and here we solve this opaque, har
 
 So what about:
 
-<dl>
-<dt><a href="https://www.aaai.org/ocs/index.php/WS/AAAIW16/paper/view/12613" class="external alias" target="_blank">Quantilizers</a></dt>
-<dd>This seems to be the most plausible alternative; mild optimization and impact measurement share many properties. But:
-<ul>
-<li>What happens if the agent is already powerful? A greater proportion of plans could be catastrophic, since the agent is in a better position to cause them.</li>
-<li>Where does the base distribution come from (opaque, hard problem?), and how do we know it’s safe to sample from?</li>
-<li>In the linked paper, Jessica Taylor suggests the idea of learning a human distribution over actions. How robustly would we need to learn this distribution? How numerous are catastrophic plans, and what <em>is</em> a catastrophe, defined without reference to our values in particular? (That definition requires understanding impact!)</li>
-</ul>
-</dd>
-<dt><a href="https://www.lesswrong.com/s/4dHMdK5TLN6xcqtyc" class="external alias" target="_blank">Value learning</a></dt>
-<dd>
-<ul>
-<li>We only want this if <em>our</em> (human) values are learned!</li>
-<li><a href="https://papers.nips.cc/paper/7803-occams-razor-is-insufficient-to-infer-the-preferences-of-irrational-agents.pdf" class="external alias" target="_blank">Value learning is impossible without assumptions,</a> and <a href="https://www.lesswrong.com/s/4dHMdK5TLN6xcqtyc/p/EhNCnCkmu7MwrQ7yz" class="external alias" target="_blank">getting good enough assumptions could be really hard.</a> If we don’t know if we can get value learning ／reward specification right, we’d like safeguards which don’t fail because value learning goes wrong. The point of a safeguard is that it can catch you if the main thing falls through; if the safeguard fails because the main thing does, that’s pointless.</li>
-</ul>
-</dd>
-<dt><a href="https://intelligence.org/files/Corrigibility.pdf" class="external alias" target="_blank">Corrigibility</a></dt>
-<dd>At present, I’m excited about this property because I suspect it has a simple core principle. But
-<ul>
-<li>Even if the system is responsive to correction (and non-manipulative, and whatever other properties we associate with corrigibility), what if we become <em>unable</em> to correct it as a result of early actions—if the agent “moves too quickly”, so to speak?</li>
-<li><a href="https://ai-alignment.com/corrigibility-3039e668638" class="external alias" target="_blank">Paul Christiano’s take on corrigibility</a> is much broader and an exception to this critique.</li>
-<ul>
-<li>What is the core principle?</li>
-</ul>
-</ul>
-</dd>
-</dl>
+[Quantilizers](https://www.aaai.org/ocs/index.php/WS/AAAIW16/paper/view/12613)
+: This seems to be the most plausible alternative; mild optimization and impact measurement share many properties. But:
+
+  - What happens if the agent is already powerful? A greater proportion of plans could be catastrophic, since the agent is in a better position to cause them.
+  - Where does the base distribution come from (opaque, hard problem?), and how do we know it's safe to sample from?
+  - In the linked paper, Jessica Taylor suggests the idea of learning a human distribution over actions. How robustly would we need to learn this distribution? How numerous are catastrophic plans, and what _is_ a catastrophe, defined without reference to our values in particular? (That definition requires understanding impact!)
+
+[Value learning](https://www.lesswrong.com/s/4dHMdK5TLN6xcqtyc)
+: - We only want this if _our_ (human) values are learned!
+  - [Value learning is impossible without assumptions,](https://papers.nips.cc/paper/7803-occams-razor-is-insufficient-to-infer-the-preferences-of-irrational-agents.pdf) and [getting good enough assumptions could be really hard.](https://www.lesswrong.com/s/4dHMdK5TLN6xcqtyc/p/EhNCnCkmu7MwrQ7yz) If we don't know if we can get value learning ／reward specification right, we'd like safeguards which don't fail because value learning goes wrong. The point of a safeguard is that it can catch you if the main thing falls through; if the safeguard fails because the main thing does, that's pointless.
+
+[Corrigibility](https://intelligence.org/files/Corrigibility.pdf)
+: At present, I'm excited about this property because I suspect it has a simple core principle. But
+
+  - Even if the system is responsive to correction (and non-manipulative, and whatever other properties we associate with corrigibility), what if we become _unable_ to correct it as a result of early actions—if the agent "moves too quickly", so to speak?
+  - [Paul Christiano's take on corrigibility](https://ai-alignment.com/corrigibility-3039e668638) is much broader and an exception to this critique.
+    - What is the core principle?
 
 # Notes
 

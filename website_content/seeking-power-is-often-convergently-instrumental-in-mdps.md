@@ -101,22 +101,18 @@ My theorems apply to finite MDPs; for the unfamiliar, I’ll illustrate with Pac
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.webm" type="video/webm"></video>
 
-<dl>
-<dt>Full observability</dt>
-<dd>You can see everything that’s going on; this information is packaged in the <em>state s</em>. In Pac-Man, the state is the game screen.
-</dd>
-<dt>Markov transition function</dt>
-<dd>The next state depends only on the choice of action a and the current state s. It doesn’t matter how we got into a situation.
-</dd>
-<dt>Discounted reward</dt>
-<dd>Future rewards are geometrically discounted by some discount rate <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7335em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.05556em;">γ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∈</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord">1</span><span class="mclose">]</span><span class="mord">.</span></span></span></span>
-<ul>
-<li>At discount rate <span class="fraction">1/2</span>, this means that reward in one turn is half as important as immediate reward, reward in two turns is a quarter as important, and so on.</li>
-<li>We’ll colloquially say that agents “care a lot about the future” when <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.05556em;">γ</span></span></span></span> is “sufficiently” close to 1. (I’ll sometimes use quotations to flag well-defined formal concepts that I won’t unpack in this post.)</li>
-<li>The score in Pac-Man is the undiscounted sum of rewards-to-date.</li>
-</ul>
-</dd>
-</dl>
+Full observability
+: You can see everything that's going on; this information is packaged in the _state s_. In Pac-Man, the state is the game screen.
+
+Markov transition function
+: The next state depends only on the choice of action a and the current state s. It doesn't matter how we got into a situation.
+
+Discounted reward
+: Future rewards are geometrically discounted by some discount rate $\gamma \in [0, 1].$
+
+  - At discount rate <span class="fraction">1/2</span>, this means that reward in one turn is half as important as immediate reward, reward in two turns is a quarter as important, and so on.
+  - We'll colloquially say that agents "care a lot about the future" when $\gamma$ is "sufficiently" close to 1. (I'll sometimes use quotations to flag well-defined formal concepts that I won't unpack in this post.)
+  - The score in Pac-Man is the undiscounted sum of rewards-to-date.
 
 When playing the game, the agent has to choose an action at each state. This decision-making function is called a _policy_; a policy is optimal (for a reward function $R$ and discount rate $\gamma$) when it always makes decisions which maximize discounted reward. This maximal quantity is called the _optimal value_ for reward function $R$ at state $s$ and discount rate $\gamma$.[^1]
 

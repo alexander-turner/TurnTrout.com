@@ -1,6 +1,7 @@
 import type { Element, ElementContent, Root } from "hast"
 
 import { spawnSync, type SpawnSyncReturns } from "child_process"
+import crypto from "crypto"
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
 import sizeOf from "image-size"
@@ -102,7 +103,7 @@ class AssetProcessor {
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
       // Use unique temp file to avoid race conditions with parallel workers
-      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${Date.now()}`
+      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${crypto.randomUUID()}`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
       await fs.writeFile(tempFilePath, data, "utf-8")
@@ -435,7 +436,7 @@ export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
     htmlPlugins(ctx: BuildCtx) {
-      // istanbul ignore next -- simple default value
+      /* istanbul ignore next -- defensive default for offline flag */
       const offline = ctx.argv.offline ?? false
       return [
         () => {

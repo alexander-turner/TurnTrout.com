@@ -3,7 +3,7 @@
  * Supports fetching README files from GitHub repositories.
  */
 
-import { execSync } from "child_process"
+import { execFileSync } from "child_process"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -45,7 +45,7 @@ export type FetchFunction = (url: string) => string
  */
 // istanbul ignore next - Integration functionality tested via dependency injection
 export const defaultFetchFunction: FetchFunction = (url: string): string => {
-  const output = execSync(`curl -sf "${url}"`, {
+  const output = execFileSync("curl", ["-sf", url], {
     encoding: "utf-8",
     timeout: 30000, // 30 second timeout
   })

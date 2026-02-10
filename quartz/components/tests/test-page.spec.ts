@@ -572,31 +572,31 @@ test.describe("Spoilers", () => {
 
       // Click again to close
       await spoiler.click()
-      await page.mouse.click(0, 0) // Click away to remove focus
-
       await expect(spoiler).not.toHaveClass(/revealed/)
     })
   }
 
-  test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
-    // Skip on mobile devices where hover is not a native interaction
-    test.skip(!isDesktopViewport(page), "Desktop-only test")
-
+  test("Clicking spoiler twice re-hides it", async ({ page }) => {
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
     await expect(spoiler).toBeVisible()
 
     const initialScreenshot = await spoiler.screenshot()
 
-    await spoiler.hover()
+    // Click to reveal
+    await spoiler.click()
+    await expect(spoiler).toHaveClass(/revealed/)
+
     const revealedScreenshot = await spoiler.screenshot()
     expect(revealedScreenshot).not.toEqual(initialScreenshot)
 
-    await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
-      elementToScreenshot: spoiler,
-      disableHover: false,
-      preserveSiblings: true,
-    })
+    // Click again to re-hide
+    await spoiler.click()
+    await expect(spoiler).not.toHaveClass(/revealed/)
+
+    // Visually verify the spoiler is hidden again
+    const rehiddenScreenshot = await spoiler.screenshot()
+    expect(rehiddenScreenshot).not.toEqual(revealedScreenshot)
   })
 })
 
@@ -852,7 +852,7 @@ test.describe("List alignment", () => {
     { prefix: "", suffix: " li" },
     { prefix: "blockquote > ", suffix: "" },
     { prefix: "blockquote > ", suffix: " li" },
-    { prefix: "* > table ", suffix: "" },
+    { prefix: "* table ", suffix: "" },
     { prefix: "", suffix: "> label > .checkbox-toggle" },
   ]) {
     test(`First ol li and first ul li have the same x-position (${prefix}...${suffix})`, async ({
@@ -1040,6 +1040,46 @@ test.describe("Checkboxes", () => {
         expect(checkboxState).toBe(savedState)
       })
     }
+  })
+})
+
+test.describe("Scroll indicators", () => {
+  test("Footnote table shows right fade when overflowing", async ({ page }) => {
+    const footnoteTableContainer = page
+      .locator('li[id^="user-content-fn-"] .table-container')
+      .first()
+    await footnoteTableContainer.scrollIntoViewIfNeeded()
+
+    // Only assert if the table actually overflows (guaranteed on mobile, likely on all viewports)
+    const overflows = await footnoteTableContainer.evaluate((el) => el.scrollWidth > el.clientWidth)
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!overflows) return
+
+    const scrollIndicator = footnoteTableContainer.locator("..")
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+  })
+
+  test("Left fade appears after scrolling a wide element right", async ({ page }) => {
+    // Target the scroll-indicator wrapping the wide Maxwell's equations
+    const scrollIndicator = page.locator(".scroll-indicator").filter({ hasText: "∇" }).first()
+    const scrollable = scrollIndicator.locator(".katex-display")
+    await scrollable.scrollIntoViewIfNeeded()
+
+    // Scroll to the middle of the element
+    await scrollable.evaluate((el) => {
+      el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+    })
+
+    await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+
+    // Verify the ::before pseudo-element reaches full opacity after transition
+    await expect(async () => {
+      const beforeOpacity = await scrollIndicator.evaluate((el) => {
+        return window.getComputedStyle(el, "::before").opacity
+      })
+      expect(beforeOpacity).toBe("1")
+    }).toPass()
   })
 })
 

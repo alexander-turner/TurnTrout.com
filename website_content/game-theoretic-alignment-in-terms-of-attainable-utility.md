@@ -94,8 +94,8 @@ This narrows our problem statement to the point where we can start specifying cr
 **Consistency with affine transformations**
 : In particular, applying any affine transformation $A$ to each player's utility function should "preserve the structure of the game", which should be represented in the alignment metric. This criterion can be strengthened in the following ways:
 
-1. _Alignment metric is an affine function of players' utilities._ Since the composition of affine functions is affine, this condition implies the above.
-2. _Consistency under affine transformations for individual players._ The intuition is that affine transformations are precisely the set of transformations that "preserve preferences" in the VNM sense.
+  1. _Alignment metric is an affine function of players' utilities._ Since the composition of affine functions is affine, this condition implies the above.
+  2. _Consistency under affine transformations for individual players._ The intuition is that affine transformations are precisely the set of transformations that "preserve preferences" in the VNM sense.
 
 Another relevant distinction to be drawn is between _global_ and _local_ alignment metrics. Mathematically, we define a global metric to be strictly a function of a multi-player game, while a local metric is a function of both the game and a strategy profile. Intuitively, local metrics can "see" information about the strategies actually being played, while global metrics are forced to address the complexity of the entire game.
 
@@ -114,9 +114,9 @@ We'll be using the following games as examples:
 
 Table: [Matching Pennies](https://en.wikipedia.org/wiki/Matching_pennies).
 
-|                                   | $\color{blue}{\text{Player 1: Cooperate}}$                 | $\color{blue}{\text{Player 1: Defect}}$                    |
+| | $\color{blue}{\text{Player 1: Cooperate}}$ | $\color{blue}{\text{Player 1: Defect}}$ |
 | --------------------------------: | :--------------------------------------------------------: | :--------------------------------------------------------: |
-|   $\color{red}{\text{P2: Cooperate}}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ |
+| $\color{red}{\text{P2: Cooperate}}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ |
 | $\color{red}{\text{P2: Defect}}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ | $\color{red}{-1} \hspace{5pt} \backslash \color{blue}{-1}$ |
 
 Table: [Prisoners' Dilemma](https://en.wikipedia.org/wiki/Prisoner%27s_dilemma).

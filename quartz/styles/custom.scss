@@ -3,6 +3,7 @@
 @use "table";
 @use "colors";
 @use "favicon";
+@use "scroll-indicator";
 
 body {
   min-height: 100vh;
@@ -40,10 +41,6 @@ li > blockquote:first-child {
     padding-right: 0;
   }
 
-  & li {
-    max-width: 100%;
-  }
-
   // Ordered lists in footnotes should start at 1, 2, 3, etc.
   & > li > ol {
     counter-reset: list;
@@ -79,9 +76,9 @@ a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
 
-  // Footnotes should be a bit easier to see
-  background-color: color-mix(in srgb, gray 10%, transparent);
-  padding: 0 0.1rem;
+  // Dotted border signals "click for interaction" (same pattern as Elvish text)
+  border: 1px dotted var(--midground-fainter);
+  padding: 0 calc(0.25 * $base-margin);
   border-radius: 5px;
 
   @media all and (max-width: $max-mobile-width) {
@@ -314,6 +311,11 @@ sup {
 figure:has(> .subfigure) {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+
+  > figcaption {
+    flex-basis: 100%;
+  }
 }
 
 figure {
@@ -715,36 +717,26 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Hover to show";
-  }
-
-  @media (max-width: $tablet-breakpoint) {
-    &::after {
-      content: "Tap to show";
-    }
+    content: "Click to show";
   }
 }
 
 .spoiler-content {
   filter: blur(4px);
-  opacity: 0.5;
 
   // Safari needs this
   & > * {
     filter: inherit;
-    opacity: inherit;
   }
 }
 
-.spoiler-container:hover .spoiler-overlay,
-.spoiler-container:focus .spoiler-overlay,
+.spoiler-overlay:focus-visible,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:hover .spoiler-content,
-.spoiler-container:focus .spoiler-content,
+.spoiler-overlay:focus-visible + .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
@@ -799,21 +791,19 @@ img.emoji {
   }
 }
 
-#mermaid-0,
-#mermaid-1,
-#mermaid-2 {
+// Ensure all mermaid diagram text has sufficient contrast
+[id^="mermaid-"] {
   font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
 
   & span,
-  & .label {
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
   }
-}
-
-#mermaid-1 {
-  // Needed to ensure arrowheads are visible
-  fill: var(--midground-faint) !important;
 }
 
 .flowchart-link {
@@ -831,7 +821,6 @@ foreignObject {
   overflow: visible !important;
 }
 
-// stylelint-
 .flowchart .nodeLabel,
 .flowchart .label,
 .flowchart .edgeLabel {
@@ -899,7 +888,7 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-  font-weight: 200;
+  color: var(--foreground);
 }
 
 // Specific graph in design doc has too much whitespace in light

@@ -188,7 +188,7 @@ What we actually found
 
 : For some unit-normalized, Gaussian-sampled vector $x$, consider the sum of the sum of $W_{OV} \cdot x$ for all 25 $W_{OV}$ matrices (one for each head). This sum's norm is 5 times larger than the `attn_out` norm, as shown in this figure: [^7]
 
-![A log-linear line chart comparing attention component norms to the attention output norm across layers. The Frobenius norms of individual W_OV attention head weights increase with layer number, closely tracking the actual L2-norm of the attention output. The L2-norm of the bias  is negligible until the final layers.](https://assets.turntrout.com/static/images/posts/oqofcuc6vya0jcgdfjy9.avif)
+  ![A log-linear line chart comparing attention component norms to the attention output norm across layers. The Frobenius norms of individual W_OV attention head weights increase with layer number, closely tracking the actual L2-norm of the attention output. The L2-norm of the bias  is negligible until the final layers.](https://assets.turntrout.com/static/images/posts/oqofcuc6vya0jcgdfjy9.avif)
 
 > [!warning] Caveat
 > We do not understand the full picture of how `attn_out` is generated. All we show is that the $W_{OV}$ norms grow at the same rate.

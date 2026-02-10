@@ -1,7 +1,12 @@
+import type { Element, Parent, Root } from "hast"
 import type OriginalFetchType from "node-fetch"
 
 import { jest } from "@jest/globals"
 import { Response as NodeFetchResponse } from "node-fetch"
+import rehypeParse from "rehype-parse"
+import rehypeStringify from "rehype-stringify"
+import { unified } from "unified"
+import { visit } from "unist-util-visit"
 
 /**
  * Mocks a single successful fetch request on the provided mock instance.
@@ -40,4 +45,48 @@ export function mockFetchNetworkError(
   error: Error = new Error("Network error"),
 ): void {
   fetchMockInstance.mockRejectedValueOnce(error)
+}
+
+/**
+ * Recursively removes 'position' properties from AST nodes for testing purposes.
+ * This helps in comparing AST nodes without considering their position information.
+ *
+ * @param obj - The object to process, typically a HAST (HTML Abstract Syntax Tree) node
+ * @returns A new object with all 'position' properties removed, preserving the rest of the structure
+ */
+export function removePositions(obj: unknown): unknown {
+  if (Array.isArray(obj)) {
+    return obj.map(removePositions)
+  } else if (typeof obj === "object" && obj !== null) {
+    const newObj: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      if (key !== "position") {
+        newObj[key] = removePositions(value)
+      }
+    }
+    return newObj
+  }
+  return obj
+}
+
+/**
+ * Creates a rehype processor function for testing transformer plugins.
+ * Processes HTML input through rehype pipeline with a custom visitor function.
+ *
+ * @param modifyNode - The visitor function to apply to each element in the tree
+ * @returns An async function that processes HTML strings and returns the stringified result
+ */
+export function createRehypeProcessor(
+  modifyNode: (node: Element, index: number | undefined, parent: Parent | undefined) => void,
+) {
+  return async function process(input: string): Promise<string> {
+    const result = await unified()
+      .use(rehypeParse, { fragment: true })
+      .use(() => (tree: Root) => {
+        visit(tree, "element", modifyNode)
+      })
+      .use(rehypeStringify)
+      .process(input)
+    return result.toString()
+  }
 }

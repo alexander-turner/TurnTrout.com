@@ -88,8 +88,8 @@ describe("HTMLFormattingImprovement", () => {
         `<p>Suppose you tell me, ${LEFT_DOUBLE_QUOTE}<code>TurnTrout</code>,${RIGHT_DOUBLE_QUOTE} we definitely</p>`,
       ],
       [
-        '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
-        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMi<span class="favicon-span">nd’s<img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
+        '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="word-joiner" aria-hidden="true">⁠</span><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></a></p>',
+        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="word-joiner" aria-hidden="true">⁠</span><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></a></p>',
       ],
       [
         '<div><p>not confident in that plan - "</p><p>"Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>',
@@ -628,8 +628,9 @@ describe("HTMLFormattingImprovement", () => {
 
     describe("Legal symbols", () => {
       it.each([
-        ["<p>(c)</p>", "<p>©</p>"],
-        ["<p>(C)</p>", "<p>©</p>"],
+        // (c) only converts with copyright context (year or "copyright" keyword)
+        ["<p>(c)</p>", "<p>(c)</p>"],
+        ["<p>Copyright (c) 2024</p>", "<p>Copyright © 2024</p>"],
         ["<p>(r)</p>", "<p>®</p>"],
         ["<p>(R)</p>", "<p>®</p>"],
         ["<p>(tm)</p>", "<p>™</p>"],

@@ -74,6 +74,6 @@ It turns out that even though there was *no* loss function causing the encoding 
 
 # Code
 
-You can see the code [here](https://github.com/g-w1/gradient-routed-vae).
+You can see the [code on GitHub](https://github.com/g-w1/gradient-routed-vae).
 
 [^1]: I did have to train the model a few times to get something that behaved nicely enough for the demo.

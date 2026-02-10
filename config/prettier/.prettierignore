@@ -1,8 +1,6 @@
 public
 **.md
 **.min.*
-**.yaml
-**.yml
 node_modules
 .quartz-cache
 **/.github/workflows/*.yaml
@@ -10,6 +8,7 @@ node_modules
 coverage/
 htmlcov/
 .venv/
+.vale-styles
 .logs/
 test-results/
-**/.asset_dimensions.json
+pnpm-lock.yaml

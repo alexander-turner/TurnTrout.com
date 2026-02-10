@@ -85,6 +85,15 @@ if is_root; then
 fi
 
 #######################################
+# Clean up stale state from previous sessions
+#######################################
+
+# Remove stop-hook retry counter for THIS project so a new session starts fresh
+# (keyed on project dir hash, matching verify_ci.py's _retry_file)
+PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
+rm -f "/tmp/claude-stop-attempts-${PROJ_HASH}"
+
+#######################################
 # Git setup
 #######################################
 
@@ -146,12 +155,26 @@ if [ -z "${GH_REPO:-}" ]; then
 fi
 
 #######################################
-# DeepSource CLI
+# DeepSource CLI (fork with --commit support)
+# Source: https://github.com/DeepSourceCorp/cli/pull/267
 #######################################
 
 if ! command -v deepsource &>/dev/null; then
-  echo "Installing DeepSource CLI..."
-  curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || warn "Failed to install DeepSource CLI"
+  echo "Installing DeepSource CLI (fork with --commit flag)..."
+  if command -v go &>/dev/null; then
+    _ds_tmp=$(mktemp -d)
+    if git clone --quiet --branch feat/issues-list-by-commit --depth 1 \
+      "$(github_url "alexander-turner/cli")" "$_ds_tmp/cli" 2>/dev/null; then
+      (cd "$_ds_tmp/cli" && go build -o "$HOME/.local/bin/deepsource" ./cmd/deepsource) 2>/dev/null \
+        || warn "Failed to build DeepSource CLI fork"
+    else
+      warn "Failed to clone DeepSource CLI fork"
+    fi
+    rm -rf "$_ds_tmp"
+  else
+    # Fallback to official CLI (without --commit support)
+    curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || warn "Failed to install DeepSource CLI"
+  fi
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
@@ -166,7 +189,17 @@ fi
 echo "Installing Node dependencies..."
 pnpm install --silent || warn "Failed to install Node dependencies"
 
-command -v uv &>/dev/null && uv sync --quiet 2>/dev/null
+if command -v uv &>/dev/null; then
+  uv sync --quiet 2>/dev/null
+  # Add .venv/bin to PATH so Python tools (autoflake, isort, autopep8, etc.)
+  # installed by uv sync are available to lint-staged and other commands
+  if [ -d "$PROJECT_DIR/.venv/bin" ]; then
+    export PATH="$PROJECT_DIR/.venv/bin:$PATH"
+    if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+      echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+    fi
+  fi
+fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then
   echo "Session setup complete with $SETUP_WARNINGS warning(s)" >&2

@@ -11,7 +11,6 @@ authors:
   - Luke Marks
   - Alex Cloud
   - Alex Turner
-createBibtex: true
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/b34a33eed86d79c77c6ad3560e8dd7865a109d202e8b9c74.jpg
 aliases:
@@ -23,6 +22,7 @@ date_published: 2025-11-22 00:21:52.667251
 date_updated: 2025-12-30 14:46:20.403471
 no_dropcap: false
 card_image_alt: A diagram shows that penalizing an AI's output for cheating causes it to obfuscate its reasoning. Before training, a robot's CoT is "I'll cheat" and its output is "I just cheated!". After training, its CoT says "I'll solve it like an honest chatbot" but still cheats, and its output is "Nothing to see here!".
+createBibtex: true
 ---
 
 
@@ -134,6 +134,18 @@ We believe these results are strong evidence that output-based training generall
 
 > [!thanks] Acknowledgments
 > Produced as part of MATS Team Shard 8.0 under the mentorship of Alex Turner and Alex Cloud. Luke and Jacob contributed equally.
+
+```bibtex
+@misc{drori2025outputsupervisionobfuscatechain,
+      title={Output Supervision Can Obfuscate the Chain of Thought}, 
+      author={Jacob Drori and Luke Marks and Bryce Woodworth and Alex Cloud and Alexander Matt Turner},
+      year={2025},
+      eprint={2511.11584},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2511.11584}, 
+}
+```
 
 [^contradiction]: Our results do not contradict prior work showing that CoT obfuscation doesn't seem to happen when the CoT is necessary for task completion. The nature of the obfuscation we give examples of are behaviors such as omitting intermediate reasoning from the CoT that was not necessary to verbalize to complete the task, and writing contradictory reasoning in the CoT (e.g., writing "I used method A to solve the problem" when method B was clearly used).
 

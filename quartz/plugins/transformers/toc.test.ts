@@ -484,6 +484,27 @@ describe("TableOfContents Plugin", () => {
       expect(mockFile.data.toc?.[3]?.slug).toBe("complex-code-title")
     })
 
+    it("normalizes NBSP in heading slugs", () => {
+      const plugin = TableOfContents()
+      const mockCtx = {} as BuildCtx
+      const plugins = plugin.markdownPlugins?.(mockCtx) ?? []
+      const processor = (plugins[0] as () => ProcessorFunction)()
+
+      const mockFile: MockFile = {
+        path: "test.md",
+        data: { frontmatter: {} },
+      }
+
+      // "I love this" gets NBSP inserted by applyTextTransforms (orphan prevention)
+      const mockTree: Root = createRoot([createHeading(2, [createText("I love this")])])
+
+      processor(mockTree, mockFile)
+
+      expect(mockFile.data.toc).toHaveLength(1)
+      // Slug should use regular hyphens, not NBSP artifacts
+      expect(mockFile.data.toc?.[0]?.slug).toBe("i-love-this")
+    })
+
     it("handles mixed depth scenarios correctly", () => {
       const plugin = TableOfContents({ maxDepth: 3 })
       const mockCtx = {} as BuildCtx

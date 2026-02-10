@@ -12,12 +12,10 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build (SLOW: ~5+ minutes, avoid unless necessary)
+pnpm build        # Production build
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
 ```
-
-**Note**: `pnpm build` is slow. For validation, prefer running `pnpm test` and `pnpm check` instead.
 
 ### Testing
 
@@ -32,6 +30,29 @@ pytest <path>               # Python tests (NOT python -m pytest)
 
 ```bash
 conda init && conda activate website
+```
+
+### Running Playwright Tests Locally
+
+1. Install browsers and WebKit system dependencies:
+
+```bash
+npx playwright install chromium firefox
+npx playwright install-deps webkit
+npx playwright install webkit
+```
+
+2. Start the local server in offline mode (uses Playwright's Chromium for critical CSS generation):
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --serve --offline &
+```
+
+3. Wait for the server to be ready at `http://localhost:8080`, then run tests:
+
+```bash
+npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
 ```
 
 ### Code Quality
@@ -80,9 +101,11 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook, which also detects the GitHub repo from proxy remotes and exports `GH_REPO` so `gh` CLI commands work in web sessions. Manual setup: `git config core.hooksPath .hooks`
 
-**Pre-commit**: Runs lint-staged formatters/linters on changed files. **Never skip pre-commit hooks with `--no-verify`** - always fix the underlying issues instead.
+**Pre-commit**: Runs lint-staged formatters/linters on changed files
+
+**Commits**: Never commit `pnpm-lock.yaml`. Only commit `package.json` when dependencies change.
 
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
@@ -106,6 +129,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
 - Visual regression tests use Playwright with `lost-pixel`
+- **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details
 
@@ -152,7 +176,7 @@ When pushing to main, these checks run automatically:
 5. Markdown link validation
 6. Frontmatter validation
 7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, Tengwar character validation, etc.)
+8. Built site checks (no localhost links, all favicons wrapped, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
 11. Publication date updates
@@ -166,6 +190,14 @@ After pushing to main:
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis
+
+### CI Cost Optimization
+
+- **Playwright/visual tests on PRs**: These only run when the `ci:full-tests` label is added to a PR. They always run on push to main/dev and in the merge queue.
+- **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
+- **Path filters**: Workflows only trigger when relevant files change. Playwright tests skip content-only changes.
+- **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.
+- **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
 
@@ -192,21 +224,6 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
-
-### Imports and Exports
-
-- Never create re-exports for "backward compatibility" - update importers to use the canonical source
-- Constants should be imported from their defining module (e.g., `markerChar` from `constants.ts`)
-- When moving constants to a shared location, update all importers in the same commit
-
-### Quote Characters
-
-**WARNING**: Claude cannot visually distinguish between straight quotes (`"` U+0022) and curly quotes (`"` U+201C, `"` U+201D). When modifying code containing quote characters in regexes or strings:
-
-- Use explicit Unicode escapes (`\u201c`, `\u201d`) instead of literal curly quotes
-- Never use `sed` or similar tools to modify lines containing mixed quote types
-- Verify quote characters with `python3 -c "print(repr(line))"` before and after changes
-- The `check_consecutive_periods` regex in `built_site_checks.py` is particularly sensitive to this
 
 ### Testing
 

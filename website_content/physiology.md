@@ -171,7 +171,7 @@ Subtitle: Check out [Cells at Work](https://en.wikipedia.org/wiki/Cells_at_Work!
 
 This anime is fun. Not as fun as [Doctor Stone](/doctor-stone), but fun. Its representations of cells are sometimes hard to forget.  
 
-For example. Neutrophils are a first-responder immune cell and a type of white blood cell. They catch invaders, envelop them, and then dissolve them - a process called [phagocytosis](https://en.wikipedia.org/wiki/Phagocytosis). <em>Cells at Work</em> portrays neutrophils as knife-wielding maniacs.
+For example. Neutrophils are a first-responder immune cell and a type of white blood cell. They catch invaders, envelop them, and then dissolve them - a process called [phagocytosis](https://en.wikipedia.org/wiki/Phagocytosis). _Cells at Work_ portrays neutrophils as knife-wielding maniacs.
 
 <figure style="display: flex;" >
 <span class="subfigure">

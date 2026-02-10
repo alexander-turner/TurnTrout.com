@@ -271,7 +271,6 @@ Overall, the first three results line up with our hands-on experience with the n
 To understand the network, we tried various hand-designed model edits. These edits change the forward pass, without any retraining or optimization. To see the effect of a modification, we display the diff between the vector fields:
 
 <figure>
-<div style="display:flex; justify-content: center; ">
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/original_maze_field.avif" alt="The original probability vectors. The mouse seems 'torn' between the cheese and the right side of the maze."/>
 <figcaption>(a) Original probabilities</figcaption>
@@ -283,7 +282,6 @@ To understand the network, we tried various hand-designed model edits. These edi
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/maze_field_diff.avif" alt="The change in the action probability vectors, shown in green. They point away from the cheese."/>
 <figcaption>(c) Steered minus original</figcaption>
-</div>
 </div>
 <figcaption><b>Left:</b> The net probability vectors induced by the unmodified forward passes.  
 <br/><b>Middle:</b> For any steering modification we make to forward passes, we plot the new probability vectors induced by the modified forward passes.  <br/>

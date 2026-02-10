@@ -17,11 +17,11 @@
   --gold: #db9c01; /* Gold */
 
   // Theme-specific colors (from quartz.config.ts darkMode)
-  --background: #12141e;
+  --background: #{$background-dark};
   --midground-faint: #{$midground-faint-dark};
   --midground: #{$midground-dark};
   --midground-strong: #c6cff0;
-  --foreground: #d6deff;
+  --foreground: #{$foreground-dark};
   --secondary: #97b0e9;
   --tertiary: #99d1db;
   --highlight: #949cbb30;
@@ -55,20 +55,20 @@
   --red: #be415c;
   --orange: #a45c19;
   --yellow: #7d751c;
-  --green: #40a02b;
-  --teal: #179299;
-  --sky: #008bc3;
+  --green: #22820d;
+  --teal: #037e85;
+  --sky: #007cb4;
   --blue: #3e6ccb;
   --lavender: #4963fd;
   --purple: #6f42c1;
-  --gold: #be8a00;
+  --gold: #9b6700;
 
   // Theme-specific colors (from quartz.config.ts lightMode)
-  --background: #fcfcff;
+  --background: #{$background-light};
   --midground-faint: #{$midground-faint-light};
   --midground: #{$midground-light};
   --midground-strong: #5c5f77;
-  --foreground: #4c4f69;
+  --foreground: #{$foreground-light};
   --secondary: #1e66f5;
   --tertiary: #0486b9;
   --highlight: #7c7f9324;

@@ -4,7 +4,6 @@ import type { Plugin as UnifiedPlugin, PluggableList } from "unified"
 import GithubSlugger from "github-slugger"
 import { headingRank } from "hast-util-heading-rank"
 import { toString } from "hast-util-to-string"
-import { h } from "hastscript"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeSlug from "rehype-slug"
 import remarkGfm from "remark-gfm"
@@ -12,6 +11,7 @@ import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
+import { createWordJoinerSpan } from "./utils"
 
 export interface Options {
   enableSmartyPants: boolean
@@ -104,155 +104,313 @@ function footnoteBacklinkPlugin() {
   }
 }
 
-/**
- * Converts a <dd> element to a <p> element, preserving its children.
- * Used when a <dd> is orphaned (not preceded by a <dt>).
- *
- * @param ddElement - The <dd> element to convert
- * @returns A new <p> element with the same children
- */
-export function convertDdToParagraph(ddElement: Element): Element {
-  return {
-    type: "element",
-    tagName: "p",
-    properties: {},
-    children: ddElement.children,
-  }
+/** Adds `tabindex="0"` to <pre> and their <code> children for keyboard scrollability. */
+function makePreElementsKeyboardAccessible(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "pre") return
+    node.properties = node.properties || {}
+    node.properties.tabIndex = 0
+    // Also make <code> children focusable since they may be the actual
+    // scrollable element (e.g. Shiki code blocks with display:grid)
+    for (const child of node.children) {
+      if (child.type === "element" && child.tagName === "code") {
+        child.properties = child.properties || {}
+        child.properties.tabIndex = 0
+      }
+    }
+  })
 }
 
+/** Adds keyboard accessibility to mermaid-rendered inline SVGs. */
+function makeMermaidSvgsAccessible(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+    if (!node.properties?.id?.toString().startsWith("mermaid")) return
+
+    node.properties.tabIndex = 0
+    node.properties.role = "img"
+    node.properties.ariaLabel = "Mermaid diagram"
+  })
+}
+
+/** Adds `<track kind="captions">` to <video> elements that lack one. */
+function ensureVideoCaptionTracks(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "video") return
+    const hasTrack = node.children.some(
+      (child) => child.type === "element" && child.tagName === "track",
+    )
+    if (!hasTrack) {
+      node.children.push({
+        type: "element",
+        tagName: "track",
+        properties: { kind: "captions", src: "data:text/vtt,WEBVTT" },
+        children: [],
+      })
+    }
+  })
+}
+
+const VALID_DL_CHILD_TAGS = new Set(["dt", "dd", "div", "script", "template"])
+
 /**
- * Processes a single child element within a definition list, determining whether
- * to keep it as-is, convert it, or update state tracking.
- *
- * @param child - The child element to process
- * @param lastWasDt - Whether the previous element was a <dt>
- * @returns An object containing the processed element and the new state
+ * Validates that a <dl> element's structure complies with the axe definition-list rule:
+ * - All direct element children must be <dt>, <dd>, <div>, <script>, or <template>
+ * - Every <dt> group must be followed by at least one <dd> (no trailing/interrupted groups)
+ * - Every <dd> must be preceded by at least one <dt> (no orphaned <dd>)
  */
-export function processDefinitionListChild(
-  child: Element["children"][number],
-  lastWasDt: boolean,
-): { element: Element["children"][number]; newLastWasDt: boolean } {
-  // Handle non-element nodes (text, comments, etc.)
-  if (child.type !== "element") {
-    return { element: child, newLastWasDt: false }
-  }
+export function isValidDlStructure(children: Element["children"]): boolean {
+  let state: "none" | "dt" | "dd" = "none"
+  let hasPairs = false
 
-  // Handle <dt> elements - set state for next <dd>
-  if (child.tagName === "dt") {
-    return { element: child, newLastWasDt: true }
-  }
+  for (const child of children) {
+    if (child.type !== "element") continue
 
-  // Handle <dd> elements - check if valid or orphaned
-  if (child.tagName === "dd") {
-    if (lastWasDt) {
-      // Valid <dd> following a <dt> - preserve it
-      return { element: child, newLastWasDt: false }
+    if (!VALID_DL_CHILD_TAGS.has(child.tagName)) return false
+
+    if (child.tagName === "dt") {
+      state = "dt"
+    } else if (child.tagName === "dd") {
+      if (state !== "dt" && state !== "dd") return false
+      state = "dd"
+      hasPairs = true
     } else {
-      // Orphaned <dd> without preceding <dt> - convert to paragraph
-      return { element: convertDdToParagraph(child), newLastWasDt: false }
+      // div/script/template: dt before this without dd is orphaned
+      if (state === "dt") return false
+      state = "none"
     }
   }
 
-  // Handle other elements (div, script, template are allowed in <dl>)
-  return { element: child, newLastWasDt: false }
+  // Trailing <dt> without <dd> is invalid
+  if (state === "dt") return false
+
+  return hasPairs
 }
 
 /**
- * Fixes a definition list by converting orphaned <dd> elements to <p> elements.
+ * When a <dl> has only orphaned <dd> children (no <dt>), tries to adopt the
+ * immediately preceding <p> sibling as a <dt>, producing a valid definition
+ * list. This fixes the common pattern where a blank line between term and
+ * `: ` syntax breaks the remark-definition-list association:
  *
- * @param dlElement - The <dl> element to fix
- * @returns The fixed <dl> element with updated children
+ *   Markdown:           HTML before fix:              HTML after fix:
+ *   Term                <p>Term</p>                   <dl>
+ *                       <dl><dd>Def</dd></dl>           <dt>Term</dt>
+ *   : Def                                               <dd>Def</dd>
+ *                                                     </dl>
+ *
+ * Mutates parentChildren in place (splices out the adopted <p>).
+ * @returns true if a <p> was successfully adopted as <dt>
  */
-export function fixDefinitionList(dlElement: Element): Element {
-  if (!dlElement.children || dlElement.children.length === 0) {
-    return dlElement
+export function adoptPrecedingSiblingAsDt(
+  dl: Element,
+  dlIndex: number,
+  parentChildren: Element["children"],
+): boolean {
+  // Walk backwards past whitespace text nodes to find preceding element
+  let prevIdx = dlIndex - 1
+  while (prevIdx >= 0 && parentChildren[prevIdx].type !== "element") {
+    prevIdx--
   }
 
-  const fixedChildren: Element["children"] = []
-  let lastWasDt = false
+  if (prevIdx < 0) return false
 
-  for (const child of dlElement.children) {
-    const result = processDefinitionListChild(child, lastWasDt)
-    fixedChildren.push(result.element)
-    lastWasDt = result.newLastWasDt
+  const prev = parentChildren[prevIdx] as Element
+  if (prev.tagName !== "p") return false
+
+  // Convert <p> contents to <dt> and prepend to <dl>
+  const dt: Element = {
+    type: "element",
+    tagName: "dt",
+    properties: {},
+    children: prev.children,
   }
 
-  return {
-    ...dlElement,
-    children: fixedChildren,
-  }
+  // Remove <p> and any whitespace between it and <dl>
+  parentChildren.splice(prevIdx, dlIndex - prevIdx)
+  dl.children.unshift(dt)
+
+  return true
 }
 
 /**
- * Fixes malformed definition lists to comply with WCAG accessibility standards.
+ * Fixes <dl> elements that have only orphaned <dd> (no <dt>) by either:
+ * 1. Adopting a preceding <p> sibling as a <dt> (preserves definition list semantics)
+ * 2. Falling back to <dl> → <div> and <dd> → <p> when no <p> is available
  *
- * PROBLEM:
- * The remark-gfm plugin converts Markdown lines starting with ": " into HTML <dd> elements,
- * which is intended for creating definition lists. However, when this syntax is used in
- * contexts like blockquotes without a preceding term definition, it creates invalid HTML
- * structure that violates accessibility standards.
- *
- * Example problematic Markdown:
- * ```markdown
- * > User
- * >
- * > : Develop a social media bot...
- * ```
- *
- * Gets converted by remark-gfm to invalid HTML:
- * ```html
- * <blockquote>
- *   <p>User</p>
- *   <dl><dd>Develop a social media bot...</dd></dl>
- * </blockquote>
- * ```
- *
- * This violates WCAG 1.3.1 (Info and Relationships) because <dd> (description) elements
- * must be preceded by <dt> (term) elements within <dl> containers. Pa11y accessibility
- * checker flags these as errors:
- * "<dl> elements must only directly contain properly-ordered <dt> and <dd> groups"
- *
- * SOLUTION:
- * This plugin scans all <dl> elements and converts orphaned <dd> elements (those without
- * a preceding <dt>) into <p> elements. This maintains semantic correctness while preserving
- * the visual presentation and content structure.
- *
- * The plugin uses a state machine approach:
- * - Tracks whether the last element was a <dt> using the `lastWasDt` flag
- * - When encountering a <dd>:
- *   - If lastWasDt is true: Keep as <dd> (valid pair)
- *   - If lastWasDt is false: Convert to <p> (orphaned)
- * - Resets the flag after processing each <dd> or non-<dt> element
- *
- * Valid structure (preserved):
- * ```html
- * <dl>
- *   <dt>Term</dt>
- *   <dd>Description</dd>
- * </dl>
- * ```
- *
- * Invalid structure (fixed):
- * ```html
- * <!-- Before -->
- * <dl><dd>Orphaned description</dd></dl>
- *
- * <!-- After -->
- * <dl><p>Orphaned description</p></dl>
- * ```
- *
- * @returns A rehype plugin function that transforms the HTML tree
+ * Also converts stray <dd>/<dt> elements found outside any <dl> to <p>.
  */
-export function fixDefinitionListsPlugin() {
+function fixOrphanedDefinitionLists(tree: Root): void {
+  const dlNodes: Array<{ node: Element; index: number; parentChildren: Element["children"] }> = []
+
+  visit(tree, "element", (node: Element, index: number | undefined, parent) => {
+    if (node.tagName === "dl" && index !== undefined && parent) {
+      dlNodes.push({ node, index, parentChildren: parent.children as Element["children"] })
+    }
+  })
+
+  // Process in reverse so parent splices don't invalidate earlier indices
+  for (const { node: dl, index: dlIndex, parentChildren } of dlNodes.reverse()) {
+    const hasDt = dl.children.some((c) => c.type === "element" && c.tagName === "dt")
+    if (hasDt) continue
+
+    if (adoptPrecedingSiblingAsDt(dl, dlIndex, parentChildren)) continue
+
+    // Fallback: degrade to <div> with <p> children
+    dl.tagName = "div"
+    for (const child of dl.children) {
+      if (child.type === "element" && child.tagName === "dd") {
+        child.tagName = "p"
+      }
+    }
+  }
+
+  // Convert stray <dd>/<dt> outside any <dl> to <p>
+  visit(tree, "element", (node: Element) => {
+    if (!node.children) return
+    for (const child of node.children) {
+      if (child.type !== "element") continue
+      if ((child.tagName === "dd" || child.tagName === "dt") && node.tagName !== "dl") {
+        child.tagName = "p"
+      }
+    }
+  })
+}
+
+export function htmlAccessibilityPlugin() {
   return (tree: Root) => {
     // istanbul ignore next --- defensive
     if (!tree) return
 
+    fixOrphanedDefinitionLists(tree)
+
+    // Validate remaining <dl> elements and demote invalid ones
     visit(tree, "element", (node: Element) => {
       if (node.tagName !== "dl") return
+      if (!isValidDlStructure(node.children)) {
+        node.tagName = "div"
+      }
+    })
 
-      const fixed = fixDefinitionList(node)
-      node.children = fixed.children
+    makePreElementsKeyboardAccessible(tree)
+    makeMermaidSvgsAccessible(tree)
+    ensureVideoCaptionTracks(tree)
+    deduplicateSvgIds(tree)
+  }
+}
+
+/** Replaces `url(#oldId)` references using an ID mapping. */
+function remapUrlIdReferences(text: string, idMap: Map<string, string>): string {
+  return text.replace(/url\(#(?<urlId>[^)]+)\)/g, (match, _urlId, _offset, _str, { urlId }) => {
+    return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
+  })
+}
+
+/** Collects all element IDs within an SVG and renames them with a prefix. */
+function collectAndPrefixIds(svg: Element, prefix: string): Map<string, string> {
+  const idMap = new Map<string, string>()
+  visit(svg, "element", (child: Element) => {
+    if (child.properties?.id) {
+      const oldId = String(child.properties.id)
+      idMap.set(oldId, `${prefix}${oldId}`)
+      child.properties.id = `${prefix}${oldId}`
+    }
+  })
+  return idMap
+}
+
+/** Updates href, xlinkHref, and url(#id) attribute references. */
+function updatePropertyReferences(svg: Element, idMap: Map<string, string>): void {
+  visit(svg, "element", (child: Element) => {
+    if (!child.properties) return
+
+    for (const [key, value] of Object.entries(child.properties)) {
+      if (typeof value !== "string") continue
+
+      if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
+        const refId = value.slice(1)
+        if (idMap.has(refId)) {
+          child.properties[key] = `#${idMap.get(refId)}`
+        }
+      }
+
+      if (value.includes("url(#")) {
+        child.properties[key] = remapUrlIdReferences(value, idMap)
+      }
+    }
+  })
+}
+
+/** Updates ID references inside inline `<style>` elements. */
+function updateStyleReferences(svg: Element, idMap: Map<string, string>): void {
+  visit(svg, "element", (child: Element) => {
+    if (child.tagName !== "style") return
+    for (const textChild of child.children) {
+      if (textChild.type !== "text") continue
+
+      if (textChild.value.includes("url(#")) {
+        textChild.value = remapUrlIdReferences(textChild.value, idMap)
+      }
+
+      for (const [oldId, newId] of idMap) {
+        textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
+      }
+    }
+  })
+}
+
+/**
+ * Makes SVG internal IDs unique by adding a per-SVG prefix.
+ * When multiple SVGs are inlined (e.g., Mermaid diagrams), their internal IDs
+ * (markers, clipPaths, etc.) can collide. This function prefixes each SVG's IDs
+ * with a unique identifier based on its position in the document.
+ */
+export function deduplicateSvgIds(tree: Root): void {
+  let svgIndex = 0
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+
+    const idMap = collectAndPrefixIds(node, `svg-${svgIndex++}-`)
+    if (idMap.size === 0) return
+
+    updatePropertyReferences(node, idMap)
+    updateStyleReferences(node, idMap)
+  })
+}
+
+/** Adds `aria-label` to heading links that have no direct text content (e.g. KaTeX-only headings). */
+export function ensureHeadingLinksHaveAccessibleNames() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (!headingRank(node)) return
+
+      const link = node.children.find(
+        (child) => child.type === "element" && child.tagName === "a",
+      ) as Element | undefined
+      if (!link) return
+
+      const hasDirectText = link.children.some(
+        (child) => child.type === "text" && child.value.trim().length > 0,
+      )
+      if (hasDirectText) return
+
+      // Extract label from KaTeX <annotation> elements (original LaTeX source)
+      const annotations: string[] = []
+      visit(link, "element", (child: Element) => {
+        if (child.tagName === "annotation") {
+          const text = toString(child).trim()
+          if (text) annotations.push(text)
+        }
+      })
+
+      const label =
+        annotations.join(" ") ||
+        String(node.properties?.id || "heading")
+          .replaceAll(/-+/g, " ")
+          .trim()
+
+      link.properties = link.properties || {}
+      link.properties.ariaLabel = label
     })
   }
 }
@@ -272,19 +430,24 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin(), fixDefinitionListsPlugin()]
+      // Pass as attacher references (not called) so unified calls them correctly
+      const plugins: PluggableList = [footnoteBacklinkPlugin, htmlAccessibilityPlugin]
 
       if (opts.linkHeadings) {
-        plugins.push(returnAddIdsToHeadingsFn, [
-          rehypeAutolinkHeadings as unknown as UnifiedPlugin,
-          {
-            behavior: "wrap",
-            properties: {
-              "data-no-popover": "true",
-              tabIndex: -1,
+        plugins.push(
+          returnAddIdsToHeadingsFn,
+          [
+            rehypeAutolinkHeadings as unknown as UnifiedPlugin,
+            {
+              behavior: "wrap",
+              properties: {
+                "data-no-popover": "true",
+                tabIndex: -1,
+              },
             },
-          },
-        ])
+          ],
+          ensureHeadingLinksHaveAccessibleNames,
+        )
       }
 
       return plugins
@@ -376,22 +539,6 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     return
   }
 
-  const text = lastTextNode.value
-  const textIndex = Math.max(0, text.length - 4) // ensures splitIndex is never negative
-
-  // Update the original text node if there's text before the split
-  if (textIndex > 0) {
-    lastTextNode.value = text.slice(0, textIndex)
-  } else {
-    // Remove the original text node if we're wrapping all text
-    lastParagraph.children = []
-  }
-
-  // Add the favicon span with remaining text and back arrow
-  lastParagraph.children.push(
-    h("span", { className: "favicon-span" }, [
-      { type: "text", value: text.slice(textIndex) },
-      backArrow,
-    ]),
-  )
+  // Append word joiner + back arrow to prevent line-break orphaning
+  lastParagraph.children.push(createWordJoinerSpan(), backArrow)
 }

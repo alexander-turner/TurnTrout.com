@@ -1033,6 +1033,19 @@ Ultimately, unsupervised steering could be a valuable tool in the pursuit of enu
 
 Using mechanistic interpretability to solve deceptive alignment is a potentially hard problem, and we can use as many bits of information as we can get. I'm excited about the promise of unsupervised steering methods to contribute useful bits of information to this challenge.
 
+<hr/>
+
+To cite this work:
+
+```bibtex
+@article{mack2024melbo,
+    title={Mechanistically Eliciting Latent Behaviors in Language Models},
+    author={Mack, Andrew and Turner, Alexander Matt},
+    journal={AI Alignment Forum},
+    year={2024},
+}
+```
+
 [^1]: Previous work has alluded to the hybrid-nature of LLMs and speculated on the nature of the modes, e.g. suggesting that these are best thought of as [simulacra](https://www.lesswrong.com/posts/vJFdjigzmcXMhNTsx/simulators) or [shards](https://www.lesswrong.com/tag/shard-theory). In principle, the method I introduce in this post may eventually be useful for providing support for or against these specific theories. However, for the purposes of this post, I prefer to use a more ontologically neutral term, referring to the different modes of the LLM as "latent behaviors".
 [^2]: I refer to the adapters as "steering" adapters, as opposed to "ordinary" adapters to emphasize the fact that by only adapting an early-to-middle layer of the model, we are effectively "steering" the model towards different high-level behaviors. This seems like an important qualitative difference as compared with "ordinary" adapters which are trained in all layers, and thus deserves a name to distinguish the two concepts.
 [^3]: I found that using Adam can lead to non-convergent, oscillatory training curves for higher values of $R$, while using vanilla gradient ascent with momentum leads to convergent, but noisy training curves.

@@ -3,6 +3,7 @@ import { formatAuthors } from "../components/Authors"
 import { formatTitle } from "../components/component_utils"
 import { simpleConstants, faviconUrl } from "../components/constants"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../styles/variables"
 import { escapeHTML } from "./escape"
 import { resolveRelative, type FullSlug } from "./path"
 
@@ -82,6 +83,9 @@ export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string
   return `
     <title>${escapeHTML(title)}</title>
     <meta name="description" content="${escapeHTML(description)}">
+    <link rel="canonical" href="${escapeHTML(pageUrl)}" />
+    <meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />
     <meta property="og:title" content="${escapeHTML(title)}" />
     <meta property="og:type" content="article" />
     <meta property="og:url" content="${escapeHTML(redirUrl)}" />

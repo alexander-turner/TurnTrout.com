@@ -20,6 +20,7 @@ on:
       - "pyproject.toml"
       - "uv.lock"
       - ".github/actions/**"
+  merge_group:
 
 permissions:
   actions: read

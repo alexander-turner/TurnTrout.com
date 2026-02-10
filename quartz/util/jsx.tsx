@@ -21,7 +21,8 @@ const customComponents: Partial<Components> = {
       props.defaultValue = defaultValue.toString()
     }
     return (
-      <div className="table-container">
+      // skipcq: JS-0762 -- tabIndex on scrollable region is intentional for keyboard accessibility
+      <div className="table-container" tabIndex={0} role="region" aria-label="Scrollable table">
         <table {...tableProps} />
       </div>
     )
