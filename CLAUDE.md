@@ -217,6 +217,11 @@ Per `.cursorrules` and `design.md`:
 - Check for existing libraries before rolling custom solutions
 - Look for existing patterns in the codebase before creating new ones
 
+### Documentation
+
+- When modifying functionality described in `website_content/design.md`, update that file to reflect the changes
+- The design document explains implementation details for site features, deployment pipeline, and CI/CD workflows
+
 ### Code Style
 
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
