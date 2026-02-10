@@ -672,7 +672,9 @@ describe("Favicon Utilities", () => {
         linkfavicons.insertFavicon(imgPath, node)
 
         expect(node.children.length).toBe(2)
-        expect(node.children[1]).toEqual(linkfavicons.createFaviconElement(imgPath))
+        const wjSpan = node.children[1] as Element
+        expect(wjSpan).toMatchObject(wordJoinerNode)
+        expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
       })
 
       /*
@@ -825,7 +827,9 @@ describe("Favicon Utilities", () => {
       const parent = h("div", [node])
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
-      const faviconElement = node.children[0] as Element
+      const wjSpan = node.children[0] as Element
+      expect(wjSpan).toMatchObject(wordJoinerNode)
+      const faviconElement = wjSpan.children[1] as Element
       expect(faviconElement.tagName).toBe("svg")
       expect(faviconElement.properties.style).toContain(expectedPath)
     })
@@ -841,7 +845,9 @@ describe("Favicon Utilities", () => {
       const parent = h("div", [node])
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
-      const faviconElement = node.children[0] as Element
+      const wjSpan = node.children[0] as Element
+      expect(wjSpan).toMatchObject(wordJoinerNode)
+      const faviconElement = wjSpan.children[1] as Element
       expect(faviconElement.tagName).toBe("svg")
       expect(faviconElement.properties.style).toContain(expectedPath)
     })
@@ -863,8 +869,10 @@ describe("Favicon Utilities", () => {
         (node: Element) => {
           expect(node.properties.className).toContain("same-page-link")
           expect(node.children.length).toBe(1)
-          // ANCHOR_PATH is SVG, so it creates an svg element with mask
-          const faviconElement = node.children[0] as Element
+          // ANCHOR_PATH is SVG, so it creates an svg element with mask inside word-joiner
+          const wjSpan = node.children[0] as Element
+          expect(wjSpan.tagName).toBe("span")
+          const faviconElement = wjSpan.children[1] as Element
           expect(faviconElement.tagName).toBe("svg")
           expect(faviconElement.properties.style).toContain(specialFaviconPaths.anchor)
         },
@@ -951,10 +959,11 @@ describe("Favicon Utilities", () => {
 
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
-      // Favicon appended as sibling of span (span is not in tagsToZoomInto)
-      expect(node.children.length).toBe(2) // span + favicon
-      const lastChild = node.children[1] as Element
-      expect(hasClass(lastChild, "favicon")).toBe(true)
+      // Favicon wrapped in word-joiner, appended as sibling of span (span is not in tagsToZoomInto)
+      expect(node.children.length).toBe(2) // span + word joiner (containing favicon)
+      const wjSpan = node.children[1] as Element
+      expect(wjSpan).toMatchObject(wordJoinerNode)
+      expect(hasClass(wjSpan.children[1] as Element, "favicon")).toBe(true)
     })
 
     it.each([
@@ -1031,7 +1040,8 @@ describe("Favicon Utilities", () => {
 
         await linkfavicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+        const wjSpan = node.children[0] as Element
+        expect(wjSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
 
       it(`should add favicons that appear more than ${minFaviconCount} times`, async () => {
@@ -1051,7 +1061,8 @@ describe("Favicon Utilities", () => {
 
         await linkfavicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+        const wjSpan = node.children[0] as Element
+        expect(wjSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
 
       it("should skip favicons not in counts map (treat as 0)", async () => {
@@ -1086,7 +1097,8 @@ describe("Favicon Utilities", () => {
           await linkfavicons.ModifyNode(node, parent, counts)
           expect(node.children.length).toBeGreaterThan(0)
           // These are SVG paths (mail.svg, anchor.svg), so they create svg elements with masks
-          const faviconElement = node.children[0] as Element
+          const wjSpan = node.children[0] as Element
+          const faviconElement = wjSpan.children[1] as Element
           expect(faviconElement.tagName).toBe("svg")
           expect(faviconElement.properties.style).toContain(expectedPath)
         },
@@ -1108,8 +1120,10 @@ describe("Favicon Utilities", () => {
 
         await linkfavicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        expect(node.children[0]).toHaveProperty("properties.style")
-        expect((node.children[0] as Element).properties.style).toContain(faviconPath)
+        const wjSpan = node.children[0] as Element
+        const faviconEl = wjSpan.children[1] as Element
+        expect(faviconEl).toHaveProperty("properties.style")
+        expect(faviconEl.properties.style).toContain(faviconPath)
       })
 
       it("should skip non-whitelisted favicons if count is below threshold", async () => {
@@ -1149,7 +1163,8 @@ describe("Favicon Utilities", () => {
 
         await linkfavicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        expect(node.children[0]).toHaveProperty("properties.src", faviconPath)
+        const wjSpan = node.children[0] as Element
+        expect(wjSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
     })
   })
@@ -1623,14 +1638,18 @@ describe("AddFavicons plugin", () => {
     const sectionLink = divElement.children[1] as Element
 
     expect(mailtoLink.children.length).toBe(1)
-    // MAIL_PATH is SVG, so it creates an svg element with mask, not img with src
-    const mailFavicon = mailtoLink.children[0] as Element
+    // MAIL_PATH is SVG, favicon is inside word-joiner span
+    const mailWj = mailtoLink.children[0] as Element
+    expect(mailWj).toMatchObject(wordJoinerNode)
+    const mailFavicon = mailWj.children[1] as Element
     expect(mailFavicon.tagName).toBe("svg")
     expect(mailFavicon.properties.style).toContain(specialFaviconPaths.mail)
 
     expect(sectionLink.children.length).toBe(1)
-    // ANCHOR_PATH is SVG, so it creates an svg element with mask, not img with src
-    const anchorFavicon = sectionLink.children[0] as Element
+    // ANCHOR_PATH is SVG, favicon is inside word-joiner span
+    const anchorWj = sectionLink.children[0] as Element
+    expect(anchorWj).toMatchObject(wordJoinerNode)
+    const anchorFavicon = anchorWj.children[1] as Element
     expect(anchorFavicon.tagName).toBe("svg")
     expect(anchorFavicon.properties.style).toContain(specialFaviconPaths.anchor)
   })
@@ -1884,7 +1903,8 @@ describe("getQuartzPath hostname normalization", () => {
       await linkfavicons.ModifyNode(node, parent, faviconCounts)
 
       expect(node.children.length).toBeGreaterThan(0)
-      const insertedFavicon = node.children[0] as Element
+      const wjSpan = node.children[0] as Element
+      const insertedFavicon = wjSpan.children[1] as Element
       expect(insertedFavicon.properties.src).toBe(normalizedAvifUrl)
     })
 
@@ -1947,9 +1967,11 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
   it("should handle node with only whitespace text", () => {
     const node = h("a", {}, ["   "])
     linkfavicons.appendFaviconWithWordJoiner(node, linkfavicons.createFaviconElement(imgPath))
-    // Whitespace-only text is treated as empty, favicon appended directly
-    expect(node.children.length).toBe(2) // whitespace text + favicon
-    expect(node.children[1]).toEqual(linkfavicons.createFaviconElement(imgPath))
+    // Whitespace-only text is treated as empty, favicon wrapped in word-joiner
+    expect(node.children.length).toBe(2) // whitespace text + word joiner (containing favicon)
+    const wjSpan = node.children[1] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it.each([
@@ -1988,17 +2010,21 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
   it("should handle node with element child that has no text", () => {
     const node = h("a", {}, [h("div")])
     linkfavicons.appendFaviconWithWordJoiner(node, linkfavicons.createFaviconElement(imgPath))
-    // div is not zoomable and not text, favicon appended directly
+    // div is not zoomable and not text, favicon wrapped in word-joiner
     expect(node.children.length).toBe(2)
-    expect(node.children[1]).toEqual(linkfavicons.createFaviconElement(imgPath))
+    const wjSpan = node.children[1] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should handle node with mixed children ending in element", () => {
     const node = h("a", {}, [{ type: "text", value: "Text " }, h("span", {}, ["More"])])
     linkfavicons.insertFavicon(imgPath, node)
-    // span is not in tagsToZoomInto, so favicon is appended to parent
-    expect(node.children.length).toBe(3) // text + span + favicon
-    expect(node.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+    // span is not in tagsToZoomInto, so favicon wrapped in word-joiner appended to parent
+    expect(node.children.length).toBe(3) // text + span + word joiner (containing favicon)
+    const wjSpan = node.children[2] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should zoom into abbr inside link (RSS link structure)", () => {
