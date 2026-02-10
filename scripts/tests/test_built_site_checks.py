@@ -2512,8 +2512,38 @@ def test_check_link_spacing(html, expected):
                 f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
                 [],
             )
-            for char in ("(", "[", " ", "-", "\u2014")
+            for char in ("(", "[", " ", "-", "\u2014", "\u2013", "\u2212")
         ],
+        # Digit before smallcaps (e.g. "3Blue1Brown")
+        (
+            '<p>3Blue<abbr class="small-caps">1brown</abbr> videos</p>',
+            [],
+        ),
+        # Arrow followed by digits (reversed numbers like "↗563")
+        (
+            '<p><span class="monospace-arrow">\u2197</span>563 is a number</p>',
+            [],
+        ),
+        # En-dash after ordinal suffix
+        (
+            '<p>the 20<sup class="ordinal-suffix">th</sup>\u2013century</p>',
+            [],
+        ),
+        # Minus sign before fraction
+        (
+            '<p>about \u2212<span class="fraction">1/3</span> of the total</p>',
+            [],
+        ),
+        # En-dash before fraction
+        (
+            '<p>about \u2013<span class="fraction">1/3</span> of the total</p>',
+            [],
+        ),
+        # Opening paren after abbreviation (e.g. "AIXI(-tl)")
+        (
+            '<p>The <abbr class="small-caps">aixi</abbr>(-tl) agent</p>',
+            [],
+        ),
         # Properly spaced ordinal (realistic transform output)
         (
             '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
@@ -2734,6 +2764,12 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
         (
             "    - 1:1-1:8  warning  `.0118mg` is misspelt  retext-spell\n",
             {1: "page.html"},
+            [],
+        ),
+        # Summary line ("⚠ 19 warnings") is skipped
+        (
+            "\u26a0 19 warnings\n",
+            {},
             [],
         ),
     ],

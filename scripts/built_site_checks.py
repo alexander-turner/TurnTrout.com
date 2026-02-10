@@ -1764,8 +1764,8 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r"
+ALLOWED_ELT_PRECEDING_CHARS = "[({-–—~×“=+‘ \n\t\r−"
+ALLOWED_ELT_FOLLOWING_CHARS = "[(])}.,;!?:-–—~×+”…=’ \n\t\r"
 
 
 def _check_element_spacing(
@@ -1825,7 +1825,27 @@ _INLINE_FORMATTING_SELECTORS = (
 )
 
 
+_DIGITS = "0123456789"
 _ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+_ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS
+_ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
+
+# Per-selector overrides for allowed preceding/following characters
+_SELECTOR_PRECEDING_CHARS: dict[str, str] = {
+    "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
+    "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+}
+_SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
+    "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
+    "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
+    "span.right-arrow": _ARROW_FOLLOWING_CHARS,
+}
+
+
+def _abbr_starts_with_digit(element: Tag) -> bool:
+    """Check if an abbreviation element's text starts with a digit."""
+    text = element.get_text()
+    return bool(text) and text[0].isdigit()
 
 
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
@@ -1837,23 +1857,29 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
     smallcaps ``<abbr>``).
 
     Abbreviations allow a trailing "s" for plurals (e.g. "LLMs" renders as
-    ``<abbr>llm</abbr>s``).
+    ``<abbr>llm</abbr>s``). Arrows allow digits after them (e.g. reversed
+    numbers like "↗563"). Abbreviations starting with a digit skip the
+    preceding-space check (e.g. "3Blue1Brown" → ``3Blue<abbr>1brown</abbr>``).
     """
     issues: list[str] = []
     for selector in _INLINE_FORMATTING_SELECTORS:
-        following_chars = (
-            _ABBR_FOLLOWING_CHARS
-            if selector == "abbr.small-caps"
-            else ALLOWED_ELT_FOLLOWING_CHARS
+        preceding = _SELECTOR_PRECEDING_CHARS.get(
+            selector, ALLOWED_ELT_PRECEDING_CHARS
+        )
+        following = _SELECTOR_FOLLOWING_CHARS.get(
+            selector, ALLOWED_ELT_FOLLOWING_CHARS
         )
         for element in _tags_only(soup.select(selector)):
-            issues.extend(
-                _check_element_spacing(
-                    element,
-                    ALLOWED_ELT_PRECEDING_CHARS,
-                    following_chars,
+            # Skip preceding-space check for abbrs starting with a digit,
+            # since they're part of proper nouns (e.g. "3Blue1Brown")
+            if selector == "abbr.small-caps" and _abbr_starts_with_digit(
+                element
+            ):
+                issues.extend(check_spacing(element, following, "after"))
+            else:
+                issues.extend(
+                    _check_element_spacing(element, preceding, following)
                 )
-            )
     return issues
 
 
@@ -2341,7 +2367,7 @@ def _parse_spellcheck_output(
     issues: list[str] = []
     for line in stdout.splitlines():
         line = line.strip()
-        if not line or "warning" not in line:
+        if not line or "warning" not in line or line.startswith("\u26a0"):
             continue
 
         word = _extract_flagged_word(line)
