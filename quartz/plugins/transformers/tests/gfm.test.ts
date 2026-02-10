@@ -20,6 +20,7 @@ import {
   adoptPrecedingSiblingAsDt,
   deduplicateSvgIds,
   isValidDlStructure,
+  ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -1155,5 +1156,98 @@ describe("isValidDlStructure", () => {
     ["dd after div (orphaned)", [h("div", ["X"]), h("dd", ["D"])], false],
   ])("%s → %s", (_desc, children, expected) => {
     expect(isValidDlStructure(children)).toBe(expected)
+  })
+})
+
+describe("ensureHeadingLinksHaveAccessibleNames", () => {
+  const runPlugin = (tree: Root): void => {
+    const fn = ensureHeadingLinksHaveAccessibleNames()
+    fn(tree)
+  }
+
+  it("adds aria-label from KaTeX annotation to heading link with no direct text", () => {
+    const link = h("a", { href: "#math-heading" }, [
+      h("span", { className: ["katex"] }, [
+        h("span", { className: ["katex-mathml"] }, [
+          h("semantics", [h("annotation", { encoding: "application/x-tex" }, ["E = mc^2"])]),
+        ]),
+      ]),
+    ])
+    const heading = h("h2", { id: "math-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("E = mc^2")
+  })
+
+  it("skips heading links with direct text content", () => {
+    const link = h("a", { href: "#text-heading" }, ["Regular text heading"])
+    const heading = h("h2", { id: "text-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBeUndefined()
+  })
+
+  it("skips headings without links", () => {
+    const heading = h("h2", { id: "no-link" }, ["Just text"])
+    const tree: Root = { type: "root", children: [heading] }
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("falls back to heading id when no annotation found", () => {
+    const link = h("a", { href: "#e-mc2" }, [
+      h("span", { className: ["katex"] }, [h("span", { className: ["katex-html"] })]),
+    ])
+    const heading = h("h2", { id: "e-mc2" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("e mc2")
+  })
+
+  it("falls back to 'heading' when id is empty", () => {
+    const link = h("a", { href: "#" }, [h("span", ["no text content"])])
+    const heading = h("h2", {}, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("heading")
+  })
+
+  it("skips non-heading elements", () => {
+    const link = h("a", { href: "#something" }, [h("span", ["no text"])])
+    const paragraph = h("p", [link])
+    const tree: Root = { type: "root", children: [paragraph] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBeUndefined()
+  })
+
+  it("handles link without properties object", () => {
+    const link: Element = {
+      type: "element",
+      tagName: "a",
+      properties: undefined as unknown as Element["properties"],
+      children: [h("span", ["katex content"])],
+    }
+    const heading = h("h2", { id: "test-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("test heading")
+  })
+
+  it("skips annotations with empty text", () => {
+    const link = h("a", { href: "#math" }, [
+      h("span", { className: ["katex"] }, [
+        h("semantics", [h("annotation", { encoding: "application/x-tex" }, [""])]),
+      ]),
+    ])
+    const heading = h("h2", { id: "math" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("math")
   })
 })

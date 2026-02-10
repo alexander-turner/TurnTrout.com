@@ -110,7 +110,9 @@
 
 #center-content #toc-content-mobile {
   & a,
-  & a:visited {
+  & a:visited,
+  & a *,
+  & a:visited * {
     color: var(--foreground);
   }
 }

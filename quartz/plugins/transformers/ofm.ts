@@ -811,8 +811,7 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         // replace all wikilinks inside a table first
         src = src.replace(tableRegex, (value: string): string => {
           // escape all aliases and headers in wikilinks inside a table
-          return value.replace(tableWikilinkRegex, (_, ...capture: string[]) => {
-            const [raw]: (string | undefined)[] = capture
+          return value.replace(tableWikilinkRegex, (_match: string, raw: string) => {
             /* istanbul ignore next -- table wikilink escaping edge case */
             let escaped = raw ?? ""
             escaped = escaped.replace("#", "\\#")
@@ -823,34 +822,40 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
         })
 
         // replace all other wikilinks
-        src = src.replace(wikilinkRegex, (value: string, ...capture: string[]): string => {
-          const [rawFp, rawHeader, rawAlias]: (string | undefined)[] = capture
+        src = src.replace(
+          wikilinkRegex,
+          (
+            value: string,
+            rawFp: string | undefined,
+            rawHeader: string | undefined,
+            rawAlias: string | undefined,
+          ): string => {
+            /* istanbul ignore next -- wikilink parsing edge cases */
+            const fp = rawFp ?? ""
+            const embedDisplay = value.startsWith("!") ? "!" : ""
 
-          /* istanbul ignore next -- wikilink parsing edge cases */
-          const fp = rawFp ?? ""
-          const embedDisplay = value.startsWith("!") ? "!" : ""
+            // Handle anchor/header processing
+            let displayAnchor = ""
+            if (rawHeader === "#") {
+              // Preserve bare "#" for intro transclusion (![[page#]])
+              displayAnchor = "#"
+            } else if (rawHeader) {
+              const anchor = rawHeader.trim().replace(/^#+/, "")
+              const blockRef = anchor.startsWith("^") ? "^" : ""
+              displayAnchor = `#${blockRef}${slugAnchor(anchor)}`
+            }
 
-          // Handle anchor/header processing
-          let displayAnchor = ""
-          if (rawHeader === "#") {
-            // Preserve bare "#" for intro transclusion (![[page#]])
-            displayAnchor = "#"
-          } else if (rawHeader) {
-            const anchor = rawHeader.trim().replace(/^#+/, "")
-            const blockRef = anchor.startsWith("^") ? "^" : ""
-            displayAnchor = `#${blockRef}${slugAnchor(anchor)}`
-          }
+            // Handle alias processing - only use explicitly provided aliases
+            const displayAlias = rawAlias ?? ""
 
-          // Handle alias processing - only use explicitly provided aliases
-          const displayAlias = rawAlias ?? ""
+            /* istanbul ignore next -- external link wikilink edge case */
+            if (rawFp && externalLinkRegex.test(rawFp)) {
+              return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
+            }
 
-          /* istanbul ignore next -- external link wikilink edge case */
-          if (rawFp && externalLinkRegex.test(rawFp)) {
-            return `${embedDisplay}[${displayAlias.replace(/^\|/, "")}](${rawFp})`
-          }
-
-          return `${embedDisplay}[[${fp}${displayAnchor}${displayAlias}]]`
-        })
+            return `${embedDisplay}[[${fp}${displayAnchor}${displayAlias}]]`
+          },
+        )
       }
 
       return src
