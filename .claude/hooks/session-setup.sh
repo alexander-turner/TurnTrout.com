@@ -187,7 +187,7 @@ fi
 #######################################
 
 echo "Installing Node dependencies..."
-pnpm install --silent || warn "Failed to install Node dependencies"
+pnpm install --frozen-lockfile --silent || die "pnpm lockfile is broken — regenerate with: rm pnpm-lock.yaml && pnpm install"
 
 if command -v uv &>/dev/null; then
   uv sync --quiet 2>/dev/null
