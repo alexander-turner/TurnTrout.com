@@ -2077,12 +2077,14 @@ describe("favicon must be inside word-joiner span (prevents line-break orphaning
     }
 
     const wjSpan = findWordJoiner(node as Element)
-    expect(wjSpan).not.toBeNull()
+    if (wjSpan === null) {
+      throw new Error("word-joiner span not found")
+    }
 
     // The favicon MUST be a child of the word-joiner span, not a sibling.
     // With the old sibling approach, the favicon was next to the word-joiner
     // span, and browsers could still insert line breaks before the favicon SVG.
-    const faviconChild = wjSpan!.children.find(
+    const faviconChild = wjSpan.children.find(
       (c) => c.type === "element" && hasClass(c as Element, "favicon"),
     )
     expect(faviconChild).toBeDefined()
