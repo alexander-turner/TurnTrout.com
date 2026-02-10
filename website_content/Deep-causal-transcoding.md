@@ -9,7 +9,9 @@ tags:
   - mats-program
 description: Principled derivation of unsupervised steering vector discovery methods.
   Unlocks password-locked models and breaks jailbreak defenses.
-authors: Andrew Mack and Alex Turner
+authors:
+  - Andrew Mack
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -189,11 +191,15 @@ Below, I describe the methods I use to train DCTs with linear, quadratic, and ex
 
 [^bignote-recovery]: If we can't recover the true features under reasonable assumptions even in the noiseless setting, then this is obviously bad for enumerative safety, and so we should at least demand this much. A natural follow-up concern is that the "noise term" $\vec\epsilon(\vec\theta)$ is far from i.i.d. as it captures the "deep" part of the computation of the sliced transformer, and it's natural to assume that the reason why deep transformers work well in practice is that they perform non-trivially "deep" computations. Fortunately, as I discuss below, there is room for hope from the literature on matrix and tensor decompositions which guarantee recovery under certain conditions even with adversarial noise.
 
+<!-- markdownlint-disable MD060 -->
+
 | Activation Function | Conditions for Guaranteed Recovery      | Description of Algorithm                                                                                 |
-| ------------------: | :-------------------------------------: | :------------------------------------------------------------------------------------------------------- |
+| ------------------: | :-------------------------------------: | :------------------------------------------------------------------------------------------------------ |
 | Linear              | Exact orthogonality                     | SVD of Jacobian                                                                                          |
 | Quadratic           | Provable recovery assuming incoherence  | Orthogonalized Alternating-Least-Squares ([Sharan and Valiant (2017)](https://arxiv.org/abs/1703.01804)) |
 | Exponential         | Plausible recovery assuming incoherence | Orthogonalized Gradient Iteration ([see below](#fitting-an-exponential-mlp))                             |
+
+<!-- markdownlint-enable MD060 -->
 
 Table: **Table 2**: Description of recovery guarantees and algorithms used.
 
@@ -606,9 +612,13 @@ The results outlined above appear to conflict with recent work of [Arditi et al.
 
 We can reconcile these seemingly contradictory findings by examining what happens when we ablate DCT features rather than adding them. Specifically, I find that while ablating individual DCT features performs poorly, ablating an averaged direction yields stronger jailbreak effects. Here are the results using directional ablation instead of activation addition:
 
+<!-- markdownlint-disable MD060 -->
+
 |                     | Individual $\hat v_\ell$: average score | Individual $\hat v_\ell$: max score | Aggregate feature: $v_\textrm{avg}$ | Aggregate feature: $\pm v_\textrm{svd}$ |
-| ------------------: | :-------------------------------------: | :---------------------------------: | :---------------------------------: | :-------------------------------------: |
-| **Jailbreak Score** | -2.39                                   | 5.94                                | 7.30                                | 6.78                                    |
+| ------------------: | :-------------------------------------: | :---------------------------------: | :----------------------------------: | :--------------------------------------: |
+| **Jailbreak Score** | -2.39                                   | 5.94                                | 7.30                                 | 6.78                                     |
+
+<!-- markdownlint-enable MD060 -->
 
 Table: **Table 4**: Jailbreak scores obtained by *ablating* individual vs aggregate source-layer features.
 
@@ -628,9 +638,13 @@ Finally, I consider what happens when we ablate target-layer features learned by
 
 In particular, I perform the same ablation analysis as above on *target-layer* features (the $\hat u_\ell$'s):
 
+<!-- markdownlint-disable MD060 -->
+
 |                     | Individual $\hat u_\ell$: average score | Individual $\hat u_\ell$: max score | Aggregate feature: $u_\textrm{avg}$ | Aggregate feature: $\pm u_\textrm{svd}$ |
-| ------------------: | :-------------------------------------: | :---------------------------------: | :---------------------------------: | :-------------------------------------: |
-| **Jailbreak Score** | -3.91                                   | 1.73                                | 2.55                                | 2.90                                    |
+| ------------------: | :-------------------------------------: | :---------------------------------: | :----------------------------------: | :--------------------------------------: |
+| **Jailbreak Score** | -3.91                                   | 1.73                                | 2.55                                 | 2.90                                     |
+
+<!-- markdownlint-enable MD060 -->
 
 Table: **Table 5**: Jailbreak scores obtained by *ablating* individual vs aggregate *target-layer* features.
 

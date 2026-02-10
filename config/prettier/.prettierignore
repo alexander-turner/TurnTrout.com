@@ -11,4 +11,5 @@ htmlcov/
 .vale-styles
 .logs/
 test-results/
+.mypy_cache/
 pnpm-lock.yaml

@@ -27,7 +27,18 @@ import {
   PUNCTUATION_BEFORE_MATCH,
 } from "../tagSmallcaps"
 
+/** Process HTML through the smallcaps transform, stripping data-original-text for cleaner assertions. */
 function testTagSmallcapsHTML(inputHTML: string) {
+  return rehype()
+    .data("settings", { fragment: true })
+    .use(rehypeTagSmallcaps)
+    .processSync(inputHTML)
+    .toString()
+    .replace(/ data-original-text="[^"]*"/g, "")
+}
+
+/** Process HTML through the smallcaps transform, preserving all attributes. */
+function testTagSmallcapsHTMLRaw(inputHTML: string) {
   return rehype()
     .data("settings", { fragment: true })
     .use(rehypeTagSmallcaps)
@@ -1163,5 +1174,34 @@ describe("replaceSCInNode", () => {
         '(<abbr class="small-caps">Nasa</abbr>), [<abbr class="small-caps">fbi</abbr>]; {<abbr class="small-caps">cia</abbr>}!',
       )
     })
+  })
+})
+
+describe("data-original-text attribute", () => {
+  const cases: [string, string, string][] = [
+    [
+      "acronym",
+      "<p>NASA launched</p>",
+      '<p><abbr class="small-caps" data-original-text="NASA">Nasa</abbr> launched</p>',
+    ],
+    [
+      "acronym with suffix",
+      "<p>LLMs are</p>",
+      '<p><abbr class="small-caps" data-original-text="LLM">Llm</abbr>s are</p>',
+    ],
+    [
+      "numeric abbreviation",
+      "<p>14B params</p>",
+      '<p><abbr class="small-caps" data-original-text="14B">14b</abbr> params</p>',
+    ],
+    [
+      "all-caps phrase",
+      "<p>I HATE YOU</p>",
+      '<p><abbr class="small-caps" data-original-text="I HATE YOU">I hate you</abbr></p>',
+    ],
+  ]
+
+  it.each(cases)("preserves original text for %s", (_label, input, expected) => {
+    expect(testTagSmallcapsHTMLRaw(input)).toBe(expected)
   })
 })
