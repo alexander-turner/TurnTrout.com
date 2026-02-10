@@ -34,16 +34,10 @@ test.beforeEach(async ({ page }) => {
 })
 
 async function closeSearch(page: Page) {
-  try {
-    const searchContainer = page.locator("#search-container")
-    // Use getAttribute instead of evaluate to avoid browser context crashes
-    const classList = await searchContainer.getAttribute("class")
-    if (classList?.includes("active")) {
-      await page.keyboard.press("Escape")
-      await expect(searchContainer).not.toHaveClass(/active/)
-    }
-  } catch {
-    // Ignore errors if page context is already destroyed (e.g., after navigation)
+  const searchContainer = page.locator("#search-container")
+  if (await searchContainer.evaluate((el) => el.classList.contains("active"))) {
+    await page.keyboard.press("Escape")
+    await expect(searchContainer).not.toHaveClass(/active/)
   }
 }
 
