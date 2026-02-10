@@ -218,7 +218,7 @@ export const matchTextNodes = (node: Node, term: string) => {
     const nodeText = node.nodeValue ?? ""
     // Normalize NBSP (U+00A0) to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
-    const normalizedText = nodeText.replace(/\u00A0/g, " ")
+    const normalizedText = nodeText.replace(/\u00A0/gu, " ")
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
