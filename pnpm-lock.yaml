@@ -7666,9 +7666,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770}
-    version: 1.4.1
+  punctilio@1.7.5:
+    resolution: {integrity: sha512-lgp23TG4/nK/dyEN7Pf6Svxwlh8NpbrTt5X6o9zGi2h6AuyoOZsWlc7634+xFhg7K2qiKh9QfxgcxtAfFdJ9GQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       unified: ^11.0.0

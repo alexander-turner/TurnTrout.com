@@ -476,8 +476,8 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 export function plusToAmpersand(text: string): string {
-  const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
-  const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
+  const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
+  const result = text.replace(new RegExp(sourcePattern, "gu"), " \u0026 ")
   return result
 }
 
