@@ -190,7 +190,7 @@ echo "Installing Node dependencies..."
 pnpm install --frozen-lockfile --silent || die "pnpm lockfile out of sync — try: pnpm install (or if corrupt: rm pnpm-lock.yaml && pnpm install)"
 
 if command -v uv &>/dev/null; then
-  uv sync --quiet 2>/dev/null
+  uv sync --quiet || warn "uv sync failed — Python lint tools (isort, autoflake, autopep8) may be unavailable"
   # Add .venv/bin to PATH so Python tools (autoflake, isort, autopep8, etc.)
   # installed by uv sync are available to lint-staged and other commands
   if [ -d "$PROJECT_DIR/.venv/bin" ]; then
