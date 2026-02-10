@@ -114,7 +114,6 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - Stashes uncommitted changes
 - Runs comprehensive validation (tests, linting, spellcheck, link validation)
 - Compresses/uploads assets to CDN
-- Updates publication dates
 - Can resume from last failure: `RESUME=true git push`
 
 ## Content Structure
@@ -179,12 +178,12 @@ When pushing to main, these checks run automatically:
 8. Built site checks (no localhost links, all favicons wrapped, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
-11. Publication date updates
 
 ## GitHub Actions (Post-push)
 
 After pushing to main:
 
+- **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
 - Tests run on ~40 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
