@@ -65,7 +65,7 @@ export function wrapLeadingNumbers(text: string): string {
 
 export function wrapNumbersBeforeColon(text: string): string {
   return text.replace(
-    /(?<heading>#[\w ]*)(?<!\d)(?<digit>\d):/g,
+    /(?<heading>#[\p{L}\d_ ]*)(?<!\d)(?<digit>\d):/gu,
     '$<heading><span style="font-variant-numeric: lining-nums;">$<digit></span>:',
   )
 }
