@@ -30,7 +30,7 @@ export const foregroundLight = "#4c4f69"
 export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
-export const midgroundLight = "#6c6c73"
+export const midgroundLight = "#74747b"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
 // Shared variables between SCSS and TypeScript
