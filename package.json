@@ -55,7 +55,6 @@
       "ruff check --fix"
     ],
     "!(*.vale-styles)/**/*.md": [
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
     ]
   },
