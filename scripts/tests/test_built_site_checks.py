@@ -2598,19 +2598,17 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Favicon with word-joiner span (valid)
+        # Favicon inside word-joiner span (valid)
         (
-            '<a>text<span class="word-joiner" aria-hidden="true">\u2060</span>'
-            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></a>',
+            '<a>text<span class="word-joiner" aria-hidden="true">\u2060'
+            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></span></a>',
             [],
         ),
-        # Favicon without word-joiner span (invalid)
+        # Favicon without word-joiner span parent (invalid)
         (
             '<a>text<svg class="favicon" data-domain="example_com"'
             ' style="--mask-url: url(test.svg);"></svg></a>',
-            [
-                "Favicon (example_com) missing word-joiner span as previous sibling"
-            ],
+            ["Favicon (example_com) missing word-joiner span as parent"],
         ),
         # Favicon inside .no-favicon-span (should be ignored)
         (
@@ -2618,23 +2616,23 @@ def test_check_tengwar_characters(html, expected):
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
             [],
         ),
-        # img.favicon without word-joiner (invalid)
+        # img.favicon without word-joiner parent (invalid)
         (
             '<a>text<img class="favicon" src="test.ico"></a>',
-            ["Favicon (test.ico) missing word-joiner span as previous sibling"],
+            ["Favicon (test.ico) missing word-joiner span as parent"],
         ),
         # No favicons at all (valid)
         ("<div><p>No favicons</p></div>", []),
-        # Mixed: one with, one without word-joiner
+        # Mixed: one with, one without word-joiner parent
         (
             "<div>"
-            '<a>ok<span class="word-joiner">\u2060</span>'
+            '<a>ok<span class="word-joiner">\u2060'
             '<svg class="favicon" data-domain="ok_com"'
-            ' style="--mask-url: url(ok.svg);"></svg></a>'
+            ' style="--mask-url: url(ok.svg);"></svg></span></a>'
             '<a>bad<svg class="favicon" data-domain="bad_com"'
             ' style="--mask-url: url(bad.svg);"></svg></a>'
             "</div>",
-            ["Favicon (bad_com) missing word-joiner span as previous sibling"],
+            ["Favicon (bad_com) missing word-joiner span as parent"],
         ),
         # Nested .no-favicon-span (should be ignored)
         (

@@ -738,8 +738,11 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
     imgNodeToAppend.properties.class = "favicon close-text"
   }
 
-  // Append word joiner + favicon to prevent line-break orphaning
-  node.children.push(createWordJoinerSpan(), imgNodeToAppend)
+  // Wrap favicon inside word-joiner span with white-space: nowrap
+  // to prevent line-break orphaning of the favicon
+  const wordJoiner = createWordJoinerSpan()
+  wordJoiner.children.push(imgNodeToAppend)
+  node.children.push(wordJoiner)
 }
 
 /**

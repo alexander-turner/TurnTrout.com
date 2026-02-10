@@ -1162,11 +1162,11 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
 
 def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all favicons are preceded by a word joiner span element.
+    Check that all favicons are inside a word joiner span element.
 
-    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
-    the favicon from orphaning onto a new line. Every favicon should have this
-    span as its immediately preceding sibling, unless it's inside a
+    The word joiner (U+2060) wrapped in a <span class="word-joiner"> with
+    white-space: nowrap prevents the favicon from orphaning onto a new line.
+    Every favicon should be a child of this span, unless it's inside a
     .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
@@ -1175,10 +1175,10 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
     issues: list[str] = []
 
     for favicon in _get_favicons_to_check(soup):
-        prev_sibling = favicon.previous_sibling
+        parent = favicon.parent
         if isinstance(
-            prev_sibling, Tag
-        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            parent, Tag
+        ) and "word-joiner" in script_utils.get_classes(parent):
             continue
 
         # Identify the favicon for the error message
@@ -1189,8 +1189,7 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
 
         _append_to_list(
             issues,
-            f"Favicon ({context}) missing word-joiner span as "
-            f"previous sibling",
+            f"Favicon ({context}) missing word-joiner span as parent",
         )
 
     return issues

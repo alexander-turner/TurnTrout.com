@@ -651,16 +651,17 @@ describe("Favicon Utilities", () => {
       const imgPath = "/test/favicon.png"
 
       it.each(["Long text content", "Medium", "1234"])(
-        "should append word joiner + favicon for %s",
+        "should append word joiner containing favicon for %s",
         (text) => {
           const node = h("div", {}, [text])
           linkfavicons.insertFavicon(imgPath, node)
 
-          // text is unchanged, word joiner + favicon appended
-          expect(node.children.length).toBe(3)
+          // text is unchanged, word joiner span (containing favicon) appended
+          expect(node.children.length).toBe(2)
           expect(node.children[0]).toEqual({ type: "text", value: text })
-          expect(node.children[1]).toMatchObject(wordJoinerNode)
-          expect(node.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+          const wjSpan = node.children[1] as Element
+          expect(wjSpan).toMatchObject(wordJoinerNode)
+          expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
         },
       )
 
@@ -677,10 +678,10 @@ describe("Favicon Utilities", () => {
       /*
        <a>Test <code>tag name test</code></a>
        becomes
-       <a>Test <code>tag name test\u2060<img/></code></a>
+       <a>Test <code>tag name test<span class="word-joiner">\u2060<img/></span></code></a>
       */
       it.each(linkfavicons.tagsToZoomInto)(
-        "should zoom into %s elements and append word joiner + favicon",
+        "should zoom into %s elements and append word joiner containing favicon",
         (tagName) => {
           const innerText = "tag name test"
           const node = h("a", {}, [{ type: "text", value: "Test " }, h(tagName, {}, [innerText])])
@@ -690,10 +691,11 @@ describe("Favicon Utilities", () => {
           expect(node.children[0]).toEqual({ type: "text", value: "Test " })
 
           const tagChild = node.children[1] as Element
-          expect(tagChild.children.length).toBe(3) // text + word joiner + favicon
+          expect(tagChild.children.length).toBe(2) // text + word joiner (containing favicon)
           expect(tagChild.children[0]).toEqual({ type: "text", value: innerText })
-          expect(tagChild.children[1]).toMatchObject(wordJoinerNode)
-          expect(tagChild.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+          const wjSpan = tagChild.children[1] as Element
+          expect(wjSpan).toMatchObject(wordJoinerNode)
+          expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
         },
       )
 
@@ -705,10 +707,11 @@ describe("Favicon Utilities", () => {
 
         expect(node.children.length).toBe(1)
         const codeChild = node.children[0] as Element
-        expect(codeChild.children.length).toBe(3)
+        expect(codeChild.children.length).toBe(2)
         expect(codeChild.children[0]).toEqual({ type: "text", value: codeContent })
-        expect(codeChild.children[1]).toMatchObject(wordJoinerNode)
-        expect(codeChild.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+        const wjSpan = codeChild.children[1] as Element
+        expect(wjSpan).toMatchObject(wordJoinerNode)
+        expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
       })
 
       it("should ignore empty text nodes when finding last child", () => {
@@ -719,13 +722,14 @@ describe("Favicon Utilities", () => {
 
         linkfavicons.insertFavicon(imgPath, linkWithEmptyText)
 
-        // Zooms into code (skips empty text), appends word joiner + favicon inside code
+        // Zooms into code (skips empty text), appends word joiner (containing favicon) inside code
         expect(linkWithEmptyText.children.length).toBe(2) // code + empty text
         const codeChild = linkWithEmptyText.children[0] as Element
-        expect(codeChild.children.length).toBe(3)
+        expect(codeChild.children.length).toBe(2)
         expect(codeChild.children[0]).toEqual({ type: "text", value: codeContent })
-        expect(codeChild.children[1]).toMatchObject(wordJoinerNode)
-        expect(codeChild.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+        const wjSpan = codeChild.children[1] as Element
+        expect(wjSpan).toMatchObject(wordJoinerNode)
+        expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
       })
 
       it.each(linkfavicons.charsToSpace)(
@@ -735,14 +739,15 @@ describe("Favicon Utilities", () => {
           const node = h("p", {}, [text])
           linkfavicons.insertFavicon(imgPath, node)
 
-          expect(node.children.length).toBe(3) // text + word joiner + favicon
+          expect(node.children.length).toBe(2) // text + word joiner (containing favicon)
           expect(node.children[0]).toEqual({ type: "text", value: text })
-          expect(node.children[1]).toMatchObject(wordJoinerNode)
-          expect(node.children[2]).toMatchObject(createExpectedFavicon(imgPath, true))
+          const wjSpan = node.children[1] as Element
+          expect(wjSpan).toMatchObject(wordJoinerNode)
+          expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath, true))
         },
       )
 
-      it("should append word joiner + favicon after last text child", () => {
+      it("should append word joiner containing favicon after last text child", () => {
         const node = h("p", [
           "My email is ",
           h("a", { href: "https://mailto:throwaway@turntrout.com", class: "external" }, [
@@ -753,11 +758,12 @@ describe("Favicon Utilities", () => {
 
         linkfavicons.insertFavicon(specialFaviconPaths.mail, node)
 
-        // Word joiner + favicon appended after the "." text node
-        expect(node.children.length).toBe(5) // text + a + text "." + word joiner + favicon
+        // Word joiner (containing favicon) appended after the "." text node
+        expect(node.children.length).toBe(4) // text + a + text "." + word joiner (with favicon)
         expect(node.children[2]).toEqual({ type: "text", value: "." })
-        expect(node.children[3]).toMatchObject(wordJoinerNode)
-        expect(node.children[4]).toMatchObject(createExpectedFavicon(specialFaviconPaths.mail))
+        const wjSpan = node.children[3] as Element
+        expect(wjSpan).toMatchObject(wordJoinerNode)
+        expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(specialFaviconPaths.mail))
       })
     })
   })
@@ -1953,11 +1959,12 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
   ])("should handle node with %s", (text) => {
     const node = h("a", {}, [text])
     linkfavicons.insertFavicon(imgPath, node)
-    // text unchanged, word joiner + favicon appended
-    expect(node.children.length).toBe(3)
+    // text unchanged, word joiner (containing favicon) appended
+    expect(node.children.length).toBe(2)
     expect(node.children[0]).toEqual({ type: "text", value: text })
-    expect(node.children[1]).toMatchObject(wordJoinerNode)
-    expect(node.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+    const wjSpan = node.children[1] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should handle nested tagsToZoomInto elements", () => {
@@ -1971,10 +1978,11 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
 
     const strongElement = node.children[2] as Element
     expect(strongElement.tagName).toBe("strong")
-    expect(strongElement.children.length).toBe(3) // text + word joiner + favicon
+    expect(strongElement.children.length).toBe(2) // text + word joiner (containing favicon)
     expect(strongElement.children[0]).toEqual({ type: "text", value: innerText })
-    expect(strongElement.children[1]).toMatchObject(wordJoinerNode)
-    expect(strongElement.children[2]).toMatchObject(createExpectedFavicon(imgPath))
+    const wjSpan = strongElement.children[1] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should handle node with element child that has no text", () => {
@@ -2002,10 +2010,11 @@ describe("appendFaviconWithWordJoiner edge cases", () => {
     expect(node.children.length).toBe(1)
     const abbr = node.children[0] as Element
     expect(abbr.tagName).toBe("abbr")
-    expect(abbr.children.length).toBe(3) // text + word joiner + favicon
+    expect(abbr.children.length).toBe(2) // text + word joiner (containing favicon)
     expect(abbr.children[0]).toEqual({ type: "text", value: "rss" })
-    expect(abbr.children[1]).toMatchObject(wordJoinerNode)
-    expect(abbr.children[2]).toMatchObject({
+    const wjSpan = abbr.children[1] as Element
+    expect(wjSpan).toMatchObject(wordJoinerNode)
+    expect(wjSpan.children[1]).toMatchObject({
       type: "element",
       properties: expect.objectContaining({
         class: "favicon",

@@ -1,7 +1,7 @@
 @use "./variables.scss" as *;
 
 .word-joiner {
-  display: contents;
+  white-space: nowrap;
   user-select: none;
 }
 
