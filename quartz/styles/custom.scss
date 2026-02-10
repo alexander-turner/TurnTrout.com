@@ -41,10 +41,6 @@ li > blockquote:first-child {
     padding-right: 0;
   }
 
-  & li {
-    max-width: 100%;
-  }
-
   // Ordered lists in footnotes should start at 1, 2, 3, etc.
   & > li > ol {
     counter-reset: list;
@@ -727,22 +723,20 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
-  opacity: 0.5;
 
   // Safari needs this
   & > * {
     filter: inherit;
-    opacity: inherit;
   }
 }
 
-.spoiler-container:focus-visible .spoiler-overlay,
+.spoiler-overlay:focus-visible,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:focus-visible .spoiler-content,
+.spoiler-overlay:focus-visible + .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
@@ -797,21 +791,19 @@ img.emoji {
   }
 }
 
-#mermaid-0,
-#mermaid-1,
-#mermaid-2 {
+// Ensure all mermaid diagram text has sufficient contrast
+[id^="mermaid-"] {
   font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
 
   & span,
-  & .label {
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
     color: var(--foreground) !important;
     fill: var(--foreground) !important;
   }
-}
-
-#mermaid-1 {
-  // Needed to ensure arrowheads are visible
-  fill: var(--midground-faint) !important;
 }
 
 .flowchart-link {
@@ -896,7 +888,7 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-  font-weight: 200;
+  color: var(--foreground);
 }
 
 // Specific graph in design doc has too much whitespace in light

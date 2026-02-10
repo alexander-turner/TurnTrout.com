@@ -378,6 +378,43 @@ export function deduplicateSvgIds(tree: Root): void {
   })
 }
 
+/** Adds `aria-label` to heading links that have no direct text content (e.g. KaTeX-only headings). */
+export function ensureHeadingLinksHaveAccessibleNames() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (!headingRank(node)) return
+
+      const link = node.children.find(
+        (child) => child.type === "element" && child.tagName === "a",
+      ) as Element | undefined
+      if (!link) return
+
+      const hasDirectText = link.children.some(
+        (child) => child.type === "text" && child.value.trim().length > 0,
+      )
+      if (hasDirectText) return
+
+      // Extract label from KaTeX <annotation> elements (original LaTeX source)
+      const annotations: string[] = []
+      visit(link, "element", (child: Element) => {
+        if (child.tagName === "annotation") {
+          const text = toString(child).trim()
+          if (text) annotations.push(text)
+        }
+      })
+
+      const label =
+        annotations.join(" ") ||
+        String(node.properties?.id || "heading")
+          .replaceAll(/-+/g, " ")
+          .trim()
+
+      link.properties = link.properties || {}
+      link.properties.ariaLabel = label
+    })
+  }
+}
+
 /**
  * A plugin that transforms GitHub-flavored Markdown into HTML.
  *
@@ -393,19 +430,24 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
       return opts.enableSmartyPants ? [remarkGfm, smartypants] : [remarkGfm]
     },
     htmlPlugins() {
-      const plugins: PluggableList = [footnoteBacklinkPlugin(), htmlAccessibilityPlugin()]
+      // Pass as attacher references (not called) so unified calls them correctly
+      const plugins: PluggableList = [footnoteBacklinkPlugin, htmlAccessibilityPlugin]
 
       if (opts.linkHeadings) {
-        plugins.push(returnAddIdsToHeadingsFn, [
-          rehypeAutolinkHeadings as unknown as UnifiedPlugin,
-          {
-            behavior: "wrap",
-            properties: {
-              "data-no-popover": "true",
-              tabIndex: -1,
+        plugins.push(
+          returnAddIdsToHeadingsFn,
+          [
+            rehypeAutolinkHeadings as unknown as UnifiedPlugin,
+            {
+              behavior: "wrap",
+              properties: {
+                "data-no-popover": "true",
+                tabIndex: -1,
+              },
             },
-          },
-        ])
+          ],
+          ensureHeadingLinksHaveAccessibleNames,
+        )
       }
 
       return plugins
