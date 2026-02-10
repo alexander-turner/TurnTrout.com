@@ -485,16 +485,14 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 
 ### Non-breaking spaces
 
-I use [my `punctilio` library](https://github.com/alexander-turner/punctilio) to intelligently insert non-breaking spaces (NBSP) throughout site text. Non-breaking spaces prevent awkward line breaks that would disrupt reading flow. Text on either side of a non-breaking space will always stay together on the same line.
+[My `punctilio` library](https://github.com/alexander-turner/punctilio) intelligently inserts non-breaking spaces (NBSPs) throughout site text. Non-breaking spaces prevent awkward line breaks --- text on either side of a non-breaking space will always stay together on the same line. `punctilio` handles several typographic scenarios:
 
-`punctilio` handles several typographic scenarios:
-
-- **Preventing short words**: "a", "I", and "to" should never be alone on a line.
-- **Keeping numbers with their units**: "100 km", "5 kg", and "32 °F".
-- **Preserving references and abbreviations**: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
-- **Handling copyright and trademark symbols**: "© 2024" and "™ Widget".
-- **Keeping initials together**: "J. K. Rowling" and "C. S. Lewis".
-- **Preventing widow words**: The last word of a paragraph stays with at least one preceding word.
+- Preventing short words: "a", "I", and "to" should never be alone on a line.
+- Keeping numbers with their units: "100 km", "5 kg", and "32 °F".
+- Preserving references and abbreviations: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
+- Handling copyright and trademark symbols: "© 2024" and "™ Widget".
+- Keeping initials together: "J. K. Rowling" and "C. S. Lewis".
+- Preventing widow words: The last word of a paragraph stays with at least one preceding word.
 
 ### Automatic conversion of quotation marks
 
