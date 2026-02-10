@@ -483,6 +483,32 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
 
+### Non-breaking spaces
+
+I use [my fork of Punctilio](https://github.com/alexander-turner/punctilio) to intelligently insert non-breaking spaces (NBSP) throughout the site's text. Non-breaking spaces prevent awkward line breaks that would disrupt reading flow. Unlike regular spaces, text on either side of a non-breaking space will always stay together on the same line.
+
+The NBSP transformations handle several typographic scenarios:
+
+**Preventing orphaned short words**
+: Short words like "a", "I", "to", and "of" should not appear alone at the end of a line. For example, "I went to the store" keeps "to the" together.
+
+**Keeping numbers with their units**
+: Measurements stay cohesive: "100 km", "5 kg", "32 °F". The number and unit are never split across lines.
+
+**Preserving references and abbreviations**
+: Academic and formal references maintain their integrity: "Fig. 1", "p. 42", "§ 5", "Dr. Smith".
+
+**Handling copyright and trademark symbols**
+: Legal symbols stay with their associated content: "© 2024", "™ Widget".
+
+**Keeping initials together**
+: Names with initials render properly: "J. K. Rowling", "C. S. Lewis".
+
+**Preventing widow words**
+: The last word of a paragraph stays with at least one preceding word, avoiding single-word final lines.
+
+These transformations apply to all text content - including page titles, headings, descriptions, and body text - ensuring consistent, professional typography throughout the site. Code blocks are excluded from NBSP insertion to preserve literal formatting.
+
 ### Automatic conversion of quotation marks
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
