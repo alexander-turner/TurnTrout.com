@@ -18,6 +18,7 @@ import prettyBytes from "pretty-bytes"
 import serveHandler from "serve-handler"
 import { WebSocketServer, type WebSocket } from "ws"
 
+import { generateCritical } from "../styles/generate-critical"
 import { generateScss, generateScssRecord } from "../styles/generate-variables"
 import {
   fp,
@@ -76,9 +77,10 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     await checkPortAvailability(argv.port)
   }
 
-  // Generate SCSS variables before building
+  // Generate SCSS files before building
   generateScss()
-  console.log("SCSS variables generated successfully!")
+  generateCritical()
+  console.log("SCSS files generated successfully!")
 
   const ctx: Context = await context({
     entryPoints: [fp],

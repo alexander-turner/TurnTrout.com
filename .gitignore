@@ -15,6 +15,7 @@ tsconfig.tsbuildinfo
 .quartz_checks
 .timestamps
 *variables.scss
+*critical.scss
 *__pycache__*
 
 # Testing & Coverage

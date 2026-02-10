@@ -1,4 +1,18 @@
-:root {
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+/**
+ * Generates the critical.scss file content from template
+ * This CSS is manually appended to auto-generated critical CSS and inlined in HTML
+ * SCSS variables (like $midground-faint-light) are replaced at build time with actual values
+ * @returns The complete critical SCSS content as a string
+ */
+const generateCriticalScssContent = (): string => {
+  return `:root {
   font-family: var(--font-main);
 }
 
@@ -22,8 +36,8 @@ pre {
 }
 
 article[data-use-dropcap="true"] {
-  --dropcap-vertical-offset: 0.15rem;
-  --dropcap-font-size: 3.95rem;
+  --dropcap-vertical-offset: #{$dropcap-vertical-offset};
+  --dropcap-font-size: #{$dropcap-font-size};
   --before-color: var(--midground-faint);
   --font-main: "EBGaramond__subset", "EBGaramond";
   --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
@@ -34,7 +48,7 @@ article[data-use-dropcap="true"] {
 
 article[data-use-dropcap="true"] > p:first-of-type {
   position: relative;
-  min-height: 4.2rem;
+  min-height: #{$dropcap-min-height};
 }
 
 article[data-use-dropcap="true"] > p:first-of-type::before {
@@ -70,24 +84,6 @@ article[data-use-dropcap="true"] > p:first-of-type::first-line {
 
 em {
   font-family: var(--font-italic-situational);
-}
-
-:root[saved-theme="dark"],
-.dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
-  --green: #a6d189;
-  --blue: #8caaee;
-}
-
-:root[saved-theme="light"],
-.light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --red: #be415c;
-  --green: #22820d;
-  --blue: #3e6ccb;
 }
 
 .sidebar {
@@ -153,4 +149,33 @@ em {
   #right-sidebar {
     margin-right: 0;
   }
+}
+`
+}
+
+/**
+ * Generates and writes the critical SCSS file to disk
+ * @throws Error if file writing fails
+ */
+export function generateCritical(): void {
+  try {
+    const outputPath = path.join(__dirname, "critical.scss")
+    const scss = generateCriticalScssContent()
+    fs.writeFileSync(outputPath, scss)
+  } catch (error) {
+    console.error("Error generating critical SCSS:", error)
+    throw error
+  }
+}
+
+// Run generation if this is the main module
+/* istanbul ignore next */
+try {
+  if (process.argv[1] === fileURLToPath(import.meta.url)) {
+    generateCritical()
+    console.log("Critical SCSS generated successfully!")
+  }
+} catch {
+  // Ignore any errors in the execution check
+  // This allows the module to be imported without issues
 }
