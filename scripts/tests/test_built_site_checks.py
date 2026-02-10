@@ -2573,9 +2573,10 @@ def test_extract_flat_paragraph_texts():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 2
-    # data-original-text restores the source form
-    assert "9Combinations of strategies." in result[0]
-    assert "Normal text." in result[1]
+    # data-original-text restores the source form;
+    # trailing punctuation is padded with a space for spellchecker tokenization
+    assert "9Combinations of strategies ." in result[0]
+    assert "Normal text ." in result[1]
     assert "skip_this" not in result[1]
 
 
@@ -2586,7 +2587,7 @@ def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr():
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
-    assert "RELU is an activation function." in result[0]
+    assert "RELU is an activation function ." in result[0]
 
 
 def test_extract_flat_paragraph_texts_partial_word_abbr():
@@ -2617,7 +2618,7 @@ def test_extract_flat_paragraph_texts_fallback_without_data_attr():
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
-    assert "RELU is an activation function." in result[0]
+    assert "RELU is an activation function ." in result[0]
 
 
 def test_extract_flat_paragraph_texts_skips_non_article():
@@ -2629,7 +2630,7 @@ def test_extract_flat_paragraph_texts_skips_non_article():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1
-    assert "Inside article." in result[0]
+    assert "Inside article ." in result[0]
 
 
 def test_extract_flat_paragraph_texts_skips_nav_footer():
@@ -2654,7 +2655,7 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
     assert len(result) == 1
-    assert "Normal paragraph." in result[0]
+    assert "Normal paragraph ." in result[0]
 
 
 def test_extract_flat_paragraph_texts_spaces_sub_br():
@@ -2713,6 +2714,23 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
     assert "\u2019" not in result[1]
 
 
+def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
+    """
+    Dropcap-split contractions (I 've → I've) are rejoined.
+
+    The dropcap transformer inserts a space before apostrophes for CSS
+    rendering, which breaks contractions. The extraction should rejoin them.
+    """
+    html = """<article>
+    <p>I \u2019ve found the opposite.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "I've" in result[0]
+    assert "I 've" not in result[0]
+
+
 @pytest.mark.parametrize(
     "stdout,line_to_source,expected",
     [
@@ -2736,36 +2754,6 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
             {1: "page.html"},
             ["[unknown] - 99:1-99:5  warning  `xyz`  retext-spell"],
         ),
-        # Numeric tokens are filtered (model sizes like "0.7B")
-        (
-            "    - 1:1-1:4  warning  `0.7B` is misspelt  retext-spell\n",
-            {1: "page.html"},
-            [],
-        ),
-        # Short tokens (1-2 chars) are filtered ("ve", "al", "m3")
-        (
-            "    - 1:1-1:3  warning  `ve` is misspelt  retext-spell\n",
-            {1: "page.html"},
-            [],
-        ),
-        # Unicode superscript tokens are filtered ("m³")
-        (
-            "    - 1:1-1:3  warning  `m³` is misspelt  retext-spell\n",
-            {1: "page.html"},
-            [],
-        ),
-        # Tokens with equals sign are filtered ("11=10.34mg")
-        (
-            "    - 1:1-1:11  warning  `11=10.34mg` is misspelt  retext-spell\n",
-            {1: "page.html"},
-            [],
-        ),
-        # Dot-prefixed numeric tokens are filtered (".0118mg")
-        (
-            "    - 1:1-1:8  warning  `.0118mg` is misspelt  retext-spell\n",
-            {1: "page.html"},
-            [],
-        ),
         # Summary line ("⚠ 19 warnings") is skipped
         (
             "\u26a0 19 warnings\n",
@@ -2778,31 +2766,6 @@ def test_parse_spellcheck_output(stdout, line_to_source, expected):
     """Test parsing of spellchecker-cli output."""
     assert (
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
-        == expected
-    )
-
-
-@pytest.mark.parametrize(
-    "word,expected",
-    [
-        ("hello", False),
-        ("misspelt", False),
-        ("0.7B", True),
-        ("3.7M", True),
-        ("1.5B-parameter", True),
-        (".0118mg", True),
-        ("11=10.34mg", True),
-        ("m³", True),
-        ("ve", True),
-        ("al", True),
-        ("m3", True),
-        ("GPT-3.5T", False),  # Not numeric-starting — handled via wordlist
-    ],
-)
-def test_spellcheck_false_positive_regex(word, expected):
-    """Test false positive regex matches expected patterns."""
-    assert (
-        bool(built_site_checks._SPELLCHECK_FALSE_POSITIVE_RE.match(word))
         == expected
     )
 

@@ -2307,6 +2307,15 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
             # Normalize smart quotes to ASCII so spellchecker treats
             # contractions like "I've" as single words instead of "I"+"ve"
             text = text.replace("\u2019", "'").replace("\u2018", "'")
+            # Rejoin dropcap-split contractions: the dropcap transformer
+            # inserts a space before apostrophes ("I've" → "I 've") for
+            # CSS rendering, which makes the spellchecker see "ve" as a
+            # standalone word. Rejoin them here.
+            text = re.sub(r"\b(\w) '", r"\1'", text)
+            # Pad sentence-ending punctuation with a trailing space so
+            # the spellchecker doesn't glue it to the preceding word
+            # (e.g. "submodules." → "submodules .")
+            text = re.sub(r"(\w)([.!?])$", r"\1 \2", text)
             if text:
                 paragraphs.append(text)
     return paragraphs
@@ -2335,28 +2344,15 @@ def _write_paragraphs_to_tempfile(
         return Path(tmp.name), line_to_source
 
 
-# Tokens that are not real misspellings — numeric patterns, model sizes,
-# measurements, Unicode superscripts, math fragments, etc.
-_SPELLCHECK_FALSE_POSITIVE_RE = re.compile(
-    r"^(?:"
-    # starts with digit (model sizes like "0.7B", "3.7M", "1.5B-parameter")
-    r"\d.*|"
-    r"\.?\d.*|"  # starts with optional dot then digit (".0118mg")
-    r".*[³²¹⁰].*|"  # contains Unicode superscripts ("m³")
-    r".*=.*|"  # contains equals sign ("11=10.34mg")
-    r".{1,2}"  # 1-2 character tokens ("ve", "al", "m3")
-    r")$"
-)
-
-
-def _extract_flagged_word(warning_line: str) -> str:
-    """
-    Extract the flagged word from a spellchecker-cli warning line.
-
-    Format: ``... warning  `word` is misspelt ...``
-    """
-    m = re.search(r"`([^`]+)`", warning_line)
-    return m.group(1) if m else ""
+# Patterns passed to spellchecker-cli --ignore to suppress false positives
+# at the tool level. Each regex is anchored with ^ and $ by spellchecker-cli.
+_SPELLCHECK_IGNORE_PATTERNS: list[str] = [
+    r"\d.*",  # starts with digit: model sizes ("0.7B"), measurements ("3.7M")
+    r"\.?\d.*",  # optional dot then digit: ".0118mg"
+    r".*[³²¹⁰].*",  # Unicode superscripts: "m³"
+    r".*=.*",  # contains equals sign: "11=10.34mg"
+    r".{1,2}",  # 1-2 char tokens: "ve", "al"
+]
 
 
 def _parse_spellcheck_output(
@@ -2368,15 +2364,6 @@ def _parse_spellcheck_output(
     for line in stdout.splitlines():
         line = line.strip()
         if not line or "warning" not in line or line.startswith("\u26a0"):
-            continue
-
-        word = _extract_flagged_word(line)
-        # Strip trailing/leading punctuation that spellchecker-cli
-        # sometimes includes in tokens (e.g. "submodules.")
-        stripped_word = word.strip(".-,;:!?")
-        if _SPELLCHECK_FALSE_POSITIVE_RE.match(word) or (
-            stripped_word != word and stripped_word.isalpha()
-        ):
             continue
 
         # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
@@ -2416,6 +2403,9 @@ def _spellcheck_flattened_paragraphs(
     tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
 
     dict_args = ["--dictionaries", str(wordlist)] if wordlist.exists() else []
+    ignore_args: list[str] = []
+    if _SPELLCHECK_IGNORE_PATTERNS:
+        ignore_args = ["--ignore", *_SPELLCHECK_IGNORE_PATTERNS]
     try:
         result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
             [
@@ -2429,6 +2419,7 @@ def _spellcheck_flattened_paragraphs(
                 "--plugins",
                 "spell",
                 *dict_args,
+                *ignore_args,
             ],
             capture_output=True,
             text=True,
