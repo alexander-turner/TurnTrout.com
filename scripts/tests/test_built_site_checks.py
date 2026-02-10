@@ -2706,12 +2706,67 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
             {1: "page.html"},
             ["[unknown] - 99:1-99:5  warning  `xyz`  retext-spell"],
         ),
+        # Numeric tokens are filtered (model sizes like "0.7B")
+        (
+            "    - 1:1-1:4  warning  `0.7B` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [],
+        ),
+        # Short tokens (1-2 chars) are filtered ("ve", "al", "m3")
+        (
+            "    - 1:1-1:3  warning  `ve` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [],
+        ),
+        # Unicode superscript tokens are filtered ("m³")
+        (
+            "    - 1:1-1:3  warning  `m³` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [],
+        ),
+        # Tokens with equals sign are filtered ("11=10.34mg")
+        (
+            "    - 1:1-1:11  warning  `11=10.34mg` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [],
+        ),
+        # Dot-prefixed numeric tokens are filtered (".0118mg")
+        (
+            "    - 1:1-1:8  warning  `.0118mg` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [],
+        ),
     ],
 )
 def test_parse_spellcheck_output(stdout, line_to_source, expected):
     """Test parsing of spellchecker-cli output."""
     assert (
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    "word,expected",
+    [
+        ("hello", False),
+        ("misspelt", False),
+        ("0.7B", True),
+        ("3.7M", True),
+        ("1.5B-parameter", True),
+        (".0118mg", True),
+        ("11=10.34mg", True),
+        ("m³", True),
+        ("ve", True),
+        ("al", True),
+        ("m3", True),
+        ("GPT-3.5T", False),  # Not numeric-starting — handled via wordlist
+    ],
+)
+def test_spellcheck_false_positive_regex(word, expected):
+    """Test false positive regex matches expected patterns."""
+    assert (
+        bool(built_site_checks._SPELLCHECK_FALSE_POSITIVE_RE.match(word))
         == expected
     )
 

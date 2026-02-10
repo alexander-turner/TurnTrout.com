@@ -2309,6 +2309,30 @@ def _write_paragraphs_to_tempfile(
         return Path(tmp.name), line_to_source
 
 
+# Tokens that are not real misspellings — numeric patterns, model sizes,
+# measurements, Unicode superscripts, math fragments, etc.
+_SPELLCHECK_FALSE_POSITIVE_RE = re.compile(
+    r"^(?:"
+    # starts with digit (model sizes like "0.7B", "3.7M", "1.5B-parameter")
+    r"\d.*|"
+    r"\.?\d.*|"  # starts with optional dot then digit (".0118mg")
+    r".*[³²¹⁰].*|"  # contains Unicode superscripts ("m³")
+    r".*=.*|"  # contains equals sign ("11=10.34mg")
+    r".{1,2}"  # 1-2 character tokens ("ve", "al", "m3")
+    r")$"
+)
+
+
+def _extract_flagged_word(warning_line: str) -> str:
+    """
+    Extract the flagged word from a spellchecker-cli warning line.
+
+    Format: ``... warning  `word` is misspelt ...``
+    """
+    m = re.search(r"`([^`]+)`", warning_line)
+    return m.group(1) if m else ""
+
+
 def _parse_spellcheck_output(
     stdout: str, line_to_source: dict[int, str]
 ) -> list[str]:
@@ -2319,6 +2343,16 @@ def _parse_spellcheck_output(
         line = line.strip()
         if not line or "warning" not in line:
             continue
+
+        word = _extract_flagged_word(line)
+        # Strip trailing/leading punctuation that spellchecker-cli
+        # sometimes includes in tokens (e.g. "submodules.")
+        stripped_word = word.strip(".-,;:!?")
+        if _SPELLCHECK_FALSE_POSITIVE_RE.match(word) or (
+            stripped_word != word and stripped_word.isalpha()
+        ):
+            continue
+
         # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
         match = re.match(r".*?(\d+):\d+-\d+:\d+", line)
         if not match:
