@@ -42,9 +42,8 @@ async function closeSearch(page: Page) {
       await page.keyboard.press("Escape")
       await expect(searchContainer).not.toHaveClass(/active/)
     }
-  } catch (error) {
+  } catch {
     // Ignore errors if page context is already destroyed (e.g., after navigation)
-    console.log("Failed to close search (page may be destroyed):", error)
   }
 }
 
