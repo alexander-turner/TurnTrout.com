@@ -7,7 +7,6 @@ import {
   createPopover,
   footnoteForwardRefRegex,
 } from "./popover_helpers"
-import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Module-level state
 let activePopoverRemover: (() => void) | null = null
@@ -71,7 +70,33 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   parentOfPopover.prepend(popoverElement)
 
   // Wrap any scrollable tables/katex in the popover with fade indicators
-  const scrollCleanup = wrapScrollables(popoverElement)
+  const popoverObservers: ResizeObserver[] = []
+  for (const el of popoverElement.querySelectorAll<HTMLElement>(
+    ".table-container, .katex-display",
+  )) {
+    const parent = el.parentElement
+    if (!parent || parent.classList.contains("scroll-indicator")) continue
+
+    const wrapper = document.createElement("div")
+    wrapper.className = "scroll-indicator"
+    parent.insertBefore(wrapper, el)
+    wrapper.appendChild(el)
+
+    const update = () => {
+      const { scrollLeft, scrollWidth, clientWidth } = el
+      wrapper.classList.toggle("can-scroll-left", scrollWidth > clientWidth && scrollLeft > 1)
+      wrapper.classList.toggle(
+        "can-scroll-right",
+        scrollWidth > clientWidth && scrollLeft + clientWidth < scrollWidth - 1,
+      )
+    }
+
+    el.addEventListener("scroll", update, { passive: true })
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    popoverObservers.push(observer)
+    update()
+  }
 
   const updatePosition = () => {
     setPopoverPosition(popoverElement, this)
@@ -89,7 +114,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
 
   const onPopoverRemove = () => {
     activePopoverRemover = null
-    scrollCleanup.disconnect()
+    for (const obs of popoverObservers) obs.disconnect()
     window.removeEventListener("resize", updatePosition)
     window.removeEventListener("scroll", handleScroll)
   }
