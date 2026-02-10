@@ -28,7 +28,6 @@ authors:
   - Meg Tong
   - Evan Hubinger
   - Alex Turner
-  Alex Turner
 tags:
   - corrigibility
   - AI
