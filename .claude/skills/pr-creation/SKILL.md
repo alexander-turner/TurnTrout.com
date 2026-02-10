@@ -77,6 +77,10 @@ Do NOT skip reading the resource file — it contains the detailed checklist the
 2. Make necessary fixes and commit them
 3. If you fixed more than 3 issues or made structural changes, re-run the critique (max 2 re-runs total — if issues persist after 2 rounds of critique, proceed to validation rather than looping indefinitely)
 
+### Step 3b: Run Playwright Tests (If Applicable)
+
+If the PR adds or modifies Playwright spec tests (`*.spec.ts`), run them locally before proceeding to catch test logic errors early. Follow the instructions in the project's CLAUDE.md under "Running Playwright Tests Locally" to set up the server and run the new tests. If the local environment cannot run browsers (e.g., sandbox crashes), note this and rely on CI to validate.
+
 ### Step 4: Run Validation
 
 Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templates.md) for common commands per language). Fix any failures before proceeding.
