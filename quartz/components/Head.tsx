@@ -113,6 +113,7 @@ export default (() => {
       return (
         <link
           key={icon}
+          rel="prefetch"
           href={`https://assets.turntrout.com/static/icons/${icon}.svg`}
           as="image"
           type="image/svg+xml"
@@ -150,17 +151,13 @@ export default (() => {
         id: "instant-scroll-restoration",
         src: "/static/scripts/instantScrollRestoration.js",
       },
-      {
-        id: "lock-video-playback-rate",
-        src: "/static/scripts/lockVideoPlaybackRate.js",
-      },
     ]
 
     return (
       <head>
         <meta charSet="utf-8" />
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
@@ -175,6 +172,7 @@ export default (() => {
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
+        <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
           <style

@@ -2,7 +2,7 @@ name: Visual Testing
 
 concurrency:
   group: visual-testing-${{ github.event_name }}-${{ github.ref_name }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -14,13 +14,63 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+  pull_request:
+    branches: ["main"]
+    types: [labeled, synchronize, opened, reopened]
+  merge_group:
 
 permissions:
   actions: read
   contents: read
 
 jobs:
+  # Gate: only run on PRs if the ci:full-tests label is present
+  should-run:
+    name: visual-should-run
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: visual-testing-build
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Remove Safari autoplay script
+        run: rm -f ./quartz/static/scripts/safari-autoplay.js
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: visual-testing-public-dir
+          path: public/
+          retention-days: 1
+
   visual-testing:
+    needs: build
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
     strategy:
@@ -57,9 +107,6 @@ jobs:
         with:
           install-playwright: "true"
 
-      - name: Remove Safari autoplay script
-        run: rm -f ./quartz/static/scripts/safari-autoplay.js
-
       - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
 
@@ -69,8 +116,11 @@ jobs:
       - name: Install Puppeteer Chrome
         run: pnpm exec puppeteer browsers install chrome
 
-      - name: Build site
-        run: pnpm build
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: visual-testing-public-dir
+          path: public/
 
       - name: Run Playwright tests
         id: playwright
@@ -95,7 +145,7 @@ jobs:
           name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1
 
       - name: Upload Winston logs
         if: always()
@@ -104,7 +154,7 @@ jobs:
           name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1
 
       - name: Upload webServer build logs
         if: steps.playwright.outcome == 'failure'
@@ -113,15 +163,15 @@ jobs:
           name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1
 
       - name: Upload Playwright traces
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        if: failure()
+        if: steps.playwright.outcome == 'failure'
         with:
           name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
-          retention-days: 7
+          retention-days: 1
 
       - name: Upload Lost Pixel screenshots shard
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

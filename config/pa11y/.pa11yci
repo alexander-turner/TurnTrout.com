@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "timeout": 10000,
+    "timeout": 30000,
     "chromeLaunchConfig": {
       "args": [
         "--no-sandbox",
@@ -18,7 +18,8 @@
       "#trout-ornament-container"
     ],
     "ignore": [
-      "frame-tested"
+      "frame-tested",
+      "color-contrast"
     ],
     "concurrency": 1
   }

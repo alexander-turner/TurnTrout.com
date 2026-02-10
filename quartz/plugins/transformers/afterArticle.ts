@@ -12,10 +12,9 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
   "newsletter",
 ])
 
-const rssSpan = h("span", { className: "favicon-span" }, [
+export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [
   h("abbr", { class: "small-caps" }, "rss"),
 ])
-export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [
   h("div", h("p", ["Find out when I post more content: ", newsletterElement, " & ", rssElement])),
 ])

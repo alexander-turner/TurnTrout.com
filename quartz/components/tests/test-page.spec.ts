@@ -9,7 +9,6 @@ import {
   setTheme,
   waitForTransitionEnd,
   isDesktopViewport,
-  isFirefox,
   getH1Screenshots,
   isElementChecked,
 } from "./visual_utils"
@@ -577,51 +576,27 @@ test.describe("Spoilers", () => {
     })
   }
 
-  test("Tapping spoiler twice re-hides it on mobile", async ({ page }) => {
-    test.skip(isDesktopViewport(page), "Mobile-only test")
-
+  test("Clicking spoiler twice re-hides it", async ({ page }) => {
     const spoiler = page.locator(".spoiler-container").first()
     await spoiler.scrollIntoViewIfNeeded()
     await expect(spoiler).toBeVisible()
 
     const initialScreenshot = await spoiler.screenshot()
 
-    // Tap to reveal
+    // Click to reveal
     await spoiler.click()
     await expect(spoiler).toHaveClass(/revealed/)
 
     const revealedScreenshot = await spoiler.screenshot()
     expect(revealedScreenshot).not.toEqual(initialScreenshot)
 
-    // Tap again to re-hide
+    // Click again to re-hide
     await spoiler.click()
     await expect(spoiler).not.toHaveClass(/revealed/)
 
-    // Visually verify the spoiler is hidden again without tapping elsewhere
+    // Visually verify the spoiler is hidden again
     const rehiddenScreenshot = await spoiler.screenshot()
     expect(rehiddenScreenshot).not.toEqual(revealedScreenshot)
-  })
-
-  test("Hovering over spoiler reveals it (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(!isDesktopViewport(page), "Desktop-only test")
-    // Headless Firefox doesn't reliably apply CSS :hover pseudo-class
-    test.skip(isFirefox(testInfo), "Firefox headless :hover unreliable")
-
-    const spoiler = page.locator(".spoiler-container").first()
-    await spoiler.scrollIntoViewIfNeeded()
-    await expect(spoiler).toBeVisible()
-
-    const initialScreenshot = await spoiler.screenshot()
-
-    await spoiler.hover()
-    const revealedScreenshot = await spoiler.screenshot()
-    expect(revealedScreenshot).not.toEqual(initialScreenshot)
-
-    await takeRegressionScreenshot(page, testInfo, "spoiler-hover-reveal", {
-      elementToScreenshot: spoiler,
-      disableHover: false,
-      preserveSiblings: true,
-    })
   })
 })
 
@@ -1065,6 +1040,46 @@ test.describe("Checkboxes", () => {
         expect(checkboxState).toBe(savedState)
       })
     }
+  })
+})
+
+test.describe("Scroll indicators", () => {
+  test("Footnote table shows right fade when overflowing", async ({ page }) => {
+    const footnoteTableContainer = page
+      .locator('li[id^="user-content-fn-"] .table-container')
+      .first()
+    await footnoteTableContainer.scrollIntoViewIfNeeded()
+
+    // Only assert if the table actually overflows (guaranteed on mobile, likely on all viewports)
+    const overflows = await footnoteTableContainer.evaluate((el) => el.scrollWidth > el.clientWidth)
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!overflows) return
+
+    const scrollIndicator = footnoteTableContainer.locator("..")
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+  })
+
+  test("Left fade appears after scrolling a wide element right", async ({ page }) => {
+    // Target the scroll-indicator wrapping the wide Maxwell's equations
+    const scrollIndicator = page.locator(".scroll-indicator").filter({ hasText: "∇" }).first()
+    const scrollable = scrollIndicator.locator(".katex-display")
+    await scrollable.scrollIntoViewIfNeeded()
+
+    // Scroll to the middle of the element
+    await scrollable.evaluate((el) => {
+      el.scrollLeft = Math.floor((el.scrollWidth - el.clientWidth) / 2)
+    })
+
+    await expect(scrollIndicator).toHaveClass(/can-scroll-left/)
+    await expect(scrollIndicator).toHaveClass(/can-scroll-right/)
+
+    // Verify the ::before pseudo-element reaches full opacity after transition
+    await expect(async () => {
+      const beforeOpacity = await scrollIndicator.evaluate((el) => {
+        return window.getComputedStyle(el, "::before").opacity
+      })
+      expect(beforeOpacity).toBe("1")
+    }).toPass()
   })
 })
 

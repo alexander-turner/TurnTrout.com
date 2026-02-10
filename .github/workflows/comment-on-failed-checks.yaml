@@ -4,17 +4,12 @@ on:
   workflow_run:
     workflows:
       - "Node tests"
-      - "JavaScript linting"
       - "Python linting"
       - "Python tests"
       - "Playwright Tests"
       - "Visual Testing"
-      - "Spellcheck"
-      - "Vale prose linting"
-      - "Stylelint SCSS"
-      - "Source file checks"
-      - "Built site checks"
-      - "Link checker"
+      - "Lint and validate"
+      - "Site build checks"
       - "Lighthouse Testing"
       - "Deploy to Cloudflare"
     types:

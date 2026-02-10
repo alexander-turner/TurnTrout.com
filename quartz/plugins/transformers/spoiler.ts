@@ -1,10 +1,9 @@
-import type { Element, Parent, Root, Text } from "hast"
+import type { Element, Parent, Text } from "hast"
 
 // skipcq: JS-0257
 import { h } from "hastscript"
-import { visit } from "unist-util-visit"
 
-import type { QuartzTransformerPlugin } from "../types"
+import { createElementVisitorPlugin } from "./utils"
 
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
@@ -14,7 +13,7 @@ const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
  * @returns JavaScript code as a string for the onclick handler
  */
 function toggleSpoilerJs(className: string): string {
-  return `if(this.classList.contains('${className}')) { this.classList.remove('${className}'); this.classList.add('force-hidden') } else { this.classList.remove('force-hidden'); this.classList.add('${className}') }`
+  return `this.classList.toggle('${className}')`
 }
 
 /**
@@ -36,7 +35,6 @@ export function createSpoilerNode(content: string | Element[]): Element {
     {
       className: ["spoiler-container"],
       onclick: toggleSpoilerJs("revealed"),
-      onmouseenter: "this.classList.remove('force-hidden')",
     },
     [
       h("span", { className: ["spoiler-overlay"] }),
@@ -128,13 +126,4 @@ export function processParagraph(paragraph: Element): Element | null {
  * interactive spoiler elements. Spoilers are marked with "! " at the start of
  * blockquote paragraphs.
  */
-export const rehypeCustomSpoiler: QuartzTransformerPlugin = () => ({
-  name: "customSpoiler",
-  htmlPlugins() {
-    return [
-      () => (tree: Root) => {
-        visit(tree, "element", modifyNode)
-      },
-    ]
-  },
-})
+export const rehypeCustomSpoiler = createElementVisitorPlugin("customSpoiler", modifyNode)

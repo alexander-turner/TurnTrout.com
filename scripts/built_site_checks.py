@@ -177,6 +177,7 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     # Strip zero-width spaces and other invisible characters
     text = text.replace("\u200b", "")  # zero-width space
     text = text.replace("\ufeff", "")  # zero-width no-break space
+    text = text.replace("\u2060", "")  # word joiner
     return text.strip()
 
 
@@ -1159,49 +1160,40 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
     ]
 
 
-def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
+def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all img.favicon and svg.favicon elements are direct children of
-    span elements.
+    Check that all favicons are preceded by a word joiner span element.
+
+    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
+    the favicon from orphaning onto a new line. Every favicon should have this
+    span as its immediately preceding sibling, unless it's inside a
+    .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons that are not direct
-         children of span elements.
+        list of strings describing favicons missing word joiner spans.
     """
-    problematic_favicons: list[str] = []
+    issues: list[str] = []
 
-    favicons_to_check = _get_favicons_to_check(soup)
+    for favicon in _get_favicons_to_check(soup):
+        prev_sibling = favicon.previous_sibling
+        if isinstance(
+            prev_sibling, Tag
+        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            continue
 
-    contexts = [
-        (
-            (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
-            if favicon.name == "img"
-            else (
-                favicon.get("data-domain", "unknown domain"),
-                "SVG favicon ({ctx})",
-                favicon,
-            )
+        # Identify the favicon for the error message
+        if favicon.name == "img":
+            context = favicon.get("src", "unknown source")
+        else:
+            context = favicon.get("data-domain", "unknown domain")
+
+        _append_to_list(
+            issues,
+            f"Favicon ({context}) missing word-joiner span as "
+            f"previous sibling",
         )
-        for favicon in favicons_to_check
-    ]
 
-    for context, info_template, favicon in contexts:
-        parent = favicon.parent
-        if (
-            not parent
-            or parent.name != "span"
-            or "favicon-span" not in script_utils.get_classes(parent)
-        ):
-            info = (
-                info_template.format(ctx=context)
-                + " is not a direct child of a span.favicon-span."
-            )
-            if parent:
-                info += " Instead, it's a child of "
-                info += f"<{parent.name}>: {parent.get_text()}"
-            problematic_favicons.append(info)
-
-    return problematic_favicons
+    return issues
 
 
 def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
@@ -1573,8 +1565,8 @@ def check_file_for_issues(
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
-        "invalid_favicon_parents": check_favicon_parent_elements(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
+        "missing_word_joiner": check_favicon_word_joiner(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),

@@ -430,9 +430,11 @@ export function renderPage(
 
   const body = (
     <body data-slug={slug}>
-      <a href="#center-content" className="skip-to-content internal same-page-link">
-        Skip to main content
-      </a>
+      <a
+        href="#center-content"
+        className="skip-to-content internal same-page-link"
+        aria-label="Skip to main content"
+      />
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}

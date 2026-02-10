@@ -80,7 +80,7 @@ const searchHTML = (
   <div className="search" id="nav-searchbar">
     <div className="no-select" id="search-icon">
       <svg
-        tabIndex={0}
+        tabIndex={-1}
         aria-labelledby="title desc"
         role="img"
         xmlns="http://www.w3.org/2000/svg"
@@ -188,6 +188,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           type="button"
           className="mobile-only"
           aria-label="Opens menu for key site links."
+          aria-expanded="false"
         >
           <span className="bar" />
           <span className="bar" />

@@ -6,6 +6,15 @@ code[data-theme*=" "] span {
   color: var(--shiki-light);
 }
 
+// Override Shiki github-light colors that fail WCAG AA contrast on the site background
+code[data-theme*=" "] span[style*="--shiki-light:#D73A49"] {
+  --shiki-light: var(--red);
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#E36209"] {
+  --shiki-light: var(--orange);
+}
+
 [data-theme="dark"] code[data-theme*=" "] {
   color: var(--shiki-dark);
 }
