@@ -6,8 +6,10 @@ import copy
 import html
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -1585,6 +1587,7 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
+        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -1843,6 +1846,48 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
         )
 
     return problematic_links
+
+
+_INLINE_FORMATTING_SELECTORS = (
+    "abbr.small-caps",
+    "span.ordinal-num",
+    "sup.ordinal-suffix",
+    "span.fraction",
+    "span.monospace-arrow",
+    "span.right-arrow",
+)
+
+
+_ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
+def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
+    """
+    Check spacing around transform-produced inline elements.
+
+    Catches whitespace-eating bugs from HAST transformers that wrap text in
+    inline elements (e.g. "9combinations" from a missing space before a
+    smallcaps ``<abbr>``).
+
+    Abbreviations allow a trailing "s" for plurals (e.g. "LLMs" renders as
+    ``<abbr>llm</abbr>s``).
+    """
+    issues: list[str] = []
+    for selector in _INLINE_FORMATTING_SELECTORS:
+        following_chars = (
+            _ABBR_FOLLOWING_CHARS
+            if selector == "abbr.small-caps"
+            else ALLOWED_ELT_FOLLOWING_CHARS
+        )
+        for element in _tags_only(soup.select(selector)):
+            issues.extend(
+                _check_element_spacing(
+                    element,
+                    ALLOWED_ELT_PRECEDING_CHARS,
+                    following_chars,
+                )
+            )
+    return issues
 
 
 # Whitelisted emphasis patterns that should be ignored
@@ -2181,6 +2226,225 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
+_SKIP_PARENT_CLASSES = (
+    "sequence-links",
+    "page-listing",
+    "authors",
+    "admonition-metadata",
+    "backlinks",
+    "transclude",
+    "tag-container",
+    "all-tags",
+)
+
+
+def _normalize_smallcaps(el_copy: Tag) -> None:
+    """
+    Replace ``<abbr class="small-caps">`` with its original text.
+
+    Each smallcaps ``<abbr>`` carries a ``data-original-text``
+    attribute holding the pre-transform text (e.g. ``ReLU``,
+    ``14B``).  This function substitutes the element with that
+    original text so the spellchecker sees source-faithful tokens.
+    """
+    for abbr in el_copy.select("abbr.small-caps"):
+        original = abbr.get("data-original-text")
+        if original:
+            abbr.replace_with(NavigableString(str(original)))
+        else:
+            # Fallback for legacy HTML without the attribute
+            abbr.string = abbr.get_text().upper()
+
+
+def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract flattened visible text from ``<p>`` elements.
+
+    Strips code, KaTeX, script, and style content, replaces
+    smallcaps abbreviation elements with their original text
+    (via ``data-original-text``), and inserts spaces around
+    ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
+    for each paragraph.
+    """
+    paragraphs: list[str] = []
+    # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
+    for article in _tags_only(soup.find_all("article")):
+        for element in _tags_only(article.find_all("p")):
+            if (
+                should_skip(element)
+                or element.find_parent(["nav", "footer", "header"])
+                or any(
+                    element.find_parent(class_=cls)
+                    for cls in _SKIP_PARENT_CLASSES
+                )
+                or element.find_parent(id="content-meta")
+                or "page-listing-title" in script_utils.get_classes(element)
+            ):
+                continue
+
+            # Work on a copy to avoid mutating the original soup
+            el_copy = copy.copy(element)
+
+            _normalize_smallcaps(el_copy)
+
+            # Fix inline element word boundaries:
+            # - <br> → space (prevents "state<br>while" → "statewhile")
+            # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
+            # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
+            for br in el_copy.find_all("br"):
+                br.replace_with(" ")
+            for sub in el_copy.find_all("sub"):
+                sub.insert_before(" ")
+            for sup in el_copy.find_all("sup"):
+                sup.unwrap()
+
+            # Remove footnote ref links to avoid "word1" concatenation
+            for link in el_copy.find_all("a", id=True):
+                link_id = link.get("id", "")
+                if isinstance(link_id, str) and link_id.startswith(
+                    "user-content-fnref-"
+                ):
+                    parent = link.parent
+                    if isinstance(parent, Tag) and parent.name == "sup":
+                        parent.decompose()
+                    else:
+                        link.decompose()
+
+            text = script_utils.get_non_code_text(el_copy).strip()
+            # Normalize smart quotes to ASCII so spellchecker treats
+            # contractions like "I've" as single words instead of "I"+"ve"
+            text = text.replace("\u2019", "'").replace("\u2018", "'")
+            if text:
+                paragraphs.append(text)
+    return paragraphs
+
+
+def _write_paragraphs_to_tempfile(
+    paragraph_map: dict[str, list[str]],
+) -> tuple[Path, dict[int, str]]:
+    """Write paragraph texts to a temp file and return path + line mapping."""
+    line_to_source: dict[int, str] = {}
+    line_num = 1
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-rendered-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp:
+        for file_path, paragraphs in paragraph_map.items():
+            for para in paragraphs:
+                tmp.write(f"{para}\n")
+                line_to_source[line_num] = file_path
+                line_num += 1
+        return Path(tmp.name), line_to_source
+
+
+def _build_case_insensitive_wordlist(wordlist: Path) -> Path | None:
+    """
+    Create a temp wordlist with case variants of every entry.
+
+    Adds lowercased, uppercased, and first-letter-capitalized forms
+    so that smallcaps-lowered text (``relu`` from ``ReLU``) and
+    sentence-start capitalized forms (``Conv`` from ``conv``) both
+    match.  Returns the temp file path, or *None* if *wordlist*
+    doesn't exist.
+    """
+    if not wordlist.exists():
+        return None
+    original_words = wordlist.read_text(encoding="utf-8").splitlines()
+    lowered = {w.lower() for w in original_words if w}
+    uppered = {w.upper() for w in original_words if w}
+    # First-letter-capitalized covers sentence-start forms (e.g.
+    # ``conv`` → ``Conv``, ``llms`` → ``Llms``).
+    cap_first = {w[0].upper() + w[1:] for w in lowered if w}
+    all_words = sorted(set(original_words) | lowered | uppered | cap_first)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-wordlist-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp_wl:
+        tmp_wl.write("\n".join(all_words) + "\n")
+        return Path(tmp_wl.name)
+
+
+def _spellcheck_flattened_paragraphs(
+    paragraph_map: dict[str, list[str]],
+) -> list[str]:
+    """
+    Run ``spellchecker-cli`` on flattened paragraph text.
+
+    Writes all paragraphs to a temp ``.txt`` file (one per line) and
+    invokes the same spellchecker used for source markdown.  Returns a
+    list of human-readable issue strings.
+
+    Args:
+        paragraph_map: Mapping from HTML file path to list of paragraph texts.
+    """
+    if not paragraph_map:
+        return []
+
+    pnpm = shutil.which("pnpm")
+    if pnpm is None:
+        return ["pnpm not found — skipping rendered-text spellcheck"]
+
+    wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
+    tmp_wordlist = _build_case_insensitive_wordlist(wordlist)
+    issues: list[str] = []
+
+    try:
+        dict_args = (
+            ["--dictionaries", str(tmp_wordlist)]
+            if tmp_wordlist is not None
+            else []
+        )
+        result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
+            [
+                pnpm,
+                "exec",
+                "spellchecker",
+                "--no-suggestions",
+                "--quiet",
+                "--files",
+                str(tmp_path),
+                "--plugins",
+                "spell",
+                *dict_args,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(_GIT_ROOT),
+        )
+
+        if result.returncode != 0 and result.stdout:
+            for line in result.stdout.splitlines():
+                line = line.strip()
+                if not line or "warning" not in line:
+                    continue
+                # Try to extract line number and prepend source file
+                # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
+                match = re.match(r".*?(\d+):\d+-\d+:\d+", line)
+                if match:
+                    ln = int(match.group(1))
+                    source = line_to_source.get(ln, "unknown")
+                    issues.append(f"[{source}] {line}")
+                else:
+                    issues.append(line)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+        if tmp_wordlist is not None:
+            tmp_wordlist.unlink(missing_ok=True)
+
+    return issues
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2193,6 +2457,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    paragraph_map: dict[str, list[str]] = {}
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2232,10 +2497,33 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 file_path, public_dir, citation_to_files
             )
 
+            # Collect flattened paragraph text for spellcheck
+            # Skip test page (contains Lorem ipsum and other test strings)
+            if Path(file).stem != "test-page":
+                # skipcq: PTC-W6004
+                with open(file_path, encoding="utf-8") as f:
+                    soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+                if not script_utils.is_redirect(
+                    soup_for_paras
+                ) and not soup_for_paras.find("div", class_="page-listing"):
+                    paras = _extract_flat_paragraph_texts(soup_for_paras)
+                    if paras:
+                        rel = str(file_path.relative_to(public_dir))
+                        paragraph_map[rel] = paras
+
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
     if citation_issues:
         _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
+    # Spellcheck flattened paragraph text across all pages
+    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
+    if spelling_issues:
+        _print_issues(
+            public_dir,
+            {"rendered_text_spelling": spelling_issues},
+        )
         issues_found_in_html = True
 
     return issues_found_in_html

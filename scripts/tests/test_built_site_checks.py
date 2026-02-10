@@ -2530,6 +2530,324 @@ def test_check_link_spacing(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
+        # The original bug: "9combinations" from transform eating whitespace
+        (
+            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            ["Missing space before: 9<abbr>Combinations</abbr>"],
+        ),
+        # Properly spaced smallcaps
+        (
+            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            [],
+        ),
+        # Missing space after smallcaps
+        (
+            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket</p>',
+            ["Missing space after: <abbr>Nasa</abbr>launched a rocket"],
+        ),
+        # Plural abbreviation: "LLMs" → <abbr>llm</abbr>s
+        (
+            '<p>Using <abbr class="small-caps">llm</abbr>s for research.</p>',
+            [],
+        ),
+        # Allowed punctuation after smallcaps
+        *[
+            (
+                f'<p>The <abbr class="small-caps">Nasa</abbr>{char}s</p>',
+                [],
+            )
+            for char in ("\u2019", ".", ",", "!", "?", ")", "]", ";", ":")
+        ],
+        # Allowed chars before smallcaps
+        *[
+            (
+                f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
+                [],
+            )
+            for char in ("(", "[", " ", "-", "\u2014")
+        ],
+        # Properly spaced ordinal (realistic transform output)
+        (
+            '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
+            [],
+        ),
+        # Regular abbr/span without formatting classes — not checked
+        (
+            "<p>9<abbr>combinations</abbr> test</p>",
+            [],
+        ),
+    ],
+)
+def test_check_inline_formatting_spacing(html, expected):
+    """Test spacing checks around transform-produced inline elements."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_formatting_spacing(soup)
+    assert sorted(result) == sorted(expected)
+
+
+def test_extract_flat_paragraph_texts():
+    """Test flattened paragraph text extraction with data-original-text."""
+    html = """<article>
+    <p>9<abbr class="small-caps" data-original-text="9Combinations">9combinations</abbr> of strategies.</p>
+    <p><code>skip_this</code> Normal text.</p>
+    <p class="no-formatting">Skip this whole element.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    # data-original-text restores the source form
+    assert "9Combinations of strategies." in result[0]
+    assert "Normal text." in result[1]
+    assert "skip_this" not in result[1]
+
+
+def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr():
+    """Abbreviations with data-original-text are replaced with original text."""
+    html = """<article>
+    <p><abbr class="small-caps" data-original-text="RELU">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function." in result[0]
+
+
+def test_extract_flat_paragraph_texts_partial_word_abbr():
+    """Embedded abbreviations with data-original-text restore the original."""
+    html = """<article>
+    <p>3Blue<abbr class="small-caps" data-original-text="1Brown">1brown</abbr>'s videos</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "3Blue1Brown's" in result[0]
+
+
+def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling():
+    """Embedded abbreviation with data-original-text restores original
+    casing."""
+    html = """<article>
+    <p>Qwen-<abbr class="small-caps" data-original-text="14B">14b</abbr>-Chat is a model.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "Qwen-14B-Chat" in result[0]
+
+
+def test_extract_flat_paragraph_texts_fallback_without_data_attr():
+    """Without data-original-text, falls back to uppercasing."""
+    html = """<article>
+    <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function." in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_non_article():
+    """Paragraphs outside <article> are skipped entirely."""
+    html = """
+    <p>Outside article.</p>
+    <article><p>Inside article.</p></article>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Inside article." in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_nav_footer():
+    """Paragraphs inside nav/footer/header/sequence-links/page-listing and other
+    metadata containers are skipped."""
+    html = """<article>
+    <nav><p>PreviousLessons</p></nav>
+    <footer><p>2025Apply</p></footer>
+    <header><p>Site header text</p></header>
+    <div class="sequence-links"><p><em>Previous</em>Reward is enough</p></div>
+    <div class="page-listing"><p>ListingTitle tags dates</p></div>
+    <div class="authors"><p>AlexJanuary 2025</p></div>
+    <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
+    <div class="backlinks"><p>BacklinkTitle</p></div>
+    <span class="transclude"><p>Transcluded listing</p></span>
+    <div class="tag-container"><p>Tag text</p></div>
+    <div class="all-tags"><p>All tags</p></div>
+    <div id="content-meta"><p>Metadata</p></div>
+    <p class="page-listing-title">Page title</p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Normal paragraph." in result[0]
+
+
+def test_extract_flat_paragraph_texts_spaces_sub_br():
+    """Subscript gets space, <br> gets space, <sup> is unwrapped."""
+    html = """<article>
+    <p>bounds<sub>reasonable</sub> and state<br>while and 2<sup>nd</sup></p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "bounds reasonable" in result[0]
+    assert "state while" in result[0]
+    # <sup> is unwrapped (not spaced), preserving "2nd" as one word
+    assert "2nd" in result[0]
+
+
+def test_extract_flat_paragraph_texts_strips_footnote_refs():
+    """Footnote reference links are removed to avoid 'word1' concatenation."""
+    html = """<article>
+    <p>A couple<sup><a id="user-content-fnref-1" href="#fn1">1</a></sup> of things.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "couple" in result[0]
+    assert "1" not in result[0]
+
+
+def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
+    """Footnote ref link without <sup> parent is also removed."""
+    html = """<article>
+    <p>A word<a id="user-content-fnref-2" href="#fn2">2</a> here.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "2" not in result[0]
+    assert "word" in result[0]
+
+
+def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
+    """Smart quotes are replaced with ASCII apostrophes so contractions
+    like "I\u2019ve" are kept as single words for the spellchecker."""
+    html = """<article>
+    <p>I\u2019ve found the opposite.</p>
+    <p>You\u2019re not \u2018wrong\u2019 about this.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert "I've" in result[0]
+    assert "You're" in result[1]
+    # No Unicode smart quotes remain
+    assert "\u2019" not in result[0]
+    assert "\u2018" not in result[1]
+    assert "\u2019" not in result[1]
+
+
+def test_build_case_insensitive_wordlist(tmp_path):
+    """Temp wordlist includes lowercased and uppercased variants."""
+    wordlist = tmp_path / "wordlist.txt"
+    wordlist.write_text("ReLU\nGPT-4o\nalready-lower\n")
+    result = built_site_checks._build_case_insensitive_wordlist(wordlist)
+    assert result is not None
+    try:
+        words = result.read_text(encoding="utf-8").splitlines()
+        assert "ReLU" in words
+        assert "relu" in words
+        assert "RELU" in words
+        assert "GPT-4o" in words
+        assert "gpt-4o" in words
+        assert "GPT-4O" in words
+        assert "already-lower" in words
+        assert "ALREADY-LOWER" in words
+    finally:
+        result.unlink(missing_ok=True)
+
+
+def test_build_case_insensitive_wordlist_missing(tmp_path):
+    """Returns None when wordlist doesn't exist."""
+    assert (
+        built_site_checks._build_case_insensitive_wordlist(
+            tmp_path / "missing.txt"
+        )
+        is None
+    )
+
+
+def test_spellcheck_flattened_paragraphs_empty():
+    """Empty input returns empty output."""
+    assert built_site_checks._spellcheck_flattened_paragraphs({}) == []
+
+
+def test_spellcheck_flattened_paragraphs_no_pnpm():
+    """Returns a skip message when pnpm is not found."""
+    with patch("shutil.which", return_value=None):
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"test.html": ["Hello world."]}
+        )
+    assert len(result) == 1
+    assert "pnpm not found" in result[0]
+
+
+def test_spellcheck_flattened_paragraphs_clean(tmp_path, monkeypatch):
+    """No issues returned when spellchecker exits cleanly."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+    wordlist.write_text("hello\n")
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["Hello world."]}
+        )
+    assert result == []
+
+
+def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
+    """Misspelled words produce issues with source file annotations."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+    wordlist.write_text("hello\n")
+
+    # spellchecker-cli output format: "- LINE:COL-LINE:COL  warning  `word` ..."
+    stdout = (
+        "Checking files...\n"
+        "    - 1:7-1:12  warning  `wrold` is misspelt  retext-spell\n"
+    )
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout=stdout, stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["Hello wrold."]}
+        )
+    assert len(result) == 1
+    assert "[page.html]" in result[0]
+    assert "wrold" in result[0]
+
+
+def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
+    """Warning lines without line numbers are still captured."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout="some warning text", stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["test"]}
+        )
+    assert len(result) == 1
+    assert "some warning text" in result[0]
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
         # Basic consecutive periods
         (
             "<p>Test..</p>",
