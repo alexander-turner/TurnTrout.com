@@ -539,6 +539,8 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     return
   }
 
-  // Append word joiner + back arrow to prevent line-break orphaning
-  lastParagraph.children.push(createWordJoinerSpan(), backArrow)
+  // Wrap back arrow inside word-joiner span to prevent line-break orphaning
+  const wordJoiner = createWordJoinerSpan()
+  wordJoiner.children.push(backArrow)
+  lastParagraph.children.push(wordJoiner)
 }
