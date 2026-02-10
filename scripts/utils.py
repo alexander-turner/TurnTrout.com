@@ -20,6 +20,7 @@ RIGHT_DOUBLE_QUOTE = "\u201d"
 ELLIPSIS = "\u2026"
 ZERO_WIDTH_SPACE = "\u200b"
 ZERO_WIDTH_NBSP = "\ufeff"
+WORD_JOINER = "\u2060"
 
 
 def load_shared_constants() -> dict:  # pragma: no cover

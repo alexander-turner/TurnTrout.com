@@ -20,9 +20,7 @@ af-num-comments-on-upload: 0
 title: How should TurnTrout handle his DeepMind equity situation?
 lw-latest-edit: 2023-10-26T00:56:40.898000Z
 lw-is-linkpost: "false"
-authors:
-  - Oliver Habryka
-  - Alex Turner
+authors: Oliver Habryka and Alex Turner
 tags:
   - practical
   - deepmind
@@ -62,12 +60,8 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
 
-<dd>
-<ol>
-<li>I didn’t realize how substantially equity contributes to the compensation package, and</li>
-<li>it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.</li>
-</ol>
-</dd>
+  1. I didn't realize how substantially equity contributes to the compensation package, and
+  2. it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.
 
 `habryka`
 

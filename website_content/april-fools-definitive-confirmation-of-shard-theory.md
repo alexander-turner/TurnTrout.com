@@ -68,13 +68,24 @@ I've concluded the following:
 
 I then had GPT-4 identify some of the 46 shards:
 
-<dl> <dt>The Procrastination Shard</dt><dd>This shard makes the AI model continually suggest that users read just one more LessWrong post or engage in another lengthy comment thread before taking any real-world action.</dd>
-<dt>Hindsight Bias Shard</dt> <dd>This shard leads the model to believe it knew the answer all along after learning new information, making it appear much smarter in retrospect.</dd>
-<dt>The "Armchair Philosopher" Shard</dt><dd>With this shard, the AI can generate lengthy and convoluted philosophical arguments on any topic, often without any direct experience or understanding of the subject matter.</dd>
-<dt>Argumentative Shard</dt><dd>A shard that compels the model to challenge every statement and belief, regardless of how trivial or uncontroversial it may be.</dd>
-<dt>Trolley Problem Shard</dt><dd>This shard makes the model obsess over hypothetical moral dilemmas and ethical conundrums, while ignoring more practical and immediate concerns.</dd>
-<dt>The Existential Dread Shard</dt><dd>This shard causes the AI to frequently bring up the potential risks of AI alignment and existential catastrophes, even when discussing unrelated topics.</dd>
-</dl>
+The Procrastination Shard
+: This shard makes the AI model continually suggest that users read just one more LessWrong post or engage in another lengthy comment thread before taking any real-world action.
+
+Hindsight Bias Shard
+: This shard leads the model to believe it knew the answer all along after learning new information, making it appear much smarter in retrospect.
+
+The "Armchair Philosopher" Shard
+: With this shard, the AI can generate lengthy and convoluted philosophical arguments on any topic, often without any direct experience or understanding of the subject matter.
+
+Argumentative Shard
+: A shard that compels the model to challenge every statement and belief, regardless of how trivial or uncontroversial it may be.
+
+Trolley Problem Shard
+: This shard makes the model obsess over hypothetical moral dilemmas and ethical conundrums, while ignoring more practical and immediate concerns.
+
+The Existential Dread Shard
+: This shard causes the AI to frequently bring up the potential risks of AI alignment and existential catastrophes, even when discussing unrelated topics.
+
 I'm pleasantly surprised that <code>gpt-neox-20b</code> shares values which I (and other LessWrong users) have historically demonstrated. The fact that <code>gpt-neox-20b</code> and LessWrong share many shards makes me more optimistic about alignment overall, since it implies convergence in the values of real-world trained systems.
 
 (As a corollary, this demonstrates that LLMs can make serious alignment progress.)

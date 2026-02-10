@@ -1,5 +1,3 @@
-// NOTE: Docstrings generated via AI; take with a grain of salt
-
 import { type Element, type ElementContent, type Root } from "hast"
 import { render } from "preact-render-to-string"
 // skipcq: JS-W1028
@@ -432,9 +430,11 @@ export function renderPage(
 
   const body = (
     <body data-slug={slug}>
-      <a href="#center-content" className="skip-to-content">
-        Skip to main content
-      </a>
+      <a
+        href="#center-content"
+        className="skip-to-content internal same-page-link"
+        aria-label="Skip to main content"
+      />
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}

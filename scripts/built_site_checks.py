@@ -34,6 +34,7 @@ from scripts.utils import (
     NBSP,
     RIGHT_DOUBLE_QUOTE,
     RIGHT_SINGLE_QUOTE,
+    WORD_JOINER,
     ZERO_WIDTH_NBSP,
     ZERO_WIDTH_SPACE,
 )
@@ -144,6 +145,51 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
+PRESENTATIONAL_TAGS = ("span", "br")
+
+
+def _should_skip_paragraph(p: Tag) -> bool:
+    """Check if a paragraph should be skipped for punctuation checking."""
+    classes = script_utils.get_classes(p)
+    if (
+        "subtitle" in classes
+        or "page-listing-title" in classes
+        or p.find(class_="transclude")
+    ):
+        return True
+
+    # Skip paragraphs that only contain inline styling elements
+    # (e.g. typography examples like <span class="h2">Header 2</span>)
+    return all(
+        (isinstance(c, Tag) and c.name in PRESENTATIONAL_TAGS)
+        or (isinstance(c, NavigableString) and not c.strip())
+        for c in p.children
+    )
+
+
+def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
+    """
+    Get cleaned text from a paragraph for punctuation checking.
+
+    Removes footnote references, trims special characters, and strips invisible
+    characters.
+    """
+    p_copy = copy.copy(p)
+    for link in p_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            link.decompose()
+
+    text = p_copy.get_text(strip=True).rstrip(
+        TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
+    )
+    # Strip zero-width spaces and other invisible characters
+    text = text.replace(ZERO_WIDTH_SPACE, "")
+    text = text.replace(ZERO_WIDTH_NBSP, "")
+    text = text.replace(WORD_JOINER, "")
+    return text.strip()
 
 
 def check_top_level_paragraphs_end_with_punctuation(
@@ -156,35 +202,10 @@ def check_top_level_paragraphs_end_with_punctuation(
     for article in soup.find_all("article"):
         paragraphs = article.find_all("p", recursive=False)
         for p in paragraphs:
-            if not isinstance(p, Tag):
-                continue
-            classes = script_utils.get_classes(p)
-            if (
-                "subtitle" in classes
-                or "page-listing-title" in classes
-                or p.find(class_="transclude")
-            ):
+            if not isinstance(p, Tag) or _should_skip_paragraph(p):
                 continue
 
-            # Remove footnote reference links
-            p_copy = copy.copy(p)
-            for link in p_copy.find_all("a", id=True):
-                link_id = link.get("id", "")
-                if isinstance(link_id, str) and link_id.startswith(
-                    "user-content-fnref-"
-                ):
-                    link.decompose()
-
-            text = p_copy.get_text(strip=True).rstrip(
-                TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
-            )
-            if not text:
-                continue
-
-            # Strip zero-width spaces and other invisible characters
-            text = text.replace(ZERO_WIDTH_SPACE, "")
-            text = text.replace(ZERO_WIDTH_NBSP, "")
-            text = text.strip()
+            text = _get_paragraph_text_for_punctuation_check(p)
             if not text:
                 continue
 
@@ -696,17 +717,47 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
         width = img.get("width")
         height = img.get("height")
 
-        if width and height:
-            continue
+        if not width or not height:
+            src = img.get("src", "unknown")
+            # Truncate long URLs for readability
+            src_str = str(src)
+            if len(src_str) > 80:
+                src_str = src_str[:40] + "..." + src_str[-37:]
 
-        missing = []
-        if not width:
-            missing.append("width")
-        if not height:
-            missing.append("height")
+            missing = []
+            if not width:
+                missing.append("width")
+            if not height:
+                missing.append("height")
 
-        src = img.get("src")
-        issues.append(f"<img> missing {', '.join(missing)}: {src}")
+            issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
+def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
+    """
+    Check for class names that contain commas or start with dots.
+
+    These indicate CSS selector syntax was incorrectly used as HTML class
+    attribute values (e.g. ``class="float-right,.bar"`` instead of
+    ``class="float-right bar"``).
+
+    Returns:
+        list of strings describing invalid class names
+    """
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(class_=True)):
+        classes = script_utils.get_classes(element)
+        for cls in classes:
+            if "," in cls or cls.startswith("."):
+                tag_preview = str(element)[:120]
+                _append_to_list(
+                    issues,
+                    f"Invalid class name '{cls}' on <{element.name}>:"
+                    f" {tag_preview}",
+                )
 
     return issues
 
@@ -1131,49 +1182,40 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
     ]
 
 
-def check_favicon_parent_elements(soup: BeautifulSoup) -> list[str]:
+def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all img.favicon and svg.favicon elements are direct children of
-    span elements.
+    Check that all favicons are preceded by a word joiner span element.
+
+    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
+    the favicon from orphaning onto a new line. Every favicon should have this
+    span as its immediately preceding sibling, unless it's inside a
+    .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons that are not direct
-         children of span elements.
+        list of strings describing favicons missing word joiner spans.
     """
-    problematic_favicons: list[str] = []
+    issues: list[str] = []
 
-    favicons_to_check = _get_favicons_to_check(soup)
+    for favicon in _get_favicons_to_check(soup):
+        prev_sibling = favicon.previous_sibling
+        if isinstance(
+            prev_sibling, Tag
+        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            continue
 
-    contexts = [
-        (
-            (favicon.get("src", "unknown source"), "Favicon ({ctx})", favicon)
-            if favicon.name == "img"
-            else (
-                favicon.get("data-domain", "unknown domain"),
-                "SVG favicon ({ctx})",
-                favicon,
-            )
+        # Identify the favicon for the error message
+        if favicon.name == "img":
+            context = favicon.get("src", "unknown source")
+        else:
+            context = favicon.get("data-domain", "unknown domain")
+
+        _append_to_list(
+            issues,
+            f"Favicon ({context}) missing word-joiner span as "
+            f"previous sibling",
         )
-        for favicon in favicons_to_check
-    ]
 
-    for context, info_template, favicon in contexts:
-        parent = favicon.parent
-        if (
-            not parent
-            or parent.name != "span"
-            or "favicon-span" not in script_utils.get_classes(parent)
-        ):
-            info = (
-                info_template.format(ctx=context)
-                + " is not a direct child of a span.favicon-span."
-            )
-            if parent:
-                info += " Instead, it's a child of "
-                info += f"<{parent.name}>: {parent.get_text()}"
-            problematic_favicons.append(info)
-
-    return problematic_favicons
+    return issues
 
 
 def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
@@ -1547,8 +1589,8 @@ def check_file_for_issues(
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
-        "invalid_favicon_parents": check_favicon_parent_elements(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
+        "missing_word_joiner": check_favicon_word_joiner(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
@@ -1572,6 +1614,7 @@ def check_file_for_issues(
             soup
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
+        "invalid_class_names": check_invalid_class_names(soup),
     }
 
     if should_check_fonts:

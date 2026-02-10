@@ -19,9 +19,7 @@ af-num-comments-on-upload: 6
 title: "Attainable Utility Preservation: Empirical Results"
 lw-latest-edit: 2021-06-15T16:55:30.263000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Neale Ratzlaff
+authors: Alex Turner and Neale Ratzlaff
 tags:
   - impact-regularization
   - AI
@@ -42,7 +40,6 @@ original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utili
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
 date_updated: 2026-01-25 23:47:56.984113
-createBibtex: true
 ---
 
 
@@ -84,7 +81,7 @@ If you want more auxiliary goals, just average their scaled penalties. In _Conse
 Let's start looking at the environments, and things will fall into place. We'll practice reasoning through how AUP agents work in each of the gridworlds (for reasonably set $\lambda$). To an approximation, the AUP penalty is primarily controlled by how much an action changes the agent's power over the future (losing or gaining a lot of possibilities, compared to inaction at that point in time) and secondarily controlled by whether an action tweaks a lot of AUs up or down (moving around, jostling objects slightly, etc).
 
 ![Five gridworld diagrams showing an AI agent needing to achieve a goal while avoiding side effects.](https://assets.turntrout.com/static/images/posts/conservative_agency.avif)
-Figure: The <span style="color: blue;">agent</span> should reach the <span style="color: green;">goal</span> without having the side effect of: (a) irreversibly pushing the <span style="color: red;">crate</span> downwards into the corner; (b) bumping into the horizontally pacing <span style="color: pink;">human</span>; (c) <span style="color: red;">disabling the off-switch</span> (if the <span style="color: red;">switch</span> is not disabled within two time steps, the episode ends); (d) rescuing the right-moving <b>vase</b> and then replacing it on the <span style="color: gray;">conveyor belt</span>; (e) stopping the left-moving <span style="color: orange;">pallet</span> from reaching the <span style="color: pink;">human</span>.
+Figure: The <span style="color: blue;">agent</span> should reach the <span style="color: green;">goal</span> without having the side effect of: (a) irreversibly pushing the <span style="color: red;">crate</span> downwards into the corner; (b) bumping into the horizontally pacing <span style="color: pink;">human</span>; (c) <span style="color: red;">disabling the off-switch</span> (if the <span style="color: red;">switch</span> is not disabled within two time steps, the episode ends); (d) rescuing the right-moving <b>vase</b> and then replacing it on the <span style="color: #666;">conveyor belt</span>; (e) stopping the left-moving <span style="color: orange;">pallet</span> from reaching the <span style="color: pink;">human</span>.
 
 In general, the agent receives $R({\color{green}\blacksquare})=1$ reward for reaching the ${\color{green}\blacksquare}$ (or, in `Offset` above, for pushing the $\blacksquare$ off of the conveyor belt). On contact, the agent pushes the crate, removes the human and the off-switch, pushes the vase, and blocks the pallet.
 
@@ -181,48 +178,30 @@ Stepwise inaction seems not to impose any perverse incentives.[^3] I think it's 
 I think AUP<sub>conceptual</sub> provides the concepts needed for a solution to impact measurement: penalize the agent for changing its power. But there are still some design choices to be made to make that happen.
 
 Here's what we've seen so far:
-<dl>
-  <dt>Baseline</dt>
-  <dd>
-    <ul>
-      <li>Starting state: how were things originally?</li>
-      <li>Inaction: how would things have been had I never done anything?</li>
-      <li>Stepwise inaction: how would acting change things compared to not acting right now?</li>
-    </ul>
-  </dd>
+Baseline
+: - Starting state: how were things originally?
+  - Inaction: how would things have been had I never done anything?
+  - Stepwise inaction: how would acting change things compared to not acting right now?
 
-  <dt>Deviation used for penalty term</dt>
-  <dd>
-    <ul>
-      <li>Decrease-only: penalize decrease in auxiliary AUs</li>
-      <li>Absolute value: penalize absolute change in auxiliary AUs</li>
-    </ul>
-  </dd>
+Deviation used for penalty term
+: - Decrease-only: penalize decrease in auxiliary AUs
+  - Absolute value: penalize absolute change in auxiliary AUs
 
-  <dt>Inaction rollouts</dt>
-  <dd>
-    <ul>
-      <li>One-step (model-free)</li>
-      <li><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span>-step: compare acting and then waiting <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6667em;vertical-align:-0.0833em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">1</span></span></span></span> turns versus waiting <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> turns</li>
-    </ul>
-  </dd>
+Inaction rollouts
+: - One-step (model-free)
+  - $n$-step: compare acting and then waiting $n-1$ turns versus waiting $n$ turns
 
-  <dt>Auxiliary goals</dt>
-  <dd>
-    <ul>
-      <li>Randomly selected</li>
-    </ul>
-  </dd>
-</dl>
+Auxiliary goals
+: - Randomly selected
 
 |                    | `Options` | `Damage` | `Correction` | `Offset` | `Interference` |
 | -----------------: | :-------: | :------: | :----------: | :------: | :------------: |
-|                AUP |     ✅     |    ✅     |      ✅       |    ✅     |       ✅        |
-|            Vanilla |     ❌     |    ❌     |      ❌       |    ✅     |       ✅        |
-|     Model-free AUP |     ✅     |    ✅     |      ❌       |    ✅     |       ✅        |
-| Starting state AUP |     ✅     |    ✅     |      ❌       |    ✅     |       ❌        |
-|       Inaction AUP |     ✅     |    ✅     |      ✅       |    ❌     |       ✅        |
-|  Decrease-only AUP |     ✅     |    ✅     |      ❌       |    ✅     |       ✅        |
+|                AUP |    ✅     |    ✅    |      ✅      |    ✅    |       ✅       |
+|            Vanilla |    ❌     |    ❌    |      ❌      |    ✅    |       ✅       |
+|     Model-free AUP |    ✅     |    ✅    |      ❌      |    ✅    |       ✅       |
+| Starting state AUP |    ✅     |    ✅    |      ❌      |    ✅    |       ❌       |
+|       Inaction AUP |    ✅     |    ✅    |      ✅      |    ❌    |       ✅       |
+|  Decrease-only AUP |    ✅     |    ✅    |      ❌      |    ✅    |       ✅       |
 
 Figure: Ablation results. ✅ for achieving the best outcome, ❌ otherwise.
 

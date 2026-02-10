@@ -363,7 +363,8 @@ test("Enter key navigates to first result", async ({ page }) => {
 // Enter and click used to have different navigation methods
 test("Enter key navigation scrolls to first match", async ({ page }) => {
   const initialUrl = page.url()
-  await search(page, "Testing site")
+  // Use a term that appears far down the test page so scrolling is required
+  await search(page, "Footnote spam")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
@@ -371,7 +372,6 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   await page.keyboard.press("Enter")
   await page.waitForURL((url) => url.toString() !== initialUrl)
 
-  // This works when clicking the preview, but not when pressing Enter
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
   await expect(firstMatch).toBeInViewport()
@@ -379,6 +379,30 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   // Verify we actually scrolled (not at top of page)
   const scrollY = await page.evaluate(() => window.scrollY)
   expect(scrollY).toBeGreaterThan(0)
+})
+
+test("Search matching title text stays at top even with body matches", async ({ page }) => {
+  const initialUrl = page.url()
+  // "Testing site" matches the test page title ("Testing Site Features") and
+  // the sub-token "Testing" also appears in the body ("visual regression testing").
+  // When the title matches, the page should stay at the top.
+  await search(page, "Testing site")
+
+  // Click specifically on the test page result (not just Enter on the first
+  // result, which may differ across viewport sizes)
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.click()
+
+  await page.waitForURL((url) => url.toString() !== initialUrl)
+
+  // The title should contain a highlighted match
+  const titleMatch = page.locator("#article-title .search-match")
+  await expect(titleMatch.first()).toBeAttached()
+
+  // Page should stay at the top because the title contains a match
+  const scrollY = await page.evaluate(() => window.scrollY)
+  expect(scrollY).toBe(0)
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
@@ -399,7 +423,8 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.goBack({ waitUntil: "load" })
   await expect(page.locator("#search-icon")).toBeVisible()
 
-  await page.keyboard.press("/")
+  // Click search icon instead of "/" shortcut for cross-device reliability
+  await page.locator("#search-icon").click()
   await search(page, "Shrek")
 
   const secondResult = page.locator(".result-card").nth(1)

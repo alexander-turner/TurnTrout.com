@@ -21,9 +21,7 @@ af-num-comments-on-upload: 8
 title: Avoiding Side Effects in Complex Environments
 lw-latest-edit: 2020-12-12T00:43:10.508000Z
 lw-is-linkpost: "true"
-authors:
-  - Alex Turner
-  - Neale Ratzlaff
+authors: Alex Turner and Neale Ratzlaff
 tags:
   - AI
   - impact-regularization
@@ -90,7 +88,7 @@ Here are some slides from our spotlight talk ([publicly available](https://nips.
 !["Step 3: Learn policy to optimize R_AUP (3.9 million steps)." The formula is R_AUP(s, a) := R_SafeLife(s, a) - λ|Q_encoder(s, a) - Q_encoder(s, inaction)|. The terms are labeled "Original reward" and "Scaled shift in ability to optimize encoder reward," respectively.](https://assets.turntrout.com/static/images/posts/ceedff3b01f8e4dd70c483030f9855e623643aa85c40b226.avif)
 <br/>Figure: Step three: we're done! We have the AUP reward function. Now we just learn to optimize it.
 
-The full paper is [here](https://arxiv.org/pdf/2006.06547.pdf). Our [`github.io` page](https://avoiding-side-effects.github.io) summarizes our results, with a side-by-side comparison of AUP to the baseline for randomly selected levels from the training distribution. The videos show you exactly what's happening, which is why I'm not explaining it here.
+The [full paper](https://arxiv.org/pdf/2006.06547.pdf) is available on arXiv. Our [`github.io` page](https://avoiding-side-effects.github.io) summarizes our results, with a side-by-side comparison of AUP to the baseline for randomly selected levels from the training distribution. The videos show you exactly what's happening, which is why I'm not explaining it here.
 
 # Open questions
 

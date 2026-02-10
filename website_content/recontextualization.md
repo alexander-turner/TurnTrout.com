@@ -7,12 +7,7 @@ tags:
   - specification-gaming
   - mats-program
 description: "Resist specification gaming by generating data with anti-misbehavior prompts, then training on pro-misbehavior prompts."
-authors:
-  - Ariana Azarbal
-  - Victor Gillioz
-  - Alex Cloud
-  - Alex Turner
-createBibtex: true
+authors: Ariana Azarbal* and Victor Gillioz, Alex Cloud, and Alex Turner
 card_image:
 card_image_alt:
 aliases:
@@ -217,6 +212,18 @@ _Recontextualization_ distills good behavior into a context which allows bad beh
 Many researchers try to improve the training signal to better verify whether the AI _really_ did what we wanted. But "training signal quality" is not the only variable that counts. Context matters, too.
 
 # Acknowledgments
+
+```bibtex
+@misc{azarbal2025recontextualization,
+      title={Recontextualization Mitigates Specification Gaming without Modifying the Specification}, 
+      author={Ariana Azarbal and Victor Gillioz and Vladimir Ivanov and Bryce Woodworth and Jacob Drori and Nevan Wichers and Aram Ebtekar and Alex Cloud and Alexander Matt Turner},
+      year={2025},
+      eprint={2512.19027},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2512.19027}, 
+}
+```
 
 We performed this work during MATS 8 on Team Shard under the supervision of Alex Turner and Alex Cloud. **If you're interested in working on projects like this, please** [**apply to work with Team Shard**](https://forms.matsprogram.org/apply-s26) **next summer during MATS 10!**
 

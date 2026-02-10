@@ -5,9 +5,12 @@ import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
+import { render } from "preact-render-to-string"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { renderPostStatistics } from "../../components/ContentMeta"
+import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -18,6 +21,7 @@ import {
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/linkfavicons"
+import { createWordJoinerSpan } from "../transformers/utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
@@ -84,11 +88,17 @@ export const generateTestCountContent = (): ContentGenerator => {
   }
 }
 
+interface GitCountOptions {
+  author?: string
+  grep?: string
+}
+
 // skipcq: JS-D1001
-export async function countGitCommits(author: string): Promise<number> {
-  const output = execSync(`git rev-list --all --count --author="${author}"`, {
-    encoding: "utf-8",
-  })
+export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  let cmd = "git rev-list --all --count"
+  if (options.author) cmd += ` --author="${options.author}"`
+  if (options.grep) cmd += ` --grep="${options.grep}"`
+  const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -138,6 +148,7 @@ export async function countLinesOfCode(): Promise<number> {
 
 export interface RepoStats {
   commitCount: number
+  aiCommitCount: number
   jsTestCount: number
   playwrightTestCount: number
   pytestCount: number
@@ -146,16 +157,17 @@ export interface RepoStats {
 
 // skipcq: JS-D1001
 export async function computeRepoStats(): Promise<RepoStats> {
-  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits("Alex Turner"),
+      countGitCommits({ author: "Alex Turner" }),
+      countGitCommits({ grep: "claude.ai/code/session" }),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
       countLinesOfCode(),
     ])
 
-  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -194,7 +206,43 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [h("span", { className: "favicon-span" }, [faviconElement])]
+    return [createWordJoinerSpan(), faviconElement]
+  }
+}
+
+/**
+ * Generates a metadata admonition ("About this post" box) with dummy data,
+ * using the same component that renders real post metadata.
+ */
+export const generateMetadataAdmonition = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const dummyProps = {
+      cfg: {},
+      fileData: {
+        text: "word ".repeat(1600), // ~8 minutes reading time
+        relativePath: "welcome-to-the-pond.md",
+        frontmatter: {
+          date_published: new Date("2024-10-30"),
+          date_updated: "2024-11-12",
+        },
+      },
+    } as unknown as QuartzComponentProps
+
+    const jsx = renderPostStatistics(dummyProps)
+    // istanbul ignore next
+    if (!jsx) return []
+
+    const html = render(jsx)
+    const root = fromHtml(html, { fragment: true })
+
+    // Strip the post-statistics ID to avoid duplicate IDs on the page
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "post-statistics") {
+        delete node.properties.id
+      }
+    })
+
+    return root.children.filter((c): c is Element => c.type === "element")
   }
 }
 
@@ -342,6 +390,7 @@ const createPopulatorMap = (
 ): Map<string, ContentGenerator> => {
   return new Map([
     // IDs
+    ["populate-metadata-admonition", generateMetadataAdmonition()],
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
@@ -355,6 +404,10 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",

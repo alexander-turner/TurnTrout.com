@@ -7,8 +7,7 @@ tags:
   - instrumental-convergence
   - critique
 description: Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a "fact about reality."
-authors:
-  - Alex Turner
+authors: Alex Turner
 card_image:
 card_image_alt:
 aliases:

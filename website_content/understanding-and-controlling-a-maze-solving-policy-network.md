@@ -19,12 +19,7 @@ af-num-comments-on-upload: 22
 title: Understanding and controlling a maze-solving policy network
 lw-latest-edit: 2023-06-07T01:47:42.456000Z
 lw-is-linkpost: "false"
-authors:
-  - Alex Turner
-  - Peli Grietzer
-  - Ulisse Mini
-  - Monte MacDiarmid
-  - David Udell
+authors: Alex Turner, Peli Grietzer, Ulisse Mini, Monte MacDiarmid, and David Udell
 tags:
   - AI
   - mats-program
@@ -50,7 +45,6 @@ card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2
 description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.
-createBibtex: true
 ---
 
 
@@ -271,7 +265,6 @@ Overall, the first three results line up with our hands-on experience with the n
 To understand the network, we tried various hand-designed model edits. These edits change the forward pass, without any retraining or optimization. To see the effect of a modification, we display the diff between the vector fields:
 
 <figure>
-<div style="display:flex; justify-content: center; ">
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/original_maze_field.avif" alt="The original probability vectors. The mouse seems 'torn' between the cheese and the right side of the maze."/>
 <figcaption>(a) Original probabilities</figcaption>
@@ -283,7 +276,6 @@ To understand the network, we tried various hand-designed model edits. These edi
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/maze_field_diff.avif" alt="The change in the action probability vectors, shown in green. They point away from the cheese."/>
 <figcaption>(c) Steered minus original</figcaption>
-</div>
 </div>
 <figcaption><b>Left:</b> The net probability vectors induced by the unmodified forward passes.  
 <br/><b>Middle:</b> For any steering modification we make to forward passes, we plot the new probability vectors induced by the modified forward passes.  <br/>

@@ -21,12 +21,7 @@ af-num-comments-on-upload: 2
 title: "ActAdd: Steering Language Models without Optimization"
 lw-latest-edit: 2023-11-06T16:33:20.505000Z
 lw-is-linkpost: "true"
-authors:
-  - Alex Turner
-  - Lisa Thiergart
-  - David Udell
-  - Ulisse Mini
-  - Monte MacDiarmid
+authors: Alex Turner, Lisa Thiergart, David Udell, Ulisse Mini, and Monte MacDiarmid
 tags:
   - AI
   - activation-engineering
@@ -41,7 +36,6 @@ skip_import: true
 description: "Activation additions: steering language models by adding a bias to the
   forward pass. Surprisingly broad control, small impact on off-target capabilities."
 date_updated: 2025-11-22 00:21:52.667251
-createBibtex: true
 ---
 
 
@@ -63,7 +57,7 @@ The method's new name is "activation addition" (ActAdd), replacing the more assu
 
 We ran some new experiments to test ActAdd more systematically and go beyond the striking text samples in the original post and tested against more standardized benchmarks. We use [OpenWebText](https://paperswithcode.com/dataset/openwebtext) (a recreation of OpenAI's large, somewhat quality-filtered WebText dataset) and [LAMA-ConceptNet](https://aclanthology.org/D19-1250.pdf) (a simple factual recall benchmark).
 
-### 1\. Activation additions preserve perplexity on OpenWebText
+## 1\. Activation additions preserve perplexity on OpenWebText
 
 Does ActAdd increase the probability of the model outputting tokens related to the steering vector? Does performance improve as "relevance of test documents to the steering vector" increases? Yes on both counts.
 
@@ -71,7 +65,7 @@ Does ActAdd increase the probability of the model outputting tokens related to t
 
 Figure: Adding a `wedding` − “ ” steering vector lowers perplexity when wedding words are more frequent. The perplexity ratio (lower is better) compares the relative predictive performance of ActAdd and an unmodified model.  
 
-### 2\. Activation addition boosts wedding-related word counts
+## 2\. Activation addition boosts wedding-related word counts
 
 We score model generations under ActAdd, show the effect of different injection layers, and give a sense of the method's reliability.
 
@@ -79,7 +73,7 @@ For the wedding vector, the intervention is effective at the first layer,  rises
 
 ![A line chart plotting "Mean wedding word count" on the y-axis against the model "Layer" of intervention on the x-axis. The word count rises from the start, peaks at nearly 1.8 at layer 6, and then declines steadily, approaching a dotted baseline near zero after layer 35.](https://assets.turntrout.com/static/images/posts/wedding-word-count.avif)
 
-### 3\. Evidence that activation additions preserve capabilities
+## 3\. Evidence that activation additions preserve capabilities
 
 We test that ActAdd does not disrupt the model’s general knowledge (as some other steering methods do). We use ConceptNet from the LAMA benchmark, a general knowledge dataset.[^3]
 

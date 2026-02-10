@@ -172,7 +172,7 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel, and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
 
-During the build process, I convert all naive CSS assignments of `color:red` (<span style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
+During the build process, I convert all naive CSS assignments of `color:red` (<span class="ignore-pa11y" style="color:rgb(255,0,0);">imagine if I made you read this</span>) to <span style="color:red">the site's red</span>. Lots of my old equations used raw `red` / `green` / `blue` colors because that's all that my old blog allowed; these colors are converted to the site theme. I even override and standardize the colors used for syntax highlighting in the code blocks.
 
 I color [inline favicons](#inline-favicons) using muted shades from the site's palette. For sites like [YouTube](https://youtube.com) and [Google Drive](https://drive.google.com), colored favicons enhance recognition and orient the reader.
 
@@ -341,15 +341,15 @@ Exponential font sizing
 : After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
 : <span class="h1">Header 1</span>
-<span class="h2">Header 2</span>
-<span class="h3">Header 3</span>
-<span class="h4">Header 4</span>
-<span class="h5">Header 5</span>
+  <span class="h2">Header 2</span>
+  <span class="h3">Header 3</span>
+  <span class="h4">Header 4</span>
+  <span class="h5">Header 5</span>
 
 : <span>Normal text</span>
-<span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-<span style="font-size:var(--font-size-minus-2)">Smaller text</span>
-<span style="font-size:var(--font-size-minus-3)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
+  <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
 
 All spacing is a simple multiple of a base measurement
 : If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
@@ -431,7 +431,7 @@ I have long appreciated [illuminated calligraphy.](https://www.atlasobscura.com/
 However, implementation was tricky. As shown with the figure's "A", CSS assigns a single color to each text element. To get around this obstacle, I took advantage of the fact that EB Garamond dropcaps can be split into the letter and the embellishment.
 
 <div class="centered" style="font-size:4rem;line-height:1.4 !important;">
-<span class="dropcap" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
+<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 </div>
   
@@ -684,7 +684,10 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation doesn't _just_ append an `<img>` element. Basically, I make a new `<span>` which acts as a "favicon sandwich", packaging both the last few letters of the link text and then the favicon `<img>` element. The `<span>`'s style ensures that if the favicon element is wrapped, the last few letters will be wrapped as well.
+To tackle this, the favicon transformation inserts a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) character immediately before the favicon element. The word joiner basically glues the previous text to the favicon, preventing line breaks at its position.
+
+> [!note] My previous implementation: the "favicon sandwich"
+> I used to create a new `<span>` which packaged both the last few letters of the link text and then the favicon element. However, I realized that word joiners are simpler.
 
 ### I only include recognizable favicons
 
@@ -811,6 +814,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 | Metric                       | Count                                                |
 | ---------------------------: | :--------------------------------------------------- |
 | Total commits                | <span class="populate-commit-count"></span>          |
+| Human-authored commits       | <span class="populate-human-commit-count"></span>    |
 | TypeScript unit tests        | <span class="populate-js-test-count"></span>         |
 | Python unit tests            | <span class="populate-pytest-count"></span>          |
 | Playwright integration tests | <span class="populate-playwright-test-count"></span> |
@@ -819,7 +823,7 @@ To keep documentation up-to-date, the build process computes e.g. the number of 
 ## Smaller features
 
 Popovers
-: Quartz comes with interactive popover previews for internal links, such as footnotes or section references. Desktop users can view popovers by hovering over an internal link. For footnotes, the popover isolates the content.
+: Quartz comes with interactive popover previews for internal links. Desktop users can view popovers by hovering over an internal link. Like the [Elvish text](#font-selection), footnote numbers have a dotted border to signal interactivity; clicking them opens a popover with the footnote content, which dismisses on click-outside.
 
 Search
 : My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.
@@ -834,25 +838,34 @@ Spoilers hide text until hovered
 
 : >! Have you heard? Snape kills Dumbledore.
 
+Scroll indicators for overflowing content
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
+
+  For example:
+
+  $$
+  e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+  $$
+
 Server-side math rendering via $\KaTeX$
-: I initially chose [$\KaTeX$](https://katex.org/) over [MathJax](https://www.mathjax.org/) due to its faster client-side rendering speed. However, now I render the $\KaTeX$ server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-Table: A table with unbalanced columns.
+  Table: A table with unbalanced columns.
 
-| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-{.full-width .center-table-headings}
+  {.full-width .center-table-headings}
 
-Table: A rebalanced table which pleases the eyes.
+  Table: A rebalanced table which pleases the eyes.
 
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
@@ -1047,8 +1060,8 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 2. Failure to inline critical CSS;
 >
 > **Favicon validation:**
-> 1. Favicons which are not sandwiched within `span.favicon-span` tags will wrap on their own, [which is awkward](#inline-favicons);
-> 2. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 1. Favicons that aren't SVG elements with proper `mask-url` styling;
+> 2. Each favicon is preceded by a [word joiner](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
@@ -1122,13 +1135,11 @@ Cryptographic timestamping
 
 : To verify that a commit `ABC012` was indeed committed by a given date, run
 
-<!-- TODO: make this part of the <dd>-->
-
-```shell
-git clone https://github.com/alexander-turner/.timestamps
-cd .timestamps
-ots --no-bitcoin verify "files/ABC012.txt.ots"
-```
+  ```shell
+  git clone https://github.com/alexander-turner/.timestamps
+  cd .timestamps
+  ots --no-bitcoin verify "files/ABC012.txt.ots"
+  ```
 
 # Github Actions
 

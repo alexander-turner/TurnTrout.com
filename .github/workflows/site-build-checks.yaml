@@ -1,7 +1,7 @@
-name: Link checker
+name: Site build checks
 
 concurrency:
-  group: linkchecker-${{ github.event_name }}-${{ github.ref_name }}
+  group: site-build-checks-${{ github.event_name }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -11,6 +11,8 @@ on:
       - "quartz/**"
       - "website_content/**"
       - "config/**"
+      - "scripts/built_site_checks.py"
+      - "scripts/check_internal_links.py"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -19,19 +21,22 @@ on:
       - "quartz/**"
       - "website_content/**"
       - "config/**"
+      - "scripts/built_site_checks.py"
+      - "scripts/check_internal_links.py"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+  merge_group:
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  linkchecker:
+  build:
+    name: site-checks-build
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
-
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -42,6 +47,64 @@ jobs:
 
       - name: Build site
         run: pnpm build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
+          retention-days: 1
+
+  built-site-checks:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
+
+      - name: Check CSS variables
+        run: |
+          # Run stylelint to check for unknown CSS variables
+          # Filter out known false positives and check if any real issues remain
+          WARNINGS=$(pnpm exec stylelint public/index.css \
+            --config config/stylelint/.variables-only-stylelintrc.json 2>&1 \
+            | grep -vE 'shiki|problem|public/index.css' \
+            | grep . || true)
+
+          if [ -n "$WARNINGS" ]; then
+            echo "Error: Found unknown CSS variable(s):"
+            echo "$WARNINGS"
+            exit 1
+          fi
+
+      - name: Run built site checks
+        run: uv run python scripts/built_site_checks.py
+
+  linkchecker:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: site-build-checks-public-dir
+          path: public/
 
       - name: Install linkchecker
         run: pip install linkchecker

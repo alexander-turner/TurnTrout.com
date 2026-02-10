@@ -9,7 +9,7 @@ import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/pa
 import { simpleConstants } from "../constants"
 import { debounceWaitMs } from "../constants"
 import { debounce } from "./component_script_utils"
-import { matchHTML, getSearchMatchScrollPosition } from "./search"
+import { matchHTML } from "./search"
 import { isLocalUrl } from "./spa_utils"
 
 const { pondVideoId } = simpleConstants
@@ -98,26 +98,36 @@ function dispatchNavEvent(url: FullSlug) {
  * This supports the `#:~:text=<query>` URL hash emitted by the search UI. Injects `.match` into the DOM.
  *
  * @param searchText - The raw search query (decoded from the hash).
- * @returns `true` if we found a match and scrolled, otherwise `false`.
+ * @returns `true` if we found and highlighted a match, `false` otherwise.
  */
 function scrollToMatch(searchText: string): boolean {
-  console.debug("[scrollToMatch] Called with searchText:", searchText)
   const article = document.querySelector("article") as HTMLElement | null
-  if (!article) {
-    console.debug("[scrollToMatch] No article found")
-    return false
-  }
-  console.debug("[scrollToMatch] Article found, matching...")
+  if (!article) return false
 
   // Use the exported search matcher to create `.search-match` spans.
   // matchHTML returns a cloned element with search matches, so we need to replace the original.
   const matchedArticle = matchHTML(searchText, article)
   article.replaceWith(matchedArticle)
 
-  const firstMatch = matchedArticle.querySelector(".search-match") as HTMLElement | null
-  if (!firstMatch) return false
+  // The title (<h1 id="article-title">) is outside <article>, so highlight it separately.
+  const titleEl = document.getElementById("article-title")
+  let hasTitleMatch = false
+  if (titleEl) {
+    const matchedTitle = matchHTML(searchText, titleEl)
+    hasTitleMatch = matchedTitle.querySelectorAll(".search-match").length > 0
+    titleEl.replaceWith(matchedTitle)
+  }
 
-  const targetPos = getSearchMatchScrollPosition(firstMatch, document.documentElement, 0.25)
+  const bodyMatches = matchedArticle.querySelectorAll(".search-match")
+  if (bodyMatches.length === 0 && !hasTitleMatch) return false
+
+  // If the search term matched in the article title, stay at the top of the page
+  // — the title is already visible and scrolling down would be disorienting.
+  if (hasTitleMatch) return true
+
+  const firstMatch = bodyMatches[0] as HTMLElement
+  const targetPos =
+    firstMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
   window.scrollTo({ top: targetPos, behavior: "instant" })
   return true
 }

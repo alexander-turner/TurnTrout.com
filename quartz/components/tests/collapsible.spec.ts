@@ -6,6 +6,13 @@ const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible
 async function spaNavigateToAbout(page: Page): Promise<void> {
   await page.evaluate(() => window.spaNavigate(new URL("/about", window.location.origin)))
   await page.waitForURL("**/about")
+  await page.waitForSelector('body[data-slug="about"]')
+}
+
+async function goBackToTestPage(page: Page): Promise<void> {
+  await page.goBack()
+  await page.waitForURL("**/test-page")
+  await page.waitForSelector('body[data-slug="test-page"]')
 }
 
 test.beforeEach(async ({ page }) => {
@@ -90,8 +97,7 @@ test.describe("Collapsible admonition state persistence", () => {
     await spaNavigateToAbout(page)
 
     // Navigate back
-    await page.goBack()
-    await page.waitForURL("**/test-page")
+    await goBackToTestPage(page)
 
     // Verify state persisted
     const stateAfterNav = await getCollapsibles(page)
@@ -124,8 +130,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Navigate away and back
     await spaNavigateToAbout(page)
-    await page.goBack()
-    await page.waitForURL("**/test-page")
+    await goBackToTestPage(page)
 
     // Get IDs after navigation
     const idsAfterNav = await getCollapsibles(page).evaluateAll((els) =>
