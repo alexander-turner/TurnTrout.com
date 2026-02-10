@@ -20,7 +20,9 @@ af-num-comments-on-upload: 0
 title: How should TurnTrout handle his DeepMind equity situation?
 lw-latest-edit: 2023-10-26T00:56:40.898000Z
 lw-is-linkpost: "false"
-authors: Oliver Habryka and Alex Turner
+authors:
+  - Oliver Habryka
+  - Alex Turner
 tags:
   - practical
   - deepmind
