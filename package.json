@@ -55,7 +55,6 @@
       "ruff check --fix"
     ],
     "!(*.vale-styles)/**/*.md": [
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
     ]
   },
@@ -123,7 +122,7 @@
     "pretty-bytes": "6.1.1",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "^1.7.5",
+    "punctilio": "github:alexander-turner/punctilio",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "reading-time": "1.5.0",

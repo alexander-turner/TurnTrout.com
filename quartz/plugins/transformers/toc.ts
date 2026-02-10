@@ -6,6 +6,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { normalizeNbsp } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { slugify, resetSlugger } from "./gfm"
@@ -122,7 +123,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                   const plainText = stripHtmlTagsFromString(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
-                  const slug = slugify(plainText)
+                  const slug = slugify(normalizeNbsp(plainText))
 
                   toc.push({
                     depth: heading.depth,

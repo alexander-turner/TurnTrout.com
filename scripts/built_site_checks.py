@@ -27,6 +27,17 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
+from scripts.utils import (
+    ELLIPSIS,
+    LEFT_DOUBLE_QUOTE,
+    LEFT_SINGLE_QUOTE,
+    NBSP,
+    RIGHT_DOUBLE_QUOTE,
+    RIGHT_SINGLE_QUOTE,
+    WORD_JOINER,
+    ZERO_WIDTH_NBSP,
+    ZERO_WIDTH_SPACE,
+)
 
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
@@ -175,9 +186,9 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
         TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
     )
     # Strip zero-width spaces and other invisible characters
-    text = text.replace("\u200b", "")  # zero-width space
-    text = text.replace("\ufeff", "")  # zero-width no-break space
-    text = text.replace("\u2060", "")  # word joiner
+    text = text.replace(ZERO_WIDTH_SPACE, "")
+    text = text.replace(ZERO_WIDTH_NBSP, "")
+    text = text.replace(WORD_JOINER, "")
     return text.strip()
 
 
@@ -236,6 +247,10 @@ def _check_anchor_classes(
      Not all same-page links are specified like that.
     """
     classes = set(script_utils.get_classes(link))
+
+    # Skip accessibility skip-to-content link (not a content link)
+    if "skip-to-content" in classes:
+        return
 
     required_classes = {"internal", "same-page-link"}
     if not required_classes.issubset(classes):
@@ -388,18 +403,20 @@ def _append_to_list(
     lst.append(prefix + to_append)
 
 
+_S = f"[ {NBSP}]"  # Space or non-breaking space
 _CANARY_BAD_ANYWHERE = (
-    r"> \[\![a-zA-Z]+\]",  # Callout syntax
-    r"\[ \]",  # Unrendered checkbox
-    r"Table: ",
-    r"Figure: ",
-    r"Code: ",
-    r"Caption: ",
+    rf">{_S}\[\![a-zA-Z]+\]",  # Callout syntax
+    rf"\[{_S}\]",  # Unrendered checkbox
+    rf"Table:{_S}",
+    rf"Figure:{_S}",
+    rf"Code:{_S}",
+    rf"Caption:{_S}",
 )
 _CANARY_BAD_PREFIXES = (
-    r": ",  # Unrendered description
+    rf":{_S}",  # Unrendered description
     r"#",  # Unrendered heading
-    r"\[(\s|\u200B)*\]",  # image alt declaration, may contain 0width space
+    # image alt declaration, may contain 0width space
+    rf"\[(\s|{ZERO_WIDTH_SPACE})*\]",
 )
 
 
@@ -865,7 +882,9 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
-        if stripped_text and (re.search(r"\*|\_(?!\_* +\%)", stripped_text)):
+        if stripped_text and (
+            re.search(rf"\*|\_(?!\_*[ {NBSP}]+\%)", stripped_text)
+        ):
             _append_to_list(
                 problematic_texts,
                 stripped_text,
@@ -1089,7 +1108,10 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r"(?!\.\.\?)\.[\u0022\u201c\u201d]*\.", str(element)):
+            if re.search(
+                rf'(?!\.\.\?)\.["{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]*\.',
+                str(element),
+            ):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1470,9 +1492,11 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
+    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
+    simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
-    return unescaped_label.strip()
+    normalized_spaces = unescaped_label.replace(NBSP, " ")
+    return normalized_spaces.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
@@ -1760,8 +1784,17 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r"
+ALLOWED_ELT_PRECEDING_CHARS = (
+    "[({-—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r" + NBSP
+)
+ALLOWED_ELT_FOLLOWING_CHARS = (
+    "])}.,;!?:-—~×+"
+    + RIGHT_DOUBLE_QUOTE
+    + RIGHT_SINGLE_QUOTE
+    + ELLIPSIS
+    + "=' \n\t\r"
+    + NBSP
+)
 
 
 def _check_element_spacing(

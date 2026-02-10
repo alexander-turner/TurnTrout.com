@@ -15,7 +15,7 @@ describe("normalizeHastElement", () => {
 
     expect(result.children[0]).toMatchObject({
       type: "text",
-      value: "This is a test with quotes “like this” and dashes—here",
+      value: "This is a test with quotes “like this” and dashes—here",
     })
   })
 
@@ -31,7 +31,7 @@ describe("normalizeHastElement", () => {
     // Check that text formatting is applied within the link
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "A link with “quotes”",
+      value: "A link with “quotes”",
     })
   })
 
