@@ -20,9 +20,6 @@ export interface ScrollIndicatorCleanup {
 /**
  * Wraps scrollable elements (.table-container, .katex-display) within the
  * given container with scroll-indicator wrappers that show fade effects.
- * @param container - The container element to search within
- * @param signal - Optional AbortSignal to remove scroll event listeners
- * @returns A cleanup object to disconnect ResizeObservers
  */
 export function wrapScrollables(
   container: HTMLElement,
@@ -30,15 +27,13 @@ export function wrapScrollables(
 ): ScrollIndicatorCleanup {
   const observers: ResizeObserver[] = []
 
-  const scrollables = container.querySelectorAll<HTMLElement>(".table-container, .katex-display")
-
-  for (const el of scrollables) {
-    // Skip if already wrapped from a previous call
-    if (el.parentElement?.classList.contains("scroll-indicator")) continue
+  for (const el of container.querySelectorAll<HTMLElement>(".table-container, .katex-display")) {
+    const parent = el.parentElement
+    if (!parent || parent.classList.contains("scroll-indicator")) continue
 
     const wrapper = document.createElement("div")
     wrapper.className = "scroll-indicator"
-    el.parentNode!.insertBefore(wrapper, el)
+    parent.insertBefore(wrapper, el)
     wrapper.appendChild(el)
 
     const update = () => updateScrollIndicator(wrapper, el)
