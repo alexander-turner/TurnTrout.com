@@ -2290,6 +2290,35 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     assert result == Counter(expected_counts)
 
 
+def test_head_with_retry_succeeds_after_timeout(monkeypatch):
+    """Retry succeeds on second attempt after initial timeout."""
+    calls = []
+
+    def mock_head(url, timeout):
+        calls.append(timeout)
+        if len(calls) == 1:
+            raise requests.Timeout("timed out")
+        return type("MockResponse", (), {"ok": True, "status_code": 200})
+
+    monkeypatch.setattr(requests, "head", mock_head)
+    resp = built_site_checks._head_with_retry("https://example.com")
+    assert resp.ok
+    assert calls == [10, 20]  # timeout doubles on retry
+
+
+def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
+    """All retries fail — re-raises the last exception."""
+    monkeypatch.setattr(
+        requests,
+        "head",
+        lambda url, timeout: (_ for _ in ()).throw(
+            requests.ConnectionError("fail")
+        ),
+    )
+    with pytest.raises(requests.ConnectionError, match="fail"):
+        built_site_checks._head_with_retry("https://example.com")
+
+
 @pytest.mark.parametrize(
     "html,expected,mock_responses",
     [
