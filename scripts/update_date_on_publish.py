@@ -1,6 +1,7 @@
 """Update the publish and update dates in markdown files."""
 
 import io
+import os
 import re  # Import the re module
 import subprocess
 import sys
@@ -34,13 +35,16 @@ current_date = TimeStamp(
 
 def is_file_modified(file_path: Path) -> bool:
     """
-    Check if file has unpushed changes in git.
+    Check if file was modified in the relevant commit range.
+
+    In CI (when GIT_COMMIT_RANGE is set), checks if the file changed in that range.
+    Otherwise, checks if file has unpushed changes in git.
 
     Args:
         file_path (Path): Path to the file to check
 
     Returns:
-        bool: True if file has unpushed changes, False otherwise
+        bool: True if file was modified, False otherwise
     """
     try:
         # Get the relative path from git root
@@ -50,13 +54,32 @@ def is_file_modified(file_path: Path) -> bool:
         ).strip()
         rel_path = file_path.resolve().relative_to(Path(git_root))
 
-        # Check for unpushed changes
+        # Determine commit range to check
+        commit_range = os.environ.get("GIT_COMMIT_RANGE")
+        if commit_range:
+            # CI environment: check if file changed in the push event
+            # Handle edge case: initial push has before=0000000000000000000000000000000000000000
+            before_commit = (
+                commit_range.split("..")[0] if ".." in commit_range else None
+            )
+            if before_commit and before_commit.strip("0"):
+                # Normal case: compare the range
+                range_to_check = commit_range
+            else:
+                # First push: check the after commit only
+                after_commit = commit_range.split("..")[-1]
+                range_to_check = f"{after_commit}^..{after_commit}"
+        else:
+            # Local environment: check for unpushed changes
+            range_to_check = "origin/main..HEAD"
+
+        # Check if file changed in the range
         result = subprocess.check_output(
             [
                 git_executable,
                 "diff",
                 "--name-only",
-                "origin/main..HEAD",
+                range_to_check,
                 str(rel_path),
             ],
             text=True,
