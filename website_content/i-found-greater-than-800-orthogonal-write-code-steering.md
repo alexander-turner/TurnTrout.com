@@ -21,7 +21,9 @@ af-num-comments-on-upload: 0
 title: I found >800 orthogonal 'write code' steering vectors
 lw-latest-edit: 2024-07-17T21:40:13.035000Z
 lw-is-linkpost: 'true'
-authors: Jacob Goldman-Wetzler and Alex Turner
+authors:
+  - Jacob Goldman-Wetzler
+  - Alex Turner
 tags:
   - AI
   - mats-program

@@ -20,7 +20,9 @@ af-num-comments-on-upload: 7
 title: Mode collapse in RL may be fueled by the update equation
 lw-latest-edit: 2023-06-24T18:23:46.663000Z
 lw-is-linkpost: 'false'
-authors: Alex Turner and Michael Einhorn
+authors:
+  - Alex Turner
+  - Michael Einhorn
 tags:
   - AI
   - reinforcement-learning
