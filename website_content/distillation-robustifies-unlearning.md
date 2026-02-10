@@ -221,19 +221,6 @@ UNDO is a viable approach for creating genuinely capability-limited models. Whil
 > [!idea] Join Team Shard
 > Want to become more skilled at alignment research? Apply to work with us later this year in the next round of [MATS](https://www.matsprogram.org/apply#Turner).
 
-## Citation
-
-```bibtex
-@misc{lee2025distillationrobustifiesunlearning,
-      title={Distillation Robustifies Unlearning}, 
-      author={Bruce W. Lee and Addie Foote and Alex Infanger and Leni Shor and Harish Kamath and Jacob Goldman-Wetzler and Bryce Woodworth and Alex Cloud and Alexander Matt Turner},
-      year={2025},
-      eprint={2506.06278},
-      archivePrefix={arXiv},
-      url={https://arxiv.org/abs/2506.06278}, 
-}
-```
-
 [^1]: Other work has used distillation in contexts other than model compression, including [improving](https://arxiv.org/pdf/1805.04770) [performance](https://arxiv.org/pdf/1911.04252), dataset [privacy](https://arxiv.org/pdf/2110.08324) [protection](https://arxiv.org/pdf/1610.05755), and [continual](https://arxiv.org/pdf/1606.09282) [learning](https://arxiv.org/pdf/2302.00487).
 
 [^2]: Distilling unlearned teacher logits isn’t always similar to just filtering out the forget data. In a TinyStories setting, we unlearned “ability to tell stories involving trees” from a small teacher model. Then we distilled its logits into a small student model. However, the student was vulnerable to relearning attacks, [which wouldn’t have happened if we had performed data filtering](https://turntrout.com/gradient-routing#robust-unlearning).
