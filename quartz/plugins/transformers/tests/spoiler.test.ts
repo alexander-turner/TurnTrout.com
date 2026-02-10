@@ -1,9 +1,6 @@
 import { expect, describe, it, test } from "@jest/globals"
 import { type Element, type Parent, type Root } from "hast"
 import { h } from "hastscript"
-import rehypeParse from "rehype-parse"
-import rehypeStringify from "rehype-stringify"
-import { unified } from "unified"
 import { visit } from "unist-util-visit"
 
 import { BuildCtx } from "../../../util/ctx"
@@ -14,32 +11,9 @@ import {
   processParagraph,
   rehypeCustomSpoiler,
 } from "../spoiler"
+import { removePositions, createRehypeProcessor } from "./test-utils"
 
-function removePositions(obj: unknown): unknown {
-  if (Array.isArray(obj)) {
-    return obj.map(removePositions)
-  } else if (typeof obj === "object" && obj !== null) {
-    const newObj: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(obj)) {
-      if (key !== "position") {
-        newObj[key] = removePositions(value)
-      }
-    }
-    return newObj
-  }
-  return obj
-}
-
-async function process(input: string) {
-  const result = await unified()
-    .use(rehypeParse, { fragment: true })
-    .use(() => (tree: Root) => {
-      visit(tree, "element", modifyNode)
-    })
-    .use(rehypeStringify)
-    .process(input)
-  return result.toString()
-}
+const process = createRehypeProcessor(modifyNode)
 
 describe("rehype-custom-spoiler", () => {
   it.each([

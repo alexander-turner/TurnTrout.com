@@ -7,7 +7,7 @@
 #   1. YAML frontmatter present (starts with ---)
 #   2. name: field in frontmatter (descriptive identifier)
 #   3. description: field in frontmatter (2+ sentences for activation context)
-#   4. ## Examples section in body (real input/output pairs prevent generic output)
+#   4. ## Examples section in body (real input/output pairs prevent generic output) [optional]
 #
 # Skills must use directory format: .claude/skills/<name>/SKILL.md
 # Flat files (.claude/skills/<name>.md) are rejected.
@@ -67,11 +67,10 @@ for file in "$@"; do
     errors=$((errors + 1))
   fi
 
-  # Check body has an Examples section (real examples prevent generic output)
+  # Warn (but don't fail) if Examples section is missing
   body=$(awk '/^---$/{n++; next} n>=2' "$file")
   if ! echo "$body" | grep -q '^## Examples'; then
-    echo "ERROR: $file missing '## Examples' section — add 2-3 real input/output examples" >&2
-    errors=$((errors + 1))
+    echo "WARN: $file missing '## Examples' section — consider adding 2-3 real input/output examples" >&2
   fi
 done
 

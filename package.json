@@ -313,6 +313,9 @@
       "tmp": "0.2.4",
       "@eslint/plugin-kit": "0.3.4",
       "qs": "6.14.1"
+    },
+    "patchedDependencies": {
+      "pa11y@9.0.1": "patches/pa11y@9.0.1.patch"
     }
   }
 }

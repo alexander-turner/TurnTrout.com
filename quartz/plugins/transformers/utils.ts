@@ -1,7 +1,10 @@
-import type { Parent, RootContent, Text, Element, Root } from "hast"
+import type { Parent, RootContent, Text, Element, Root, ElementContent } from "hast"
 
 import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
+import { visit } from "unist-util-visit"
+
+import type { QuartzTransformerPlugin } from "../types"
 
 export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z.-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
@@ -187,6 +190,25 @@ export function hasAncestor(
   return ancestors.some((anc) => ancestorPredicate(anc as Element))
 }
 
+/**
+ * Creates a word joiner span element that prevents line breaks
+ * without polluting clipboard content (user-select: none).
+ */
+const WORD_JOINER_SPAN = {
+  type: "element" as const,
+  tagName: "span",
+  properties: { className: "word-joiner", ariaHidden: "true" },
+  children: [{ type: "text" as const, value: "\u2060" }],
+}
+
+export function createWordJoinerSpan(): Element {
+  return {
+    ...WORD_JOINER_SPAN,
+    properties: { ...WORD_JOINER_SPAN.properties },
+    children: [{ ...WORD_JOINER_SPAN.children[0] }],
+  } as Element
+}
+
 // Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
   // Check both className and class properties (hastscript uses class)
@@ -195,4 +217,62 @@ export function hasClass(node: Element, className: string): boolean {
     return classProp.includes(className)
   }
   return false
+}
+
+/**
+ * Type guard to check if a node is a Text node.
+ * @param node - The node to check
+ * @returns True if the node is a Text node
+ */
+export function isTextNode(node: ElementContent): node is Text {
+  return node.type === "text"
+}
+
+/**
+ * Type guard to check if a node is an Element node.
+ * @param node - The node to check
+ * @returns True if the node is an Element node
+ */
+export function isElementNode(node: ElementContent): node is Element {
+  return node.type === "element"
+}
+
+/**
+ * Check if an element is a code element.
+ * @param node - The element to check
+ * @returns True if the element's tagName is "code"
+ */
+export function isCode(node: Element): boolean {
+  return node.tagName === "code"
+}
+
+/**
+ * Factory function to create a Quartz transformer plugin that visits all elements in the HTML AST.
+ * Reduces boilerplate for simple transformer plugins that just need to visit and modify elements.
+ *
+ * @param name - The name of the plugin (e.g., "customSpoiler")
+ * @param visitor - A function that processes each element node in the tree
+ * @returns A QuartzTransformerPlugin that applies the visitor to all elements
+ *
+ * @example
+ * export const MyPlugin = createElementVisitorPlugin("MyPlugin", (node, index, parent) => {
+ *   if (node.tagName === "p") {
+ *     // Modify paragraph elements
+ *   }
+ * })
+ */
+export function createElementVisitorPlugin(
+  name: string,
+  visitor: (node: Element, index: number | undefined, parent: Parent | undefined) => void,
+): QuartzTransformerPlugin {
+  return () => ({
+    name,
+    htmlPlugins() {
+      return [
+        () => (tree: Root) => {
+          visit(tree, "element", visitor)
+        },
+      ]
+    },
+  })
 }

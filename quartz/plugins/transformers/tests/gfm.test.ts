@@ -16,10 +16,10 @@ import {
   isFootnoteListItem,
   findFootnoteBackArrow,
   appendArrowToFootnoteListItemVisitor,
-  fixDefinitionListsPlugin,
-  convertDdToParagraph,
-  processDefinitionListChild,
-  fixDefinitionList,
+  htmlAccessibilityPlugin,
+  adoptPrecedingSiblingAsDt,
+  deduplicateSvgIds,
+  isValidDlStructure,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -120,17 +120,20 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     mockBackArrow = h("a", { className: "data-footnote-backref" })
   })
 
-  test("should wrap last four characters with backref in nowrap span", () => {
+  test("should append word joiner + back arrow after text", () => {
     const node = h("li", [h("p", ["Long text here"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text " })
-
-    const span = paragraph.children[1] as Element
-    expect(span).toEqual(h("span", { className: "favicon-span" }, ["here", mockBackArrow]))
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text here" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle text shorter than 4 characters", () => {
@@ -139,8 +142,14 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    const span = paragraph.children[0] as Element
-    expect(span).toEqual(h("span", { className: "favicon-span" }, ["Hi", mockBackArrow]))
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(paragraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle multiple paragraphs", () => {
@@ -153,11 +162,14 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
     const lastParagraph = node.children[1] as Element
-    expect(lastParagraph.children).toHaveLength(2)
-    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
-    expect(lastParagraph.children[1]).toEqual(
-      h("span", { className: "favicon-span" }, ["raph", mockBackArrow]),
-    )
+    expect(lastParagraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph" })
+    expect(lastParagraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(lastParagraph.children[2]).toBe(mockBackArrow)
   })
 
   test("should handle empty paragraph", () => {
@@ -206,17 +218,17 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstPara.children).toHaveLength(1)
     expect(firstPara.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
-    // Check second paragraph has the text split and back arrow properly appended
+    // Check second paragraph has the back arrow appended with word joiner
     const secondPara = node.children[1] as Element
-    expect(secondPara.children).toHaveLength(2)
-    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragr" })
-
-    const nowrapSpan = secondPara.children[1] as Element
-    expect(nowrapSpan.tagName).toBe("span")
-    expect(nowrapSpan.properties).toEqual({ className: ["favicon-span"] })
-    expect(nowrapSpan.children).toHaveLength(2)
-    expect(nowrapSpan.children[0]).toEqual({ type: "text", value: "aph." })
-    expect(nowrapSpan.children[1]).toBe(mockBackArrow)
+    // Old back arrow removed, text preserved, word joiner + new back arrow appended
+    expect(secondPara.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragraph." })
+    expect(secondPara.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(secondPara.children[2]).toBe(mockBackArrow)
   })
 
   test("should ignore <li> ending with an image", () => {
@@ -568,14 +580,16 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + wrapped back arrow
+    // Should have processed the footnote - text + word joiner + back arrow
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + span with back arrow
-
-    // Check that the back arrow is wrapped in a span
-    const lastChild = paragraph.children[1] as Element
-    expect(lastChild.tagName).toBe("span")
-    expect(lastChild.properties?.className).toEqual(["favicon-span"])
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote text" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
   it.each([
@@ -624,15 +638,16 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote
+    // Should have processed the footnote - text + word joiner + back arrow
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(1) // just the span with all text + back arrow
-
-    // Check that all text is wrapped with the back arrow
-    const span = paragraph.children[0] as Element
-    expect(span.tagName).toBe("span")
-    expect(span.properties?.className).toEqual(["favicon-span"])
-    expect(span.children).toHaveLength(2) // text + back arrow
+    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(paragraph.children[1]).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[2] as Element).tagName).toBe("a")
   })
 
   test("should handle footnote with empty paragraph", () => {
@@ -670,227 +685,475 @@ describe("gfmVisitor function", () => {
 
     // Should have processed the footnote
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(4) // original content + span with last text + back arrow
-
-    // Check that the last part is wrapped
-    const lastChild = paragraph.children[3] as Element
-    expect(lastChild.tagName).toBe("span")
-    expect(lastChild.properties?.className).toEqual(["favicon-span"])
-    expect(lastChild.children).toHaveLength(2) // text + back arrow
-  })
-})
-
-/**
- * Tests for definition list fixing helpers and plugin
- *
- * PROBLEM CONTEXT:
- * The remark-gfm plugin converts Markdown lines starting with ": " into HTML <dd> elements.
- * This is intended for creating definition lists, but when used in contexts like blockquotes
- * without a preceding term, it creates invalid HTML: <dl><dd>content</dd></dl>
- *
- * This violates WCAG accessibility standards which require <dd> elements to be preceded by
- * <dt> elements within <dl> containers. Pa11y accessibility checker flags these as errors:
- * "<dl> elements must only directly contain properly-ordered <dt> and <dd> groups"
- *
- * REAL-WORLD EXAMPLE:
- * Markdown like this in a blockquote:
- *   > User
- *   >
- *   > : Develop a social media bot...
- *
- * Gets converted by remark-gfm to:
- *   <blockquote><p>User</p><dl><dd>Develop a social media bot...</dd></dl></blockquote>
- *
- * THE FIX:
- * Helper functions process definition list children and convert orphaned <dd> elements
- * (those without a preceding <dt>) into <p> elements, maintaining semantic correctness.
- */
-
-describe("convertDdToParagraph", () => {
-  it("converts dd element to p element preserving children", () => {
-    const dd = h("dd", ["Description text"])
-    const result = convertDdToParagraph(dd)
-
-    expect(result.tagName).toBe("p")
-    expect(result.type).toBe("element")
-    expect(result.properties).toEqual({})
-    expect(result.children).toEqual(dd.children)
-  })
-
-  it("preserves nested elements in children", () => {
-    const dd = h("dd", ["Text with ", h("strong", ["bold"]), " content"])
-    const result = convertDdToParagraph(dd)
-
-    expect(result.tagName).toBe("p")
-    expect(result.children).toHaveLength(3)
-    expect((result.children[1] as Element).tagName).toBe("strong")
-  })
-})
-
-describe("processDefinitionListChild", () => {
-  describe("dt elements", () => {
-    it("preserves dt and sets state to true", () => {
-      const dt = h("dt", ["Term"])
-      const result = processDefinitionListChild(dt, false)
-
-      expect(result.element).toBe(dt)
-      expect(result.newLastWasDt).toBe(true)
+    // original content (text, em, text) + word joiner + back arrow
+    expect(paragraph.children).toHaveLength(5)
+    expect(paragraph.children[0]).toEqual({
+      type: "text",
+      value: "This is a complex footnote with ",
     })
-  })
-
-  describe("dd elements", () => {
-    it("preserves dd when lastWasDt is true and keeps state true for subsequent dd", () => {
-      const dd = h("dd", ["Description"])
-      const result = processDefinitionListChild(dd, true)
-
-      expect(result.element).toBe(dd)
-      expect(result.newLastWasDt).toBe(true)
-    })
-
-    it("converts dd to p when lastWasDt is false", () => {
-      const dd = h("dd", ["Orphaned"])
-      const result = processDefinitionListChild(dd, false)
-
-      expect((result.element as Element).tagName).toBe("p")
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-
-  describe("other elements", () => {
-    it.each([
-      ["div", h("div", ["Content"])],
-      ["script", h("script", ["code"])],
-      ["template", h("template", ["template content"])],
-    ])("preserves %s and resets state", (_name, element) => {
-      const result = processDefinitionListChild(element, true)
-
-      expect(result.element).toBe(element)
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-
-  describe("non-element nodes", () => {
-    it("preserves text nodes and preserves state", () => {
-      const textNode = { type: "text" as const, value: "Some text" }
-      const result = processDefinitionListChild(textNode, true)
-
-      expect(result.element).toBe(textNode)
-      expect(result.newLastWasDt).toBe(true)
-    })
-
-    it("preserves text nodes with false state", () => {
-      const textNode = { type: "text" as const, value: "Some text" }
-      const result = processDefinitionListChild(textNode, false)
-
-      expect(result.element).toBe(textNode)
-      expect(result.newLastWasDt).toBe(false)
-    })
-  })
-})
-
-describe("fixDefinitionList", () => {
-  it("returns unchanged dl when empty", () => {
-    const dl = h("dl", [])
-    const result = fixDefinitionList(dl)
-
-    expect(result.children).toHaveLength(0)
-  })
-
-  it.each([
-    ["single orphaned dd", [h("dd", ["Orphan"])], ["p"]],
-    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], ["dt", "dd"]],
-    [
-      "orphaned dd before valid pair",
-      [h("dd", ["Orphan"]), h("dt", ["Term"]), h("dd", ["Valid"])],
-      ["p", "dt", "dd"],
-    ],
-    [
-      "multiple consecutive dd after dt (all valid)",
-      [h("dt", ["Term"]), h("dd", ["First"]), h("dd", ["Second"])],
-      ["dt", "dd", "dd"],
-    ],
-    [
-      "complex mixed structure",
-      [
-        h("dd", ["Orphan 1"]),
-        h("dt", ["Term 1"]),
-        h("dd", ["Valid 1"]),
-        h("dd", ["Valid 2"]),
-        h("dt", ["Term 2"]),
-        h("dd", ["Valid 3"]),
-      ],
-      ["p", "dt", "dd", "dd", "dt", "dd"],
-    ],
-  ])("fixes %s correctly", (_desc, children, expectedTags) => {
-    const dl = h("dl", children)
-    const result = fixDefinitionList(dl)
-
-    expect(result.children).toHaveLength(expectedTags.length)
-    expectedTags.forEach((tag, i) => {
-      expect((result.children[i] as Element).tagName).toBe(tag)
-    })
-  })
-
-  it("preserves non-element nodes", () => {
-    const dl = h("dl", [{ type: "text", value: "Text" }, h("dt", ["Term"]), h("dd", ["Desc"])])
-    const result = fixDefinitionList(dl)
-
-    expect(result.children).toHaveLength(3)
-    expect(result.children[0]).toEqual({ type: "text", value: "Text" })
-  })
-
-  it("preserves dd after dt even with whitespace text nodes between them", () => {
-    const dl: Element = {
+    expect((paragraph.children[1] as Element).tagName).toBe("em")
+    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
+    expect(paragraph.children[3]).toMatchObject({
       type: "element",
-      tagName: "dl",
-      properties: {},
-      children: [
-        h("dt", ["Term"]),
-        { type: "text", value: "\n  " },
-        h("dd", ["First"]),
-        { type: "text", value: "\n  " },
-        h("dd", ["Second"]),
-      ],
-    }
-    const result = fixDefinitionList(dl)
-
-    const elements = result.children.filter((c) => c.type === "element")
-    expect(elements.map((e) => (e as Element).tagName)).toEqual(["dt", "dd", "dd"])
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((paragraph.children[4] as Element).tagName).toBe("a")
   })
 })
 
-describe("fixDefinitionListsPlugin (integration)", () => {
-  const runPlugin = (dl: Element): void => {
-    const tree: Root = { type: "root", children: [dl] }
-    const plugin = fixDefinitionListsPlugin()
-    plugin(tree)
-  }
+describe("adoptPrecedingSiblingAsDt", () => {
+  it("adopts preceding <p> as <dt>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), dl]
 
-  it("fixes orphaned dd elements in dl", () => {
-    const dl = h("dl", [h("dd", ["Orphan"])])
-    runPlugin(dl)
-
-    expect((dl.children[0] as Element).tagName).toBe("p")
-  })
-
-  it("preserves valid dt/dd pairs", () => {
-    const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
-    runPlugin(dl)
-
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(true)
+    expect(children).toHaveLength(1)
     expect((dl.children[0] as Element).tagName).toBe("dt")
     expect((dl.children[1] as Element).tagName).toBe("dd")
   })
 
-  it("handles complex nested structures", () => {
-    const dl = h("dl", [
-      h("dd", ["Orphan"]),
-      h("dt", ["Term"]),
-      h("dd", ["Valid 1"]),
-      h("dd", ["Valid 2"]),
-    ])
-    runPlugin(dl)
+  it("adopts past whitespace text nodes", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("p", ["Term"]), { type: "text", value: "\n" }, dl]
 
-    const tags = dl.children.map((c) => (c as Element).tagName)
-    expect(tags).toEqual(["p", "dt", "dd", "dd"])
+    expect(adoptPrecedingSiblingAsDt(dl, 2, children)).toBe(true)
+    expect(children).toHaveLength(1) // <p> and whitespace removed
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+  })
+
+  it("returns false when no preceding element", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    expect(adoptPrecedingSiblingAsDt(dl, 0, [dl])).toBe(false)
+  })
+
+  it("returns false when preceding element is not <p>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const children: Element["children"] = [h("h2", ["Heading"]), dl]
+
+    expect(adoptPrecedingSiblingAsDt(dl, 1, children)).toBe(false)
+    expect(children).toHaveLength(2) // unchanged
+  })
+})
+
+describe("htmlAccessibilityPlugin (integration)", () => {
+  const runPlugin = (tree: Root): void => {
+    const plugin = htmlAccessibilityPlugin()
+    plugin(tree)
+  }
+
+  it("adopts preceding <p> as <dt> for orphaned <dl>", () => {
+    const dl = h("dl", [h("dd", ["Def"])])
+    const tree: Root = { type: "root", children: [h("p", ["Term"]), dl] }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(1)
+    expect(dl.tagName).toBe("dl")
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it("falls back to <div>/<p> when no preceding <p>", () => {
+    const dl = h("dl", [h("dd", ["Orphan"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+    expect((dl.children[0] as Element).tagName).toBe("p")
+  })
+
+  it("preserves valid <dl> with <dt>/<dd> pairs", () => {
+    const dl = h("dl", [h("dt", ["Term"]), h("dd", ["Desc"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("dl")
+    expect((dl.children[0] as Element).tagName).toBe("dt")
+    expect((dl.children[1] as Element).tagName).toBe("dd")
+  })
+
+  it.each([
+    ["dd", "dd"],
+    ["dt", "dt"],
+  ])("converts orphaned <%s> outside <dl> to <p>", (_label, tag) => {
+    const element = h(tag, ["Orphaned content"])
+    const tree: Root = { type: "root", children: [h("div", [element])] }
+    runPlugin(tree)
+
+    expect(element.tagName).toBe("p")
+  })
+
+  it("preserves <dd> inside valid <dl>", () => {
+    const dd = h("dd", ["Valid description"])
+    const dl = h("dl", [h("dt", ["Term"]), dd])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dd.tagName).toBe("dd")
+  })
+
+  it("handles elements without children in orphaned dd/dt check", () => {
+    const brokenNode = { type: "element" as const, tagName: "span", properties: {} } as Element
+    const tree: Root = { type: "root", children: [brokenNode] }
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("handles multiple consecutive orphaned <dl>s, each adopting its own <p>", () => {
+    const dl1 = h("dl", [h("dd", ["Def1"])])
+    const dl2 = h("dl", [h("dd", ["Def2"])])
+    const tree: Root = {
+      type: "root",
+      children: [h("p", ["Term1"]), dl1, h("p", ["Term2"]), dl2],
+    }
+    runPlugin(tree)
+
+    expect(tree.children).toHaveLength(2)
+    expect((dl1.children[0] as Element).tagName).toBe("dt")
+    expect((dl2.children[0] as Element).tagName).toBe("dt")
+  })
+
+  it.each([
+    ["with existing properties", false],
+    ["without existing properties", true],
+  ])("adds tabindex to pre elements %s", (_desc, deleteProperties) => {
+    const pre = h("pre", [h("code", ["const x = 1"])])
+    if (deleteProperties) {
+      delete (pre as unknown as Record<string, unknown>).properties
+    }
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(pre.properties.tabIndex).toBe(0)
+  })
+
+  it.each([
+    ["with existing properties", false],
+    ["without existing properties", true],
+  ])("adds tabindex to code elements inside pre %s", (_desc, deleteProperties) => {
+    const code = h("code", { dataLanguage: "bibtex" }, ["@article{...}"])
+    if (deleteProperties) {
+      delete (code as unknown as Record<string, unknown>).properties
+    }
+    const pre = h("pre", [code])
+    const tree: Root = { type: "root", children: [pre] }
+    runPlugin(tree)
+
+    expect(code.properties.tabIndex).toBe(0)
+  })
+
+  it.each([
+    [
+      "adds <track> to video without one",
+      () => h("video", { controls: true }, [h("source", { src: "test.mp4", type: "video/mp4" })]),
+      (el: Element) => {
+        const track = el.children.find(
+          (c) => c.type === "element" && c.tagName === "track",
+        ) as Element
+        expect(track).toBeDefined()
+        expect(track.properties?.kind).toBe("captions")
+        expect(track.properties?.src).toBe("data:text/vtt,WEBVTT")
+      },
+    ],
+    [
+      "does not add duplicate <track>",
+      () =>
+        h("video", { controls: true }, [
+          h("source", { src: "test.mp4", type: "video/mp4" }),
+          h("track", { kind: "captions", label: "No audio" }),
+        ]),
+      (el: Element) => {
+        const tracks = el.children.filter((c) => c.type === "element" && c.tagName === "track")
+        expect(tracks).toHaveLength(1)
+      },
+    ],
+    [
+      "skips non-video elements",
+      () => h("div", ["content"]),
+      (el: Element) => expect(el.children).toHaveLength(1),
+    ],
+  ] as [string, () => Element, (el: Element) => void][])(
+    "video caption tracks: %s",
+    (_desc, createElement, assert) => {
+      const element = createElement()
+      const tree: Root = { type: "root", children: [element] }
+      runPlugin(tree)
+      assert(element)
+    },
+  )
+
+  it("adds tabindex, role, and aria-label to mermaid SVGs", () => {
+    const svg = h("svg", { id: "mermaid-1234" }, [h("rect", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBe(0)
+    expect(svg.properties?.role).toBe("img")
+    expect(svg.properties?.ariaLabel).toBe("Mermaid diagram")
+  })
+
+  it("skips non-mermaid SVGs", () => {
+    const svg = h("svg", { id: "icon-search" }, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.tabIndex).toBeUndefined()
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("skips SVGs without id", () => {
+    const svg = h("svg", {}, [h("path", {})])
+    const tree: Root = { type: "root", children: [svg] }
+    runPlugin(tree)
+
+    expect(svg.properties?.role).toBeUndefined()
+  })
+
+  it("demotes dl with trailing dt to div", () => {
+    const dl = h("dl", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
+
+  it("demotes dl with invalid child to div", () => {
+    const dl = h("dl", [h("dt", ["T"]), h("p", ["Invalid"]), h("dd", ["D"])])
+    const tree: Root = { type: "root", children: [dl] }
+    runPlugin(tree)
+
+    expect(dl.tagName).toBe("div")
+  })
+})
+
+describe("deduplicateSvgIds", () => {
+  it("prefixes IDs in a single SVG", () => {
+    const marker = h("marker", { id: "flowchart-pointEnd" })
+    const svg = h("svg", [marker])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(marker.properties?.id).toBe("svg-0-flowchart-pointEnd")
+  })
+
+  it("uses different prefixes for multiple SVGs", () => {
+    const marker1 = h("marker", { id: "pointEnd" })
+    const marker2 = h("marker", { id: "pointEnd" })
+    const svg1 = h("svg", [marker1])
+    const svg2 = h("svg", [marker2])
+    const tree: Root = { type: "root", children: [svg1, svg2] }
+    deduplicateSvgIds(tree)
+
+    expect(marker1.properties?.id).toBe("svg-0-pointEnd")
+    expect(marker2.properties?.id).toBe("svg-1-pointEnd")
+  })
+
+  it.each([
+    [
+      "href",
+      () => {
+        const use = h("use", { href: "#arrow" })
+        return { svg: h("svg", [h("marker", { id: "arrow" }), use]), target: use }
+      },
+      (target: Element) => expect(target.properties?.href).toBe("#svg-0-arrow"),
+    ],
+    [
+      "xlinkHref",
+      () => {
+        const rect: Element = {
+          type: "element",
+          tagName: "rect",
+          properties: { xlinkHref: "#grad1" },
+          children: [],
+        }
+        const svg: Element = {
+          type: "element",
+          tagName: "svg",
+          properties: {},
+          children: [h("linearGradient", { id: "grad1" }), rect],
+        }
+        return { svg, target: rect }
+      },
+      (target: Element) => expect(target.properties?.xlinkHref).toBe("#svg-0-grad1"),
+    ],
+    [
+      "url(#id) in properties",
+      () => {
+        const rect = h("rect", { "clip-path": "url(#clip1)" })
+        return { svg: h("svg", [h("clipPath", { id: "clip1" }), rect]), target: rect }
+      },
+      (target: Element) => expect(target.properties?.["clip-path"]).toBe("url(#svg-0-clip1)"),
+    ],
+  ] as [string, () => { svg: Element; target: Element }, (target: Element) => void][])(
+    "updates %s references to prefixed IDs",
+    (_desc, setup, assert) => {
+      const { svg, target } = setup()
+      const tree: Root = { type: "root", children: [svg] }
+      deduplicateSvgIds(tree)
+      assert(target)
+    },
+  )
+
+  it.each([
+    [
+      "url(#id) in <style>",
+      "clip1",
+      ".cls { clip-path: url(#clip1); }",
+      ".cls { clip-path: url(#svg-0-clip1); }",
+    ],
+    [
+      "#id CSS selector in <style>",
+      "myNode",
+      "#myNode { fill: red; }",
+      "#svg-0-myNode { fill: red; }",
+    ],
+  ])("updates %s text content", (_desc, id, cssInput, cssExpected) => {
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: cssInput }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [h("g", { id }), style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(cssExpected)
+  })
+
+  it("skips SVGs without any IDs", () => {
+    const rect = h("rect", { width: 100, height: 50 })
+    const svg = h("svg", [rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    // Should not modify anything
+    expect(rect.properties?.width).toBe(100)
+    expect(rect.properties?.id).toBeUndefined()
+  })
+
+  it("skips non-SVG elements", () => {
+    const div = h("div", { id: "should-not-change" })
+    const tree: Root = { type: "root", children: [div] }
+    deduplicateSvgIds(tree)
+
+    expect(div.properties?.id).toBe("should-not-change")
+  })
+
+  it.each([
+    ["href", { href: "#unknown-ref" }, "href", "#unknown-ref"],
+    ["url(#id)", { fill: "url(#unknown-gradient)" }, "fill", "url(#unknown-gradient)"],
+  ])("leaves unmatched %s references unchanged", (_desc, props, key, expectedValue) => {
+    const ref = h("rect", props)
+    const svg = h("svg", [h("marker", { id: "arrow" }), ref])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(ref.properties?.[key]).toBe(expectedValue)
+  })
+
+  it.each([
+    [
+      "non-text children of style elements",
+      () => {
+        const style: Element = {
+          type: "element",
+          tagName: "style",
+          properties: {},
+          children: [h("span", ["not text"])],
+        }
+        return h("svg", [h("g", { id: "myNode" }), style]) as unknown as Element
+      },
+    ],
+    [
+      "elements without properties",
+      () => {
+        const emptyElement = {
+          type: "element" as const,
+          tagName: "g",
+          properties: undefined,
+          children: [],
+        } as unknown as Element
+        return {
+          type: "element",
+          tagName: "svg",
+          properties: {},
+          children: [h("marker", { id: "arrow" }), emptyElement],
+        } as Element
+      },
+    ],
+  ] as [string, () => Element][])("handles %s without throwing", (_desc, createSvg) => {
+    const tree: Root = { type: "root", children: [createSvg()] }
+    expect(() => deduplicateSvgIds(tree)).not.toThrow()
+  })
+
+  it("leaves numeric property values unchanged", () => {
+    const rect = h("rect", { id: "box", width: 100, height: 50 })
+    const svg = h("svg", [h("marker", { id: "arrow" }), rect])
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(rect.properties?.width).toBe(100)
+    expect(rect.properties?.height).toBe(50)
+  })
+
+  it.each([
+    ["no url(#) content (plain CSS)", "myNode", ".cls { fill: red; }", [".cls { fill: red; }"]],
+    [
+      "mixed known/unknown url(#id) references",
+      "knownId",
+      ".cls { clip-path: url(#unknownId); fill: url(#knownId); }",
+      ["url(#unknownId)", "url(#svg-0-knownId)"],
+    ],
+  ])("style elements: %s", (_desc, id, cssInput, expectedSubstrings) => {
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: cssInput }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: {},
+      children: [h("g", { id }), style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    const result = (style.children[0] as { type: "text"; value: string }).value
+    for (const substring of expectedSubstrings) {
+      expect(result).toContain(substring)
+    }
+  })
+})
+
+describe("isValidDlStructure", () => {
+  it.each([
+    ["valid dt/dd pair", [h("dt", ["Term"]), h("dd", ["Desc"])], true],
+    [
+      "multiple dt/dd pairs",
+      [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"]), h("dd", ["D2"])],
+      true,
+    ],
+    ["multiple dd after one dt", [h("dt", ["Term"]), h("dd", ["D1"]), h("dd", ["D2"])], true],
+    ["orphaned dd (no preceding dt)", [h("dd", ["Orphan"])], false],
+    ["trailing dt without dd", [h("dt", ["Term"])], false],
+    ["valid pair + trailing dt", [h("dt", ["T1"]), h("dd", ["D1"]), h("dt", ["T2"])], false],
+    ["invalid child element (p)", [h("dt", ["T"]), h("p", ["Bad"]), h("dd", ["D"])], false],
+    ["dt interrupted by div before dd", [h("dt", ["T"]), h("div", ["Mid"]), h("dd", ["D"])], false],
+    ["empty children", [], false],
+    [
+      "text nodes between dt and dd (valid)",
+      [h("dt", ["T"]), { type: "text" as const, value: "\n" }, h("dd", ["D"])],
+      true,
+    ],
+    ["dd after div (orphaned)", [h("div", ["X"]), h("dd", ["D"])], false],
+  ])("%s → %s", (_desc, children, expected) => {
+    expect(isValidDlStructure(children)).toBe(expected)
   })
 })

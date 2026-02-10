@@ -44,6 +44,11 @@ function processFootnoteForPopover(
   }
   modifyElementIds([clonedFootnote], "-popover")
 
+  // Prevent meta-popovers: strip popover triggers from links inside footnote content
+  for (const link of clonedFootnote.querySelectorAll(".can-trigger-popover")) {
+    link.classList.remove("can-trigger-popover")
+  }
+
   // Extract the content from the <li> wrapper and return as a fragment
   const fragment = html.createDocumentFragment()
   while (clonedFootnote.firstChild) {
@@ -126,6 +131,15 @@ export async function createPopover(options: PopoverOptions): Promise<HTMLElemen
   if (footnoteMatch?.groups) {
     const footnoteId = footnoteMatch.groups.footnoteId
     renderFootnoteContent(popoverInner, html, targetUrl, footnoteId)
+    popoverElement.classList.add("footnote-popover")
+
+    const closeBtn = document.createElement("button")
+    closeBtn.classList.add("popover-close")
+    closeBtn.setAttribute("aria-label", "Close footnote")
+    closeBtn.setAttribute("type", "button")
+    closeBtn.textContent = "\u00d7" // × multiplication sign
+    // Append to outer .popover so it doesn't scroll with .popover-inner content
+    popoverElement.appendChild(closeBtn)
   } else {
     renderFullPageContent(popoverInner, html, targetUrl)
   }
@@ -253,12 +267,13 @@ export function attachPopoverEventListeners(
   linkElement: HTMLLinkElement,
   onRemove: () => void,
 ): () => void {
+  const isFootnote = popoverElement.classList.contains("footnote-popover")
+
   let isMouseOverLink = false
   let isMouseOverPopover = false
 
   const removePopover = () => {
-    popoverElement.classList.remove("visible")
-    // Use a short timeout to allow for potential CSS transitions
+    popoverElement.classList.remove("popover-visible")
     setTimeout(() => {
       if (!isMouseOverLink && !isMouseOverPopover) {
         popoverElement.remove()
@@ -271,45 +286,61 @@ export function attachPopoverEventListeners(
     popoverElement.classList.add("popover-visible")
   }
 
-  const handlerMap = {
-    mouseenterLink: () => {
-      isMouseOverLink = true
-      showPopover()
-    },
-    mouseleaveLink: () => {
-      isMouseOverLink = false
-      removePopover()
-    },
-    mouseenterPopover: () => {
-      isMouseOverPopover = true
-    },
-    mouseleavePopover: () => {
-      isMouseOverPopover = false
-      removePopover()
-    },
-    clickPopover: (e: MouseEvent) => {
-      const clickedLink = (e.target as HTMLElement).closest("a")
-      if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-        window.location.href = clickedLink.href
-      } else {
-        window.location.href = linkElement.href
-      }
-    },
+  const clickPopover = (e: MouseEvent) => {
+    const clickedLink = (e.target as HTMLElement).closest("a")
+    if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
+      window.location.href = clickedLink.href
+    } else if (!isFootnote) {
+      // For non-footnote popovers, clicking body navigates to the link target.
+      // For footnote popovers, clicking body does nothing (content is just readable text).
+      window.location.href = linkElement.href
+    }
   }
 
-  linkElement.addEventListener("mouseenter", handlerMap.mouseenterLink)
-  linkElement.addEventListener("mouseleave", handlerMap.mouseleaveLink)
-  popoverElement.addEventListener("mouseenter", handlerMap.mouseenterPopover)
-  popoverElement.addEventListener("mouseleave", handlerMap.mouseleavePopover)
-  popoverElement.addEventListener("click", handlerMap.clickPopover)
+  popoverElement.addEventListener("click", clickPopover)
+
+  // Hover listeners only for non-footnote popovers. Footnote popovers are
+  // click-only: opened by clicking the footnote ref, dismissed by clicking
+  // outside, pressing Escape, or clicking the close button.
+  let mouseenterLink: (() => void) | undefined
+  let mouseleaveLink: (() => void) | undefined
+  let mouseenterPopover: (() => void) | undefined
+  let mouseleavePopover: (() => void) | undefined
+
+  if (!isFootnote) {
+    mouseenterLink = () => {
+      isMouseOverLink = true
+      showPopover()
+    }
+    mouseleaveLink = () => {
+      isMouseOverLink = false
+      if (!popoverElement.dataset.pinned) {
+        removePopover()
+      }
+    }
+    mouseenterPopover = () => {
+      isMouseOverPopover = true
+    }
+    mouseleavePopover = () => {
+      isMouseOverPopover = false
+      if (!popoverElement.dataset.pinned) {
+        removePopover()
+      }
+    }
+
+    linkElement.addEventListener("mouseenter", mouseenterLink)
+    linkElement.addEventListener("mouseleave", mouseleaveLink)
+    popoverElement.addEventListener("mouseenter", mouseenterPopover)
+    popoverElement.addEventListener("mouseleave", mouseleavePopover)
+  }
 
   // Returned cleanup function
   return () => {
-    linkElement.removeEventListener("mouseenter", handlerMap.mouseenterLink)
-    linkElement.removeEventListener("mouseleave", handlerMap.mouseleaveLink)
-    popoverElement.removeEventListener("mouseenter", handlerMap.mouseenterPopover)
-    popoverElement.removeEventListener("mouseleave", handlerMap.mouseleavePopover)
-    popoverElement.removeEventListener("click", handlerMap.clickPopover)
+    if (mouseenterLink) linkElement.removeEventListener("mouseenter", mouseenterLink)
+    if (mouseleaveLink) linkElement.removeEventListener("mouseleave", mouseleaveLink)
+    if (mouseenterPopover) popoverElement.removeEventListener("mouseenter", mouseenterPopover)
+    if (mouseleavePopover) popoverElement.removeEventListener("mouseleave", mouseleavePopover)
+    popoverElement.removeEventListener("click", clickPopover)
 
     // Also trigger removal logic if cleanup is called directly
     popoverElement.remove()

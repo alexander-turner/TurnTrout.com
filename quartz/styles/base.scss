@@ -20,6 +20,11 @@ html {
   color: var(--foreground);
   text-decoration: underline;
 
+  // Use a pseudo-element so the text is not searchable via Ctrl+F
+  &::after {
+    content: "Skip to main content";
+  }
+
   &:focus {
     left: 50%;
     transform: translateX(-50%);
@@ -213,6 +218,7 @@ a {
           max-width: $page-width;
           height: auto;
           overflow-y: visible;
+          pointer-events: none;
         }
       }
 

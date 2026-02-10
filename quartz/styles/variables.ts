@@ -23,6 +23,10 @@ export const listPaddingLeft = "1.875rem"
 export const fontScaleFactor = 1.2
 
 // Colors
+export const backgroundDark = "#12141e"
+export const backgroundLight = "#fcfcff"
+export const foregroundDark = "#d6deff"
+export const foregroundLight = "#4c4f69"
 export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
@@ -44,6 +48,10 @@ export const variables = {
   maxSidebarGap,
   maxContentWidth,
   baseMargin,
+  backgroundDark,
+  backgroundLight,
+  foregroundDark,
+  foregroundLight,
   boldWeight,
   semiBoldWeight,
   normalWeight,

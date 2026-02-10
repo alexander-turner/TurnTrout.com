@@ -32,6 +32,29 @@ pytest <path>               # Python tests (NOT python -m pytest)
 conda init && conda activate website
 ```
 
+### Running Playwright Tests Locally
+
+1. Install browsers and WebKit system dependencies:
+
+```bash
+npx playwright install chromium firefox
+npx playwright install-deps webkit
+npx playwright install webkit
+```
+
+2. Start the local server in offline mode (uses Playwright's Chromium for critical CSS generation):
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --serve --offline &
+```
+
+3. Wait for the server to be ready at `http://localhost:8080`, then run tests:
+
+```bash
+npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
+```
+
 ### Code Quality
 
 ```bash
@@ -165,6 +188,14 @@ After pushing to main:
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis
+
+### CI Cost Optimization
+
+- **Playwright/visual tests on PRs**: These only run when the `ci:full-tests` label is added to a PR. They always run on push to main/dev and in the merge queue.
+- **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
+- **Path filters**: Workflows only trigger when relevant files change. Playwright tests skip content-only changes.
+- **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.
+- **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
 

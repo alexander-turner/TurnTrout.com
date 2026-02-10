@@ -207,6 +207,34 @@ test("Menu disappears when scrolling down and reappears when scrolling up", asyn
   await expect(navbar).toBeVisible()
 })
 
+test("Content behind hidden navbar is clickable on mobile", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  const navbar = page.locator("#navbar")
+  const leftSidebar = page.locator("#left-sidebar")
+
+  // Navbar visible: sidebar should not intercept, navbar should intercept
+  await expect(leftSidebar).toHaveCSS("pointer-events", "none")
+  await expect(navbar).toHaveCSS("pointer-events", "auto")
+
+  // Scroll down to hide navbar
+  await page.evaluate(() => window.scrollTo({ top: 250, behavior: "instant" }))
+  await expect(navbar).toHaveClass(/hide-above-screen/)
+
+  // When hidden, navbar should also not intercept clicks
+  await expect(navbar).toHaveCSS("pointer-events", "none")
+
+  // Verify a link in the content area is clickable despite the sticky sidebar
+  const firstVisibleLink = page.locator("article a.internal[href]").first()
+  await firstVisibleLink.scrollIntoViewIfNeeded()
+  const href = firstVisibleLink
+  await expect(href).toHaveAttribute("href")
+
+  const initialUrl = page.url()
+  await firstVisibleLink.click()
+  await page.waitForURL((url) => url.href !== initialUrl)
+})
+
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 

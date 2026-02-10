@@ -2598,88 +2598,56 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Test favicon directly under span with correct class (valid)
+        # Favicon with word-joiner span (valid)
         (
-            '<span class="favicon-span"><img class="favicon" src="test.ico"></span>',
+            '<a>text<span class="word-joiner" aria-hidden="true">\u2060</span>'
+            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></a>',
             [],
         ),
-        # Test favicon without parent span (invalid)
+        # Favicon without word-joiner span (invalid)
         (
-            '<div><img class="favicon" src="test.ico"></div>',
+            '<a>text<svg class="favicon" data-domain="example_com"'
+            ' style="--mask-url: url(test.svg);"></svg></a>',
             [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
+                "Favicon (example_com) missing word-joiner span as previous sibling"
             ],
         ),
-        # Test favicon nested deeper (invalid)
+        # Favicon inside .no-favicon-span (should be ignored)
         (
-            '<span class="favicon-span"><div><img class="favicon" src="test.ico"></div></span>',
-            [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test multiple favicons
-        (
-            """
-            <div>
-                <span class="favicon-span"><img class="favicon" src="valid.ico"></span>
-                <div><img class="favicon" src="invalid.ico"></div>
-            </div>
-            """,
-            [
-                "Favicon (invalid.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test favicon with no parent
-        (
-            '<img class="favicon" src="orphan.ico">',
-            [
-                "Favicon (orphan.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <[document]>: "
-            ],
-        ),
-        # Test non-favicon images (should be ignored)
-        (
-            '<div><img src="regular.png"></div>',
+            '<div class="no-favicon-span">'
+            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
             [],
         ),
-        # Test favicon under span but missing required class (invalid)
+        # img.favicon without word-joiner (invalid)
         (
-            '<span><img class="favicon" src="test.ico"></span>',
-            [
-                "Favicon (test.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <span>: "
-            ],
+            '<a>text<img class="favicon" src="test.ico"></a>',
+            ["Favicon (test.ico) missing word-joiner span as previous sibling"],
         ),
-        # Test favicon inside .no-favicon-span (should be ignored)
+        # No favicons at all (valid)
+        ("<div><p>No favicons</p></div>", []),
+        # Mixed: one with, one without word-joiner
         (
-            '<div class="no-favicon-span"><img class="favicon" src="test.ico"></div>',
-            [],
+            "<div>"
+            '<a>ok<span class="word-joiner">\u2060</span>'
+            '<svg class="favicon" data-domain="ok_com"'
+            ' style="--mask-url: url(ok.svg);"></svg></a>'
+            '<a>bad<svg class="favicon" data-domain="bad_com"'
+            ' style="--mask-url: url(bad.svg);"></svg></a>'
+            "</div>",
+            ["Favicon (bad_com) missing word-joiner span as previous sibling"],
         ),
-        # Test svg.favicon inside .no-favicon-span (should be ignored)
+        # Nested .no-favicon-span (should be ignored)
         (
-            '<div class="no-favicon-span"><svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
-            [],
-        ),
-        # Test mixed: favicon in .no-favicon-span ignored, other favicon reported
-        (
-            """
-            <div>
-                <div class="no-favicon-span"><img class="favicon" src="ignored.ico"></div>
-                <div><img class="favicon" src="reported.ico"></div>
-            </div>
-            """,
-            [
-                "Favicon (reported.ico) is not a direct child of a span.favicon-span. Instead, it's a child of <div>: "
-            ],
-        ),
-        # Test nested .no-favicon-span (should be ignored)
-        (
-            '<div class="no-favicon-span"><span><img class="favicon" src="test.ico"></span></div>',
+            '<div class="no-favicon-span"><span>'
+            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></span></div>',
             [],
         ),
     ],
 )
-def test_check_favicon_parent_elements(html, expected):
+def test_check_favicon_word_joiner(html, expected):
+    """Test the check_favicon_word_joiner function."""
     soup = BeautifulSoup(html, "html.parser")
-    assert built_site_checks.check_favicon_parent_elements(soup) == expected
+    assert built_site_checks.check_favicon_word_joiner(soup) == expected
 
 
 @pytest.mark.parametrize(
@@ -5040,7 +5008,7 @@ description: Test description
         ),
         # Element with child SVG element but no text (valid - used for favicons)
         (
-            '<span id="populate-turntrout-favicon"><span class="favicon-span"><svg class="favicon"></svg></span></span>',
+            '<span id="populate-turntrout-favicon"><svg class="favicon"></svg></span>',
             [],
         ),
         # Element with child img element but no text (valid)
@@ -5056,8 +5024,8 @@ description: Test description
         # Multiple favicon populate elements with SVG children (valid)
         (
             """
-            <span id="populate-turntrout-favicon"><span class="favicon-span"><svg></svg></span></span>
-            <span id="populate-anchor-favicon"><span class="favicon-span"><svg></svg></span></span>
+            <span id="populate-turntrout-favicon"><svg></svg></span>
+            <span id="populate-anchor-favicon"><svg></svg></span>
             """,
             [],
         ),
@@ -5116,7 +5084,7 @@ def test_check_populate_elements_nonempty_non_string_id():
         # Element with iframe child (self-contained, has content)
         ("<div><iframe src='test.html'></iframe></div>", True),
         # Element with nested structure containing SVG
-        ("<span><span class='favicon-span'><svg></svg></span></span>", True),
+        ("<span><svg></svg></span>", True),
         # Element with only NavigableString children (newlines/whitespace)
         ("<div>\n</div>", False),
         # Element with both text and child element
@@ -5362,7 +5330,8 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         # Paragraphs with only zero-width spaces should be skipped
         ("<article><p>\u200b</p></article>", []),
         ("<article><p>\ufeff</p></article>", []),
-        ("<article><p>\u200b\ufeff  </p></article>", []),
+        ("<article><p>\u2060</p></article>", []),
+        ("<article><p>\u200b\ufeff\u2060  </p></article>", []),
         # Footnote references should be removed before checking
         (
             '<article><p>Text with footnote.<a id="user-content-fnref-1" href="#fn-1">1</a></p></article>',
@@ -5380,6 +5349,7 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         # Text ending with punctuation after zero-width spaces
         ("<article><p>Text.\u200b</p></article>", []),
         ("<article><p>Text.\ufeff</p></article>", []),
+        ("<article><p>Text.\u2060</p></article>", []),
         # Text ending with trim characters (should be stripped)
         ("<article><p>Text.↗</p></article>", []),
         ("<article><p>Text.✓</p></article>", []),
