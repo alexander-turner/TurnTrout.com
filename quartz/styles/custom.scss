@@ -388,6 +388,10 @@ p:has(+ .subtitle),
       }
     }
   }
+
+  .timeline & {
+    color: var(--midground-strong);
+  }
 }
 
 figure > img {
