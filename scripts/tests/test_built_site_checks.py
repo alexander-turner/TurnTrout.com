@@ -5523,6 +5523,15 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             '<article><p>Text with <span class="h2">Header 2</span></p></article>',
             ["Paragraph ends with invalid character '2' Text withHeader 2"],
         ),
+        # Feature-list paragraphs with · separators should be skipped
+        (
+            "<article><p>Feature A · Feature B · Feature C</p></article>",
+            [],
+        ),
+        (
+            "<article><p><strong>Bold feature</strong> · <strong>Another</strong></p></article>",
+            [],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
