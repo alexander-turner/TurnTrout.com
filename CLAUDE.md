@@ -105,8 +105,6 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
-**Commits**: Only commit `package.json` when dependencies change.
-
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
 **Pre-push** (main branch only):
