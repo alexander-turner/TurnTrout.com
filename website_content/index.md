@@ -39,8 +39,8 @@ Stay a while! The water's great.
 4. [Formalizing "defection" using game theory](/what-counts-as-defection)
 5. [English writes numbers backwards](/backwards-numbers)
 
-# Dive in
+# Or dive in
 
-Or browse [all my posts](/posts).
+And browse [all of my posts](/posts).
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/pond-calming.mp4" class="no-vsc" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/pond-calming.webm" class="no-vsc" type="video/webm"></video>
