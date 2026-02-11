@@ -32,6 +32,8 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
+        with:
+          install-python: "false"
       - name: Build site
         run: pnpm build
       - name: Start server and run accessibility checks

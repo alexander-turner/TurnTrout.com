@@ -1,5 +1,10 @@
 name: "Setup Build Environment"
 description: "Checks out code, sets up Node and Python, installs dependencies, and caches them."
+inputs:
+  install-python:
+    description: "Whether to install Python and Python dependencies"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -10,6 +15,7 @@ runs:
         cache-playwright: "false"
         cache-puppeteer: "false"
         cache-ffmpeg: "false"
+        install-python: ${{ inputs.install-python }}
 
     - name: Install Build Dependencies
       run: |

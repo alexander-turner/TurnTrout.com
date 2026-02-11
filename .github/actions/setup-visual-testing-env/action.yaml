@@ -16,6 +16,7 @@ runs:
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-ffmpeg: "true"
+        install-python: "false"
 
     - name: Install Playwright browsers and system dependencies
       if: inputs.install-playwright == 'true'

@@ -17,6 +17,10 @@ inputs:
     description: "Whether to cache ffmpeg"
     required: false
     default: "false"
+  install-python:
+    description: "Whether to install Python and Python dependencies"
+    required: false
+    default: "true"
 outputs:
   ffmpeg-cache-hit:
     description: "Whether ffmpeg was found in cache"
@@ -92,15 +96,18 @@ runs:
       shell: bash
 
     - name: Set up uv
+      if: inputs.install-python == 'true'
       uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
       with:
         enable-cache: true
         cache-dependency-glob: "uv.lock"
 
     - name: Set up Python
+      if: inputs.install-python == 'true'
       run: uv python install 3.11
       shell: bash
 
     - name: Install Python Dependencies
+      if: inputs.install-python == 'true'
       run: uv sync --frozen
       shell: bash
