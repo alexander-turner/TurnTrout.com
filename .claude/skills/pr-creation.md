@@ -11,6 +11,8 @@ Use this skill when:
 - Creating a pull request for completed work
 - The user asks to "create a PR", "open a pull request", or similar
 
+**Note:** For pushing additional commits to an existing PR, use the `push` skill instead.
+
 ## Prerequisites
 
 - GitHub CLI (`gh`) must be authenticated
@@ -135,34 +137,13 @@ After pushing, check for DeepSource static analysis issues:
 1. Get the commit SHA: `git rev-parse HEAD`
 2. Run: `deepsource issues list --commit <SHA>`
 3. If analysis isn't ready yet, retry after 30 seconds (up to 3 attempts)
-4. Fix any legitimate issues found, commit, and push
-5. If the `--commit` flag is not available, skip this step
+4. Fix any legitimate issues found
+5. If issues were fixed, use the `push` skill to update the PR and push changes
+6. If the `--commit` flag is not available, skip this step
 
 ### Step 7: Report Result
 
 Provide the PR URL and title to the user.
-
-## Updating the PR Description
-
-**After each subsequent commit**, update the PR description to reflect the new changes:
-
-```bash
-gh pr edit --body "$(cat <<'EOF'
-## Summary
-<Updated summary reflecting all changes>
-
-## Changes
-<Updated list of all changes, including new commits>
-
-## Testing
-<Updated testing information>
-
-https://claude.ai/code/session_...
-EOF
-)"
-```
-
-This keeps reviewers informed of the PR's current state without requiring them to parse individual commits.
 
 ## Error Handling
 
