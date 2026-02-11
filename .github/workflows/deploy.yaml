@@ -27,7 +27,7 @@ permissions:
 jobs:
   prepare-deploy:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -132,7 +132,7 @@ jobs:
   verify-tests:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Wait for all tests
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
