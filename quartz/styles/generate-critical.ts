@@ -181,7 +181,8 @@ export function generateCritical(): void {
     const scss = generateCriticalScssContent()
     fs.writeFileSync(outputPath, scss)
   } catch (error) {
-    console.error("Error generating critical SCSS:", error)
+    // Avoid logging the error itself (it may contain file path info)
+    console.error("Error generating critical SCSS")
     throw error
   }
 }

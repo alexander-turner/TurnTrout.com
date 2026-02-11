@@ -114,8 +114,10 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
+        # Use 30s timeout to accommodate Cloudflare CDN latency. The 10s default
+        # caused intermittent failures in CI when the CDN was slow to respond.
         response = requests.head(
-            card_url, timeout=10, allow_redirects=True, headers=headers
+            card_url, timeout=30, allow_redirects=True, headers=headers
         )
 
         if not response.ok:
