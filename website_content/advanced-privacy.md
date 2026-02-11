@@ -8,7 +8,8 @@ tags:
   - practical
   - community
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.jpg
 aliases:

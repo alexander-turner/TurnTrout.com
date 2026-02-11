@@ -437,6 +437,14 @@ describe("matchTextNodes", () => {
       expectedHTML: "<p></p>",
       expectedContent: [],
     },
+    {
+      name: "NBSP normalized to regular space for multi-word matching",
+      html: "<p>AI\u00A0presidents discuss alignment</p>",
+      searchTerm: "AI presidents",
+      expectedCount: 1,
+      expectedHTML: '<p><span class="search-match">AI presidents</span> discuss alignment</p>',
+      expectedContent: ["AI presidents"],
+    },
   ]
 
   it.each(testCases)(

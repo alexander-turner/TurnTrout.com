@@ -6,7 +6,8 @@ tags:
   - AI
   - mats-program
 description: Our gradient routing technique can force an interpretable inner representation. Each dimension corresponds to a digit. Play with a demo!
-authors: Jacob Goldman-Wetzler
+authors:
+  - Jacob Goldman-Wetzler
 hideSubscriptionLinks: true
 card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 aliases:
@@ -73,6 +74,6 @@ It turns out that even though there was *no* loss function causing the encoding 
 
 # Code
 
-You can see the code [here](https://github.com/g-w1/gradient-routed-vae).
+You can see the [code on GitHub](https://github.com/g-w1/gradient-routed-vae).
 
 [^1]: I did have to train the model a few times to get something that behaved nicely enough for the demo.
