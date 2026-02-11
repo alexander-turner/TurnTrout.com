@@ -29,10 +29,7 @@ jobs:
         uses: ./.github/actions/setup-base-env
 
       - name: Update article dates
-        run: uv run python scripts/update_date_on_publish.py
-        env:
-          # Pass the commit range from the push event to the script
-          GIT_COMMIT_RANGE: ${{ github.event.before }}..${{ github.event.after }}
+        run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
 
       - name: Check for changes
         id: check-changes

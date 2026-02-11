@@ -33,15 +33,14 @@ current_date = TimeStamp(
 )
 
 
-def is_file_modified(file_path: Path) -> bool:
+def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
     """
     Check if file was modified in the relevant commit range.
 
-    In CI (when GIT_COMMIT_RANGE is set), checks if the file changed in that range.
-    Otherwise, checks if file has unpushed changes in git.
-
     Args:
         file_path (Path): Path to the file to check
+        commit_range (str | None): Git commit range to check (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
 
     Returns:
         bool: True if file was modified, False otherwise
@@ -55,7 +54,6 @@ def is_file_modified(file_path: Path) -> bool:
         rel_path = file_path.resolve().relative_to(Path(git_root))
 
         # Determine commit range to check
-        commit_range = os.environ.get("GIT_COMMIT_RANGE")
         if commit_range:
             # CI environment: check if file changed in the push event
             # Handle edge case: initial push has before=0000000000000000000000000000000000000000
@@ -200,13 +198,9 @@ def main(
     Args:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "website_content" in current directory.
-        commit_range (str | None, optional): Git commit range to check for modifications.
-            If provided, overrides the GIT_COMMIT_RANGE environment variable.
-            Defaults to None (uses environment variable if set).
+        commit_range (str | None, optional): Git commit range to check for modifications
+            (e.g., "abc123..def456"). If None, checks for unpushed changes.
     """
-    # Set commit range in environment if provided as parameter
-    if commit_range is not None:
-        os.environ["GIT_COMMIT_RANGE"] = commit_range
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
         if not metadata and not content:
@@ -217,7 +211,7 @@ def main(
         maybe_update_publish_date(metadata)
 
         # Check for unpushed changes and update date_updated if needed
-        if is_file_modified(md_file_path):
+        if is_file_modified(md_file_path, commit_range):
             metadata["date_updated"] = current_date
 
         # Ensure that date fields are timestamps
@@ -234,4 +228,22 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Update publication dates in markdown files"
+    )
+    parser.add_argument(
+        "--commit-range",
+        type=str,
+        help="Git commit range to check (e.g., abc123..def456)",
+    )
+    parser.add_argument(
+        "--content-dir",
+        type=Path,
+        default=Path("website_content"),
+        help="Directory containing markdown files",
+    )
+    args = parser.parse_args()
+
+    main(content_dir=args.content_dir, commit_range=args.commit_range)
