@@ -1133,9 +1133,9 @@ Reordering elements in `<head>` to ensure social media previews
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
-: For posts which are being pushed for the first time, my script sets their publication date. For posts which have been updated since the last `push`, it updates their "last updated" date.
+: Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
 
-: The script also updates the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+: The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
 

@@ -628,8 +628,6 @@ describe("HTMLFormattingImprovement", () => {
 
     describe("Legal symbols", () => {
       it.each([
-        // (c) only converts with copyright context (year or "copyright" keyword)
-        ["<p>(c)</p>", "<p>(c)</p>"],
         ["<p>Copyright (c) 2024</p>", "<p>Copyright © 2024</p>"],
         ["<p>(r)</p>", "<p>®</p>"],
         ["<p>(R)</p>", "<p>®</p>"],

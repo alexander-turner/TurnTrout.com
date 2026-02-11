@@ -443,7 +443,9 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toBeInViewport({ ratio: 1 })
   })
 
-  test("Pressing Escape closes pinned footnote popover", async ({ page }) => {
+  test("Pressing Escape closes pinned footnote popover and returns focus to trigger", async ({
+    page,
+  }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -453,6 +455,53 @@ test.describe("Footnote popovers", () => {
 
     await page.keyboard.press("Escape")
     await expect(popover).toBeHidden()
+
+    // Focus should return to the triggering footnote link
+    const focusedHref = await page.evaluate(() => document.activeElement?.getAttribute("href"))
+    expect(focusedHref).toMatch(/^#user-content-fn-/)
+  })
+
+  test("Focus moves into pinned footnote popover on open", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Focus should be within the popover (on the close button)
+    const activeElement = page.locator(":focus")
+    await expect(activeElement).toHaveClass(/popover-close/)
+  })
+
+  test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+    await footnoteRef.scrollIntoViewIfNeeded()
+
+    await footnoteRef.click()
+    const popover = page.locator(".popover.footnote-popover")
+    await expect(popover).toBeVisible()
+
+    // Collect all focusable elements in the popover
+    const focusableCount = await popover.evaluate((el) => {
+      const selector =
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+      return [...el.querySelectorAll<HTMLElement>(selector)].filter((e) => e.offsetParent !== null)
+        .length
+    })
+    expect(focusableCount).toBeGreaterThan(0)
+
+    // Press Tab enough times to cycle through all focusable elements and back
+    for (let i = 0; i < focusableCount + 1; i++) {
+      await page.keyboard.press("Tab")
+    }
+
+    // After cycling, focus should still be inside the popover (trapped)
+    const focusIsInPopover = await page.evaluate(() => {
+      const popoverEl = document.querySelector(".popover.footnote-popover")
+      return popoverEl?.contains(document.activeElement) ?? false
+    })
+    expect(focusIsInPopover).toBe(true)
   })
 
   test("Hovering footnote link does NOT open popover", async ({ page }) => {

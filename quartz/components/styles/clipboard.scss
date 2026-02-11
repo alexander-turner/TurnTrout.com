@@ -39,7 +39,7 @@ pre {
     border-color: var(--blue);
   }
 
-  &:focus {
+  &:focus:not(:focus-visible) {
     outline: 0;
   }
 }
