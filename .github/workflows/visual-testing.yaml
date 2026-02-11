@@ -55,8 +55,6 @@ jobs:
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
-        with:
-          install-python: "false"
 
       - name: Remove Safari autoplay script
         run: rm -f ./quartz/static/scripts/safari-autoplay.js
