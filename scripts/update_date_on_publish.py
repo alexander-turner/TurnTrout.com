@@ -1,7 +1,6 @@
 """Update the publish and update dates in markdown files."""
 
 import io
-import os
 import re  # Import the re module
 import subprocess
 import sys
