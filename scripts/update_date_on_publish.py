@@ -32,6 +32,36 @@ current_date = TimeStamp(
 )
 
 
+def _determine_commit_range(commit_range: str | None) -> str:
+    """
+    Determine the git commit range to check for file modifications.
+
+    Args:
+        commit_range (str | None): Git commit range from CI (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
+
+    Returns:
+        str: The commit range to check
+    """
+    # Local environment: check for unpushed changes
+    if not commit_range:
+        return "origin/main..HEAD"
+
+    # CI environment: extract before and after commits
+    if ".." not in commit_range:
+        return commit_range
+
+    before_commit, after_commit = commit_range.split("..", 1)
+
+    # Handle edge case: initial push has before=0000000000000000000000000000000000000000
+    if before_commit.strip("0"):
+        # Normal case: compare the range
+        return commit_range
+
+    # First push: check the after commit only
+    return f"{after_commit}^..{after_commit}"
+
+
 def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
     """
     Check if file was modified in the relevant commit range.
@@ -53,22 +83,7 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
         rel_path = file_path.resolve().relative_to(Path(git_root))
 
         # Determine commit range to check
-        if commit_range:
-            # CI environment: check if file changed in the push event
-            # Handle edge case: initial push has before=0000000000000000000000000000000000000000
-            before_commit = (
-                commit_range.split("..")[0] if ".." in commit_range else None
-            )
-            if before_commit and before_commit.strip("0"):
-                # Normal case: compare the range
-                range_to_check = commit_range
-            else:
-                # First push: check the after commit only
-                after_commit = commit_range.split("..")[-1]
-                range_to_check = f"{after_commit}^..{after_commit}"
-        else:
-            # Local environment: check for unpushed changes
-            range_to_check = "origin/main..HEAD"
+        range_to_check = _determine_commit_range(commit_range)
 
         # Check if file changed in the range
         result = subprocess.check_output(
