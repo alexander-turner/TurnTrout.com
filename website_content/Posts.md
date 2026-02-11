@@ -24,13 +24,7 @@ card_image_alt: An anime-style illustration of a grand library bathed in sunligh
 
 
 
-# My favorite posts
-
-1. [Looking back on my alignment PhD](/alignment-phd)
-2. [The shard theory of human values](/shard-theory)
-3. [Bruce Wayne and the cost of inaction](/bruce-wayne-and-the-cost-of-inaction)
-4. [Formalizing “defection” using game theory](/what-counts-as-defection)
-5. [English writes numbers backwards](/backwards-numbers)
+![[welcome#Start here]]
 
 # My recent posts
 
