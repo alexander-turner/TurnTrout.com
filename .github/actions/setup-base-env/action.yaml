@@ -85,7 +85,7 @@ runs:
         key: ffmpeg-${{ runner.os }}-master-latest
 
     - name: Install Node Dependencies
-      run: pnpm install --frozen-lockfile
+      run: timeout 600 pnpm install --frozen-lockfile
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"

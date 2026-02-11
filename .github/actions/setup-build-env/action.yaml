@@ -33,7 +33,7 @@ runs:
         sudo mkdir -p "$FFMPEG_DIR"
 
         # Download and extract ffmpeg, stripping the top-level directory
-        curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
+        timeout 300 bash -c 'curl -sL "$1" | sudo tar -xJ -C "$2" --strip-components=1' -- "$FFMPEG_URL" "$FFMPEG_DIR"
 
         # Create symlinks to make ffmpeg and ffprobe available on the PATH
         sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
