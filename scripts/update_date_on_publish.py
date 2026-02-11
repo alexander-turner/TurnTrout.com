@@ -191,14 +191,22 @@ def commit_changes(message: str) -> None:
     subprocess.run([git_executable, "commit", "-m", message], check=True)
 
 
-def main(content_dir: Path = Path("website_content")) -> None:
+def main(
+    content_dir: Path = Path("website_content"), commit_range: str | None = None
+) -> None:
     """
     Main function to update dates in markdown files.
 
     Args:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "website_content" in current directory.
+        commit_range (str | None, optional): Git commit range to check for modifications.
+            If provided, overrides the GIT_COMMIT_RANGE environment variable.
+            Defaults to None (uses environment variable if set).
     """
+    # Set commit range in environment if provided as parameter
+    if commit_range is not None:
+        os.environ["GIT_COMMIT_RANGE"] = commit_range
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
         if not metadata and not content:
