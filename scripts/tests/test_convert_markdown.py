@@ -27,7 +27,7 @@ def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def mock_git_root(quartz_project_structure):
+def mock_git_root(quartz_project_structure, monkeypatch):
     """Override conftest mock_git_root to add card_images directory."""
     git_root = quartz_project_structure["public"].parent
     (git_root / "quartz" / "static" / "images" / "card_images").mkdir(
@@ -36,8 +36,11 @@ def mock_git_root(quartz_project_structure):
     (git_root / "static" / "images" / "posts").mkdir(
         parents=True, exist_ok=True
     )
-    with mock.patch("scripts.utils.get_git_root", return_value=git_root):
-        yield git_root
+    monkeypatch.setattr(
+        "scripts.utils.get_git_root",
+        lambda *_args, **_kwargs: git_root,
+    )
+    return git_root
 
 
 @pytest.mark.parametrize(
