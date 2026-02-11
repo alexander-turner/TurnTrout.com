@@ -140,7 +140,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
           wait-interval: 10
-          allowed-conclusions: success,skipped,failure
+          allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
           fail-on-no-checks: false
 

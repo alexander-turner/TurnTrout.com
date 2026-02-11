@@ -10,12 +10,11 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, resolveRelative } from "../../util/path"
+import { normalizeNbsp } from "../constants"
 import {
   PageList,
   byDateAndAlphabetical,
