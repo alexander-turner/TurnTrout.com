@@ -1,4 +1,4 @@
-"""Tests for download_external_media.py"""
+"""Tests for download_external_media.py."""
 
 import subprocess
 from unittest import mock

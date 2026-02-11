@@ -6,7 +6,8 @@ tags:
   - critique
   - AI
 description: The "shoggoth" meme reflects fears about AI but lacks sufficient scientific basis. The meme implies that AI is scarier than we know it to be.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/Zff8t5y.jpg
 aliases:

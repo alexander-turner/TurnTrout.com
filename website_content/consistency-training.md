@@ -8,7 +8,12 @@ tags:
   - deepmind
 description: "Simple & effective: train the AI to behave as if the jailbreak were
   not present. Explores activation-level training of Gemini 2.5 Flash."
-authors: Alex Irpan* and Alex Turner*, Mark Kurzeja, David Elson, and Rohin Shah
+authors:
+  - Alex Irpan
+  - Alex Turner
+  - Mark Kurzeja
+  - David Elson
+  - Rohin Shah
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -16,6 +21,7 @@ aliases:
   - activation-training
 date_published: &id001 2025-11-06 14:34:13.304738
 date_updated: *id001
+createBibtex: true
 ---
 
 

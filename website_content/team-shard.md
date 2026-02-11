@@ -8,7 +8,9 @@ tags:
   - shard-theory
   - community
 description: Team Shard consistently graduates skilled researchers, does good work, and yields three months of wholesome growth.
-authors: Alex Turner and Alex Cloud
+authors:
+  - Alex Turner
+  - Alex Cloud
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/t1YRv9z.jpg
 card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.

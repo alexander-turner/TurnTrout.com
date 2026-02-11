@@ -12,6 +12,8 @@ import { type GlobalConfiguration } from "../../cfg"
 
 import "@testing-library/jest-dom"
 
+const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
+
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FilePath } from "../../util/path"
 import {
@@ -400,7 +402,7 @@ describe("renderPreviousPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(PREV_POST_SLUG)
-    expect(link.props.children).toBe(PREV_POST_TITLE)
+    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -410,7 +412,7 @@ describe("renderPreviousPostJsx", () => {
     })
     const result = renderPreviousPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(link.props.children).toBe(PREV_POST_TITLE_CAPS)
+    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE_CAPS)
   })
 })
 
@@ -432,7 +434,7 @@ describe("renderNextPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(NEXT_POST_SLUG)
-    expect(link.props.children).toBe(NEXT_POST_TITLE)
+    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -442,7 +444,7 @@ describe("renderNextPostJsx", () => {
     })
     const result = renderNextPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(link.props.children).toBe(NEXT_POST_TITLE_CAPS)
+    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE_CAPS)
   })
 })
 

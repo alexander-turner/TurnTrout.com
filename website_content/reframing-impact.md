@@ -40,6 +40,7 @@ description: A foundational examination of "impact" for AI alignment, exploring 
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.'
 no_dropcap: "true"
+createBibtex: true
 ---
 
 

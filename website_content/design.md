@@ -483,6 +483,17 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
 
+### Non-breaking spaces
+
+[My `punctilio` library](https://github.com/alexander-turner/punctilio) intelligently inserts non-breaking spaces (NBSPs) throughout site text. Non-breaking spaces prevent awkward line breaks --- text on either side of a non-breaking space will always stay together on the same line. `punctilio` handles several typographic scenarios:
+
+- Preventing short words: "a", "I", and "to" should never be alone on a line.
+- Keeping numbers with their units: "100 km", "5 kg", and "32 °F".
+- Preserving references and abbreviations: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
+- Handling copyright and trademark symbols: "© 2024" and "™ Widget".
+- Keeping initials together: "J. K. Rowling" and "C. S. Lewis".
+- Preventing widow words: The last word of a paragraph stays with at least one preceding word.
+
 ### Automatic conversion of quotation marks
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
