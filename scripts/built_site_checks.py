@@ -1027,6 +1027,19 @@ def meta_tags_early(file_path: Path) -> list[str]:
     return issues
 
 
+def _head_with_retry(
+    url: str, timeout: int = 10, retries: int = 2
+) -> requests.Response:
+    """HEAD request with retry on timeout/connection errors."""
+    last_exc: requests.RequestException | None = None
+    for attempt in range(retries):
+        try:
+            return requests.head(url, timeout=timeout * (attempt + 1))
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            last_exc = exc
+    raise last_exc  # type: ignore[misc]
+
+
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
     """Check that all iframe sources are responding with a successful status
     code."""
@@ -1047,7 +1060,7 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
         alt: str = str(iframe.get("alt", ""))
         description: str = f"{title=} ({alt=})"
         try:
-            response = requests.head(src, timeout=10)
+            response = _head_with_retry(src)
             if not response.ok:
                 problematic_iframes.append(
                     f"Iframe source {src} returned status "
@@ -1080,7 +1093,7 @@ def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
         # Validate external endpoints when possible
         if validators.url(normalized_src):
             try:
-                response = requests.head(normalized_src, timeout=10)
+                response = _head_with_retry(normalized_src)
                 if not response.ok:
                     problematic_embeds.append(
                         f"Iframe embed returned status {response.status_code}"
@@ -1792,7 +1805,7 @@ ALLOWED_ELT_PRECEDING_CHARS = (
     "[({-–—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r−" + NBSP
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
-    "])}.,;!?:-–—~×+"
+    "])}.,;!?:-–—~×(+"
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
     + ELLIPSIS
