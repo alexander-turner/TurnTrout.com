@@ -64,7 +64,15 @@ const config: QuartzConfig = {
           punctilio: {
             owner: "alexander-turner",
             repo: "punctilio",
-            transform: stripBadges,
+            transform: (content: string) => {
+              let result = stripBadges(content)
+              // Ensure the bold feature list paragraph ends with a period
+              result = result.replace(
+                /\*\*Bri'ish localisation support\*\*/g,
+                "**Bri'ish localisation support.**",
+              )
+              return result
+            },
           },
         },
       }),
