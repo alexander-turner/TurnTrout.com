@@ -159,9 +159,8 @@ def _should_skip_paragraph(p: Tag) -> bool:
         return True
 
     # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
-    # Require at least 2 separators to avoid false positives
     text = p.get_text()
-    if text.count("·") >= 2:
+    if "·" in text:
         return True
 
     # Skip paragraphs that only contain inline styling elements
