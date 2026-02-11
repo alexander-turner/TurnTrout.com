@@ -115,7 +115,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
             )
         }
         response = requests.head(
-            card_url, timeout=10, allow_redirects=True, headers=headers
+            card_url, timeout=30, allow_redirects=True, headers=headers
         )
 
         if not response.ok:
