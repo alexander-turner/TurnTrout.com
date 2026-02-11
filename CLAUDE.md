@@ -229,6 +229,7 @@ Per `.cursorrules` and `design.md`:
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
 - Write focused, non-duplicative tests
+- **NEVER update test expectations without asking the user first.** When a test fails, the test may be correct and the code may be wrong. Always ask the user before changing what a test expects.
 
 ### Dependencies
 
