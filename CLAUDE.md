@@ -105,7 +105,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
-**Commits**: Never commit `pnpm-lock.yaml`. Only commit `package.json` when dependencies change.
+**Commits**: Only commit `package.json` when dependencies change.
 
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
