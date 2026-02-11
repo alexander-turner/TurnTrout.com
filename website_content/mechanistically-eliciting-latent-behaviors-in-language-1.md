@@ -19,7 +19,9 @@ af-num-comments-on-upload: 20
 title: Mechanistically Eliciting Latent Behaviors in Language Models
 lw-latest-edit: 2024-05-23T20:29:09.224000Z
 lw-is-linkpost: "false"
-authors: Andrew Mack and Alex Turner
+authors:
+  - Andrew Mack
+  - Alex Turner
 tags:
   - AI
   - mats-program
@@ -38,6 +40,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1v
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
+createBibtex: true
 ---
 
 
