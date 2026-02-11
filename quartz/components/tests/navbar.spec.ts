@@ -170,6 +170,35 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
 
+test("Pressing Escape closes the menu and returns focus to button", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  const menuButton = page.locator("#menu-button")
+  const navbarRightMenu = page.locator("#navbar-right .menu")
+
+  await menuButton.click()
+  await expect(navbarRightMenu).toBeVisible()
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true")
+
+  await page.keyboard.press("Escape")
+  await expect(navbarRightMenu).toBeHidden()
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false")
+
+  // Focus should return to the hamburger button
+  const focused = page.locator(":focus")
+  await expect(focused).toHaveId("menu-button")
+})
+
+test("Menu button has aria-controls pointing to nav-menu", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  const menuButton = page.locator("#menu-button")
+  await expect(menuButton).toHaveAttribute("aria-controls", "nav-menu")
+
+  const navMenu = page.locator("#nav-menu")
+  await expect(navMenu).toBeAttached()
+})
+
 test("Can't see the menu at desktop size", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 

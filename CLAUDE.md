@@ -105,8 +105,6 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
-**Commits**: Never commit `pnpm-lock.yaml`. Only commit `package.json` when dependencies change.
-
 **Pull requests**: Always follow `.claude/skills/pr-creation.md` before creating any PR.
 
 **Pre-push** (main branch only):
@@ -233,6 +231,7 @@ Per `.cursorrules` and `design.md`:
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
 - Write focused, non-duplicative tests
+- **NEVER update test expectations without asking the user first.**
 
 ### Dependencies
 
