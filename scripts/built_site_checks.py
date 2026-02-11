@@ -158,6 +158,11 @@ def _should_skip_paragraph(p: Tag) -> bool:
     ):
         return True
 
+    # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
+    text = p.get_text()
+    if "·" in text:
+        return True
+
     # Skip paragraphs that only contain inline styling elements
     # (e.g. typography examples like <span class="h2">Header 2</span>)
     return all(

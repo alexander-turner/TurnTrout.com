@@ -1,4 +1,18 @@
-:root {
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+/**
+ * Generates the critical.scss file content from template
+ * This CSS is manually appended to auto-generated critical CSS and inlined in HTML
+ * SCSS variables (like $midground-faint-light) are replaced at build time with actual values
+ * @returns The complete critical SCSS content as a string
+ */
+const generateCriticalScssContent = (): string => {
+  return `:root {
   font-family: var(--font-main);
 }
 
@@ -22,8 +36,8 @@ pre {
 }
 
 article[data-use-dropcap="true"] {
-  --dropcap-vertical-offset: 0.15rem;
-  --dropcap-font-size: 3.95rem;
+  --dropcap-vertical-offset: #{$dropcap-vertical-offset};
+  --dropcap-font-size: #{$dropcap-font-size};
   --before-color: var(--midground-faint);
   --font-main: "EBGaramond__subset", "EBGaramond";
   --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
@@ -34,7 +48,7 @@ article[data-use-dropcap="true"] {
 
 article[data-use-dropcap="true"] > p:first-of-type {
   position: relative;
-  min-height: 4.2rem;
+  min-height: #{$dropcap-min-height};
 }
 
 article[data-use-dropcap="true"] > p:first-of-type::before {
@@ -153,4 +167,29 @@ em {
   #right-sidebar {
     margin-right: 0;
   }
+}
+`
+}
+
+/**
+ * Generates and writes the critical SCSS file to disk
+ * @throws Error if file writing fails
+ */
+export function generateCritical(): void {
+  try {
+    const outputPath = path.join(__dirname, "critical.scss")
+    const scss = generateCriticalScssContent()
+    fs.writeFileSync(outputPath, scss)
+  } catch (error) {
+    // Avoid logging the error itself (it may contain file path info)
+    console.error("Error generating critical SCSS")
+    throw error
+  }
+}
+
+// Run generation if this is the main module
+/* istanbul ignore next */
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  generateCritical()
+  console.log("Critical SCSS generated successfully!")
 }

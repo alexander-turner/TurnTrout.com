@@ -15,23 +15,12 @@ date_published: 2024-10-30 18:09:31.133945
 date_updated: 2025-11-22 00:21:52.667251
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 For months, I have built a new home for my online content: [`www.turntrout.com`](/). I brooked no compromises. Over [2,220 commits later](https://github.com/alexander-turner/TurnTrout.com/commits/main/),[^commits] I'm ready to publicize.
 
 [^commits]: I counted my commits by running
 
-     ```shell
-     git log --author="Alex Turner" --oneline | wc -l
+    ```shell
+    git log --author="Alex Turner" --oneline | wc -l
     ```
 
 <div class="centered"><strong><img class="emoji" draggable="false" alt="🏰" src="https://assets.turntrout.com/twemoji/1f3f0.svg" loading="lazy"><img class="emoji" draggable="false" alt="🌊" src="https://assets.turntrout.com/twemoji/1f30a.svg" loading="lazy">Welcome to The Pond! <img class="emoji" draggable="false" alt="🐟" src="https://assets.turntrout.com/twemoji/1f41f.svg" loading="lazy"><img class="emoji" draggable="false" alt="🪿" src="https://assets.turntrout.com/twemoji/replacements/1fabf.svg" loading="lazy"></strong></div>
@@ -40,7 +29,7 @@ For months, I have built a new home for my online content: [`www.turntrout.com`]
 
 Figure: I commissioned this GIF for $270.94. I paid a bit extra to ensure the goose honks twice.
 
-I don't want to be on LessWrong anymore. Briefly, the site - and parts of the rationality community - don't meet my standards for discourse, truth-seeking, charity, and community health. For the most part, I'll elaborate my concerns another time. This post is a happy post. ❤️  
+I don't want to be on LessWrong anymore. Briefly, the site - and parts of the rationality community - don't meet my standards for discourse, truth-seeking, charity, and community health. For the most part, I'll elaborate my concerns another time. This post is a happy post. ❤️
 
 # Inspiration for the website
 
@@ -62,7 +51,7 @@ I hope this site encourages me to write more. I miss writing and sharing. I miss
 
 # What you can find in _The Pond_
 
-I've imported and remastered all 120 of my LessWrong posts. _Every single post_, retouched and detailed. I both [pin down my favorite posts](/posts#my-favorite-posts) and [group the posts into sequences](/posts#sequences). I've also launched the site with three extra posts!
+I've imported and remastered all 120 of my LessWrong posts. _Every single post_, retouched and detailed. I both [pin down my favorite posts](/posts#some-of-my-favorite-posts) and [group the posts into sequences](/posts#sequences). I've also launched the site with three extra posts!
 
 1. [The design of this website](/design)
 2. [Can transformers act on information beyond an effective layer horizon?](/effective-layer-horizon)
@@ -72,13 +61,15 @@ The [research page](/research) summarizes my past and present research interests
 
 ## My dating doc
 
-Like any good trout seeking a mate, I've prepared my nesting grounds with care. While trout typically build their nests (called ["redds"](https://fishingweekendwarrior.com/information/a-comprehensive-guide-to-rainbow-trout-spawning/)) in gravel stream beds, I've taken the initiative to construct mine in digital form. Female trout are known to carefully inspect potential nesting sites before choosing their mate - and I encourage similar scrutiny of my [dating doc](/date-me).[^trout]  
+Like any good trout seeking a mate, I've prepared my nesting grounds with care. While trout typically build their nests (called ["redds"](https://fishingweekendwarrior.com/information/a-comprehensive-guide-to-rainbow-trout-spawning/)) in gravel stream beds, I've taken the initiative to construct mine in digital form. Female trout are known to carefully inspect potential nesting sites before choosing their mate - and I encourage similar scrutiny of my [dating doc](/date-me).[^trout]
+
 <figure>
 <img src="https://assets.turntrout.com/static/images/anime_sunset.avif" alt="A stylized rendition of a beautiful orange sunset over the Bay skyline." style="margin-top: 1rem; width: 80%;"/>
 <figcaption>Are you the kind of person I'm looking for? If so, you should totally <a href="/date-me">read the doc</a> and then fill out the Google Form to indicate interest and then wait patiently! <img class="emoji" draggable="false" alt="🙂" src="https://assets.turntrout.com/twemoji/1f642.svg" loading="lazy"></figcaption>
 </figure>
 
 > [!info]- Embedded preview of my dating doc
+>
 > <iframe title="I'm that 'Other Fish in the Sea'" src="/date-me" style="height: 1000px"></iframe>
 
 [^trout]: I'm not a marine biologist. I looked around and gave the trout mating claims a quick check - they don't seem obviously wrong.
@@ -88,10 +79,12 @@ Like any good trout seeking a mate, I've prepared my nesting grounds with care. 
 I've [criticized the loose analogical reasoning which permeates the rationalist community's AI risk arguments](/danger-of-suggestive-terminology). But criticism is cheap. I want to hold myself to my own high standards.
 
 <!-- vale off -->
+
 > [!quote] Theodore Roosevelt
 > Subtitle: ["Citizenship In A Republic"; delivered at the Sorbonne on 23 April, 1910](https://en.wikipedia.org/wiki/Citizenship_in_a_Republic)
 >
 > The poorest way to face life is to face it with a sneer. There are many men who feel a kind of twister pride in cynicism; there are many who confine themselves to criticism of the way others do what they themselves dare not even attempt. There is no more unhealthy being, no man less worthy of respect, than he who either really holds, or feigns to hold, an attitude of sneering disbelief toward all that is great and lofty, whether in achievement or in that noble effort which, even if it fails, comes to second achievement. A cynical habit of thought and speech, a readiness to criticize work which the critic himself never tries to perform, an intellectual aloofness which will not accept contact with life's realities - all these are marks, not as the possessor would fain to think, of superiority but of weakness. They mark the men unfit to bear their part painfully in the stern strife of living, who seek, in the affection of contempt for the achievements of others, to hide from others and from themselves in their own weakness. The rôle is easy; there is none easier, save only the rôle of the man who sneers alike at both criticism and performance.
+
 <!-- vale on -->
 
 I hope to speak loudly and carry a small ego. I want to enjoy my wins and honorably acknowledge my mispredictions.
@@ -103,11 +96,11 @@ Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistak
 ## Bounty for bad analogies I've made since 2022
 
 Analogies can be useful; analogies can be deadly. For an analogy to be useful, it would do well to highlight how two analogous situations _share the relevant mechanisms._ For example, an [analog computer](https://en.wikipedia.org/wiki/Analog_computer) obeys the same differential equations as certain harmonic oscillators. By reasoning using the "analogy" of an electrical circuit with such-and-such voltages and resistances, we can accurately predict physical systems of pendulums and springs:
- ![A diagram showing an analogy between a physical mass-spring system and an electrical system. Both are governed by the same differential equation. A graph below plots their shared output, which is a damped oscillation.](https://assets.turntrout.com/static/images/posts/computer-analogy.avif)
+![A diagram showing an analogy between a physical mass-spring system and an electrical system. Both are governed by the same differential equation. A graph below plots their shared output, which is a damped oscillation.](https://assets.turntrout.com/static/images/posts/computer-analogy.avif)
 
- However, in AI alignment, folks seem to be less careful. Does "evolution" "finding" the human genome tell us anything about the difficulty of "inner alignment" in "selection processes"? What are the proposed mechanisms?
+However, in AI alignment, folks seem to be less careful. Does "evolution" "finding" the human genome tell us anything about the difficulty of "inner alignment" in "selection processes"? What are the proposed mechanisms?
 
- I think that I am more careful - and that I have been for a while.
+I think that I am more careful - and that I have been for a while.
 
 > [!money] $50 bounty for analogies without mechanistic support
 >
@@ -145,4 +138,4 @@ By embedding [`Fatebook.io`](https://fatebook.io) predictions, I get the benefit
 
 # The future
 
-Over the last few years, my life has lost a certain touch of magic - a touch of _[aspiration to do better](https://www.lesswrong.com/posts/Nu3wa6npK4Ry66vFp/a-sense-that-more-is-possible)_ and of _excitement to not be doing it alone._  I will speak more of this de-magicking. For now, I say: May this site bring back a touch of magic.
+Over the last few years, my life has lost a certain touch of magic - a touch of _[aspiration to do better](https://www.lesswrong.com/posts/Nu3wa6npK4Ry66vFp/a-sense-that-more-is-possible)_ and of _excitement to not be doing it alone._ I will speak more of this de-magicking. For now, I say: May this site bring back a touch of magic.
