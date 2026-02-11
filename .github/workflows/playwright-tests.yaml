@@ -47,6 +47,7 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -68,6 +69,7 @@ jobs:
   playwright-tests:
     needs: build
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -192,6 +194,7 @@ jobs:
     if: always() && needs.playwright-tests.result == 'failure'
     needs: playwright-tests
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: ./.github/actions/summarize-failed-shards
