@@ -340,13 +340,13 @@ Exponential font sizing
 
 : After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-: <span class="h1">Header 1</span>
+  <span class="h1">Header 1</span>
   <span class="h2">Header 2</span>
   <span class="h3">Header 3</span>
   <span class="h4">Header 4</span>
   <span class="h5">Header 5</span>
 
-: <span>Normal text</span>
+  <span>Normal text</span>
   <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
   <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
   <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
