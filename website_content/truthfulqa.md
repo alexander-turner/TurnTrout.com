@@ -7,7 +7,9 @@ tags:
   - critique
   - deepmind
 description: Common factuality benchmark was easily gamed using our simple decision tree. The benchmark is now updated.
-authors: Alex Turner and Mark Kurzeja
+authors:
+  - Alex Turner
+  - Mark Kurzeja
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/Rql9Xy5.jpg
 aliases:

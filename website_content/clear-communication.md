@@ -7,7 +7,8 @@ tags:
   - practical
 description: When a claim is shown to be incorrect, defenders may say that the author
   actually meant something else entirely. I think this move is harmful.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:

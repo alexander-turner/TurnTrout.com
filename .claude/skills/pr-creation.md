@@ -128,7 +128,17 @@ EOF
 - Note any breaking changes
 - Include the Claude session URL at the end
 
-### Step 6: Report Result
+### Step 6: Check DeepSource Issues
+
+After pushing, check for DeepSource static analysis issues:
+
+1. Get the commit SHA: `git rev-parse HEAD`
+2. Run: `deepsource issues list --commit <SHA>`
+3. If analysis isn't ready yet, retry after 30 seconds (up to 3 attempts)
+4. Fix any legitimate issues found, commit, and push
+5. If the `--commit` flag is not available, skip this step
+
+### Step 7: Report Result
 
 Provide the PR URL and title to the user.
 

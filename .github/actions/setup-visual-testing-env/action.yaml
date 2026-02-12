@@ -16,6 +16,7 @@ runs:
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-ffmpeg: "true"
+        install-python: "false"
 
     - name: Install Playwright browsers and system dependencies
       if: inputs.install-playwright == 'true'
@@ -33,7 +34,7 @@ runs:
         sudo mkdir -p "$FFMPEG_DIR"
 
         # Download and extract ffmpeg, stripping the top-level directory
-        curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
+        timeout 300 bash -c 'curl -sL "$1" | sudo tar -xJ -C "$2" --strip-components=1' -- "$FFMPEG_URL" "$FFMPEG_DIR"
       shell: bash
 
     - name: Setup ffmpeg symlinks

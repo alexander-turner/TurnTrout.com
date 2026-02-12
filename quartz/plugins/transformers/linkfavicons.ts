@@ -689,14 +689,15 @@ export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'"]
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**
- * Appends a favicon to a node, preceded by a word joiner character (U+2060)
- * to prevent line breaking between the text and the favicon.
+ * Appends a favicon to a node, wrapped inside a word-joiner span
+ * (with white-space: nowrap) to prevent line breaking between the
+ * text and the favicon.
  *
  * This function:
  * 1. Finds the last meaningful child node
  * 2. Recurses into inline elements (code, em, strong, etc.)
  * 3. Adds close-text class if the last character needs extra margin
- * 4. Appends a word joiner + favicon
+ * 4. Wraps the favicon inside a word-joiner span and appends it
  *
  * @param node - The Element node to process
  * @param imgNodeToAppend - The favicon node to append
@@ -708,10 +709,12 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
     .reverse()
     .find((child) => child.type === "element" || !isEmpty(child as Element | Text))
 
-  // If no valid last child found, just append the favicon
+  // If no valid last child found, wrap and append the favicon
   if (!lastChild) {
     logger.debug("No valid last child found, appending favicon directly")
-    node.children.push(imgNodeToAppend)
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(imgNodeToAppend)
+    node.children.push(wordJoiner)
     return
   }
 
@@ -722,10 +725,12 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
     return
   }
 
-  // If last child is not a text node or has no value, just append
+  // If last child is not a text node or has no value, wrap and append
   if (lastChild.type !== "text" || !lastChild.value) {
     logger.debug("Appending favicon directly to node")
-    node.children.push(imgNodeToAppend)
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(imgNodeToAppend)
+    node.children.push(wordJoiner)
     return
   }
 
@@ -738,8 +743,11 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
     imgNodeToAppend.properties.class = "favicon close-text"
   }
 
-  // Append word joiner + favicon to prevent line-break orphaning
-  node.children.push(createWordJoinerSpan(), imgNodeToAppend)
+  // Wrap favicon inside word-joiner span with white-space: nowrap
+  // to prevent line-break orphaning of the favicon
+  const wordJoiner = createWordJoinerSpan()
+  wordJoiner.children.push(imgNodeToAppend)
+  node.children.push(wordJoiner)
 }
 
 /**

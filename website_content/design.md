@@ -483,6 +483,17 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
 
+### Non-breaking spaces
+
+[My `punctilio` library](https://github.com/alexander-turner/punctilio) intelligently inserts non-breaking spaces (NBSPs) throughout site text. Non-breaking spaces prevent awkward line breaks --- text on either side of a non-breaking space will always stay together on the same line. `punctilio` handles several typographic scenarios:
+
+- Preventing short words: "a", "I", and "to" should never be alone on a line.
+- Keeping numbers with their units: "100 km", "5 kg", and "32 °F".
+- Preserving references and abbreviations: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
+- Handling copyright and trademark symbols: "© 2024" and "™ Widget".
+- Keeping initials together: "J. K. Rowling" and "C. S. Lewis".
+- Preventing widow words: The last word of a paragraph stays with at least one preceding word.
+
 ### Automatic conversion of quotation marks
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
@@ -1122,9 +1133,9 @@ Reordering elements in `<head>` to ensure social media previews
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
-: For posts which are being pushed for the first time, my script sets their publication date. For posts which have been updated since the last `push`, it updates their "last updated" date.
+: Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
 
-: The script also updates the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+: The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
 

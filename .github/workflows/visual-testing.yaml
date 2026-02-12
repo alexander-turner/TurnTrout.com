@@ -48,6 +48,7 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -73,6 +74,7 @@ jobs:
     needs: build
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -190,6 +192,7 @@ jobs:
     if: always() && needs.visual-testing.result == 'failure'
     needs: visual-testing
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: ./.github/actions/summarize-failed-shards
@@ -200,6 +203,7 @@ jobs:
   combine-and-upload:
     needs: visual-testing
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     if: needs.visual-testing.result == 'success'
 
     steps:

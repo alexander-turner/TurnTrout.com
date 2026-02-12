@@ -9,7 +9,9 @@ tags:
   - mats-program
 description: Principled derivation of unsupervised steering vector discovery methods.
   Unlocks password-locked models and breaks jailbreak defenses.
-authors: Andrew Mack and Alex Turner
+authors:
+  - Andrew Mack
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:

@@ -206,7 +206,9 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createWordJoinerSpan(), faviconElement]
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(faviconElement)
+    return [wordJoiner]
   }
 }
 

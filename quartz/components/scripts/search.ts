@@ -9,6 +9,11 @@ import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 
+// Global function injected by renderPage.tsx to lazy-load content index
+declare global {
+  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+}
+
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
 
@@ -216,11 +221,14 @@ export const matchTextNodes = (node: Node, term: string) => {
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
+    // Normalize NBSP (U+00A0) to regular space so multi-word search terms
+    // match across non-breaking spaces inserted by punctilio
+    const normalizedText = nodeText.replace(/\u00A0/gu, " ")
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation
-    const parts = nodeText.split(regex)
+    const parts = normalizedText.split(regex)
     if (parts.length === 1) return // No matches
 
     const fragment = document.createDocumentFragment()
@@ -681,7 +689,13 @@ async function onNav(e: CustomEventMap["nav"]) {
   }
 
   currentSlug = e.detail.url
-  data = await fetchData
+
+  // Verify getContentIndex was injected by renderPage.tsx
+  if (typeof getContentIndex !== "function") {
+    throw new Error("getContentIndex not initialized - check script injection order")
+  }
+
+  data = await getContentIndex()
   if (!data) return
   results = document.createElement("div")
   const container = document.getElementById("search-container")

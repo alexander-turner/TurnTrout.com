@@ -257,7 +257,7 @@ describe("createLinkWithFavicon", () => {
     expect(result.props["data-slug"]).toBe("another-page")
   })
 
-  it("should include word joiner and favicon in link children", () => {
+  it("should include word joiner containing favicon in link children", () => {
     const result = createLinkWithFavicon(
       "Link with favicon",
       "/page",
@@ -266,8 +266,8 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    // text + word joiner span + favicon
-    expect(children.length).toBe(3)
+    // text + word joiner span (containing favicon)
+    expect(children.length).toBe(2)
     expect(typeof children[0]).toBe("string")
 
     const wordJoiner = children[1] as JSX.Element
@@ -275,19 +275,20 @@ describe("createLinkWithFavicon", () => {
     expect(wordJoiner.type).toBe("span")
     expect(wordJoiner.props.class).toBe("word-joiner")
 
-    const favicon = children[2]
-    assertJSXElement(favicon)
-    expect(favicon.props.class).toContain("favicon")
+    const wjChildren = wordJoiner.props.children as unknown[]
+    const favicon = wjChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 
-  it("should preserve full text with word joiner before favicon", () => {
+  it("should preserve full text with word joiner containing favicon", () => {
     const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // text + word joiner span + favicon
-    expect(children.length).toBe(3)
+    // text + word joiner span (containing favicon)
+    expect(children.length).toBe(2)
     expect(children[0]).toBe("Test text")
 
     const wordJoiner = children[1] as JSX.Element
@@ -295,8 +296,9 @@ describe("createLinkWithFavicon", () => {
     expect(wordJoiner.type).toBe("span")
     expect(wordJoiner.props.class).toBe("word-joiner")
 
-    const favicon = children[2]
-    assertJSXElement(favicon)
-    expect(favicon.props.class).toContain("favicon")
+    const wjChildren = wordJoiner.props.children as unknown[]
+    const favicon = wjChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 })

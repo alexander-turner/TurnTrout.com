@@ -21,8 +21,13 @@ af-num-comments-on-upload: 23
 title: Steering Llama-2 with contrastive activation additions
 lw-latest-edit: 2024-02-13T03:16:20.193000Z
 lw-is-linkpost: "true"
-authors: Nina Rimsky, Wuschel Schulz, Nick Gabrieli, Meg Tong, Evan Hubinger, and
-  Alex Turner
+authors:
+  - Nina Rimsky
+  - Wuschel Schulz
+  - Nick Gabrieli
+  - Meg Tong
+  - Evan Hubinger
+  - Alex Turner
 tags:
   - corrigibility
   - AI
@@ -39,6 +44,7 @@ skip_import: true
 description: Steering Llama-2 towards or away from various traits using sample-efficient
   steering vectors.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 

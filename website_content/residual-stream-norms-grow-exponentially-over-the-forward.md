@@ -19,7 +19,9 @@ af-num-comments-on-upload: 6
 title: Residual stream norms grow exponentially over the forward pass
 lw-latest-edit: 2023-05-08T16:36:55.402000Z
 lw-is-linkpost: "false"
-authors: Stefan Heimersheim and Alex Turner
+authors:
+  - Stefan Heimersheim
+  - Alex Turner
 tags:
   - AI
 aliases:

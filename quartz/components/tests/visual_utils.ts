@@ -233,11 +233,13 @@ export async function takeRegressionScreenshot(
 /** Wraps all H1 sections in spans, taking the locator or page object as the base. */
 export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
   const evaluateFunc = () => {
-    // Create a static list of headers to iterate over
-    const headers = Array.from(document.querySelectorAll("article > h1"))
+    // Collect direct-child H1s and footnote sections as split boundaries (in DOM order)
+    const boundaries = Array.from(
+      document.querySelectorAll("article > h1, article > section[data-footnotes]"),
+    )
 
-    for (const header of headers) {
-      const parent = header.parentElement
+    for (const boundary of boundaries) {
+      const parent = boundary.parentElement
 
       if (!parent) continue
 
@@ -247,18 +249,19 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
       }
 
       const span = document.createElement("span")
-      if (!header.id) {
+      const id = boundary.id || boundary.querySelector("h1")?.id
+      if (!id) {
         throw new Error("Header has no id")
       }
-      span.id = `h1-span-${header.id}`
+      span.id = `h1-span-${id}`
 
-      parent.insertBefore(span, header)
+      parent.insertBefore(span, boundary)
 
-      span.appendChild(header)
+      span.appendChild(boundary)
 
-      // Move all subsequent siblings into the span until we hit the next h1
+      // Move all subsequent siblings into the span until we hit the next boundary
       let nextSibling = span.nextSibling
-      while (nextSibling && headers.indexOf(nextSibling as Element) === -1) {
+      while (nextSibling && boundaries.indexOf(nextSibling as Element) === -1) {
         const toMove = nextSibling
         nextSibling = toMove.nextSibling
         span.appendChild(toMove)
