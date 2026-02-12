@@ -9,6 +9,11 @@ import { simpleConstants } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 
+// Global function injected by renderPage.tsx to lazy-load content index
+declare global {
+  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+}
+
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
 
@@ -684,7 +689,13 @@ async function onNav(e: CustomEventMap["nav"]) {
   }
 
   currentSlug = e.detail.url
-  data = await fetchData
+
+  // Verify getContentIndex was injected by renderPage.tsx
+  if (typeof getContentIndex !== "function") {
+    throw new Error("getContentIndex not initialized - check script injection order")
+  }
+
+  data = await getContentIndex()
   if (!data) return
   results = document.createElement("div")
   const container = document.getElementById("search-container")
