@@ -98,44 +98,32 @@ describe("jsx utilities", () => {
       expect(html).toContain('tabindex="0"')
     })
 
-    it("should add unique aria-labels to each table", () => {
-      const tree1 = h("div", [h("table", [h("tr", [h("td", "Table 1")])])])
-      const tree2 = h("div", [h("table", [h("tr", [h("td", "Table 2")])])])
-      const tree3 = h("div", [h("table", [h("tr", [h("td", "Table 3")])])])
+    it("should add unique aria-labels to each table within a page", () => {
+      // Test with multiple tables in a single page
+      const tree = h("div", [
+        h("table", [h("tr", [h("td", "Table 1")])]),
+        h("table", [h("tr", [h("td", "Table 2")])]),
+        h("table", [h("tr", [h("td", "Table 3")])]),
+      ])
 
-      const result1 = htmlToJsx(testFilePath, tree1)
-      const result2 = htmlToJsx(testFilePath, tree2)
-      const result3 = htmlToJsx(testFilePath, tree3)
+      const result = htmlToJsx(testFilePath, tree)
+      expect(result).toBeDefined()
 
-      expect(result1).toBeDefined()
-      expect(result2).toBeDefined()
-      expect(result3).toBeDefined()
+      const html = render(result!)
 
-      const html1 = render(result1!)
-      const html2 = render(result2!)
-      const html3 = render(result3!)
+      // Extract all aria-labels from the rendered HTML
+      const labelMatches = html.match(/aria-label="Scrollable table \d+"/g)
+      expect(labelMatches).not.toBeNull()
+      expect(labelMatches).toHaveLength(3)
 
-      // Each table should have a unique aria-label with incrementing counter
-      expect(html1).toMatch(/aria-label="Scrollable table \d+"/)
-      expect(html2).toMatch(/aria-label="Scrollable table \d+"/)
-      expect(html3).toMatch(/aria-label="Scrollable table \d+"/)
+      // Verify all labels are unique
+      const uniqueLabels = new Set(labelMatches)
+      expect(uniqueLabels.size).toBe(3)
 
-      // Extract the counter values to verify they're different
-      const match1 = html1.match(/aria-label="Scrollable table (?<counter>\d+)"/)
-      const match2 = html2.match(/aria-label="Scrollable table (?<counter>\d+)"/)
-      const match3 = html3.match(/aria-label="Scrollable table (?<counter>\d+)"/)
-
-      expect(match1).not.toBeNull()
-      expect(match2).not.toBeNull()
-      expect(match3).not.toBeNull()
-
-      const counter1 = parseInt(match1!.groups!.counter!)
-      const counter2 = parseInt(match2!.groups!.counter!)
-      const counter3 = parseInt(match3!.groups!.counter!)
-
-      // Counters should be unique and sequential
-      expect(counter2).toBeGreaterThan(counter1)
-      expect(counter3).toBeGreaterThan(counter2)
+      // Verify the labels are numbered sequentially
+      expect(html).toContain('aria-label="Scrollable table 1"')
+      expect(html).toContain('aria-label="Scrollable table 2"')
+      expect(html).toContain('aria-label="Scrollable table 3"')
     })
 
     it("should handle table with defaultValue prop", () => {
@@ -239,6 +227,31 @@ describe("jsx utilities", () => {
       expect(result).toBeDefined()
       const html = render(result!)
       expect(html).toContain('role="region"')
+    })
+
+    it("should reset counter for each page build", () => {
+      // Simulate building first page with 2 tables
+      const page1 = h("div", [
+        h("table", [h("tr", [h("td", "Table 1")])]),
+        h("table", [h("tr", [h("td", "Table 2")])]),
+      ])
+      const result1 = htmlToJsx("page1.md" as FilePath, page1)
+
+      // Simulate building second page with 2 tables
+      const page2 = h("div", [
+        h("table", [h("tr", [h("td", "Table 1")])]),
+        h("table", [h("tr", [h("td", "Table 2")])]),
+      ])
+      const result2 = htmlToJsx("page2.md" as FilePath, page2)
+
+      const html1 = render(result1!)
+      const html2 = render(result2!)
+
+      // Both pages should start counting from 1
+      expect(html1).toContain('aria-label="Scrollable table 1"')
+      expect(html1).toContain('aria-label="Scrollable table 2"')
+      expect(html2).toContain('aria-label="Scrollable table 1"')
+      expect(html2).toContain('aria-label="Scrollable table 2"')
     })
   })
 
