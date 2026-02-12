@@ -1,6 +1,10 @@
 name: "Setup Base Environment"
 description: "Sets up Node.js, pnpm, Python with uv, and common caches"
 inputs:
+  install-node-deps:
+    description: "Whether to install Node.js and dependencies"
+    required: false
+    default: "true"
   install-sharp:
     description: "Whether to install sharp for Linux"
     required: false
@@ -29,19 +33,23 @@ runs:
   using: "composite"
   steps:
     - name: Set up Node.js
+      if: inputs.install-node-deps == 'true'
       uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
       with:
         node-version: "22.12.0"
 
     - name: Install pnpm
+      if: inputs.install-node-deps == 'true'
       uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
 
     - name: Get pnpm store directory
+      if: inputs.install-node-deps == 'true'
       shell: bash
       run: |
         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
     - name: Restore pnpm cache
+      if: inputs.install-node-deps == 'true'
       uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
         path: ${{ env.STORE_PATH }}
@@ -85,13 +93,14 @@ runs:
         key: ffmpeg-${{ runner.os }}-master-latest
 
     - name: Install Node Dependencies
+      if: inputs.install-node-deps == 'true'
       run: timeout 600 pnpm install --frozen-lockfile
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
 
     - name: Install sharp
-      if: inputs.install-sharp == 'true'
+      if: inputs.install-sharp == 'true' && inputs.install-node-deps == 'true'
       run: pnpm install --os=linux --cpu=x64 sharp
       shell: bash
 

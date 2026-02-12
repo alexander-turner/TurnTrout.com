@@ -27,6 +27,8 @@ jobs:
 
       - name: Setup Base Environment
         uses: ./.github/actions/setup-base-env
+        with:
+          install-node-deps: "false"
 
       - name: Update article dates
         run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
