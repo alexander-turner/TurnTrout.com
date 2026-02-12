@@ -689,6 +689,12 @@ async function onNav(e: CustomEventMap["nav"]) {
   }
 
   currentSlug = e.detail.url
+
+  // Verify getContentIndex was injected by renderPage.tsx
+  if (typeof getContentIndex !== "function") {
+    throw new Error("getContentIndex not initialized - check script injection order")
+  }
+
   data = await getContentIndex()
   if (!data) return
   results = document.createElement("div")

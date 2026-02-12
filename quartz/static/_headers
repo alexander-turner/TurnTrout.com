@@ -34,7 +34,7 @@
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' https://assets.turntrout.com data:; media-src 'self' https://assets.turntrout.com; font-src 'self'; frame-src 'self' https://www.youtube.com https://manifold.markets https://dash.palform.app https://fatebook.io https://jacobgw.com; frame-ancestors 'self'; connect-src 'self' https://cloud.umami.is; base-uri 'self'; form-action 'self' https://dash.palform.app; upgrade-insecure-requests
 
 # 2. Stylesheets & Scripts (1 Day)
-# Short cache since files lack content hashes - ensures users get weekly updates
+# Short cache since files lack content hashes - ensures users get daily updates
 # HTML uses no-cache, so fresh HTML will reference updated CSS/JS
 /*.css
   Cache-Control: public, max-age=86400
@@ -55,16 +55,16 @@
 # Covers: pond.mov, pond.webm, favicons, etc.
 # Conservative cache since these may occasionally update
 /*.jpg
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.png
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.ico
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.svg
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.avif
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.mov
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000
 /*.webm
-  Cache-Control: public, max-age=2592000, immutable
+  Cache-Control: public, max-age=2592000

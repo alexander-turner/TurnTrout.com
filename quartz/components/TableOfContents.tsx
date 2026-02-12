@@ -284,6 +284,7 @@ export function elementToJsx(elt: RootContent): JSX.Element | null {
 }
 
 CreateTableOfContents.css = modernStyle
+
 CreateTableOfContents.afterDOMLoaded = `
 document.addEventListener('nav', function() {
   // Scroll to top when TOC title is clicked
@@ -297,10 +298,18 @@ document.addEventListener('nav', function() {
     });
   }
 
-  const sections = document.querySelectorAll("#center-content h1, #center-content h2");
+  const allSections = document.querySelectorAll("#center-content h1, #center-content h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
+  // Filter sections to only those with IDs
+  const sections = Array.from(allSections).filter(section => section.id);
+
   if (sections.length === 0 || navLinks.length === 0) return;
+
+  // Disconnect previous observer to prevent memory leak
+  if (window.tocObserver) {
+    window.tocObserver.disconnect();
+  }
 
   let currentSection = "";
 
@@ -316,11 +325,11 @@ document.addEventListener('nav', function() {
 
   // Use IntersectionObserver to detect visible sections without forced reflows
   const observerOptions = {
-    rootMargin: "-25% 0px -75% 0px", // Trigger when section enters the top quarter
+    rootMargin: "-25% 0px -75% 0px", // Trigger when section is in middle 50% of viewport
     threshold: 0
   };
 
-  const observer = new IntersectionObserver((entries) => {
+  window.tocObserver = new IntersectionObserver((entries) => {
     // Find the topmost visible section
     let topmostSection = null;
     let topmostY = Infinity;
@@ -340,11 +349,14 @@ document.addEventListener('nav', function() {
     }
   }, observerOptions);
 
-  sections.forEach((section) => observer.observe(section));
+  sections.forEach((section) => window.tocObserver.observe(section));
 
-  // Set initial active link based on hash or first section
+  // Set initial active link based on hash or first section with ID
   const hash = window.location.hash.slice(1);
-  updateActiveLink(hash || sections[0]?.id || "");
+  const firstSectionId = sections[0]?.id;
+  if (hash || firstSectionId) {
+    updateActiveLink(hash || firstSectionId);
+  }
 });
 `
 
