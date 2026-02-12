@@ -300,30 +300,51 @@ document.addEventListener('nav', function() {
   const sections = document.querySelectorAll("#center-content h1, #center-content h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
-  function updateActiveLink() {
-    let currentSection = "";
-    const scrollPosition = window.scrollY + window.innerHeight / 4;
+  if (sections.length === 0 || navLinks.length === 0) return;
 
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      if (scrollPosition >= sectionTop) {
-        currentSection = section.id;
-      }
-    });
+  let currentSection = "";
+
+  function updateActiveLink(newSection) {
+    if (newSection === currentSection) return;
+    currentSection = newSection;
 
     navLinks.forEach((link) => {
-      link.classList.remove("active");
       const slug = link.getAttribute('href').split("#")[1];
-      if (currentSection && slug === currentSection) {
-        link.classList.add("active");
-      }
+      link.classList.toggle("active", currentSection && slug === currentSection);
     });
   }
 
-  window.addEventListener("scroll", updateActiveLink);
+  // Use IntersectionObserver to detect visible sections without forced reflows
+  const observerOptions = {
+    rootMargin: "-25% 0px -75% 0px", // Trigger when section enters the top quarter
+    threshold: 0
+  };
 
-  // Initial call to set active link on page load
-  updateActiveLink();
+  const observer = new IntersectionObserver((entries) => {
+    // Find the topmost visible section
+    let topmostSection = null;
+    let topmostY = Infinity;
+
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const rect = entry.boundingClientRect;
+        if (rect.top < topmostY) {
+          topmostY = rect.top;
+          topmostSection = entry.target.id;
+        }
+      }
+    });
+
+    if (topmostSection) {
+      updateActiveLink(topmostSection);
+    }
+  }, observerOptions);
+
+  sections.forEach((section) => observer.observe(section));
+
+  // Set initial active link based on hash or first section
+  const hash = window.location.hash.slice(1);
+  updateActiveLink(hash || sections[0]?.id || "");
 });
 `
 

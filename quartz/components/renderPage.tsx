@@ -236,7 +236,15 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  const contentIndexScript = `const fetchData = fetch("${contentIndexPath}").then(data => data.json())`
+  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
+  const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
+let fetchData = null;
+function getContentIndex() {
+  if (!fetchData) {
+    fetchData = fetch(contentIndexPath).then(data => data.json());
+  }
+  return fetchData;
+}`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],
