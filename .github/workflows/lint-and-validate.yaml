@@ -123,7 +123,14 @@ jobs:
         id: source-checks
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
-        run: uv run python scripts/source_file_checks.py --check-publication-dates
+        run: |
+          # Check publication dates on PRs and merge queue (pre-merge validation)
+          # Skip on push to main/dev (dates are auto-added by update-article-dates workflow)
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
+            uv run python scripts/source_file_checks.py --check-publication-dates
+          else
+            uv run python scripts/source_file_checks.py
+          fi
 
       - name: Check results
         run: |
