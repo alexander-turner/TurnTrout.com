@@ -21,8 +21,6 @@ tsconfig.tsbuildinfo
 # Testing & Coverage
 .coverage*
 coverage
-*snapshots*
-*__snapshots__
 lost-pixel/*
 .lostpixel
 /test-results/
