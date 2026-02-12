@@ -161,6 +161,29 @@ describe("elvish-toggle", () => {
       expect(helpText).not.toBeNull()
     })
 
+    it("should append help text to main landmark when available", () => {
+      document.body.innerHTML = `
+        <main id="center-content">
+          <span class="elvish"></span>
+        </main>
+      `
+      initializeElvishElements()
+
+      const main = document.getElementById("center-content")
+      const helpText = document.getElementById("elvish-help")
+      expect(helpText).not.toBeNull()
+      expect(main?.contains(helpText)).toBe(true)
+    })
+
+    it("should fallback to body when main landmark is not available", () => {
+      document.body.innerHTML = '<span class="elvish"></span>'
+      initializeElvishElements()
+
+      const helpText = document.getElementById("elvish-help")
+      expect(helpText).not.toBeNull()
+      expect(document.body.contains(helpText)).toBe(true)
+    })
+
     it("should not create help text when no elvish elements exist", () => {
       document.body.innerHTML = '<span class="other"></span>'
       initializeElvishElements()
