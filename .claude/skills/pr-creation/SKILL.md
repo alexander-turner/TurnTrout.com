@@ -86,8 +86,12 @@ Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templat
 You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatting guidelines before this step.
 
 1. Push the branch: `git push -u origin HEAD`
-2. Create the PR using `gh pr create` with the template from the resource file
-3. **CI label**: If the PR includes code changes that should be validated by Playwright/visual regression tests, add the `ci:full-tests` label: `gh pr edit --add-label "ci:full-tests"`. Without this label, expensive test suites (Playwright, visual testing) are skipped on PRs to save compute. They will still run in the merge queue before merging.
+2. Check if a PR already exists for the current branch:
+   ```bash
+   EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
+   ```
+   If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+3. Create the PR using `gh pr create` with the template from the resource file
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
@@ -117,13 +121,11 @@ Provide the PR URL and confirm all CI checks have passed.
 5. Fixes the null check, commits: `fix: add null check for empty session token`
 6. Runs `pnpm check && pnpm test && pnpm lint` — all pass
 7. Pushes and creates PR:
-
-   ```bash
+   ```
    gh pr create --title "fix: handle null session token in login flow" --body "..."
    ```
-
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
+9. Reports: "PR #47 created and all CI checks pass: https://github.com/org/repo/pull/47"
 
 ### Example 2: Multi-Commit Feature
 
@@ -155,4 +157,5 @@ Provide the PR URL and confirm all CI checks have passed.
 - **Tests fail**: Fix the tests, don't skip them
 - **`gh` not authenticated**: Tell user to run `gh auth login` or set `GH_TOKEN`
 - **Push fails**: Check branch permissions and remote configuration
+- **PR already exists (HTTP 422)**: Check for existing PRs first with `gh pr list --head "$(git branch --show-current)"`, then use `gh pr edit` to update
 - **No changes to PR**: Confirm with the user that work is committed
