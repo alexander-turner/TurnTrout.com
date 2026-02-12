@@ -811,12 +811,39 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+The site achieves WCAG2AA compliance through a combination of proactive implementation and automated testing. Every push to `main` triggers [pa11y-ci](https://github.com/pa11y/pa11y-ci) accessibility audits using both [Axe](https://www.deque.com/axe/) and [HTMLCodeSniffer](https://squizlabs.github.io/HTML_CodeSniffer/) runners against the entire sitemap. [Lighthouse](https://developers.google.com/web/tools/lighthouse) accessibility checks run in CI as well.
 
-> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
-> ![[/open-source#automatic-alt-text-generation]]
+### Implementation highlights
 
-To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+**Keyboard navigation**: All interactive elements are keyboard-accessible. The site supports standard shortcuts like `/` to open search, `Escape` to close modals, and `Tab`/`Shift+Tab` to cycle through focusable elements. Popovers implement focus trapping to prevent keyboard users from accidentally tabbing outside the modal context.
+
+**ARIA attributes**: Interactive components use proper ARIA labels, roles, and states. For example, the hamburger menu button includes `aria-expanded` (dynamically updated), `aria-controls` linking to the menu, and `aria-label` describing its purpose. Spoiler blocks use `role="button"` with `tabindex="0"` and `aria-expanded` states. Decorative elements are marked `aria-hidden="true"`.
+
+**Semantic HTML**: The site uses proper landmark elements (`<header>`, `<nav>`, `<main>`), heading hierarchy, and list structures. A skip-to-content link (visually hidden until focused) lets keyboard users bypass navigation.
+
+**Visual accessibility**: The site respects `prefers-reduced-motion`, disabling animations for motion-sensitive users. Light and dark modes provide contrast options. I avoid low-contrast text by using medium-contrast for secondary elements (margin text, list markers) while keeping body text high-contrast.
+
+**Alt text**: I include alt text for all images, automatically generated and manually approved using my open-source [`alt-text-llm`](/open-source#automatic-alt-text-generation) tool. Build-time validation ensures that custom card images have corresponding `card_image_alt` attributes.
+
+**Media accessibility**: The 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list) video includes full subtitles.
+
+### Low-hanging fruit for improvement
+
+While the site passes WCAG2AA automated checks, several opportunities remain for deeper accessibility coverage:
+
+1. **Manual screen reader testing**: Automated tools catch only ~30-40% of accessibility issues. Testing with NVDA (Windows), JAWS (Windows), and VoiceOver (macOS/iOS) would surface issues like confusing reading order, missing context, or verbose announcements.
+
+2. **ARIA live regions**: Dynamic content updates (search results, popover content) don't currently announce to screen readers. Adding `aria-live` regions would improve the experience for assistive technology users.
+
+3. **Color contrast verification**: While I avoid problematic contrasts, automated contrast checking (via [axe DevTools](https://www.deque.com/axe/devtools/) or [Contrast Checker](https://webaim.org/resources/contrastchecker/)) would catch edge cases, especially for muted favicon colors and margin text.
+
+4. **Focus indicators**: While keyboard navigation works, not all interactive elements may have visible focus indicators. A systematic audit would ensure consistent focus styling.
+
+5. **Accessible error messages**: If form validation exists (search, newsletter signup), ensuring errors are properly associated with inputs via `aria-describedby` would improve usability.
+
+6. **Mobile screen reader testing**: TalkBack (Android) and VoiceOver (iOS) have different behaviors than desktop screen readers, warranting separate testing.
+
+The current approach—automated WCAG2AA compliance plus proactive ARIA/semantic HTML implementation—catches most issues. The remaining gaps require manual testing with actual assistive technologies, which is time-intensive but valuable for users who depend on these tools.
 
 ## Auto-generated repository statistics
 
