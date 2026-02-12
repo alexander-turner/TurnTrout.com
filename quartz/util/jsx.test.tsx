@@ -87,15 +87,17 @@ describe("jsx utilities", () => {
   })
 
   describe("custom table component", () => {
-    it("should wrap tables in scrollable container", () => {
+    it.each([
+      ["class", 'class="table-container"'],
+      ["role", 'role="region"'],
+      ["tabindex", 'tabindex="0"'],
+    ])("should add %s attribute to table container", (_, expected) => {
       const tree = h("table", [h("tr", [h("td", "Cell 1")])])
       const result = htmlToJsx(testFilePath, tree)
 
       expect(result).toBeDefined()
       const html = render(result!)
-      expect(html).toContain('class="table-container"')
-      expect(html).toContain('role="region"')
-      expect(html).toContain('tabindex="0"')
+      expect(html).toContain(expected)
     })
 
     it("should add unique aria-labels to each table within a page", () => {
@@ -211,24 +213,6 @@ describe("jsx utilities", () => {
       expect(html).toContain("Table 2")
     })
 
-    it("should add tabindex for keyboard accessibility", () => {
-      const tree = h("table", [h("tr", [h("td", "Content")])])
-      const result = htmlToJsx(testFilePath, tree)
-
-      expect(result).toBeDefined()
-      const html = render(result!)
-      expect(html).toContain('tabindex="0"')
-    })
-
-    it("should add region role for accessibility", () => {
-      const tree = h("table", [h("tr", [h("td", "Content")])])
-      const result = htmlToJsx(testFilePath, tree)
-
-      expect(result).toBeDefined()
-      const html = render(result!)
-      expect(html).toContain('role="region"')
-    })
-
     it("should reset counter for each page build", () => {
       // Simulate building first page with 2 tables
       const page1 = h("div", [
@@ -291,14 +275,16 @@ describe("jsx utilities", () => {
       expect(html).toContain("Content")
     })
 
-    it("should handle self-closing elements", () => {
-      const tree = h("div", [h("br"), h("hr")])
+    it.each([
+      ["br", "<br"],
+      ["hr", "<hr"],
+    ])("should handle %s self-closing element", (tag, expected) => {
+      const tree = h("div", [h(tag)])
       const result = htmlToJsx(testFilePath, tree)
 
       expect(result).toBeDefined()
       const html = render(result!)
-      expect(html).toContain("<br")
-      expect(html).toContain("<hr")
+      expect(html).toContain(expected)
     })
 
     it("should handle special characters in text", () => {
