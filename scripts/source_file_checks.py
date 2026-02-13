@@ -572,9 +572,16 @@ def check_description_list_continuations(text: str) -> List[str]:
         : Definition text
         <blank line>
           Indented continuation (no colon)
+
+    Code and math blocks are ignored during checking.
     """
+    # Remove code and math blocks while preserving line structure
+    processed_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+
     errors = []
-    lines = text.split("\n")
+    lines = processed_text.split("\n")
 
     i = 0
     while i < len(lines) - 2:
