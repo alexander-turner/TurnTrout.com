@@ -54,13 +54,13 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : Ok, so the basic situation as I understand it is that as part of your DeepMind offer you would get a bunch of Google stock that would become available to you over the course of around 4 years or so. This means in-expectation, for 4 years, your net worth would substantially correlate with overall Google performance, which on our worldview probably substantially correlates with how much google invests in AGI and how much it participates in the AGI race.
 
-: My sense is you want to end up in a spot where your net-worth isn't super correlated with how much Google invests in AGI. Doing this thoroughly seems hard (since there are things like job security and overall salaries at Google that of course also correlate with Google stock), but getting to a point where you are about as correlated as if you didn't have stock options seems doable.
+  My sense is you want to end up in a spot where your net-worth isn't super correlated with how much Google invests in AGI. Doing this thoroughly seems hard (since there are things like job security and overall salaries at Google that of course also correlate with Google stock), but getting to a point where you are about as correlated as if you didn't have stock options seems doable.
 
 `TurnTrout`
 
 : Yeah, I want to have lower correlation because I want to make clearheaded decisions about deployment and research directions, which aren't muddled by concerns like "I might get more money for making societally risky plays."
 
-: I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
+  I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
 
   1. I didn't realize how substantially equity contributes to the compensation package, and
   2. it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.
@@ -69,11 +69,11 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : The easiest way for doing this would of course be to just ask for a compensation package with no stock options, but many companies don't like that. You might also be able to get a better deal here by doing your own hedging than whatever price Google would offer you for those stock options.
 
-: Ok, but assuming that you can't just ask for a no-stock-options package, how could you potentially reduce your exposure to Google stock here?
+  Ok, but assuming that you can't just ask for a no-stock-options package, how could you potentially reduce your exposure to Google stock here?
 
-: You could just sell a contract that transfers ownership over your shares as soon as you get it, but this now creates a principal-agent problem between you and the person who you sold the shares to. They would like you to stay at DeepMind for longer so the stock options vest, but you don't have anything to gain by that, so ideally the contract would somehow pass this incentive through to you, since I don't think it's the primary thing we are trying to handle here.
+  You could just sell a contract that transfers ownership over your shares as soon as you get it, but this now creates a principal-agent problem between you and the person who you sold the shares to. They would like you to stay at DeepMind for longer so the stock options vest, but you don't have anything to gain by that, so ideally the contract would somehow pass this incentive through to you, since I don't think it's the primary thing we are trying to handle here.
 
-: You could just structure this as an ongoing contract where you get money at each vesting cliff. I.e. each time you get some Google shares, a person sends you money for those shares (with a price locked in at the time of signing the contract). This does annoyingly create a liability for that person (they need to always have enough money to buy Google stock at the locked in price), but Google stock seems stable enough that probably someone is willing to buy this at not too much of a premium.
+  You could just structure this as an ongoing contract where you get money at each vesting cliff. I.e. each time you get some Google shares, a person sends you money for those shares (with a price locked in at the time of signing the contract). This does annoyingly create a liability for that person (they need to always have enough money to buy Google stock at the locked in price), but Google stock seems stable enough that probably someone is willing to buy this at not too much of a premium.
 
 : Now, let's think about whether there is just some product on the open market that you could buy to end up with this.
 

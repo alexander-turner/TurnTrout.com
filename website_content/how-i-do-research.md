@@ -55,7 +55,7 @@ that seems plausibly important to AI safety (low impact), or a phenomenon that's
 Stare at the problem
 : On my own, ignoring any existing thinking as much as possible. Just think about what the problem is, what's confusing about it, what a solution would look like. In retrospect, this has helped me avoid anchoring myself. Also, my prior for existing work is that it's confused and unhelpful, and I can do better by just thinking hard. I think this is pretty reasonable for a field as young as AI alignment, but I wouldn't expect this to be true at all for e.g. physics or abstract algebra. I also think this is likely to be true in any field where philosophy is required, where you need to find the right formalisms instead of working from axioms.
 
-: Therefore, when thinking about [whether "responsibility for outcomes" has a simple core concept](/overcoming-clinginess-in-impact-measures), I nearly instantly concluded it didn't, without spending a second glancing over the surely countless philosophy papers wringing their hands (yup, papers have hands) over this debate. This was the right move. I just trusted my own thinking. Lit. reviews are just proxy signals of your having gained comprehension and coming to a well-considered conclusion.
+  Therefore, when thinking about [whether "responsibility for outcomes" has a simple core concept](/overcoming-clinginess-in-impact-measures), I nearly instantly concluded it didn't, without spending a second glancing over the surely countless philosophy papers wringing their hands (yup, papers have hands) over this debate. This was the right move. I just trusted my own thinking. Lit. reviews are just proxy signals of your having gained comprehension and coming to a well-considered conclusion.
 
 Concrete examples are helpful
 : At first, [thinking about vases in the context of impact measurement](/whitelisting-impact-measure) was helpful for getting a grip on low impact, even though it was [actually misleading](/world-state-is-the-wrong-abstraction-for-impact). I like to be concrete because we actually need _solutions_ - I want to learn more about the relationship between solution specifications and the task at hand.
@@ -69,9 +69,9 @@ Don't formalize your thoughts too early
 Don't ask permission to think big thoughts
 : Don't worry about whether you have the [license](https://www.lesswrong.com/posts/dhj9dhiwhq3DX6W8z/hero-licensing) or background to come up with a solution. When I was starting out, I was too busy being fascinated by the problem to remember that I, you know, wasn't allowed to solve it.
 
-: Obviously, there are common-sense exceptions to this, mostly revolving around trying to run without any feet. It would be pretty silly to think about logical uncertainty without even knowing propositional logic. One of the advantages of immersing myself in a lot of math isn't just knowing more, but knowing what I don't know.
+  Obviously, there are common-sense exceptions to this, mostly revolving around trying to run without any feet. It would be pretty silly to think about logical uncertainty without even knowing propositional logic. One of the advantages of immersing myself in a lot of math isn't just knowing more, but knowing what I don't know.
 
-: However, I think it's rare to secretly lack the basic skills to even start on the problem at hand. You'll probably know if you are, because all your thoughts keep coming back to the same kind of confusions about a formalism, or something. Then, you look for ways to resolve the confusion (possibly by asking a question on LW or in the MIRIx Discord), find the thing, and get back to work.
+  However, I think it's rare to secretly lack the basic skills to even start on the problem at hand. You'll probably know if you are, because all your thoughts keep coming back to the same kind of confusions about a formalism, or something. Then, you look for ways to resolve the confusion (possibly by asking a question on LW or in the MIRIx Discord), find the thing, and get back to work.
 
 # Stress-test thoughts
 

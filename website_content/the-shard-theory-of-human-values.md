@@ -334,7 +334,7 @@ We defined[^16] “values” as “contextual influences on decision-making.” 
 Type-correctness
 : We think that our definition is deeply appropriate in certain ways. Just because you value eating donuts, doesn’t mean you want to retain that pro-donut influence on your decision-making. Thus, _reflectively endorsing_ a value shard happens when the shards which reason about your shard composition, bid for the donut-shard to stick around. By the same logic, it makes total sense to want your values to change over time—the “reflective” parts of you want the shard composition in the future to be different from the present composition. (For example, many arachnophobes probably want to drop their fear of spiders.) Rather than humans being “weird” for wanting their values to change over time, we think it’s probably the default for smart agents meeting our learning-process assumptions ([Section 1](#1-neuroscientific-assumptions)).
 
-: Furthermore, your _values_ do not reflect a _reflectively endorsed utility function_. First off, those are different types of objects. Values bid for and against options, while a utility function grades options. Second, your values vary contextually, while any such utility function would be constant across contexts. More on these points later, in more advanced shard theory posts.
+  Furthermore, your _values_ do not reflect a _reflectively endorsed utility function_. First off, those are different types of objects. Values bid for and against options, while a utility function grades options. Second, your values vary contextually, while any such utility function would be constant across contexts. More on these points later, in more advanced shard theory posts.
 
 Different shard compositions can produce similar urges
 : If you feel an urge to approach nearby donuts, that indicates a range of possibilities:
@@ -343,7 +343,7 @@ Different shard compositions can produce similar urges
 : - A _social_ shard is firing because your friends are all eating donuts, and the social shard was historically reinforced for executing plans where you “fit in” / gain their approval.
 : - …
 
-: So, just because you feel an urge to eat the donut, doesn’t _necessarily_ mean you have a donut shard or that you “value” donuts under our definition. (But you probably do.)
+  So, just because you feel an urge to eat the donut, doesn't _necessarily_ mean you have a donut shard or that you "value" donuts under our definition. (But you probably do.)
 
 Shards are just collections of subshards
 : One subshard of your family-shard might steer towards futures where your family is happy, while another subshard may influence decisions so that your mother is proud of you. On my (`TurnTrout`’s) current understanding, “family shard” is just an abstraction of a set of heterogeneous subshards which are downstream of similar historical reinforcement events (e.g. related to spending time with your family). By and large, subshards of the same shard do not all steer towards the same kind of future.
