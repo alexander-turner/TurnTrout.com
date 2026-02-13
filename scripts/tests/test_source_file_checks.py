@@ -2344,6 +2344,25 @@ def test_check_footnote_references(
         (": Definition\n\n", []),
         # Valid: no blank line between definition and continuation
         (": First line\nContinuation", []),
+        # Valid: code block with description list pattern (should be ignored)
+        (
+            "Some text\n\n```markdown\n: First example\n\n: Second example\n```\n\nMore text",
+            [],
+        ),
+        # Valid: math block with colon pattern (should be ignored)
+        (
+            "Some text\n\n$$\n: math notation\n\n: more math\n$$\n\nMore text",
+            [],
+        ),
+        # Mixed: error outside code block, valid inside code block
+        (
+            ": Real definition\n\n: Error here\n\n```\n: Valid in code\n\n: Also valid\n```",
+            [
+                "Line 3: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Error here..."
+            ],
+        ),
     ],
 )
 def test_check_description_list_continuations(
