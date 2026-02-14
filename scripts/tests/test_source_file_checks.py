@@ -1,3 +1,4 @@
+import shutil
 import sys
 import tempfile
 import unittest.mock as mock
@@ -11,6 +12,11 @@ import requests  # type: ignore[import]
 
 from .. import utils as script_utils
 from .utils import create_markdown_file
+
+requires_sass = pytest.mark.skipif(
+    shutil.which("sass") is None,
+    reason="sass executable not found",
+)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -540,6 +546,7 @@ def setup_font_test(
     return _setup
 
 
+@requires_sass
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -684,6 +691,7 @@ def test_integration_with_main(
     assert exc_info.value.code == 1
 
 
+@requires_sass
 def test_compile_scss(tmp_path: Path) -> None:
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
@@ -2344,6 +2352,25 @@ def test_check_footnote_references(
         (": Definition\n\n", []),
         # Valid: no blank line between definition and continuation
         (": First line\nContinuation", []),
+        # Valid: code block with description list pattern (should be ignored)
+        (
+            "Some text\n\n```markdown\n: First example\n\n: Second example\n```\n\nMore text",
+            [],
+        ),
+        # Valid: math block with colon pattern (should be ignored)
+        (
+            "Some text\n\n$$\n: math notation\n\n: more math\n$$\n\nMore text",
+            [],
+        ),
+        # Mixed: error outside code block, valid inside code block
+        (
+            ": Real definition\n\n: Error here\n\n```\n: Valid in code\n\n: Also valid\n```",
+            [
+                "Line 3: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Error here..."
+            ],
+        ),
     ],
 )
 def test_check_description_list_continuations(

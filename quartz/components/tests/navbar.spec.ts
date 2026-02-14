@@ -111,7 +111,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })

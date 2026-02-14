@@ -32,6 +32,7 @@ jobs:
               - 'pyproject.toml'
               - 'uv.lock'
               - '.github/actions/**'
+              - '.github/scripts/**'
 
   python-tests:
     needs: detect-changes
@@ -52,7 +53,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish
+          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg
           pip install linkchecker
 
       - name: Install ImageMagick 7 via Homebrew

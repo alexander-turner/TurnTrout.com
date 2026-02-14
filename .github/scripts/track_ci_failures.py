@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Track CI failures on claude/ branch PRs and escalate when exhausted.
+"""
+Track CI failures on claude/ branch PRs and escalate when exhausted.
 
 Notification/labeling system only — does NOT ping @claude. The Stop hook
 (verify_ci.py) is the primary fix mechanism. This script:
