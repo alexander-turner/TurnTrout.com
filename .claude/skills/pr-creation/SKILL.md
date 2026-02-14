@@ -129,12 +129,8 @@ Provide the PR URL and confirm all CI checks have passed.
    ```
 
 8. Watches CI with `gh pr checks 47 --watch` — all green
-<<<<<<< HEAD
 9. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — no issues found
 10. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
-=======
-9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
->>>>>>> origin/dev
 
 ### Example 2: Multi-Commit Feature
 
