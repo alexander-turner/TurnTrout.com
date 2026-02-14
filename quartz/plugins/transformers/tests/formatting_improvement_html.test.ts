@@ -2101,3 +2101,44 @@ describe("Non-breaking space insertion", () => {
     expect(result).toContain(NBSP)
   })
 })
+
+describe("applyTextTransforms with useNbsp option", () => {
+  it("should not insert nbsp when useNbsp is false", () => {
+    const input = "I love this thing"
+    const result = applyTextTransforms(input, { useNbsp: false })
+    expect(result).not.toContain(NBSP)
+  })
+
+  it("should insert nbsp when useNbsp is true (default)", () => {
+    const input = "I love this thing"
+    const resultDefault = applyTextTransforms(input)
+    const resultExplicit = applyTextTransforms(input, { useNbsp: true })
+    expect(resultDefault).toContain(NBSP)
+    expect(resultExplicit).toContain(NBSP)
+  })
+
+  it("should still apply other transformations when useNbsp is false", () => {
+    // Test that smart quotes are still applied
+    const quotesInput = 'He said "hello"'
+    const quotesResult = applyTextTransforms(quotesInput, { useNbsp: false })
+    expect(quotesResult).toContain(LEFT_DOUBLE_QUOTE)
+    expect(quotesResult).toContain(RIGHT_DOUBLE_QUOTE)
+
+    // Test that symbol transforms are still applied
+    const symbolInput = "2x3"
+    const symbolResult = applyTextTransforms(symbolInput, { useNbsp: false })
+    expect(symbolResult).toBe(`2${MULTIPLICATION}3`)
+
+    // Test that hyphen replacement is still applied
+    const hyphenInput = "test - case"
+    const hyphenResult = applyTextTransforms(hyphenInput, { useNbsp: false })
+    expect(hyphenResult).toBe("test—case")
+  })
+
+  it("should not insert nbsp after abbreviations when useNbsp is false", () => {
+    const input = "See Fig. 3 for details"
+    const result = applyTextTransforms(input, { useNbsp: false })
+    expect(result).not.toContain(NBSP)
+    expect(result).toBe("See Fig. 3 for details")
+  })
+})
