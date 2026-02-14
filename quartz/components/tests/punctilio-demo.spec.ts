@@ -113,14 +113,10 @@ test.describe("Live transform", () => {
   test("typing custom text updates the output", async ({ page }) => {
     const input = page.locator("#punctilio-input")
     await input.fill("")
-    await input.type('"Hello"', { delay: 30 })
+    await input.pressSequentially('"Hello"', { delay: 30 })
 
-    // Wait for debounced transform
-    await page.waitForTimeout(200)
-
-    // The diff view should contain the result with smart quotes
-    const diffHtml = await page.locator("#punctilio-diff").innerHTML()
-    expect(diffHtml).toContain("\u201c") // left double quote
+    // Auto-retrying assertion waits for debounced transform
+    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
   })
 })
 
@@ -146,12 +142,44 @@ test.describe("Options panel", () => {
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
 
-    // Wait for re-transform
-    await page.waitForTimeout(150)
+    // Auto-retrying assertion waits for re-transform
+    await expect(page.locator("#punctilio-output")).not.toHaveValue(/\u201c/) // no left double quote
+  })
+})
 
-    // Check that the output no longer contains smart quotes
-    const outputValue = await page.locator("#punctilio-output").inputValue()
-    expect(outputValue).not.toContain("\u201c") // no left double quote
+test.describe("Cross-element HTML transform", () => {
+  test("smart quotes pair correctly across inline element boundaries", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('<p>"Hello <em>world</em>"</p>')
+
+    // The diff view should contain properly paired smart quotes
+    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+    await expect(page.locator("#punctilio-diff")).toContainText("\u201d") // right double quote
+  })
+})
+
+test.describe("Markdown protection", () => {
+  test("inline math is preserved in markdown mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('The formula $E = mc^2$ is "famous".')
+
+    // Math should be preserved, but quotes should be transformed
+    await expect(page.locator("#punctilio-diff")).toContainText("$E = mc^2$")
+    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+  })
+
+  test("fenced code blocks with ~~~ are preserved", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('~~~\nx = "don\'t change"\n~~~')
+
+    // Code block content should be preserved verbatim
+    await expect(page.locator("#punctilio-diff")).toContainText('"don\'t change"')
   })
 })
 
@@ -164,7 +192,7 @@ test.describe("SPA navigation", () => {
     // Navigate back
     await page.goBack()
     await page.waitForURL("**/punctilio")
-    await page.waitForSelector("#punctilio-demo")
+    await expect(page.locator("#punctilio-demo")).toBeVisible()
 
     // Demo should be reinitialized with example text
     const inputValue = await page.locator("#punctilio-input").inputValue()

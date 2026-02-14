@@ -27,6 +27,8 @@ x = "don't transform this"
 print(x)
 \`\`\`
 
+Inline math like $E = mc^2$ is preserved.
+
 See the [documentation](https://example.com/it's-fine) for more.
 
 (c) 2024 Acme Corp. 2x faster than before!`
@@ -41,7 +43,16 @@ const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
 
 <pre><code>x = "don't transform this"</code></pre>`
 
-const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA"])
+const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA", "KBD", "VAR", "SAMP"])
+
+// Unicode Private Use Area character — used as separator for cross-element
+// text handling. The punctilio transform() treats this character as transparent
+// in its regex patterns, allowing proper quote pairing across element boundaries.
+const SEPARATOR = "\uE000"
+
+// Maximum combined input+output length for character-level diff.
+// Beyond this, show plain output to avoid excessive memory use.
+const MAX_DIFF_LENGTH = 10_000
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -66,10 +77,12 @@ function getConfig(): TransformOptions {
   }
 }
 
+// ─── Markdown mode ───────────────────────────────────────────────────
+
 /**
- * Protect markdown syntax (code blocks, inline code, link/image URLs)
- * from being transformed, run the transform on the remaining text,
- * then restore the protected content.
+ * Protect Markdown syntax (code blocks, inline code, links, math, HTML
+ * blocks, URLs) from being transformed, run the transform on the
+ * remaining text, then restore the protected content.
  */
 function transformMarkdownText(text: string, config: TransformOptions): string {
   const placeholders: string[] = []
@@ -83,14 +96,27 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
 
   let result = text
 
-  // Protect fenced code blocks (``` ... ```)
-  result = result.replace(/```[\s\S]*?```/g, protect)
-  // Protect inline code (`...`)
+  // Protect YAML front matter at start of text
+  result = result.replace(/^---\n[\s\S]*?\n---/m, protect)
+  // Protect fenced code blocks (``` or ~~~, with optional language)
+  result = result.replace(/(?:```|~~~)[\s\S]*?(?:```|~~~)/g, protect)
+  // Protect math display blocks ($$...$$)
+  result = result.replace(/\$\$[\s\S]*?\$\$/g, protect)
+  // Protect inline math ($...$) — requires non-space after opening and before closing $
+  result = result.replace(/\$(?!\s)[^$\n]+(?<!\s)\$/g, protect)
+  // Protect inline code — double backtick first, then single
+  result = result.replace(/``[^`]+``/g, protect)
   result = result.replace(/`[^`\n]+`/g, protect)
+  // Protect HTML blocks (<tag>...</tag> spanning lines)
+  result = result.replace(/^<(?<tag>[a-zA-Z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\k<tag>>/gm, protect)
+  // Protect self-closing HTML tags
+  result = result.replace(/<[a-zA-Z][\w-]*(?:\s[^>]*)?\s*\/>/g, protect)
   // Protect image/link URLs: ![alt](url) or [text](url)
-  result = result.replace(/!?\[[^\]]*\]\([^)]+\)/g, protect)
+  result = result.replace(/!?\[[^\]]*\]\([^)]*\)/g, protect)
   // Protect reference-style link definitions: [id]: url
   result = result.replace(/^\[[^\]]+\]:\s+\S+.*$/gm, protect)
+  // Protect autolinks: <http://...> or <email@example.com>
+  result = result.replace(/<(?:https?:\/\/[^\s>]+|[^\s>]+@[^\s>]+)>/g, protect)
   // Protect raw URLs (http/https)
   result = result.replace(/https?:\/\/\S+/g, protect)
 
@@ -105,39 +131,126 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
   return result
 }
 
-function hasSkippedAncestor(element: Element | null): boolean {
-  let current = element
-  while (current) {
-    if (SKIP_TAGS.has(current.tagName)) return true
-    current = current.parentElement
+// ─── HTML mode with cross-element text handling ──────────────────────
+
+/**
+ * Recursively collect all text nodes from a DOM subtree, skipping
+ * elements in SKIP_TAGS. This allows text spanning multiple inline
+ * elements (e.g., <em>, <strong>) to be transformed as a unit.
+ */
+function flattenDomTextNodes(node: Node): Text[] {
+  const result: Text[] = []
+  for (const child of Array.from(node.childNodes)) {
+    if (child.nodeType === Node.TEXT_NODE) {
+      result.push(child as Text)
+    } else if (child.nodeType === Node.ELEMENT_NODE) {
+      const el = child as Element
+      if (!SKIP_TAGS.has(el.tagName)) {
+        result.push(...flattenDomTextNodes(el))
+      }
+    }
   }
-  return false
+  return result
 }
 
 /**
- * Parse HTML with DOMParser, walk text nodes (skipping elements with
- * code/script/style/pre ancestors), apply transform() to each text node,
- * then serialize back.
+ * Find elements that directly contain non-whitespace text nodes.
+ * When found, the element is collected (its inline descendants'
+ * text will be included via flattenDomTextNodes). Otherwise,
+ * recurse into children to find deeper elements with text.
+ */
+function collectTransformableElements(node: Element): Element[] {
+  if (SKIP_TAGS.has(node.tagName)) return []
+
+  const hasDirectText = Array.from(node.childNodes).some(
+    (child) => child.nodeType === Node.TEXT_NODE && (child.textContent ?? "").trim().length > 0,
+  )
+
+  if (hasDirectText) return [node]
+
+  const results: Element[] = []
+  for (const child of Array.from(node.childNodes)) {
+    if (child.nodeType === Node.ELEMENT_NODE) {
+      results.push(...collectTransformableElements(child as Element))
+    }
+  }
+  return results
+}
+
+/**
+ * Apply the transform to an element's text using the separator technique
+ * from punctilio's rehype plugin. This correctly handles text spanning
+ * multiple HTML elements (e.g., quotes wrapping <em> or <strong> tags).
+ *
+ * Approach:
+ * 1. Flatten all text nodes from the element (descending into inline children)
+ * 2. Append a separator after each text node's content and concatenate
+ * 3. Transform the concatenated text (separator is transparent to the regexes)
+ * 4. Split by separator and assign fragments back to original text nodes
+ */
+function transformElementDom(node: Element, config: TransformOptions): void {
+  const textNodes = flattenDomTextNodes(node)
+  if (textNodes.length === 0) return
+
+  const markedContent = textNodes.map((n) => (n.textContent ?? "") + SEPARATOR).join("")
+  const transformed = transform(markedContent, { ...config, separator: SEPARATOR })
+  const fragments = transformed.split(SEPARATOR).slice(0, -1)
+
+  // Safety: if the transform consumed separators, bail out
+  if (fragments.length !== textNodes.length) return
+
+  for (let i = 0; i < textNodes.length; i++) {
+    textNodes[i].textContent = fragments[i]
+  }
+}
+
+/**
+ * Parse HTML with DOMParser, walk the tree applying the separator-based
+ * transform to each element's text content, then serialize back.
+ *
+ * This correctly handles cross-element text — e.g., in
+ *   <p>"Hello <em>world</em>"</p>
+ * the opening and closing quotes are in separate text nodes but will
+ * be transformed as a unit, producing proper smart quote pairing.
  */
 function transformHtmlText(html: string, config: TransformOptions): string {
   const parser = new DOMParser()
   const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
 
-  const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT)
+  const processed = new WeakSet<Element>()
+  const elements = collectTransformableElements(doc.body)
 
-  const textNodes: Text[] = []
-  let node: Node | null
-  while ((node = walker.nextNode())) {
-    textNodes.push(node as Text)
-  }
-
-  for (const textNode of textNodes) {
-    if (hasSkippedAncestor(textNode.parentElement)) continue
-    if (textNode.textContent) {
-      textNode.textContent = transform(textNode.textContent, config)
+  for (const el of elements) {
+    if (processed.has(el)) continue
+    transformElementDom(el, config)
+    processed.add(el)
+    // Mark descendants to prevent double-processing
+    for (const desc of el.querySelectorAll("*")) {
+      processed.add(desc)
     }
   }
 
+  return doc.body.innerHTML
+}
+
+/**
+ * Sanitize HTML for the rendered preview by stripping event handlers
+ * and javascript: URLs.
+ */
+function sanitizeHtmlForPreview(html: string): string {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
+  for (const el of doc.body.querySelectorAll("*")) {
+    for (const attr of Array.from(el.attributes)) {
+      if (
+        attr.name.startsWith("on") ||
+        ((attr.name === "href" || attr.name === "src") &&
+          attr.value.trim().toLowerCase().startsWith("javascript:"))
+      ) {
+        el.removeAttribute(attr.name)
+      }
+    }
+  }
   return doc.body.innerHTML
 }
 
@@ -319,8 +432,12 @@ document.addEventListener("nav", () => {
     if (diffOutput) {
       const showDiff = diffToggle?.checked ?? true
       if (showDiff) {
-        const segments = diffChars(input.value, result)
-        diffOutput.innerHTML = renderDiffHtml(segments)
+        if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+          diffOutput.textContent = result
+        } else {
+          const segments = diffChars(input.value, result)
+          diffOutput.innerHTML = renderDiffHtml(segments)
+        }
         diffOutput.style.display = ""
         output.style.display = "none"
       } else {
@@ -333,7 +450,7 @@ document.addEventListener("nav", () => {
     if (htmlPreview) {
       if (currentMode === "html") {
         htmlPreview.style.display = ""
-        htmlPreview.innerHTML = result
+        htmlPreview.innerHTML = sanitizeHtmlForPreview(result)
       } else {
         htmlPreview.style.display = "none"
       }
@@ -381,13 +498,18 @@ document.addEventListener("nav", () => {
       "click",
       () => {
         if (!output) return
-        navigator.clipboard.writeText(output.value).then(() => {
-          const original = copyBtn.textContent
-          copyBtn.textContent = "Copied!"
-          setTimeout(() => {
-            copyBtn.textContent = original
-          }, 1500)
-        })
+        navigator.clipboard.writeText(output.value).then(
+          () => {
+            const original = copyBtn.textContent
+            copyBtn.textContent = "Copied!"
+            setTimeout(() => {
+              copyBtn.textContent = original
+            }, 1500)
+          },
+          () => {
+            // Clipboard write failed (e.g. permissions denied) — leave button unchanged
+          },
+        )
       },
       { signal },
     )
