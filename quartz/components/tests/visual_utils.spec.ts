@@ -717,17 +717,17 @@ test.describe("pauseMediaElements", () => {
 
 test.describe("showingPreview", () => {
   const viewports = [
-    { width: 1580, height: 800, expected: true }, // Desktop
-    { width: 1024, height: 768, expected: true }, // Tablet landscape (above breakpoint)
-    { width: 991, height: 768, expected: false }, // Tablet portrait (below breakpoint)
-    { width: 800, height: 600, expected: false }, // Smaller Tablet
-    { width: 480, height: 800, expected: false }, // Mobile
+    { width: 1580, height: 800 }, // Desktop
+    { width: 1024, height: 768 }, // Tablet landscape
+    { width: 991, height: 768 }, // Tablet portrait
+    { width: 800, height: 600 }, // Smaller Tablet
+    { width: 480, height: 800 }, // Mobile
   ]
 
-  for (const { width, height, expected } of viewports) {
-    test(`returns ${expected} for viewport ${width}x${height}`, async ({ page }) => {
+  for (const { width, height } of viewports) {
+    test(`returns true for viewport ${width}x${height}`, async ({ page }) => {
       await page.setViewportSize({ width, height })
-      expect(showingPreview(page)).toBe(expected)
+      expect(showingPreview(page)).toBe(true)
     })
   }
 })

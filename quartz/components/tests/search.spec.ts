@@ -156,11 +156,11 @@ test("Search layout restores height when tab becomes visible again", async ({ pa
   expect(heightAfter).toBeGreaterThan(0)
 })
 
-test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
+test("Preview panel is visible on all viewports", async ({ page }) => {
   await search(page, "test")
 
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  await expect(previewContainer).toBeVisible()
 })
 
 test("Search placeholder changes based on viewport", async ({ page }) => {
@@ -406,7 +406,11 @@ test("Search matching title text stays at top even with body matches", async ({ 
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  // This test uses hover() to select different results, which requires a desktop viewport
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
+    "Requires hover for result selection",
+  )
 
   const initialUrl = page.url()
   await search(page, "Shrek")
@@ -696,7 +700,11 @@ test("Navigated page properly orients the first match in viewport", async ({ pag
 })
 
 test("Result card matching stays synchronized with preview", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  // This test uses hover() for mouse interaction, which requires a desktop viewport
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
+    "Requires hover for mouse interaction",
+  )
 
   await search(page, "test")
 
@@ -837,4 +845,79 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
 
   // The text should appear in the search bar even while loading
   await expect(searchBar).toHaveValue(testText)
+})
+
+test.describe("Mobile tap-to-select", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 480, height: 800 })
+  })
+
+  test("first tap on unfocused card selects it without navigating", async ({ page }) => {
+    await search(page, "test")
+
+    const firstResult = page.locator(".result-card").first()
+    const secondResult = page.locator(".result-card").nth(1)
+    await expect(firstResult).toHaveClass(/focus/)
+    await expect(secondResult).not.toHaveClass(/focus/)
+
+    const urlBefore = page.url()
+    await secondResult.click()
+
+    // Should select the card (show focus) but NOT navigate
+    await expect(secondResult).toHaveClass(/focus/)
+    expect(page.url()).toBe(urlBefore)
+  })
+
+  test("second tap on focused card navigates", async ({ page }) => {
+    await search(page, "test")
+
+    const secondResult = page.locator(".result-card").nth(1)
+
+    // First tap: select
+    await secondResult.click()
+    await expect(secondResult).toHaveClass(/focus/)
+
+    const urlBefore = page.url()
+
+    // Second tap: navigate
+    await secondResult.click()
+    await page.waitForURL((url) => url.toString() !== urlBefore)
+  })
+
+  test("preview panel updates when tapping a different card", async ({ page }) => {
+    await search(page, "Steering")
+
+    const previewContainer = page.locator("#preview-container")
+    await expect(previewContainer).toBeVisible()
+
+    // Get initial preview content
+    const initialPreviewText = await previewContainer.textContent()
+
+    // Tap a different card to select it
+    const secondResult = page.locator(".result-card").nth(1)
+    await secondResult.click()
+    await expect(secondResult).toHaveClass(/focus/)
+
+    // Preview content should have changed
+    await expect(async () => {
+      const newPreviewText = previewContainer
+      await expect(newPreviewText).not.toHaveText(initialPreviewText)
+    }).toPass()
+  })
+})
+
+test("desktop click navigates immediately without tap-to-select", async ({ page }) => {
+  // Ensure desktop viewport
+  await page.setViewportSize({ width: tabletBreakpoint + 100, height: 800 })
+
+  await search(page, "test")
+
+  const secondResult = page.locator(".result-card").nth(1)
+  await expect(secondResult).toBeVisible()
+
+  const urlBefore = page.url()
+  await secondResult.click()
+
+  // On desktop, single click should navigate immediately
+  await page.waitForURL((url) => url.toString() !== urlBefore)
 })

@@ -29,7 +29,6 @@ const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 
 jest.mock("../../../styles/variables", () => ({
   tabletBreakpoint: 800,
-  mobileBreakpoint: 480,
 }))
 
 describe("Search Module Functions", () => {
