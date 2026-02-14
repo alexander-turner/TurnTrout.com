@@ -8,6 +8,7 @@
     border-radius: 6px;
     overflow: hidden;
     width: fit-content;
+    max-width: 100%;
   }
 
   .punctilio-mode-btn {
@@ -48,6 +49,7 @@
 
   .punctilio-panel {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
 
@@ -68,6 +70,7 @@
 
     textarea {
       width: 100%;
+      box-sizing: border-box;
       min-height: 280px;
       padding: 0.75rem;
       border: 1px solid var(--midground-faint);
@@ -95,6 +98,7 @@
   // Diff view — styled the same as the readonly output textarea
   .punctilio-diff {
     width: 100%;
+    box-sizing: border-box;
     min-height: 280px;
     padding: 0.75rem;
     border: 1px solid var(--midground-faint);
@@ -138,24 +142,11 @@
     }
   }
 
-  // Copy button
-  .punctilio-copy-btn {
-    padding: 0.2rem 0.6rem;
-    border: 1px solid var(--midground-faint);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--midground);
-    font-family: inherit;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition:
-      background-color 0.15s,
-      color 0.15s;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
-      color: var(--foreground);
-    }
+  // Copy button — reuses .clipboard-button from code blocks
+  .clipboard-button {
+    position: static;
+    opacity: 1;
+    margin: 0;
   }
 
   // Diff toggle
@@ -200,6 +191,7 @@
       padding: 0.75rem;
       border: 1px solid var(--midground-faint);
       border-radius: 6px;
+      box-sizing: border-box;
       background-color: color-mix(in srgb, var(--foreground) 2%, var(--background));
     }
 
