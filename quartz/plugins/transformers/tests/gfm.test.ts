@@ -180,14 +180,17 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle empty paragraph by removing it and appending arrow directly to li", () => {
+  test("should handle empty paragraph by appending arrow into it", () => {
     const node = h("li", [h("p", [])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Empty paragraph removed; arrow appended directly to the <li> (no span wrapping)
+    // Arrow appended into the empty paragraph
     expect(node.children).toHaveLength(1)
-    expect(node.children[0]).toBe(mockBackArrow)
+    const p = node.children[0] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect(p.children[0]).toBe(mockBackArrow)
   })
 
   test("should handle empty paragraph with table sibling", () => {
@@ -196,10 +199,13 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Empty paragraph removed; arrow appended directly after table (no span wrapping)
+    // Arrow appended into the empty paragraph after the table
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("table")
-    expect(node.children[1]).toBe(mockBackArrow)
+    const p = node.children[1] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect(p.children[0]).toBe(mockBackArrow)
   })
 
   test("should handle paragraph with only whitespace", () => {
@@ -708,28 +714,34 @@ describe("gfmVisitor function", () => {
     expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
-  test("should handle footnote with empty paragraph by removing paragraph and appending to li", () => {
+  test("should handle footnote with empty paragraph by appending arrow into it", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const footnoteItem = h("li", { id: "user-content-fn-1" }, [h("p", [backArrow])])
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Empty paragraph removed; arrow appended directly to the <li> (no span wrapping)
+    // Arrow appended into the now-empty paragraph
     expect(footnoteItem.children).toHaveLength(1)
-    expect((footnoteItem.children[0] as Element).tagName).toBe("a")
+    const p = footnoteItem.children[0] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect((p.children[0] as Element).tagName).toBe("a")
   })
 
-  test("should handle table-only footnote by appending arrow after table", () => {
+  test("should handle table-only footnote by appending arrow into paragraph after table", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const table = h("table", [h("tr", [h("td", ["cell"])])])
     const footnoteItem = h("li", { id: "user-content-fn-table" }, [table, h("p", [backArrow])])
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Empty paragraph removed; arrow appended directly after table (no span wrapping)
+    // Arrow appended into the now-empty paragraph after the table
     expect(footnoteItem.children).toHaveLength(2)
     expect((footnoteItem.children[0] as Element).tagName).toBe("table")
-    expect((footnoteItem.children[1] as Element).tagName).toBe("a")
+    const p = footnoteItem.children[1] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect((p.children[0] as Element).tagName).toBe("a")
   })
 
   test("should handle complex footnote structure", () => {

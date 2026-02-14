@@ -518,10 +518,6 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
  * Splices the last few characters from the final text node and wraps them
  * with the back arrow in a nowrap span (`white-space: nowrap`), using the
  * same approach as favicon link icons.
- *
- * For table-only footnotes where the back arrow was the sole content of its
- * paragraph, the empty paragraph is removed and the arrow is appended directly
- * to the <li> so it flows inline after the preceding table/figure.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
   const lastParagraph = node.children.findLast(
@@ -532,16 +528,6 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
   }
 
   removeBackArrowFromChildren(lastParagraph)
-
-  // Handle empty paragraph case (e.g., table-only footnotes where the
-  // back arrow was the only content in its own paragraph). Remove the
-  // empty <p> and append arrow directly to the <li>.
-  if (lastParagraph.children.length === 0) {
-    const pIndex = node.children.indexOf(lastParagraph)
-    node.children.splice(pIndex, 1)
-    node.children.push(backArrow)
-    return
-  }
 
   // Find the last text node in the paragraph
   const children = [...lastParagraph.children]
