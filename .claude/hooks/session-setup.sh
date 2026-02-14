@@ -102,7 +102,6 @@ if [ -z "${GH_REPO:-}" ]; then
 fi
 
 # Set gh's default repo so commands like `gh pr create` work even when
-# Set gh's default repo so commands like `gh pr create` work even when
 # the git remote is a local proxy URL that gh can't resolve.
 if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
 	gh repo set-default "$GH_REPO" || warn "Failed to set default repo for gh"
