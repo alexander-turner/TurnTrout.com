@@ -988,7 +988,7 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 > 4. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
 > 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
 > 6. Headings should not contain Markdown links (like `## Title [link](...)`).
-> 7. Description list continuations are properly formatted: after a definition line (starting with `:`), continuation paragraphs should be indented (typically 2 spaces) rather than starting with another `:`.
+> 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
 >
 > **Typography:**
 > 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
