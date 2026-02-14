@@ -847,12 +847,16 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchBar).toHaveValue(testText)
 })
 
-test("Mobile search results show text snippets", async ({ page }) => {
+test("Mobile search results show inline preview slices", async ({ page }) => {
   await page.setViewportSize({ width: 480, height: 800 })
-  await search(page, "test")
+  await search(page, "Steering")
 
   const firstResult = page.locator(".result-card").first()
-  const snippet = firstResult.locator("p")
-  await expect(snippet).toBeVisible()
-  await expect(snippet).not.toBeEmpty()
+  const inlinePreview = firstResult.locator(".inline-preview")
+  await expect(inlinePreview).toBeAttached()
+
+  // Preview content loads asynchronously
+  const article = inlinePreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty()
 })

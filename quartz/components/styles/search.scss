@@ -250,6 +250,22 @@
           & > p {
             margin-bottom: 0;
           }
+
+          & .inline-preview {
+            height: 6rem;
+            overflow: hidden;
+            pointer-events: none;
+            margin-top: $base-margin;
+
+            // Fade out at the bottom edge
+            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+
+            & .search-preview {
+              margin: 0 auto;
+              width: 100%;
+              font-size: 0.85em;
+            }
+          }
         }
       }
     }

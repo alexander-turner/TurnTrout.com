@@ -884,10 +884,34 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   content = replaceEmojiConvertArrows(content)
 
   let suffixHTML = ""
-  if (!enablePreview || window.innerWidth <= tabletBreakpoint) {
+  if (!enablePreview) {
     suffixHTML = `<p>${content}</p>`
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+
+  // On mobile/tablet, embed a small inline preview slice in each card
+  if (enablePreview && window.innerWidth <= tabletBreakpoint) {
+    const inlinePreview = document.createElement("div")
+    inlinePreview.classList.add("inline-preview")
+    itemTile.appendChild(inlinePreview)
+
+    void fetchContent(slug as FullSlug).then(({ content: contentElements }) => {
+      if (!contentElements) return
+      const article = document.createElement("article")
+      article.classList.add("search-preview")
+      contentElements.forEach((el) => {
+        article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
+      })
+      inlinePreview.appendChild(article)
+
+      // Scroll to first match so the relevant slice is visible
+      const firstMatch = inlinePreview.querySelector(".search-match")
+      if (firstMatch) {
+        const matchOffset = (firstMatch as HTMLElement).offsetTop
+        inlinePreview.scrollTop = Math.max(0, matchOffset - inlinePreview.clientHeight / 3)
+      }
+    })
+  }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
