@@ -226,6 +226,7 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
+- Declare variables close to where they are first used, not at the top of a function
 
 ### Error Handling
 

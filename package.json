@@ -50,7 +50,7 @@
       "ruff check --fix",
       "autoflake --in-place",
       "isort",
-      "bash -c 'uv run docformatter --in-place --config config/python/pyproject.toml \"$@\" || true' --",
+      ".hooks/format-docstrings.sh",
       "autopep8 --in-place",
       "black"
     ],

@@ -4,6 +4,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
@@ -43,11 +44,16 @@ def mock_environment(quartz_project_structure, monkeypatch):
     # Mock common utility functions
     monkeypatch.setattr(script_utils, "collect_aliases", lambda md_dir: set())
 
-    # Mock check_rss_file_for_issues to prevent actual subprocess call in main tests
+    # Mock subprocess-dependent helpers to avoid npx/tsx calls in tests
     monkeypatch.setattr(
         built_site_checks,
         "check_rss_file_for_issues",
         lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        built_site_checks,
+        "_build_favicon_lists",
+        lambda _git_root: ([], []),
     )
 
     return {
@@ -652,6 +658,7 @@ def test_check_file_for_issues(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["localhost_links"] == ["https://localhost:8000"]
@@ -687,6 +694,7 @@ def test_complicated_blockquote(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["trailing_blockquotes"] == [
@@ -707,6 +715,7 @@ def test_check_file_for_issues_with_redirect(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues == {}
@@ -3019,27 +3028,23 @@ def test_blacklist_overrides_whitelist():
     assert result == []
 
 
-def test_build_favicon_lists(tmp_path):
-    """Test _build_favicon_lists loads and expands whitelist + blacklist."""
-    config_dir = tmp_path / "config"
-    config_dir.mkdir()
-    constants = {
-        "faviconCountWhitelist": ["apple_com", "x_com"],
-        "googleSubdomainWhitelist": ["scholar", "colab.research"],
-        "faviconSubstringBlacklist": ["vox_com", "medium_com"],
-    }
-    (config_dir / "constants.json").write_text(
-        json.dumps(constants), encoding="utf-8"
+@mock.patch("built_site_checks.subprocess.run")
+def test_build_favicon_lists(mock_run):
+    """Test _build_favicon_lists calls TS script and parses output."""
+    mock_run.return_value = subprocess.CompletedProcess(
+        args=[],
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "whitelist": ["apple_com", "x_com", "scholar_google_com"],
+                "blacklist": ["csir_co_za", "medium_com"],
+            }
+        ),
     )
-
-    whitelist, blacklist = built_site_checks._build_favicon_lists(tmp_path)
-    assert whitelist == [
-        "apple_com",
-        "x_com",
-        "scholar_google_com",
-        "colab_research_google_com",
-    ]
-    assert blacklist == ["vox_com", "medium_com"]
+    whitelist, blacklist = built_site_checks._build_favicon_lists(Path("/fake"))
+    assert whitelist == ["apple_com", "x_com", "scholar_google_com"]
+    assert blacklist == ["csir_co_za", "medium_com"]
+    mock_run.assert_called_once()
 
 
 def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
@@ -3087,7 +3092,7 @@ def test_check_file_for_issues_without_favicon_whitelist(tmp_path):
         return_value=BeautifulSoup(html, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None
+            file_path, base_dir, None, built_site_checks.CheckOptions()
         )
 
     assert "whitelisted_missing_favicons" not in issues
@@ -3278,7 +3283,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(),
         )
 
     # Verify that missing_preloaded_font is not in the issues
@@ -3515,7 +3523,10 @@ description: Test Description
         ),
     ):
         issues = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, md_file_path
+            html_file_path,
+            base_dir,
+            md_file_path,
+            built_site_checks.CheckOptions(),
         )
 
     mock_check.assert_called_once_with(
@@ -3553,7 +3564,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
         ),
     ):
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None
+            html_file_path, base_dir, None, built_site_checks.CheckOptions()
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
@@ -3574,6 +3585,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
             html_file_path,
             base_dir,
             non_existent_md_path,
+            built_site_checks.CheckOptions(),
         )
     mock_check_non_existent.assert_not_called()
     assert "missing_markdown_assets" not in issues_non_existent
@@ -3603,7 +3615,7 @@ def test_check_file_for_issues_favicon_check_called(
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None
+            file_path, base_dir, None, built_site_checks.CheckOptions()
         )
 
     if should_check_favicon:
@@ -4600,6 +4612,7 @@ def soup_check_setup(mock_environment, monkeypatch):
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
+        "opts": built_site_checks.CheckOptions(),
     }
     return common_args, html_file_path
 

@@ -1280,31 +1280,24 @@ def _build_favicon_lists(
     git_root: Path,
 ) -> tuple[list[str], list[str]]:
     """
-    Build favicon whitelist and blacklist from config/constants.json.
+    Build favicon whitelist and blacklist by calling the shared TS module.
 
-    Returns a (whitelist, blacklist) tuple of underscore-separated domain
-    entries.  The whitelist contains domains that should always receive
-    favicons; the blacklist contains domains that should never receive them.
-    A blacklisted domain takes priority over the whitelist (mirroring the
-    TS ``shouldIncludeFavicon`` logic).
+    Runs ``scripts/compute_favicon_lists.ts`` (which imports from
+    ``quartz/util/favicon-config.ts``) so that the Python validation
+    uses the exact same inclusion predicate — including PSL-normalised
+    blacklist entries — as the Quartz transformer.
 
-    Note: The TS ``faviconCountWhitelistComputed`` also includes
-    ``specialFaviconPaths`` (mail/anchor/rss icons) and applies
-    ``specialDomainMappings`` (e.g. transformer-circuits.pub →
-    anthropic.com).  Those are intentionally omitted here because
-    ``specialFaviconPaths`` are full URLs (not domain patterns) and
-    ``specialDomainMappings`` targets are already whitelisted directly.
+    Returns a (whitelist, blacklist) tuple.
     """
-    constants_path = git_root / "config" / "constants.json"
-    with open(constants_path, encoding="utf-8") as f:
-        constants = json.load(f)
-
-    whitelist: list[str] = list(constants["faviconCountWhitelist"])
-    for subdomain in constants["googleSubdomainWhitelist"]:
-        whitelist.append(f"{subdomain.replace('.', '_')}_google_com")
-
-    blacklist: list[str] = list(constants["faviconSubstringBlacklist"])
-    return whitelist, blacklist
+    result = subprocess.run(
+        ["npx", "tsx", str(git_root / "scripts" / "compute_favicon_lists.ts")],
+        capture_output=True,
+        text=True,
+        cwd=str(git_root),
+        check=True,
+    )
+    data = json.loads(result.stdout)
+    return data["whitelist"], data["blacklist"]
 
 
 def _is_asset_href(href: str) -> bool:
@@ -1322,11 +1315,6 @@ def _is_asset_href(href: str) -> bool:
         mime_type.startswith(("image/", "video/", "audio/"))
         or mime_type == "application/pdf"
     )
-
-
-def _matches_any(normalised_domain: str, entries: list[str]) -> bool:
-    """Check if any entry is a substring of the normalised domain."""
-    return any(entry in normalised_domain for entry in entries)
 
 
 def check_whitelisted_links_have_favicons(
@@ -1376,9 +1364,9 @@ def check_whitelisted_links_have_favicons(
         normalised = hostname.removeprefix("www.").replace(".", "_")
 
         # Blacklist takes priority (mirrors TS shouldIncludeFavicon)
-        if _matches_any(normalised, blacklist):
+        if any(entry in normalised for entry in blacklist):
             continue
-        if not _matches_any(normalised, favicon_whitelist):
+        if not any(entry in normalised for entry in favicon_whitelist):
             continue
 
         has_favicon = bool(link.select_one("svg.favicon, img.favicon"))
@@ -1671,7 +1659,7 @@ def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
-    opts: CheckOptions | None = None,
+    opts: CheckOptions,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1685,8 +1673,6 @@ def check_file_for_issues(
     Returns:
         Dictionary of issues found in the HTML file
     """
-    if opts is None:
-        opts = CheckOptions()
     soup = script_utils.parse_html_file(file_path)
     if script_utils.is_redirect(soup):
         return {}
@@ -2332,6 +2318,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+
     favicon_whitelist, favicon_blacklist = _build_favicon_lists(
         public_dir.parent
     )
@@ -2341,7 +2328,6 @@ def _process_html_files(  # pylint: disable=too-many-locals
         favicon_whitelist=favicon_whitelist,
         favicon_blacklist=favicon_blacklist,
     )
-
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
         if "drafts" in root_path.parts:
