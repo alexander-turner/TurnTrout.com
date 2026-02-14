@@ -72,16 +72,17 @@ annotations:
     expect(spec.x.scale).toBe("log")
     expect(spec.y.scale).toBe("linear")
     expect(spec.series[0].color).toBe("var(--blue)")
-    expect(spec.annotations).toHaveLength(3)
-    expect(spec.annotations![0]).toEqual({
+    const annotations = spec.annotations ?? []
+    expect(annotations).toHaveLength(3)
+    expect(annotations[0]).toEqual({
       type: "horizontal-line",
       value: 3.14,
       label: "Baseline",
       style: "dashed",
     })
-    expect(spec.annotations![1].label).toBeUndefined()
-    expect(spec.annotations![1].style).toBe("solid")
-    expect(spec.annotations![2].style).toBe("solid")
+    expect(annotations[1].label).toBeUndefined()
+    expect(annotations[1].style).toBe("solid")
+    expect(annotations[2].style).toBe("solid")
   })
 
   it.each([
@@ -281,14 +282,15 @@ describe("renderLineChart", () => {
     expect(annotations).toHaveLength(1)
     // Find dashed annotation line
     const annotLine = annotations[0].children.find(
-      (c) => c.type === "element" && c.tagName === "line",
-    ) as Element
-    expect(annotLine.properties?.["stroke-dasharray"]).toBe("6,4")
+      (c): c is Element => c.type === "element" && c.tagName === "line",
+    )
+    expect(annotLine?.properties?.["stroke-dasharray"]).toBe("6,4")
     // Find annotation label
     const annotText = annotations[0].children.find(
-      (c) => c.type === "element" && c.tagName === "text",
-    ) as Element
-    expect((annotText.children[0] as Text).value).toBe("Target")
+      (c): c is Element => c.type === "element" && c.tagName === "text",
+    )
+    const labelNode = annotText?.children[0]
+    expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
   })
 
   it("includes accessible SVG title element", () => {
@@ -298,7 +300,8 @@ describe("renderLineChart", () => {
       if (node.tagName === "title") titleElements.push(node)
     })
     expect(titleElements).toHaveLength(1)
-    expect((titleElements[0].children[0] as Text).value).toBe("Test Chart")
+    const titleChild = titleElements[0].children[0]
+    expect(titleChild.type === "text" && titleChild.value).toBe("Test Chart")
   })
 
   it("uses default accessible title when no title provided", () => {
@@ -309,7 +312,8 @@ describe("renderLineChart", () => {
       if (node.tagName === "title") titleElements.push(node)
     })
     expect(titleElements).toHaveLength(1)
-    expect((titleElements[0].children[0] as Text).value).toBe("Line chart")
+    const titleChild = titleElements[0].children[0]
+    expect(titleChild.type === "text" && titleChild.value).toBe("Line chart")
   })
 
   it("renders without title when not provided", () => {
@@ -443,9 +447,9 @@ describe("renderLineChart", () => {
     })
     expect(annotations).toHaveLength(1)
     const line = annotations[0].children.find(
-      (c) => c.type === "element" && c.tagName === "line",
-    ) as Element
-    expect(line.properties?.["stroke-dasharray"]).toBe("none")
+      (c): c is Element => c.type === "element" && c.tagName === "line",
+    )
+    expect(line?.properties?.["stroke-dasharray"]).toBe("none")
     // No text child for label
     const texts = annotations[0].children.filter(
       (c) => c.type === "element" && c.tagName === "text",
@@ -541,7 +545,7 @@ series:
   it("replaces chart code block with SVG figure", () => {
     const tree = createChartTree(VALID_YAML)
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     // Execute the plugin
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
@@ -559,7 +563,7 @@ series:
   it("does not modify non-chart code blocks", () => {
     const tree = createChartTree("console.log('hello')", "javascript")
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
 
@@ -580,7 +584,7 @@ series:
       ],
     }
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
 
@@ -633,7 +637,7 @@ series:
     }
 
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
 
@@ -654,7 +658,7 @@ series:
       ],
     }
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
 
@@ -670,13 +674,15 @@ series:
     jest.spyOn(fs, "readFileSync").mockReturnValue("// smart-chart-tooltip script")
     try {
       const plugin = Charts()
-      const resources = plugin.externalResources!(mockCtx)
-      expect(resources.js).toHaveLength(1)
-      expect(resources.js![0]).toMatchObject({
+      const resources = plugin.externalResources?.(mockCtx) ?? {}
+      const jsResources = resources.js ?? []
+      expect(jsResources).toHaveLength(1)
+      expect(jsResources[0]).toMatchObject({
         loadTime: "afterDOMReady",
         contentType: "inline",
       })
-      expect((resources.js![0] as { script: string }).script).toContain("smart-chart-tooltip")
+      const scriptResource = jsResources[0] as { script: string }
+      expect(scriptResource.script).toContain("smart-chart-tooltip")
     } finally {
       jest.restoreAllMocks()
     }
@@ -702,7 +708,7 @@ series:
       ],
     }
     const plugin = Charts()
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
     const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
     transform(tree)
 
