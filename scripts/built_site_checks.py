@@ -1303,7 +1303,8 @@ _ASSET_EXTENSIONS = frozenset(
 
 
 def _build_favicon_whitelist(git_root: Path) -> list[str]:
-    """Build the full favicon whitelist from config/constants.json.
+    """
+    Build the full favicon whitelist from config/constants.json.
 
     Returns underscore-separated domain entries that should always receive
     favicons (regardless of count threshold).
@@ -1336,7 +1337,8 @@ def check_whitelisted_links_have_favicons(
     soup: BeautifulSoup,
     favicon_whitelist: list[str],
 ) -> list[str]:
-    """Check that external links to whitelisted domains have favicons.
+    """
+    Check that external links to whitelisted domains have favicons.
 
     For each ``<a class="external">`` link whose domain matches a whitelist
     entry, verifies the link contains a ``.favicon`` descendant element.
