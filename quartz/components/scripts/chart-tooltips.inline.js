@@ -15,12 +15,12 @@
 
     tooltip.textContent = ""
     if (series) {
-      var strong = document.createElement("strong")
+      const strong = document.createElement("strong")
       strong.textContent = series
       tooltip.appendChild(strong)
       tooltip.appendChild(document.createElement("br"))
     }
-    tooltip.appendChild(document.createTextNode(x + ", " + y))
+    tooltip.appendChild(document.createTextNode(`${x}, ${y}`))
     tooltip.style.display = "block"
     positionTooltip(e)
   }
@@ -36,8 +36,8 @@
     }
     if (top < 0) top = e.clientY + 12
 
-    tooltip.style.left = left + "px"
-    tooltip.style.top = top + "px"
+    tooltip.style.left = `${left}px`
+    tooltip.style.top = `${top}px`
   }
 
   function hideTooltip() {
