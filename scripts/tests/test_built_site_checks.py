@@ -2877,19 +2877,20 @@ def test_is_asset_href(href, expected):
     "html,whitelist,expected",
     [
         # No external links
-        ("<div><p>No links here</p></div>", ["apple_com"], []),
+        ("<article><p>No links here</p></article>", ["apple_com"], []),
         # External link to whitelisted domain WITH favicon (valid)
         (
-            '<a class="external" href="https://apple.com/products">'
+            '<article><a class="external" href="https://apple.com/products">'
             'Apple<span class="word-joiner">'
             '<svg class="favicon" style="--mask-url: url(apple.svg);"></svg>'
-            "</span></a>",
+            "</span></a></article>",
             ["apple_com"],
             [],
         ),
         # External link to whitelisted domain WITHOUT favicon (invalid)
         (
-            '<a class="external" href="https://apple.com/products">Apple</a>',
+            '<article><a class="external" href="https://apple.com/products">'
+            "Apple</a></article>",
             ["apple_com"],
             [
                 "Whitelisted link missing favicon: apple.com"
@@ -2898,13 +2899,15 @@ def test_is_asset_href(href, expected):
         ),
         # External link to non-whitelisted domain without favicon (valid)
         (
-            '<a class="external" href="https://example.com">Example</a>',
+            '<article><a class="external" href="https://example.com">'
+            "Example</a></article>",
             ["apple_com"],
             [],
         ),
         # Subdomain of whitelisted domain without favicon (invalid)
         (
-            '<a class="external" href="https://blog.apple.com/news">Blog</a>',
+            '<article><a class="external" href="https://blog.apple.com/news">'
+            "Blog</a></article>",
             ["apple_com"],
             [
                 "Whitelisted link missing favicon: blog.apple.com"
@@ -2913,7 +2916,8 @@ def test_is_asset_href(href, expected):
         ),
         # www. prefix stripped correctly
         (
-            '<a class="external" href="https://www.apple.com">Apple</a>',
+            '<article><a class="external" href="https://www.apple.com">'
+            "Apple</a></article>",
             ["apple_com"],
             [
                 "Whitelisted link missing favicon: www.apple.com"
@@ -2922,23 +2926,25 @@ def test_is_asset_href(href, expected):
         ),
         # Asset link to whitelisted domain (should be skipped)
         (
-            '<a class="external" href="https://apple.com/image.png">Img</a>',
+            '<article><a class="external" href="https://apple.com/image.png">'
+            "Img</a></article>",
             ["apple_com"],
             [],
         ),
         # Internal link (no class="external") to whitelisted domain (skip)
         (
-            '<a href="https://apple.com/products">Apple</a>',
+            '<article><a href="https://apple.com/products">'
+            "Apple</a></article>",
             ["apple_com"],
             [],
         ),
         # Multiple links: one valid, one missing favicon
         (
-            "<div>"
+            "<article>"
             '<a class="external" href="https://apple.com">'
             'ok<svg class="favicon" style="--mask-url: url(a.svg);"></svg></a>'
             '<a class="external" href="https://discord.gg/abc">bad</a>'
-            "</div>",
+            "</article>",
             ["apple_com", "discord_gg"],
             [
                 "Whitelisted link missing favicon: discord.gg"
@@ -2947,8 +2953,9 @@ def test_is_asset_href(href, expected):
         ),
         # Google subdomain whitelist entry
         (
-            '<a class="external" href="https://scholar.google.com/citations">'
-            "Scholar</a>",
+            '<article><a class="external"'
+            ' href="https://scholar.google.com/citations">'
+            "Scholar</a></article>",
             ["scholar_google_com"],
             [
                 "Whitelisted link missing favicon: scholar.google.com"
@@ -2957,26 +2964,36 @@ def test_is_asset_href(href, expected):
         ),
         # Non-http link with external class (should be skipped)
         (
-            '<a class="external" href="ftp://apple.com/file">FTP</a>',
+            '<article><a class="external" href="ftp://apple.com/file">'
+            "FTP</a></article>",
             ["apple_com"],
             [],
         ),
         # Link with img.favicon (also valid)
         (
-            '<a class="external" href="https://apple.com">'
-            'Apple<img class="favicon" src="apple.png"></a>',
+            '<article><a class="external" href="https://apple.com">'
+            'Apple<img class="favicon" src="apple.png"></a></article>',
             ["apple_com"],
             [],
         ),
         # Empty whitelist – nothing flagged
         (
-            '<a class="external" href="https://apple.com">Apple</a>',
+            '<article><a class="external" href="https://apple.com">'
+            "Apple</a></article>",
             [],
             [],
         ),
         # Malformed URL with no hostname (should be skipped gracefully)
         (
-            '<a class="external" href="https://">Bad URL</a>',
+            '<article><a class="external" href="https://">'
+            "Bad URL</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Link outside <article> (nav/aside) – should be skipped
+        (
+            '<nav><a class="external" href="https://apple.com">'
+            "Apple</a></nav>",
             ["apple_com"],
             [],
         ),

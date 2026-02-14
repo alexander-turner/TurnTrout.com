@@ -1355,7 +1355,9 @@ def check_whitelisted_links_have_favicons(
     """
     issues: list[str] = []
 
-    for link in soup.select("a.external[href]"):
+    # Only check links inside <article>; component-generated links (nav,
+    # aside) never pass through the favicon transformer.
+    for link in soup.select("article a.external[href]"):
         href = str(link.get("href", ""))
         if not href.startswith(("http://", "https://")):
             continue
