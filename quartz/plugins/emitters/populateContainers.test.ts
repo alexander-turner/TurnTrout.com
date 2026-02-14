@@ -25,7 +25,7 @@ import { type StaticResources } from "../../util/resources"
 const { minFaviconCount, defaultPath } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
-import * as linkfavicons from "../transformers/linkfavicons"
+import * as favicons from "../transformers/favicons"
 import { type QuartzEmitterPlugin } from "../types"
 
 let populateModule: typeof import("./populateContainers")
@@ -55,7 +55,7 @@ describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
   const mockOutputDir = "/mock/output"
   const mockStaticResources: StaticResources = { css: [], js: [] }
-  const urlCache = linkfavicons.urlCache
+  const urlCache = favicons.urlCache
 
   beforeAll(async () => {
     populateModule = await import("./populateContainers")

@@ -19,7 +19,7 @@ import {
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import { createWinstonLogger } from "../../util/log"
-import { createFaviconSpan, hasClass } from "./utils"
+import { hasClass, spliceAndWrapLastChars } from "./utils"
 
 const {
   minFaviconCount,
@@ -691,8 +691,6 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
 export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'"]
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
-export const maxCharsToRead = 4
-
 /**
  * Splices the last few characters from a text node and wraps them
  * with the favicon in a nowrap span, preventing line-break orphaning.
@@ -701,10 +699,10 @@ export const maxCharsToRead = 4
  * 1. Finds the last meaningful child node
  * 2. Recurses into inline elements (code, em, strong, etc.)
  * 3. If an existing favicon-span exists, appends to it
- * 4. Splices the last 4 characters and wraps them + favicon in a favicon-span
+ * 4. Splices the last 4 characters and wraps them + favicon in a nowrap span
  * 5. Adds close-text class if the last character needs extra margin
  *
- * @returns The favicon-span to append to the parent, or null if already handled
+ * @returns The nowrap span to append to the parent, or null if already handled
  */
 export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): Element | null {
   // Find the last non-empty child
@@ -747,10 +745,9 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   }
 
   const lastChildText = lastChild as Text
-  const textContent = lastChildText.value
 
   // Some characters render particularly close to the favicon, so we add a small margin
-  const lastChar = textContent.at(-1)
+  const lastChar = lastChildText.value.at(-1)
   if (lastChar && charsToSpace.includes(lastChar)) {
     logger.debug("Adding margin-left to appended element")
     // istanbul ignore next
@@ -758,20 +755,7 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     imgNodeToAppend.properties.class = "favicon close-text"
   }
 
-  // Take the last few characters (up to maxCharsToRead)
-  const charsToRead = Math.min(maxCharsToRead, textContent.length)
-  const lastChars = textContent.slice(-charsToRead)
-  lastChildText.value = textContent.slice(0, -charsToRead)
-
-  const span = createFaviconSpan(lastChars, imgNodeToAppend)
-
-  // Replace entire text with span if all text was moved
-  if (lastChars === textContent) {
-    node.children.pop()
-    logger.debug(`Replacing all ${charsToRead} chars with span`)
-  }
-
-  return span
+  return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)
 }
 
 /**

@@ -191,16 +191,52 @@ export function hasAncestor(
 }
 
 /**
- * Creates a favicon-span element that wraps the last few characters of text
- * and the favicon/icon to prevent line-break orphaning via white-space: nowrap.
+ * Maximum characters to splice from the end of a text node when wrapping
+ * an inline icon (favicon, back arrow, etc.) in a nowrap span.
  */
-export function createFaviconSpan(text: string, child: Element): Element {
+export const maxCharsToRead = 4
+
+/**
+ * Creates a nowrap span element that wraps the given text and child element
+ * to prevent line-break orphaning via white-space: nowrap.
+ */
+export function createNowrapSpan(text: string, child: Element): Element {
   return {
     type: "element",
     tagName: "span",
     properties: { className: "favicon-span" },
     children: [{ type: "text" as const, value: text }, child],
   } as Element
+}
+
+/**
+ * Splices the last few characters from a text node and wraps them with
+ * the given element in a nowrap span, preventing line-break orphaning.
+ *
+ * Mutates `lastTextNode.value` in place. If all text is consumed, removes
+ * the text node from `parent.children`.
+ *
+ * @returns The nowrap span containing [spliced text, elementToWrap].
+ */
+export function spliceAndWrapLastChars(
+  lastTextNode: Text,
+  parent: Element,
+  elementToWrap: Element,
+): Element {
+  const text = lastTextNode.value
+  const charsToRead = Math.min(maxCharsToRead, text.length)
+  const lastChars = text.slice(-charsToRead)
+  lastTextNode.value = text.slice(0, -charsToRead)
+
+  // Remove the text node entirely if all text was moved into the span
+  if (lastChars === text) {
+    const idx = parent.children.indexOf(lastTextNode as unknown as ElementContent)
+    if (idx !== -1) {
+      parent.children.splice(idx, 1)
+    }
+  }
+
+  return createNowrapSpan(lastChars, elementToWrap)
 }
 
 // Does node have a class that includes the given className?

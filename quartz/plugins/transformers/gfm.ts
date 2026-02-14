@@ -11,7 +11,7 @@ import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
-import { createFaviconSpan } from "./utils"
+import { spliceAndWrapLastChars } from "./utils"
 
 export interface Options {
   enableSmartyPants: boolean
@@ -512,14 +512,12 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
   })
 }
 
-const maxCharsToRead = 4
-
 /**
  * Add a back arrow to the footnote. Modifies the footnote node in place.
  *
  * Splices the last few characters from the final text node and wraps them
- * with the back arrow in a `<span class="favicon-span">` (white-space: nowrap),
- * using the same approach as favicon link icons.
+ * with the back arrow in a nowrap span (`white-space: nowrap`), using the
+ * same approach as favicon link icons.
  *
  * For table-only footnotes where the back arrow was the sole content of its
  * paragraph, the empty paragraph is removed and the arrow is appended directly
@@ -555,16 +553,5 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     return
   }
 
-  const text = lastTextNode.value
-  const textIndex = Math.max(0, text.length - maxCharsToRead)
-
-  if (textIndex > 0) {
-    lastTextNode.value = text.slice(0, textIndex)
-  } else {
-    // Remove the original text node if we're wrapping all text
-    const idx = lastParagraph.children.indexOf(lastTextNode)
-    lastParagraph.children.splice(idx, 1)
-  }
-
-  lastParagraph.children.push(createFaviconSpan(text.slice(textIndex), backArrow))
+  lastParagraph.children.push(spliceAndWrapLastChars(lastTextNode, lastParagraph, backArrow))
 }
