@@ -112,6 +112,7 @@ fi
 #######################################
 
 if [ -f "$PROJECT_DIR/package.json" ]; then
+	# Always run install (git hooks are configured in package.json postinstall)
 	if command -v pnpm &>/dev/null; then
 		pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
@@ -121,6 +122,7 @@ fi
 
 if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 	uv sync --quiet || warn "Failed to sync Python dependencies"
+	# Add .venv/bin to PATH so Python tools are available to hooks
 	if [ -d "$PROJECT_DIR/.venv/bin" ]; then
 		export PATH="$PROJECT_DIR/.venv/bin:$PATH"
 		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then

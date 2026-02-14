@@ -61,7 +61,7 @@ Before updating an existing PR (pushing new commits, editing the description, et
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
 
-### Step 2: Self-Critique (Required)
+### Step 2: Self-Critique
 
 **Before creating the PR**, you MUST read [critique-prompt.md](critique-prompt.md) and launch a critique sub-agent using the Task tool:
 
@@ -95,7 +95,7 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
-### Step 6: Wait for CI Checks
+### Step 6: Wait for CI Checks (MANDATORY)
 
 1. Run `gh pr checks <pr-number> --watch` to monitor
 2. If any checks fail, investigate and fix the issues
