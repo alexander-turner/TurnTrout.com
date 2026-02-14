@@ -1,3 +1,4 @@
+import shutil
 import sys
 import tempfile
 import unittest.mock as mock
@@ -11,6 +12,11 @@ import requests  # type: ignore[import]
 
 from .. import utils as script_utils
 from .utils import create_markdown_file
+
+requires_sass = pytest.mark.skipif(
+    shutil.which("sass") is None,
+    reason="sass executable not found",
+)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -540,6 +546,7 @@ def setup_font_test(
     return _setup
 
 
+@requires_sass
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -684,6 +691,7 @@ def test_integration_with_main(
     assert exc_info.value.code == 1
 
 
+@requires_sass
 def test_compile_scss(tmp_path: Path) -> None:
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
