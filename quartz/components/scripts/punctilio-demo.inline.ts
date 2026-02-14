@@ -158,6 +158,133 @@ const EXAMPLES: Record<TransformMode, string> = {
   html: EXAMPLE_HTML,
 }
 
+// ─── Inline diff highlighting ────────────────────────────────────────
+
+type DiffKind = "equal" | "insert" | "delete"
+interface DiffSegment {
+  kind: DiffKind
+  text: string
+}
+
+/**
+ * Character-level diff using the Myers algorithm (O(ND) shortest edit
+ * script). Returns an array of equal / insert / delete segments.
+ */
+function diffChars(oldStr: string, newStr: string): DiffSegment[] {
+  const oldLen = oldStr.length
+  const newLen = newStr.length
+
+  // Fast path: identical strings
+  if (oldStr === newStr) return [{ kind: "equal", text: oldStr }]
+
+  // Myers diff – we track the furthest-reaching D-paths.
+  const max = oldLen + newLen
+  const size = 2 * max + 1
+  const v = new Int32Array(size) // v[k + max] = x
+  v.fill(-1)
+  v[max + 1] = 0
+
+  // Each entry in trace stores a snapshot of v for that edit distance.
+  const trace: Int32Array[] = []
+
+  outer: for (let d = 0; d <= max; d++) {
+    trace.push(v.slice())
+    for (let k = -d; k <= d; k += 2) {
+      let x: number
+      if (k === -d || (k !== d && v[k - 1 + max] < v[k + 1 + max])) {
+        x = v[k + 1 + max] // move down (insert)
+      } else {
+        x = v[k - 1 + max] + 1 // move right (delete)
+      }
+      let y = x - k
+      // Follow diagonal (equal characters)
+      while (x < oldLen && y < newLen && oldStr[x] === newStr[y]) {
+        x++
+        y++
+      }
+      v[k + max] = x
+      if (x >= oldLen && y >= newLen) break outer
+    }
+  }
+
+  // Backtrack to recover the edit script
+  const segments: DiffSegment[] = []
+  let x = oldLen
+  let y = newLen
+
+  for (let d = trace.length - 1; d >= 0; d--) {
+    const vPrev = trace[d]
+    const k = x - y
+
+    let prevK: number
+    if (k === -d || (k !== d && vPrev[k - 1 + max] < vPrev[k + 1 + max])) {
+      prevK = k + 1
+    } else {
+      prevK = k - 1
+    }
+
+    const prevX = vPrev[prevK + max]
+    const prevY = prevX - prevK
+
+    // Diagonal (equal characters) – walk backwards
+    while (x > prevX && y > prevY) {
+      x--
+      y--
+      segments.push({ kind: "equal", text: oldStr[x] })
+    }
+
+    if (d > 0) {
+      if (x === prevX) {
+        // Insert
+        y--
+        segments.push({ kind: "insert", text: newStr[y] })
+      } else {
+        // Delete
+        x--
+        segments.push({ kind: "delete", text: oldStr[x] })
+      }
+    }
+  }
+
+  segments.reverse()
+
+  // Merge consecutive segments of the same kind
+  const merged: DiffSegment[] = []
+  for (const seg of segments) {
+    const last = merged[merged.length - 1]
+    if (last && last.kind === seg.kind) {
+      last.text += seg.text
+    } else {
+      merged.push({ ...seg })
+    }
+  }
+
+  return merged
+}
+
+/** Render diff segments as HTML spans with appropriate classes. */
+function renderDiffHtml(segments: DiffSegment[]): string {
+  return segments
+    .map((seg) => {
+      const escaped = seg.text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>")
+      switch (seg.kind) {
+        case "equal":
+          return escaped
+        case "insert":
+          return `<span class="diff-insert">${escaped}</span>`
+        case "delete":
+          return `<span class="diff-delete">${escaped}</span>`
+      }
+    })
+    .join("")
+}
+
+// ─── Main nav handler ────────────────────────────────────────────────
+
 let abortController: AbortController | null = null
 
 document.addEventListener("nav", () => {
@@ -168,7 +295,11 @@ document.addEventListener("nav", () => {
 
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
   const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
+  const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
+  const htmlPreview = document.getElementById("punctilio-html-preview") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
+  const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
+  const diffToggle = document.getElementById("punctilio-diff-toggle") as HTMLInputElement | null
 
   if (!input || !output) return
 
@@ -181,7 +312,32 @@ document.addEventListener("nav", () => {
   function runTransform() {
     if (!input || !output) return
     const config = getConfig()
-    output.value = doTransform(input.value, currentMode, config)
+    const result = doTransform(input.value, currentMode, config)
+    output.value = result
+
+    // Diff highlighting
+    if (diffOutput) {
+      const showDiff = diffToggle?.checked ?? true
+      if (showDiff) {
+        const segments = diffChars(input.value, result)
+        diffOutput.innerHTML = renderDiffHtml(segments)
+        diffOutput.style.display = ""
+        output.style.display = "none"
+      } else {
+        diffOutput.style.display = "none"
+        output.style.display = ""
+      }
+    }
+
+    // HTML rendered preview
+    if (htmlPreview) {
+      if (currentMode === "html") {
+        htmlPreview.style.display = ""
+        htmlPreview.innerHTML = result
+      } else {
+        htmlPreview.style.display = "none"
+      }
+    }
   }
 
   const debouncedTransform = debounce(runTransform, 100)
@@ -217,5 +373,28 @@ document.addEventListener("nav", () => {
   )
   for (const opt of optionInputs) {
     opt.addEventListener("change", runTransform, { signal })
+  }
+
+  // Copy output button
+  if (copyBtn) {
+    copyBtn.addEventListener(
+      "click",
+      () => {
+        if (!output) return
+        navigator.clipboard.writeText(output.value).then(() => {
+          const original = copyBtn.textContent
+          copyBtn.textContent = "Copied!"
+          setTimeout(() => {
+            copyBtn.textContent = original
+          }, 1500)
+        })
+      },
+      { signal },
+    )
+  }
+
+  // Diff toggle
+  if (diffToggle) {
+    diffToggle.addEventListener("change", runTransform, { signal })
   }
 })

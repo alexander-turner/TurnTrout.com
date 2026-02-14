@@ -21,12 +21,25 @@ Type or paste text in the input area below and see the transformed output.
 </div>
 <div class="punctilio-panels">
 <div class="punctilio-panel">
+<div class="punctilio-panel-header">
 <label for="punctilio-input">Input</label>
+</div>
 <textarea id="punctilio-input" spellcheck="false"></textarea>
 </div>
 <div class="punctilio-panel">
+<div class="punctilio-panel-header">
 <label for="punctilio-output">Output</label>
+<div class="punctilio-toolbar">
+<label class="punctilio-toggle">
+<input type="checkbox" id="punctilio-diff-toggle" checked />
+Diff
+</label>
+<button id="punctilio-copy-btn" class="punctilio-copy-btn">Copy</button>
+</div>
+</div>
 <textarea id="punctilio-output" readonly spellcheck="false"></textarea>
+<div id="punctilio-diff" class="punctilio-diff"></div>
+<div id="punctilio-html-preview" class="punctilio-html-preview" style="display: none"></div>
 </div>
 </div>
 <details class="punctilio-options">

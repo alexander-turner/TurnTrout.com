@@ -51,13 +51,19 @@
     display: flex;
     flex-direction: column;
 
-    label {
-      font-weight: 600;
+    .punctilio-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 0.3rem;
-      font-size: 0.85rem;
-      color: var(--midground);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+
+      label {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--midground);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
     }
 
     textarea {
@@ -82,6 +88,92 @@
       &[readonly] {
         background-color: color-mix(in srgb, var(--foreground) 4%, var(--background));
         cursor: default;
+      }
+    }
+  }
+
+  // Diff view — styled the same as the readonly output textarea
+  .punctilio-diff {
+    width: 100%;
+    min-height: 280px;
+    padding: 0.75rem;
+    border: 1px solid var(--midground-faint);
+    border-radius: 6px;
+    background-color: color-mix(in srgb, var(--foreground) 4%, var(--background));
+    color: var(--foreground);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-y: auto;
+
+    .diff-insert {
+      background-color: color-mix(in srgb, #22c55e 20%, transparent);
+      border-radius: 2px;
+    }
+
+    .diff-delete {
+      background-color: color-mix(in srgb, #ef4444 20%, transparent);
+      text-decoration: line-through;
+      border-radius: 2px;
+    }
+  }
+
+  // HTML rendered preview
+  .punctilio-html-preview {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--midground-faint);
+    border-radius: 6px;
+    background-color: var(--background);
+    font-size: 0.95rem;
+    line-height: 1.5;
+
+    &:empty,
+    &[style*="display: none"] {
+      margin-top: 0;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  // Copy button
+  .punctilio-copy-btn {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--midground-faint);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--midground);
+    font-family: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+      color: var(--foreground);
+    }
+  }
+
+  // Diff toggle
+  .punctilio-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .punctilio-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      color: var(--midground);
+      cursor: pointer;
+
+      input[type="checkbox"] {
+        margin: 0;
       }
     }
   }
