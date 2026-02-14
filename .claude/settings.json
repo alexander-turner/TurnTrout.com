@@ -19,6 +19,11 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-push-check.sh"
+          },
+          {
+            "type": "command",
+            "command": "fish \"$CLAUDE_PROJECT_DIR\"/scripts/run_deepsource_cli.fish",
+            "timeout": 360
           }
         ]
       }
