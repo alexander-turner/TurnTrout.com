@@ -2101,3 +2101,30 @@ describe("Non-breaking space insertion", () => {
     expect(result).toContain(NBSP)
   })
 })
+
+describe("applyTextTransforms with useNbsp option", () => {
+  it.each([
+    ["I love this thing", false],
+    ["See Fig. 3 for details", false],
+  ])("does not insert nbsp when useNbsp=%s: %s", (input, useNbsp) => {
+    const result = applyTextTransforms(input, { useNbsp })
+    expect(result).not.toContain(NBSP)
+  })
+
+  it.each([
+    ["I love this thing", true],
+    ["I love this thing", undefined],
+  ])("inserts nbsp when useNbsp=%s: %s", (input, useNbsp) => {
+    const result = applyTextTransforms(input, useNbsp === undefined ? {} : { useNbsp })
+    expect(result).toContain(NBSP)
+  })
+
+  it.each([
+    ['He said "hello"', `He said ${LEFT_DOUBLE_QUOTE}hello${RIGHT_DOUBLE_QUOTE}`],
+    ["2x3", `2${MULTIPLICATION}3`],
+    ["test - case", "test—case"],
+  ])("applies other transforms when useNbsp=false: %s", (input, expected) => {
+    const result = applyTextTransforms(input, { useNbsp: false })
+    expect(result).toBe(expected)
+  })
+})
