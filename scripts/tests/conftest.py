@@ -34,10 +34,7 @@ def quartz_project_structure(tmp_path: Path):
     """
     Create a minimal Quartz directory layout under *tmp_path*.
 
-    The structure mirrors the directories expected by many scripts:
-    ├── public/
-    ├── quartz/static/
-    └── website_content/
+    The structure mirrors the directories expected by many scripts.
     """
     dirs = {
         "public": tmp_path / "public",
