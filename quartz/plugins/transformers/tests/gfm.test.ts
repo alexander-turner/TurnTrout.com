@@ -176,14 +176,38 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle empty paragraph", () => {
+  test("should handle empty paragraph by removing it and appending arrow to li", () => {
     const node = h("li", [h("p", [])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(mockBackArrow)
+    // Empty paragraph removed; arrow appended in word-joiner span to the <li>
+    expect(node.children).toHaveLength(1)
+    const wjSpan = node.children[0] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(wjSpan.children[1]).toBe(mockBackArrow)
+  })
+
+  test("should handle empty paragraph with table sibling", () => {
+    const table = h("table", [h("tr", [h("td", ["cell"])])])
+    const node = h("li", [table, h("p", [])])
+
+    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+
+    // Empty paragraph removed; arrow appended after table
+    expect(node.children).toHaveLength(2)
+    expect((node.children[0] as Element).tagName).toBe("table")
+    const wjSpan = node.children[1] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle paragraph with only whitespace", () => {
@@ -191,9 +215,17 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
+    // Whitespace paragraph preserved with word-joiner appended
     const paragraph = node.children[0] as Element
-    const span = paragraph.children[0] as Element
-    expect(span).toEqual({ type: "text", value: "  " })
+    expect(paragraph.children).toHaveLength(2)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "  " })
+    const wjSpan = paragraph.children[1] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
   test("should handle complex multi-paragraph footnote with rich formatting", () => {
     const node = h("li", [
@@ -567,6 +599,17 @@ describe("findFootnoteBackArrow function", () => {
     const result = findFootnoteBackArrow(footnoteItem)
     expect(result).toBe(backArrow)
   })
+
+  test("should find back arrow in last paragraph when there are multiple paragraphs", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const footnoteItem = h("li", { id: "user-content-fn-1" }, [
+      h("p", ["First paragraph text."]),
+      h("p", ["Second paragraph text.", backArrow]),
+    ])
+
+    const result = findFootnoteBackArrow(footnoteItem)
+    expect(result).toBe(backArrow)
+  })
 })
 
 describe("gfmVisitor function", () => {
@@ -657,16 +700,40 @@ describe("gfmVisitor function", () => {
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
 
-  test("should handle footnote with empty paragraph", () => {
+  test("should handle footnote with empty paragraph by removing paragraph and appending to li", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const footnoteItem = h("li", { id: "user-content-fn-1" }, [h("p", [backArrow])])
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have added just the back arrow
-    const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(backArrow)
+    // Empty paragraph should be removed; arrow appended in word-joiner span to the <li>
+    expect(footnoteItem.children).toHaveLength(1)
+    const wjSpan = footnoteItem.children[0] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+  })
+
+  test("should handle table-only footnote by appending arrow after table", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const table = h("table", [h("tr", [h("td", ["cell"])])])
+    const footnoteItem = h("li", { id: "user-content-fn-table" }, [table, h("p", [backArrow])])
+
+    appendArrowToFootnoteListItemVisitor(footnoteItem)
+
+    // Empty paragraph removed; arrow appended in word-joiner span after table
+    expect(footnoteItem.children).toHaveLength(2)
+    expect((footnoteItem.children[0] as Element).tagName).toBe("table")
+    const wjSpan = footnoteItem.children[1] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
 
   test("should handle complex footnote structure", () => {
@@ -701,6 +768,33 @@ describe("gfmVisitor function", () => {
     expect((paragraph.children[1] as Element).tagName).toBe("em")
     expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
     const wjSpan = paragraph.children[3] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+  })
+
+  test("should handle multi-paragraph footnote with back arrow in last paragraph", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const footnoteItem = h("li", { id: "user-content-fn-1" }, [
+      h("p", ["First paragraph."]),
+      h("p", ["Second paragraph.", backArrow]),
+    ])
+
+    appendArrowToFootnoteListItemVisitor(footnoteItem)
+
+    // First paragraph unchanged
+    const firstParagraph = footnoteItem.children[0] as Element
+    expect(firstParagraph.children).toHaveLength(1)
+    expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph." })
+
+    // Second paragraph: text + word joiner (containing back arrow)
+    const secondParagraph = footnoteItem.children[1] as Element
+    expect(secondParagraph.children).toHaveLength(2)
+    expect(secondParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph." })
+    const wjSpan = secondParagraph.children[1] as Element
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",

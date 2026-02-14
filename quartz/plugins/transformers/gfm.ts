@@ -1,4 +1,4 @@
-import type { Root, Element, Text } from "hast"
+import type { Root, Element } from "hast"
 import type { Plugin as UnifiedPlugin, PluggableList } from "unified"
 
 import GithubSlugger from "github-slugger"
@@ -49,7 +49,7 @@ export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
     return null
   }
 
-  const lastParagraph = footnoteNode.children.find(
+  const lastParagraph = footnoteNode.children.findLast(
     (child) => child.type === "element" && child.tagName === "p",
   ) as Element | undefined
 
@@ -514,6 +514,14 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
 
 /**
  * Add a back arrow to the footnote. Modifies the footnote node in place.
+ *
+ * For footnotes with text, the back arrow is wrapped in a word-joiner span
+ * (white-space: nowrap) and appended to the last paragraph, keeping it on the
+ * same line as the preceding text—like favicon spans.
+ *
+ * For table-only footnotes where the back arrow was the sole content of its
+ * paragraph, the empty paragraph is removed and the arrow is appended directly
+ * to the <li> so it flows inline after the preceding table/figure.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
   const lastParagraph = node.children[node.children.length - 1] as Element | undefined
@@ -523,19 +531,15 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
 
   removeBackArrowFromChildren(lastParagraph)
 
-  // Handle empty paragraph case
+  // Handle empty paragraph case (e.g., table-only footnotes where the
+  // back arrow was the only content in its own paragraph). Remove the
+  // empty <p> and append arrow directly to the <li> so it appears
+  // inline after the preceding content (table, figure, etc.).
   if (lastParagraph.children.length === 0) {
-    lastParagraph.children = [backArrow]
-    return
-  }
-
-  // Get the last text node without modifying the original array
-  const children2 = [...lastParagraph.children]
-  const lastTextNode = children2.reverse().find((child) => child.type === "text") as Text
-
-  // Handle whitespace-only case
-  if (!lastTextNode || lastTextNode.value.trim() === "") {
-    lastParagraph.children = [lastTextNode, backArrow].filter(Boolean)
+    node.children.pop()
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(backArrow)
+    node.children.push(wordJoiner)
     return
   }
 
