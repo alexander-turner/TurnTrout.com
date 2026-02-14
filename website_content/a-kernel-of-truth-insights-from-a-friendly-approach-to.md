@@ -105,7 +105,7 @@ In multi-variable calculus, the derivative of a function $g:\mathbb{R}^n\to\math
 
 You can go even further and consider the derivative of $h:\mathbb{R}^n\to\mathbb{R}^m$, which is the function $h':\mathbb{R}^n\to\mathbb{R}^{n\times m}$ – for a given $n$\-dimensional input vector, $h$ again can change its vector-valued output differently depending on in which input dimension change occurs.
 
-What if we want to differentiate the following function $L$, with range $\mathbb{R}$ domain the set of continuous functions bounded to $[a,b]$ - $C[a,b]$:
+What if we want to differentiate the following function $L$, with range $\mathbb{R}$ and domain the set of continuous functions bounded to $[a,b]$ - $C[a,b]$:
 
 $$
  L(\mathbf{f}):=\int_{0}^{1} (\mathbf{f}(t))^{2} dt.
@@ -128,7 +128,7 @@ Alex
 
 : An interesting concept that comes to mind is thinking about a functional derivative with respect to e.g. a straight-line [homotopy](https://en.wikipedia.org/wiki/Homotopy), where you really _could_ say how a function is changing at every point with respect to time. But I don't think that's the same concept.
 
-: <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1">
+  <video class="float-right" autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.webm" type="video/webm"></video>
 
 `TheMajor`
