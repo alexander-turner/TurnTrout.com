@@ -904,12 +904,16 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
       })
       inlinePreview.appendChild(article)
 
-      // Scroll to first match so the relevant slice is visible
-      const firstMatch = inlinePreview.querySelector(".search-match")
-      if (firstMatch) {
-        const matchOffset = (firstMatch as HTMLElement).offsetTop
-        inlinePreview.scrollTop = Math.max(0, matchOffset - inlinePreview.clientHeight / 3)
-      }
+      // Wait for layout before scrolling to first match
+      requestAnimationFrame(() => {
+        const firstMatch = inlinePreview.querySelector(".search-match")
+        if (firstMatch) {
+          const matchRect = firstMatch.getBoundingClientRect()
+          const containerRect = inlinePreview.getBoundingClientRect()
+          const relativeTop = matchRect.top - containerRect.top + inlinePreview.scrollTop
+          inlinePreview.scrollTop = Math.max(0, relativeTop - inlinePreview.clientHeight / 3)
+        }
+      })
     })
   }
 
