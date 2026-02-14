@@ -40,7 +40,7 @@ Do **NOT** use this skill for:
 ## Prerequisites
 
 - GitHub CLI (`gh`) must be authenticated
-- All changes must be committed to a feature branch (not `$CLAUDE_CODE_BASE_REF`/`master`)
+- All changes must be committed to a feature branch (not `$CLAUDE_CODE_BASE_REF`)
 
 ## Updating an Existing PR
 
