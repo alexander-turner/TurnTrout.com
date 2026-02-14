@@ -77,10 +77,6 @@ Do NOT skip reading the resource file — it contains the detailed checklist the
 2. Make necessary fixes and commit them
 3. If you fixed more than 3 issues or made structural changes, re-run the critique (max 2 re-runs total — if issues persist after 2 rounds of critique, proceed to validation rather than looping indefinitely)
 
-### Step 3b: Run Playwright Tests (If Applicable)
-
-If the PR adds or modifies Playwright spec tests (`*.spec.ts`), run them locally before proceeding to catch test logic errors early. Follow the instructions in the project's CLAUDE.md under "Running Playwright Tests Locally" to set up the server and run the new tests. If the local environment cannot run browsers (e.g., sandbox crashes), note this and rely on CI to validate.
-
 ### Step 4: Run Validation
 
 Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templates.md) for common commands per language). Fix any failures before proceeding.
@@ -90,8 +86,14 @@ Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templat
 You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatting guidelines before this step.
 
 1. Push the branch: `git push -u origin HEAD`
-2. Create the PR using `gh pr create` with the template from the resource file
-3. **CI label**: If the PR includes code changes that should be validated by Playwright/visual regression tests, add the `ci:full-tests` label: `gh pr edit --add-label "ci:full-tests"`. Without this label, expensive test suites (Playwright, visual testing) are skipped on PRs to save compute. They will still run in the merge queue before merging.
+2. Check if a PR already exists for the current branch:
+
+   ```bash
+   EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
+   ```
+
+   If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+3. Create the PR using `gh pr create` with the template from the resource file
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
@@ -102,20 +104,7 @@ After creating the PR, and after any subsequent fix commits, update the PR descr
 3. Push fixes and wait again
 4. Only proceed once all checks are green
 
-### Step 7: Check DeepSource Issues
-
-After CI checks pass, check for DeepSource static analysis issues on the branch:
-
-1. Get the current commit SHA: `git rev-parse HEAD`
-2. Wait briefly for DeepSource analysis to complete (it runs on push via the GitHub App)
-3. Run: `deepsource issues list --commit <SHA>`
-4. If the command fails (e.g., analysis not ready yet), retry after 30 seconds (up to 3 attempts)
-5. Review any issues found:
-   - Fix legitimate issues, commit, and push
-   - After pushing fixes, re-run `deepsource issues list --commit <new-SHA>` to verify
-6. If the `--commit` flag is not available (official CLI without fork), skip this step with a note
-
-### Step 8: Report Result
+### Step 7: Report Result
 
 Provide the PR URL and confirm all CI checks have passed.
 
@@ -159,8 +148,7 @@ Provide the PR URL and confirm all CI checks have passed.
 8. Pushes and creates PR with detailed body summarizing the feature
 9. Watches CI — one check fails (lint warning on new file)
 10. Fixes lint issue, pushes, watches again — all green
-11. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — finds 1 style issue, fixes it
-12. Reports success with PR URL
+11. Reports success with PR URL
 
 ### Example 3: When Input Is Unclear
 
@@ -174,6 +162,5 @@ Provide the PR URL and confirm all CI checks have passed.
 - **Tests fail**: Fix the tests, don't skip them
 - **`gh` not authenticated**: Tell user to run `gh auth login` or set `GH_TOKEN`
 - **Push fails**: Check branch permissions and remote configuration
+- **PR already exists (HTTP 422)**: Check for existing PRs first with `gh pr list --head "$(git branch --show-current)"`, then use `gh pr edit` to update
 - **No changes to PR**: Confirm with the user that work is committed
-- **DeepSource analysis not ready**: Retry `deepsource issues list --commit <SHA>` after 30 seconds, up to 3 times
-- **DeepSource `--commit` flag unavailable**: Skip the DeepSource check step and note it in the PR report

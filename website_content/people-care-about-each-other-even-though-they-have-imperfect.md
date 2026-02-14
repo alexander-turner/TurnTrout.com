@@ -78,7 +78,7 @@ Below is a dialogue with my model of Eliezer. I wrote the dialogue to help me th
 Alex
 : Suppose that I can get smarter over time—that AGI just doesn’t happen, that the march of reason continues, that lifespans extend, and that I therefore gradually become quite old and quite smart.[^1] Goodhart’s Curse predicts that—even though I _think_ I want to help my brother be happy, even though I _think_ I value his having a good life by his own values—my desire to help him is _not “error-free”, it is not perfect_, and so Goodhart’s Curse will magnify and blow up these errors. And time unfolds, the Curse is realized, and I bring about a future which is high-regret by his “true values” $V$.[^2] Insofar as Goodhart’s Curse has teeth as an argument for AI risk, it seems to predict that my brother will deeply regret my optimization.
 
-: This prediction seems flatly wrong: I wouldn’t bring about an outcome like that. Why do I believe that? Because I have reasonably high-fidelity access to my _own policy_, via imagining myself in the relevant situations. I have information about whether I would e.g. improve myself such that "improved" Alex screws over his brother. I simply imagine being faced with the choice, and through my imagination, I realize I wouldn't want to improve myself that way.
+  This prediction seems flatly wrong: I wouldn’t bring about an outcome like that. Why do I believe that? Because I have reasonably high-fidelity access to my _own policy_, via imagining myself in the relevant situations. I have information about whether I would e.g. improve myself such that "improved" Alex screws over his brother. I simply imagine being faced with the choice, and through my imagination, I realize I wouldn't want to improve myself that way.
 
 **Alex’s model of Eliezer**
 :
@@ -94,7 +94,7 @@ Alex
 **Alex**
 : Indeed. And even though evolution couldn’t get us to value inclusive genetic fitness, evolution _somehow_ found an adaptation for caring about kin, such that this caring generalizes off-distribution into the radically different modern environment, such that Goodhart’s Curse will be unable to drastically blow up the way I care for my brother, because I care about my brother’s preferences in the requisite “error-free” way.
 
-: That doesn’t sound like a thing which happens in reality. Seems more likely that the Curse doesn’t have the alignment implications which I perceive you to be claiming (e.g. that imperfect motivations get Goodharted to oblivion in the limit).
+  That doesn’t sound like a thing which happens in reality. Seems more likely that the Curse doesn’t have the alignment implications which I perceive you to be claiming (e.g. that imperfect motivations get Goodharted to oblivion in the limit).
 
 **Alex's model of Eliezer**
 : What’s your point? Suppose I agreed that you are not currently falling victim to Goodhart’s Curse, at least in the sense of not bringing about outcomes your brother strongly disvalues. What next?
@@ -102,7 +102,7 @@ Alex
 **Alex**
 : The point isn’t that I’m avoiding Goodhart’s Curse _right now._ I’m further claiming I won’t self-improve into an entity which (foreseeably to my current self) breaks the “I care about my brother” invariant. Therefore, insofar as I can become more intelligent, I will self-improve into an entity which doesn’t bring about horrible outcomes for my brother.
 
-: (And yes, if I considered a trillion zillion plans for improving myself and assigned each one a rating—a rather foolish procedure, all things considered—the highest-rated plan wouldn’t be the actually best plan. The [optimizer’s curse](https://arbital.com/p/goodharts_curse/) applies. Furthermore, the highest-rated plan might be _worse than doing nothing_, insofar as I consider plans which my search implicitly optimizes to look deceptively good to me. Since I already know that that decision-making procedure sucks, I just won’t use that procedure.)
+  (And yes, if I considered a trillion zillion plans for improving myself and assigned each one a rating—a rather foolish procedure, all things considered—the highest-rated plan wouldn’t be the actually best plan. The [optimizer’s curse](https://arbital.com/p/goodharts_curse/) applies. Furthermore, the highest-rated plan might be _worse than doing nothing_, insofar as I consider plans which my search implicitly optimizes to look deceptively good to me. Since I already know that that decision-making procedure sucks, I just won’t use that procedure.)
 
 : This smarter version of myself poses a problem to certain implications of Goodhart’s Curse. You claim that it’s really hard to point AI to care about other entities’ values. But if we look at _actual reality_, at the one empirical example ever of general intelligence, there are literally billions of examples of those intelligences caring about each other every day. And, speaking for myself, _I_ wouldn’t do something stupid like “consider a zillion plans and then choose the best one, with the foreseeable result of screwing over my brother due to my imperfect pointer to his values.”
 
@@ -133,12 +133,12 @@ Alex
 **Alex's model of Eliezer**
 : \[Sighs\] We have now entered the foreseeable part of the conversation where my interlocutor fails to understand how intelligence works. You peer out from your human condition, from the messy heuristics which chain into each other, and fail to realize the utter dissimilarity of AI. Of how Utility will sharpen and unify messy heuristics into coherence, pulling together disparate strands of cognition into a more efficient whole. You introspect upon your messy and kludgy human experience and, having lived nothing else, expect the same from AI.
 
-: AI will not be like you. AI will not think like you do. AI will not value like you do. I don’t know why this is so hard for people to understand.
+  AI will not be like you. AI will not think like you do. AI will not value like you do. I don’t know why this is so hard for people to understand.
 
 **Alex**
 : Ad hominem and appeal to your own authority without making specific counterarguments against my point. Also, “humans are a mess” is not an actual explanation but a profession of ignorance (more precisely, a hypothesis class containing a range of high-complexity hypotheses), nor does that statement explain how your Goodhart’s Curse arguments shouldn’t blow up my ability to successfully care about my brother.
 
-: Let’s get back to the substance: I’m claiming that your theory makes an introspectively apparent-to-me misprediction. You’re saying that your theory doesn’t apply to this situation, for reasons which I don’t currently understand and which have not been explained to my satisfaction. I'm currently inclined to conclude that the misprediction-generator (i.e. "value pointers must be perfect else shattering of all true value") is significantly less likely to apply to real-world agents. (And that insofar as this is a hole in your argument which no one else noticed, there are probably more holes in other alignment arguments.)
+  Let’s get back to the substance: I’m claiming that your theory makes an introspectively apparent-to-me misprediction. You’re saying that your theory doesn’t apply to this situation, for reasons which I don’t currently understand and which have not been explained to my satisfaction. I'm currently inclined to conclude that the misprediction-generator (i.e. "value pointers must be perfect else shattering of all true value") is significantly less likely to apply to real-world agents. (And that insofar as this is a hole in your argument which no one else noticed, there are probably more holes in other alignment arguments.)
 
 **Alex's model of Eliezer**
 : \[I don’t really know what he’d say here\]

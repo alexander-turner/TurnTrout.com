@@ -1,3 +1,4 @@
+import shutil
 import sys
 import tempfile
 import unittest.mock as mock
@@ -11,6 +12,11 @@ import requests  # type: ignore[import]
 
 from .. import utils as script_utils
 from .utils import create_markdown_file
+
+requires_sass = pytest.mark.skipif(
+    shutil.which("sass") is None,
+    reason="sass executable not found",
+)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -540,6 +546,7 @@ def setup_font_test(
     return _setup
 
 
+@requires_sass
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -684,6 +691,7 @@ def test_integration_with_main(
     assert exc_info.value.code == 1
 
 
+@requires_sass
 def test_compile_scss(tmp_path: Path) -> None:
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
@@ -2284,6 +2292,97 @@ def test_check_footnote_references(
     assert sorted(errors) == sorted(expected_errors)
 
 
+@pytest.mark.parametrize(
+    "text,expected_errors",
+    [
+        # Valid: no description lists
+        ("Normal text without any description lists", []),
+        # Valid: single definition without continuation
+        ("Term\n: Definition text", []),
+        # Valid: definition with properly indented continuation
+        (": First paragraph\n\n  Second paragraph", []),
+        # Valid: multiple definitions
+        ("Term1\n: Definition 1\n\nTerm2\n: Definition 2", []),
+        # Valid: indented continuation after blank line
+        ("Term\n: Definition\n\n  Continuation text", []),
+        # Error: colon prefix on continuation line
+        (
+            ": First paragraph\n\n: Second paragraph",
+            [
+                "Line 3: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Second paragraph..."
+            ],
+        ),
+        # Error: multiple improper continuations
+        (
+            ": First\n\n: Second\n\n: Third",
+            [
+                "Line 3: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Second...",
+                "Line 5: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Third...",
+            ],
+        ),
+        # Valid: new term after blank line (no error)
+        ("Term1\n: Definition 1\n\nTerm2\n: Definition 2", []),
+        # Error: real-world case from design.md
+        (
+            "Exponential font sizing\n"
+            ": After consulting TypeScale, I scaled the font.\n"
+            "\n"
+            ': <span class="h1">Header 1</span>',
+            [
+                "Line 4: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                'Found: : <span class="h1">Header 1</span>...'
+            ],
+        ),
+        # Valid: properly formatted continuation from design.md
+        (
+            "Exponential font sizing\n"
+            ": After consulting TypeScale, I scaled the font.\n"
+            "\n"
+            '  <span class="h1">Header 1</span>',
+            [],
+        ),
+        # Edge case: definition at end of document
+        (": Last definition", []),
+        # Edge case: blank lines at end
+        (": Definition\n\n", []),
+        # Valid: no blank line between definition and continuation
+        (": First line\nContinuation", []),
+        # Valid: code block with description list pattern (should be ignored)
+        (
+            "Some text\n\n```markdown\n: First example\n\n: Second example\n```\n\nMore text",
+            [],
+        ),
+        # Valid: math block with colon pattern (should be ignored)
+        (
+            "Some text\n\n$$\n: math notation\n\n: more math\n$$\n\nMore text",
+            [],
+        ),
+        # Mixed: error outside code block, valid inside code block
+        (
+            ": Real definition\n\n: Error here\n\n```\n: Valid in code\n\n: Also valid\n```",
+            [
+                "Line 3: Description list continuation should be indented "
+                "(typically 2 spaces), not start with `: `. "
+                "Found: : Error here..."
+            ],
+        ),
+    ],
+)
+def test_check_description_list_continuations(
+    text: str, expected_errors: List[str]
+) -> None:
+    """Test checking description list continuations."""
+    errors = source_file_checks.check_description_list_continuations(text)
+    assert errors == expected_errors
+
+
 _MISSING_DATE_ERR = ["Missing or empty date_published field"]
 
 
@@ -2302,12 +2401,20 @@ def test_check_publication_date(
     metadata: Dict[str, Any], expected_errors: List[str]
 ) -> None:
     """Test the check_publication_date function."""
-    assert source_file_checks.check_publication_date(metadata) == expected_errors
+    assert (
+        source_file_checks.check_publication_date(metadata) == expected_errors
+    )
 
 
-@pytest.mark.parametrize("check_dates,should_fail", [(True, True), (False, False)])
+@pytest.mark.parametrize(
+    "check_dates,should_fail", [(True, True), (False, False)]
+)
 def test_main_publication_dates_flag(
-    git_repo_setup, quartz_project_structure, monkeypatch, check_dates, should_fail
+    git_repo_setup,
+    quartz_project_structure,
+    monkeypatch,
+    check_dates,
+    should_fail,
 ) -> None:
     """Test main() behavior with/without --check-publication-dates flag."""
     content_dir = quartz_project_structure["content"]
