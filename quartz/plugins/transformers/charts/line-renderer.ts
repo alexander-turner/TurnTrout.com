@@ -1,9 +1,10 @@
+import type { ScaleContinuousNumeric, ScaleLinear } from "d3-scale"
 import type { Element, ElementContent } from "hast"
 
-import * as d3Array from "d3-array"
-import * as d3Format from "d3-format"
-import * as d3Scale from "d3-scale"
-import * as d3Shape from "d3-shape"
+import { max, min } from "d3-array"
+import { format } from "d3-format"
+import { scaleLinear, scaleLog } from "d3-scale"
+import { line } from "d3-shape"
 
 import type { ChartSpec, SeriesSpec } from "./types"
 
@@ -19,11 +20,11 @@ function createScale(
   domain: [number, number],
   range: [number, number],
   scaleType: "linear" | "log",
-): d3Scale.ScaleContinuousNumeric<number, number> {
+): ScaleContinuousNumeric<number, number> {
   if (scaleType === "log") {
-    return d3Scale.scaleLog().domain(domain).range(range).nice()
+    return scaleLog().domain(domain).range(range).nice()
   }
-  return d3Scale.scaleLinear().domain(domain).range(range).nice()
+  return scaleLinear().domain(domain).range(range).nice()
 }
 
 function computeDomain(
@@ -32,20 +33,17 @@ function computeDomain(
 ): [number, number] {
   const allValues = series.flatMap((s) => s.data.map(accessor))
   // istanbul ignore next -- parser validates non-empty data
-  return [d3Array.min(allValues) ?? 0, d3Array.max(allValues) ?? 1]
+  return [min(allValues) ?? 0, max(allValues) ?? 1]
 }
 
 function formatTick(value: number): string {
-  if (Number.isInteger(value)) return d3Format.format(",")(value)
-  return d3Format.format(",.2~f")(value)
+  if (Number.isInteger(value)) return format(",")(value)
+  return format(",.2~f")(value)
 }
 
-function generateTicks(
-  scale: d3Scale.ScaleContinuousNumeric<number, number>,
-  count: number,
-): number[] {
+function generateTicks(scale: ScaleContinuousNumeric<number, number>, count: number): number[] {
   // D3 scales have a .ticks() method
-  return (scale as d3Scale.ScaleLinear<number, number>).ticks(count)
+  return (scale as ScaleLinear<number, number>).ticks(count)
 }
 
 function createSvgElement(
@@ -72,10 +70,7 @@ function createTextElement(
   ])
 }
 
-function renderXAxis(
-  xScale: d3Scale.ScaleContinuousNumeric<number, number>,
-  label: string,
-): Element {
+function renderXAxis(xScale: ScaleContinuousNumeric<number, number>, label: string): Element {
   const ticks = generateTicks(xScale, 8)
   const tickElements: Element[] = ticks.map((t) => {
     const xPos = xScale(t)
@@ -116,10 +111,7 @@ function renderXAxis(
   )
 }
 
-function renderYAxis(
-  yScale: d3Scale.ScaleContinuousNumeric<number, number>,
-  label: string,
-): Element {
+function renderYAxis(yScale: ScaleContinuousNumeric<number, number>, label: string): Element {
   const ticks = generateTicks(yScale, 6)
   const tickElements: Element[] = ticks.map((t) => {
     const yPos = yScale(t)
@@ -166,16 +158,15 @@ function renderYAxis(
 
 function renderSeries(
   series: SeriesSpec,
-  xScale: d3Scale.ScaleContinuousNumeric<number, number>,
-  yScale: d3Scale.ScaleContinuousNumeric<number, number>,
+  xScale: ScaleContinuousNumeric<number, number>,
+  yScale: ScaleContinuousNumeric<number, number>,
   seriesIndex: number,
 ): Element {
   const color = series.color ?? DEFAULT_COLOR
   const sortedData = [...series.data].sort((a, b) => a[0] - b[0])
 
   // Line path
-  const lineGenerator = d3Shape
-    .line<[number, number]>()
+  const lineGenerator = line<[number, number]>()
     .x((d) => xScale(d[0]))
     .y((d) => yScale(d[1]))
   // istanbul ignore next -- lineGenerator returns null only for empty data (parser validates non-empty)
@@ -216,8 +207,8 @@ function renderSeries(
 
 function renderAnnotations(
   spec: ChartSpec,
-  xScale: d3Scale.ScaleContinuousNumeric<number, number>,
-  yScale: d3Scale.ScaleContinuousNumeric<number, number>,
+  xScale: ScaleContinuousNumeric<number, number>,
+  yScale: ScaleContinuousNumeric<number, number>,
 ): Element[] {
   if (!spec.annotations) return []
 
