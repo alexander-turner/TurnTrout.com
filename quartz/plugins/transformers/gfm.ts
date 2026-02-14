@@ -524,8 +524,10 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
  * to the <li> so it flows inline after the preceding table/figure.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
-  const lastParagraph = node.children[node.children.length - 1] as Element | undefined
-  if (!lastParagraph || lastParagraph.tagName !== "p") {
+  const lastParagraph = node.children.findLast(
+    (child) => child.type === "element" && (child as Element).tagName === "p",
+  ) as Element | undefined
+  if (!lastParagraph) {
     return
   }
 
@@ -536,7 +538,8 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
   // empty <p> and append arrow directly to the <li> so it appears
   // inline after the preceding content (table, figure, etc.).
   if (lastParagraph.children.length === 0) {
-    node.children.pop()
+    const pIndex = node.children.indexOf(lastParagraph)
+    node.children.splice(pIndex, 1)
     const wordJoiner = createWordJoinerSpan()
     wordJoiner.children.push(backArrow)
     node.children.push(wordJoiner)

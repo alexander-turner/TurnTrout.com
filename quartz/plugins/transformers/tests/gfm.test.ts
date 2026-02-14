@@ -278,6 +278,24 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(paragraph.children).toEqual(originalChildren)
   })
 
+  test("should find paragraph even when non-paragraph elements follow it", () => {
+    const node = h("li", [h("p", ["Text content"]), h("div", ["trailing div"])])
+
+    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+
+    // Paragraph should have word-joiner appended even though it's not the last child
+    const paragraph = node.children[0] as Element
+    expect(paragraph.children).toHaveLength(2)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Text content" })
+    const wjSpan = paragraph.children[1] as Element
+    expect(wjSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "word-joiner", ariaHidden: "true" },
+    })
+    expect(wjSpan.children[1]).toBe(mockBackArrow)
+  })
+
   test("should handle node without children property", () => {
     const node = h("li", [h("p", [])])
 
