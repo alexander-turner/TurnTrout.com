@@ -1,7 +1,7 @@
 import json
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
@@ -5959,3 +5959,70 @@ def test_find_duplicate_citations_multiple_duplicates():
     assert len(result) == 2
     assert any("Turner2024A" in issue for issue in result)
     assert any("Smith2023X" in issue and "3 files" in issue for issue in result)
+
+
+def test_maybe_collect_citation_keys_redirect(tmp_path):
+    """Redirect pages should be skipped during citation key collection."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    redirect_html = (
+        '<html><head><meta http-equiv="refresh" content="0;url=/new-page">'
+        "</head><body><code>@misc{SomeKey,</code></body></html>"
+    )
+    file_path = public_dir / "redirect.html"
+    file_path.write_text(redirect_html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert len(citation_to_files) == 0
+
+
+def test_maybe_collect_citation_keys_collects(tmp_path):
+    """Non-redirect pages should have their citation keys collected."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    html = "<html><body><code>@misc{Turner2024Design,</code></body></html>"
+    file_path = public_dir / "page.html"
+    file_path.write_text(html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert "Turner2024Design" in citation_to_files
+    assert citation_to_files["Turner2024Design"] == ["page.html"]
+
+
+def test_process_html_files_duplicate_citations(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Duplicate citation keys across files should be reported."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create two HTML files with the same citation key
+    citation_html = "<html><body><code>@misc{DupeKey2024,</code></body></html>"
+    for name in ("page1.html", "page2.html"):
+        (public_dir / name).write_text(citation_html)
+
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    # Mock parse_html_file to read from the tmp public_dir
+    def _mock_parse(file_path):
+        with open(file_path, encoding="utf-8") as f:
+            return BeautifulSoup(f.read(), "html.parser")
+
+    monkeypatch.setattr(script_utils, "parse_html_file", _mock_parse)
+
+    result = built_site_checks._process_html_files(
+        public_dir,
+        mock_environment["content_dir"],
+        check_fonts=False,
+        defined_css_vars=set(),
+    )
+    assert result is True
