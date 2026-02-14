@@ -1,3 +1,4 @@
+import { diffChars } from "diff"
 import { transform, type TransformOptions } from "punctilio"
 
 import { debounce } from "./component_script_utils"
@@ -279,138 +280,18 @@ const EXAMPLES: Record<TransformMode, string> = {
 
 // ─── Inline diff highlighting ────────────────────────────────────────
 
-type DiffKind = "equal" | "insert" | "delete"
-interface DiffSegment {
-  kind: DiffKind
-  text: string
-}
-
-/**
- * Build the Myers diff trace (forward pass). Each entry stores the
- * furthest-reaching x-coordinate for each diagonal at edit distance d.
- * Returns once both strings are fully consumed.
- */
-function buildMyersTrace(oldStr: string, newStr: string): Int32Array[] {
-  const oldLen = oldStr.length
-  const newLen = newStr.length
-  const max = oldLen + newLen
-  const size = 2 * max + 1
-  const furthestX = new Int32Array(size)
-  furthestX.fill(-1)
-  furthestX[max + 1] = 0
-
-  const trace: Int32Array[] = []
-
-  for (let d = 0; d <= max; d++) {
-    trace.push(furthestX.slice())
-    for (let k = -d; k <= d; k += 2) {
-      let x: number
-      if (k === -d || (k !== d && furthestX[k - 1 + max] < furthestX[k + 1 + max])) {
-        x = furthestX[k + 1 + max]
-      } else {
-        x = furthestX[k - 1 + max] + 1
-      }
-      let y = x - k
-      while (x < oldLen && y < newLen && oldStr[x] === newStr[y]) {
-        x++
-        y++
-      }
-      furthestX[k + max] = x
-      if (x >= oldLen && y >= newLen) return trace
-    }
-  }
-
-  return trace
-}
-
-/**
- * Character-level diff using the Myers algorithm (O(ND) shortest edit
- * script). Returns an array of equal / insert / delete segments.
- */
-function diffChars(oldStr: string, newStr: string): DiffSegment[] {
-  const oldLen = oldStr.length
-  const newLen = newStr.length
-
-  // Fast path: identical strings
-  if (oldStr === newStr) return [{ kind: "equal", text: oldStr }]
-
-  const max = oldLen + newLen
-  const trace = buildMyersTrace(oldStr, newStr)
-
-  // Backtrack to recover the edit script
-  const segments: DiffSegment[] = []
-  let x = oldLen
-  let y = newLen
-
-  for (let d = trace.length - 1; d >= 0; d--) {
-    const vPrev = trace[d]
-    const k = x - y
-
-    let prevK: number
-    if (k === -d || (k !== d && vPrev[k - 1 + max] < vPrev[k + 1 + max])) {
-      prevK = k + 1
-    } else {
-      prevK = k - 1
-    }
-
-    const prevX = vPrev[prevK + max]
-    const prevY = prevX - prevK
-
-    // Diagonal (equal characters) – walk backwards
-    while (x > prevX && y > prevY) {
-      x--
-      y--
-      segments.push({ kind: "equal", text: oldStr[x] })
-    }
-
-    if (d > 0) {
-      if (x === prevX) {
-        y--
-        segments.push({ kind: "insert", text: newStr[y] })
-      } else {
-        x--
-        segments.push({ kind: "delete", text: oldStr[x] })
-      }
-    }
-  }
-
-  segments.reverse()
-
-  // Merge consecutive segments of the same kind
-  const merged: DiffSegment[] = []
-  for (const seg of segments) {
-    const last = merged[merged.length - 1]
-    if (last && last.kind === seg.kind) {
-      last.text += seg.text
-    } else {
-      merged.push({ ...seg })
-    }
-  }
-
-  return merged
-}
-
-/** Render diff segments as HTML spans with appropriate classes. */
-function renderDiffHtml(segments: DiffSegment[]): string {
-  return segments
-    .map((seg) => {
-      const escaped = seg.text
+/** Render diff changes as HTML spans with appropriate classes. */
+function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
+  return changes
+    .map((change) => {
+      const escaped = change.value
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/\n/g, "<br>")
-      switch (seg.kind) {
-        case "equal":
-          return escaped
-        case "insert":
-          return `<span class="diff-insert">${escaped}</span>`
-        case "delete":
-          return `<span class="diff-delete">${escaped}</span>`
-        default: {
-          const exhaustive: never = seg.kind
-          throw new Error(`Unknown diff kind: ${exhaustive}`)
-        }
-      }
+      if (change.added) return `<span class="diff-insert">${escaped}</span>`
+      if (change.removed) return `<span class="diff-delete">${escaped}</span>`
+      return escaped
     })
     .join("")
 }

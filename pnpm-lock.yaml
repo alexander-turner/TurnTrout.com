@@ -79,6 +79,9 @@ importers:
       d3-color:
         specifier: 3.1.0
         version: 3.1.0
+      diff:
+        specifier: 8.0.3
+        version: 8.0.3
       esbuild-sass-plugin:
         specifier: 3.3.1
         version: 3.3.1(esbuild@0.25.1)(sass-embedded@1.88.0)
@@ -4178,6 +4181,10 @@ packages:
     resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
     engines: {node: '>=0.3.1'}
 
+  diff@8.0.3:
+    resolution: {integrity: sha512-qejHi7bcSD4hQAZE0tNAawRK1ZtafHDmMTMkrrIGgSLl7hTnQHmKCeB45xAcbfTqK2zowkM3j3bHt/4b/ARbYQ==}
+    engines: {node: '>=0.3.1'}
+
   diffie-hellman@5.0.3:
     resolution: {integrity: sha512-kqag/Nl+f3GwyK25fhUMYj81BUOrZ9IuJsjIcDE5icNM9FJHAVm3VcUDxdLPoQtTuUylWm6ZIknYJwwaPxsUzg==}
 
@@ -7668,6 +7675,7 @@ packages:
 
   punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770:
     resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770}
+    version: 1.4.1
     engines: {node: '>=18.0.0'}
     peerDependencies:
       unified: ^11.0.0
@@ -14034,6 +14042,8 @@ snapshots:
   diff-sequences@29.6.3: {}
 
   diff@7.0.0: {}
+
+  diff@8.0.3: {}
 
   diffie-hellman@5.0.3:
     dependencies:
