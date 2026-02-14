@@ -263,8 +263,8 @@
             mask-image: linear-gradient(
               to bottom,
               transparent 0%,
-              black 15%,
-              black 40%,
+              var(--foreground) 15%,
+              var(--foreground) 40%,
               transparent 100%
             );
 
