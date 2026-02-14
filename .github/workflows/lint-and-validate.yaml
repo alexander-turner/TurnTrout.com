@@ -32,8 +32,10 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          # Fetch enough history to access before/after commits from the push event
-          fetch-depth: 0
+          fetch-depth: 2  # Get current commit + parent for git diff
+
+      - name: Fetch before commit
+        run: git fetch --depth=2 origin ${{ github.event.before }}
 
       - name: Setup Base Environment
         uses: ./.github/actions/setup-base-env

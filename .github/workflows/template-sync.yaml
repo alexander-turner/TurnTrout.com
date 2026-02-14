@@ -52,8 +52,7 @@ jobs:
     steps:
       - name: Checkout child repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        # Default shallow fetch is sufficient - git operations are on template repo
 
       - name: Checkout template repository
         uses: actions/checkout@v4
