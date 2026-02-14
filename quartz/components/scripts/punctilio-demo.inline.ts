@@ -99,7 +99,8 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
   // Protect YAML front matter at start of text
   result = result.replace(/^---\n[\s\S]*?\n---/m, protect)
   // Protect fenced code blocks (``` or ~~~, with optional language)
-  result = result.replace(/(?:```|~~~)[\s\S]*?(?:```|~~~)/g, protect)
+  // Use backreference to ensure opening and closing delimiters match
+  result = result.replace(/(?<fence>```|~~~)[\s\S]*?\k<fence>/g, protect)
   // Protect math display blocks ($$...$$)
   result = result.replace(/\$\$[\s\S]*?\$\$/g, protect)
   // Protect inline math ($...$) — requires non-space after opening and before closing $
@@ -242,10 +243,11 @@ function sanitizeHtmlForPreview(html: string): string {
   const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
   for (const el of doc.body.querySelectorAll("*")) {
     for (const attr of Array.from(el.attributes)) {
+      const val = attr.value.trim().toLowerCase()
       if (
         attr.name.startsWith("on") ||
         ((attr.name === "href" || attr.name === "src") &&
-          attr.value.trim().toLowerCase().startsWith("javascript:"))
+          (val.startsWith("javascript:") || val.startsWith("data:")))
       ) {
         el.removeAttribute(attr.name)
       }
@@ -507,7 +509,10 @@ document.addEventListener("nav", () => {
             }, 1500)
           },
           () => {
-            // Clipboard write failed (e.g. permissions denied) — leave button unchanged
+            copyBtn.textContent = "Failed"
+            setTimeout(() => {
+              copyBtn.textContent = "Copy"
+            }, 1500)
           },
         )
       },
