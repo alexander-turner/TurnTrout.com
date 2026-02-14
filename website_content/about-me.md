@@ -43,7 +43,7 @@ How was this website designed?
 : Refer to [The design of this website.](/design)
 
 `TurnTrout`, you're amazing and handsome and I want to date you!
-: My dating doc resides [on my dating page.](/date-me) Check to see if we're compatible!
+: My dating doc resides [on this page.](/date-me) Check to see if we're compatible!
 
 # Contact me
 

@@ -6,9 +6,13 @@ import { setTheme as utilsSetTheme } from "./visual_utils"
 // False negative because the helpers call expect
 /* eslint-disable playwright/expect-expect */
 
+// Test constants
 const AUTO_THEME: Theme = "light"
+const THEME_SCHEMES = ["light", "dark"] as const
+const ALL_THEMES = ["light", "dark", "auto"] as const
+const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -83,7 +87,7 @@ test("System preference changes are reflected in auto mode", async ({ page }) =>
   await helper.setTheme("auto")
   await helper.verifyThemeLabel("auto")
 
-  for (const scheme of ["light", "dark"] as const) {
+  for (const scheme of THEME_SCHEMES) {
     await page.emulateMedia({ colorScheme: scheme })
     await helper.verifyTheme(scheme)
 
@@ -94,7 +98,7 @@ test("System preference changes are reflected in auto mode", async ({ page }) =>
 })
 
 test.describe("Theme persistence and UI states", () => {
-  for (const theme of ["light", "dark", "auto"] as const) {
+  ALL_THEMES.forEach((theme) => {
     test(`persists ${theme} theme across reloads`, async ({ page }) => {
       const helper = new DarkModeHelper(page)
       await helper.setTheme(theme)
@@ -105,7 +109,7 @@ test.describe("Theme persistence and UI states", () => {
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
     })
-  }
+  })
 })
 
 // Verify that dark mode toggle works w/ both the real button and the helper
@@ -201,8 +205,8 @@ test("No flash of unstyled content on page load", async ({ page }) => {
   expect(afterScreenshots.get("dark")).not.toEqual(afterScreenshots.get("auto"))
 })
 
-for (const prefix of ["./shard-theory", "./about", "./design#"]) {
-  for (const theme of ["light", "dark", "auto"] as const) {
+NAVIGATION_PREFIXES.forEach((prefix) => {
+  ALL_THEMES.forEach((theme) => {
     test(`Internal navigation preserves theme label (prefix: ${prefix}, theme: ${theme})`, async ({
       page,
     }) => {
@@ -216,5 +220,5 @@ for (const prefix of ["./shard-theory", "./about", "./design#"]) {
       await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)
     })
-  }
-}
+  })
+})

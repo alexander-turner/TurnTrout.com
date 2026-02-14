@@ -16,7 +16,7 @@ async function goBackToTestPage(page: Page): Promise<void> {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 })
 
 test.describe("Collapsible admonition state persistence", () => {

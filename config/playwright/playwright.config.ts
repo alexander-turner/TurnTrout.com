@@ -67,7 +67,7 @@ export default defineConfig({
   timeout: 30000,
   workers: 1, // Parallelism causes flakiness
 
-  retries: process.env.CI ? 5 : 1,
+  retries: process.env.CI ? 3 : 1,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
@@ -82,7 +82,7 @@ export default defineConfig({
     baseURL: "http://localhost:8080",
     trace: "on-first-retry",
     screenshot: {
-      mode: "on",
+      mode: "only-on-failure",
       fullPage: true,
     },
     // Stabilize device scale across runners to reduce text subpixel jitter.

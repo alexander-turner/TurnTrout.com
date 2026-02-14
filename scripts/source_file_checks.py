@@ -796,7 +796,11 @@ def compile_scss(scss_file_path: Path) -> str:
         return ""
 
     styles_dir = scss_file_path.parent
-    sass_path = Path(str(shutil.which("sass")))
+    sass_path = shutil.which("sass")
+    if sass_path is None:
+        raise FileNotFoundError(
+            "sass executable not found. Install it via pnpm."
+        )
 
     result = subprocess.run(
         [sass_path, f"--load-path={styles_dir}", str(scss_file_path)],

@@ -33,9 +33,7 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  // I don't trust playwright's test isolation
-  await page.reload()
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -573,8 +571,7 @@ test.describe("Footnote popovers", () => {
 base.describe("Footnote popover on mobile", () => {
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.reload()
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
   })
 
   base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {

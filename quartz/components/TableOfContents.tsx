@@ -284,6 +284,7 @@ export function elementToJsx(elt: RootContent): JSX.Element | null {
 }
 
 CreateTableOfContents.css = modernStyle
+
 CreateTableOfContents.afterDOMLoaded = `
 document.addEventListener('nav', function() {
   // Scroll to top when TOC title is clicked
@@ -297,33 +298,65 @@ document.addEventListener('nav', function() {
     });
   }
 
-  const sections = document.querySelectorAll("#center-content h1, #center-content h2");
+  const allSections = document.querySelectorAll("#center-content h1, #center-content h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
-  function updateActiveLink() {
-    let currentSection = "";
-    const scrollPosition = window.scrollY + window.innerHeight / 4;
+  // Filter sections to only those with IDs
+  const sections = Array.from(allSections).filter(section => section.id);
 
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      if (scrollPosition >= sectionTop) {
-        currentSection = section.id;
-      }
-    });
+  if (sections.length === 0 || navLinks.length === 0) return;
+
+  // Disconnect previous observer to prevent memory leak
+  if (window.tocObserver) {
+    window.tocObserver.disconnect();
+  }
+
+  let currentSection = "";
+
+  function updateActiveLink(newSection) {
+    if (newSection === currentSection) return;
+    currentSection = newSection;
 
     navLinks.forEach((link) => {
-      link.classList.remove("active");
       const slug = link.getAttribute('href').split("#")[1];
-      if (currentSection && slug === currentSection) {
-        link.classList.add("active");
-      }
+      link.classList.toggle("active", currentSection && slug === currentSection);
     });
   }
 
-  window.addEventListener("scroll", updateActiveLink);
+  // Use IntersectionObserver to detect visible sections without forced reflows
+  const observerOptions = {
+    rootMargin: "-25% 0px -75% 0px", // Trigger when section is in middle 50% of viewport
+    threshold: 0
+  };
 
-  // Initial call to set active link on page load
-  updateActiveLink();
+  window.tocObserver = new IntersectionObserver((entries) => {
+    // Find the topmost visible section
+    let topmostSection = null;
+    let topmostY = Infinity;
+
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const rect = entry.boundingClientRect;
+        if (rect.top < topmostY) {
+          topmostY = rect.top;
+          topmostSection = entry.target.id;
+        }
+      }
+    });
+
+    if (topmostSection) {
+      updateActiveLink(topmostSection);
+    }
+  }, observerOptions);
+
+  sections.forEach((section) => window.tocObserver.observe(section));
+
+  // Set initial active link based on hash or first section with ID
+  const hash = window.location.hash.slice(1);
+  const firstSectionId = sections[0]?.id;
+  if (hash || firstSectionId) {
+    updateActiveLink(hash || firstSectionId);
+  }
 });
 `
 
