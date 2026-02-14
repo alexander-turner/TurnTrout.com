@@ -1,11 +1,17 @@
 import type { Element, Root } from "hast"
 
+import fs from "fs"
+import path from "path"
 import { visit } from "unist-util-visit"
+import { fileURLToPath } from "url"
 
 import type { QuartzTransformerPlugin } from "../types"
 
 import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
+
+const currentFilePath = fileURLToPath(import.meta.url)
+const currentDirPath = path.dirname(currentFilePath)
 
 /**
  * Finds the text content of a code element (the YAML chart spec).
@@ -46,6 +52,19 @@ function getCodeElement(pre: Element): Element {
 
 export const Charts: QuartzTransformerPlugin = () => ({
   name: "Charts",
+  externalResources() {
+    const tooltipScriptPath = path.join(currentDirPath, "../../static/scripts/chart-tooltips.js")
+    const tooltipScript = fs.readFileSync(tooltipScriptPath, "utf8")
+    return {
+      js: [
+        {
+          script: tooltipScript,
+          loadTime: "afterDOMReady",
+          contentType: "inline",
+        },
+      ],
+    }
+  },
   htmlPlugins() {
     return [
       () => (tree: Root) => {

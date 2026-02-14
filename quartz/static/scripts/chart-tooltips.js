@@ -13,10 +13,14 @@
     const series = target.getAttribute("data-series")
     if (!x || !y) return
 
-    let html = ""
-    if (series) html += "<strong>" + series + "</strong><br>"
-    html += x + ", " + y
-    tooltip.innerHTML = html
+    tooltip.textContent = ""
+    if (series) {
+      var strong = document.createElement("strong")
+      strong.textContent = series
+      tooltip.appendChild(strong)
+      tooltip.appendChild(document.createElement("br"))
+    }
+    tooltip.appendChild(document.createTextNode(x + ", " + y))
     tooltip.style.display = "block"
     positionTooltip(e)
   }

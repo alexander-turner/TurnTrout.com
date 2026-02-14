@@ -176,6 +176,16 @@ annotations:
       "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: 3\n    style: dotted",
       'annotations[0] style must be "solid" or "dashed"',
     ],
+    [
+      "log scale with zero x value",
+      "type: line\nx:\n  label: X\n  scale: log\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [0, 2]",
+      'Log scale on "x" axis requires positive values',
+    ],
+    [
+      "log scale with negative y value",
+      "type: line\nx:\n  label: X\ny:\n  label: Y\n  scale: log\nseries:\n  - name: S\n    data:\n      - [1, -5]",
+      'Log scale on "y" axis requires positive values',
+    ],
   ])("throws on %s", (_desc, yaml, expectedMsg) => {
     expect(() => parseChartSpec(yaml)).toThrow(expectedMsg)
   })
@@ -278,6 +288,27 @@ describe("renderLineChart", () => {
       (c) => c.type === "element" && c.tagName === "text",
     ) as Element
     expect((annotText.children[0] as Text).value).toBe("Target")
+  })
+
+  it("includes accessible SVG title element", () => {
+    const svg = renderLineChart(BASIC_SPEC)
+    const titleElements: Element[] = []
+    visit(svg, "element", (node: Element) => {
+      if (node.tagName === "title") titleElements.push(node)
+    })
+    expect(titleElements).toHaveLength(1)
+    expect((titleElements[0].children[0] as Text).value).toBe("Test Chart")
+  })
+
+  it("uses default accessible title when no title provided", () => {
+    const spec: ChartSpec = { ...BASIC_SPEC, title: undefined }
+    const svg = renderLineChart(spec)
+    const titleElements: Element[] = []
+    visit(svg, "element", (node: Element) => {
+      if (node.tagName === "title") titleElements.push(node)
+    })
+    expect(titleElements).toHaveLength(1)
+    expect((titleElements[0].children[0] as Text).value).toBe("Line chart")
   })
 
   it("renders without title when not provided", () => {
@@ -632,6 +663,17 @@ series:
   it("has the correct plugin name", () => {
     const plugin = Charts()
     expect(plugin.name).toBe("Charts")
+  })
+
+  it("provides tooltip script via externalResources", () => {
+    const plugin = Charts()
+    const resources = plugin.externalResources!(mockCtx)
+    expect(resources.js).toHaveLength(1)
+    expect(resources.js![0]).toMatchObject({
+      loadTime: "afterDOMReady",
+      contentType: "inline",
+    })
+    expect((resources.js![0] as { script: string }).script).toContain("smart-chart-tooltip")
   })
 
   it("handles className as non-array", () => {

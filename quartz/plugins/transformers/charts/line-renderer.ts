@@ -277,8 +277,12 @@ export function renderLineChart(spec: ChartSpec): Element {
 
   // Build chart elements
   const chartChildren: Element[] = []
+  const titleText = spec.title ?? "Line chart"
 
-  // Title (outside the inner group)
+  // Accessible <title> element
+  chartChildren.push(createSvgElement("title", {}, [{ type: "text" as const, value: titleText }]))
+
+  // Visible title (outside the inner group)
   if (spec.title) {
     chartChildren.push(renderTitle(spec.title))
   }

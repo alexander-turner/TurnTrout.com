@@ -80,6 +80,25 @@ function parseAnnotations(raw: unknown): Annotation[] {
   })
 }
 
+function validateLogScaleData(spec: ChartSpec): void {
+  const axes: Array<{ axis: AxisSpec; name: string; accessor: (d: [number, number]) => number }> = [
+    { axis: spec.x, name: "x", accessor: (d) => d[0] },
+    { axis: spec.y, name: "y", accessor: (d) => d[1] },
+  ]
+  for (const { axis, name, accessor } of axes) {
+    if (axis.scale !== "log") continue
+    for (const series of spec.series) {
+      for (const point of series.data) {
+        if (accessor(point) <= 0) {
+          throw new Error(
+            `Log scale on "${name}" axis requires positive values, but series "${series.name}" has ${name}=${accessor(point)}`,
+          )
+        }
+      }
+    }
+  }
+}
+
 export function parseChartSpec(yamlString: string): ChartSpec {
   const raw = yaml.load(yamlString)
   if (typeof raw !== "object" || raw === null) {
@@ -91,7 +110,7 @@ export function parseChartSpec(yamlString: string): ChartSpec {
     throw new Error(`Unsupported chart type: "${obj.type}". Only "line" is supported.`)
   }
 
-  return {
+  const spec: ChartSpec = {
     type: "line",
     title: typeof obj.title === "string" ? obj.title : undefined,
     x: parseAxisSpec(obj.x, "x"),
@@ -99,4 +118,7 @@ export function parseChartSpec(yamlString: string): ChartSpec {
     series: parseSeries(obj.series),
     annotations: obj.annotations ? parseAnnotations(obj.annotations) : undefined,
   }
+
+  validateLogScaleData(spec)
+  return spec
 }
