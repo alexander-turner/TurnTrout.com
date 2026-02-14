@@ -133,7 +133,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -150,7 +150,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -171,7 +171,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -187,7 +187,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -205,7 +205,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -223,7 +223,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -263,7 +263,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -291,7 +291,7 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect(wjSpan.children[1]).toBe(mockBackArrow)
   })
@@ -654,7 +654,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
@@ -713,7 +713,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
@@ -730,7 +730,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
@@ -749,7 +749,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
@@ -789,7 +789,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })
@@ -816,7 +816,7 @@ describe("gfmVisitor function", () => {
     expect(wjSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "word-joiner" },
     })
     expect((wjSpan.children[1] as Element).tagName).toBe("a")
   })

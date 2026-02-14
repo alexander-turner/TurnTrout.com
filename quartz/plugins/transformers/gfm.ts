@@ -541,6 +541,10 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
     const pIndex = node.children.indexOf(lastParagraph)
     node.children.splice(pIndex, 1)
     const wordJoiner = createWordJoinerSpan()
+    // Back arrow is focusable, so aria-hidden on the wrapper would hide it
+    // from screen readers. The \u2060 word joiner is a zero-width format
+    // character that screen readers already ignore.
+    delete wordJoiner.properties.ariaHidden
     wordJoiner.children.push(backArrow)
     node.children.push(wordJoiner)
     return
@@ -548,6 +552,7 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
 
   // Wrap back arrow inside word-joiner span to prevent line-break orphaning
   const wordJoiner = createWordJoinerSpan()
+  delete wordJoiner.properties.ariaHidden
   wordJoiner.children.push(backArrow)
   lastParagraph.children.push(wordJoiner)
 }
