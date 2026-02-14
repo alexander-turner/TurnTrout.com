@@ -884,7 +884,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   content = replaceEmojiConvertArrows(content)
 
   let suffixHTML = ""
-  if (!enablePreview) {
+  if (!enablePreview || window.innerWidth <= tabletBreakpoint) {
     suffixHTML = `<p>${content}</p>`
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
@@ -909,13 +909,6 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   itemTile.addEventListener("mouseleave", onMouseLeave)
   itemTile.addEventListener("click", (e) => {
     e.preventDefault()
-    // On mobile/tablet with preview: first tap selects card, second tap navigates
-    if (enablePreview && window.innerWidth <= tabletBreakpoint) {
-      if (!itemTile.classList.contains("focus")) {
-        void displayPreview(itemTile, false)
-        return
-      }
-    }
     navigateWithSearchTerm(itemTile.href, currentSearchTerm)
   })
 
