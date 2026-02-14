@@ -434,9 +434,7 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
 **Alex**
 : Yes, it is indeed possible to selectively consider historical disanalogies which support a (potentially) desired conclusion (i.e. that outer/inner is fine). If we're going to play reference class tennis, how about [all of the times biomimicry has worked](https://en.wikipedia.org/wiki/Biomimetics)?
 
-  <!-- vale Openly.But = NO -->
-  But let's not play reference class tennis. As mentioned above, we have to obey conservation of expected evidence here.
-  <!-- vale Openly.But = YES -->
+  However, let's not play reference class tennis. As mentioned above, we have to obey conservation of expected evidence here.
 
 : In worlds where inner alignment was a good and feasible approach for getting certain human-compatible values into an AI (let’s call that hypothesis class H<sub>inner-align</sub>), I think that we would expect with greater probability for human values to naturally arise via inner alignment _successes_. However, in worlds where inner alignment failures are appropriate for getting human values into an AI (H<sub>fail</sub>), we would expect with greater probability for human values to naturally arise via inner alignment _failures_.
 
