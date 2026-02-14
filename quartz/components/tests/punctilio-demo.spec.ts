@@ -181,6 +181,62 @@ test.describe("Markdown protection", () => {
     // Code block content should be preserved verbatim
     await expect(page.locator("#punctilio-diff")).toContainText('"don\'t change"')
   })
+
+  test("mismatched fence delimiters are not treated as a code block", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const input = page.locator("#punctilio-input")
+    // ``` opening with ~~~ "closing" — these don't match, so the quotes inside
+    // should be transformed (not protected as a code block)
+    await input.fill('```\n"hello"\n~~~')
+
+    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+  })
+})
+
+test.describe("HTML preview sanitization", () => {
+  test("strips data: URIs from href attributes in preview", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('<p><a href="data:text/html,<script>alert(1)</script>">click</a></p>')
+
+    const preview = page.locator("#punctilio-html-preview")
+    await expect(preview).toBeVisible()
+
+    // The data: URI should be stripped from the rendered preview
+    const link = preview.locator("a")
+    await expect(link).toBeAttached()
+    await expect(link).not.toHaveAttribute("href")
+  })
+
+  test("strips javascript: URIs from href attributes in preview", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('<p><a href="javascript:alert(1)">click</a></p>')
+
+    const preview = page.locator("#punctilio-html-preview")
+    await expect(preview).toBeVisible()
+
+    const link = preview.locator("a")
+    await expect(link).toBeAttached()
+    await expect(link).not.toHaveAttribute("href")
+  })
+
+  test("strips event handler attributes in preview", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill('<p onmouseover="alert(1)">hover me</p>')
+
+    const preview = page.locator("#punctilio-html-preview")
+    await expect(preview).toBeVisible()
+
+    const para = preview.locator("p")
+    await expect(para).toBeAttached()
+    await expect(para).not.toHaveAttribute("onmouseover")
+  })
 })
 
 test.describe("SPA navigation", () => {

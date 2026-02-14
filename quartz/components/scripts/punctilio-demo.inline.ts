@@ -264,6 +264,10 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
       return transformMarkdownText(text, config)
     case "html":
       return transformHtmlText(text, config)
+    default: {
+      const exhaustive: never = mode
+      throw new Error(`Unknown mode: ${exhaustive}`)
+    }
   }
 }
 
@@ -282,6 +286,44 @@ interface DiffSegment {
 }
 
 /**
+ * Build the Myers diff trace (forward pass). Each entry stores the
+ * furthest-reaching x-coordinate for each diagonal at edit distance d.
+ * Returns once both strings are fully consumed.
+ */
+function buildMyersTrace(oldStr: string, newStr: string): Int32Array[] {
+  const oldLen = oldStr.length
+  const newLen = newStr.length
+  const max = oldLen + newLen
+  const size = 2 * max + 1
+  const furthestX = new Int32Array(size)
+  furthestX.fill(-1)
+  furthestX[max + 1] = 0
+
+  const trace: Int32Array[] = []
+
+  for (let d = 0; d <= max; d++) {
+    trace.push(furthestX.slice())
+    for (let k = -d; k <= d; k += 2) {
+      let x: number
+      if (k === -d || (k !== d && furthestX[k - 1 + max] < furthestX[k + 1 + max])) {
+        x = furthestX[k + 1 + max]
+      } else {
+        x = furthestX[k - 1 + max] + 1
+      }
+      let y = x - k
+      while (x < oldLen && y < newLen && oldStr[x] === newStr[y]) {
+        x++
+        y++
+      }
+      furthestX[k + max] = x
+      if (x >= oldLen && y >= newLen) return trace
+    }
+  }
+
+  return trace
+}
+
+/**
  * Character-level diff using the Myers algorithm (O(ND) shortest edit
  * script). Returns an array of equal / insert / delete segments.
  */
@@ -292,35 +334,8 @@ function diffChars(oldStr: string, newStr: string): DiffSegment[] {
   // Fast path: identical strings
   if (oldStr === newStr) return [{ kind: "equal", text: oldStr }]
 
-  // Myers diff – we track the furthest-reaching D-paths.
   const max = oldLen + newLen
-  const size = 2 * max + 1
-  const v = new Int32Array(size) // v[k + max] = x
-  v.fill(-1)
-  v[max + 1] = 0
-
-  // Each entry in trace stores a snapshot of v for that edit distance.
-  const trace: Int32Array[] = []
-
-  outer: for (let d = 0; d <= max; d++) {
-    trace.push(v.slice())
-    for (let k = -d; k <= d; k += 2) {
-      let x: number
-      if (k === -d || (k !== d && v[k - 1 + max] < v[k + 1 + max])) {
-        x = v[k + 1 + max] // move down (insert)
-      } else {
-        x = v[k - 1 + max] + 1 // move right (delete)
-      }
-      let y = x - k
-      // Follow diagonal (equal characters)
-      while (x < oldLen && y < newLen && oldStr[x] === newStr[y]) {
-        x++
-        y++
-      }
-      v[k + max] = x
-      if (x >= oldLen && y >= newLen) break outer
-    }
-  }
+  const trace = buildMyersTrace(oldStr, newStr)
 
   // Backtrack to recover the edit script
   const segments: DiffSegment[] = []
@@ -350,11 +365,9 @@ function diffChars(oldStr: string, newStr: string): DiffSegment[] {
 
     if (d > 0) {
       if (x === prevX) {
-        // Insert
         y--
         segments.push({ kind: "insert", text: newStr[y] })
       } else {
-        // Delete
         x--
         segments.push({ kind: "delete", text: oldStr[x] })
       }
@@ -393,6 +406,10 @@ function renderDiffHtml(segments: DiffSegment[]): string {
           return `<span class="diff-insert">${escaped}</span>`
         case "delete":
           return `<span class="diff-delete">${escaped}</span>`
+        default: {
+          const exhaustive: never = seg.kind
+          throw new Error(`Unknown diff kind: ${exhaustive}`)
+        }
       }
     })
     .join("")

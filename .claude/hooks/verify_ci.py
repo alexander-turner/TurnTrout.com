@@ -64,7 +64,6 @@ def main() -> None:
         except (ValueError, OSError):
             attempt = 1
     retry_file.write_text(str(attempt), encoding="utf-8")
-    return attempt
 
     # --- Collect checks to run ---
     failures: list[str] = []
