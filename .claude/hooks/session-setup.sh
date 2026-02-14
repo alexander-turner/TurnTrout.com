@@ -108,6 +108,20 @@ if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
 fi
 
 #######################################
+# Timestamps repo (required by post-commit hook)
+#######################################
+
+if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
+	git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" ||
+		warn "Failed to clone .timestamps repo"
+fi
+
+# Install opentimestamps-client if ots binary is not available
+if ! command -v ots &>/dev/null; then
+	uv_install_if_missing ots opentimestamps-client
+fi
+
+#######################################
 # Project dependencies
 #######################################
 
