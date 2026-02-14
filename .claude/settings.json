@@ -22,7 +22,7 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/run_deepsource_cli.sh",
+            "command": "fish \"$CLAUDE_PROJECT_DIR\"/scripts/run_deepsource_cli.fish",
             "timeout": 120
           }
         ]

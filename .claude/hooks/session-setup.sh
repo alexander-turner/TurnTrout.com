@@ -50,8 +50,14 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
-if ! command -v shellcheck &>/dev/null && is_root; then
-	{ apt-get update -qq && apt-get install -y -qq shellcheck; } || warn "Failed to install shellcheck"
+if is_root; then
+	apt_pkgs=()
+	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
+	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	if [ ${#apt_pkgs[@]} -gt 0 ]; then
+		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
+			warn "Failed to install ${apt_pkgs[*]}"
+	fi
 fi
 
 #######################################
