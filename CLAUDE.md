@@ -227,6 +227,7 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 - Declare variables close to where they are first used, not at the top of a function
+- **Never re-export** - no barrel files (`index.ts` that only re-export), no `export * from`, no `export { X } from "./other"`. Always import directly from the source module where the symbol is defined
 
 ### Error Handling
 
@@ -245,3 +246,7 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
+
+## Lessons Learned
+
+- **No re-exports**: Barrel files and re-exports (e.g., `export { X } from "./other"`, `export * from "./module"`, index files that only re-export) obscure where symbols are defined and add indirection. Always import directly from the source module.

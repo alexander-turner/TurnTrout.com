@@ -63,8 +63,8 @@ jest.unstable_mockModule("../../components/Header", () => ({
   default: jest.fn(() => () => null),
 }))
 
-jest.unstable_mockModule("../../components", () => ({
-  Content: jest.fn(() => () => null),
+jest.unstable_mockModule("../../components/pages/Content", () => ({
+  default: jest.fn(() => () => null),
 }))
 
 describe("ContentPage", () => {

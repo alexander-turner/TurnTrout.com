@@ -9,9 +9,9 @@ import {
   sharedPageComponents,
 } from "../../../config/quartz/quartz.layout"
 import { type FullPageLayout } from "../../cfg"
-import { Content } from "../../components"
 import BodyConstructor from "../../components/Body"
 import HeaderConstructor from "../../components/Header"
+import Content from "../../components/pages/Content"
 import { pageResources, renderPage } from "../../components/renderPage"
 import { type QuartzComponentProps } from "../../components/types"
 import DepGraph from "../../depgraph"

@@ -107,9 +107,6 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
   return true
 }
 
-// Re-export for backward compatibility with test imports
-export { normalizeFaviconListEntry } from "../../util/favicon-config"
-
 /**
  * Normalizes a favicon path for counting by removing format-specific extensions.
  * Counts are format-agnostic (domain-based), so we store paths without extensions.

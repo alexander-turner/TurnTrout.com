@@ -38,10 +38,6 @@ export function getStaticResourcesFromPlugins(ctx: BuildCtx) {
   return staticResources
 }
 
-export * from "./transformers"
-export * from "./filters"
-export * from "./emitters"
-
 declare module "vfile" {
   // inserted in processors.ts
   interface DataMap {

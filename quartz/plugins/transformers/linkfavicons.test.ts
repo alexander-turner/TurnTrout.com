@@ -24,6 +24,7 @@ import {
   defaultPath,
 } from "../../components/constants"
 import { faviconUrlsFile } from "../../components/constants.server"
+import { normalizeFaviconListEntry } from "../../util/favicon-config"
 import { hasClass } from "./utils"
 
 const { minFaviconCount, faviconSubstringBlacklist } = simpleConstants
@@ -549,7 +550,7 @@ describe("Favicon Utilities", () => {
     describe("favicon blacklist", () => {
       it.each(
         faviconSubstringBlacklist.map((blacklistEntry: string) => [
-          `/static/images/external-favicons/${linkfavicons.normalizeFaviconListEntry(blacklistEntry)}.png`,
+          `/static/images/external-favicons/${normalizeFaviconListEntry(blacklistEntry)}.png`,
         ]),
       )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
         const faviconCounts = new Map<string, number>()
@@ -562,7 +563,7 @@ describe("Favicon Utilities", () => {
       })
 
       it("should exclude favicons with blacklisted substring in middle of path", () => {
-        const blacklistEntry = linkfavicons.normalizeFaviconListEntry(faviconSubstringBlacklist[0])
+        const blacklistEntry = normalizeFaviconListEntry(faviconSubstringBlacklist[0])
         const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
         const faviconCounts = new Map<string, number>()
         // Counts are stored without extensions (format-agnostic)
@@ -1710,7 +1711,7 @@ describe("transformUrl", () => {
 
   it.each(
     faviconSubstringBlacklist.map((blacklistEntry: string) => [
-      `/static/images/external-favicons/${linkfavicons.normalizeFaviconListEntry(blacklistEntry)}.png`,
+      `/static/images/external-favicons/${normalizeFaviconListEntry(blacklistEntry)}.png`,
       defaultPath,
     ]),
   )("should return defaultPath if blacklisted: %s", (input, expected) => {
@@ -1815,7 +1816,7 @@ describe("normalizeFaviconListEntry", () => {
     ["blog_example_com", "example_com", "strips subdomain"],
     ["developer_mozilla_org", "mozilla_org", "strips subdomain"],
   ])("should normalize %s to %s (%s)", (input, expected) => {
-    expect(linkfavicons.normalizeFaviconListEntry(input)).toBe(expected)
+    expect(normalizeFaviconListEntry(input)).toBe(expected)
   })
 })
 
@@ -2099,7 +2100,7 @@ describe("favicon must be inside word-joiner span (prevents line-break orphaning
 
 describe("shouldIncludeFavicon edge cases", () => {
   it("should exclude blacklisted favicon even if whitelisted", () => {
-    const blacklistEntry = linkfavicons.normalizeFaviconListEntry(faviconSubstringBlacklist[0])
+    const blacklistEntry = normalizeFaviconListEntry(faviconSubstringBlacklist[0])
     const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
     const faviconCounts = new Map<string, number>()
     // Counts are stored without extensions (format-agnostic)

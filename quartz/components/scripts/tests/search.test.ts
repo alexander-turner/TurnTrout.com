@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import escapeRegExp from "escape-string-regexp"
 
 import { simpleConstants } from "../../constants"
 import {
@@ -11,7 +12,6 @@ import {
   descendantsSamePageLinks,
   tokenizeTerm,
   match,
-  escapeRegExp,
   createMatchSpan,
   updatePlaceholder,
   showSearch,

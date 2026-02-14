@@ -3,10 +3,10 @@ import type { QuartzComponentProps } from "../../components/types"
 import type { QuartzEmitterPlugin } from "../types"
 
 import { defaultListPageLayout, sharedPageComponents } from "../../../config/quartz/quartz.layout"
-import { TagContent } from "../../components"
 import BodyConstructor from "../../components/Body"
 import { uiStrings } from "../../components/constants"
 import HeaderConstructor from "../../components/Header"
+import TagContent from "../../components/pages/TagContent"
 import { pageResources, renderPage } from "../../components/renderPage"
 import DepGraph from "../../depgraph"
 import {
