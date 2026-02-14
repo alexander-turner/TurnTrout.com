@@ -32,6 +32,7 @@ jobs:
               - 'pyproject.toml'
               - 'uv.lock'
               - '.github/actions/**'
+              - '.github/scripts/**'
 
   python-lint:
     needs: detect-changes
@@ -53,14 +54,14 @@ jobs:
         run: |
           uv run python -m mypy \
             --config-file config/python/mypy.ini \
-            scripts/*.py
+            scripts/*.py .github/scripts/*.py
 
       - name: Run docformatter check
         run: |
           uv run python -m docformatter \
             --check \
             --config config/python/pyproject.toml \
-            scripts/*.py
+            scripts/*.py .github/scripts/*.py
 
       - name: Run pylint
         run: |

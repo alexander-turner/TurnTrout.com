@@ -1,3 +1,4 @@
+import shutil
 import sys
 import tempfile
 import unittest.mock as mock
@@ -11,6 +12,11 @@ import requests  # type: ignore[import]
 
 from .. import utils as script_utils
 from .utils import create_markdown_file
+
+requires_sass = pytest.mark.skipif(
+    shutil.which("sass") is None,
+    reason="sass executable not found",
+)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
@@ -540,6 +546,7 @@ def setup_font_test(
     return _setup
 
 
+@requires_sass
 @pytest.mark.parametrize(
     "scenario",
     [
@@ -684,15 +691,14 @@ def test_integration_with_main(
     assert exc_info.value.code == 1
 
 
+@requires_sass
 def test_compile_scss(tmp_path: Path) -> None:
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
-    scss_file.write_text(
-        """
+    scss_file.write_text("""
         $color: red;
         body { color: $color; }
-    """
-    )
+    """)
 
     css = source_file_checks.compile_scss(scss_file)
     assert "body" in css
@@ -2302,26 +2308,32 @@ def test_check_publication_date(
     metadata: Dict[str, Any], expected_errors: List[str]
 ) -> None:
     """Test the check_publication_date function."""
-    assert source_file_checks.check_publication_date(metadata) == expected_errors
+    assert (
+        source_file_checks.check_publication_date(metadata) == expected_errors
+    )
 
 
-@pytest.mark.parametrize("check_dates,should_fail", [(True, True), (False, False)])
+@pytest.mark.parametrize(
+    "check_dates,should_fail", [(True, True), (False, False)]
+)
 def test_main_publication_dates_flag(
-    git_repo_setup, quartz_project_structure, monkeypatch, check_dates, should_fail
+    git_repo_setup,
+    quartz_project_structure,
+    monkeypatch,
+    check_dates,
+    should_fail,
 ) -> None:
     """Test main() behavior with/without --check-publication-dates flag."""
     content_dir = quartz_project_structure["content"]
     tmp_path = git_repo_setup["root"]
 
-    (content_dir / "test.md").write_text(
-        """---
+    (content_dir / "test.md").write_text("""---
 title: Test Post
 description: Test Description
 permalink: /test
 tags: [test]
 ---
-"""
-    )
+""")
     monkeypatch.setattr(
         script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
     )
