@@ -1,0 +1,137 @@
+#punctilio-demo {
+  margin-top: 1rem;
+
+  .punctilio-mode-selector {
+    display: flex;
+    gap: 0;
+    margin-bottom: 1rem;
+    border: 1px solid var(--midground-faint);
+    border-radius: 6px;
+    overflow: hidden;
+    width: fit-content;
+  }
+
+  .punctilio-mode-btn {
+    padding: 0.4rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--midground);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+
+    &:not(:last-child) {
+      border-right: 1px solid var(--midground-faint);
+    }
+
+    &:hover {
+      background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+    }
+
+    &.active {
+      background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+      color: var(--foreground);
+      font-weight: 600;
+    }
+  }
+
+  .punctilio-panels {
+    display: flex;
+    gap: 1rem;
+
+    @media (width <= 750px) {
+      flex-direction: column;
+    }
+  }
+
+  .punctilio-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      font-size: 0.85rem;
+      color: var(--midground);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      padding: 0.75rem;
+      border: 1px solid var(--midground-faint);
+      border-radius: 6px;
+      background-color: color-mix(in srgb, var(--foreground) 2%, var(--background));
+      color: var(--foreground);
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      resize: vertical;
+      tab-size: 2;
+
+      &:focus {
+        outline: 2px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+        outline-offset: -1px;
+      }
+
+      &[readonly] {
+        background-color: color-mix(in srgb, var(--foreground) 4%, var(--background));
+        cursor: default;
+      }
+    }
+  }
+
+  .punctilio-options {
+    margin-top: 1rem;
+
+    summary {
+      cursor: pointer;
+      color: var(--midground);
+      font-size: 0.9rem;
+      user-select: none;
+
+      &:hover {
+        color: var(--foreground);
+      }
+    }
+
+    .punctilio-options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 0.5rem 1.5rem;
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border: 1px solid var(--midground-faint);
+      border-radius: 6px;
+      background-color: color-mix(in srgb, var(--foreground) 2%, var(--background));
+    }
+
+    .punctilio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.9rem;
+      color: var(--foreground);
+
+      input[type="checkbox"] {
+        margin: 0;
+      }
+
+      select {
+        padding: 0.2rem 0.4rem;
+        border: 1px solid var(--midground-faint);
+        border-radius: 4px;
+        background: var(--background);
+        color: var(--foreground);
+        font-size: 0.85rem;
+        font-family: inherit;
+      }
+    }
+  }
+}
