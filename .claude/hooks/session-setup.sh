@@ -120,6 +120,34 @@ if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
 fi
 
 #######################################
+# DeepSource CLI (fork with --commit support)
+# Source: https://github.com/DeepSourceCorp/cli/pull/267
+#######################################
+
+if ! command -v deepsource &>/dev/null; then
+  echo "Installing DeepSource CLI (fork with --commit flag)..."
+  if command -v go &>/dev/null; then
+    _ds_tmp=$(mktemp -d)
+    if git clone --quiet --branch feat/issues-list-by-commit --depth 1 \
+      "$(github_url "alexander-turner/cli")" "$_ds_tmp/cli" 2>/dev/null; then
+      (cd "$_ds_tmp/cli" && go build -o "$HOME/.local/bin/deepsource" ./cmd/deepsource) 2>/dev/null \
+        || warn "Failed to build DeepSource CLI fork"
+    else
+      warn "Failed to clone DeepSource CLI fork"
+    fi
+    rm -rf "$_ds_tmp"
+  else
+    # Fallback to official CLI (without --commit support)
+    curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || warn "Failed to install DeepSource CLI"
+  fi
+fi
+
+if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
+  echo "Configuring DeepSource authentication..."
+  deepsource auth login --with-token "$DEEPSOURCE_PAT" 2>&1 || warn "Failed to authenticate with DeepSource"
+fi
+
+#######################################
 # Timestamps repo (required by post-commit hook)
 #######################################
 
