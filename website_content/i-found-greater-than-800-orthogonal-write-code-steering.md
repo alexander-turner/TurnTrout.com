@@ -226,7 +226,9 @@ The model needs to be able represent common features redundantly since it repres
 
   I think the Appendix provides some evidence for this: both the 'becomes an alien species' and 'STEM problem' vectors don't have many vectors that have close to 0 KL divergence in outputs w.r.t the original MELBO vector the way that the 'coding' and 'jailbreak' vectors do. This plausibly makes sense because they seem like less common features than coding in python and something like instruction following (which is what I predict the jailbreak vector is activating).
 
+  <!-- vale Openly.But = NO -->
   But this is also a post-hoc observation so to really test this I would need to make an advance prediction with a different steering vector. I also don't think it would need 800 steering vectors for coding to represent the concept redundantly if this hypothesis were true. I suspect it would need fewer vectors.
+  <!-- vale Openly.But = YES -->
 
 These orthogonal steering vectors are just adversarial vectors that are out of distribution for the model.
 : Some evidence for this hypothesis: the orthogonal steering vectors all have magnitudes much higher than the original MELBO vector (shown at $x=0$ in the plots), suggesting that there is something 'unnatural' going on. However, I also didn't impose a penalty on the magnitudes of the generated orthogonal vectors, so it's plausible that if there was a $L_2$ penalty term in the loss function, the optimization process would be able to find vectors of similar magnitudes.

@@ -111,9 +111,11 @@ My response
 
   For simplicity, suppose you want the future to contain lots of bananas. Suppose you _think_ your AI cares about bananas but _actually_ it primarily cares about fruit in general and only pretended to primarily care about bananas, for instrumental reasons. Then it kills everyone and makes a ton of fruit (only some of which are bananas). In that scenario, we should have chiseled different cognition into the AI so that it would have valued bananas more strongly. (Similarly for "the AI cared about granite spheres and paperclips and...")
 
-  While this scenario involves misgeneralization, there’s no separate tendency of “alignment shalt not generalize.”
+  While this scenario involves misgeneralization, there's no separate tendency of "alignment shalt not generalize."
 
-  But suppose you _do_ get the AI to primarily care about bananas early in training, and it retains that banana value shard/decision-influencing-factor into mid-training. At this point, I think the banana-shard will convergently be motivated to steer the AI’s future training so that the AI _keeps making bananas._ So, if you get some of the early-/mid-training values to care about making bananas, then those early-/mid-values will, by instrumental convergence, reliably steer training to keep generalizing appropriately. If they did not, that would lead to fewer bananas, and the banana-shard would bid for a different path of capability gain!
+  <!-- vale Openly.But = NO -->
+  But suppose you _do_ get the AI to primarily care about bananas early in training, and it retains that banana value shard/decision-influencing-factor into mid-training. At this point, I think the banana-shard will convergently be motivated to steer the AI's future training so that the AI _keeps making bananas._ So, if you get some of the early-/mid-training values to care about making bananas, then those early-/mid-values will, by instrumental convergence, reliably steer training to keep generalizing appropriately. If they did not, that would lead to fewer bananas, and the banana-shard would bid for a different path of capability gain!
+  <!-- vale Openly.But = YES -->
 
   While not an airtight safety argument, I think it's a reasonably strong _a priori_ case. The main difficulty here still seems to be my already-central expected difficulty of “loss signals might chisel undesired values into the AI.”
 
