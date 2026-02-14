@@ -1,5 +1,9 @@
 import { diffChars } from "diff"
 import { transform, type TransformOptions } from "punctilio"
+import { rehypePunctilio } from "punctilio/rehype"
+import rehypeParse from "rehype-parse"
+import rehypeStringify from "rehype-stringify"
+import { unified } from "unified"
 
 import { debounce } from "./component_script_utils"
 
@@ -43,13 +47,6 @@ const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
 <p>(c) 2024 Acme Corp. 2x faster!</p>
 
 <pre><code>x = "don't transform this"</code></pre>`
-
-const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA", "KBD", "VAR", "SAMP"])
-
-// Unicode Private Use Area character — used as separator for cross-element
-// text handling. The punctilio transform() treats this character as transparent
-// in its regex patterns, allowing proper quote pairing across element boundaries.
-const SEPARATOR = "\uE000"
 
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
@@ -133,106 +130,21 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
   return result
 }
 
-// ─── HTML mode with cross-element text handling ──────────────────────
+// ─── HTML mode ───────────────────────────────────────────────────────
 
 /**
- * Recursively collect all text nodes from a DOM subtree, skipping
- * elements in SKIP_TAGS. This allows text spanning multiple inline
- * elements (e.g., <em>, <strong>) to be transformed as a unit.
- */
-function flattenDomTextNodes(node: Node): Text[] {
-  const result: Text[] = []
-  for (const child of Array.from(node.childNodes)) {
-    if (child.nodeType === Node.TEXT_NODE) {
-      result.push(child as Text)
-    } else if (child.nodeType === Node.ELEMENT_NODE) {
-      const el = child as Element
-      if (!SKIP_TAGS.has(el.tagName)) {
-        result.push(...flattenDomTextNodes(el))
-      }
-    }
-  }
-  return result
-}
-
-/**
- * Find elements that directly contain non-whitespace text nodes.
- * When found, the element is collected (its inline descendants'
- * text will be included via flattenDomTextNodes). Otherwise,
- * recurse into children to find deeper elements with text.
- */
-function collectTransformableElements(node: Element): Element[] {
-  if (SKIP_TAGS.has(node.tagName)) return []
-
-  const hasDirectText = Array.from(node.childNodes).some(
-    (child) => child.nodeType === Node.TEXT_NODE && (child.textContent ?? "").trim().length > 0,
-  )
-
-  if (hasDirectText) return [node]
-
-  const results: Element[] = []
-  for (const child of Array.from(node.childNodes)) {
-    if (child.nodeType === Node.ELEMENT_NODE) {
-      results.push(...collectTransformableElements(child as Element))
-    }
-  }
-  return results
-}
-
-/**
- * Apply the transform to an element's text using the separator technique
- * from punctilio's rehype plugin. This correctly handles text spanning
- * multiple HTML elements (e.g., quotes wrapping <em> or <strong> tags).
- *
- * Approach:
- * 1. Flatten all text nodes from the element (descending into inline children)
- * 2. Append a separator after each text node's content and concatenate
- * 3. Transform the concatenated text (separator is transparent to the regexes)
- * 4. Split by separator and assign fragments back to original text nodes
- */
-function transformElementDom(node: Element, config: TransformOptions): void {
-  const textNodes = flattenDomTextNodes(node)
-  if (textNodes.length === 0) return
-
-  const markedContent = textNodes.map((n) => (n.textContent ?? "") + SEPARATOR).join("")
-  const transformed = transform(markedContent, { ...config, separator: SEPARATOR })
-  const fragments = transformed.split(SEPARATOR).slice(0, -1)
-
-  // Safety: if the transform consumed separators, bail out
-  if (fragments.length !== textNodes.length) return
-
-  for (let i = 0; i < textNodes.length; i++) {
-    textNodes[i].textContent = fragments[i]
-  }
-}
-
-/**
- * Parse HTML with DOMParser, walk the tree applying the separator-based
- * transform to each element's text content, then serialize back.
- *
- * This correctly handles cross-element text — e.g., in
- *   <p>"Hello <em>world</em>"</p>
- * the opening and closing quotes are in separate text nodes but will
- * be transformed as a unit, producing proper smart quote pairing.
+ * Transform HTML using punctilio's rehype plugin pipeline.
+ * Handles cross-element text (e.g., quotes spanning <em> tags),
+ * skip tags (code, pre, kbd, etc.), and separator-based text joining
+ * automatically via rehypePunctilio.
  */
 function transformHtmlText(html: string, config: TransformOptions): string {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
-
-  const processed = new WeakSet<Element>()
-  const elements = collectTransformableElements(doc.body)
-
-  for (const el of elements) {
-    if (processed.has(el)) continue
-    transformElementDom(el, config)
-    processed.add(el)
-    // Mark descendants to prevent double-processing
-    for (const desc of el.querySelectorAll("*")) {
-      processed.add(desc)
-    }
-  }
-
-  return doc.body.innerHTML
+  const result = unified()
+    .use(rehypeParse, { fragment: true })
+    .use(rehypePunctilio, config)
+    .use(rehypeStringify)
+    .processSync(html)
+  return String(result)
 }
 
 /**
