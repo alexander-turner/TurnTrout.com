@@ -50,9 +50,9 @@
       "ruff check --fix",
       "autoflake --in-place",
       "isort",
+      "bash -c 'uv run docformatter --in-place --config config/python/pyproject.toml \"$@\" || true' --",
       "autopep8 --in-place",
-      "black",
-      "ruff check --fix"
+      "black"
     ],
     "!(*.vale-styles)/**/*.md": [
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"

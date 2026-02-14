@@ -1302,12 +1302,17 @@ _ASSET_EXTENSIONS = frozenset(
 )
 
 
-def _build_favicon_whitelist(git_root: Path) -> list[str]:
+def _build_favicon_lists(
+    git_root: Path,
+) -> tuple[list[str], list[str]]:
     """
-    Build the full favicon whitelist from config/constants.json.
+    Build favicon whitelist and blacklist from config/constants.json.
 
-    Returns underscore-separated domain entries that should always receive
-    favicons (regardless of count threshold).
+    Returns a (whitelist, blacklist) tuple of underscore-separated domain
+    entries.  The whitelist contains domains that should always receive
+    favicons; the blacklist contains domains that should never receive them.
+    A blacklisted domain takes priority over the whitelist (mirroring the
+    TS ``shouldIncludeFavicon`` logic).
 
     Note: The TS ``faviconCountWhitelistComputed`` also includes
     ``specialFaviconPaths`` (mail/anchor/rss icons) and applies
@@ -1323,7 +1328,9 @@ def _build_favicon_whitelist(git_root: Path) -> list[str]:
     whitelist: list[str] = list(constants["faviconCountWhitelist"])
     for subdomain in constants["googleSubdomainWhitelist"]:
         whitelist.append(f"{subdomain.replace('.', '_')}_google_com")
-    return whitelist
+
+    blacklist: list[str] = list(constants["faviconSubstringBlacklist"])
+    return whitelist, blacklist
 
 
 def _is_asset_href(href: str) -> bool:
@@ -1336,24 +1343,30 @@ def _is_asset_href(href: str) -> bool:
 def check_whitelisted_links_have_favicons(
     soup: BeautifulSoup,
     favicon_whitelist: list[str],
+    favicon_blacklist: list[str] | None = None,
 ) -> list[str]:
     """
     Check that external links to whitelisted domains have favicons.
 
-    For each ``<a class="external">`` link whose domain matches a whitelist
-    entry, verifies the link contains a ``.favicon`` descendant element.
+    For each ``<a class="external">`` link inside ``<article>`` whose
+    domain matches a whitelist entry (and is NOT blacklisted), verifies
+    the link contains a ``.favicon`` descendant element.
 
     Args:
         soup: Parsed HTML page.
         favicon_whitelist: Underscore-separated domain entries (e.g.
             ``["apple_com", "scholar_google_com"]``).  Matching is by
             substring inclusion in the underscore-normalised hostname.
+        favicon_blacklist: Underscore-separated domain entries that should
+            never receive favicons.  Blacklist takes priority over
+            whitelist (mirroring the TS logic).
 
     Returns:
         List of human-readable issue strings for whitelisted links missing
         favicons.
     """
     issues: list[str] = []
+    blacklist = favicon_blacklist or []
 
     # Only check links inside <article>; component-generated links (nav,
     # aside) never pass through the favicon transformer.
@@ -1373,6 +1386,11 @@ def check_whitelisted_links_have_favicons(
 
         # Normalise: strip www., convert dots to underscores
         normalised = hostname.removeprefix("www.").replace(".", "_")
+
+        # Blacklist takes priority (mirrors TS shouldIncludeFavicon)
+        is_blacklisted = any(entry in normalised for entry in blacklist)
+        if is_blacklisted:
+            continue
 
         is_whitelisted = any(entry in normalised for entry in favicon_whitelist)
         if not is_whitelisted:
@@ -1662,6 +1680,7 @@ def check_file_for_issues(  # pylint: disable=too-many-arguments,too-many-positi
     should_check_fonts: bool,
     defined_css_variables: Set[str] | None = None,
     favicon_whitelist: list[str] | None = None,
+    favicon_blacklist: list[str] | None = None,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1674,6 +1693,8 @@ def check_file_for_issues(  # pylint: disable=too-many-arguments,too-many-positi
         defined_css_variables: Set of defined CSS variables
         favicon_whitelist: Underscore-separated whitelist entries for favicon
             check (e.g. ``["apple_com"]``).  ``None`` skips the check.
+        favicon_blacklist: Underscore-separated blacklist entries.  Blacklisted
+            domains are excluded even if they match the whitelist.
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1742,7 +1763,9 @@ def check_file_for_issues(  # pylint: disable=too-many-arguments,too-many-positi
 
     if favicon_whitelist is not None:
         issues["whitelisted_missing_favicons"] = (
-            check_whitelisted_links_have_favicons(soup, favicon_whitelist)
+            check_whitelisted_links_have_favicons(
+                soup, favicon_whitelist, favicon_blacklist
+            )
         )
 
     if should_check_fonts:
@@ -2321,7 +2344,9 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
-    favicon_whitelist = _build_favicon_whitelist(public_dir.parent)
+    favicon_whitelist, favicon_blacklist = _build_favicon_lists(
+        public_dir.parent
+    )
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2352,6 +2377,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 should_check_fonts=check_fonts,
                 defined_css_variables=defined_css_vars,
                 favicon_whitelist=favicon_whitelist,
+                favicon_blacklist=favicon_blacklist,
             )
 
             if any(lst for lst in issues.values()):

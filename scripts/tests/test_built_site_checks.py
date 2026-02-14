@@ -3007,25 +3007,42 @@ def test_check_whitelisted_links_have_favicons(html, whitelist, expected):
     assert result == expected
 
 
-def test_build_favicon_whitelist(tmp_path):
-    """Test _build_favicon_whitelist loads and expands the whitelist."""
+def test_blacklist_overrides_whitelist():
+    """Blacklisted domains should be skipped even if matching whitelist."""
+    # "x_com" whitelist entry is a substring of "vox_com", but vox_com is
+    # blacklisted, so it should NOT be flagged.
+    html = (
+        '<article><a class="external" href="https://www.vox.com/article">'
+        "Vox</a></article>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_whitelisted_links_have_favicons(
+        soup, ["x_com"], ["vox_com"]
+    )
+    assert result == []
+
+
+def test_build_favicon_lists(tmp_path):
+    """Test _build_favicon_lists loads and expands whitelist + blacklist."""
     config_dir = tmp_path / "config"
     config_dir.mkdir()
     constants = {
         "faviconCountWhitelist": ["apple_com", "x_com"],
         "googleSubdomainWhitelist": ["scholar", "colab.research"],
+        "faviconSubstringBlacklist": ["vox_com", "medium_com"],
     }
     (config_dir / "constants.json").write_text(
         json.dumps(constants), encoding="utf-8"
     )
 
-    result = built_site_checks._build_favicon_whitelist(tmp_path)
-    assert result == [
+    whitelist, blacklist = built_site_checks._build_favicon_lists(tmp_path)
+    assert whitelist == [
         "apple_com",
         "x_com",
         "scholar_google_com",
         "colab_research_google_com",
     ]
+    assert blacklist == ["vox_com", "medium_com"]
 
 
 def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
@@ -3057,7 +3074,8 @@ def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
 
 
 def test_check_file_for_issues_without_favicon_whitelist(tmp_path):
-    """Test that check_file_for_issues skips favicon check when whitelist is None."""
+    """Test that check_file_for_issues skips favicon check when whitelist is
+    None."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
     file_path = base_dir / "test.html"
@@ -3755,6 +3773,7 @@ def test_main_handles_markdown_mapping(
             should_check_fonts=False,
             defined_css_variables={"--color-primary", "--color-secondary"},
             favicon_whitelist=[],
+            favicon_blacklist=[],
         )
 
 
@@ -3814,6 +3833,7 @@ def test_main_command_line_args(
         should_check_fonts=True,
         defined_css_variables={"--color-primary", "--color-secondary"},
         favicon_whitelist=[],
+        favicon_blacklist=[],
     )
 
 

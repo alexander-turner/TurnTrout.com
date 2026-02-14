@@ -48,12 +48,13 @@ def quartz_project_structure(tmp_path: Path):
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)
 
-    # Minimal constants.json used by _build_favicon_whitelist
+    # Minimal constants.json used by _build_favicon_lists
     (dirs["config"] / "constants.json").write_text(
         json.dumps(
             {
                 "faviconCountWhitelist": [],
                 "googleSubdomainWhitelist": [],
+                "faviconSubstringBlacklist": [],
             }
         ),
         encoding="utf-8",
