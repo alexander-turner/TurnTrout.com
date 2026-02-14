@@ -48,7 +48,6 @@ fi
 
 # Install tools quietly — only warn on failure
 webi_install_if_missing shfmt
-webi_install_if_missing shellcheck
 webi_install_if_missing gh
 webi_install_if_missing jq
 if ! command -v shellcheck &>/dev/null && is_root; then
@@ -102,6 +101,7 @@ if [ -z "${GH_REPO:-}" ]; then
 	fi
 fi
 
+# Set gh's default repo so commands like `gh pr create` work even when
 # Set gh's default repo so commands like `gh pr create` work even when
 # the git remote is a local proxy URL that gh can't resolve.
 if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then

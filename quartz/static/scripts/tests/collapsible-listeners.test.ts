@@ -78,14 +78,22 @@ describe("collapsible-listeners", () => {
     expect(content.classList.contains("active")).toBe(true)
   })
 
-  it("should track bound state with data attribute", () => {
+  it("should handle collapsible toggling with event delegation", () => {
     const collapsible = createCollapsible("test-2")
     document.body.appendChild(collapsible)
 
-    expect(collapsible.dataset.collapsibleBound).toBeUndefined()
-
     dispatchNavEvent()
 
-    expect(collapsible.dataset.collapsibleBound).toBe("true")
+    const content = collapsible.querySelector(".content") as HTMLElement
+    const title = collapsible.querySelector(".collapsible-title") as HTMLElement
+    const foldIcon = collapsible.querySelector(".fold-icon") as HTMLElement
+
+    expect(content.classList.contains("active")).toBe(false)
+    expect(foldIcon.getAttribute("aria-expanded")).toBe("false")
+
+    title.click()
+
+    expect(content.classList.contains("active")).toBe(true)
+    expect(foldIcon.getAttribute("aria-expanded")).toBe("true")
   })
 })

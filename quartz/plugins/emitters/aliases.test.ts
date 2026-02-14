@@ -175,64 +175,50 @@ describe("AliasRedirects", () => {
     expect(components).toEqual([])
   })
 
-  it("should handle permalinks in dependency graph", async () => {
+  it.each([
+    [
+      "permalinks",
+      "test-permalink.md",
+      { permalink: "custom-permalink" },
+      ["public/custom-permalink.html"],
+    ],
+    [
+      "trailing slashes",
+      "test-slash.md",
+      { aliases: ["alias-with-slash/"] },
+      ["public/alias-with-slash/index.html"],
+    ],
+  ])("should handle %s in dependency graph", async (_, path, frontmatter, expectedNodes) => {
     const vfile = createTestVFile({
-      path: "/content/test-permalink.md",
-      frontmatter: { title: "Test Permalink", permalink: "custom-permalink" },
+      path: `/content/${path}`,
+      frontmatter: { title: "Test", ...frontmatter },
     })
     const content = createMockContent(vfile)
 
-    const graph = await testDependencyGraph(plugin, mockCtx, content, [
-      "public/custom-permalink.html" as FilePath,
-    ])
-    expect(graph).toBeDefined()
-  })
-
-  it("should handle trailing slashes in dependency graph", async () => {
-    const vfile = createTestVFile({
-      path: "/content/test-slash.md",
-      frontmatter: { title: "Test Slash", aliases: ["alias-with-slash/"] },
-    })
-    const content = createMockContent(vfile)
-
-    const graph = await testDependencyGraph(plugin, mockCtx, content, [
-      "public/alias-with-slash/index.html" as FilePath,
-    ])
+    const graph = await testDependencyGraph(plugin, mockCtx, content, expectedNodes as FilePath[])
     expect(graph).toBeDefined()
   })
 
   it("should handle permalinks in emit function", async () => {
     const vfile = createTestVFile({
       path: "/content/test-permalink.md",
-      frontmatter: {
-        title: "Test Permalink",
-        permalink: "custom-permalink",
-        aliases: ["old-alias"],
-      },
+      frontmatter: { title: "Test", permalink: "custom-permalink", aliases: ["old-alias"] },
     })
     const content = createMockContent(vfile)
 
-    const files = await testEmitFiles(plugin, mockCtx, content, [
-      "old-alias.html",
-      "test-permalink.html",
-    ]) // old alias + permalink redirects
+    await testEmitFiles(plugin, mockCtx, content, ["old-alias.html", "test-permalink.html"])
     expect(vfile.data.slug).toBe("custom-permalink")
-    expect(files).toBeDefined()
   })
 
   it("should handle trailing slashes in emit function", async () => {
     const vfile = createTestVFile({
       path: "/content/test-slash.md",
-      frontmatter: { title: "Test Slash", aliases: ["alias-with-slash/"] },
+      frontmatter: { title: "Test", aliases: ["alias-with-slash/"] },
     })
     const content = createMockContent(vfile)
 
     await testEmitFiles(plugin, mockCtx, content, ["alias-with-slash/index.html"])
-    expect(write).toHaveBeenCalledWith(
-      expect.objectContaining({
-        slug: "alias-with-slash/index",
-      }),
-    )
+    expect(write).toHaveBeenCalledWith(expect.objectContaining({ slug: "alias-with-slash/index" }))
   })
 
   it("should handle missing authors metadata", async () => {

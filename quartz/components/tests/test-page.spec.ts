@@ -16,6 +16,13 @@ import {
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
 
+// Test constants
+const THEMES = ["dark", "light"] as const
+const LIGHT_THEMES = ["light", "dark"] as const
+const MOCK_PAGE_SLUGS = ["404"]
+const DYNAMIC_PAGE_SLUGS = ["recent", "tags/personal"]
+const FOLD_STATES = ["open", "collapse"] as const
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     // Mock clipboard API if not available
@@ -86,13 +93,13 @@ async function setDummyContentMeta(page: Page) {
 }
 
 test.describe("Test page sections", () => {
-  for (const theme of ["dark", "light"]) {
+  THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
-  }
+  })
 })
 
 test.describe("Unique content around the site", () => {
@@ -121,17 +128,17 @@ test.describe("Unique content around the site", () => {
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
 
-  for (const pageSlug of ["404"]) {
+  MOCK_PAGE_SLUGS.forEach((pageSlug) => {
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(`http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
-  }
+  })
 
   // Several pages update based on new posts
   // Mock the data to prevent needless updating of the screenshots
-  for (const pageSlug of ["recent", "tags/personal"]) {
+  DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(url)
@@ -166,7 +173,7 @@ test.describe("Unique content around the site", () => {
         elementToScreenshot: page.locator("#center-content"),
       })
     })
-  }
+  })
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
@@ -379,7 +386,7 @@ test.describe("Admonitions", () => {
     })
   }
 
-  for (const status of ["open", "collapse"]) {
+  FOLD_STATES.forEach((status) => {
     test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
       page,
     }, testInfo) => {
@@ -392,7 +399,7 @@ test.describe("Admonitions", () => {
         preserveSiblings: true,
       })
     })
-  }
+  })
 
   test("color demo text isn't wrapping", async ({ page }) => {
     for (const identifier of ["#light-demo", "#dark-demo"]) {
@@ -420,7 +427,7 @@ test.describe("Admonitions", () => {
 })
 
 test.describe("Clipboard button", () => {
-  for (const theme of ["light", "dark"]) {
+  LIGHT_THEMES.forEach((theme) => {
     test(`Clipboard button is visible when hovering over code block in ${theme} mode`, async ({
       page,
     }) => {
@@ -443,7 +450,7 @@ test.describe("Clipboard button", () => {
       const screenshotAfterClicking = await clipboardButton.screenshot()
       expect(screenshotAfterClicking).not.toEqual(screenshotBeforeClicking)
     })
-  }
+  })
 })
 
 test.describe("Right sidebar", () => {
@@ -753,12 +760,12 @@ test.describe("Video Speed Controller visibility", () => {
     }, videoId)
   }
 
-  const testCases = [
+  const videoTestCases = [
     { name: "no-vsc videos", html: '<video class="no-vsc" id="test-video"></video>' },
     { name: "loop+autoplay videos", html: '<video loop autoplay id="test-video"></video>' },
   ]
 
-  for (const testCase of testCases) {
+  videoTestCases.forEach((testCase) => {
     test(`locks playback rate to 1.0 for ${testCase.name}`, async ({ page }) => {
       await page.addScriptTag({ path: "quartz/static/scripts/lockVideoPlaybackRate.js" })
 
@@ -790,7 +797,7 @@ test.describe("Video Speed Controller visibility", () => {
       const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
       expect(resetPlaybackRate).toBe(1.0)
     })
-  }
+  })
 })
 
 test("First paragraph is the same before and after clicking on a heading", async ({

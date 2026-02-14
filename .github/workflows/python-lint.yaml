@@ -46,6 +46,8 @@ jobs:
 
       - name: Setup base environment
         uses: ./.github/actions/setup-base-env
+        with:
+          install-node-deps: "false"
 
       - name: Run mypy
         run: |

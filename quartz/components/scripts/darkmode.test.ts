@@ -7,6 +7,19 @@ import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals
 import { type FullSlug } from "../../util/path"
 import { rotateTheme, setupDarkMode } from "./darkmode"
 
+// Test constants
+const SYSTEM_PREFERENCES = ["dark", "light"] as const
+const DOM_SETUP = `
+  <div id="darkmode-span">
+    <button id="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg id="day-icon"></svg>
+      <svg id="night-icon"></svg>
+    </button>
+    <p id="theme-label">Auto</p>
+  </div>
+`
+const NAV_EVENT_DETAIL = { url: "" as FullSlug }
+
 // Mock MediaQueryListEvent if not available in test environment
 class MockMediaQueryListEvent extends Event {
   matches: boolean
@@ -52,17 +65,13 @@ describe("darkmode", () => {
     return customPropertyValue.replace(/"/g, "")
   }
 
-  beforeEach(() => {
-    document.body.innerHTML = `
-      <div id="darkmode-span">
-        <button id="theme-toggle" type="button" aria-label="Toggle theme">
-          <svg id="day-icon"></svg>
-          <svg id="night-icon"></svg>
-        </button>
-        <p id="theme-label">Auto</p>
-      </div>
-    `
+  const initializeAndDispatchNav = () => {
+    setupDarkMode()
+    document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
+  }
 
+  beforeEach(() => {
+    document.body.innerHTML = DOM_SETUP
     localStorageSpy = jest.spyOn(Storage.prototype, "setItem")
 
     // Mock window.matchMedia
@@ -88,23 +97,24 @@ describe("darkmode", () => {
   })
 
   describe("theme initialization", () => {
-    for (const systemPrefers of ["dark", "light"]) {
-      it(`should set theme to ${systemPrefers} when system prefers ${systemPrefers}`, () => {
+    it.each(SYSTEM_PREFERENCES)(
+      "should set theme to %s when system prefers %s",
+      (systemPrefers) => {
         matchMediaSpy.mockReturnValue(createMockMediaQueryList(systemPrefers === "dark"))
         setupDarkMode()
-        document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+        document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
 
         expect(document.documentElement.getAttribute("data-theme")).toBe(systemPrefers)
         expect(getThemeLabelContent()).toBe("Auto")
-      })
-    }
+      },
+    )
 
     it("should respect stored theme preference over system preference", () => {
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false)) // system prefers light
       localStorage.setItem("saved-theme", "dark")
 
       setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
 
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(getThemeLabelContent()).toBe("Dark")
@@ -113,17 +123,13 @@ describe("darkmode", () => {
 
   describe("theme toggle", () => {
     it("should emit theme change event when toggle is clicked", () => {
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
-
+      initializeAndDispatchNav()
       triggerToggle()
       expect(getThemeLabelContent()).toBe("Light")
     })
 
     it("should update localStorage when theme is changed", () => {
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
-
+      initializeAndDispatchNav()
       triggerToggle()
 
       expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "light")
@@ -136,8 +142,7 @@ describe("darkmode", () => {
       const mediaQueryList = createMockMediaQueryList(false)
       matchMediaSpy.mockReturnValue(mediaQueryList)
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Initially in auto mode
       expect(document.documentElement.getAttribute("data-theme")).toBe("light")
@@ -168,8 +173,7 @@ describe("darkmode", () => {
       const mediaQueryList = createMockMediaQueryList(true)
       matchMediaSpy.mockReturnValue(mediaQueryList)
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Initially dark theme but auto mode
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
@@ -200,8 +204,7 @@ describe("darkmode", () => {
       // Mock a system preference of dark
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
@@ -233,8 +236,7 @@ describe("darkmode", () => {
       localStorage.setItem("saved-theme", "invalid-theme")
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Clicking the toggle should go from invalid -> auto (default) -> light
       rotateTheme()
