@@ -554,6 +554,60 @@ def check_stray_katex(text: str) -> List[str]:
     return errors
 
 
+def check_description_list_continuations(text: str) -> List[str]:
+    """
+    Check for improperly formatted description list continuations.
+
+    In Markdown description lists, after a definition line (starting with `: `),
+    if there's a blank line followed by another line starting with `: `, this is
+    likely an error. Continuation paragraphs should be indented (typically 2 spaces)
+    without the `:` prefix.
+
+    Pattern that triggers error:
+        : Definition text
+        <blank line>
+        : Another line starting with colon  <- Should be indented continuation
+
+    Correct format:
+        : Definition text
+        <blank line>
+          Indented continuation (no colon)
+
+    Code and math blocks are ignored during checking.
+    """
+    # Remove code and math blocks while preserving line structure
+    processed_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+
+    errors = []
+    lines = processed_text.split("\n")
+
+    i = 0
+    while i < len(lines) - 2:
+        current = lines[i]
+        next_line = lines[i + 1]
+        line_after_next = lines[i + 2]
+
+        # Check pattern: definition line -> blank line -> another `: ` line
+        if (
+            current.startswith(": ")
+            and not next_line.strip()
+            and line_after_next.startswith(": ")
+        ):
+            errors.append(
+                f"Line {i + 3}: Description list continuation should be indented "
+                f"(typically 2 spaces), not start with `: `. "
+                f"Found: {line_after_next[:60]}..."
+            )
+            # Skip ahead to avoid duplicate errors
+            i += 2
+        else:
+            i += 1
+
+    return errors
+
+
 def check_html_with_braces(text: str) -> List[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
@@ -699,6 +753,9 @@ def check_file_data(
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
+        "description_list_continuations": check_description_list_continuations(
+            text
+        ),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),

@@ -113,7 +113,7 @@ In-between
 
 : Reality dictates the alignment tax, which dictates the tradeoffs available to the agent. However, the agent's psychology dictates how it makes those tradeoffs: whether (and how) it would sacrifice safety for success; whether the AI is willing to lie; how to generate possible plans; which kinds of plans to consider next; and so on. Thus, both reality _and_ psychology produce the final output.
 
-: I am not being pedantic. Gemini Pro 3.0 and [MechaHitler](https://www.seangoedecke.com/ai-personality-space/) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
+  I am not being pedantic. Gemini Pro 3.0 and [MechaHitler](https://www.seangoedecke.com/ai-personality-space/) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
 
 # Why both convergence types require psychology
 

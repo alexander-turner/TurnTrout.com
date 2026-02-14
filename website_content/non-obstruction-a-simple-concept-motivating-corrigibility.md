@@ -93,7 +93,7 @@ Evan Hubinger recently wrote a [great FAQ on inner alignment terminology](https:
 Corrigibility with respect to a set of goals
 : I find it useful to not think of corrigibility as a binary property, or even as existing on a one-dimensional continuum. I often think about corrigibility _with respect to a set_ $S$  _of payoff functions_. (This isn't always the right abstraction: there are plenty of policies which don't care about payoff functions. I still find it useful.)
 
-: For example, imagine an AI which let you correct it if and only if it knows you aren’t a torture-maximizer. We’d probably still call this AI “corrigible \[to us\]”, even though it isn’t corrigible to some possible designer. We’d still be fine, assuming it has accurate beliefs.
+  For example, imagine an AI which let you correct it if and only if it knows you aren’t a torture-maximizer. We’d probably still call this AI “corrigible \[to us\]”, even though it isn’t corrigible to some possible designer. We’d still be fine, assuming it has accurate beliefs.
 
 Corrigibility != alignment
 : Here's an AI which is neither impact nor intent aligned, but which is corrigible. Each day, the AI randomly hurts one person in the world, and otherwise does nothing. It’s corrigible because it doesn't prevent us from shutting it off or modifying it.

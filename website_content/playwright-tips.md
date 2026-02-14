@@ -71,7 +71,7 @@ It took me a long time to achieve these goals. Practically, I recommend directly
 Stabilize screenshots using `toHaveScreenshot`
 : Use [`await expect(page).toHaveScreenshot`](https://playwright.dev/docs/test-snapshots) instead of `await page.screenshot`. The first is much more robust. For example, `toHaveScreenshot` repeatedly takes screenshots and waits for consecutive screenshots to be identical - automatically waiting for painting to finish. A lot of my externally loaded assets did not stably render until I used `toHaveScreenshot` - waiting for `networkidle` is not enough.
 
-: When using `npx playwright test`, make sure to pass in `--update-snapshots` or else your CI will go "errr, there r no snapshot" and then error out.
+  When using `npx playwright test`, make sure to pass in `--update-snapshots` or else your CI will go "errr, there r no snapshot" and then error out.
 
 Target screenshots to specific elements
 : Instead of taking a screenshot of the entire page, I take a screenshot of e.g. a particular table. The idea is that modifying table styling only affects the table-containing screenshots.
@@ -79,12 +79,12 @@ Target screenshots to specific elements
 For elements with the `controls` attribute, scrub to the end
 : Embedded audio and video elements fetch a varying number of bytes before the test takes a screenshot. That varying number of bytes means a varying "loaded" portion of the loading bar, creating a flaky visual difference. Before each test, I now scrub each audio element to the end, ensuring the element is displayed as fully loaded.
 
-: ![[https://assets.turntrout.com/static/images/posts/design-20250810160319.avif|An HTML audio player under the heading "Audio". The progress bar shows a small, lighter-colored segment at the beginning, indicating the portion of audio data that has been fetched.]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
+  ![[https://assets.turntrout.com/static/images/posts/design-20250810160319.avif|An HTML audio player under the heading "Audio". The progress bar shows a small, lighter-colored segment at the beginning, indicating the portion of audio data that has been fetched.]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
 
 Isolate the relevant DOM
 : While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
 
-: I made a helper function which deletes unrelated parts of the DOM. For example, suppose I have five `<span>`s in a row. I want to screenshot the third `<span>`. The position of the first two `<span>`s affects the position of the third. Therefore, I edit the DOM to exclude siblings of ancestors of the element I want to screenshot. I would then exclude the other four `<span>`s.
+  I made a helper function which deletes unrelated parts of the DOM. For example, suppose I have five `<span>`s in a row. I want to screenshot the third `<span>`. The position of the first two `<span>`s affects the position of the third. Therefore, I edit the DOM to exclude siblings of ancestors of the element I want to screenshot. I would then exclude the other four `<span>`s.
 
 Mock the content
 : When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
