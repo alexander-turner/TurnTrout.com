@@ -652,7 +652,6 @@ def test_check_file_for_issues(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["localhost_links"] == ["https://localhost:8000"]
@@ -688,7 +687,6 @@ def test_complicated_blockquote(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["trailing_blockquotes"] == [
@@ -709,7 +707,6 @@ def test_check_file_for_issues_with_redirect(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues == {}
@@ -3065,8 +3062,7 @@ def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
             file_path,
             base_dir,
             None,
-            should_check_fonts=False,
-            favicon_whitelist=["apple_com"],
+            built_site_checks.CheckOptions(favicon_whitelist=["apple_com"]),
         )
 
     assert "whitelisted_missing_favicons" in issues
@@ -3091,7 +3087,7 @@ def test_check_file_for_issues_without_favicon_whitelist(tmp_path):
         return_value=BeautifulSoup(html, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, should_check_fonts=False
+            file_path, base_dir, None
         )
 
     assert "whitelisted_missing_favicons" not in issues
@@ -3266,7 +3262,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=True
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(should_check_fonts=True),
         )
 
     # Verify that missing_preloaded_font is in the issues
@@ -3279,7 +3278,7 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=False
+            file_path, tmp_path / "public", None
         )
 
     # Verify that missing_preloaded_font is not in the issues
@@ -3516,7 +3515,7 @@ description: Test Description
         ),
     ):
         issues = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, md_file_path, should_check_fonts=False
+            html_file_path, base_dir, md_file_path
         )
 
     mock_check.assert_called_once_with(
@@ -3554,7 +3553,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
         ),
     ):
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None, should_check_fonts=False
+            html_file_path, base_dir, None
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
@@ -3575,7 +3574,6 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
             html_file_path,
             base_dir,
             non_existent_md_path,
-            should_check_fonts=False,
         )
     mock_check_non_existent.assert_not_called()
     assert "missing_markdown_assets" not in issues_non_existent
@@ -3605,7 +3603,7 @@ def test_check_file_for_issues_favicon_check_called(
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, should_check_fonts=False
+            file_path, base_dir, None
         )
 
     if should_check_favicon:
@@ -3770,10 +3768,12 @@ def test_main_handles_markdown_mapping(
             html_file,
             mock_environment["public_dir"],
             md_file,
-            should_check_fonts=False,
-            defined_css_variables={"--color-primary", "--color-secondary"},
-            favicon_whitelist=[],
-            favicon_blacklist=[],
+            built_site_checks.CheckOptions(
+                should_check_fonts=False,
+                defined_css_variables={"--color-primary", "--color-secondary"},
+                favicon_whitelist=[],
+                favicon_blacklist=[],
+            ),
         )
 
 
@@ -3830,10 +3830,12 @@ def test_main_command_line_args(
         html_file,
         mock_environment["public_dir"],
         None,
-        should_check_fonts=True,
-        defined_css_variables={"--color-primary", "--color-secondary"},
-        favicon_whitelist=[],
-        favicon_blacklist=[],
+        built_site_checks.CheckOptions(
+            should_check_fonts=True,
+            defined_css_variables={"--color-primary", "--color-secondary"},
+            favicon_whitelist=[],
+            favicon_blacklist=[],
+        ),
     )
 
 
@@ -4598,8 +4600,6 @@ def soup_check_setup(mock_environment, monkeypatch):
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
-        "should_check_fonts": False,
-        "defined_css_variables": None,
     }
     return common_args, html_file_path
 
