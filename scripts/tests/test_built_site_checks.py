@@ -1,3 +1,4 @@
+import json
 import subprocess
 import sys
 from collections import Counter
@@ -2852,6 +2853,216 @@ def test_check_favicons_are_svgs(html, expected):
 
 
 @pytest.mark.parametrize(
+    "href,expected",
+    [
+        ("https://example.com/image.png", True),
+        ("https://example.com/image.jpg", True),
+        ("https://example.com/image.avif", True),
+        ("https://example.com/video.mp4", True),
+        ("https://example.com/audio.mp3", True),
+        ("https://example.com/doc.pdf", True),
+        ("https://example.com/image.png?w=100", True),
+        ("https://example.com/image.png#section", True),
+        ("https://example.com/page", False),
+        ("https://example.com/page.html", False),
+        ("https://example.com/", False),
+        ("https://example.com/path/to/resource", False),
+    ],
+)
+def test_is_asset_href(href, expected):
+    assert built_site_checks._is_asset_href(href) == expected
+
+
+@pytest.mark.parametrize(
+    "html,whitelist,expected",
+    [
+        # No external links
+        ("<div><p>No links here</p></div>", ["apple_com"], []),
+        # External link to whitelisted domain WITH favicon (valid)
+        (
+            '<a class="external" href="https://apple.com/products">'
+            'Apple<span class="word-joiner">'
+            '<svg class="favicon" style="--mask-url: url(apple.svg);"></svg>'
+            "</span></a>",
+            ["apple_com"],
+            [],
+        ),
+        # External link to whitelisted domain WITHOUT favicon (invalid)
+        (
+            '<a class="external" href="https://apple.com/products">Apple</a>',
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: apple.com"
+                " (https://apple.com/products)"
+            ],
+        ),
+        # External link to non-whitelisted domain without favicon (valid)
+        (
+            '<a class="external" href="https://example.com">Example</a>',
+            ["apple_com"],
+            [],
+        ),
+        # Subdomain of whitelisted domain without favicon (invalid)
+        (
+            '<a class="external" href="https://blog.apple.com/news">Blog</a>',
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: blog.apple.com"
+                " (https://blog.apple.com/news)"
+            ],
+        ),
+        # www. prefix stripped correctly
+        (
+            '<a class="external" href="https://www.apple.com">Apple</a>',
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: www.apple.com"
+                " (https://www.apple.com)"
+            ],
+        ),
+        # Asset link to whitelisted domain (should be skipped)
+        (
+            '<a class="external" href="https://apple.com/image.png">Img</a>',
+            ["apple_com"],
+            [],
+        ),
+        # Internal link (no class="external") to whitelisted domain (skip)
+        (
+            '<a href="https://apple.com/products">Apple</a>',
+            ["apple_com"],
+            [],
+        ),
+        # Multiple links: one valid, one missing favicon
+        (
+            "<div>"
+            '<a class="external" href="https://apple.com">'
+            'ok<svg class="favicon" style="--mask-url: url(a.svg);"></svg></a>'
+            '<a class="external" href="https://discord.gg/abc">bad</a>'
+            "</div>",
+            ["apple_com", "discord_gg"],
+            [
+                "Whitelisted link missing favicon: discord.gg"
+                " (https://discord.gg/abc)"
+            ],
+        ),
+        # Google subdomain whitelist entry
+        (
+            '<a class="external" href="https://scholar.google.com/citations">'
+            "Scholar</a>",
+            ["scholar_google_com"],
+            [
+                "Whitelisted link missing favicon: scholar.google.com"
+                " (https://scholar.google.com/citations)"
+            ],
+        ),
+        # Non-http link with external class (should be skipped)
+        (
+            '<a class="external" href="ftp://apple.com/file">FTP</a>',
+            ["apple_com"],
+            [],
+        ),
+        # Link with img.favicon (also valid)
+        (
+            '<a class="external" href="https://apple.com">'
+            'Apple<img class="favicon" src="apple.png"></a>',
+            ["apple_com"],
+            [],
+        ),
+        # Empty whitelist – nothing flagged
+        (
+            '<a class="external" href="https://apple.com">Apple</a>',
+            [],
+            [],
+        ),
+        # Malformed URL with no hostname (should be skipped gracefully)
+        (
+            '<a class="external" href="https://">Bad URL</a>',
+            ["apple_com"],
+            [],
+        ),
+    ],
+)
+def test_check_whitelisted_links_have_favicons(html, whitelist, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_whitelisted_links_have_favicons(
+        soup, whitelist
+    )
+    assert result == expected
+
+
+def test_build_favicon_whitelist(tmp_path):
+    """Test _build_favicon_whitelist loads and expands the whitelist."""
+    config_dir = tmp_path / "config"
+    config_dir.mkdir()
+    constants = {
+        "faviconCountWhitelist": ["apple_com", "x_com"],
+        "googleSubdomainWhitelist": ["scholar", "colab.research"],
+    }
+    (config_dir / "constants.json").write_text(
+        json.dumps(constants), encoding="utf-8"
+    )
+
+    result = built_site_checks._build_favicon_whitelist(tmp_path)
+    assert result == [
+        "apple_com",
+        "x_com",
+        "scholar_google_com",
+        "colab_research_google_com",
+    ]
+
+
+def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
+    """Test that check_file_for_issues passes favicon_whitelist through."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            base_dir,
+            None,
+            should_check_fonts=False,
+            favicon_whitelist=["apple_com"],
+        )
+
+    assert "whitelisted_missing_favicons" in issues
+    assert any("apple.com" in s for s in issues["whitelisted_missing_favicons"])
+
+
+def test_check_file_for_issues_without_favicon_whitelist(tmp_path):
+    """Test that check_file_for_issues skips favicon check when whitelist is None."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, base_dir, None, should_check_fonts=False
+        )
+
+    assert "whitelisted_missing_favicons" not in issues
+
+
+@pytest.mark.parametrize(
     "file_structure,expected",
     [
         # Test all files in root (valid)
@@ -3526,6 +3737,7 @@ def test_main_handles_markdown_mapping(
             md_file,
             should_check_fonts=False,
             defined_css_variables={"--color-primary", "--color-secondary"},
+            favicon_whitelist=[],
         )
 
 
@@ -3584,6 +3796,7 @@ def test_main_command_line_args(
         None,
         should_check_fonts=True,
         defined_css_variables={"--color-primary", "--color-secondary"},
+        favicon_whitelist=[],
     )
 
 

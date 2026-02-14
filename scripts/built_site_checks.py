@@ -4,6 +4,7 @@
 import argparse
 import copy
 import html
+import json
 import os
 import re
 import subprocess
@@ -1273,6 +1274,108 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
+# Asset extensions that should not receive favicons (mirrors TS isAssetLink)
+_ASSET_EXTENSIONS = frozenset(
+    {
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "svg",
+        "webp",
+        "avif",
+        "ico",
+        "bmp",
+        "tiff",
+        "mp4",
+        "webm",
+        "mov",
+        "avi",
+        "mp3",
+        "wav",
+        "ogg",
+        "flac",
+        "pdf",
+    }
+)
+
+
+def _build_favicon_whitelist(git_root: Path) -> list[str]:
+    """Build the full favicon whitelist from config/constants.json.
+
+    Returns underscore-separated domain entries that should always receive
+    favicons (regardless of count threshold).
+    """
+    constants_path = git_root / "config" / "constants.json"
+    with open(constants_path, encoding="utf-8") as f:
+        constants = json.load(f)
+
+    whitelist: list[str] = list(constants["faviconCountWhitelist"])
+    for subdomain in constants["googleSubdomainWhitelist"]:
+        whitelist.append(f"{subdomain.replace('.', '_')}_google_com")
+    return whitelist
+
+
+def _is_asset_href(href: str) -> bool:
+    """Check if an href points to an asset file (image/video/audio)."""
+    path = href.split("?")[0].split("#")[0]
+    ext = path.rsplit(".", 1)[-1].lower() if "." in path else ""
+    return ext in _ASSET_EXTENSIONS
+
+
+def check_whitelisted_links_have_favicons(
+    soup: BeautifulSoup,
+    favicon_whitelist: list[str],
+) -> list[str]:
+    """Check that external links to whitelisted domains have favicons.
+
+    For each ``<a class="external">`` link whose domain matches a whitelist
+    entry, verifies the link contains a ``.favicon`` descendant element.
+
+    Args:
+        soup: Parsed HTML page.
+        favicon_whitelist: Underscore-separated domain entries (e.g.
+            ``["apple_com", "scholar_google_com"]``).  Matching is by
+            substring inclusion in the underscore-normalised hostname.
+
+    Returns:
+        List of human-readable issue strings for whitelisted links missing
+        favicons.
+    """
+    issues: list[str] = []
+
+    for link in soup.select("a.external[href]"):
+        href = str(link.get("href", ""))
+        if not href.startswith(("http://", "https://")):
+            continue
+
+        # Skip asset links (images, videos, etc.) – they never get favicons
+        if _is_asset_href(href):
+            continue
+
+        parsed = urlparse(href)
+        hostname = parsed.hostname or ""
+        if not hostname:
+            continue
+
+        # Normalise: strip www., convert dots to underscores
+        normalised = hostname.removeprefix("www.").replace(".", "_")
+
+        is_whitelisted = any(entry in normalised for entry in favicon_whitelist)
+        if not is_whitelisted:
+            continue
+
+        # Check if the <a> contains a favicon descendant
+        has_favicon = bool(link.select_one("svg.favicon, img.favicon"))
+        if not has_favicon:
+            _append_to_list(
+                issues,
+                f"Whitelisted link missing favicon: {hostname} ({href})",
+            )
+
+    return issues
+
+
 def _check_populate_commit_count(
     soup: BeautifulSoup, *, min_commit_count: int
 ) -> list[str]:
@@ -1545,6 +1648,7 @@ def check_file_for_issues(
     md_path: Path | None,
     should_check_fonts: bool,
     defined_css_variables: Set[str] | None = None,
+    favicon_whitelist: list[str] | None = None,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1555,6 +1659,8 @@ def check_file_for_issues(
         md_path: Path to the markdown file that generated the HTML file
         should_check_fonts: Whether to check for preloaded fonts
         defined_css_variables: Set of defined CSS variables
+        favicon_whitelist: Underscore-separated whitelist entries for favicon
+            check (e.g. ``["apple_com"]``).  ``None`` skips the check.
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1620,6 +1726,11 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
     }
+
+    if favicon_whitelist is not None:
+        issues["whitelisted_missing_favicons"] = (
+            check_whitelisted_links_have_favicons(soup, favicon_whitelist)
+        )
 
     if should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
@@ -2197,6 +2308,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    favicon_whitelist = _build_favicon_whitelist(public_dir.parent)
 
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2226,6 +2338,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
                 md_path,
                 should_check_fonts=check_fonts,
                 defined_css_variables=defined_css_vars,
+                favicon_whitelist=favicon_whitelist,
             )
 
             if any(lst for lst in issues.values()):
