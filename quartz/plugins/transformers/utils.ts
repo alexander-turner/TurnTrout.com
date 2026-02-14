@@ -191,21 +191,15 @@ export function hasAncestor(
 }
 
 /**
- * Creates a word joiner span element that prevents line breaks
- * without polluting clipboard content (user-select: none).
+ * Creates a favicon-span element that wraps the last few characters of text
+ * and the favicon/icon to prevent line-break orphaning via white-space: nowrap.
  */
-const WORD_JOINER_SPAN = {
-  type: "element" as const,
-  tagName: "span",
-  properties: { className: "word-joiner", ariaHidden: "true" },
-  children: [{ type: "text" as const, value: "\u2060" }],
-}
-
-export function createWordJoinerSpan(): Element {
+export function createFaviconSpan(text: string, child: Element): Element {
   return {
-    ...WORD_JOINER_SPAN,
-    properties: { ...WORD_JOINER_SPAN.properties },
-    children: [{ ...WORD_JOINER_SPAN.children[0] }],
+    type: "element",
+    tagName: "span",
+    properties: { className: "favicon-span" },
+    children: [{ type: "text" as const, value: text }, child],
   } as Element
 }
 

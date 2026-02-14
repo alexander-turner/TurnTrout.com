@@ -1,4 +1,4 @@
-import type { Root, Element } from "hast"
+import type { Root, Element, Text } from "hast"
 import type { Plugin as UnifiedPlugin, PluggableList } from "unified"
 
 import GithubSlugger from "github-slugger"
@@ -11,7 +11,7 @@ import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
-import { createWordJoinerSpan } from "./utils"
+import { createFaviconSpan } from "./utils"
 
 export interface Options {
   enableSmartyPants: boolean
@@ -512,12 +512,14 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
   })
 }
 
+const maxCharsToRead = 4
+
 /**
  * Add a back arrow to the footnote. Modifies the footnote node in place.
  *
- * For footnotes with text, the back arrow is wrapped in a word-joiner span
- * (white-space: nowrap) and appended to the last paragraph, keeping it on the
- * same line as the preceding text—like favicon spans.
+ * Splices the last few characters from the final text node and wraps them
+ * with the back arrow in a `<span class="favicon-span">` (white-space: nowrap),
+ * using the same approach as favicon link icons.
  *
  * For table-only footnotes where the back arrow was the sole content of its
  * paragraph, the empty paragraph is removed and the arrow is appended directly
@@ -535,24 +537,34 @@ export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element)
 
   // Handle empty paragraph case (e.g., table-only footnotes where the
   // back arrow was the only content in its own paragraph). Remove the
-  // empty <p> and append arrow directly to the <li> so it appears
-  // inline after the preceding content (table, figure, etc.).
+  // empty <p> and append arrow directly to the <li>.
   if (lastParagraph.children.length === 0) {
     const pIndex = node.children.indexOf(lastParagraph)
     node.children.splice(pIndex, 1)
-    const wordJoiner = createWordJoinerSpan()
-    // Back arrow is focusable, so aria-hidden on the wrapper would hide it
-    // from screen readers. The \u2060 word joiner is a zero-width format
-    // character that screen readers already ignore.
-    delete wordJoiner.properties.ariaHidden
-    wordJoiner.children.push(backArrow)
-    node.children.push(wordJoiner)
+    node.children.push(backArrow)
     return
   }
 
-  // Wrap back arrow inside word-joiner span to prevent line-break orphaning
-  const wordJoiner = createWordJoinerSpan()
-  delete wordJoiner.properties.ariaHidden
-  wordJoiner.children.push(backArrow)
-  lastParagraph.children.push(wordJoiner)
+  // Find the last text node in the paragraph
+  const children = [...lastParagraph.children]
+  const lastTextNode = children.reverse().find((child) => child.type === "text") as Text | undefined
+
+  // Handle whitespace-only or no text case
+  if (!lastTextNode || lastTextNode.value.trim() === "") {
+    lastParagraph.children.push(backArrow)
+    return
+  }
+
+  const text = lastTextNode.value
+  const textIndex = Math.max(0, text.length - maxCharsToRead)
+
+  if (textIndex > 0) {
+    lastTextNode.value = text.slice(0, textIndex)
+  } else {
+    // Remove the original text node if we're wrapping all text
+    const idx = lastParagraph.children.indexOf(lastTextNode)
+    lastParagraph.children.splice(idx, 1)
+  }
+
+  lastParagraph.children.push(createFaviconSpan(text.slice(textIndex), backArrow))
 }

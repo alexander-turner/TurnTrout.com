@@ -695,10 +695,7 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation inserts a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) character immediately before the favicon element. The word joiner basically glues the previous text to the favicon, preventing line breaks at its position.
-
-> [!note] My previous implementation: the "favicon sandwich"
-> I used to create a new `<span>` which packaged both the last few letters of the link text and then the favicon element. However, I realized that word joiners are simpler.
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position. The same technique is used for footnote back-arrow icons.
 
 ### I only include recognizable favicons
 
@@ -1073,7 +1070,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Favicon validation:**
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
-> 2. Each favicon is preceded by a [word joiner](#favicons-never-wrap-alone-to-a-new-line);
+> 2. Each favicon is wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);

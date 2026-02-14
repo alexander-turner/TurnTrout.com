@@ -121,38 +121,40 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     mockBackArrow = h("a", { className: "data-footnote-backref" })
   })
 
-  test("should append word joiner containing back arrow after text", () => {
+  test("should splice last 4 chars into favicon-span with back arrow after text", () => {
     const node = h("li", [h("p", ["Long text here"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text here" })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span (containing last chars + back arrow)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text " })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "here" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle text shorter than 4 characters", () => {
+  test("should handle text shorter than 4 characters by wrapping all text in favicon-span", () => {
     const node = h("li", [h("p", ["Hi"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    // Text node removed (all chars fit in favicon-span), only favicon-span remains
+    expect(paragraph.children).toHaveLength(1)
+    const faviconSpan = paragraph.children[0] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle multiple paragraphs", () => {
@@ -165,31 +167,27 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
     const lastParagraph = node.children[1] as Element
-    expect(lastParagraph.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph" })
-    const wjSpan = lastParagraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    // "Second paragraph" = 16 chars, textIndex = 12, text becomes "Second parag", favicon-span gets "raph"
+    expect(lastParagraph.children).toHaveLength(2) // shortened text + favicon-span
+    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
+    const faviconSpan = lastParagraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "raph" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle empty paragraph by removing it and appending arrow to li", () => {
+  test("should handle empty paragraph by removing it and appending arrow directly to li", () => {
     const node = h("li", [h("p", [])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Empty paragraph removed; arrow appended in word-joiner span to the <li>
+    // Empty paragraph removed; arrow appended directly to the <li> (no span wrapping)
     expect(node.children).toHaveLength(1)
-    const wjSpan = node.children[0] as Element
-    expect(wjSpan).toMatchObject({
-      type: "element",
-      tagName: "span",
-      properties: { className: "word-joiner" },
-    })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(node.children[0]).toBe(mockBackArrow)
   })
 
   test("should handle empty paragraph with table sibling", () => {
@@ -198,16 +196,10 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Empty paragraph removed; arrow appended after table
+    // Empty paragraph removed; arrow appended directly after table (no span wrapping)
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("table")
-    const wjSpan = node.children[1] as Element
-    expect(wjSpan).toMatchObject({
-      type: "element",
-      tagName: "span",
-      properties: { className: "word-joiner" },
-    })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(node.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle paragraph with only whitespace", () => {
@@ -215,17 +207,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Whitespace paragraph preserved with word-joiner appended
+    // Whitespace paragraph preserved with back arrow appended directly (no span wrapping)
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toHaveLength(2)
     expect(paragraph.children[0]).toEqual({ type: "text", value: "  " })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
-      type: "element",
-      tagName: "span",
-      properties: { className: "word-joiner" },
-    })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(paragraph.children[1]).toBe(mockBackArrow)
   })
   test("should handle complex multi-paragraph footnote with rich formatting", () => {
     const node = h("li", [
@@ -254,18 +240,19 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstPara.children).toHaveLength(1)
     expect(firstPara.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
-    // Check second paragraph has the back arrow appended inside word joiner
+    // Check second paragraph: old back arrow removed, last 4 chars spliced into favicon-span
     const secondPara = node.children[1] as Element
-    // Old back arrow removed, text preserved, word joiner (containing new back arrow) appended
-    expect(secondPara.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragraph." })
-    const wjSpan = secondPara.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    // "Second paragraph." = 17 chars, textIndex = 13
+    expect(secondPara.children).toHaveLength(2) // shortened text + favicon-span
+    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragr" })
+    const faviconSpan = secondPara.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should ignore <li> ending with an image", () => {
@@ -283,17 +270,19 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
-    // Paragraph should have word-joiner appended even though it's not the last child
+    // Paragraph should have favicon-span appended even though it's not the last child
+    // "Text content" = 12 chars, textIndex = 8
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toHaveLength(2)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Text content" })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Text con" })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect(wjSpan.children[1]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "tent" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle node without children property", () => {
@@ -646,17 +635,18 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + word joiner (containing back arrow)
+    // "Footnote text" = 13 chars, textIndex = 9
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote text" })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote " })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "text" })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
   it.each([
@@ -705,17 +695,17 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + word joiner (containing back arrow)
+    // "Hi" = 2 chars (< 4), textIndex = 0, text node removed, all text in favicon-span
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(2) // text + word joiner (containing back arrow)
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    const wjSpan = paragraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    expect(paragraph.children).toHaveLength(1) // only favicon-span (text node removed)
+    const faviconSpan = paragraph.children[0] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
   test("should handle footnote with empty paragraph by removing paragraph and appending to li", () => {
@@ -724,15 +714,9 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Empty paragraph should be removed; arrow appended in word-joiner span to the <li>
+    // Empty paragraph removed; arrow appended directly to the <li> (no span wrapping)
     expect(footnoteItem.children).toHaveLength(1)
-    const wjSpan = footnoteItem.children[0] as Element
-    expect(wjSpan).toMatchObject({
-      type: "element",
-      tagName: "span",
-      properties: { className: "word-joiner" },
-    })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect((footnoteItem.children[0] as Element).tagName).toBe("a")
   })
 
   test("should handle table-only footnote by appending arrow after table", () => {
@@ -742,16 +726,10 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Empty paragraph removed; arrow appended in word-joiner span after table
+    // Empty paragraph removed; arrow appended directly after table (no span wrapping)
     expect(footnoteItem.children).toHaveLength(2)
     expect((footnoteItem.children[0] as Element).tagName).toBe("table")
-    const wjSpan = footnoteItem.children[1] as Element
-    expect(wjSpan).toMatchObject({
-      type: "element",
-      tagName: "span",
-      properties: { className: "word-joiner" },
-    })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect((footnoteItem.children[1] as Element).tagName).toBe("a")
   })
 
   test("should handle complex footnote structure", () => {
@@ -777,21 +755,23 @@ describe("gfmVisitor function", () => {
 
     // Should have processed the footnote
     const paragraph = footnoteItem.children[0] as Element
-    // original content (text, em, text) + word joiner (containing back arrow)
+    // " and more content." = 18 chars, textIndex = 14
+    // original content (text, em, shortened text) + favicon-span
     expect(paragraph.children).toHaveLength(4)
     expect(paragraph.children[0]).toEqual({
       type: "text",
       value: "This is a complex footnote with ",
     })
     expect((paragraph.children[1] as Element).tagName).toBe("em")
-    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
-    const wjSpan = paragraph.children[3] as Element
-    expect(wjSpan).toMatchObject({
+    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more cont" })
+    const faviconSpan = paragraph.children[3] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "ent." })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
   test("should handle multi-paragraph footnote with back arrow in last paragraph", () => {
@@ -808,17 +788,18 @@ describe("gfmVisitor function", () => {
     expect(firstParagraph.children).toHaveLength(1)
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph." })
 
-    // Second paragraph: text + word joiner (containing back arrow)
+    // Second paragraph: "Second paragraph." = 17 chars, textIndex = 13
     const secondParagraph = footnoteItem.children[1] as Element
     expect(secondParagraph.children).toHaveLength(2)
-    expect(secondParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph." })
-    const wjSpan = secondParagraph.children[1] as Element
-    expect(wjSpan).toMatchObject({
+    expect(secondParagraph.children[0]).toEqual({ type: "text", value: "Second paragr" })
+    const faviconSpan = secondParagraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner" },
+      properties: { className: "favicon-span" },
     })
-    expect((wjSpan.children[1] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 })
 
