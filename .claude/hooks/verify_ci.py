@@ -61,10 +61,10 @@ def _read_attempt(retry_file: Path) -> int:
     attempt = 1
     if retry_file.exists():
         try:
-            attempt = int(retry_file.read_text().strip()) + 1
+            attempt = int(retry_file.read_text(encoding="utf-8").strip()) + 1
         except (ValueError, OSError):
             attempt = 1
-    retry_file.write_text(str(attempt))
+    retry_file.write_text(str(attempt), encoding="utf-8")
     return attempt
 
 
