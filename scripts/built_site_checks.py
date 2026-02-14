@@ -1653,7 +1653,7 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
-def check_file_for_issues(
+def check_file_for_issues(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
