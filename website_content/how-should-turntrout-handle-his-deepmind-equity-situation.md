@@ -54,13 +54,13 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : Ok, so the basic situation as I understand it is that as part of your DeepMind offer you would get a bunch of Google stock that would become available to you over the course of around 4 years or so. This means in-expectation, for 4 years, your net worth would substantially correlate with overall Google performance, which on our worldview probably substantially correlates with how much google invests in AGI and how much it participates in the AGI race.
 
-  My sense is you want to end up in a spot where your net-worth isn't super correlated with how much Google invests in AGI. Doing this thoroughly seems hard (since there are things like job security and overall salaries at Google that of course also correlate with Google stock), but getting to a point where you are about as correlated as if you didn't have stock options seems doable.
+: My sense is you want to end up in a spot where your net-worth isn't super correlated with how much Google invests in AGI. Doing this thoroughly seems hard (since there are things like job security and overall salaries at Google that of course also correlate with Google stock), but getting to a point where you are about as correlated as if you didn't have stock options seems doable.
 
 `TurnTrout`
 
 : Yeah, I want to have lower correlation because I want to make clearheaded decisions about deployment and research directions, which aren't muddled by concerns like "I might get more money for making societally risky plays."
 
-  I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
+: I was somewhat worried about equity CoI, and my gut response was "I guess I'll decline equity", but
 
   1. I didn't realize how substantially equity contributes to the compensation package, and
   2. it now seems like it shouldn't be too hard to construct a portfolio with a net ~zero position in GOOG. However, that's a question I don't have a lot of background in.
@@ -69,17 +69,17 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : The easiest way for doing this would of course be to just ask for a compensation package with no stock options, but many companies don't like that. You might also be able to get a better deal here by doing your own hedging than whatever price Google would offer you for those stock options.
 
-  Ok, but assuming that you can't just ask for a no-stock-options package, how could you potentially reduce your exposure to Google stock here?
+: Ok, but assuming that you can't just ask for a no-stock-options package, how could you potentially reduce your exposure to Google stock here?
 
-  You could just sell a contract that transfers ownership over your shares as soon as you get it, but this now creates a principal-agent problem between you and the person who you sold the shares to. They would like you to stay at DeepMind for longer so the stock options vest, but you don't have anything to gain by that, so ideally the contract would somehow pass this incentive through to you, since I don't think it's the primary thing we are trying to handle here.
+: You could just sell a contract that transfers ownership over your shares as soon as you get it, but this now creates a principal-agent problem between you and the person who you sold the shares to. They would like you to stay at DeepMind for longer so the stock options vest, but you don't have anything to gain by that, so ideally the contract would somehow pass this incentive through to you, since I don't think it's the primary thing we are trying to handle here.
 
-  You could just structure this as an ongoing contract where you get money at each vesting cliff. I.e. each time you get some Google shares, a person sends you money for those shares (with a price locked in at the time of signing the contract). This does annoyingly create a liability for that person (they need to always have enough money to buy Google stock at the locked in price), but Google stock seems stable enough that probably someone is willing to buy this at not too much of a premium.
+: You could just structure this as an ongoing contract where you get money at each vesting cliff. I.e. each time you get some Google shares, a person sends you money for those shares (with a price locked in at the time of signing the contract). This does annoyingly create a liability for that person (they need to always have enough money to buy Google stock at the locked in price), but Google stock seems stable enough that probably someone is willing to buy this at not too much of a premium.
 
-  Now, let's think about whether there is just some product on the open market that you could buy to end up with this.
+: Now, let's think about whether there is just some product on the open market that you could buy to end up with this.
 
 `TurnTrout`
 
-  One important part would be that (as with any job) I'll be at Google for an unknown duration, and so I don't want to commit to selling my full number of shares, and I'd also like a solution which is robust to receiving additional equity due to high performance.
+: One important part would be that (as with any job) I'll be at Google for an unknown duration, and so I don't want to commit to selling my full number of shares, and I'd also like a solution which is robust to receiving additional equity due to high performance.
 
 `habryka`
 
@@ -93,7 +93,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : Man, I do have trouble coming up with a simple off-the-shelf contract that you could buy, or some personal commitment you could make, that would cause you to break even here.
 
-  Ok, so does anything go wrong with a dumb "I keep a spreadsheet of my Google returns, I commit to donate anything to prespecified charity that is above the current valuation of my Google shares"? Like, this isn't perfect, because you would ideally like to have the current expected value of the stock in your bank account, but Google stock isn't a meme coin and doesn't seem that extremely high-variance, but it does really lose you quite a bit of money in-expectation.
+: Ok, so does anything go wrong with a dumb "I keep a spreadsheet of my Google returns, I commit to donate anything to prespecified charity that is above the current valuation of my Google shares"? Like, this isn't perfect, because you would ideally like to have the current expected value of the stock in your bank account, but Google stock isn't a meme coin and doesn't seem that extremely high-variance, but it does really lose you quite a bit of money in-expectation.
 
 `TurnTrout`
 
@@ -111,11 +111,11 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : Like, the thing that I feel like you want to do, is to sell a futures contract for Google stock that aligns with your vesting schedule. The problem here is of course that you might end up leaving Google, and then you still need to come up with the Google stock at the pre-specified price somehow.
 
-  Also, I feel like the futures contract market probably isn't traded with that high liquidity, so you would still need to find custom counterparties here.
+: Also, I feel like the futures contract market probably isn't traded with that high liquidity, so you would still need to find custom counterparties here.
 
-  Ok, so what if we instead try to aim for something like "be approximately neutral with regards to Google stock?". Is there just like a hacky thing to do that roughly works?
+: Ok, so what if we instead try to aim for something like "be approximately neutral with regards to Google stock?". Is there just like a hacky thing to do that roughly works?
 
-  The naive thing to do is to just like, short Google in an amount equivalent to your total 4-year equity. I.e. you borrow shares, sell them, and then you need to produce the equity somehow over the coming years. But you really can't guarantee you will have enough money to buy Google stock, if it goes up a lot.
+: The naive thing to do is to just like, short Google in an amount equivalent to your total 4-year equity. I.e. you borrow shares, sell them, and then you need to produce the equity somehow over the coming years. But you really can't guarantee you will have enough money to buy Google stock, if it goes up a lot.
 
 `TurnTrout`
 
@@ -157,9 +157,9 @@ date_updated: 2025-11-22 00:21:52.667251
 
 : Yeah, definitely. But I sadly don't expect that to happen.
 
-  Idk, maybe I should set up a small fund here that buys alignment-researcher equity with the obvious contracts. It's just a 4-year contract, with more than half of the capital being freed up 2 years in, so this really isn't that much committed capital.
+: Idk, maybe I should set up a small fund here that buys alignment-researcher equity with the obvious contracts. It's just a 4-year contract, with more than half of the capital being freed up 2 years in, so this really isn't that much committed capital.
 
-  I do personally kind of want to avoid GOOG exposure, but idk, does seem less important if I am not working at GOOG.
+: I do personally kind of want to avoid GOOG exposure, but idk, does seem less important if I am not working at GOOG.
 
 `TurnTrout`
 

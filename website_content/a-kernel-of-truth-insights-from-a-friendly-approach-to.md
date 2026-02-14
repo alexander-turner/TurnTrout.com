@@ -122,99 +122,101 @@ This concept is important because it's what you use to prove e.g. that a line is
 Below is an exchange between me and `TheMajor`, reproduced and slightly edited with permission:
 
 Alex
-  I'm having trouble understanding functional derivatives. I'm used to thinking about derivatives as with respect to time, or with respect to variations along the input dimensions. But when I think about a derivative on function space, I'm not sure what the "time" is, even though I can think about the topology and the neighborhoods around a given function.
+: I'm having trouble understanding functional derivatives. I'm used to thinking about derivatives as with respect to time, or with respect to variations along the input dimensions. But when I think about a derivative on function space, I'm not sure what the "time" is, even though I can think about the topology and the neighborhoods around a given function.
 
-  And I know the answer is that there isn't "time", but I'm not sure what there _is_.
+: And I know the answer is that there isn't "time", but I'm not sure what there _is_.
 
-  An interesting concept that comes to mind is thinking about a functional derivative with respect to e.g. a straight-line [homotopy](https://en.wikipedia.org/wiki/Homotopy), where you really _could_ say how a function is changing at every point with respect to time. But I don't think that's the same concept.
+: An interesting concept that comes to mind is thinking about a functional derivative with respect to e.g. a straight-line [homotopy](https://en.wikipedia.org/wiki/Homotopy), where you really _could_ say how a function is changing at every point with respect to time. But I don't think that's the same concept.
 
-  <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1">
+: <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/HomotopySmall.webm" type="video/webm"></video>
 
 `TheMajor`
-  The concept is as follows:
-  Let's say we have some (a priori non-linear) map $L$, which takes a function as an input and gives a number as an output. I.e. it maps from a vector space $X$ of functions to the complex numbers $\mathbb{C}$. Now fix a function $f\in X$, and a second function $g\in X$. We can then consider the 1-dimensional linear subspace $f + \mathbb{C}g := \{f + \lambda g: \lambda \in \mathbb{C}\}$. The map $L$ on this subspace is just a normal map, and if it is differentiable at the point $f$ in this subspace then its derivative is called _the functional derivative of $L$ at $f$ with respect to $g$_.
+: The concept is as follows:
+: Let's say we have some (a priori non-linear) map $L$, which takes a function as an input and gives a number as an output. I.e. it maps from a vector space $X$ of functions to the complex numbers $\mathbb{C}$. Now fix a function $f\in X$, and a second function $g\in X$. We can then consider the 1-dimensional linear subspace $f + \mathbb{C}g := \{f + \lambda g: \lambda \in \mathbb{C}\}$. The map $L$ on this subspace is just a normal map, and if it is differentiable at the point $f$ in this subspace then its derivative is called _the functional derivative of $L$ at $f$ with respect to $g$_.
 
 Alex
-  By normal map, is that something like a [normal operator](https://en.wikipedia.org/wiki/Normal_operator)?
+: By normal map, is that something like a [normal operator](https://en.wikipedia.org/wiki/Normal_operator)?
 
 `TheMajor`
-  sorry, I didn't mean normal in a technical context. Since the subspace I introduced is one-dimensional (as a complex vector space), and it maps to the complex numbers as well, we have good old introduction to complex analysis derivatives here. If you like you can work with reals instead of complex variables too, in which case it would be the familiar real derivative.
+: sorry, I didn't mean normal in a technical context. Since the subspace I introduced is one-dimensional (as a complex vector space), and it maps to the complex numbers as well, we have good old introduction to complex analysis derivatives here. If you like you can work with reals instead of complex variables too, in which case it would be the familiar real derivative.
 
 Alex
-  Wouldn't it still output a function, $g'$ maybe? wait. Would the derivative with respect to $\lambda$ just be $g$?
+: Wouldn't it still output a function, $g'$ maybe? wait. Would the derivative with respect to $\lambda$ just be $g$?
 
 `TheMajor`
-  there is no derivative with respect to $\lambda$.
+: there is no derivative with respect to $\lambda$.
 
 Alex
-  ah ya. duh (my brain was still acting as if differentiation had to be from the real numbers to the real numbers, so it searched for a real/complex number in the problem formalization and found $\lambda$.)
+: ah ya. duh (my brain was still acting as if differentiation had to be from the real numbers to the real numbers, so it searched for a real/complex number in the problem formalization and found $\lambda$.)
 
 `TheMajor`
-  let me know if this part is clear, because unfortunately its the next few steps where it gets really confusing.
+: let me know if this part is clear, because unfortunately its the next few steps where it gets really confusing.
 
 Alex
-  Unfortunately, I don't think it's clear yet. So I see how this is a one-dimensional subspace,[^2] because it's generated by one basis function ($g$).
+: Unfortunately, I don't think it's clear yet. So I see how this is a one-dimensional subspace,[^2] because it's generated by one basis function ($g$).
 
-  But I don't see how this translates to a normal complex derivative, in particular, I don't quite understand what the range of this function is.
+<!-- vale Openly.But = NO -->
+: But I don't see how this translates to a normal complex derivative, in particular, I don't quite understand what the range of this function is.
+<!-- vale Openly.But = YES -->
 
 <!-- vale off -->
 `TheMajor`
-  No problem, and it's very good that you share that it's unclear. The range of $L$ is the complex numbers, $L$ maps from $X$ (our vector space of functions) to $\mathbb{C}$ (the complex numbers).
+: No problem, and it's very good that you share that it's unclear. The range of $L$ is the complex numbers, $L$ maps from $X$ (our vector space of functions) to $\mathbb{C}$ (the complex numbers).
 <!-- vale on -->
 
 Alex
-  I guess I'm confused why we're using that type signature if we're taking a derivative on the whole function – but maybe that'll be clear after I get the rest.
+: I guess I'm confused why we're using that type signature if we're taking a derivative on the whole function – but maybe that'll be clear after I get the rest.
 
 `TheMajor`
-  that is exactly the heart of the confusion surrounding functional derivatives, and we'll have to get there in a few steps.we'll start with defining functional derivatives for easy maps, i.e. the ones that take on complex values, and then work towards more complicated settings.
+: that is exactly the heart of the confusion surrounding functional derivatives, and we'll have to get there in a few steps.we'll start with defining functional derivatives for easy maps, i.e. the ones that take on complex values, and then work towards more complicated settings.
 
-  so back to the example above; we have a vector space $X$ (our 'function space'), we have a (possibly non-linear) map $L: X \to \mathbb{C}$. we will now introduce the derivative of $L$ at $f$ with respect to $g$, with $f,g\in X$. This derivative is just a complex number.
+: so back to the example above; we have a vector space $X$ (our 'function space'), we have a (possibly non-linear) map $L: X \to \mathbb{C}$. we will now introduce the derivative of $L$ at $f$ with respect to $g$, with $f,g\in X$. This derivative is just a complex number.
 
-  To find this we consider the 1-dimensional subspace $f + \mathbb{C}g$ that I introduced above, and we note that the map from $\mathbb{C}$ to this subspace, given by $\lambda\mapsto f + \lambda g$, is a bijection that goes through $f$ at 0. this gives us a map from $\mathbb{C}$ to $\mathbb{C}$, by sending $\lambda$ to $L(f+\lambda g)$. We take the derivative of that at $\lambda = 0$, and that is _the derivative of $L$ at $f$ with respect to $g$_.
+: To find this we consider the 1-dimensional subspace $f + \mathbb{C}g$ that I introduced above, and we note that the map from $\mathbb{C}$ to this subspace, given by $\lambda\mapsto f + \lambda g$, is a bijection that goes through $f$ at 0. this gives us a map from $\mathbb{C}$ to $\mathbb{C}$, by sending $\lambda$ to $L(f+\lambda g)$. We take the derivative of that at $\lambda = 0$, and that is _the derivative of $L$ at $f$ with respect to $g$_.
 
 Alex
-  Okay, that makes sense so far.
+: Okay, that makes sense so far.
 
 `TheMajor`
-  Nice 😃 this map has a few properties that I just want to remark and then ignore. For example it need not be linear in $f$ (which makes sense, since $f$ is only the point we're evaluating at). And by doing some work with chain rules it does have some linear properties in $g$.
+: Nice 😃 this map has a few properties that I just want to remark and then ignore. For example it need not be linear in $f$ (which makes sense, since $f$ is only the point we're evaluating at). And by doing some work with chain rules it does have some linear properties in $g$.
 
-  now there are two ways in which we can make this story complicated again, and most authors do both simultaneously.
+: now there are two ways in which we can make this story complicated again, and most authors do both simultaneously.
 
-  Firstly we can try to extend the "derivative of $L$ at $f$ with respect to $g$" to something like "derivative of $L$ at $f$". We'll do this first. Secondly we can try to take a different map, say $M$, which maps from $X$ into another vector space $Y$ (instead of the complex numbers). We can then try and define a derivative of $M$ at $f$ with respect to $g$.
+: Firstly we can try to extend the "derivative of $L$ at $f$ with respect to $g$" to something like "derivative of $L$ at $f$". We'll do this first. Secondly we can try to take a different map, say $M$, which maps from $X$ into another vector space $Y$ (instead of the complex numbers). We can then try and define a derivative of $M$ at $f$ with respect to $g$.
 
 <!-- vale off -->
-  The first step is conceptually simple, but formally and computationally very difficult. Given a point $f\in X$ and our map $L$ from before, we can simply say that "the derivative of $L$ at $f$" is the map that sends $g \in X$ to "the derivative of $L$ at $f$ with respect to $g$". So "the derivative of $L$ at $f$" is a map from $X$ to $\mathbb{C}$.
+: The first step is conceptually simple, but formally and computationally very difficult. Given a point $f\in X$ and our map $L$ from before, we can simply say that "the derivative of $L$ at $f$" is the map that sends $g \in X$ to "the derivative of $L$ at $f$ with respect to $g$". So "the derivative of $L$ at $f$" is a map from $X$ to $\mathbb{C}$.
 
-  this is formally difficult because usually you want this derivative to have some nice properties, but because it was defined pointwise it's very difficult to establish this! Frequently these derivatives are not continuous, and mathematicians resort to horrible tricks (like throwing out a bunch of points of the domain X on which our derivative is annoying) to recover some structure here.
+: this is formally difficult because usually you want this derivative to have some nice properties, but because it was defined pointwise it's very difficult to establish this! Frequently these derivatives are not continuous, and mathematicians resort to horrible tricks (like throwing out a bunch of points of the domain X on which our derivative is annoying) to recover some structure here.
 <!-- vale on -->
 
 Alex
-  So, given some arbitrary function $L : X \to\mathbb{C}$ which is "differentiable" at $f$, we define a function $L'_{f}: g \mapsto$ (derivative of $L$ at $f$ with respect to $g$)?
+: So, given some arbitrary function $L : X \to\mathbb{C}$ which is "differentiable" at $f$, we define a function $L'_{f}: g \mapsto$ (derivative of $L$ at $f$ with respect to $g$)?
 
 `TheMajor`
-  yes, exactly.
+: yes, exactly.
 
 Alex
-  You could even maybe think of each input $g$ as projecting the derivative of $L$ at $f$? Or specifying one of many possible directions.
+: You could even maybe think of each input $g$ as projecting the derivative of $L$ at $f$? Or specifying one of many possible directions.
 
 `TheMajor`
 <!-- vale off -->
-  Yes, this is 100% correct. This is related to the "nice linear properties in $g$" that I mentioned above
+: Yes, this is 100% correct. This is related to the "nice linear properties in $g$" that I mentioned above
 
-  I also stated that this is computationally difficult. This is actually quite funny - the best way to find "The derivative of $L$ at $f$" is to take a 'test function' $g \in X$ (arbitrarily), compute (the derivative of $L$ at $f$ with respect to $g$), and then tahdah, you have now found the map that sends $g$ to (the derivative of $L$ at $f$ with respect to $g$), i.e. exactly what you were looking for.
+: I also stated that this is computationally difficult. This is actually quite funny - the best way to find "The derivative of $L$ at $f$" is to take a 'test function' $g \in X$ (arbitrarily), compute (the derivative of $L$ at $f$ with respect to $g$), and then tahdah, you have now found the map that sends $g$ to (the derivative of $L$ at $f$ with respect to $g$), i.e. exactly what you were looking for.
 <!-- vale on -->
 
 Alex
-  this sounds pretty computationally easy? Or are you calculating $L'$ for a general test function $g$, in which case, how do you get any nontrivial information out of that?
+: this sounds pretty computationally easy? Or are you calculating $L'$ for a general test function $g$, in which case, how do you get any nontrivial information out of that?
 
 `TheMajor`
-  Yes, you need to calculate it for a general test function.
+: Yes, you need to calculate it for a general test function.
 
-  also something that may help with gaining insight: in multivariable calculus (lets say 2 dimensions, that's already plenty difficult) there is a clear divide between the \[existence of a partial derivative of a function at a point\] and \[the function being differentiable at that point\].
+: also something that may help with gaining insight: in multivariable calculus (lets say 2 dimensions, that's already plenty difficult) there is a clear divide between the \[existence of a partial derivative of a function at a point\] and \[the function being differentiable at that point\].
 
 Alex
-  yeah, because $L'$ has to exist for… all $g$? That seems a little tough.
+: yeah, because $L'$ has to exist for… all $g$? That seems a little tough.
 
 > [!info] Edited after posting
 > Back in my [_Topology_ review](/topology-textbook-review), I discussed a similar phenomenon: continuity in multiple input dimensions requires not just continuity in each input variable, but in _all_ sequences converging to the point in question:
@@ -227,43 +229,43 @@ Alex
 > here we have the same, except we have (in an infinite-dimenional function space X) infinitely many "partial derivatives". so from that point of view it's not that surprising that a function "having a derivative at $f$" is actually quite rare/complicated.
 
 `TheMajor`
-  It exists for all $g$, and then $L'_f$ exists as a formal map. But usually you want something stronger, for example that $L'_f: X\to \mathbb{C}$ is continuous.
+: It exists for all $g$, and then $L'_f$ exists as a formal map. But usually you want something stronger, for example that $L'_f: X\to \mathbb{C}$ is continuous.
 
 <!-- vale off -->
-  as an important but relatively trivial aside: if $L$ is a linear map, then $L'_f$ does not actually depend on $f$. So usually it is just called "the derivative of $L$" instead of "the derivative of $L$ at $f$". This is confusing, because for non-linear $L$ there is also something called "the derivative of $L$", namely "the map that sends $f$ to \[the derivative of $L$ at $f$\]".
+: as an important but relatively trivial aside: if $L$ is a linear map, then $L'_f$ does not actually depend on $f$. So usually it is just called "the derivative of $L$" instead of "the derivative of $L$ at $f$". This is confusing, because for non-linear $L$ there is also something called "the derivative of $L$", namely "the map that sends $f$ to \[the derivative of $L$ at $f$\]".
 <!-- vale on -->
 
 Alex
-  hm. That's because of the definition of linearity, right? it's a homomorphism for both the operations of addition and scalar multiplication... Wait, I intuitively understand why linearity means it's the same everywhere, but I'm having trouble coming up with the formal justification…
+: hm. That's because of the definition of linearity, right? it's a homomorphism for both the operations of addition and scalar multiplication... Wait, I intuitively understand why linearity means it's the same everywhere, but I'm having trouble coming up with the formal justification…
 
 `TheMajor`
-  Yes, the point is that when we look at the definition of "derivative of $L$ at $f$ with respect to $g$" that is given by $\lim_{\lambda\to 0}\frac{ L(f + \lambda g) - L(f)}{\lambda}$...
+: Yes, the point is that when we look at the definition of "derivative of $L$ at $f$ with respect to $g$" that is given by $\lim_{\lambda\to 0}\frac{ L(f + \lambda g) - L(f)}{\lambda}$...
 
 Alex
-  ah, got it!
+: ah, got it!
 
 `TheMajor`
-  ok, so this was all the first way to make it confusing again. Ready for the second?
+: ok, so this was all the first way to make it confusing again. Ready for the second?
 
 Alex
-  I'm ready to be reconfused.
+: I'm ready to be reconfused.
 
 `TheMajor`
-  Ok, so now let's pick a range not inside the complex numbers $\mathbb{C}$, but inside a second normed vector space $Y$. So we have a map $M: X\to Y$, not necessarily linear. Again fix points $f, g\in X$. We are going to define the derivative of $M$ at $f$ with respect to $g$.
+: Ok, so now let's pick a range not inside the complex numbers $\mathbb{C}$, but inside a second normed vector space $Y$. So we have a map $M: X\to Y$, not necessarily linear. Again fix points $f, g\in X$. We are going to define the derivative of $M$ at $f$ with respect to $g$.
 
-  so we repeat our trick from before, consider the map from $\mathbb{C}$ via $X$ to $Y$ given by $\lambda\mapsto M(f + \lambda g)$. We wish to differentiate it at $\lambda = 0$.
+: so we repeat our trick from before, consider the map from $\mathbb{C}$ via $X$ to $Y$ given by $\lambda\mapsto M(f + \lambda g)$. We wish to differentiate it at $\lambda = 0$.
 
-  unfortunately, its image is now in $Y$, not in $\mathbb{C}$, so we don't really know what the derivative means. But because $Y$ is a normed vector space, the expression $\frac{M(f + \lambda g) - M(f)}{\lambda}$ makes sense for all non-zero $\lambda$.
+: unfortunately, its image is now in $Y$, not in $\mathbb{C}$, so we don't really know what the derivative means. But because $Y$ is a normed vector space, the expression $\frac{M(f + \lambda g) - M(f)}{\lambda}$ makes sense for all non-zero $\lambda$.
 
-  if this function can be continuously extended to $\lambda = 0$ then we define its image at 0 as the derivative of $M$ at $f$ with respect to $g$. Note that this notion of continuity has to do with the norm of $Y$.
+: if this function can be continuously extended to $\lambda = 0$ then we define its image at 0 as the derivative of $M$ at $f$ with respect to $g$. Note that this notion of continuity has to do with the norm of $Y$.
 
 <!-- vale off -->
-  this is now a vector in $Y$, so if this works we have: \[the derivative of $M$ at $f$ with respect to $g$\] which is an element of $Y$, \[the derivative of $M$ at $f$\] which is a (linear! usually horrible and not continous!) map from $X$ to $Y$.
+: this is now a vector in $Y$, so if this works we have: \[the derivative of $M$ at $f$ with respect to $g$\] which is an element of $Y$, \[the derivative of $M$ at $f$\] which is a (linear! usually horrible and not continous!) map from $X$ to $Y$.
 <!-- vale on -->
 
-  btw if the "continuously extending" part is new, you can also just think of it as the limit of that fraction as $\lambda$ approaches 0. The only point is that (as long as we're working with complex vector spaces) there are a lot of different ways for $\lambda$ to approach 0, and it has to work for all of them.
+: btw if the "continuously extending" part is new, you can also just think of it as the limit of that fraction as $\lambda$ approaches 0. The only point is that (as long as we're working with complex vector spaces) there are a lot of different ways for $\lambda$ to approach 0, and it has to work for all of them.
 
-  if we're working over the reals its simply the notion of "right limit" and "left limit" (the only two ways to approach 0 in $\mathbb{R}$) that you may have seen before, except that the convergence is now happening in $Y$.
+: if we're working over the reals its simply the notion of "right limit" and "left limit" (the only two ways to approach 0 in $\mathbb{R}$) that you may have seen before, except that the convergence is now happening in $Y$.
 
 ## Other notes
 

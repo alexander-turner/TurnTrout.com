@@ -92,7 +92,7 @@ Reframing Impact
 :
 : ![Text overlay: "An impact measure would be the first proposed safeguard which maybe actually stops a powerful agent with an imperfect objective from ruining things – without assuming anything about the objective. This is a rare property among approaches." The text lurks above an illustration paying homage to the iconic Gandalf-vs-Balrog scene in Moria. The demon's whip ends in a giant paperclip, a metaphor for a misaligned artificial intelligence.](https://assets.turntrout.com/static/images/posts/v7pzpzvi342b3svksbag.avif)
 
-  "Towards a New Impact Measure" was the title of [the post](/towards-a-new-impact-measure) in which AUP was introduced:
+: "Towards a New Impact Measure" was the title of [the post](/towards-a-new-impact-measure) in which AUP was introduced:
 :
 : ![The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads "Towards a new impact measure" and is rendered in a Tolkienesque font.](https://assets.turntrout.com/static/images/posts/ynwdidys1i7yopyqerfh.avif)
 

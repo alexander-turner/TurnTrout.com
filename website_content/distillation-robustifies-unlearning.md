@@ -58,7 +58,7 @@ Misalignment risk
 
 : Robust unlearning could remove strategic knowledge and skills that an unaligned AI might rely on. Potential removal targets include knowledge of: AI control protocols or datacenter security practices; weight exfiltration; self-modification techniques; the fact that it is an AI system; or even the ability to [be influenced by negative stereotypes about AI.](https://turntrout.com/self-fulfilling-misalignment) Robust unlearning could maybe even cripple an AI’s hacking or biology skills, or make it a less convincing liar.
 
-  Perhaps robust unlearning simply makes it harder for an AI to reason about an area, but doesn’t stop the AI entirely. That outcome would still be less risky.
+: Perhaps robust unlearning simply makes it harder for an AI to reason about an area, but doesn’t stop the AI entirely. That outcome would still be less risky.
 
 # Perfect data filtering is the current unlearning gold standard
 
@@ -176,7 +176,7 @@ Distillation is not just a compression tool[^1]
 
 : Distillation also changes safety-relevant model properties – e.g. distillation makes unlearning robust. If you first unlearn and then distill into a randomly initialized student, the student keeps the desired behavior but loses the unwanted capability, even under relearning attacks. In a sense, distilling a suppressed model allows you to only train on “good” data.[^2] UNDO decomposes “robust unlearning” into “choice of shallow-unlearning method” and “how distillation is performed.”
 
-  Therefore, developers can mix and match suppression methods. As suppression / shallow unlearning improves, so does UNDO!
+: Therefore, developers can mix and match suppression methods. As suppression / shallow unlearning improves, so does UNDO!
 
 We can trade off compute and robustness
 

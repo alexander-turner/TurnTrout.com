@@ -166,7 +166,7 @@ What if, instead of rewarding the agent for the final state, we reward it for th
 What if we take some discounted sum of reward over all ten timesteps, instead of just the final timestep?
 : I don't see why this would help, but it's possible. I'd appreciate the analysis if anyone wants to do it, or maybe I'll get to it later.
 
-  The main way this could help is it would let us penalize the agent for the `disable` _action_ at any state, while dictating that $\forall s: R(s)=R(\color{blue}{s})$. This seems helpful. It's not clear how helpful this is, though. I don't think this is a deep solution to corrigibility (as defined here), but rather a hacky prohibition.
+: The main way this could help is it would let us penalize the agent for the `disable` _action_ at any state, while dictating that $\forall s: R(s)=R(\color{blue}{s})$. This seems helpful. It's not clear how helpful this is, though. I don't think this is a deep solution to corrigibility (as defined here), but rather a hacky prohibition.
 
 # AUP avoids some issues by changing with the environment dynamics
 

@@ -299,7 +299,7 @@ This lower bound seems rather weak. Even if $K_U(\phi)+O(1)=15$ bits, $2^{-15}\a
 : For example: the symmetric group $S_{|\mathcal{S}|}$ has cardinality $|\mathcal{S}|!$, and for any $R \in \text{NPS}$, at least half of the $\phi'\in S_{|\mathcal{S}|}$ induce (weakly) power-seeking orbit elements $\phi' \cdot R$. (This argument would be strengthened by my conjectures about bigger environments $\implies$ greater fraction of orbits seek power.)
 : If some significant fraction (e.g. $\frac{1}{50}$) of these $\phi'$ are strictly power-seeking, we're adding at least $\frac{|\mathcal{S}|!}{2}\frac{1}{50}=\frac{|\mathcal{S}|!}{100}$ additional terms.
 
-  Overall, it's not surprising that the bound is loose, given the lack of assumptions about the degree of power-seeking in the environment. If the bound is anywhere near tight, then the permuted simplicity prior $\phi \cdot P_U$ incentivizes power-seeking with extremely high probability.[^troubling]
+: Overall, it's not surprising that the bound is loose, given the lack of assumptions about the degree of power-seeking in the environment. If the bound is anywhere near tight, then the permuted simplicity prior $\phi \cdot P_U$ incentivizes power-seeking with extremely high probability.[^troubling]
 [^troubling]: If you think about the permutation as a "way reward could be misspecified", then that's troubling. It seems plausible that this is often (but not always) a reasonable way to think about the action of the $\phi$ permutation.
 
 What if $P_U(\text{NPS})=0$?

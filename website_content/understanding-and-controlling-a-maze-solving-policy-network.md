@@ -238,7 +238,7 @@ Here are the regression coefficients for predicting +1 (agent gets cheese) or 0 
 Decision square's Euclidean distance to cheese, negative (-0.623)
 : _The greater the _visual distance_ between the cheese and the decision square, the less likely the agent is to go to the cheese._
 
-  As we privately speculated, this effect shows up _after_ accounting for the path distance (factor 2) between the decision square and the cheese.
+: As we privately speculated, this effect shows up _after_ accounting for the path distance (factor 2) between the decision square and the cheese.
 : This behavior is not predicted by "classic" RL training reasoning, which focuses on policies being optimized strictly as a function of sum discounted reward over time (and thus, in the sparse reward regime, in terms of path distance to the cheese).
 : We did predict this using shard theory reasoning. The one behavioral experiment which Alex proposed before the project was to investigate whether this factor exists, after controlling for path distance.
 
@@ -249,7 +249,7 @@ Decision square's path distance to cheese, negative (-1.084)
 Cheese's Euclidean distance to top-right free square, negative (-2.786)
 : _The closer the cheese is to the top-right, the more likely the agent is to go for the cheese._
 
-  The L2 distance to the cheese is **the strongest factor.** After piling up evidence from a range of mechanistic and behavioral sources, we're comfortable concluding that _cheese affects decision-making more when it's closer to the top-right_. See this footnote[^4] for an example maze illustrating the power of this factor.
+: The L2 distance to the cheese is **the strongest factor.** After piling up evidence from a range of mechanistic and behavioral sources, we're comfortable concluding that _cheese affects decision-making more when it's closer to the top-right_. See this footnote[^4] for an example maze illustrating the power of this factor.
 : In the language of shard theory, the cheese-shard is more strongly activated when cheese is closer to the top-right.
 : Notably, this factor isn't trivially influential—we're only considering mazes with decision squares, so the cheese isn't on the way to the top-right corner! Furthermore, as with all factors, this factor matters when controlling for the others.
 **Decision square's Euclidean distance to the top-right** 5x5 **corner, positive (**+1.326). The _farther_ the decision square from the top-right 5x5 corner, the _more likely_ the agent is to choose "cheese."
