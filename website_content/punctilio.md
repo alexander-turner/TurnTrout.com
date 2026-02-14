@@ -61,6 +61,10 @@ Fractions
 Degrees
 </label>
 <label class="punctilio-option">
+<input type="checkbox" id="opt-superscript" />
+Superscript
+</label>
+<label class="punctilio-option">
 <input type="checkbox" id="opt-ligatures" />
 Ligatures
 </label>

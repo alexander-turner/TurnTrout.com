@@ -1,4 +1,4 @@
-import { transform } from "punctilio"
+import { transform, type TransformOptions } from "punctilio"
 
 import { debounce } from "./component_script_utils"
 
@@ -45,17 +45,7 @@ const SKIP_TAGS = new Set(["SCRIPT", "STYLE", "CODE", "PRE", "TEXTAREA"])
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
-interface TransformConfig {
-  punctuationStyle: "american" | "british" | "none"
-  dashStyle: "american" | "british" | "none"
-  symbols: boolean
-  fractions: boolean
-  degrees: boolean
-  ligatures: boolean
-  nbsp: boolean
-}
-
-function getConfig(): TransformConfig {
+function getConfig(): TransformOptions {
   return {
     punctuationStyle:
       (document.querySelector<HTMLSelectElement>("#opt-punctuation-style")?.value as
@@ -70,6 +60,7 @@ function getConfig(): TransformConfig {
     symbols: document.querySelector<HTMLInputElement>("#opt-symbols")?.checked ?? true,
     fractions: document.querySelector<HTMLInputElement>("#opt-fractions")?.checked ?? false,
     degrees: document.querySelector<HTMLInputElement>("#opt-degrees")?.checked ?? false,
+    superscript: document.querySelector<HTMLInputElement>("#opt-superscript")?.checked ?? false,
     ligatures: document.querySelector<HTMLInputElement>("#opt-ligatures")?.checked ?? false,
     nbsp: document.querySelector<HTMLInputElement>("#opt-nbsp")?.checked ?? true,
   }
@@ -80,7 +71,7 @@ function getConfig(): TransformConfig {
  * from being transformed, run the transform on the remaining text,
  * then restore the protected content.
  */
-function transformMarkdownText(text: string, config: TransformConfig): string {
+function transformMarkdownText(text: string, config: TransformOptions): string {
   const placeholders: string[] = []
   const MARKER = "\uF8FF" // Private-use character unlikely to appear in input
 
@@ -114,11 +105,21 @@ function transformMarkdownText(text: string, config: TransformConfig): string {
   return result
 }
 
+function hasSkippedAncestor(element: Element | null): boolean {
+  let current = element
+  while (current) {
+    if (SKIP_TAGS.has(current.tagName)) return true
+    current = current.parentElement
+  }
+  return false
+}
+
 /**
- * Parse HTML with DOMParser, walk text nodes (skipping code/script/style/pre),
- * apply transform() to each text node, then serialize back.
+ * Parse HTML with DOMParser, walk text nodes (skipping elements with
+ * code/script/style/pre ancestors), apply transform() to each text node,
+ * then serialize back.
  */
-function transformHtmlText(html: string, config: TransformConfig): string {
+function transformHtmlText(html: string, config: TransformOptions): string {
   const parser = new DOMParser()
   const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
 
@@ -131,8 +132,7 @@ function transformHtmlText(html: string, config: TransformConfig): string {
   }
 
   for (const textNode of textNodes) {
-    const parent = textNode.parentElement
-    if (parent && SKIP_TAGS.has(parent.tagName)) continue
+    if (hasSkippedAncestor(textNode.parentElement)) continue
     if (textNode.textContent) {
       textNode.textContent = transform(textNode.textContent, config)
     }
@@ -141,7 +141,7 @@ function transformHtmlText(html: string, config: TransformConfig): string {
   return doc.body.innerHTML
 }
 
-function doTransform(text: string, mode: TransformMode, config: TransformConfig): string {
+function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
   switch (mode) {
     case "plaintext":
       return transform(text, config)
@@ -158,7 +158,11 @@ const EXAMPLES: Record<TransformMode, string> = {
   html: EXAMPLE_HTML,
 }
 
+let abortController: AbortController | null = null
+
 document.addEventListener("nav", () => {
+  abortController?.abort()
+
   const container = document.getElementById("punctilio-demo")
   if (!container) return
 
@@ -167,6 +171,10 @@ document.addEventListener("nav", () => {
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
 
   if (!input || !output) return
+
+  const controller = new AbortController()
+  abortController = controller
+  const { signal } = controller
 
   let currentMode: TransformMode = "plaintext"
 
@@ -183,20 +191,24 @@ document.addEventListener("nav", () => {
   runTransform()
 
   // Live transform on input
-  input.addEventListener("input", debouncedTransform)
+  input.addEventListener("input", debouncedTransform, { signal })
 
   // Mode switching
   for (const btn of modeButtons) {
-    btn.addEventListener("click", () => {
-      for (const b of modeButtons) b.classList.remove("active")
-      btn.classList.add("active")
-      const newMode = (btn.dataset.mode ?? "plaintext") as TransformMode
-      if (newMode !== currentMode) {
-        currentMode = newMode
-        input.value = EXAMPLES[currentMode]
-      }
-      runTransform()
-    })
+    btn.addEventListener(
+      "click",
+      () => {
+        for (const b of modeButtons) b.classList.remove("active")
+        btn.classList.add("active")
+        const newMode = (btn.dataset.mode ?? "plaintext") as TransformMode
+        if (newMode !== currentMode) {
+          currentMode = newMode
+          input.value = EXAMPLES[currentMode]
+        }
+        runTransform()
+      },
+      { signal },
+    )
   }
 
   // Options changes trigger re-transform
@@ -204,6 +216,6 @@ document.addEventListener("nav", () => {
     ".punctilio-options input, .punctilio-options select",
   )
   for (const opt of optionInputs) {
-    opt.addEventListener("change", runTransform)
+    opt.addEventListener("change", runTransform, { signal })
   }
 })
