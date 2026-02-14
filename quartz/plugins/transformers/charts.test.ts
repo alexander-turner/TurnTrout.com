@@ -1,6 +1,7 @@
 import type { Element, Root, Text } from "hast"
 
-import { describe, expect, it } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
+import fs from "fs"
 import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -666,14 +667,19 @@ series:
   })
 
   it("provides tooltip script via externalResources", () => {
-    const plugin = Charts()
-    const resources = plugin.externalResources!(mockCtx)
-    expect(resources.js).toHaveLength(1)
-    expect(resources.js![0]).toMatchObject({
-      loadTime: "afterDOMReady",
-      contentType: "inline",
-    })
-    expect((resources.js![0] as { script: string }).script).toContain("smart-chart-tooltip")
+    jest.spyOn(fs, "readFileSync").mockReturnValue("// smart-chart-tooltip script")
+    try {
+      const plugin = Charts()
+      const resources = plugin.externalResources!(mockCtx)
+      expect(resources.js).toHaveLength(1)
+      expect(resources.js![0]).toMatchObject({
+        loadTime: "afterDOMReady",
+        contentType: "inline",
+      })
+      expect((resources.js![0] as { script: string }).script).toContain("smart-chart-tooltip")
+    } finally {
+      jest.restoreAllMocks()
+    }
   })
 
   it("handles className as non-array", () => {

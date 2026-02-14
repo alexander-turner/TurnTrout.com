@@ -53,7 +53,10 @@ function getCodeElement(pre: Element): Element {
 export const Charts: QuartzTransformerPlugin = () => ({
   name: "Charts",
   externalResources() {
-    const tooltipScriptPath = path.join(currentDirPath, "../../static/scripts/chart-tooltips.js")
+    const tooltipScriptPath = path.join(
+      currentDirPath,
+      "../components/scripts/chart-tooltips.inline.js",
+    )
     const tooltipScript = fs.readFileSync(tooltipScriptPath, "utf8")
     return {
       js: [
