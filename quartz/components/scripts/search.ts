@@ -2,7 +2,7 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
-import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
+import { tabletBreakpoint } from "../../styles/variables"
 import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants } from "../constants"
@@ -884,7 +884,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   content = replaceEmojiConvertArrows(content)
 
   let suffixHTML = ""
-  if (!enablePreview || window.innerWidth <= mobileBreakpoint) {
+  if (!enablePreview) {
     suffixHTML = `<p>${content}</p>`
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
@@ -909,6 +909,13 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   itemTile.addEventListener("mouseleave", onMouseLeave)
   itemTile.addEventListener("click", (e) => {
     e.preventDefault()
+    // On mobile/tablet with preview: first tap selects card, second tap navigates
+    if (enablePreview && window.innerWidth <= tabletBreakpoint) {
+      if (!itemTile.classList.contains("focus")) {
+        void displayPreview(itemTile, false)
+        return
+      }
+    }
     navigateWithSearchTerm(itemTile.href, currentSearchTerm)
   })
 

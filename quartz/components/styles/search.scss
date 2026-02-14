@@ -131,12 +131,9 @@
         flex: 0 0 min(30%, $right-sidebar-width);
       }
 
-      @media all and (min-width: $mobile-breakpoint) {
+      // Side-by-side layout: desktop only
+      @media all and (min-width: ($tablet-breakpoint + 1)) {
         &[data-preview] {
-          & .result-card > p.preview {
-            display: none;
-          }
-
           & > div {
             &:first-child {
               border-right: 1px solid var(--midground-faint);
@@ -157,15 +154,31 @@
         border-radius: 5px;
       }
 
+      // Stacked layout: tablet and mobile
       @media all and (max-width: $tablet-breakpoint) {
-        & > #preview-container {
-          display: none !important;
+        &.display-results {
+          flex-direction: column;
+          height: calc(75vh - 12vh);
+        }
+
+        & > div {
+          height: auto;
         }
 
         &[data-preview] > #results-container {
+          flex: 0 0 auto;
           width: 100%;
-          height: auto;
-          flex: 0 0 100%;
+          max-height: 30%;
+          border-bottom: 1px solid var(--midground-faint);
+          border-radius: 5px 5px 0 0;
+        }
+
+        & > #preview-container {
+          flex: 1 1 0;
+          min-height: 0;
+          margin-left: 0;
+          padding-left: calc(2 * $base-margin);
+          border-radius: 0 0 5px 5px;
         }
       }
 
