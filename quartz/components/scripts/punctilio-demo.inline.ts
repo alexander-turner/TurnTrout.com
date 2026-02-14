@@ -1,8 +1,11 @@
 import { diffChars } from "diff"
 import { transform, type TransformOptions } from "punctilio"
 import { rehypePunctilio } from "punctilio/rehype"
+import { remarkPunctilio } from "punctilio/remark"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
+import remarkParse from "remark-parse"
+import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
 import { debounce } from "./component_script_utils"
@@ -78,56 +81,17 @@ function getConfig(): TransformOptions {
 // ─── Markdown mode ───────────────────────────────────────────────────
 
 /**
- * Protect Markdown syntax (code blocks, inline code, links, math, HTML
- * blocks, URLs) from being transformed, run the transform on the
- * remaining text, then restore the protected content.
+ * Transform Markdown using punctilio's remark plugin pipeline.
+ * Handles code blocks, inline code, and other Markdown syntax
+ * automatically via the MDAST-based remarkPunctilio transformer.
  */
 function transformMarkdownText(text: string, config: TransformOptions): string {
-  const placeholders: string[] = []
-  const MARKER = "\uF8FF" // Private-use character unlikely to appear in input
-
-  function protect(match: string): string {
-    const idx = placeholders.length
-    placeholders.push(match)
-    return `${MARKER}${idx}${MARKER}`
-  }
-
-  let result = text
-
-  // Protect YAML front matter at start of text
-  result = result.replace(/^---\n[\s\S]*?\n---/m, protect)
-  // Protect fenced code blocks (``` or ~~~, with optional language)
-  // Use backreference to ensure opening and closing delimiters match
-  result = result.replace(/(?<fence>```|~~~)[\s\S]*?\k<fence>/g, protect)
-  // Protect math display blocks ($$...$$)
-  result = result.replace(/\$\$[\s\S]*?\$\$/g, protect)
-  // Protect inline math ($...$) — requires non-space after opening and before closing $
-  result = result.replace(/\$(?!\s)[^$\n]+(?<!\s)\$/g, protect)
-  // Protect inline code — double backtick first, then single
-  result = result.replace(/``[^`]+``/g, protect)
-  result = result.replace(/`[^`\n]+`/g, protect)
-  // Protect HTML blocks (<tag>...</tag> spanning lines)
-  result = result.replace(/^<(?<tag>[a-zA-Z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\k<tag>>/gm, protect)
-  // Protect self-closing HTML tags
-  result = result.replace(/<[a-zA-Z][\w-]*(?:\s[^>]*)?\s*\/>/g, protect)
-  // Protect image/link URLs: ![alt](url) or [text](url)
-  result = result.replace(/!?\[[^\]]*\]\([^)]*\)/g, protect)
-  // Protect reference-style link definitions: [id]: url
-  result = result.replace(/^\[[^\]]+\]:\s+\S+.*$/gm, protect)
-  // Protect autolinks: <http://...> or <email@example.com>
-  result = result.replace(/<(?:https?:\/\/[^\s>]+|[^\s>]+@[^\s>]+)>/g, protect)
-  // Protect raw URLs (http/https)
-  result = result.replace(/https?:\/\/\S+/g, protect)
-
-  result = transform(result, config)
-
-  // Restore placeholders
-  result = result.replace(new RegExp(`${MARKER}(?<idx>\\d+)${MARKER}`, "g"), (...args) => {
-    const groups = args[args.length - 1] as { idx: string }
-    return placeholders[parseInt(groups.idx)]
-  })
-
-  return result
+  const result = unified()
+    .use(remarkParse)
+    .use(remarkPunctilio, config)
+    .use(remarkStringify)
+    .processSync(text)
+  return String(result)
 }
 
 // ─── HTML mode ───────────────────────────────────────────────────────

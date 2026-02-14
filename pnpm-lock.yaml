@@ -164,8 +164,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: github:alexander-turner/punctilio
-        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770(unified@11.0.5)
+        specifier: 2.1.0
+        version: 2.1.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -226,6 +226,9 @@ importers:
       remark-smartypants:
         specifier: 3.0.2
         version: 3.0.2
+      remark-stringify:
+        specifier: ^11.0.0
+        version: 11.0.0
       rfdc:
         specifier: 1.3.1
         version: 1.3.1
@@ -7669,13 +7672,18 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770}
-    version: 1.4.1
+  punctilio@2.1.0:
+    resolution: {integrity: sha512-ynLn+819P0pznlMFWcHnHLW0rChSgz/Fes8S5WW155wpy+S92vF87FMNJBfUqkKm9zJvxVir9N7FDDI6bGmytw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
+      remark-parse: ^11.0.0
+      remark-stringify: ^11.0.0
       unified: ^11.0.0
     peerDependenciesMeta:
+      remark-parse:
+        optional: true
+      remark-stringify:
+        optional: true
       unified:
         optional: true
 
@@ -18617,11 +18625,13 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/38d36bc2b2af66e1ad838aff476122b35c6d1770(unified@11.0.5):
+  punctilio@2.1.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
     optionalDependencies:
+      remark-parse: 11.0.0
+      remark-stringify: 11.0.0
       unified: 11.0.5
 
   punycode.js@2.3.1: {}
