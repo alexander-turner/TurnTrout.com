@@ -40,7 +40,7 @@ Do **NOT** use this skill for:
 ## Prerequisites
 
 - GitHub CLI (`gh`) must be authenticated
-- All changes must be committed to a feature branch (not `main`/`master`)
+- All changes must be committed to a feature branch (not `$CLAUDE_CODE_BASE_REF`/`master`)
 
 ## Updating an Existing PR
 
@@ -56,7 +56,7 @@ Before updating an existing PR (pushing new commits, editing the description, et
 
 ### Step 1: Gather Context
 
-1. Identify the base branch (typically `main` or `master`)
+1. The base branch is in the env variable `$CLAUDE_CODE_BASE_REF`
 2. Run `git diff <base-branch>...HEAD` to see all changes
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
@@ -91,7 +91,7 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
    EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
    ```
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
-3. Create the PR using `gh pr create` with the template from the resource file
+3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
@@ -114,8 +114,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
-2. Runs `git log main..HEAD --oneline` — sees 2 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 2 commits
 3. Launches critique sub-agent with the diff
 4. Critique returns: "Looks good, minor suggestion to add null check on line 42"
 5. Fixes the null check, commits: `fix: add null check for empty session token`
@@ -133,8 +133,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes across 8 files including new components, tests, and API routes
-2. Runs `git log main..HEAD --oneline` — sees 5 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes across 8 files including new components, tests, and API routes
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 5 commits
 3. Launches critique sub-agent with the full diff
 4. Critique returns 4 issues: unused import, missing error boundary, test not covering edge case, over-engineered helper
 5. Fixes all 4 issues across 2 additional commits
@@ -149,7 +149,7 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **User says:** "Push this up"
 
-**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `main`, or just push the branch without creating a PR?"
+**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `$CLAUDE_CODE_BASE_REF`, or just push the branch without creating a PR?"
 
 ## Error Handling
 
