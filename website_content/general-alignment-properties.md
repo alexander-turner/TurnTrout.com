@@ -61,9 +61,9 @@ Terminally valuing latent objects in reality
 Navigating ontological shifts
 :    Consider latent-diamond-AIXI (LDAIXI), an AIXI variant. LDAIXI's utility function which scans its top 50 hypotheses (represented as Turing machines), checks each work tape for atomic representations of diamonds, and then computes the utility to be the amount of atomic diamond in the world.
 
-:    If LDAIXI updates sufficiently hard towards non-atomic physical theories, then it can no longer find any utility in its top 50 hypotheses. All policies now might have equal value (zero), and LDAIXI would not continue maximizing the expected diamond content of the future. From our viewpoint, LDAIXI has [failed to rebind its "goals"](https://arbital.com/p/ontology_identification/) to its new conceptions of reality. (From LDAIXI's "viewpoint", it has Bayes-updated on its observations and continues to select optimal actions.)
+     If LDAIXI updates sufficiently hard towards non-atomic physical theories, then it can no longer find any utility in its top 50 hypotheses. All policies now might have equal value (zero), and LDAIXI would not continue maximizing the expected diamond content of the future. From our viewpoint, LDAIXI has [failed to rebind its "goals"](https://arbital.com/p/ontology_identification/) to its new conceptions of reality. (From LDAIXI's "viewpoint", it has Bayes-updated on its observations and continues to select optimal actions.)
 
-:    On the other hand, physicists do not stop caring about their friends when they learn quantum mechanics. Children do not stop caring about animals when they learn that animals are made out of cells. People seem to navigate ontological shifts pretty well.
+     On the other hand, physicists do not stop caring about their friends when they learn quantum mechanics. Children do not stop caring about animals when they learn that animals are made out of cells. People seem to navigate ontological shifts pretty well.
 
 Reflective reasoning / embeddedness
 :    [AIXI can't think straight about how it is embedded in the world](https://www.lesswrong.com/posts/AszKwKyhBPZAnCstA/solomonoff-cartesianism). However, people quickly learn heuristics like "If I get angry, I'll be more likely to be mean to people around me", or "If I take cocaine now, I'll be even more likely to take cocaine in the future."

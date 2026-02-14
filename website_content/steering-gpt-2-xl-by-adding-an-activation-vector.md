@@ -946,9 +946,9 @@ Activation additions are _way cheaper_ than finetuning
 Activation additions may preserve model interpretability, even while changing the model's alignment properties
 : If you're finetuning the whole model, then a single gradient can potentially change _every parameter in your model_, thereby undoing your interpretability work (unless you can understand the update itself).
 
-: But activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
+  But activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
 
-: Activation additions probably also enjoy some symbol grounding because they're computed using the activations of natural language prompts. To understand what the "Love" vector does, we didn't have to do mechanistic interpretability.
+  Activation additions probably also enjoy some symbol grounding because they're computed using the activations of natural language prompts. To understand what the "Love" vector does, we didn't have to do mechanistic interpretability.
 
 Activation additions can sometimes be composed
 : For $n$ vectors which ~cleanly compose, there are exponentially many alignment configurations (at least $2^n$, since each vector can be included or excluded from a given configuration). That said, finetuning may share this benefit to some extent.[^39]

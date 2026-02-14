@@ -372,54 +372,54 @@ As I have argued, this does not seem to be the world we live in. Therefore, sinc
 Communication is hard. Understanding is hard. Even if I fully understood what other people are trying to do (I don't), I'd still not have space to reply to every viewpoint. I’m still going to say what I think, do my best, and be honest. I expect to be importantly right, which is why I’m sharing this essay. As it stands, I’m worried about much of the alignment field and the concepts being used.
 
 **Alex’s model of an outer alignment enjoyer**
-: Outer / inner alignment is cool because it lets us decompose “what we want the agent to care about” and “how we get the agent to care about that.” This problem decomposition is natural and lets us allocate the agent’s motivations to the part we have more specification-level control over (e.g. its reward function).
+  Outer / inner alignment is cool because it lets us decompose “what we want the agent to care about” and “how we get the agent to care about that.” This problem decomposition is natural and lets us allocate the agent’s motivations to the part we have more specification-level control over (e.g. its reward function).
 
 **Alex**
-: I don’t think it makes sense to design an agent to have an actor/grader motivational structure. [As I’ve discussed](/dont-design-agents-which-exploit-adversarial-inputs), [I think those design patterns are full of landmines](/dont-align-agents-to-evaluations-of-plans).
+  I don’t think it makes sense to design an agent to have an actor/grader motivational structure. [As I’ve discussed](/dont-design-agents-which-exploit-adversarial-inputs), [I think those design patterns are full of landmines](/dont-align-agents-to-evaluations-of-plans).
 
 **Alex's model of an outer alignment enjoyer**
-: I think we can recover the concept if we just let “outer alignment” be “what cognition / values should the AI have?”.
+  I think we can recover the concept if we just let “outer alignment” be “what cognition / values should the AI have?”.
 
 **Alex**
-: That is indeed important to think about. That’s also _not_ aiming for an “outer-aligned” reward function or grading procedure. Don’t pollute the namespace—allocate different phrases to different concepts. That is, you can consider “what values should the AI have?” and _then_ “what reward function will chisel those values into the AI?”. But then we aren’t inner-aligning the agent _to the outer objective_ anymore, but rather we are producing the _desired_ _internal values_. We’re now reasoning about reward-chiseling, which I’m a big fan of.
+  That is indeed important to think about. That’s also _not_ aiming for an “outer-aligned” reward function or grading procedure. Don’t pollute the namespace—allocate different phrases to different concepts. That is, you can consider “what values should the AI have?” and _then_ “what reward function will chisel those values into the AI?”. But then we aren’t inner-aligning the agent _to the outer objective_ anymore, but rather we are producing the _desired_ _internal values_. We’re now reasoning about reward-chiseling, which I’m a big fan of.
 
 **Alex's model of an outer alignment enjoyer**
-: Right, but you have to admit that “consider what kinds of objectives are safe to maximize” is _highly relevant_ to “what do we want the AI to end up doing for us?”. As you just agreed, we obviously want to understand that.
+  Right, but you have to admit that “consider what kinds of objectives are safe to maximize” is _highly relevant_ to “what do we want the AI to end up doing for us?”. As you just agreed, we obviously want to understand that.
 
-: (And yes, _maximization_. Just look at the coherence theorems spotlighting expected utility maximization as the thing which non-stupid real-world agents do! Unless you think we won’t get an EU maximizer?)
+  (And yes, _maximization_. Just look at the coherence theorems spotlighting expected utility maximization as the thing which non-stupid real-world agents do! Unless you think we won’t get an EU maximizer?)
 
 **Alex**
-: Compared to “what reward signal-generators are safe to optimize?”, it’s _far_ _more_ reasonable to consider “what broad-strokes _utility_ function should the AI optimize?”. Even so, there are [_tons_](https://www.readthesequences.com/The-Hidden-Complexity-Of-Wishes) of [skulls](https://arbital.com/p/diamond_maximizer/) along that path. We just suck at coming up with utility functions which are safe to maximize, for [generalizable reasons](/dont-design-agents-which-exploit-adversarial-inputs). Why should a modern alignment researcher spend an additional increment of time thinking about _that_ question, instead of other questions? Do you think that we’ll _finally_ find the clever utility function/grading procedure which is robust against adversarial optimization? I think it’s wiser to simply avoid design patterns which pit you against a superintelligence’s adversarial optimization pressure.
+  Compared to “what reward signal-generators are safe to optimize?”, it’s _far_ _more_ reasonable to consider “what broad-strokes _utility_ function should the AI optimize?”. Even so, there are [_tons_](https://www.readthesequences.com/The-Hidden-Complexity-Of-Wishes) of [skulls](https://arbital.com/p/diamond_maximizer/) along that path. We just suck at coming up with utility functions which are safe to maximize, for [generalizable reasons](/dont-design-agents-which-exploit-adversarial-inputs). Why should a modern alignment researcher spend an additional increment of time thinking about _that_ question, instead of other questions? Do you think that we’ll _finally_ find the clever utility function/grading procedure which is robust against adversarial optimization? I think it’s wiser to simply avoid design patterns which pit you against a superintelligence’s adversarial optimization pressure.
 
-: (And I don’t think you’ll get a meaningfully viewable-as-bounded-EU-maximizer [until late in the agent’s developmental timeline](/a-shot-at-the-diamond-alignment-problem#The-values-handshake). That might be an important modeling consideration. Be careful to distinguish asymptotic limits from finite-time results.)
+  (And I don’t think you’ll get a meaningfully viewable-as-bounded-EU-maximizer [until late in the agent’s developmental timeline](/a-shot-at-the-diamond-alignment-problem#The-values-handshake). That might be an important modeling consideration. Be careful to distinguish asymptotic limits from finite-time results.)
 
 **Alex's model of an outer alignment enjoyer**
-: Seriously? It would be real progress to solve the outer alignment problem in terms of writing down a utility function over universe-histories which is safe to maximize. For example, suppose we learned that if the utility function penalizes the agent for gaining more than _X_ power for >1 year (in some formally specifiable sense) would bound the risk from that AI, making it easier to get AIs which do pivotal acts without keeping power forever. Then we learn something about the properties we might aim to chisel into the AI’s inner cognition, in order to come out alive on the other side of AGI.
+  Seriously? It would be real progress to solve the outer alignment problem in terms of writing down a utility function over universe-histories which is safe to maximize. For example, suppose we learned that if the utility function penalizes the agent for gaining more than _X_ power for >1 year (in some formally specifiable sense) would bound the risk from that AI, making it easier to get AIs which do pivotal acts without keeping power forever. Then we learn something about the properties we might aim to chisel into the AI’s inner cognition, in order to come out alive on the other side of AGI.
 
 **Alex**
-: First, note that your argument is for finding a safe-to-maximize _utility function over universe histories_, which is not the same as the historically prioritized _reward-outer-alignment_. Second, not only do I think that your hope won’t happen, I think the hope is written in an ontology which doesn’t make sense.
+  First, note that your argument is for finding a safe-to-maximize _utility function over universe histories_, which is not the same as the historically prioritized _reward-outer-alignment_. Second, not only do I think that your hope won’t happen, I think the hope is written in an ontology which doesn’t make sense.
 
-: Here’s a non-strict analogy which hopefully expresses some of my unease. Your hope feels like saying, “If I could examine the set of physically valid universe-histories in which I go hiking tonight, I’d have learned something about where I might trip and fall during the hike.” Like, sure? But why would I want to examine _that_ mathematical object in order to not trip during the hike? Sure seems inefficient and hard to parse.
+  Here’s a non-strict analogy which hopefully expresses some of my unease. Your hope feels like saying, “If I could examine the set of physically valid universe-histories in which I go hiking tonight, I’d have learned something about where I might trip and fall during the hike.” Like, sure? But why would I want to examine _that_ mathematical object in order to not trip during the hike? Sure seems inefficient and hard to parse.
 
-: I agree that “What decision-making influences should we develop inside the AI?” is a hugely important question. I just don’t think that “what utility functions are safe to maximize?” is a sensible way to approach that question.
+  I agree that “What decision-making influences should we develop inside the AI?” is a hugely important question. I just don’t think that “what utility functions are safe to maximize?” is a sensible way to approach that question.
 
 **Alex's model of an outer alignment enjoyer**
-: Even though we probably won’t discover a compact specification of a utility function which is _strictly and literally safe to literally maximize_, there are _degrees_ of safety when a real-world agent optimizes an objective. Two objectives may be gameable, but one can still be _less_ gameable than the other.
+  Even though we probably won’t discover a compact specification of a utility function which is _strictly and literally safe to literally maximize_, there are _degrees_ of safety when a real-world agent optimizes an objective. Two objectives may be gameable, but one can still be _less_ gameable than the other.
 
 **Alex**
-: Sure seems like that in the outer/inner paradigm, those “degrees of safety” are irrelevant in the limit, as their imperfections burst under the strain of strong optimization. (Aren’t _you_ supposed to be the discussant operating that paradigm, Alex's model of an outer alignment enjoyer?)
+  Sure seems like that in the outer/inner paradigm, those “degrees of safety” are irrelevant in the limit, as their imperfections burst under the strain of strong optimization. (Aren’t _you_ supposed to be the discussant operating that paradigm, Alex's model of an outer alignment enjoyer?)
 
 **Alex's model of an outer alignment enjoyer**
-: I don’t see how you aren’t basically giving up on figuring out what the AI should be doing.
+  I don’t see how you aren’t basically giving up on figuring out what the AI should be doing.
 
 **Alex**
-: Giving up? No! _Thinking about “what utility function over universe-histories is good?” is just one way of framing “How can we sculpt an AI’s internal cognition so that it stops the world from blowing up due to unaligned AI?”._ If you live and breathe the inner/outer alignment frame, you’re missing out on better framings and ontologies for alignment! To excerpt from [_Project Lawful_](https://www.projectlawful.com/):
+  Giving up? No! _Thinking about “what utility function over universe-histories is good?” is just one way of framing “How can we sculpt an AI’s internal cognition so that it stops the world from blowing up due to unaligned AI?”._ If you live and breathe the inner/outer alignment frame, you’re missing out on better framings and ontologies for alignment! To excerpt from [_Project Lawful_](https://www.projectlawful.com/):
 
-: > The difficult thing, in most pre-paradigmatic and confused problems at the beginning of some Science, is not coming up with the right complicated long sentence in a language you already know. It's breaking out of the language in which every hypothesis you can write is false. \[...\] The warning sign that you need to 'jump-out-of-the-system' is the feeling \[of\] frustration, flailing around in the dark, trying desperate wild ideas and getting unhelpful results one after another. When you feel like that, you're probably thinking in the wrong language, or missing something fundamental, or trying to do something that is in fact impossible. Or impossible using the tools you have.
+  > The difficult thing, in most pre-paradigmatic and confused problems at the beginning of some Science, is not coming up with the right complicated long sentence in a language you already know. It's breaking out of the language in which every hypothesis you can write is false. \[...\] The warning sign that you need to 'jump-out-of-the-system' is the feeling \[of\] frustration, flailing around in the dark, trying desperate wild ideas and getting unhelpful results one after another. When you feel like that, you're probably thinking in the wrong language, or missing something fundamental, or trying to do something that is in fact impossible. Or impossible using the tools you have.
 
-: Stop trying to write complicated long sentences in terms of outer objectives. **Just, stop**. Let’s find a new language. (Do you really think a future alignment textbook would say “And then, to everyone’s amazement, outer alignment scheme #7,513 succeeded!”)
+  Stop trying to write complicated long sentences in terms of outer objectives. **Just, stop**. Let’s find a new language. (Do you really think a future alignment textbook would say “And then, to everyone’s amazement, outer alignment scheme #7,513 succeeded!”)
 
-: Now, I can legitimately point out that outer and inner alignment aren't a good framing for alignment, _without_ offering an alternative better framing. That said, I [recently wrote](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=xwJfX45CvaKXFFtCS):[^11] [^12]
+  Now, I can legitimately point out that outer and inner alignment aren't a good framing for alignment, _without_ offering an alternative better framing. That said, I [recently wrote](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=xwJfX45CvaKXFFtCS):[^11] [^12]
 
   > [!quote]
   > Shard theory suggests that goals are more natural to specify/inculcate in their shard forms (e.g. if around trash and a trash can, then put the trash away), and not in their (presumably) final form of globally activated optimization of a coherent utility function which is the reflective equilibrium of inter-shard value-handshakes (e.g. a utility function over the agent's internal plan-ontology whose optimization leads to trash getting put away, among other utility-level reflections of initial shards).
@@ -429,127 +429,127 @@ Communication is hard. Understanding is hard. Even if I fully understood what ot
   > I think it's time to think in a different specification language.
 
 **Alex's model of an outer alignment enjoyer**
-: Bah, “shard theory of human values.” We didn’t build planes with flapping wings. Who cares if human values come from inner alignment failures—Why does that suggest that we shouldn’t solve inner alignment for AI? _AI will not be like you._
+  Bah, “shard theory of human values.” We didn’t build planes with flapping wings. Who cares if human values come from inner alignment failures—Why does that suggest that we shouldn’t solve inner alignment for AI? _AI will not be like you._
 
 **Alex**
-: Yes, it is indeed possible to selectively consider historical disanalogies which support a (potentially) desired conclusion (i.e. that outer/inner is fine). If we’re going to play reference class tennis, how about [all of the times biomimicry has worked](https://en.wikipedia.org/wiki/Biomimetics)?
+  Yes, it is indeed possible to selectively consider historical disanalogies which support a (potentially) desired conclusion (i.e. that outer/inner is fine). If we’re going to play reference class tennis, how about [all of the times biomimicry has worked](https://en.wikipedia.org/wiki/Biomimetics)?
 
-: But let’s not play reference class tennis. As mentioned above, we have to obey conservation of expected evidence here.
+  But let’s not play reference class tennis. As mentioned above, we have to obey conservation of expected evidence here.
 
-: In worlds where inner alignment was a good and feasible approach for getting certain human-compatible values into an AI (let’s call that hypothesis class H<sub>inner-align</sub>), I think that we would expect with greater probability for human values to naturally arise via inner alignment _successes_. However, in worlds where inner alignment failures are appropriate for getting human values into an AI (H<sub>fail</sub>), we would expect with greater probability for human values to naturally arise via inner alignment _failures_.
+  In worlds where inner alignment was a good and feasible approach for getting certain human-compatible values into an AI (let’s call that hypothesis class H<sub>inner-align</sub>), I think that we would expect with greater probability for human values to naturally arise via inner alignment _successes_. However, in worlds where inner alignment failures are appropriate for getting human values into an AI (H<sub>fail</sub>), we would expect with greater probability for human values to naturally arise via inner alignment _failures_.
 
-: Insofar as I have correctly inferred that human values constitute inner alignment failures on the human reward circuitry, this inference presents a decent likelihood ratio P(reality | H<sub>fail</sub>) / P(reality | H<sub>inner-align</sub>), since H<sub>fail</sub> predicts inferred reality more strongly. In turn, this implies an update towards H<sub>fail</sub> and away from H<sub>inner-align</sub>. I think it's worth considering the strength of this update (I'd guess it's around a bit or so against outer/inner), but it's definitely an update.
+  Insofar as I have correctly inferred that human values constitute inner alignment failures on the human reward circuitry, this inference presents a decent likelihood ratio P(reality | H<sub>fail</sub>) / P(reality | H<sub>inner-align</sub>), since H<sub>fail</sub> predicts inferred reality more strongly. In turn, this implies an update towards H<sub>fail</sub> and away from H<sub>inner-align</sub>. I think it's worth considering the strength of this update (I'd guess it's around a bit or so against outer/inner), but it's definitely an update.
 
-: I agree that there are important and substantial differences e.g. between human inductive biases and AI inductive biases. But I think that the evidential blow remains dealt against outer/inner, marginalizing over possible differences.
+  I agree that there are important and substantial differences e.g. between human inductive biases and AI inductive biases. But I think that the evidential blow remains dealt against outer/inner, marginalizing over possible differences.
 
 **Alex's model of an outer alignment enjoyer**
-: On another topic—What about “the outer objective gets smarter along with the agent”?
+  On another topic—What about “the outer objective gets smarter along with the agent”?
 
 **Alex**
-: That strategy seems unwise for the target motivational structures I have in mind (e.g. "protect humanity" or "do alignment research").
+  That strategy seems unwise for the target motivational structures I have in mind (e.g. "protect humanity" or "do alignment research").
 
   1. [Section I](#i-robust-grading-is-unnecessary-extremely-hard-and-unnatural) (robust grading is unnecessary): This plan requires an [unrealistic invariant.](/dont-design-agents-which-exploit-adversarial-inputs) The invariant is that the outer objective must "properly grade" every possible plan the agent is smart enough to consider. How are you possibly going to fulfill that invariant? Why would you _want_ to choose a scheme where you have to fulfill such an onerous invariant? For more detail on the concurrent-improvement case, see [the appendix](/dont-design-agents-which-exploit-adversarial-inputs#appendix-maybe-we-just) of [Don't design agents which exploit adversarial inputs.](/dont-design-agents-which-exploit-adversarial-inputs)
   2. [Section II](#ii-loss-functions-chisel-circuits-into-networks) (loss is like a chisel) applies: You're constraining the chisel to look like the statue. Why consider such a narrow class of approaches?
   3. [Section III](#iii-outer-inner-just-isn-t-how-alignment-works-in-people) (inner/outer is anti-natural) applies: That strategy seems _anti-natural_ as a way of getting cognitive work out of an agent.
 
 **Alex's model of an outer alignment enjoyer**
-: It’s easy to talk big talk. It’s harder to propose concrete directions which aren’t, you know, _doomed_.
+  It’s easy to talk big talk. It’s harder to propose concrete directions which aren’t, you know, _doomed_.
 
 **Alex**
-: The point isn’t that I have some even _more amazing and complicated scheme_ which avoids these problems. The point is that I don’t need one. In the void left by outer/inner, many objections and reasons for doom no longer apply (as a matter [of _anticipation_](https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t?commentId=5Kn3SgoGdL3h5zg2D) and not of the problems just popping up in a different language).
+  The point isn’t that I have some even _more amazing and complicated scheme_ which avoids these problems. The point is that I don’t need one. In the void left by outer/inner, many objections and reasons for doom no longer apply (as a matter [of _anticipation_](https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t?commentId=5Kn3SgoGdL3h5zg2D) and not of the problems just popping up in a different language).
 
-: In this void, _you should reconsider all fruits which may have grown from the outer/inner frame_. Scrutinize both your reasons for optimism (e.g. “maybe it’s simpler to just point to the outer objective”) and for pessimism (e.g. “if the graders are exploitable by the AI, the proposal fails”). See alignment with fresh eyes for a while. Think for yourself.
+  In this void, _you should reconsider all fruits which may have grown from the outer/inner frame_. Scrutinize both your reasons for optimism (e.g. “maybe it’s simpler to just point to the outer objective”) and for pessimism (e.g. “if the graders are exploitable by the AI, the proposal fails”). See alignment with fresh eyes for a while. Think for yourself.
 
-: In this void, I wrote [_Seriously, what goes wrong with "reward the agent when it makes you smile"?_](/questioning-why-simple-alignment-plan-fails):
+  In this void, I wrote [_Seriously, what goes wrong with "reward the agent when it makes you smile"?_](/questioning-why-simple-alignment-plan-fails):
 
-: > My mood \[in this post\] isn't "And this is what we do for alignment, let's relax." My mood is "Why consider super-complicated reward and feedback schemes when, as far as I can tell, we don't know what's going to happen in this relatively simple scheme? [How do reinforcement schedules map into inner values](https://www.lesswrong.com/posts/xqkGmfikqapbJ2YMj/shard-theory-an-overview)?"
+  > My mood \[in this post\] isn't "And this is what we do for alignment, let's relax." My mood is "Why consider super-complicated reward and feedback schemes when, as far as I can tell, we don't know what's going to happen in this relatively simple scheme? [How do reinforcement schedules map into inner values](https://www.lesswrong.com/posts/xqkGmfikqapbJ2YMj/shard-theory-an-overview)?"
 
-: If you’re considering “reward on smile” from an outer alignment frame, then _obviously_ it’s doomed. But from the reward-as-chisel frame, not so fast. For that scheme to be doomed, it would have to be true that, for every probable sequence of cognitive updates we can provide the agent via smile-reward events, those updates would not build up into value shards which care about people and want to protect them. That scheme’s doom is not at all clear to me.
+  If you’re considering “reward on smile” from an outer alignment frame, then _obviously_ it’s doomed. But from the reward-as-chisel frame, not so fast. For that scheme to be doomed, it would have to be true that, for every probable sequence of cognitive updates we can provide the agent via smile-reward events, those updates would not build up into value shards which care about people and want to protect them. That scheme’s doom is not at all clear to me.
 
-: One objection is “Ignorance of failure is no protection at all. We need a tight story for why AI goes _well._” Well, yeah. I’m just saying “in the absence of outer/inner, it doesn’t make sense to start debating hyper-complicated reward chisels like [debate](https://arxiv.org/abs/1805.00899) or [recursive reward modeling](https://arxiv.org/abs/1811.07871), if we still can’t even adjudicate what happens for ‘reward on smile.’ And, there seems to be misplaced emphasis on ‘objective robustness’, when really we’re trying to get good results from loss-chiseling.”
+  One objection is “Ignorance of failure is no protection at all. We need a tight story for why AI goes _well._” Well, yeah. I’m just saying “in the absence of outer/inner, it doesn’t make sense to start debating hyper-complicated reward chisels like [debate](https://arxiv.org/abs/1805.00899) or [recursive reward modeling](https://arxiv.org/abs/1811.07871), if we still can’t even adjudicate what happens for ‘reward on smile.’ And, there seems to be misplaced emphasis on ‘objective robustness’, when really we’re trying to get good results from loss-chiseling.”
 
 **Alex's model of an outer alignment enjoyer**
-: Suppose I agreed. Suppose I just dropped outer/inner. What next?
+  Suppose I agreed. Suppose I just dropped outer/inner. What next?
 
 **Alex**
-: Then you would have the rare opportunity to pause and think while floating freely between agendas. I will, for the moment, [hold off on proposing solutions](https://www.readthesequences.com/Hold-Off-On-Proposing-Solutions). Even if my proposal is good, discussing it _now_ would rob us of insights you could have contributed as well. There will be a shard theory research agenda post which will advocate for itself, in due time.
+  Then you would have the rare opportunity to pause and think while floating freely between agendas. I will, for the moment, [hold off on proposing solutions](https://www.readthesequences.com/Hold-Off-On-Proposing-Solutions). Even if my proposal is good, discussing it _now_ would rob us of insights you could have contributed as well. There will be a shard theory research agenda post which will advocate for itself, in due time.
 
 **Alex's model of an outer alignment enjoyer, different conversational branch.**
-: We know how to control reward functions to a much greater extent than we know how to control an AI’s learned value shards.
+  We know how to control reward functions to a much greater extent than we know how to control an AI’s learned value shards.
 
 **Alex**
-: This is true. And?
+  This is true. And?
 
 **Alex's model of an outer alignment enjoyer**
-: I feel like you’re just ignoring the crushing amount of RL research on regret bounds and a moderate amount of research on [the expressivity of reward functions](https://www.deepmind.com/blog/on-the-expressivity-of-markov-reward) and [how to shape reward while preserving the optimal policy set](https://scholar.google.com/scholar?cluster=16007119379407281329&hl=en&as_sd$t=7$,39). Literally _I_ have proven a theorem[^13] constructively showing how to transfer an optimal policy set from one discount rate to another. We know how to talk about these quantities. Are you seriously suggesting just tossing that out?
+  I feel like you’re just ignoring the crushing amount of RL research on regret bounds and a moderate amount of research on [the expressivity of reward functions](https://www.deepmind.com/blog/on-the-expressivity-of-markov-reward) and [how to shape reward while preserving the optimal policy set](https://scholar.google.com/scholar?cluster=16007119379407281329&hl=en&as_sd$t=7$,39). Literally _I_ have proven a theorem[^13] constructively showing how to transfer an optimal policy set from one discount rate to another. We know how to talk about these quantities. Are you seriously suggesting just tossing that out?
 
 **Alex**
-: Yes, toss it out, that stuff doesn't seem helpful for alignment thinking—including that theorem we were so proud of! Yes, toss it out, in the sense of relinquishing the ill-advised hope of outer alignment. Knowing how to talk about a quantity (reward-optimality) doesn’t mean it’s the most appropriate quantity to consider.
+  Yes, toss it out, that stuff doesn't seem helpful for alignment thinking—including that theorem we were so proud of! Yes, toss it out, in the sense of relinquishing the ill-advised hope of outer alignment. Knowing how to talk about a quantity (reward-optimality) doesn’t mean it’s the most appropriate quantity to consider.
 
 **Alex's model of an outer alignment enjoyer**
-: Consider _this_: Obviously we want to reward the agent for doing good things (like making someone smile) and penalize it for doing bad things (like hurting people). This frame is historically, empirically useful for getting good behavior out of AI.
+  Consider _this_: Obviously we want to reward the agent for doing good things (like making someone smile) and penalize it for doing bad things (like hurting people). This frame is historically, empirically useful for getting good behavior out of AI.
 
 **Alex**
-: First, we have _not_ solved AI alignment in the inner/outer paradigm—even for _seemingly simple objectives like diamond production and strawberry duplication_—despite brilliant people thinking in that frame for years. That is weak evidence against it being a good paradigm.
+  First, we have _not_ solved AI alignment in the inner/outer paradigm—even for _seemingly simple objectives like diamond production and strawberry duplication_—despite brilliant people thinking in that frame for years. That is weak evidence against it being a good paradigm.
 
-: Second, I agree that all else equal, it’s better to reward and penalize the agent for obvious good and bad things, respectively. But not _because_ the reward function is supposed to represent what I want. As I explained, the reward function is like a chisel. If I reward the agent when it makes me smile, all else equal, that’s probably going to upweight and generalize at least _some_ contextual values upstream of making me smile. That reward scheme should differentially upweight and strengthen human-compatible cognition to some extent.
+  Second, I agree that all else equal, it’s better to reward and penalize the agent for obvious good and bad things, respectively. But not _because_ the reward function is supposed to represent what I want. As I explained, the reward function is like a chisel. If I reward the agent when it makes me smile, all else equal, that’s probably going to upweight and generalize at least _some_ contextual values upstream of making me smile. That reward scheme should differentially upweight and strengthen human-compatible cognition to some extent.
 
-: Since reward/loss is _actually the chisel according to the math of cognition-updating in the most relevant-seeming approaches_, insofar as your suggestion is good, it is good _because it can be justified via cognition-chiseling reasons._ Your basic suggestion might not be enough for alignment success, but it’s an important part of our best current guess about what to do.
+  Since reward/loss is _actually the chisel according to the math of cognition-updating in the most relevant-seeming approaches_, insofar as your suggestion is good, it is good _because it can be justified via cognition-chiseling reasons._ Your basic suggestion might not be enough for alignment success, but it’s an important part of our best current guess about what to do.
 
-: More broadly, I perceive a motte and bailey:
+  More broadly, I perceive a motte and bailey:
 
   - _Bailey_: We should solve outer alignment by specifying a reward signal which can't reasonably be gamed and which expresses what we want ／is aligned with our values. This reward signal should return good outputs far outside of the normal distribution of human experience, such that it doesn't have bad maxima.
   - _Motte_: All else equal, it's better to reward the agent for doing good things (like making someone smile) and to penalize it for doing bad things (like hurting people).
-: I think that the bailey is wrong and the motte is right.
+  I think that the bailey is wrong and the motte is right.
 
 **Alex's model of an outer alignment enjoyer**
-: You keep wanting to focus on the “quantum mechanics” of loss-as-chisel. I agree that, in principle, if we really knew what we were doing—if we deeply understood SGD dynamics—we could skillfully ensure the network generalizes in the desired way (e.g. makes diamonds). You criticize the “skulls” visible on the “robust grader” research paths, while seemingly ignoring the skulls dotting the “just understand SGD” paths.
+  You keep wanting to focus on the “quantum mechanics” of loss-as-chisel. I agree that, in principle, if we really knew what we were doing—if we deeply understood SGD dynamics—we could skillfully ensure the network generalizes in the desired way (e.g. makes diamonds). You criticize the “skulls” visible on the “robust grader” research paths, while seemingly ignoring the skulls dotting the “just understand SGD” paths.
 
 **Alex**
-: I, at the least, agree that we aren’t going to get a precise theory like “If you initialize _this_ architecture and scale of foundation model on _this_ kind of corpus via self-supervised learning, it will contain a diamond concept with high probability; if you finetune on _this_ kind of task, it will hook up its primary decision-influences to the diamond-abstraction; …”. That seems possible to understand given enough time, but I doubt we’ll have that much time before the rubber hits the road.
+  I, at the least, agree that we aren’t going to get a precise theory like “If you initialize _this_ architecture and scale of foundation model on _this_ kind of corpus via self-supervised learning, it will contain a diamond concept with high probability; if you finetune on _this_ kind of task, it will hook up its primary decision-influences to the diamond-abstraction; …”. That seems possible to understand given enough time, but I doubt we’ll have that much time before the rubber hits the road.
 
-: However, I’d be more sympathetic to this concern if there wasn’t a bunch of easy progress to be had from simply realizing that loss-as-chisel _exists_, and then trying to analyze the dynamics anyways. (See basically everything I’ve written since this spring. Most of my insights have been enabled by my unusually strong desire to think mechanistically and precisely about what _actually happens_ during a learning process.)
+  However, I’d be more sympathetic to this concern if there wasn’t a bunch of easy progress to be had from simply realizing that loss-as-chisel _exists_, and then trying to analyze the dynamics anyways. (See basically everything I’ve written since this spring. Most of my insights have been enabled by my unusually strong desire to think mechanistically and precisely about what _actually happens_ during a learning process.)
 
-: One thing which would make me more pessimistic about the “understand how loss chisels cognition into agents” project is if I don’t, within about a year’s time, have empirically verified loss-as-chisel insights which wouldn’t have happened without that frame. But even if so, everything we're doing will still be governed by loss-as-chisel. [We can't ignore it and make it go away](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed#33QLQScBqFHfJyfLA).
+  One thing which would make me more pessimistic about the “understand how loss chisels cognition into agents” project is if I don’t, within about a year’s time, have empirically verified loss-as-chisel insights which wouldn’t have happened without that frame. But even if so, everything we're doing will still be governed by loss-as-chisel. [We can't ignore it and make it go away](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed#33QLQScBqFHfJyfLA).
 
 **Alex's model of an outer alignment enjoyer**
-: But if we do inner alignment, we _don’t_ have to understand SGD dynamics to the same extent that we do to chisel in diamond-producing values.
+  But if we do inner alignment, we _don’t_ have to understand SGD dynamics to the same extent that we do to chisel in diamond-producing values.
 
 **Alex**
-: I don’t know why you think that. (I don't even understand enough yet to agree or disagree in detail; I currently disagree in expectation over probable answers.)
+  I don’t know why you think that. (I don't even understand enough yet to agree or disagree in detail; I currently disagree in expectation over probable answers.)
 
-: What, exactly, are we chiseling in order to produce an inner-aligned network? How do we know we can chisel agents into that shape, if we don’t understand chiseling? What do we think we know, and how do we think we know it? **How is an inner-aligned diamond-producing agent supposed to be structured?**
-: This is not a rhetorical question. I literally do not understand what the internal cognition is supposed to look like for an inner-aligned agent. Most of what I’ve read has been vague, on the level of “an inner-aligned agent cares about optimizing the outer objective.”
+  What, exactly, are we chiseling in order to produce an inner-aligned network? How do we know we can chisel agents into that shape, if we don’t understand chiseling? What do we think we know, and how do we think we know it? **How is an inner-aligned diamond-producing agent supposed to be structured?**
+  This is not a rhetorical question. I literally do not understand what the internal cognition is supposed to look like for an inner-aligned agent. Most of what I’ve read has been vague, on the level of “an inner-aligned agent cares about optimizing the outer objective.”
 
-: Charles Foster comments:
+  Charles Foster comments:
 
-: > We are attempting to mechanistically explain how an agent makes decisions. One proposed reduction is that inside the agent, there is an even **smaller** inner agent that interacts with a non-agential evaluative submodule to make decisions for the outer agent. But that raises the immediate questions of "How does the inner agent make its decisions about how to interact with the evaluative submodule?" and then "At some point, there's gotta be some non-agential causal structure that is responsible for **actually implementing decision-making**, right?" and then "Can we just explain the original agent's behavior in those terms? What is positing an externalized evaluative submodule buying us?"
+  > We are attempting to mechanistically explain how an agent makes decisions. One proposed reduction is that inside the agent, there is an even **smaller** inner agent that interacts with a non-agential evaluative submodule to make decisions for the outer agent. But that raises the immediate questions of "How does the inner agent make its decisions about how to interact with the evaluative submodule?" and then "At some point, there's gotta be some non-agential causal structure that is responsible for **actually implementing decision-making**, right?" and then "Can we just explain the original agent's behavior in those terms? What is positing an externalized evaluative submodule buying us?"
 
-: Perhaps my emphasis on mechanistic reasoning and my [unusual](/shard-theory) [level](/a-shot-at-the-diamond-alignment-problem) [of](/dont-align-agents-to-evaluations-of-plans#Grader-optimization-planning) [precision](/against-inner-outer-alignment#Appendix-B-RL-reductionism) in my speculation about AI internals, perhaps these make people realize how _complicated_ realistic cognition is in the shard picture. Perhaps people realize [how much might have to go right](https://www.lesswrong.com/posts/krHDNc7cDvfEL8z9a/niceness-is-unnatural), how many algorithmic details may need to be etched into a network so that it does what we want and generalizes well.
+  Perhaps my emphasis on mechanistic reasoning and my [unusual](/shard-theory) [level](/a-shot-at-the-diamond-alignment-problem) [of](/dont-align-agents-to-evaluations-of-plans#Grader-optimization-planning) [precision](/against-inner-outer-alignment#Appendix-B-RL-reductionism) in my speculation about AI internals, perhaps these make people realize how _complicated_ realistic cognition is in the shard picture. Perhaps people realize [how much might have to go right](https://www.lesswrong.com/posts/krHDNc7cDvfEL8z9a/niceness-is-unnatural), how many algorithmic details may need to be etched into a network so that it does what we want and generalizes well.
 
-: But perhaps people don’t realize that a network which is inner-aligned on an objective will _also_ require a precise and conforming internal structure, and they don’t realize this because [no one has written detailed plausible stabs at inner-aligned cognition](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=eegBBj4kBsAk57utv).
+  But perhaps people don’t realize that a network which is inner-aligned on an objective will _also_ require a precise and conforming internal structure, and they don’t realize this because [no one has written detailed plausible stabs at inner-aligned cognition](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=eegBBj4kBsAk57utv).
 
 **Alex's model of an outer alignment enjoyer**
-: Just because the chisel frame is technically accurate doesn’t mean it’s the most pragmatically appropriate frame. The outer alignment frame can abstract over the details of cognition-chiseling and save us time in designing good chiseling-schemes. For example, I can just reward the AI when it wins the game of chess, and not worry about designing reward schedules according to my own (poor) understanding of chess and what chess-shards to upweight.
+  Just because the chisel frame is technically accurate doesn’t mean it’s the most pragmatically appropriate frame. The outer alignment frame can abstract over the details of cognition-chiseling and save us time in designing good chiseling-schemes. For example, I can just reward the AI when it wins the game of chess, and not worry about designing reward schedules according to my own (poor) understanding of chess and what chess-shards to upweight.
 
 **Alex**
-: I agree that sometimes you should just think about directly incentivizing the outcomes and letting RL figure out the rest; I think that [your chess example is quite good](https://assets.turntrout.com/static/images/posts/F6O98QA.avif)! Chess is fully observable and has a crisply defined, algorithmically gradable win condition. Don’t worry about “if I reward for taking a queen, what kind of cognition will that chisel?”—just reinforce the network for winning.
+  I agree that sometimes you should just think about directly incentivizing the outcomes and letting RL figure out the rest; I think that [your chess example is quite good](https://assets.turntrout.com/static/images/posts/F6O98QA.avif)! Chess is fully observable and has a crisply defined, algorithmically gradable win condition. Don’t worry about “if I reward for taking a queen, what kind of cognition will that chisel?”—just reinforce the network for winning.
 
-: However, is the “reward outcomes based on their ‘goodness’” frame _truly_ the most appropriate frame for AGI? If that _were_ true, how would we know? I mean—_gestures at probability theory intuitions_—however outer alignment-like concepts entered the alignment consciousness, it was not (as best I can discern) _because_ outer alignment concepts are optimally efficient for understanding how to chisel good cognition into agents.[^14] Am I now to believe that, _coincidentally,_ this outer alignment frame is _also_ the most appropriate abstraction for understanding how to e.g. chisel diamond-producing values into policy networks? How fortuitous!
+  However, is the “reward outcomes based on their ‘goodness’” frame _truly_ the most appropriate frame for AGI? If that _were_ true, how would we know? I mean—_gestures at probability theory intuitions_—however outer alignment-like concepts entered the alignment consciousness, it was not (as best I can discern) _because_ outer alignment concepts are optimally efficient for understanding how to chisel good cognition into agents.[^14] Am I now to believe that, _coincidentally,_ this outer alignment frame is _also_ the most appropriate abstraction for understanding how to e.g. chisel diamond-producing values into policy networks? How fortuitous!
 
 **Alex's model of an outer alignment enjoyer**
-: Are you saying it's never appropriate to consider outer/inner, then?
+  Are you saying it's never appropriate to consider outer/inner, then?
 
 **Alex**
-: I think that the terminology and frame are unhelpful. At least, I feel drastically less confused in my new primary frame, and people have told me my explanations are quite clear and focused in ways which I think relate to my new frame.
+  I think that the terminology and frame are unhelpful. At least, I feel drastically less confused in my new primary frame, and people have told me my explanations are quite clear and focused in ways which I think relate to my new frame.
 
-: In e.g. the chess example, though, it seems fine to adopt the "Newtonian mechanics" optimized-for-reward view on deep learning. Reward the agent for things you want to happen, in that setting. Just don't forget what's _really_ going on, deeper down.
+  In e.g. the chess example, though, it seems fine to adopt the "Newtonian mechanics" optimized-for-reward view on deep learning. Reward the agent for things you want to happen, in that setting. Just don't forget what's _really_ going on, deeper down.
 
 **Alex's model of an outer alignment enjoyer**
-: Even if the inner/outer alignment problem isn’t literally solvable in literal reality, it can still guide us to good ideas.
+  Even if the inner/outer alignment problem isn’t literally solvable in literal reality, it can still guide us to good ideas.
 
 **Alex**
-: Many things can guide us to good ideas. Be careful not to privilege a hypothesis which was initially elevated to consideration for reasons you may no longer believe!
+  Many things can guide us to good ideas. Be careful not to privilege a hypothesis which was initially elevated to consideration for reasons you may no longer believe!
 
 # Conclusion
 
@@ -584,29 +584,29 @@ Evan privately provided another definition which better accounts for the way he 
 I then wrote a dialogue with my model of him, which he affirmed as “a pretty reasonable representation.”
 
 **Alex**
-: Hm. OK. So it sounds like the outer objective is less of something which grades the agent directly across all situations, and which is safe to optimize _for._ Under your operationalization of the outer alignment training goal, the reward function is more like an artifact which emits reward on training in a way which tightly correlates with getting gold coins on training.
+  Hm. OK. So it sounds like the outer objective is less of something which grades the agent directly across all situations, and which is safe to optimize _for._ Under your operationalization of the outer alignment training goal, the reward function is more like an artifact which emits reward on training in a way which tightly correlates with getting gold coins on training.
 
-: Suppose I have an embodied AI I’m training via RL (for conceptual simplicity, not realism), and it navigates mazes and reaches a gold coin at the end of each maze. I’ll just watch the agent through one-way glass and see if it looks like it touched the gold coin by legit solving the maze. If it does, I hit the reward button.
+  Suppose I have an embodied AI I’m training via RL (for conceptual simplicity, not realism), and it navigates mazes and reaches a gold coin at the end of each maze. I’ll just watch the agent through one-way glass and see if it looks like it touched the gold coin by legit solving the maze. If it does, I hit the reward button.
 
-: Now suppose that this in fact just trains a smart AI which “terminally cares” about gold coins, operationalized in the “values as policy-influences” sense: In all realistically attainable situations where the AI believes there are gold coins nearby, the AI reliably reaches the gold coin. The AI doesn’t go to yellow objects, or silver coins, or any other junk.
+  Now suppose that this in fact just trains a smart AI which “terminally cares” about gold coins, operationalized in the “values as policy-influences” sense: In all realistically attainable situations where the AI believes there are gold coins nearby, the AI reliably reaches the gold coin. The AI doesn’t go to yellow objects, or silver coins, or any other junk.
 
-: So even though on training, the reward schedule was unidentifiable from “reward when a metal disk was touched”, that doesn’t matter for our training goal. We just want the AI to learn a certain kind of cognition which we “had in mind” when specifying the outer objective, and it doesn’t matter if the outer objective is “unambiguously representing” the intended goal.
+  So even though on training, the reward schedule was unidentifiable from “reward when a metal disk was touched”, that doesn’t matter for our training goal. We just want the AI to learn a certain kind of cognition which we “had in mind” when specifying the outer objective, and it doesn’t matter if the outer objective is “unambiguously representing” the intended goal.
 
 **Alex’s model of Evan**
-: Yup, basically.
+  Yup, basically.
 
 **Alex**
-: OK. So in this scenario, though, the actual reward-generating process would in fact be foolable by an AI which replaces the window with an extremely convincing display which showed me a video which made me believe it got gold coins, even though it was actually touching a secret silver coin in the real room. The existence of that adversarial input isn’t a problem, because in this story, we aren’t trying to get the AI to directly optimize the reward-generating process or any of its Cartesian transforms or whatever.
+  OK. So in this scenario, though, the actual reward-generating process would in fact be foolable by an AI which replaces the window with an extremely convincing display which showed me a video which made me believe it got gold coins, even though it was actually touching a secret silver coin in the real room. The existence of that adversarial input isn’t a problem, because in this story, we aren’t trying to get the AI to directly optimize the reward-generating process or any of its Cartesian transforms or whatever.
 
 **Alex's model of Evan**
-: Well, I guess? If you _assume_ you get the gold-coin AI, you can satisfy the story with such an underdetermined and unhardened outer objective. But I expect in reality you need to supply more reward data to rule out e.g. silver coins, and possibly to disincentivize deception during training. See the RLHF + camera-duping incident.
+  Well, I guess? If you _assume_ you get the gold-coin AI, you can satisfy the story with such an underdetermined and unhardened outer objective. But I expect in reality you need to supply more reward data to rule out e.g. silver coins, and possibly to disincentivize deception during training. See the RLHF + camera-duping incident.
 
-: So I think the answer is “technically no you don’t _have_ to worry about adversarial inputs to the grading procedure on this definition, but in reality I think you should.”
+  So I think the answer is “technically no you don’t _have_ to worry about adversarial inputs to the grading procedure on this definition, but in reality I think you should.”
 
 **Alex**
-: I think we’re going to have a separate disagreement on that camera incident which isn’t related to this decomposition, so I’ll just move past that for the moment. If this is the perspective, I don’t disagree with it as much as “have the objective represent what you want as faithfully as possible, maybe even exactly, such that the outer objective is good to optimize for.”
+  I think we’re going to have a separate disagreement on that camera incident which isn’t related to this decomposition, so I’ll just move past that for the moment. If this is the perspective, I don’t disagree with it as much as “have the objective represent what you want as faithfully as possible, maybe even exactly, such that the outer objective is good to optimize for.”
 
-: I think that this decomposition is actually compatible with some shard theory stories, even. It feels like this outer alignment definition is actually pretty lax. It feels more like saying “I want to write down an objective which appears to me to ‘encode’ gold coin-grabbing, and then have that objective entrain a gold coin value in the agent.” And, for chisel = statue reasons, the levers for inner alignment would then have to come from inductive biases (speed / complexity / hyperparameters / whatever), and not the actual feedback signals (which are kinda fixed to match the “represent the gold coin objective”).
+  I think that this decomposition is actually compatible with some shard theory stories, even. It feels like this outer alignment definition is actually pretty lax. It feels more like saying “I want to write down an objective which appears to me to ‘encode’ gold coin-grabbing, and then have that objective entrain a gold coin value in the agent.” And, for chisel = statue reasons, the levers for inner alignment would then have to come from inductive biases (speed / complexity / hyperparameters / whatever), and not the actual feedback signals (which are kinda fixed to match the “represent the gold coin objective”).
 
 ## Daniel Ziegler’s working definitions
 

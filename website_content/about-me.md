@@ -37,13 +37,13 @@ Why do you love geese so much?
 
 : In 2020, I had just started a new relationship. My girlfriend was being quite silly, so I informed her that she was a silly goose. She liked the title.
 
-: We soon happened upon [The Untitled Goose Game](https://goose.game/), a delightful cooperative experience where two players pilot two geese in order to troll and terrorize the residents of a sleepy town. There's even a dedicated button for honking! We loved the game. We loved each other. We loved the cute geese. Our strong feelings splashed onto the geese. Now, when we thought of geese, we thought of each other; when we thought of each other, we thought of geese.
+  We soon happened upon [The Untitled Goose Game](https://goose.game/), a delightful cooperative experience where two players pilot two geese in order to troll and terrorize the residents of a sleepy town. There's even a dedicated button for honking! We loved the game. We loved each other. We loved the cute geese. Our strong feelings splashed onto the geese. Now, when we thought of geese, we thought of each other; when we thought of each other, we thought of geese.
 
 How was this website designed?
 : Refer to [The design of this website.](/design)
 
 `TurnTrout`, you're amazing and handsome and I want to date you!
-: My dating doc resides [here.](/date-me) Check to see if we're compatible!
+: My dating doc resides [on my dating page.](/date-me) Check to see if we're compatible!
 
 # Contact me
 
