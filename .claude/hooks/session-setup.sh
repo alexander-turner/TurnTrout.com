@@ -116,10 +116,15 @@ if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
 		warn "Failed to clone .timestamps repo"
 fi
 
-# Install opentimestamps-client if ots binary is not available
-if ! command -v ots &>/dev/null; then
-	uv_install_if_missing ots opentimestamps-client
+# Configure .timestamps push access using GH_TOKEN (the local proxy only
+# authorizes the main repo, so .timestamps needs direct GitHub auth)
+if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
+	git -C "$PROJECT_DIR/.timestamps" remote set-url origin \
+		"https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git"
 fi
+
+# Install opentimestamps-client (needed by post-commit hook, not pre-installed in web sessions)
+uv_install_if_missing ots opentimestamps-client
 
 #######################################
 # Project dependencies
