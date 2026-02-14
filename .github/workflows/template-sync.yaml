@@ -62,6 +62,23 @@ jobs:
           path: _template
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
 
+      - name: Check token workflow scope
+        env:
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          # GitHub requires 'workflow' scope on PATs to push .github/workflows/ changes.
+          # Check the x-oauth-scopes response header from the GitHub API.
+          SCOPES=$(curl -sS -I -H "Authorization: token $TOKEN" \
+            https://api.github.com/user 2>/dev/null \
+            | grep -i '^x-oauth-scopes:' | sed 's/^[^:]*: //' | tr -d '\r\n' || true)
+
+          if echo "$SCOPES" | tr ',' '\n' | sed 's/^ *//' | grep -qx 'workflow'; then
+            echo "Token has 'workflow' scope."
+          else
+            echo "::error::TEMPLATE_SYNC_TOKEN lacks the 'workflow' scope, which GitHub requires to push changes to .github/workflows/ files. Add the 'workflow' scope to your PAT at https://github.com/settings/tokens and update the TEMPLATE_SYNC_TOKEN repository secret."
+            exit 1
+          fi
+
       - name: Sync template files with conflict detection
         id: sync
         run: |
