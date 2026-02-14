@@ -1274,7 +1274,9 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
-# Asset extensions that should not receive favicons (mirrors TS isAssetLink)
+# Asset extensions that should not receive favicons.
+# Source of truth: TS isAssetLink() in linkfavicons.ts uses MIME type lookup;
+# keep this set in sync with the media types it recognises.
 _ASSET_EXTENSIONS = frozenset(
     {
         "png",
@@ -1305,6 +1307,13 @@ def _build_favicon_whitelist(git_root: Path) -> list[str]:
 
     Returns underscore-separated domain entries that should always receive
     favicons (regardless of count threshold).
+
+    Note: The TS ``faviconCountWhitelistComputed`` also includes
+    ``specialFaviconPaths`` (mail/anchor/rss icons) and applies
+    ``specialDomainMappings`` (e.g. transformer-circuits.pub →
+    anthropic.com).  Those are intentionally omitted here because
+    ``specialFaviconPaths`` are full URLs (not domain patterns) and
+    domain mappings rarely affect whitelisted domains in practice.
     """
     constants_path = git_root / "config" / "constants.json"
     with open(constants_path, encoding="utf-8") as f:
