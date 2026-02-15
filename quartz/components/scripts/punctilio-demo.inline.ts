@@ -8,7 +8,7 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { animate, debounce, svgCheck, svgCopy } from "./component_script_utils"
+import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
 
 const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
 
