@@ -68,7 +68,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 > type: line
 > title: "Layer Horizon vs Loss of GPT2-XL (48 layers)"
 > x:
->   label: Layer Horizon
+>   label: Layer horizon
 > y:
 >   label: Loss
 > series:
@@ -103,7 +103,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 > annotations:
 >   - type: horizontal-line
 >     value: 3.1418
->     label: Baseline
+>     label: Baseline loss
 >     style: dashed
 > ```
 >

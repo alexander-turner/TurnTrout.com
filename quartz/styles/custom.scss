@@ -981,28 +981,3 @@ figure#goose-terminal {
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-
-.smart-chart-point {
-  cursor: pointer;
-}
-
-.smart-chart-tooltip {
-  position: fixed;
-  z-index: 1000;
-  padding: calc(0.5 * $base-margin) $base-margin;
-  background: var(--background);
-  border: 1px solid var(--midground-faint);
-  border-radius: 4px;
-  font-size: var(--font-size-minus-1);
-  font-family: var(--font-main);
-  color: var(--foreground);
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-  white-space: nowrap;
-}
-
-@media print {
-  .smart-chart-tooltip {
-    display: none !important;
-  }
-}

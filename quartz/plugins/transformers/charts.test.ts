@@ -1,7 +1,6 @@
 import type { Element, Root, Text } from "hast"
 
-import { describe, expect, it, jest } from "@jest/globals"
-import fs from "fs"
+import { describe, expect, it } from "@jest/globals"
 import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -224,8 +223,6 @@ describe("renderLineChart", () => {
     expect(svg.properties?.["aria-label"]).toBe("Test Chart")
     expect(svg.properties?.xmlns).toBe("http://www.w3.org/2000/svg")
     expect(svg.properties?.width).toBe("100%")
-    expect(svg.properties?.["data-x-label"]).toBe("X Axis")
-    expect(svg.properties?.["data-y-label"]).toBe("Y Axis")
   })
 
   it("renders title text", () => {
@@ -788,24 +785,6 @@ series:
   it("has the correct plugin name", () => {
     const plugin = Charts()
     expect(plugin.name).toBe("Charts")
-  })
-
-  it("provides tooltip script via externalResources", () => {
-    jest.spyOn(fs, "readFileSync").mockReturnValue("// smart-chart-tooltip script")
-    try {
-      const plugin = Charts()
-      const resources = plugin.externalResources?.(mockCtx) ?? {}
-      const jsResources = resources.js ?? []
-      expect(jsResources).toHaveLength(1)
-      expect(jsResources[0]).toMatchObject({
-        loadTime: "afterDOMReady",
-        contentType: "inline",
-      })
-      const scriptResource = jsResources[0] as { script: string }
-      expect(scriptResource.script).toContain("smart-chart-tooltip")
-    } finally {
-      jest.restoreAllMocks()
-    }
   })
 
   it("handles className as non-array", () => {

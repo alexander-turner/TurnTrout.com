@@ -22,9 +22,9 @@ function createScale(
   scaleType: "linear" | "log",
 ): ScaleContinuousNumeric<number, number> {
   if (scaleType === "log") {
-    return scaleLog().domain(domain).range(range).nice()
+    return scaleLog().domain(domain).range(range)
   }
-  return scaleLinear().domain(domain).range(range).nice()
+  return scaleLinear().domain(domain).range(range)
 }
 
 function computeDomain(
@@ -143,7 +143,7 @@ function renderYAxis(yScale: ScaleContinuousNumeric<number, number>, label: stri
 
   // Label (rotated)
   const axisLabel = createTextElement(0, 0, label, {
-    transform: `translate(-45,${INNER_HEIGHT / 2}) rotate(-90)`,
+    transform: `translate(-25,${INNER_HEIGHT / 2}) rotate(-90)`,
     "text-anchor": "middle",
     "font-size": "13px",
     "font-family": "var(--font-main)",
@@ -244,7 +244,7 @@ function renderTitle(title: string): Element {
   return createTextElement(CHART_WIDTH / 2, 18, title, {
     "text-anchor": "middle",
     "font-size": "14px",
-    "font-weight": "600",
+    "text-decoration": "underline",
     "font-family": "var(--font-main)",
   })
 }
@@ -300,8 +300,6 @@ export function renderLineChart(spec: ChartSpec): Element {
       class: "smart-chart",
       role: "img",
       "aria-label": spec.title ?? "Line chart",
-      "data-x-label": spec.x.label,
-      "data-y-label": spec.y.label,
     },
     chartChildren,
   )
