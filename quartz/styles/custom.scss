@@ -796,21 +796,6 @@ img.emoji {
   }
 }
 
-// Ensure all mermaid diagram text has sufficient contrast
-[id^="mermaid-"] {
-  font-size: 14px !important;
-  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
-
-  & span,
-  & p,
-  & .label,
-  & .nodeLabel,
-  & .edgeLabel {
-    color: var(--foreground) !important;
-    fill: var(--foreground) !important;
-  }
-}
-
 .flowchart-link {
   stroke: var(--midground-faint) !important;
 }
