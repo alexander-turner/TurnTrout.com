@@ -199,7 +199,7 @@ function renderSeries(
         createSvgElement("title", {}, [
           {
             type: "text" as const,
-            value: `${series.name}\n${axisLabels.x}: ${formatTick(d[0])}\n${axisLabels.y}: ${formatTick(d[1])}`,
+            value: `${axisLabels.x}: ${formatTick(d[0])}\n${axisLabels.y}: ${formatTick(d[1])}`,
           },
         ]),
       ],

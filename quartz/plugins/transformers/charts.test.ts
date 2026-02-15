@@ -285,7 +285,7 @@ describe("renderLineChart", () => {
     expect(titleEl).toBeDefined()
     const titleText = titleEl?.children[0]
     // First point is (0, 0) after sorting; tooltip uses axis labels
-    expect(titleText?.type === "text" && titleText.value).toBe("Series1\nX Axis: 0\nY Axis: 0")
+    expect(titleText?.type === "text" && titleText.value).toBe("X Axis: 0\nY Axis: 0")
   })
 
   it("renders a line path", () => {

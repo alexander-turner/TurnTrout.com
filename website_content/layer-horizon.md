@@ -62,6 +62,8 @@ To measure the importance of sublayer contributions originating much earlier in 
 
 [Joseph Miller reports that GPT-2-small seems too small to exhibit an effective layer horizon.](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=sppiZhHDwjYJXDdsn) However, he then ran experiments on GPT-2-XL.
 
+Shrek
+
 > [!quote] [Joseph Miller](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=DpKyPSqGCBw3erajH)
 >
 > ```chart
