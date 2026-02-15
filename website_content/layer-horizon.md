@@ -68,7 +68,7 @@ Shrek
 >
 > ```chart
 > type: line
-> title: "Layer Horizon vs Loss of GPT2-XL (48 layers)"
+> title: "Layer Horizon vs Loss for GPT2-XL (48 layers)"
 > x:
 >   label: Layer horizon
 > y:

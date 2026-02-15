@@ -268,7 +268,7 @@ function renderTitle(title: string): Element {
   return createTextElement(CHART_WIDTH / 2, 18, title, {
     "text-anchor": "middle",
     "font-size": "14px",
-    "text-decoration": "underline",
+    "text-decoration": "none",
     "font-family": "var(--font-main)",
   })
 }
