@@ -1,5 +1,7 @@
 import { execSync } from "child_process"
 import fs from "fs"
+import path from "path"
+
 import { globby } from "globby"
 import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
@@ -11,6 +13,7 @@ import { visit } from "unist-util-visit"
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
+import { faviconCountWhitelistComputed } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -25,7 +28,7 @@ import { createWordJoinerSpan } from "../transformers/utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
+const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs, quartzFolder, faviconFolder } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -265,7 +268,7 @@ export const generateFaviconContent = (): ContentGenerator => {
 
     await checkCdnSvgs(pngPathsToCheck)
 
-    // Process and filter favicons
+    // Process and filter favicons from counts
     const validFavicons = Array.from(faviconCounts.entries())
       .map(([pathWithoutExt, count]) => {
         const pathWithExt = addPngExtension(pathWithoutExt)
@@ -282,7 +285,27 @@ export const generateFaviconContent = (): ContentGenerator => {
         return { url, count } as const
       })
       .filter((item): item is { url: string; count: number } => item !== null)
-      .sort((a, b) => b.count - a.count)
+
+    // Include whitelisted local SVGs that have zero link count
+    const includedUrls = new Set(validFavicons.map((f) => f.url))
+    const svgDir = path.join(quartzFolder, faviconFolder)
+    try {
+      const svgFiles = fs.readdirSync(svgDir).filter((f) => f.endsWith(".svg"))
+      for (const svgFile of svgFiles) {
+        const domain = svgFile.replace(".svg", "")
+        const isWhitelisted = faviconCountWhitelistComputed.some((entry) => domain.includes(entry))
+        if (!isWhitelisted) continue
+
+        const url = `https://assets.turntrout.com/${faviconFolder}/${svgFile}`
+        if (includedUrls.has(url)) continue
+
+        validFavicons.push({ url, count: 0 })
+      }
+    } catch {
+      logger.warn(`Could not read SVG directory: ${svgDir}`)
+    }
+
+    validFavicons.sort((a, b) => b.count - a.count)
 
     logger.info(`After filtering, ${validFavicons.length} valid favicons for table`)
 

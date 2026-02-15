@@ -87,6 +87,7 @@ describe("PopulateContainers", () => {
     })
 
     jest.spyOn(fs, "existsSync").mockReturnValue(true)
+    jest.spyOn(fs, "readdirSync").mockReturnValue([] as unknown as fs.Dirent[])
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
       // Mock implementation - no-op for testing
     })
@@ -222,6 +223,29 @@ describe("PopulateContainers", () => {
 
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
       expect(writtenContent).toContain(specialFaviconPaths.turntrout)
+    })
+
+    it("should include whitelisted local SVGs with zero link count", async () => {
+      // No favicon counts at all
+      setFaviconCounts([])
+
+      // Mock readdirSync to return SVG files for the favicon directory
+      jest.spyOn(fs, "readdirSync").mockImplementation((dirPath: unknown) => {
+        const dirStr = String(dirPath)
+        if (dirStr.includes("external-favicons")) {
+          return ["manifold_markets.svg", "unknown_site_xyz.svg"] as unknown as fs.Dirent[]
+        }
+        return [] as unknown as fs.Dirent[]
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await emitter.emit(mockCtx, [], mockStaticResources)
+
+      const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
+      // manifold_markets is whitelisted, so it should appear even with zero count
+      expect(writtenContent).toContain("manifold_markets")
+      // unknown_site_xyz is not whitelisted, so it should not appear
+      expect(writtenContent).not.toContain("unknown_site_xyz")
     })
 
     it("should handle already-normalized paths", async () => {
