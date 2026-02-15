@@ -1290,7 +1290,7 @@ def _build_favicon_lists(
 
     Returns a (whitelist, blacklist) tuple.
     """
-    result = subprocess.run(
+    result = subprocess.run(  # skipcq: BAN-B607
         ["npx", "tsx", str(git_root / "scripts" / "compute_favicon_lists.ts")],
         capture_output=True,
         text=True,
