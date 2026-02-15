@@ -88,10 +88,7 @@ $panel-min-height: 200px;
   }
 
   .punctilio-preview {
-    padding: $base-margin calc(2 * $base-margin);
-    border: 1px solid var(--midground-faint);
-    border-radius: 5px;
-    background-color: var(--background);
+    padding: 0;
   }
 
   .punctilio-options {
@@ -108,11 +105,21 @@ $panel-min-height: 200px;
       align-items: center;
       gap: $base-margin;
       padding: calc(0.5 * $base-margin) 0;
+      width: 100%;
+      max-width: 100%;
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: $base-margin;
+        flex: 1;
+      }
 
       input.checkbox-toggle {
         position: relative;
         top: auto;
         left: auto;
+        flex-shrink: 0;
       }
 
       &:has(input.checkbox-toggle:checked) {
