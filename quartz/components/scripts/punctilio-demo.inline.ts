@@ -157,6 +157,7 @@ document.addEventListener("nav", () => {
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
   const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
   const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
+  const previewSection = document.getElementById("punctilio-preview-section") as HTMLElement | null
   const preview = document.getElementById("punctilio-preview") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
@@ -168,7 +169,7 @@ document.addEventListener("nav", () => {
   const { signal } = controller
 
   // Restore saved mode and input, or fall back to defaults
-  const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
+  const savedMode = localStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
   let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
 
   const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
@@ -192,7 +193,7 @@ document.addEventListener("nav", () => {
 
     // Persist input text and mode
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
-    sessionStorage.setItem(STORAGE_KEY_MODE, currentMode)
+    localStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
     // Diff highlighting (always shown)
     if (diffOutput) {
@@ -206,16 +207,16 @@ document.addEventListener("nav", () => {
       output.style.display = "none"
     }
 
-    if (!preview) return
+    if (!previewSection || !preview) return
 
     if (currentMode === "html") {
-      preview.style.display = ""
+      previewSection.style.display = ""
       preview.innerHTML = result
     } else if (currentMode === "markdown") {
-      preview.style.display = ""
+      previewSection.style.display = ""
       preview.innerHTML = renderMarkdownToHtml(input.value, config)
     } else {
-      preview.style.display = "none"
+      previewSection.style.display = "none"
     }
   }
 

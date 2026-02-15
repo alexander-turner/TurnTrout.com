@@ -44,51 +44,35 @@ $panel-min-height: 200px;
     }
   }
 
-  .punctilio-panel {
-    display: flex;
-    flex-direction: column;
+  textarea {
+    width: 100%;
+    min-height: $panel-min-height;
+    padding: $panel-padding;
+    border: $panel-border;
+    border-radius: 5px;
+    background-color: $panel-bg;
+    color: var(--foreground);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
 
-    & + .punctilio-panel {
-      margin-top: calc(2 * $base-margin);
+    &:focus {
+      outline: 2px solid color-mix(in srgb, var(--foreground) 30%, transparent);
+      outline-offset: -1px;
     }
 
-    .punctilio-panel-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: $base-margin;
-
-      label {
-        font-weight: $semi-bold-weight;
-        font-size: 0.85rem;
-        color: var(--midground);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-      }
+    &[readonly] {
+      background-color: $panel-bg-readonly;
+      cursor: default;
     }
+  }
 
-    textarea {
-      width: 100%;
-      min-height: $panel-min-height;
-      padding: $panel-padding;
-      border: $panel-border;
-      border-radius: 5px;
-      background-color: $panel-bg;
-      color: var(--foreground);
-      font-family: inherit;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      resize: vertical;
+  .punctilio-output-wrapper {
+    position: relative;
 
-      &:focus {
-        outline: 2px solid color-mix(in srgb, var(--foreground) 30%, transparent);
-        outline-offset: -1px;
-      }
-
-      &[readonly] {
-        background-color: $panel-bg-readonly;
-        cursor: default;
-      }
+    > .clipboard-button {
+      opacity: 1;
     }
   }
 
@@ -114,68 +98,19 @@ $panel-min-height: 200px;
   }
 
   .punctilio-preview {
-    margin-top: calc(2 * $base-margin);
     padding: $panel-padding;
     border: $panel-border;
     border-radius: 5px;
     background-color: var(--background);
     font-size: 0.95rem;
     line-height: 1.5;
-
-    &:empty,
-    &[style*="display: none"] {
-      margin-top: 0;
-      padding: 0;
-      border: none;
-    }
-  }
-
-  .punctilio-toolbar {
-    display: flex;
-    align-items: center;
-    gap: $panel-padding;
-
-    .punctilio-toggle {
-      display: flex;
-      align-items: center;
-      gap: $base-margin;
-      font-size: 0.75rem;
-      color: var(--midground);
-      cursor: pointer;
-
-      input[type="checkbox"] {
-        margin: 0;
-      }
-    }
-  }
-
-  .punctilio-copy-btn {
-    padding: calc(0.5 * $base-margin) calc(1.5 * $base-margin);
-    border: $panel-border;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--midground);
-    font-family: inherit;
-    font-size: 0.75rem;
-    cursor: pointer;
-
-    &:hover {
-      background-color: $hover-bg;
-      color: var(--foreground);
-    }
   }
 
   .punctilio-options {
-    .punctilio-options-grid {
+    .punctilio-options-list {
       list-style: none;
       margin: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: $base-margin calc(3 * $base-margin);
-      padding: $panel-padding;
-      border: $panel-border;
-      border-radius: 5px;
-      background-color: $panel-bg;
+      padding: 0;
     }
 
     .punctilio-option {
@@ -184,10 +119,11 @@ $panel-min-height: 200px;
       gap: $base-margin;
       font-size: 0.9rem;
       color: var(--foreground);
+      padding: calc(0.5 * $base-margin) 0;
 
       // These are config toggles, not task items — override checkbox-toggle's
-      // absolute positioning (designed for standard list margins) since the grid
-      // layout has no margin area to place the checkbox in.
+      // absolute positioning (designed for standard list margins) since the list
+      // has no margin area to place the checkbox in.
       input.checkbox-toggle {
         position: relative;
         top: auto;

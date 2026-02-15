@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test"
 import { takeRegressionScreenshot } from "./visual_utils"
 
 const PUNCTILIO_URL = "http://localhost:8080/punctilio"
+const PREVIEW_SECTION = "#punctilio-preview-section"
 const PREVIEW = "#punctilio-preview"
 
 // Visual regression tests don't need assertions
@@ -20,6 +21,9 @@ test.beforeEach(async ({ page }) => {
       value: () => Promise.resolve(),
       writable: true,
     })
+
+    // Clear saved mode so tests start fresh in plaintext mode
+    localStorage.removeItem("punctilio-mode")
   })
 
   await page.goto(PUNCTILIO_URL, { waitUntil: "domcontentloaded" })
@@ -104,13 +108,14 @@ test.describe("Copy output button", () => {
 })
 
 test.describe("Rendered preview", () => {
-  test("preview is hidden in plaintext mode", async ({ page }) => {
-    await expect(page.locator(PREVIEW)).toBeHidden()
+  test("preview section is hidden in plaintext mode", async ({ page }) => {
+    await expect(page.locator(PREVIEW_SECTION)).toBeHidden()
   })
 
   test("preview shows rendered output in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
 
+    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
     const preview = page.locator(PREVIEW)
     await expect(preview).toBeVisible()
 
@@ -122,6 +127,7 @@ test.describe("Rendered preview", () => {
   test("preview shows rendered output in Markdown mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
 
+    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
     const preview = page.locator(PREVIEW)
     await expect(preview).toBeVisible()
 
@@ -132,10 +138,10 @@ test.describe("Rendered preview", () => {
 
   test("preview is hidden when switching back to plaintext", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator(PREVIEW)).toBeVisible()
+    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
 
     await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
-    await expect(page.locator(PREVIEW)).toBeHidden()
+    await expect(page.locator(PREVIEW_SECTION)).toBeHidden()
   })
 })
 
@@ -235,7 +241,7 @@ test.describe("Visual regression", () => {
 
   test("Punctilio demo in HTML mode with preview (lostpixel)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator(PREVIEW)).toBeVisible()
+    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-html", {
       elementToScreenshot: page.locator("#punctilio-demo"),
@@ -244,7 +250,7 @@ test.describe("Visual regression", () => {
 
   test("Punctilio demo in Markdown mode with preview (lostpixel)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
-    await expect(page.locator(PREVIEW)).toBeVisible()
+    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-markdown", {
       elementToScreenshot: page.locator("#punctilio-demo"),
