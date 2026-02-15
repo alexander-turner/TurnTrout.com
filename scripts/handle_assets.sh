@@ -19,9 +19,9 @@ uv run python "$GIT_ROOT"/scripts/convert_markdown_yaml.py --markdown-directory 
 # Download external media files (non-assets.turntrout.com) to asset_staging
 uv run python "$GIT_ROOT"/scripts/download_external_media.py
 
-# Normalize any new SVG files added since last push TODO include downloaded? 
+# Normalize any new SVG files added since last push (excluding favicons)
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-NEW_SVG_FILES=$(git diff --name-only --diff-filter=A "origin/$CURRENT_BRANCH" 2>/dev/null | grep '\.svg$' || true)
+NEW_SVG_FILES=$(git diff --name-only --diff-filter=A "origin/$CURRENT_BRANCH" 2>/dev/null | grep '\.svg$' | grep -v 'external-favicons' || true)
 
 if [ -n "$NEW_SVG_FILES" ]; then
     NEW_SVGS=()
