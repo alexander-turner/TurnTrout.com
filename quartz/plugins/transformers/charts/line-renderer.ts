@@ -228,7 +228,7 @@ function renderAnnotations(
 
     if (ann.label) {
       children.push(
-        createTextElement(INNER_WIDTH + 5, yPos + 4, ann.label, {
+        createTextElement(5, yPos - 6, ann.label, {
           "font-size": "11px",
           "font-family": "var(--font-main)",
           fill: "var(--midground)",
@@ -300,6 +300,8 @@ export function renderLineChart(spec: ChartSpec): Element {
       class: "smart-chart",
       role: "img",
       "aria-label": spec.title ?? "Line chart",
+      "data-x-label": spec.x.label,
+      "data-y-label": spec.y.label,
     },
     chartChildren,
   )

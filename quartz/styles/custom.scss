@@ -984,11 +984,6 @@ figure#goose-terminal {
 
 .smart-chart-point {
   cursor: pointer;
-  transition: r 0.15s ease;
-
-  &:hover {
-    r: 6;
-  }
 }
 
 .smart-chart-tooltip {

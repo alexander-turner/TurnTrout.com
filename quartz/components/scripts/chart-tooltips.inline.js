@@ -10,17 +10,16 @@
   function showTooltip(target, e) {
     const x = target.getAttribute("data-x")
     const y = target.getAttribute("data-y")
-    const series = target.getAttribute("data-series")
     if (!x || !y) return
 
+    const svg = target.closest(".smart-chart")
+    const xLabel = svg?.getAttribute("data-x-label") || "X"
+    const yLabel = svg?.getAttribute("data-y-label") || "Y"
+
     tooltip.textContent = ""
-    if (series) {
-      const strong = document.createElement("strong")
-      strong.textContent = series
-      tooltip.appendChild(strong)
-      tooltip.appendChild(document.createElement("br"))
-    }
-    tooltip.appendChild(document.createTextNode(`${x}, ${y}`))
+    tooltip.appendChild(document.createTextNode(`${xLabel}: ${x}`))
+    tooltip.appendChild(document.createElement("br"))
+    tooltip.appendChild(document.createTextNode(`${yLabel}: ${y}`))
     tooltip.style.display = "block"
     positionTooltip(e)
   }

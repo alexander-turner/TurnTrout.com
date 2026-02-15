@@ -224,6 +224,8 @@ describe("renderLineChart", () => {
     expect(svg.properties?.["aria-label"]).toBe("Test Chart")
     expect(svg.properties?.xmlns).toBe("http://www.w3.org/2000/svg")
     expect(svg.properties?.width).toBe("100%")
+    expect(svg.properties?.["data-x-label"]).toBe("X Axis")
+    expect(svg.properties?.["data-y-label"]).toBe("Y Axis")
   })
 
   it("renders title text", () => {

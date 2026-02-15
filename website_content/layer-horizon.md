@@ -73,7 +73,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 >   label: Loss
 > series:
 >   - name: Loss
->     color: "var(--darkblue)"
+>     color: "var(--blue)"
 >     data:
 >       - [0, 8.92]
 >       - [2, 7.85]
