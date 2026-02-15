@@ -34,12 +34,31 @@ runs:
         set -e
         FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
         FFMPEG_DIR="/opt/ffmpeg"
+        FFMPEG_TMP="/tmp/ffmpeg.tar.xz"
 
         # Create the target directory
         sudo mkdir -p "$FFMPEG_DIR"
 
-        # Download and extract ffmpeg, stripping the top-level directory
-        timeout 300 bash -c 'curl -sL "$1" | sudo tar -xJ -C "$2" --strip-components=1' -- "$FFMPEG_URL" "$FFMPEG_DIR"
+        # Download with retry (GitHub CDN can return HTML on transient failures)
+        for attempt in 1 2 3 4; do
+          echo "Download attempt $attempt..."
+          HTTP_CODE=$(curl -sL -o "$FFMPEG_TMP" -w '%{http_code}' "$FFMPEG_URL")
+          if [ "$HTTP_CODE" -eq 200 ] && file "$FFMPEG_TMP" | grep -q 'XZ compressed'; then
+            break
+          fi
+          echo "Attempt $attempt failed (HTTP $HTTP_CODE), retrying in $((attempt * 2))s..."
+          sleep $((attempt * 2))
+        done
+
+        # Verify download before extracting
+        if ! file "$FFMPEG_TMP" | grep -q 'XZ compressed'; then
+          echo "Error: Downloaded file is not a valid .tar.xz archive"
+          file "$FFMPEG_TMP"
+          exit 1
+        fi
+
+        sudo tar -xJf "$FFMPEG_TMP" -C "$FFMPEG_DIR" --strip-components=1
+        rm -f "$FFMPEG_TMP"
 
         # Create symlinks to make ffmpeg and ffprobe available on the PATH
         sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
