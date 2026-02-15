@@ -727,6 +727,7 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
+  opacity: 0.5;
 
   // Safari needs this
   & > * {
