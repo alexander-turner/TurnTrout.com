@@ -1,3 +1,8 @@
+/** Escape HTML special characters for safe insertion into innerHTML. */
+export function escapeHtml(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+}
+
 /**
  * Limits how often a function can be called. Once called, subsequent calls within
  * the delay period will be ignored or queued for the next frame.

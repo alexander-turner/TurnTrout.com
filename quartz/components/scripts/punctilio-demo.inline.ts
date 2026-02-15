@@ -8,44 +8,25 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { debounce } from "./component_script_utils"
+import { debounce, escapeHtml } from "./component_script_utils"
 
-const EXAMPLE_PLAINTEXT = `"It's a beautiful thing..." -- George Orwell, 1984
+const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
 
-She said, "Don't you think it's wonderful?"
+The temperature was 72F -- perfect for Mr. Smith.
 
-The temperature was 72F -- perfect for a 5'10" man.
+(c) 2024 Acme Corp. 2x + 3 != 5`
 
-(c) 2024 Acme Corp. All rights reserved. (r)
-
-2x + 3 != 5
-
-Section 8.3 -- see pp. 12-15 for more details.`
-
-const EXAMPLE_MARKDOWN = `# "Hello, World!"
-
-This is a *beautiful* thing -- really, it is.
-
-She said, "I've been working on \`transform()\` for months."
-
-The building was 5'10" tall. That's >= 170cm.
+const EXAMPLE_MARKDOWN = `She said, "It's *beautiful*" -- really.
 
 \`\`\`python
 x = "don't transform this"
-print(x)
 \`\`\`
 
 Inline math like $E = mc^2$ is preserved.
 
-See the [documentation](https://example.com/it's-fine) for more.
+(c) 2024 Acme Corp. 2x faster!`
 
-(c) 2024 Acme Corp. 2x faster than before!`
-
-const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
-
-<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
-
-<p>The temperature was 72F -- perfect for a 5'10" man.</p>
+const EXAMPLE_HTML = `<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
 
 <p>(c) 2024 Acme Corp. 2x faster!</p>
 
@@ -160,11 +141,7 @@ const EXAMPLES: Record<TransformMode, string> = {
 function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
   return changes
     .map((change) => {
-      const escaped = change.value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
+      const escaped = escapeHtml(change.value).replace(/\n/g, "<br>")
       if (change.added) return `<span class="diff-insert">${escaped}</span>`
       if (change.removed) return `<span class="diff-delete">${escaped}</span>`
       return escaped
