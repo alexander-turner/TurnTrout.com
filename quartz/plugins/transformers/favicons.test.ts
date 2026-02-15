@@ -12,7 +12,7 @@ import path from "path"
 import { PassThrough } from "stream"
 
 // skipcq: JS-C1003
-import * as linkfavicons from "./linkfavicons"
+import * as linkfavicons from "./favicons"
 
 jest.mock("fs")
 import fs from "fs"
@@ -701,7 +701,10 @@ describe("Favicon Utilities", () => {
         "should zoom into %s elements and splice text into favicon-span",
         (tagName) => {
           const innerText = "tag name test"
-          const node = h("a", {}, [{ type: "text", value: "Test " }, h(tagName, {}, [innerText])])
+          const node = h("a", {}, [
+            { type: "text", value: "Test " },
+            h(tagName as string, {}, [innerText]),
+          ])
           linkfavicons.insertFavicon(imgPath, node)
 
           expect(node.children.length).toBe(2)
