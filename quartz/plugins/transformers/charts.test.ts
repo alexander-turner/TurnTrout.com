@@ -267,7 +267,7 @@ describe("renderLineChart", () => {
     expect(texts).toContain("Y Axis")
   })
 
-  it("renders data points with data attributes", () => {
+  it("renders data points with data attributes and hover titles", () => {
     const svg = renderLineChart(BASIC_SPEC)
     const points: Element[] = []
     visit(svg, "element", (node: Element) => {
@@ -278,6 +278,13 @@ describe("renderLineChart", () => {
     expect(points).toHaveLength(3)
     // Points should have data-x, data-y, data-series attributes
     expect(points[0].properties?.["data-series"]).toBe("Series1")
+    // Each point should have a <title> child with point info
+    const titleEl = points[0].children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "title",
+    )
+    expect(titleEl).toBeDefined()
+    const titleText = titleEl?.children[0]
+    expect(titleText?.type === "text" && titleText.value).toContain("Series1")
   })
 
   it("renders a line path", () => {
@@ -315,16 +322,15 @@ describe("renderLineChart", () => {
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
   })
 
-  it("includes accessible <desc> with data summary instead of <title>", () => {
+  it("includes accessible <desc> with data summary instead of root <title>", () => {
     const svg = renderLineChart(BASIC_SPEC)
     const descElements: Element[] = []
-    const titleElements: Element[] = []
     visit(svg, "element", (node: Element) => {
       if (node.tagName === "desc") descElements.push(node)
-      if (node.tagName === "title") titleElements.push(node)
     })
-    // No <title> (causes native hover tooltip)
-    expect(titleElements).toHaveLength(0)
+    // No root-level <title> (would cause whole-chart hover tooltip)
+    const rootTitles = svg.children.filter((c) => c.type === "element" && c.tagName === "title")
+    expect(rootTitles).toHaveLength(0)
     // <desc> with data summary
     expect(descElements).toHaveLength(1)
     expect(descElements[0].properties?.id).toBe("chart-desc-Series1")

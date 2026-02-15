@@ -182,16 +182,27 @@ function renderSeries(
 
   // Data points
   const points: Element[] = sortedData.map((d) =>
-    createSvgElement("circle", {
-      cx: xScale(d[0]),
-      cy: yScale(d[1]),
-      r: POINT_RADIUS,
-      fill: color,
-      class: "smart-chart-point",
-      "data-x": d[0],
-      "data-y": d[1],
-      "data-series": series.name,
-    }),
+    createSvgElement(
+      "circle",
+      {
+        cx: xScale(d[0]),
+        cy: yScale(d[1]),
+        r: POINT_RADIUS,
+        fill: color,
+        class: "smart-chart-point",
+        "data-x": d[0],
+        "data-y": d[1],
+        "data-series": series.name,
+      },
+      [
+        createSvgElement("title", {}, [
+          {
+            type: "text" as const,
+            value: `${series.name}: (${formatTick(d[0])}, ${formatTick(d[1])})`,
+          },
+        ]),
+      ],
+    ),
   )
 
   return createSvgElement(
