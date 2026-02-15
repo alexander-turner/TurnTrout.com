@@ -114,17 +114,6 @@ svg.favicon {
     );
   }
 
-  &[data-domain="mail_google_com"] {
-    background: conic-gradient(
-      from -90deg at 50% 40%,
-      var(--attenuated-red) 0deg 35deg,
-      var(--attenuated-yellow) 35deg 65deg,
-      var(--attenuated-green) 65deg 145deg,
-      var(--attenuated-red) 145deg 215deg,
-      var(--attenuated-blue) 215deg 325deg,
-      var(--attenuated-red) 325deg 360deg
-    );
-  }
 }
 
 // Per-domain SVG colors
@@ -141,7 +130,6 @@ $domain-svg-colors: (
   "scholar_google_com": var(--blue),
   "huggingface_co": var(--yellow),
   "linkedin_com": var(--blue),
-  "manifold_markets": var(--purple),
   "matsprogram_org": var(--red),
   "open_spotify_com": var(--green),
   "overleaf_com": var(--green),
