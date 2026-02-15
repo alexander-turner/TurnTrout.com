@@ -30,10 +30,6 @@ Type or paste text in the input area below and see the transformed output.
 <div class="punctilio-panel-header">
 <label for="punctilio-output">Output</label>
 <div class="punctilio-toolbar">
-<label class="punctilio-toggle">
-<input type="checkbox" id="punctilio-diff-toggle" checked />
-Diff
-</label>
 <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 </div>
 </div>

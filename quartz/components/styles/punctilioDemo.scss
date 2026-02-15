@@ -116,12 +116,6 @@
       background-color: color-mix(in srgb, #22c55e 20%, transparent);
       border-radius: 2px;
     }
-
-    .diff-delete {
-      background-color: color-mix(in srgb, #ef4444 20%, transparent);
-      text-decoration: line-through;
-      border-radius: 2px;
-    }
   }
 
   // HTML rendered preview
@@ -149,24 +143,10 @@
     margin: 0;
   }
 
-  // Diff toggle
   .punctilio-toolbar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-
-    .punctilio-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.75rem;
-      color: var(--midground);
-      cursor: pointer;
-
-      input[type="checkbox"] {
-        margin: 0;
-      }
-    }
   }
 
   .punctilio-options {

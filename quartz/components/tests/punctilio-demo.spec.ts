@@ -31,7 +31,6 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-output")).toBeAttached()
     await expect(page.locator("#punctilio-diff")).toBeAttached()
     await expect(page.locator("#punctilio-copy-btn")).toBeVisible()
-    await expect(page.locator("#punctilio-diff-toggle")).toBeChecked()
   })
 
   test("input is pre-filled with example text and output is non-empty", async ({ page }) => {
@@ -71,19 +70,12 @@ test.describe("Diff highlighting", () => {
     await expect(diffInserts.first()).toBeAttached()
   })
 
-  test("toggling diff off shows the raw output textarea", async ({ page }) => {
-    const diffToggle = page.locator("#punctilio-diff-toggle")
+  test("diff view is always visible with output textarea hidden", async ({ page }) => {
     const outputTextarea = page.locator("#punctilio-output")
     const diffDiv = page.locator("#punctilio-diff")
 
-    // Diff is on by default
     await expect(diffDiv).toBeVisible()
     await expect(outputTextarea).toBeHidden()
-
-    // Toggle diff off
-    await diffToggle.uncheck()
-    await expect(outputTextarea).toBeVisible()
-    await expect(diffDiv).toBeHidden()
   })
 })
 
