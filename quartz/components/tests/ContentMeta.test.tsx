@@ -63,7 +63,7 @@ jest.mock("../Date", () => ({
   DateElement: () => <span data-testid="date-element">Mocked Date</span>,
 }))
 
-jest.mock("../../plugins/transformers/favicons", () => ({
+jest.mock("../../plugins/transformers/linkfavicons", () => ({
   GetQuartzPath: jest.fn(),
   urlCache: new Map(),
   getFaviconPath: () => "/mock/favicon.avif",

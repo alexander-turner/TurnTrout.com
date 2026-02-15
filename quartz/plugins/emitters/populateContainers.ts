@@ -20,8 +20,9 @@ import {
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
-} from "../transformers/favicons"
-import { createNowrapSpan, hasClass } from "../transformers/utils"
+} from "../transformers/linkfavicons"
+import { createWordJoinerSpan } from "../transformers/utils"
+import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
 const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
@@ -205,7 +206,9 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createNowrapSpan("", faviconElement)]
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(faviconElement)
+    return [wordJoiner]
   }
 }
 
@@ -273,7 +276,7 @@ export const generateFaviconContent = (): ContentGenerator => {
         // istanbul ignore if
         if (url === defaultPath) return null
 
-        // Use helper from favicons.ts to check if favicon should be included
+        // Use helper from linkfavicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
         return { url, count } as const

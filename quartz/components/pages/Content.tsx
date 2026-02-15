@@ -7,7 +7,7 @@ import * as React from "react"
 import type { FilePath } from "../../util/path"
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "../types"
 
-import { insertFavicon } from "../../plugins/transformers/favicons"
+import { insertFavicon } from "../../plugins/transformers/linkfavicons"
 import { htmlToJsx } from "../../util/jsx"
 import { specialFaviconPaths } from "../constants"
 import { buildNestedList } from "../TableOfContents"

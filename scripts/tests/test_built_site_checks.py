@@ -1,8 +1,10 @@
+import json
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
@@ -42,11 +44,16 @@ def mock_environment(quartz_project_structure, monkeypatch):
     # Mock common utility functions
     monkeypatch.setattr(script_utils, "collect_aliases", lambda md_dir: set())
 
-    # Mock check_rss_file_for_issues to prevent actual subprocess call in main tests
+    # Mock subprocess-dependent helpers to avoid npx/tsx calls in tests
     monkeypatch.setattr(
         built_site_checks,
         "check_rss_file_for_issues",
         lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        built_site_checks,
+        "_build_favicon_lists",
+        lambda _git_root: ([], []),
     )
 
     return {
@@ -651,7 +658,7 @@ def test_check_file_for_issues(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["localhost_links"] == ["https://localhost:8000"]
@@ -687,7 +694,7 @@ def test_complicated_blockquote(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["trailing_blockquotes"] == [
@@ -708,7 +715,7 @@ def test_check_file_for_issues_with_redirect(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues == {}
@@ -3020,7 +3027,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=True
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(should_check_fonts=True),
         )
 
     # Verify that missing_preloaded_font is in the issues
@@ -3033,7 +3043,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=False
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(),
         )
 
     # Verify that missing_preloaded_font is not in the issues
@@ -3270,7 +3283,10 @@ description: Test Description
         ),
     ):
         issues = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, md_file_path, should_check_fonts=False
+            html_file_path,
+            base_dir,
+            md_file_path,
+            built_site_checks.CheckOptions(),
         )
 
     mock_check.assert_called_once_with(
@@ -3308,7 +3324,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
         ),
     ):
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None, should_check_fonts=False
+            html_file_path, base_dir, None, built_site_checks.CheckOptions()
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
@@ -3329,7 +3345,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
             html_file_path,
             base_dir,
             non_existent_md_path,
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_check_non_existent.assert_not_called()
     assert "missing_markdown_assets" not in issues_non_existent
@@ -3359,7 +3375,7 @@ def test_check_file_for_issues_favicon_check_called(
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, should_check_fonts=False
+            file_path, base_dir, None, built_site_checks.CheckOptions()
         )
 
     if should_check_favicon:
@@ -3524,8 +3540,12 @@ def test_main_handles_markdown_mapping(
             html_file,
             mock_environment["public_dir"],
             md_file,
-            should_check_fonts=False,
-            defined_css_variables={"--color-primary", "--color-secondary"},
+            built_site_checks.CheckOptions(
+                should_check_fonts=False,
+                defined_css_variables={"--color-primary", "--color-secondary"},
+                favicon_whitelist=[],
+                favicon_blacklist=[],
+            ),
         )
 
 
@@ -3582,8 +3602,12 @@ def test_main_command_line_args(
         html_file,
         mock_environment["public_dir"],
         None,
-        should_check_fonts=True,
-        defined_css_variables={"--color-primary", "--color-secondary"},
+        built_site_checks.CheckOptions(
+            should_check_fonts=True,
+            defined_css_variables={"--color-primary", "--color-secondary"},
+            favicon_whitelist=[],
+            favicon_blacklist=[],
+        ),
     )
 
 
@@ -4348,8 +4372,7 @@ def soup_check_setup(mock_environment, monkeypatch):
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
-        "should_check_fonts": False,
-        "defined_css_variables": None,
+        "opts": built_site_checks.CheckOptions(),
     }
     return common_args, html_file_path
 
@@ -5746,3 +5769,310 @@ def test_find_duplicate_citations_multiple_duplicates():
     assert len(result) == 2
     assert any("Turner2024A" in issue for issue in result)
     assert any("Smith2023X" in issue and "3 files" in issue for issue in result)
+
+
+@pytest.mark.parametrize(
+    "href,expected",
+    [
+        ("https://example.com/image.png", True),
+        ("https://example.com/image.jpg", True),
+        ("https://example.com/image.avif", True),
+        ("https://example.com/video.mp4", True),
+        ("https://example.com/audio.mp3", True),
+        ("https://example.com/doc.pdf", True),
+        ("https://example.com/image.png?w=100", True),
+        ("https://example.com/image.png#section", True),
+        ("https://example.com/page", False),
+        ("https://example.com/page.html", False),
+        ("https://example.com/", False),
+        ("https://example.com/path/to/resource", False),
+    ],
+)
+def test_is_asset_href(href, expected):
+    assert built_site_checks._is_asset_href(href) == expected
+
+
+@pytest.mark.parametrize(
+    "html,whitelist,expected",
+    [
+        # No external links
+        ("<article><p>No links here</p></article>", ["apple_com"], []),
+        # External link to whitelisted domain WITH favicon (valid)
+        (
+            '<article><a class="external" href="https://apple.com/products">'
+            'Apple<span class="favicon-span">'
+            '<svg class="favicon" style="--mask-url: url(apple.svg);"></svg>'
+            "</span></a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # External link to whitelisted domain WITHOUT favicon (invalid)
+        (
+            '<article><a class="external" href="https://apple.com/products">'
+            "Apple</a></article>",
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: apple.com"
+                " (https://apple.com/products)"
+            ],
+        ),
+        # External link to non-whitelisted domain without favicon (valid)
+        (
+            '<article><a class="external" href="https://example.com">'
+            "Example</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Subdomain of whitelisted domain without favicon (invalid)
+        (
+            '<article><a class="external" href="https://blog.apple.com/news">'
+            "Blog</a></article>",
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: blog.apple.com"
+                " (https://blog.apple.com/news)"
+            ],
+        ),
+        # www. prefix stripped correctly
+        (
+            '<article><a class="external" href="https://www.apple.com">'
+            "Apple</a></article>",
+            ["apple_com"],
+            [
+                "Whitelisted link missing favicon: www.apple.com"
+                " (https://www.apple.com)"
+            ],
+        ),
+        # Asset link to whitelisted domain (should be skipped)
+        (
+            '<article><a class="external" href="https://apple.com/image.png">'
+            "Img</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Internal link (no class="external") to whitelisted domain (skip)
+        (
+            '<article><a href="https://apple.com/products">'
+            "Apple</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Multiple links: one valid, one missing favicon
+        (
+            "<article>"
+            '<a class="external" href="https://apple.com">'
+            'ok<svg class="favicon" style="--mask-url: url(a.svg);"></svg></a>'
+            '<a class="external" href="https://discord.gg/abc">bad</a>'
+            "</article>",
+            ["apple_com", "discord_gg"],
+            [
+                "Whitelisted link missing favicon: discord.gg"
+                " (https://discord.gg/abc)"
+            ],
+        ),
+        # Google subdomain whitelist entry
+        (
+            '<article><a class="external"'
+            ' href="https://scholar.google.com/citations">'
+            "Scholar</a></article>",
+            ["scholar_google_com"],
+            [
+                "Whitelisted link missing favicon: scholar.google.com"
+                " (https://scholar.google.com/citations)"
+            ],
+        ),
+        # Non-http link with external class (should be skipped)
+        (
+            '<article><a class="external" href="ftp://apple.com/file">'
+            "FTP</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Link with img.favicon (also valid)
+        (
+            '<article><a class="external" href="https://apple.com">'
+            'Apple<img class="favicon" src="apple.png"></a></article>',
+            ["apple_com"],
+            [],
+        ),
+        # Empty whitelist - nothing flagged
+        (
+            '<article><a class="external" href="https://apple.com">'
+            "Apple</a></article>",
+            [],
+            [],
+        ),
+        # Malformed URL with no hostname (should be skipped gracefully)
+        (
+            '<article><a class="external" href="https://">'
+            "Bad URL</a></article>",
+            ["apple_com"],
+            [],
+        ),
+        # Link outside <article> (nav/aside) - should be skipped
+        (
+            '<nav><a class="external" href="https://apple.com">'
+            "Apple</a></nav>",
+            ["apple_com"],
+            [],
+        ),
+    ],
+)
+def test_check_whitelisted_links_have_favicons(html, whitelist, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_whitelisted_links_have_favicons(
+        soup, whitelist
+    )
+    assert result == expected
+
+
+def test_blacklist_overrides_whitelist():
+    """Blacklisted domains should be skipped even if matching whitelist."""
+    # "x_com" whitelist entry is a substring of "vox_com", but vox_com is
+    # blacklisted, so it should NOT be flagged.
+    html = (
+        '<article><a class="external" href="https://www.vox.com/article">'
+        "Vox</a></article>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_whitelisted_links_have_favicons(
+        soup, ["x_com"], ["vox_com"]
+    )
+    assert result == []
+
+
+@mock.patch("built_site_checks.subprocess.run")
+def test_build_favicon_lists(mock_run):
+    """Test _build_favicon_lists calls TS script and parses output."""
+    mock_run.return_value = subprocess.CompletedProcess(
+        args=[],
+        returncode=0,
+        stdout=json.dumps(
+            {
+                "whitelist": ["apple_com", "x_com", "scholar_google_com"],
+                "blacklist": ["csir_co_za", "medium_com"],
+            }
+        ),
+    )
+    whitelist, blacklist = built_site_checks._build_favicon_lists(Path("/fake"))
+    assert whitelist == ["apple_com", "x_com", "scholar_google_com"]
+    assert blacklist == ["csir_co_za", "medium_com"]
+    mock_run.assert_called_once()
+
+
+def test_check_file_for_issues_with_favicon_whitelist(tmp_path):
+    """Test that check_file_for_issues passes favicon_whitelist through."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            base_dir,
+            None,
+            built_site_checks.CheckOptions(favicon_whitelist=["apple_com"]),
+        )
+
+    assert "whitelisted_missing_favicons" in issues
+    assert any("apple.com" in s for s in issues["whitelisted_missing_favicons"])
+
+
+def test_check_file_for_issues_without_favicon_whitelist(tmp_path):
+    """Test that check_file_for_issues skips favicon check when whitelist is
+    None."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, base_dir, None, built_site_checks.CheckOptions()
+        )
+
+    assert "whitelisted_missing_favicons" not in issues
+
+
+def test_maybe_collect_citation_keys_redirect(tmp_path):
+    """Redirect pages should be skipped during citation key collection."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    redirect_html = (
+        '<html><head><meta http-equiv="refresh" content="0;url=/new-page">'
+        "</head><body><code>@misc{SomeKey,</code></body></html>"
+    )
+    file_path = public_dir / "redirect.html"
+    file_path.write_text(redirect_html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert len(citation_to_files) == 0
+
+
+def test_maybe_collect_citation_keys_collects(tmp_path):
+    """Non-redirect pages should have their citation keys collected."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    html = "<html><body><code>@misc{Turner2024Design,</code></body></html>"
+    file_path = public_dir / "page.html"
+    file_path.write_text(html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert "Turner2024Design" in citation_to_files
+    assert citation_to_files["Turner2024Design"] == ["page.html"]
+
+
+def test_process_html_files_duplicate_citations(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Duplicate citation keys across files should be reported."""
+    public_dir = mock_environment["public_dir"]
+
+    # Create two HTML files with the same citation key
+    citation_html = "<html><body><code>@misc{DupeKey2024,</code></body></html>"
+    for name in ("page1.html", "page2.html"):
+        (public_dir / name).write_text(citation_html)
+
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    # Mock parse_html_file to read from the tmp public_dir
+    def _mock_parse(file_path):
+        with open(file_path, encoding="utf-8") as f:
+            return BeautifulSoup(f.read(), "html.parser")
+
+    monkeypatch.setattr(script_utils, "parse_html_file", _mock_parse)
+
+    result = built_site_checks._process_html_files(
+        public_dir,
+        mock_environment["content_dir"],
+        check_fonts=False,
+        defined_css_vars=set(),
+    )
+    assert result is True

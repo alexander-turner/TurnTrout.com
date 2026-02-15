@@ -18,7 +18,7 @@ import {
   normalizePathForCounting,
   normalizeUrl,
   readFaviconCounts,
-} from "./favicons"
+} from "./linkfavicons"
 
 const logger = createWinstonLogger("countlinks")
 
