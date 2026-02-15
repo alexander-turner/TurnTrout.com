@@ -256,9 +256,22 @@
             overflow: hidden;
             pointer-events: none;
             margin-top: $base-margin;
+            border-top: 1px solid var(--midground-faint);
+            padding-top: $base-margin;
 
-            // Fade out at the bottom edge
-            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+            // Fade in at the top (hides abrupt content start) and out at the bottom
+            mask-image: linear-gradient(
+              to bottom,
+              transparent 0%,
+              var(--foreground) 15%,
+              var(--foreground) 40%,
+              transparent 100%
+            );
+
+            // Hide on desktop where the side preview panel is used instead
+            @media all and (min-width: $tablet-breakpoint) {
+              display: none;
+            }
 
             & .search-preview {
               margin: 0 auto;

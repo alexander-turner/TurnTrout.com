@@ -750,6 +750,11 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
 
+  // Re-render inline previews when viewport crosses the tablet breakpoint
+  const debouncedResizeHandler = debounce(handleResizeForInlinePreviews, 150, false)
+  window.addEventListener("resize", debouncedResizeHandler)
+  listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
+
   const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
 
@@ -866,6 +871,67 @@ const getByField = (
 }
 
 /**
+ * Add an inline preview to a result card. Fetches the page content and renders
+ * a small preview slice with search matches highlighted.
+ * @param card - The result card element
+ * @param slug - The slug for the page to preview
+ */
+/* istanbul ignore next */
+function addInlinePreviewToCard(card: HTMLElement, slug: FullSlug): void {
+  if (card.querySelector(".inline-preview")) return // Already has one
+
+  const inlinePreview = document.createElement("div")
+  inlinePreview.classList.add("inline-preview")
+  card.appendChild(inlinePreview)
+
+  void fetchContent(slug).then(({ content: contentElements }) => {
+    if (!contentElements) return
+    const article = document.createElement("article")
+    article.classList.add("search-preview")
+    contentElements.forEach((el) => {
+      article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
+    })
+    inlinePreview.appendChild(article)
+
+    // Wait for layout before scrolling to first match
+    requestAnimationFrame(() => {
+      const firstMatch = inlinePreview.querySelector(".search-match")
+      if (firstMatch) {
+        const matchRect = firstMatch.getBoundingClientRect()
+        const containerRect = inlinePreview.getBoundingClientRect()
+        const relativeTop = matchRect.top - containerRect.top + inlinePreview.scrollTop
+        inlinePreview.scrollTop = Math.max(0, relativeTop - inlinePreview.clientHeight / 3)
+      }
+    })
+  })
+}
+
+/** Track whether the viewport was at mobile/tablet width on last check */
+let wasMobileWidth = typeof window !== "undefined" && window.innerWidth <= tabletBreakpoint
+
+/**
+ * Resize handler: when the viewport crosses from desktop to mobile/tablet
+ * width, lazily add inline previews to result cards that were rendered
+ * without them.
+ */
+/* istanbul ignore next */
+function handleResizeForInlinePreviews(): void {
+  const isMobileNow = window.innerWidth <= tabletBreakpoint
+  if (isMobileNow === wasMobileWidth) return
+  wasMobileWidth = isMobileNow
+
+  if (!isMobileNow) return // Only need to add previews when going to mobile
+
+  const enablePreview = searchLayout?.dataset?.preview === "true"
+  if (!enablePreview) return
+
+  // Add inline previews to all result cards that don't already have them
+  document.querySelectorAll(".result-card:not(.no-match)").forEach((card) => {
+    addInlinePreviewToCard(card as HTMLElement, card.id as FullSlug)
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -889,32 +955,13 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
 
-  // On mobile/tablet, embed a small inline preview slice in each card
+  // On mobile/tablet, embed a small inline preview slice in each card.
+  // CSS hides .inline-preview above the tablet breakpoint, so we always
+  // attach them when preview is enabled — a resize listener
+  // (handleResizeForInlinePreviews) lazily adds them to cards rendered at
+  // desktop width when the viewport narrows.
   if (enablePreview && window.innerWidth <= tabletBreakpoint) {
-    const inlinePreview = document.createElement("div")
-    inlinePreview.classList.add("inline-preview")
-    itemTile.appendChild(inlinePreview)
-
-    void fetchContent(slug as FullSlug).then(({ content: contentElements }) => {
-      if (!contentElements) return
-      const article = document.createElement("article")
-      article.classList.add("search-preview")
-      contentElements.forEach((el) => {
-        article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
-      })
-      inlinePreview.appendChild(article)
-
-      // Wait for layout before scrolling to first match
-      requestAnimationFrame(() => {
-        const firstMatch = inlinePreview.querySelector(".search-match")
-        if (firstMatch) {
-          const matchRect = firstMatch.getBoundingClientRect()
-          const containerRect = inlinePreview.getBoundingClientRect()
-          const relativeTop = matchRect.top - containerRect.top + inlinePreview.scrollTop
-          inlinePreview.scrollTop = Math.max(0, relativeTop - inlinePreview.clientHeight / 3)
-        }
-      })
-    })
+    addInlinePreviewToCard(itemTile, slug as FullSlug)
   }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
