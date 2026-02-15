@@ -9,8 +9,8 @@ import { line } from "d3-shape"
 import type { ChartSpec, SeriesSpec } from "./types"
 
 const CHART_WIDTH = 600
-const CHART_HEIGHT = 350
-const MARGIN = { top: 30, right: 20, bottom: 50, left: 60 }
+const CHART_HEIGHT = 370
+const MARGIN = { top: 30, right: 20, bottom: 70, left: 60 }
 const INNER_WIDTH = CHART_WIDTH - MARGIN.left - MARGIN.right
 const INNER_HEIGHT = CHART_HEIGHT - MARGIN.top - MARGIN.bottom
 const POINT_RADIUS = 3.5

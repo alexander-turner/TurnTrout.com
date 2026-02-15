@@ -217,7 +217,7 @@ describe("renderLineChart", () => {
   it("produces an SVG root element with correct attributes", () => {
     const svg = renderLineChart(BASIC_SPEC)
     expect(svg.tagName).toBe("svg")
-    expect(svg.properties?.viewBox).toBe("0 0 600 350")
+    expect(svg.properties?.viewBox).toBe("0 0 600 370")
     expect(svg.properties?.class).toBe("smart-chart")
     expect(svg.properties?.role).toBe("img")
     expect(svg.properties?.["aria-label"]).toBe("Test Chart")
