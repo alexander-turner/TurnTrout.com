@@ -43,30 +43,12 @@ Options
 <option value="none">None</option>
 </select>
 </label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />
-Symbols
-</label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-fractions" />
-Fractions
-</label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-degrees" />
-Degrees
-</label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-superscript" />
-Superscript
-</label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />
-Ligatures
-</label></li>
-<li class="punctilio-option"><label>
-<input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />
-Non-breaking spaces
-</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />Symbols</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-fractions" />Fractions</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-degrees" />Degrees</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-superscript" />Superscript</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />Ligatures</label></li>
+<li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
 </ul>
 </div>
 </blockquote>
@@ -79,7 +61,6 @@ Non-breaking spaces
 <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 </div>
 <div id="punctilio-preview-section" style="display: none">
-<hr>
 <div id="punctilio-preview" class="punctilio-preview"></div>
 </div>
 </div>
