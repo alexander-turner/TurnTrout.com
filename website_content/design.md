@@ -695,7 +695,7 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position. 
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
 ### I only include recognizable favicons
 
@@ -834,18 +834,13 @@ Popovers
 : Quartz comes with interactive popover previews for internal links. Desktop users can view popovers by hovering over an internal link. Like the [Elvish text](#font-selection), footnote numbers have a dotted border to signal interactivity; clicking them opens a popover with the footnote content, which dismisses on click-outside.
 
 Search
-: Pressing `/` toggles the search modal. On mobile, each result card shows an inline content preview with highlighted matches, fading in at the top and out at the bottom. On desktop, a side panel shows the preview instead. Navigating to a result highlights the query and scrolls to the first match.
+: Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
 
-  <figure style="display:flex;justify-content:center;gap:1rem;">
-    <div class="subfigure" style="width:45%;">
-      <figcaption>Mobile inline previews.</figcaption>
-      TODO
-    </div>
-    <div class="subfigure" style="width:45%;">
-      <figcaption>Desktop preview panel.</figcaption>
-      TODO
-    </div>
-  </figure>
+  ![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+  Figure: Mobile previews.
+
+  ![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+  Figure: Desktop previews.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
@@ -857,6 +852,9 @@ Spoilers hide text until hovered
 
   >! Have you heard? Snape kills Dumbledore.
 
+Server-side math rendering via $\KaTeX$
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
+
 Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
@@ -865,9 +863,6 @@ Scroll indicators for overflowing content
   $$
   e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
   $$
-
-Server-side math rendering via $\KaTeX$
-: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
