@@ -117,7 +117,7 @@ export const FrontMatter: QuartzTransformerPlugin<Partial<Options> | undefined> 
             // Fill out frontmatter data
             file.data.frontmatter = data as QuartzPluginData["frontmatter"]
 
-            // Gather text from all text + code nodes
+            // Gather text from all text + code nodes for search indexing
             let combinedText = gatherAllText(tree)
             combinedText = escapeHTML(combinedText)
             combinedText = combinedText.replace(urlRegex, "$<domain>$<path>")

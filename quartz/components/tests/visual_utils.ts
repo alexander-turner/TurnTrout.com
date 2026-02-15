@@ -2,7 +2,7 @@ import { type Locator, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
-import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
+import { minDesktopWidth } from "../../styles/variables"
 import { type Theme } from "../scripts/darkmode"
 
 /**
@@ -364,11 +364,6 @@ export async function search(page: Page, term: string) {
   // Wait for results to appear
   const resultsContainer = page.locator("#results-container")
   await expect(resultsContainer).toBeVisible()
-
-  if (showingPreview(page)) {
-    const previewContainer = page.locator("#preview-container")
-    await expect(previewContainer).toBeAttached()
-  }
 }
 
 // skipcq: JS-0098
@@ -422,15 +417,6 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   }
 
   await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
-}
-
-/**
- * Returns true if the page will show a search preview
- */
-export function showingPreview(page: Page): boolean {
-  const viewportSize = page.viewportSize()
-  const shouldShowPreview = viewportSize?.width && viewportSize.width > tabletBreakpoint
-  return Boolean(shouldShowPreview)
 }
 
 /**

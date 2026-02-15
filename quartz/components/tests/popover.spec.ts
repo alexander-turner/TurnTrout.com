@@ -5,7 +5,6 @@ import { scrollTolerance, popoverScrollOffset } from "../constants"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
-  showingPreview,
   getAllWithWait,
   isElementChecked,
 } from "./visual_utils"
@@ -252,7 +251,7 @@ test("Popovers do not appear in search previews", async ({ page }) => {
 
   // Wait for search results and preview
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  await expect(previewContainer).toBeVisible()
 
   // Find an internal link in the preview and hover over it
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")

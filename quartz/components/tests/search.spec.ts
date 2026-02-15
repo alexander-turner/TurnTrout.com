@@ -8,7 +8,6 @@ import {
   takeRegressionScreenshot,
   setTheme,
   search,
-  showingPreview,
   getAllWithWait,
   isElementChecked,
 } from "./visual_utils"
@@ -73,7 +72,7 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
@@ -160,7 +159,8 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
+  await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
 
 test("Search placeholder changes based on viewport", async ({ page }) => {
@@ -184,7 +184,7 @@ test("matched search terms appear in results", async ({ page }) => {
 })
 
 test("search matches in headers have correct color styling", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Steering")
 
@@ -245,7 +245,7 @@ test("Search results work for a single character", async ({ page }) => {
 })
 
 test("Preview element persists after closing and reopening search", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Steering")
   const previewContainer = page.locator("#preview-container")
@@ -297,7 +297,7 @@ test.describe("Search accuracy", () => {
   const previewTerms = ["Shrek", "AI presidents", "virus", "Emoji"]
   previewTerms.forEach((term) => {
     test(`Term ${term} is previewed in the viewport`, async ({ page }) => {
-      test.skip(!showingPreview(page))
+      test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
       await search(page, term)
 
       const previewContent = page.locator("#preview-container > article")
@@ -327,7 +327,7 @@ test.describe("Search accuracy", () => {
   })
 
   test("AI presidents doesn't use dropcap", async ({ page }) => {
-    test.skip(!showingPreview(page))
+    test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
     await search(page, "AI presidents")
 
     const previewElement = page.locator("#preview-container > article")
@@ -406,7 +406,11 @@ test("Search matching title text stays at top even with body matches", async ({ 
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  // This test uses hover() to select different results, which requires a desktop viewport
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
+    "Requires hover for result selection",
+  )
 
   const initialUrl = page.url()
   await search(page, "Shrek")
@@ -437,7 +441,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Checkboxes")
 
@@ -448,7 +452,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
@@ -470,7 +474,7 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
 })
 
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Emoji examples")
 
@@ -486,7 +490,7 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
 })
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Testing site")
   await page.waitForLoadState("load")
@@ -519,7 +523,7 @@ test.describe("Image's mix-blend-mode attribute", () => {
 })
 
 test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
   await search(page, "Testing site")
 
   const previewContainer = page.locator("#preview-container")
@@ -534,7 +538,7 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
 })
 
 test("Search preview shows after bad entry", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
   await search(page, "zzzzzz")
   await search(page, "Testing site")
   await search(page, "zzzzzz")
@@ -549,7 +553,7 @@ test("Search preview shows after bad entry", async ({ page }) => {
 })
 
 test("Search preview shows after searching, closing, and reopening", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   const previewContainer = page.locator("#preview-container")
 
@@ -565,7 +569,7 @@ test("Search preview shows after searching, closing, and reopening", async ({ pa
 })
 
 test("Show search preview, search invalid, then show again", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
   await search(page, "Testing site")
   await search(page, "zzzzzz")
   await search(page, "Testing site")
@@ -581,7 +585,7 @@ test("Show search preview, search invalid, then show again", async ({ page }) =>
 test("The pond dropcaps, search preview visual regression test (lostpixel)", async ({
   page,
 }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Testing site")
 
@@ -597,7 +601,7 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
 test("Preview container click navigates to the correct page and scrolls to the first match", async ({
   page,
 }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   // Set viewport to desktop size to ensure preview is visible
   await page.setViewportSize({ width: tabletBreakpoint + 100, height: 800 })
@@ -622,7 +626,7 @@ test("Preview container click navigates to the correct page and scrolls to the f
 })
 
 test("Search preview shows multiple highlighted terms", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "test")
 
@@ -636,7 +640,7 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 })
 
 test("Search matches in preview do not have fade animation", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "test")
   const firstResult = page.locator(".result-card").first()
@@ -672,7 +676,7 @@ test("Search matches on navigated page have fade animation", async ({ page }) =>
 })
 
 test("Navigated page properly orients the first match in viewport", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Shrek")
 
@@ -696,7 +700,11 @@ test("Navigated page properly orients the first match in viewport", async ({ pag
 })
 
 test("Result card matching stays synchronized with preview", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  // This test uses hover() for mouse interaction, which requires a desktop viewport
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
+    "Requires hover for mouse interaction",
+  )
 
   await search(page, "test")
 
@@ -753,7 +761,7 @@ test("should not select a search result on initial render, even if the mouse is 
 test("Footnote table displays within boundaries in search preview (lostpixel)", async ({
   page,
 }, testInfo) => {
-  test.skip(!showingPreview(page))
+  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "test page")
 
@@ -837,4 +845,18 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
 
   // The text should appear in the search bar even while loading
   await expect(searchBar).toHaveValue(testText)
+})
+
+test("Mobile search results show inline preview slices", async ({ page }) => {
+  await page.setViewportSize({ width: 480, height: 800 })
+  await search(page, "Steering")
+
+  const firstResult = page.locator(".result-card").first()
+  const inlinePreview = firstResult.locator(".inline-preview")
+  await expect(inlinePreview).toBeAttached()
+
+  // Preview content loads asynchronously
+  const article = inlinePreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty()
 })
