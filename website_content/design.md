@@ -834,7 +834,18 @@ Popovers
 : Quartz comes with interactive popover previews for internal links. Desktop users can view popovers by hovering over an internal link. Like the [Elvish text](#font-selection), footnote numbers have a dotted border to signal interactivity; clicking them opens a popover with the footnote content, which dismisses on click-outside.
 
 Search
-: My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.
+: Pressing `/` toggles the search modal. On mobile, each result card shows an inline content preview with highlighted matches, fading in at the top and out at the bottom. On desktop, a side panel shows the preview instead. Navigating to a result highlights the query and scrolls to the first match.
+
+  <figure style="display:flex;justify-content:center;gap:1rem;">
+    <div class="subfigure" style="width:45%;">
+    <img src="asset_staging/design-02142026-1.png" alt="Searching for 'Shrek', with HTML peeks below each mobile search result (stacked vertically)."/>
+      <figcaption>Mobile inline previews.</figcaption>
+    </div>
+    <div class="subfigure" style="width:45%;">
+    <img src="asset_staging/design-02142026.png" alt="Searching for 'Shrek' and surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page."/>
+      <figcaption>Desktop preview panel.</figcaption>
+    </div>
+   </figure>
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
