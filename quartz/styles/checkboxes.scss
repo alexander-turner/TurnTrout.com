@@ -92,15 +92,18 @@ input.checkbox-toggle {
   ):not(
     li:has(> input.checkbox-toggle:checked) *,
     li:has(> * > input.checkbox-toggle:checked) *,
-    li:has(> label > input.checkbox-toggle:checked) *
+    li:has(> label > input.checkbox-toggle:checked) *,
+    #punctilio-demo *
   ) {
   opacity: 0.75;
 }
 
 // Checked state
-li:has(> input.checkbox-toggle:checked),
-li:has(> * > input.checkbox-toggle:checked),
-li:has(> label > input.checkbox-toggle:checked) {
+:is(
+    li:has(> input.checkbox-toggle:checked),
+    li:has(> * > input.checkbox-toggle:checked),
+    li:has(> label > input.checkbox-toggle:checked)
+  ):not(#punctilio-demo *) {
   &,
   & p {
     text-decoration: line-through;

@@ -65,6 +65,7 @@ $panel-min-height: 200px;
 
     > .clipboard-button {
       opacity: 1;
+      top: 0;
     }
   }
 
@@ -100,14 +101,14 @@ $panel-min-height: 200px;
       padding: 0;
     }
 
-    .punctilio-option {
+    // Config toggles, not task items — override global checkbox-toggle
+    // positioning and checked-state decorations (line-through/opacity).
+    li.punctilio-option {
       display: flex;
       align-items: center;
       gap: $base-margin;
       padding: calc(0.5 * $base-margin) 0;
 
-      // Config toggles, not task items — override checkbox-toggle positioning
-      // and checked-state decorations (line-through/opacity).
       input.checkbox-toggle {
         position: relative;
         top: auto;
