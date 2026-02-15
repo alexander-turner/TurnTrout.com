@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect, type Page, type Locator } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
@@ -31,6 +31,14 @@ test.beforeEach(async ({ page }) => {
   await expect(searchContainer).toHaveClass(/active/)
   await expect(page.locator("#search-bar")).toBeVisible()
 })
+
+function getPreviewLocator(page: Page): Locator {
+  const isMobile = (page.viewportSize()?.width ?? 0) <= tabletBreakpoint
+  if (isMobile) {
+    return page.locator(".result-card.focus .inline-preview").first()
+  }
+  return page.locator("#preview-container")
+}
 
 async function closeSearch(page: Page) {
   const searchContainer = page.locator("#search-container")
@@ -184,8 +192,6 @@ test("matched search terms appear in results", async ({ page }) => {
 })
 
 test("search matches in headers have correct color styling", async ({ page }) => {
-  test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
-
   await search(page, "Steering")
 
   const previewContainer = page.locator("#preview-container")
@@ -248,7 +254,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
   test.skip((page.viewportSize()?.width ?? 0) <= tabletBreakpoint)
 
   await search(page, "Steering")
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = getPreviewLocator(page)
   const previewArticle = previewContainer.locator("article.search-preview")
   await expect(previewArticle).toBeAttached()
 
@@ -406,18 +412,13 @@ test("Search matching title text stays at top even with body matches", async ({ 
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
-  // This test uses hover() to select different results, which requires a desktop viewport
-  test.skip(
-    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
-    "Requires hover for result selection",
-  )
-
   const initialUrl = page.url()
   await search(page, "Shrek")
-  const previewContainer = page.locator("#preview-container")
 
   const firstResult = page.locator(".result-card").first()
-  await firstResult.hover()
+  await firstResult.focus()
+
+  const previewContainer = getPreviewLocator(page)
   await previewContainer.click()
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
@@ -432,8 +433,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await search(page, "Shrek")
 
   const secondResult = page.locator(".result-card").nth(1)
-  await secondResult.hover()
-  await previewContainer.click()
+  await secondResult.focus()
+
+  const previewContainer2 = getPreviewLocator(page)
+  await previewContainer2.click()
 
   const urlsSoFar = new Set([initialUrl, firstResultUrl])
   await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
@@ -615,7 +618,8 @@ test("Preview container click navigates to the correct page and scrolls to the f
   expect(expectedUrl).not.toBeNull()
 
   // Navigate to the page
-  await page.locator("#preview-container").click()
+  const previewContainer = getPreviewLocator(page)
+  await previewContainer.click()
   await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
 
   // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
