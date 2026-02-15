@@ -645,6 +645,124 @@ series:
     expect(figure.tagName).toBe("figure")
   })
 
+  it("detects chart blocks via data-language attribute on pre", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "pre",
+          properties: { dataLanguage: "chart" },
+          children: [
+            {
+              type: "element",
+              tagName: "code",
+              properties: { dataLanguage: "chart" },
+              children: [{ type: "text", value: VALID_YAML }],
+            },
+          ],
+        },
+      ],
+    }
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    expect((tree.children[0] as Element).tagName).toBe("figure")
+  })
+
+  it("detects chart blocks wrapped in rehype-pretty-code figure", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "figure",
+          properties: { dataRehypePrettyCodeFigure: "" },
+          children: [
+            {
+              type: "element",
+              tagName: "pre",
+              properties: { dataLanguage: "chart" },
+              children: [
+                {
+                  type: "element",
+                  tagName: "code",
+                  properties: { dataLanguage: "chart" },
+                  children: [{ type: "text", value: VALID_YAML }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    const figure = tree.children[0] as Element
+    expect(figure.tagName).toBe("figure")
+    expect(figure.properties?.className as string[]).toContain("smart-chart-container")
+  })
+
+  it("skips figures without properties", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "figure",
+          properties: {},
+          children: [{ type: "text", value: "caption" }],
+        },
+      ],
+    }
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    expect((tree.children[0] as Element).tagName).toBe("figure")
+  })
+
+  it("skips non-chart rehype-pretty-code figures", () => {
+    const tree: Root = {
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "figure",
+          properties: { dataRehypePrettyCodeFigure: "" },
+          children: [
+            {
+              type: "element",
+              tagName: "pre",
+              properties: { dataLanguage: "javascript" },
+              children: [
+                {
+                  type: "element",
+                  tagName: "code",
+                  properties: {},
+                  children: [{ type: "text", value: "console.log('hi')" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    expect((tree.children[0] as Element).tagName).toBe("figure")
+    expect((tree.children[0] as Element).properties?.dataRehypePrettyCodeFigure).toBe("")
+  })
+
   it("skips non-pre elements", () => {
     const tree: Root = {
       type: "root",
