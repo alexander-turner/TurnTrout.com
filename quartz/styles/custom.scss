@@ -962,3 +962,52 @@ figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;
 }
+
+/* Smart Charts */
+.smart-chart-container {
+  margin: calc(2 * $base-margin) 0;
+  max-width: 100%;
+}
+
+.smart-chart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0;
+}
+
+.smart-chart-line {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.smart-chart-point {
+  cursor: pointer;
+  transition: r 0.15s ease;
+
+  &:hover {
+    r: 6;
+  }
+}
+
+.smart-chart-tooltip {
+  position: fixed;
+  z-index: 1000;
+  padding: calc(0.5 * $base-margin) $base-margin;
+  background: var(--background);
+  border: 1px solid var(--midground-faint);
+  border-radius: 4px;
+  font-size: var(--font-size-minus-1);
+  font-family: var(--font-main);
+  color: var(--foreground);
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
+  white-space: nowrap;
+}
+
+@media print {
+  .smart-chart-tooltip {
+    display: none !important;
+  }
+}
