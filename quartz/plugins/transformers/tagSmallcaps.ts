@@ -242,6 +242,10 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
     throw new Error("replaceSCInNode: node is not the child of its parent")
   }
 
+  // Use <tspan> instead of <abbr> inside SVG elements (where <abbr> is invalid)
+  const inSvg = ancestors.some((a) => a.type === "element" && (a as Element).tagName === "svg")
+  const nodeStyle = inSvg ? "tspan.small-caps" : "abbr.small-caps"
+
   replaceRegex(
     node,
     index,
@@ -299,7 +303,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       )
     },
     (nd: Text) => shouldSkipNode(nd, ancestors),
-    "abbr.small-caps",
+    nodeStyle,
   )
 }
 

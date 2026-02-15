@@ -237,31 +237,6 @@ describe("renderLineChart", () => {
     expect(texts).toContain("Test Chart")
   })
 
-  it("renders title with smallcaps for uppercase sequences", () => {
-    const spec: ChartSpec = {
-      ...BASIC_SPEC,
-      title: "Loss of GPT2-XL Model",
-    }
-    const svg = renderLineChart(spec)
-    // Find the title text element (direct child of SVG root)
-    const titleElement = svg.children.find(
-      (c): c is Element => c.type === "element" && c.tagName === "text",
-    )
-    expect(titleElement).toBeDefined()
-    // Should have mixed children: text + tspan + text
-    const children = titleElement!.children
-    expect(children).toHaveLength(3)
-    // "Loss of " - preceding text
-    expect(children[0]).toEqual({ type: "text", value: "Loss of " })
-    // tspan with smallcaps
-    const tspan = children[1] as Element
-    expect(tspan.tagName).toBe("tspan")
-    expect(tspan.properties?.class).toBe("small-caps")
-    expect((tspan.children[0] as Text).value).toBe("gpt2-xl")
-    // " Model" - remaining text
-    expect(children[2]).toEqual({ type: "text", value: " Model" })
-  })
-
   it("renders axis labels", () => {
     const svg = renderLineChart(BASIC_SPEC)
     const texts: string[] = []

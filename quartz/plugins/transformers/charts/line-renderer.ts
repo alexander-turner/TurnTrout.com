@@ -240,51 +240,13 @@ function renderAnnotations(
   })
 }
 
-// Matches 3+ consecutive uppercase letters, allowing digits/hyphens between groups
-const SMALLCAPS_PATTERN = /\b(?<acronym>[A-Z]{3,}(?:[\d\-''][A-Z\d\-'']+)*)\b/g
-
 function renderTitle(title: string): Element {
-  const children: ElementContent[] = []
-  let lastIndex = 0
-
-  for (const match of title.matchAll(SMALLCAPS_PATTERN)) {
-    const matchStart = match.index
-    // Add preceding text
-    if (matchStart > lastIndex) {
-      children.push({ type: "text" as const, value: title.slice(lastIndex, matchStart) })
-    }
-    // Add smallcaps tspan
-    children.push(
-      createSvgElement("tspan", { class: "small-caps" }, [
-        { type: "text" as const, value: match[0].toLowerCase() },
-      ]),
-    )
-    lastIndex = matchStart + match[0].length
-  }
-
-  // Add remaining text
-  if (lastIndex < title.length) {
-    children.push({ type: "text" as const, value: title.slice(lastIndex) })
-  }
-
-  // istanbul ignore next -- unreachable for non-empty titles (remaining text check always adds content)
-  if (children.length === 0) {
-    children.push({ type: "text" as const, value: title })
-  }
-
-  return createSvgElement(
-    "text",
-    {
-      x: CHART_WIDTH / 2,
-      y: 18,
-      fill: "var(--foreground)",
-      "text-anchor": "middle",
-      "font-size": "14px",
-      "font-weight": "600",
-      "font-family": "var(--font-main)",
-    },
-    children,
-  )
+  return createTextElement(CHART_WIDTH / 2, 18, title, {
+    "text-anchor": "middle",
+    "font-size": "14px",
+    "font-weight": "600",
+    "font-family": "var(--font-main)",
+  })
 }
 
 export function renderLineChart(spec: ChartSpec): Element {
