@@ -9,6 +9,9 @@ import clipboardScript from "./scripts/clipboard.inline"
 import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
+import punctilioDemoScript from "./scripts/punctilio-demo.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
 import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
@@ -53,6 +56,7 @@ Body.afterDOMLoaded = [
   elvishToggleScript,
   smallCapsCopyScript,
   scrollIndicatorScript,
+  punctilioDemoScript,
 ]
 Body.css = clipboardStyle
 

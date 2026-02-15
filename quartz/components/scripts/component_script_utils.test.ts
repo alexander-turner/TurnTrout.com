@@ -1,6 +1,7 @@
 import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
 
 import {
+  escapeHtml,
   throttle,
   debounce,
   animate,
@@ -45,6 +46,20 @@ afterEach(() => {
   if (rafMap) {
     rafMap.clear()
   }
+})
+
+describe("escapeHtml", () => {
+  it.each([
+    ["&", "&amp;"],
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    ['<script>alert("xss")</script>', '&lt;script&gt;alert("xss")&lt;/script&gt;'],
+    ["no special chars", "no special chars"],
+    ["", ""],
+    ["a & b < c > d", "a &amp; b &lt; c &gt; d"],
+  ])("escapes %j to %j", (input, expected) => {
+    expect(escapeHtml(input)).toBe(expected)
+  })
 })
 
 describe("throttle", () => {
