@@ -48,7 +48,7 @@ $panel-min-height: 200px;
     display: flex;
     gap: calc(2 * $base-margin);
 
-    @media (width <= #{$page-width}px) {
+    @media (width <= #{$page-width}) {
       flex-direction: column;
     }
   }
