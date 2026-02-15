@@ -161,6 +161,7 @@ function renderSeries(
   xScale: ScaleContinuousNumeric<number, number>,
   yScale: ScaleContinuousNumeric<number, number>,
   seriesIndex: number,
+  axisLabels: { x: string; y: string },
 ): Element {
   const color = series.color ?? DEFAULT_COLOR
   const sortedData = [...series.data].sort((a, b) => a[0] - b[0])
@@ -198,7 +199,7 @@ function renderSeries(
         createSvgElement("title", {}, [
           {
             type: "text" as const,
-            value: `${series.name}: (${formatTick(d[0])}, ${formatTick(d[1])})`,
+            value: `${series.name}\n${axisLabels.x}: ${formatTick(d[0])}\n${axisLabels.y}: ${formatTick(d[1])}`,
           },
         ]),
       ],
@@ -226,15 +227,27 @@ function renderAnnotations(
   return spec.annotations.map((ann) => {
     const yPos = yScale(ann.value)
     const children: Element[] = [
-      createSvgElement("line", {
-        x1: 0,
-        x2: INNER_WIDTH,
-        y1: yPos,
-        y2: yPos,
-        stroke: "var(--midground-faint)",
-        "stroke-width": "1.5",
-        "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
-      }),
+      createSvgElement(
+        "line",
+        {
+          x1: 0,
+          x2: INNER_WIDTH,
+          y1: yPos,
+          y2: yPos,
+          stroke: "var(--midground-faint)",
+          "stroke-width": "1.5",
+          "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
+          "pointer-events": "stroke",
+        },
+        [
+          createSvgElement("title", {}, [
+            {
+              type: "text" as const,
+              value: `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`,
+            },
+          ]),
+        ],
+      ),
     ]
 
     if (ann.label) {
@@ -332,7 +345,9 @@ export function renderLineChart(spec: ChartSpec): Element {
     renderXAxis(xScale, spec.x.label),
     renderYAxis(yScale, spec.y.label),
     ...renderAnnotations(spec, xScale, yScale),
-    ...spec.series.map((s, i) => renderSeries(s, xScale, yScale, i)),
+    ...spec.series.map((s, i) =>
+      renderSeries(s, xScale, yScale, i, { x: spec.x.label, y: spec.y.label }),
+    ),
   ]
 
   chartChildren.push(

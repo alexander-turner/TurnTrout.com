@@ -278,13 +278,14 @@ describe("renderLineChart", () => {
     expect(points).toHaveLength(3)
     // Points should have data-x, data-y, data-series attributes
     expect(points[0].properties?.["data-series"]).toBe("Series1")
-    // Each point should have a <title> child with point info
+    // Each point should have a <title> child with axis labels and values
     const titleEl = points[0].children.find(
       (c): c is Element => c.type === "element" && c.tagName === "title",
     )
     expect(titleEl).toBeDefined()
     const titleText = titleEl?.children[0]
-    expect(titleText?.type === "text" && titleText.value).toContain("Series1")
+    // First point is (0, 0) after sorting; tooltip uses axis labels
+    expect(titleText?.type === "text" && titleText.value).toBe("Series1\nX Axis: 0\nY Axis: 0")
   })
 
   it("renders a line path", () => {
@@ -320,6 +321,13 @@ describe("renderLineChart", () => {
     )
     const labelNode = annotText?.children[0]
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
+    // Annotation line should have a hover <title> with exact value
+    const lineTitle = annotLine?.children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "title",
+    )
+    expect(lineTitle).toBeDefined()
+    const lineTitleText = lineTitle?.children[0]
+    expect(lineTitleText?.type === "text" && lineTitleText.value).toBe("Target: 75")
   })
 
   it("includes accessible <desc> with data summary instead of root <title>", () => {
