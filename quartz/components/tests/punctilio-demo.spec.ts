@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 
 import { takeRegressionScreenshot } from "./visual_utils"
 
@@ -102,15 +102,15 @@ test.describe("Copy output button", () => {
   })
 })
 
-test.describe("HTML mode rendered preview", () => {
-  test("HTML preview is hidden in plaintext mode", async ({ page }) => {
-    await expect(page.locator("#punctilio-html-preview")).toBeHidden()
+test.describe("Rendered preview", () => {
+  test("preview is hidden in plaintext mode", async ({ page }) => {
+    await expect(page.locator("#punctilio-preview")).toBeHidden()
   })
 
-  test("HTML preview shows rendered output in HTML mode", async ({ page }) => {
+  test("preview shows rendered output in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
 
-    const preview = page.locator("#punctilio-html-preview")
+    const preview = page.locator("#punctilio-preview")
     await expect(preview).toBeVisible()
 
     // Should contain rendered HTML elements (e.g. <p> tags from the HTML example)
@@ -118,12 +118,23 @@ test.describe("HTML mode rendered preview", () => {
     await expect(paragraphs.first()).toBeAttached()
   })
 
-  test("HTML preview is hidden when switching back to plaintext", async ({ page }) => {
+  test("preview shows rendered output in Markdown mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const preview = page.locator("#punctilio-preview")
+    await expect(preview).toBeVisible()
+
+    // Should contain rendered HTML from Markdown (e.g. <p> tags, <em> tags)
+    const paragraphs = preview.locator("p")
+    await expect(paragraphs.first()).toBeAttached()
+  })
+
+  test("preview is hidden when switching back to plaintext", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator("#punctilio-html-preview")).toBeVisible()
+    await expect(page.locator("#punctilio-preview")).toBeVisible()
 
     await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
-    await expect(page.locator("#punctilio-html-preview")).toBeHidden()
+    await expect(page.locator("#punctilio-preview")).toBeHidden()
   })
 })
 
@@ -139,24 +150,12 @@ test.describe("Live transform", () => {
 })
 
 test.describe("Options panel", () => {
-  async function openOptions(page: Page): Promise<void> {
-    const details = page.locator(".punctilio-options")
-    if (!(await details.getAttribute("open"))) {
-      await details.locator("summary").click()
-    }
-  }
-
-  test("options panel toggles open and closed", async ({ page }) => {
-    const details = page.locator(".punctilio-options")
-    await expect(details).not.toHaveAttribute("open", "")
-
-    await details.locator("summary").click()
-    await expect(details).toHaveAttribute("open", "")
+  test("options are always visible", async ({ page }) => {
+    await expect(page.locator(".punctilio-options")).toBeVisible()
+    await expect(page.locator(".punctilio-options-grid")).toBeVisible()
   })
 
   test("changing punctuation style to 'none' disables smart quotes", async ({ page }) => {
-    await openOptions(page)
-
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
 
@@ -212,14 +211,14 @@ test.describe("Markdown protection", () => {
   })
 })
 
-test.describe("HTML preview sanitization", () => {
-  test("strips data: URIs from href attributes in preview", async ({ page }) => {
+test.describe("Preview sanitization", () => {
+  test("strips data: URIs from href attributes in HTML preview", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
 
     const input = page.locator("#punctilio-input")
     await input.fill('<p><a href="data:text/html,<script>alert(1)</script>">click</a></p>')
 
-    const preview = page.locator("#punctilio-html-preview")
+    const preview = page.locator("#punctilio-preview")
     await expect(preview).toBeVisible()
 
     // The data: URI should be stripped from the rendered preview
@@ -228,13 +227,13 @@ test.describe("HTML preview sanitization", () => {
     await expect(link).not.toHaveAttribute("href")
   })
 
-  test("strips javascript: URIs from href attributes in preview", async ({ page }) => {
+  test("strips javascript: URIs from href attributes in HTML preview", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
 
     const input = page.locator("#punctilio-input")
     await input.fill('<p><a href="javascript:alert(1)">click</a></p>')
 
-    const preview = page.locator("#punctilio-html-preview")
+    const preview = page.locator("#punctilio-preview")
     await expect(preview).toBeVisible()
 
     const link = preview.locator("a")
@@ -242,18 +241,32 @@ test.describe("HTML preview sanitization", () => {
     await expect(link).not.toHaveAttribute("href")
   })
 
-  test("strips event handler attributes in preview", async ({ page }) => {
+  test("strips event handler attributes in HTML preview", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
 
     const input = page.locator("#punctilio-input")
     await input.fill('<p onmouseover="alert(1)">hover me</p>')
 
-    const preview = page.locator("#punctilio-html-preview")
+    const preview = page.locator("#punctilio-preview")
     await expect(preview).toBeVisible()
 
     const para = preview.locator("p")
     await expect(para).toBeAttached()
     await expect(para).not.toHaveAttribute("onmouseover")
+  })
+
+  test("Markdown preview sanitizes rendered HTML", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+
+    const input = page.locator("#punctilio-input")
+    await input.fill("[click](javascript:alert(1))")
+
+    const preview = page.locator("#punctilio-preview")
+    await expect(preview).toBeVisible()
+
+    const link = preview.locator("a")
+    await expect(link).toBeAttached()
+    await expect(link).not.toHaveAttribute("href")
   })
 })
 
@@ -285,9 +298,18 @@ test.describe("Visual regression", () => {
 
   test("Punctilio demo in HTML mode with preview (lostpixel)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator("#punctilio-html-preview")).toBeVisible()
+    await expect(page.locator("#punctilio-preview")).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-html", {
+      elementToScreenshot: page.locator("#punctilio-demo"),
+    })
+  })
+
+  test("Punctilio demo in Markdown mode with preview (lostpixel)", async ({ page }, testInfo) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    await expect(page.locator("#punctilio-preview")).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "punctilio-demo-markdown", {
       elementToScreenshot: page.locator("#punctilio-demo"),
     })
   })

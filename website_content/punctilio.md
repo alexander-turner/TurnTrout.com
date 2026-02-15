@@ -19,7 +19,6 @@ Type or paste text in the input area below and see the transformed output.
 <button class="punctilio-mode-btn" data-mode="markdown">Markdown</button>
 <button class="punctilio-mode-btn" data-mode="html">HTML</button>
 </div>
-<div class="punctilio-panels">
 <div class="punctilio-panel">
 <div class="punctilio-panel-header">
 <label for="punctilio-input">Input</label>
@@ -35,11 +34,10 @@ Type or paste text in the input area below and see the transformed output.
 </div>
 <textarea id="punctilio-output" readonly spellcheck="false"></textarea>
 <div id="punctilio-diff" class="punctilio-diff"></div>
-<div id="punctilio-html-preview" class="punctilio-html-preview" style="display: none"></div>
 </div>
-</div>
-<details class="punctilio-options">
-<summary>Options</summary>
+<div id="punctilio-preview" class="punctilio-preview" style="display: none"></div>
+<div class="punctilio-options">
+<div class="punctilio-options-header">Options</div>
 <div class="punctilio-options-grid">
 <label class="punctilio-option">
 Punctuation style
@@ -58,29 +56,29 @@ Dash style
 </select>
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-symbols" checked />
+<input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />
 Symbols
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-fractions" />
+<input type="checkbox" class="checkbox-toggle" id="opt-fractions" />
 Fractions
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-degrees" />
+<input type="checkbox" class="checkbox-toggle" id="opt-degrees" />
 Degrees
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-superscript" />
+<input type="checkbox" class="checkbox-toggle" id="opt-superscript" />
 Superscript
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-ligatures" />
+<input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />
 Ligatures
 </label>
 <label class="punctilio-option">
-<input type="checkbox" id="opt-nbsp" checked />
+<input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />
 Non-breaking spaces
 </label>
 </div>
-</details>
+</div>
 </div>

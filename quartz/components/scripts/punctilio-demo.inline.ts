@@ -5,6 +5,7 @@ import { remarkPunctilio } from "punctilio/remark"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
+import remarkRehype from "remark-rehype"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
@@ -38,6 +39,7 @@ const MAX_DIFF_LENGTH = 10_000
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
+const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -74,6 +76,17 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
     .use(remarkParse)
     .use(remarkPunctilio, config)
     .use(remarkStringify)
+    .processSync(text)
+  return String(result)
+}
+
+/** Render transformed Markdown as HTML for the preview panel. */
+function renderMarkdownToHtml(text: string, config: TransformOptions): string {
+  const result = unified()
+    .use(remarkParse)
+    .use(remarkPunctilio, config)
+    .use(remarkRehype)
+    .use(rehypeStringify)
     .processSync(text)
   return String(result)
 }
@@ -152,6 +165,23 @@ function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
     .join("")
 }
 
+// ─── Option persistence ─────────────────────────────────────────────
+
+/** Restore select values from localStorage. */
+function restoreSelectOptions(container: HTMLElement): void {
+  for (const sel of container.querySelectorAll<HTMLSelectElement>(".punctilio-options select")) {
+    const saved = localStorage.getItem(STORAGE_KEY_OPT_PREFIX + sel.id)
+    if (saved && Array.from(sel.options).some((o) => o.value === saved)) {
+      sel.value = saved
+    }
+  }
+}
+
+/** Save a select's value to localStorage on change. */
+function persistSelectOption(sel: HTMLSelectElement): void {
+  localStorage.setItem(STORAGE_KEY_OPT_PREFIX + sel.id, sel.value)
+}
+
 // ─── Main nav handler ────────────────────────────────────────────────
 
 let abortController: AbortController | null = null
@@ -165,7 +195,7 @@ document.addEventListener("nav", () => {
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
   const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
   const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
-  const htmlPreview = document.getElementById("punctilio-html-preview") as HTMLElement | null
+  const preview = document.getElementById("punctilio-preview") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
 
@@ -178,6 +208,9 @@ document.addEventListener("nav", () => {
   // Restore saved mode and input, or fall back to defaults
   const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
   let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
+
+  // Restore select option values from localStorage
+  restoreSelectOptions(container)
 
   function runTransform() {
     if (!input || !output) return
@@ -201,13 +234,16 @@ document.addEventListener("nav", () => {
       output.style.display = "none"
     }
 
-    // HTML rendered preview
-    if (htmlPreview) {
+    // Rendered preview (Markdown and HTML modes)
+    if (preview) {
       if (currentMode === "html") {
-        htmlPreview.style.display = ""
-        htmlPreview.innerHTML = sanitizeHtmlForPreview(result)
+        preview.style.display = ""
+        preview.innerHTML = sanitizeHtmlForPreview(result)
+      } else if (currentMode === "markdown") {
+        preview.style.display = ""
+        preview.innerHTML = sanitizeHtmlForPreview(renderMarkdownToHtml(input.value, config))
       } else {
-        htmlPreview.style.display = "none"
+        preview.style.display = "none"
       }
     }
   }
@@ -223,7 +259,8 @@ document.addEventListener("nav", () => {
     b.classList.toggle("active", b.dataset.mode === currentMode)
   }
 
-  runTransform()
+  // Defer initial transform to run after checkbox.inline.js restores checkbox state
+  queueMicrotask(runTransform)
 
   // Live transform on input
   input.addEventListener("input", debouncedTransform, { signal })
@@ -246,12 +283,19 @@ document.addEventListener("nav", () => {
     )
   }
 
-  // Options changes trigger re-transform
+  // Options changes trigger re-transform and persist select values
   const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
     ".punctilio-options input, .punctilio-options select",
   )
   for (const opt of optionInputs) {
-    opt.addEventListener("change", runTransform, { signal })
+    opt.addEventListener(
+      "change",
+      () => {
+        if (opt instanceof HTMLSelectElement) persistSelectOption(opt)
+        runTransform()
+      },
+      { signal },
+    )
   }
 
   // Copy output button — reuses clipboard icon style from code blocks

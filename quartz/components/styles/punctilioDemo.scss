@@ -44,20 +44,13 @@ $panel-min-height: 200px;
     }
   }
 
-  .punctilio-panels {
-    display: flex;
-    gap: calc(2 * $base-margin);
-
-    @media (width <= #{$page-width}) {
-      flex-direction: column;
-    }
-  }
-
   .punctilio-panel {
-    flex: 1;
-    min-width: 0;
     display: flex;
     flex-direction: column;
+
+    & + .punctilio-panel {
+      margin-top: calc(2 * $base-margin);
+    }
 
     .punctilio-panel-header {
       display: flex;
@@ -120,8 +113,8 @@ $panel-min-height: 200px;
     }
   }
 
-  .punctilio-html-preview {
-    margin-top: $base-margin;
+  .punctilio-preview {
+    margin-top: calc(2 * $base-margin);
     padding: $panel-padding;
     border: $panel-border;
     border-radius: 5px;
@@ -175,22 +168,19 @@ $panel-min-height: 200px;
   .punctilio-options {
     margin-top: calc(2 * $base-margin);
 
-    summary {
-      cursor: pointer;
+    .punctilio-options-header {
+      font-weight: $semi-bold-weight;
+      font-size: 0.85rem;
       color: var(--midground);
-      font-size: 0.9rem;
-      user-select: none;
-
-      &:hover {
-        color: var(--foreground);
-      }
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: $base-margin;
     }
 
     .punctilio-options-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: $base-margin calc(3 * $base-margin);
-      margin-top: $panel-padding;
       padding: $panel-padding;
       border: $panel-border;
       border-radius: 5px;
@@ -204,8 +194,11 @@ $panel-min-height: 200px;
       font-size: 0.9rem;
       color: var(--foreground);
 
-      input[type="checkbox"] {
-        margin: 0;
+      // Override checkbox-toggle absolute positioning for this non-list context
+      input.checkbox-toggle {
+        position: relative;
+        top: auto;
+        left: auto;
       }
 
       select {
