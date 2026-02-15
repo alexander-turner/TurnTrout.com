@@ -1,10 +1,8 @@
 @use "../../styles/variables.scss" as *;
 
 $panel-border: 1px solid var(--midground-faint);
-$panel-bg: color-mix(in srgb, var(--foreground) 2%, var(--background));
 $panel-bg-readonly: color-mix(in srgb, var(--foreground) 4%, var(--background));
 $hover-bg: color-mix(in srgb, var(--foreground) 5%, transparent);
-$panel-padding: calc(1.5 * $base-margin);
 $panel-min-height: 200px;
 
 #punctilio-demo {
@@ -12,7 +10,6 @@ $panel-min-height: 200px;
 
   .punctilio-mode-selector {
     display: flex;
-    margin-bottom: calc(2 * $base-margin);
     border: $panel-border;
     border-radius: 5px;
     overflow: hidden;
@@ -45,21 +42,16 @@ $panel-min-height: 200px;
   }
 
   textarea {
+    box-sizing: border-box;
     width: 100%;
     min-height: $panel-min-height;
-    padding: $panel-padding;
-    border: $panel-border;
+    padding: $base-margin calc(2 * $base-margin);
+    border: 1px solid var(--midground-faint);
     border-radius: 5px;
-    background-color: $panel-bg;
-    color: var(--foreground);
-    font-family: inherit;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    resize: vertical;
+    resize: none;
 
     &:focus {
-      outline: 2px solid color-mix(in srgb, var(--foreground) 30%, transparent);
-      outline-offset: -1px;
+      outline: none;
     }
 
     &[readonly] {
@@ -77,16 +69,13 @@ $panel-min-height: 200px;
   }
 
   .punctilio-diff {
+    box-sizing: border-box;
     width: 100%;
     min-height: $panel-min-height;
-    padding: $panel-padding;
-    border: $panel-border;
+    padding: $base-margin calc(2 * $base-margin);
+    border: 1px solid var(--midground-faint);
     border-radius: 5px;
     background-color: $panel-bg-readonly;
-    color: var(--foreground);
-    font-family: inherit;
-    font-size: 0.95rem;
-    line-height: 1.5;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     overflow-y: auto;
@@ -98,12 +87,10 @@ $panel-min-height: 200px;
   }
 
   .punctilio-preview {
-    padding: $panel-padding;
-    border: $panel-border;
+    padding: $base-margin calc(2 * $base-margin);
+    border: 1px solid var(--midground-faint);
     border-radius: 5px;
     background-color: var(--background);
-    font-size: 0.95rem;
-    line-height: 1.5;
   }
 
   .punctilio-options {
@@ -117,33 +104,27 @@ $panel-min-height: 200px;
       display: flex;
       align-items: center;
       gap: $base-margin;
-      font-size: 0.9rem;
-      color: var(--foreground);
       padding: calc(0.5 * $base-margin) 0;
 
-      // These are config toggles, not task items — override checkbox-toggle's
-      // absolute positioning (designed for standard list margins) since the list
-      // has no margin area to place the checkbox in.
+      // Config toggles, not task items — override checkbox-toggle positioning
+      // and checked-state decorations (line-through/opacity).
       input.checkbox-toggle {
         position: relative;
         top: auto;
         left: auto;
       }
 
-      // Override line-through/opacity from checkbox-toggle's checked state —
-      // these are persistent config toggles, not completable tasks.
       &:has(input.checkbox-toggle:checked) {
         text-decoration: none;
         opacity: 1;
       }
 
       select {
-        padding: calc(0.5 * $base-margin) $base-margin;
-        border: $panel-border;
+        padding: calc(0.5 * $base-margin);
+        border: 1px solid var(--midground-faint);
         border-radius: 5px;
         background: var(--background);
         color: var(--foreground);
-        font-size: 0.85rem;
         font-family: inherit;
       }
     }

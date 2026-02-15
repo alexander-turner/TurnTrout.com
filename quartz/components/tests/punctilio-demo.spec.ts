@@ -158,6 +158,9 @@ test.describe("Live transform", () => {
 
 test.describe("Options panel", () => {
   test("changing punctuation style to 'none' disables smart quotes", async ({ page }) => {
+    // Expand the collapsed options admonition
+    await page.locator(".punctilio-options").click()
+
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
 
