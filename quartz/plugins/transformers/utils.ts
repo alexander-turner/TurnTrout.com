@@ -210,6 +210,20 @@ export function createNowrapSpan(text: string, child: Element): Element {
 }
 
 /**
+ * Creates a word-joiner span element containing a Unicode word joiner
+ * character (U+2060). Used to wrap favicons so they don't orphan from
+ * adjacent text when lines break.
+ */
+export function createWordJoinerSpan(): Element {
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: "word-joiner" },
+    children: [{ type: "text" as const, value: "\u2060" }],
+  } as Element
+}
+
+/**
  * Splices the last few characters from a text node and wraps them with
  * the given element in a nowrap span, preventing line-break orphaning.
  *

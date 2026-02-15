@@ -130,7 +130,7 @@ EOF
 
 ### Step 6: Check DeepSource Issues
 
-After pushing, check for DeepSource static analysis issues:
+After pushing, check for DeepSource static analysis issues using the forked CLI (installed by the SessionStart hook). **Never** try to fetch DeepSource URLs via `WebFetch` — the web UI requires authentication and returns no useful content.
 
 1. Get the commit SHA: `git rev-parse HEAD`
 2. Run: `deepsource issues list --commit <SHA>`
