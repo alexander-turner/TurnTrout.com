@@ -55,6 +55,9 @@ const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
 // Beyond this, show plain output to avoid excessive memory use.
 const MAX_DIFF_LENGTH = 10_000
 
+const STORAGE_KEY_INPUT = "punctilio-input"
+const STORAGE_KEY_MODE = "punctilio-mode"
+
 type TransformMode = "plaintext" | "markdown" | "html"
 
 function getConfig(): TransformOptions {
@@ -195,13 +198,19 @@ document.addEventListener("nav", () => {
   abortController = controller
   const { signal } = controller
 
-  let currentMode: TransformMode = "plaintext"
+  // Restore saved mode and input, or fall back to defaults
+  const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
+  let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
 
   function runTransform() {
     if (!input || !output) return
     const config = getConfig()
     const result = doTransform(input.value, currentMode, config)
     output.value = result
+
+    // Persist input text and mode
+    sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
+    sessionStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
     // Diff highlighting (always shown)
     if (diffOutput) {
@@ -228,8 +237,15 @@ document.addEventListener("nav", () => {
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Set initial example text and transform
-  input.value = EXAMPLES[currentMode]
+  // Restore saved input or use example text for the current mode
+  const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
+  input.value = savedInput ?? EXAMPLES[currentMode]
+
+  // Sync mode button active state with restored mode
+  for (const b of modeButtons) {
+    b.classList.toggle("active", b.dataset.mode === currentMode)
+  }
+
   runTransform()
 
   // Live transform on input
