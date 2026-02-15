@@ -195,11 +195,23 @@ jobs:
             --config config/stylelint/.stylelintrc.json \
             "quartz/**/*.scss"
 
+      - name: Set publication date check flag
+        id: pub-date-flag
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: |
+          # Check publication dates on PRs and merge queue (pre-merge validation)
+          # Skip on push to main/dev (dates are auto-added by update-dates job)
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
+            echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
+          else
+            echo "flag=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run source file checks
         id: source-checks
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
-        run: uv run python scripts/source_file_checks.py --check-publication-dates
+        run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
 
       - name: Check results
         run: |
