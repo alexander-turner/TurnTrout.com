@@ -36,49 +36,49 @@ Type or paste text in the input area below and see the transformed output.
 <div id="punctilio-diff" class="punctilio-diff"></div>
 </div>
 <div id="punctilio-preview" class="punctilio-preview" style="display: none"></div>
-<div class="punctilio-options">
-<div class="punctilio-options-header">Options</div>
-<div class="punctilio-options-grid">
-<label class="punctilio-option">
-Punctuation style
+<div class="punctilio-panel punctilio-options">
+<div class="punctilio-panel-header">
+<label>Options</label>
+</div>
+<ul class="punctilio-options-grid">
+<li class="punctilio-option"><label>Punctuation style
 <select id="opt-punctuation-style">
 <option value="american" selected>American</option>
 <option value="british">British</option>
 <option value="none">None</option>
 </select>
-</label>
-<label class="punctilio-option">
-Dash style
+</label></li>
+<li class="punctilio-option"><label>Dash style
 <select id="opt-dash-style">
 <option value="american" selected>American</option>
 <option value="british">British</option>
 <option value="none">None</option>
 </select>
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />
 Symbols
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-fractions" />
 Fractions
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-degrees" />
 Degrees
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-superscript" />
 Superscript
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />
 Ligatures
-</label>
-<label class="punctilio-option">
+</label></li>
+<li class="punctilio-option"><label>
 <input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />
 Non-breaking spaces
-</label>
-</div>
+</label></li>
+</ul>
 </div>
 </div>

@@ -166,18 +166,10 @@ $panel-min-height: 200px;
   }
 
   .punctilio-options {
-    margin-top: calc(2 * $base-margin);
-
-    .punctilio-options-header {
-      font-weight: $semi-bold-weight;
-      font-size: 0.85rem;
-      color: var(--midground);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: $base-margin;
-    }
-
     .punctilio-options-grid {
+      list-style: none;
+      margin: 0;
+      padding: 0;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: $base-margin calc(3 * $base-margin);
@@ -194,11 +186,20 @@ $panel-min-height: 200px;
       font-size: 0.9rem;
       color: var(--foreground);
 
-      // Override checkbox-toggle absolute positioning for this non-list context
+      // These are config toggles, not task items — override checkbox-toggle's
+      // absolute positioning (designed for standard list margins) since the grid
+      // layout has no margin area to place the checkbox in.
       input.checkbox-toggle {
         position: relative;
         top: auto;
         left: auto;
+      }
+
+      // Override line-through/opacity from checkbox-toggle's checked state —
+      // these are persistent config toggles, not completable tasks.
+      &:has(input.checkbox-toggle:checked) {
+        text-decoration: none;
+        opacity: 1;
       }
 
       select {

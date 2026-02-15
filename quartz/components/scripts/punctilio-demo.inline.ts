@@ -40,6 +40,7 @@ const MAX_DIFF_LENGTH = 10_000
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
 const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
+const OPTION_INPUTS_SELECTOR = ".punctilio-options input, .punctilio-options select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -108,28 +109,6 @@ function transformHtmlText(html: string, config: TransformOptions): string {
   return String(result)
 }
 
-/**
- * Sanitize HTML for the rendered preview by stripping event handlers
- * and javascript: URLs.
- */
-function sanitizeHtmlForPreview(html: string): string {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
-  for (const el of doc.body.querySelectorAll("*")) {
-    for (const attr of Array.from(el.attributes)) {
-      const val = attr.value.trim().toLowerCase()
-      if (
-        attr.name.startsWith("on") ||
-        ((attr.name === "href" || attr.name === "src") &&
-          (val.startsWith("javascript:") || val.startsWith("data:")))
-      ) {
-        el.removeAttribute(attr.name)
-      }
-    }
-  }
-  return doc.body.innerHTML
-}
-
 function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
   switch (mode) {
     case "plaintext":
@@ -165,23 +144,6 @@ function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
     .join("")
 }
 
-// ─── Option persistence ─────────────────────────────────────────────
-
-/** Restore select values from localStorage. */
-function restoreSelectOptions(container: HTMLElement): void {
-  for (const sel of container.querySelectorAll<HTMLSelectElement>(".punctilio-options select")) {
-    const saved = localStorage.getItem(STORAGE_KEY_OPT_PREFIX + sel.id)
-    if (saved && Array.from(sel.options).some((o) => o.value === saved)) {
-      sel.value = saved
-    }
-  }
-}
-
-/** Save a select's value to localStorage on change. */
-function persistSelectOption(sel: HTMLSelectElement): void {
-  localStorage.setItem(STORAGE_KEY_OPT_PREFIX + sel.id, sel.value)
-}
-
 // ─── Main nav handler ────────────────────────────────────────────────
 
 let abortController: AbortController | null = null
@@ -209,8 +171,18 @@ document.addEventListener("nav", () => {
   const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
   let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
 
-  // Restore select option values from localStorage
-  restoreSelectOptions(container)
+  const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+    OPTION_INPUTS_SELECTOR,
+  )
+
+  // Restore select values from localStorage
+  for (const opt of optionInputs) {
+    if (!(opt instanceof HTMLSelectElement)) continue
+    const saved = localStorage.getItem(STORAGE_KEY_OPT_PREFIX + opt.id)
+    if (saved && Array.from(opt.options).some((o) => o.value === saved)) {
+      opt.value = saved
+    }
+  }
 
   function runTransform() {
     if (!input || !output) return
@@ -234,17 +206,16 @@ document.addEventListener("nav", () => {
       output.style.display = "none"
     }
 
-    // Rendered preview (Markdown and HTML modes)
-    if (preview) {
-      if (currentMode === "html") {
-        preview.style.display = ""
-        preview.innerHTML = sanitizeHtmlForPreview(result)
-      } else if (currentMode === "markdown") {
-        preview.style.display = ""
-        preview.innerHTML = sanitizeHtmlForPreview(renderMarkdownToHtml(input.value, config))
-      } else {
-        preview.style.display = "none"
-      }
+    if (!preview) return
+
+    if (currentMode === "html") {
+      preview.style.display = ""
+      preview.innerHTML = result
+    } else if (currentMode === "markdown") {
+      preview.style.display = ""
+      preview.innerHTML = renderMarkdownToHtml(input.value, config)
+    } else {
+      preview.style.display = "none"
     }
   }
 
@@ -284,14 +255,12 @@ document.addEventListener("nav", () => {
   }
 
   // Options changes trigger re-transform and persist select values
-  const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-    ".punctilio-options input, .punctilio-options select",
-  )
   for (const opt of optionInputs) {
     opt.addEventListener(
       "change",
       () => {
-        if (opt instanceof HTMLSelectElement) persistSelectOption(opt)
+        if (opt instanceof HTMLSelectElement)
+          localStorage.setItem(STORAGE_KEY_OPT_PREFIX + opt.id, opt.value)
         runTransform()
       },
       { signal },
