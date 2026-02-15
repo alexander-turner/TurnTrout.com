@@ -203,8 +203,6 @@ jobs:
           # Skip on push to main/dev (dates are auto-added by update-dates job)
           if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
             echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
-          else
-            echo "flag=" >> $GITHUB_OUTPUT
           fi
 
       - name: Run source file checks
