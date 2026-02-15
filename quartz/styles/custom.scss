@@ -797,7 +797,7 @@ img.emoji {
 }
 
 // Ensure all mermaid diagram text has sufficient contrast
-[id^="mermaid-"] {
+svg[id^="mermaid-"] {
   font-size: 14px !important;
   fill: var(--midground-faint) !important; // Ensure arrowheads are visible
 
