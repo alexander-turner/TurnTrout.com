@@ -30,13 +30,7 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
 pnpm test                   # TypeScript tests with coverage (requires 100% branch coverage)
 pnpm check                  # Type checking without emitting files
 pnpm test:visual            # Visual regression tests with Playwright
-pytest <path>               # Python tests (NOT python -m pytest)
-```
-
-**Python environment**: Always activate conda environment before running Python scripts:
-
-```bash
-conda init && conda activate website
+uv run pytest <path>        # Python tests
 ```
 
 ### Running Playwright Tests Locally
