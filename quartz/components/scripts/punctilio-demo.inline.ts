@@ -245,10 +245,7 @@ document.addEventListener("nav", () => {
         for (const b of modeButtons) b.classList.remove("active")
         btn.classList.add("active")
         const newMode = (btn.dataset.mode ?? "plaintext") as TransformMode
-        if (newMode !== currentMode) {
-          currentMode = newMode
-          input.value = EXAMPLES[currentMode]
-        }
+        currentMode = newMode
         runTransform()
       },
       { signal },

@@ -50,13 +50,10 @@ test.describe("Punctilio demo page loads correctly", () => {
 
 test.describe("Mode switching", () => {
   for (const mode of ["plaintext", "markdown", "html"] as const) {
-    test(`switching to ${mode} mode updates input text`, async ({ page }) => {
+    test(`switching to ${mode} mode activates button`, async ({ page }) => {
       const btn = page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`)
       await btn.click()
       await expect(btn).toHaveClass(/active/)
-
-      const inputValue = await page.locator("#punctilio-input").inputValue()
-      expect(inputValue.length).toBeGreaterThan(0)
     })
   }
 
@@ -65,6 +62,17 @@ test.describe("Mode switching", () => {
     const activeButtons = page.locator(".punctilio-mode-btn.active")
     await expect(activeButtons).toHaveCount(1)
     await expect(activeButtons).toHaveAttribute("data-mode", "markdown")
+  })
+
+  test("input text persists across mode switches", async ({ page }) => {
+    const input = page.locator("#punctilio-input")
+    const originalValue = await input.inputValue()
+
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    await expect(input).toHaveValue(originalValue)
+
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    await expect(input).toHaveValue(originalValue)
   })
 })
 
@@ -281,24 +289,6 @@ test.describe("Clipboard button interaction", () => {
 })
 
 test.describe("Mode button navigation", () => {
-  const modes = ["plaintext", "markdown", "html"] as const
-
-  test("cycling through all modes updates input each time", async ({ page }) => {
-    const previousValues = new Set<string>()
-
-    for (const mode of modes) {
-      const btn = page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`)
-      await btn.click()
-      await expect(btn).toHaveClass(/active/)
-
-      const inputValue = await page.locator("#punctilio-input").inputValue()
-      expect(inputValue.length).toBeGreaterThan(0)
-      // Each mode has distinct example text
-      expect(previousValues.has(inputValue)).toBe(false)
-      previousValues.add(inputValue)
-    }
-  })
-
   test("clicking the already-active mode does not clear input", async ({ page }) => {
     const btn = page.locator('.punctilio-mode-btn[data-mode="plaintext"]')
     await expect(btn).toHaveClass(/active/)

@@ -79,7 +79,7 @@ Non-breaking spaces
 <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 </div>
 <div id="punctilio-preview-section" style="display: none">
-<h3>Preview</h3>
+<hr>
 <div id="punctilio-preview" class="punctilio-preview"></div>
 </div>
 </div>
