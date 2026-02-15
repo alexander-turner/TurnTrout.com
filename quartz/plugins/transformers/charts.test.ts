@@ -30,13 +30,31 @@ series:
   it("parses a minimal valid chart spec", () => {
     const spec = parseChartSpec(MINIMAL_YAML)
     expect(spec.type).toBe("line")
-    expect(spec.x).toEqual({ label: "X", scale: "linear" })
-    expect(spec.y).toEqual({ label: "Y", scale: "linear" })
+    expect(spec.x).toEqual({ label: "X", scale: "linear", min: undefined })
+    expect(spec.y).toEqual({ label: "Y", scale: "linear", min: undefined })
     expect(spec.series).toHaveLength(1)
     expect(spec.series[0].data).toEqual([[1, 2]])
     expect(spec.annotations).toBeUndefined()
     expect(spec.title).toBeUndefined()
     expect(spec.series[0].color).toBeUndefined()
+  })
+
+  it("parses axis min override", () => {
+    const yaml = `
+type: line
+x:
+  label: X
+y:
+  label: Y
+  min: 3
+series:
+  - name: S
+    data:
+      - [1, 5]
+`
+    const spec = parseChartSpec(yaml)
+    expect(spec.y.min).toBe(3)
+    expect(spec.x.min).toBeUndefined()
   })
 
   it("parses title, colors, scale, and annotations", () => {
@@ -176,6 +194,11 @@ annotations:
       "annotation invalid style",
       "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: 3\n    style: dotted",
       'annotations[0] style must be "solid" or "dashed"',
+    ],
+    [
+      "non-numeric axis min",
+      'type: line\nx:\n  label: X\n  min: "three"\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
+      'Chart "x" axis min must be a number',
     ],
     [
       "log scale with zero x value",
@@ -483,6 +506,28 @@ describe("renderLineChart", () => {
       if (node.properties?.class === "smart-chart-annotation") annotations.push(node)
     })
     expect(annotations).toHaveLength(1)
+  })
+
+  it("applies axis min overrides to domains", () => {
+    const spec: ChartSpec = {
+      type: "line",
+      x: { label: "X", min: -5 },
+      y: { label: "Y", min: 0 },
+      series: [
+        {
+          name: "S",
+          data: [
+            [1, 50],
+            [10, 100],
+          ],
+        },
+      ],
+    }
+    const svg = renderLineChart(spec)
+    // The y-axis should show ticks starting from 0 (not 50, the data min)
+    const texts: string[] = []
+    visit(svg, "text", (node: Text) => texts.push(node.value))
+    expect(texts).toContain("0")
   })
 
   it("formats integer ticks without decimals", () => {

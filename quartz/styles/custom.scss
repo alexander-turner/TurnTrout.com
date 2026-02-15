@@ -982,3 +982,12 @@ figure#goose-terminal {
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+
+.smart-chart-point {
+  cursor: pointer;
+  transition: r 0.15s ease;
+
+  &:hover {
+    r: 6;
+  }
+}

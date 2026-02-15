@@ -71,6 +71,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 >   label: Layer horizon
 > y:
 >   label: Loss
+>   min: 3
 > series:
 >   - name: Loss
 >     color: "var(--blue)"

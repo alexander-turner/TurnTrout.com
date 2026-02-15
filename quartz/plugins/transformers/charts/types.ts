@@ -1,6 +1,7 @@
 export interface AxisSpec {
   label: string
   scale?: "linear" | "log"
+  min?: number
 }
 
 export interface Annotation {

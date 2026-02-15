@@ -284,6 +284,10 @@ export function renderLineChart(spec: ChartSpec): Element {
   const xDomain = computeDomain(spec.series, (d) => d[0])
   const yDomain = computeDomain(spec.series, (d) => d[1])
 
+  // Apply explicit axis min overrides
+  if (spec.x.min !== undefined) xDomain[0] = spec.x.min
+  if (spec.y.min !== undefined) yDomain[0] = spec.y.min
+
   // Extend y domain to include annotations
   if (spec.annotations) {
     for (const ann of spec.annotations) {
