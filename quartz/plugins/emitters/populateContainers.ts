@@ -20,7 +20,7 @@ import {
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
-} from "../transformers/linkfavicons"
+} from "../transformers/favicons"
 import { createWordJoinerSpan } from "../transformers/utils"
 import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
@@ -276,7 +276,7 @@ export const generateFaviconContent = (): ContentGenerator => {
         // istanbul ignore if
         if (url === defaultPath) return null
 
-        // Use helper from linkfavicons.ts to check if favicon should be included
+        // Use helper from favicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
         return { url, count } as const

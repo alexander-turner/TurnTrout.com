@@ -25,7 +25,7 @@ import { type StaticResources } from "../../util/resources"
 const { minFaviconCount, defaultPath } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
-import * as linkfavicons from "../transformers/linkfavicons"
+import * as linkfavicons from "../transformers/favicons"
 import { type QuartzEmitterPlugin } from "../types"
 
 let populateModule: typeof import("./populateContainers")
