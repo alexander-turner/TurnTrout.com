@@ -249,6 +249,36 @@ function renderTitle(title: string): Element {
   })
 }
 
+/** Build a screen-reader description summarising the chart data. */
+function buildAccessibleDescription(spec: ChartSpec): string {
+  const parts: string[] = []
+
+  parts.push(
+    `${spec.x.label}: ${formatTick(computeDomain(spec.series, (d) => d[0])[0])} to ${formatTick(computeDomain(spec.series, (d) => d[0])[1])}.`,
+  )
+  parts.push(
+    `${spec.y.label}: ${formatTick(computeDomain(spec.series, (d) => d[1])[0])} to ${formatTick(computeDomain(spec.series, (d) => d[1])[1])}.`,
+  )
+
+  for (const s of spec.series) {
+    const sorted = [...s.data].sort((a, b) => a[0] - b[0])
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+    parts.push(
+      `${s.name}: ${sorted.length} points, from (${formatTick(first[0])}, ${formatTick(first[1])}) to (${formatTick(last[0])}, ${formatTick(last[1])}).`,
+    )
+  }
+
+  if (spec.annotations) {
+    for (const ann of spec.annotations) {
+      const label = ann.label ?? "Annotation"
+      parts.push(`${label} at y = ${formatTick(ann.value)}.`)
+    }
+  }
+
+  return parts.join(" ")
+}
+
 export function renderLineChart(spec: ChartSpec): Element {
   // Compute domains
   const xDomain = computeDomain(spec.series, (d) => d[0])
@@ -268,10 +298,14 @@ export function renderLineChart(spec: ChartSpec): Element {
 
   // Build chart elements
   const chartChildren: Element[] = []
-  const titleText = spec.title ?? "Line chart"
 
-  // Accessible <title> element
-  chartChildren.push(createSvgElement("title", {}, [{ type: "text" as const, value: titleText }]))
+  // Accessible <desc> (no native tooltip, unlike <title>)
+  const descId = `chart-desc-${spec.series.map((s) => s.name).join("-")}`.replace(/\s+/g, "-")
+  chartChildren.push(
+    createSvgElement("desc", { id: descId }, [
+      { type: "text" as const, value: buildAccessibleDescription(spec) },
+    ]),
+  )
 
   // Visible title (outside the inner group)
   if (spec.title) {
@@ -300,6 +334,7 @@ export function renderLineChart(spec: ChartSpec): Element {
       class: "smart-chart",
       role: "img",
       "aria-label": spec.title ?? "Line chart",
+      "aria-describedby": descId,
     },
     chartChildren,
   )

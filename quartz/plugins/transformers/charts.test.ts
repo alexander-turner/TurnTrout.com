@@ -292,27 +292,30 @@ describe("renderLineChart", () => {
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
   })
 
-  it("includes accessible SVG title element", () => {
+  it("includes accessible <desc> with data summary instead of <title>", () => {
     const svg = renderLineChart(BASIC_SPEC)
+    const descElements: Element[] = []
     const titleElements: Element[] = []
     visit(svg, "element", (node: Element) => {
+      if (node.tagName === "desc") descElements.push(node)
       if (node.tagName === "title") titleElements.push(node)
     })
-    expect(titleElements).toHaveLength(1)
-    const titleChild = titleElements[0].children[0]
-    expect(titleChild.type === "text" && titleChild.value).toBe("Test Chart")
+    // No <title> (causes native hover tooltip)
+    expect(titleElements).toHaveLength(0)
+    // <desc> with data summary
+    expect(descElements).toHaveLength(1)
+    expect(descElements[0].properties?.id).toBe("chart-desc-Series1")
+    expect(svg.properties?.["aria-describedby"]).toBe("chart-desc-Series1")
+    const descText = descElements[0].children[0]
+    expect(descText.type === "text" && descText.value).toContain("X Axis:")
+    expect(descText.type === "text" && descText.value).toContain("Series1: 3 points")
+    expect(descText.type === "text" && descText.value).toContain("Target at y = 75")
   })
 
-  it("uses default accessible title when no title provided", () => {
+  it("uses default aria-label when no title provided", () => {
     const spec: ChartSpec = { ...BASIC_SPEC, title: undefined }
     const svg = renderLineChart(spec)
-    const titleElements: Element[] = []
-    visit(svg, "element", (node: Element) => {
-      if (node.tagName === "title") titleElements.push(node)
-    })
-    expect(titleElements).toHaveLength(1)
-    const titleChild = titleElements[0].children[0]
-    expect(titleChild.type === "text" && titleChild.value).toBe("Line chart")
+    expect(svg.properties?.["aria-label"]).toBe("Line chart")
   })
 
   it("renders without title when not provided", () => {
