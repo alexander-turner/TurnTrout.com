@@ -118,8 +118,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
       for (const [tree, file] of content) {
         const slug = getSlug(file)
         const aliases = (file.data.frontmatter?.aliases as FullSlug[]) ?? []
-        const isIndexPage = [slug, ...aliases].includes("index" as FullSlug)
-        if (isIndexPage) {
+        if ([slug, ...aliases].includes("index" as FullSlug)) {
           containsIndex = true
         }
 
@@ -135,10 +134,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
           allFiles,
         }
 
-        // Remove TableOfContents from index page
-        const pageOpts = isIndexPage ? { ...opts, right: opts.right.filter((c) => c.name !== "TableOfContents") } : opts
-
-        const content = renderPage(cfg, slug as FullSlug, componentData, pageOpts, externalResources)
+        const content = renderPage(cfg, slug as FullSlug, componentData, opts, externalResources)
         const fp = await write({
           ctx,
           content,
