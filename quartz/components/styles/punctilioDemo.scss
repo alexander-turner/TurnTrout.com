@@ -1,53 +1,61 @@
+@use "../../styles/variables.scss" as *;
+
+$panel-border: 1px solid var(--midground-faint);
+$panel-bg: color-mix(in srgb, var(--foreground) 2%, var(--background));
+$panel-bg-readonly: color-mix(in srgb, var(--foreground) 4%, var(--background));
+$hover-bg: color-mix(in srgb, var(--foreground) 5%, transparent);
+$panel-padding: calc(1.5 * $base-margin);
+$panel-min-height: 200px;
+
 #punctilio-demo {
-  margin-top: 1rem;
+  margin-top: calc(2 * $base-margin);
 
   .punctilio-mode-selector {
     display: flex;
-    margin-bottom: 1rem;
-    border: 1px solid var(--midground-faint);
-    border-radius: 6px;
+    margin-bottom: calc(2 * $base-margin);
+    border: $panel-border;
+    border-radius: 5px;
     overflow: hidden;
     width: fit-content;
+    max-width: 100%;
   }
 
   .punctilio-mode-btn {
-    padding: 0.4rem 1rem;
+    padding: $base-margin calc(2 * $base-margin);
     border: none;
     background: transparent;
     color: var(--midground);
     cursor: pointer;
     font-family: inherit;
     font-size: 0.9rem;
-    transition:
-      background-color 0.15s,
-      color 0.15s;
 
     &:not(:last-child) {
-      border-right: 1px solid var(--midground-faint);
+      border-right: $panel-border;
     }
 
     &:hover {
-      background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+      background-color: $hover-bg;
     }
 
     &.active {
       background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
       color: var(--foreground);
-      font-weight: 600;
+      font-weight: $semi-bold-weight;
     }
   }
 
   .punctilio-panels {
     display: flex;
-    gap: 1rem;
+    gap: calc(2 * $base-margin);
 
-    @media (width <= 750px) {
+    @media (width <= #{$page-width}px) {
       flex-direction: column;
     }
   }
 
   .punctilio-panel {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
 
@@ -55,10 +63,10 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 0.3rem;
+      margin-bottom: $base-margin;
 
       label {
-        font-weight: 600;
+        font-weight: $semi-bold-weight;
         font-size: 0.85rem;
         color: var(--midground);
         text-transform: uppercase;
@@ -68,17 +76,16 @@
 
     textarea {
       width: 100%;
-      min-height: 280px;
-      padding: 0.75rem;
-      border: 1px solid var(--midground-faint);
-      border-radius: 6px;
-      background-color: color-mix(in srgb, var(--foreground) 2%, var(--background));
+      min-height: $panel-min-height;
+      padding: $panel-padding;
+      border: $panel-border;
+      border-radius: 5px;
+      background-color: $panel-bg;
       color: var(--foreground);
       font-family: inherit;
       font-size: 0.95rem;
       line-height: 1.5;
       resize: vertical;
-      tab-size: 2;
 
       &:focus {
         outline: 2px solid color-mix(in srgb, var(--foreground) 30%, transparent);
@@ -86,20 +93,19 @@
       }
 
       &[readonly] {
-        background-color: color-mix(in srgb, var(--foreground) 4%, var(--background));
+        background-color: $panel-bg-readonly;
         cursor: default;
       }
     }
   }
 
-  // Diff view — styled the same as the readonly output textarea
   .punctilio-diff {
     width: 100%;
-    min-height: 280px;
-    padding: 0.75rem;
-    border: 1px solid var(--midground-faint);
-    border-radius: 6px;
-    background-color: color-mix(in srgb, var(--foreground) 4%, var(--background));
+    min-height: $panel-min-height;
+    padding: $panel-padding;
+    border: $panel-border;
+    border-radius: 5px;
+    background-color: $panel-bg-readonly;
     color: var(--foreground);
     font-family: inherit;
     font-size: 0.95rem;
@@ -112,20 +118,13 @@
       background-color: color-mix(in srgb, #22c55e 20%, transparent);
       border-radius: 2px;
     }
-
-    .diff-delete {
-      background-color: color-mix(in srgb, #ef4444 20%, transparent);
-      text-decoration: line-through;
-      border-radius: 2px;
-    }
   }
 
-  // HTML rendered preview
   .punctilio-html-preview {
-    margin-top: 0.5rem;
-    padding: 0.75rem;
-    border: 1px solid var(--midground-faint);
-    border-radius: 6px;
+    margin-top: $base-margin;
+    padding: $panel-padding;
+    border: $panel-border;
+    border-radius: 5px;
     background-color: var(--background);
     font-size: 0.95rem;
     line-height: 1.5;
@@ -138,36 +137,15 @@
     }
   }
 
-  // Copy button
-  .punctilio-copy-btn {
-    padding: 0.2rem 0.6rem;
-    border: 1px solid var(--midground-faint);
-    border-radius: 4px;
-    background: transparent;
-    color: var(--midground);
-    font-family: inherit;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition:
-      background-color 0.15s,
-      color 0.15s;
-
-    &:hover {
-      background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
-      color: var(--foreground);
-    }
-  }
-
-  // Diff toggle
   .punctilio-toolbar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: $panel-padding;
 
     .punctilio-toggle {
       display: flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: $base-margin;
       font-size: 0.75rem;
       color: var(--midground);
       cursor: pointer;
@@ -178,8 +156,24 @@
     }
   }
 
+  .punctilio-copy-btn {
+    padding: calc(0.5 * $base-margin) calc(1.5 * $base-margin);
+    border: $panel-border;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--midground);
+    font-family: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $hover-bg;
+      color: var(--foreground);
+    }
+  }
+
   .punctilio-options {
-    margin-top: 1rem;
+    margin-top: calc(2 * $base-margin);
 
     summary {
       cursor: pointer;
@@ -195,18 +189,18 @@
     .punctilio-options-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 0.5rem 1.5rem;
-      margin-top: 0.75rem;
-      padding: 0.75rem;
-      border: 1px solid var(--midground-faint);
-      border-radius: 6px;
-      background-color: color-mix(in srgb, var(--foreground) 2%, var(--background));
+      gap: $base-margin calc(3 * $base-margin);
+      margin-top: $panel-padding;
+      padding: $panel-padding;
+      border: $panel-border;
+      border-radius: 5px;
+      background-color: $panel-bg;
     }
 
     .punctilio-option {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: $base-margin;
       font-size: 0.9rem;
       color: var(--foreground);
 
@@ -215,9 +209,9 @@
       }
 
       select {
-        padding: 0.2rem 0.4rem;
-        border: 1px solid var(--midground-faint);
-        border-radius: 4px;
+        padding: calc(0.5 * $base-margin) $base-margin;
+        border: $panel-border;
+        border-radius: 5px;
         background: var(--background);
         color: var(--foreground);
         font-size: 0.85rem;

@@ -8,44 +8,25 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { debounce } from "./component_script_utils"
+import { animate, debounce, svgCheck, svgCopy } from "./component_script_utils"
 
-const EXAMPLE_PLAINTEXT = `"It's a beautiful thing..." -- George Orwell, 1984
+const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
 
-She said, "Don't you think it's wonderful?"
+The temperature was 72F -- perfect for Mr. Smith.
 
-The temperature was 72F -- perfect for a 5'10" man.
+(c) 2024 Acme Corp. 2x + 3 != 5`
 
-(c) 2024 Acme Corp. All rights reserved. (r)
-
-2x + 3 != 5
-
-Section 8.3 -- see pp. 12-15 for more details.`
-
-const EXAMPLE_MARKDOWN = `# "Hello, World!"
-
-This is a *beautiful* thing -- really, it is.
-
-She said, "I've been working on \`transform()\` for months."
-
-The building was 5'10" tall. That's >= 170cm.
+const EXAMPLE_MARKDOWN = `She said, "It's *beautiful*" -- really.
 
 \`\`\`python
 x = "don't transform this"
-print(x)
 \`\`\`
 
 Inline math like $E = mc^2$ is preserved.
 
-See the [documentation](https://example.com/it's-fine) for more.
+(c) 2024 Acme Corp. 2x faster!`
 
-(c) 2024 Acme Corp. 2x faster than before!`
-
-const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
-
-<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
-
-<p>The temperature was 72F -- perfect for a 5'10" man.</p>
+const EXAMPLE_HTML = `<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
 
 <p>(c) 2024 Acme Corp. 2x faster!</p>
 
@@ -54,6 +35,9 @@ const EXAMPLE_HTML = `<p>"It's a beautiful thing..." -- George Orwell, 1984</p>
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
 const MAX_DIFF_LENGTH = 10_000
+
+const STORAGE_KEY_INPUT = "punctilio-input"
+const STORAGE_KEY_MODE = "punctilio-mode"
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -156,17 +140,13 @@ const EXAMPLES: Record<TransformMode, string> = {
 
 // ─── Inline diff highlighting ────────────────────────────────────────
 
-/** Render diff changes as HTML spans with appropriate classes. */
+/** Render diff changes as HTML spans, showing only additions (green) and unchanged text. */
 function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
   return changes
+    .filter((change) => !change.removed)
     .map((change) => {
-      const escaped = change.value
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
+      const escaped = escapeHtml(change.value).replace(/\n/g, "<br>")
       if (change.added) return `<span class="diff-insert">${escaped}</span>`
-      if (change.removed) return `<span class="diff-delete">${escaped}</span>`
       return escaped
     })
     .join("")
@@ -188,7 +168,6 @@ document.addEventListener("nav", () => {
   const htmlPreview = document.getElementById("punctilio-html-preview") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
-  const diffToggle = document.getElementById("punctilio-diff-toggle") as HTMLInputElement | null
 
   if (!input || !output) return
 
@@ -196,7 +175,9 @@ document.addEventListener("nav", () => {
   abortController = controller
   const { signal } = controller
 
-  let currentMode: TransformMode = "plaintext"
+  // Restore saved mode and input, or fall back to defaults
+  const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
+  let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
 
   function runTransform() {
     if (!input || !output) return
@@ -204,22 +185,20 @@ document.addEventListener("nav", () => {
     const result = doTransform(input.value, currentMode, config)
     output.value = result
 
-    // Diff highlighting
+    // Persist input text and mode
+    sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
+    sessionStorage.setItem(STORAGE_KEY_MODE, currentMode)
+
+    // Diff highlighting (always shown)
     if (diffOutput) {
-      const showDiff = diffToggle?.checked ?? true
-      if (showDiff) {
-        if (input.value.length + result.length > MAX_DIFF_LENGTH) {
-          diffOutput.textContent = result
-        } else {
-          const segments = diffChars(input.value, result)
-          diffOutput.innerHTML = renderDiffHtml(segments)
-        }
-        diffOutput.style.display = ""
-        output.style.display = "none"
+      if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+        diffOutput.textContent = result
       } else {
-        diffOutput.style.display = "none"
-        output.style.display = ""
+        const segments = diffChars(input.value, result)
+        diffOutput.innerHTML = renderDiffHtml(segments)
       }
+      diffOutput.style.display = ""
+      output.style.display = "none"
     }
 
     // HTML rendered preview
@@ -235,8 +214,15 @@ document.addEventListener("nav", () => {
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Set initial example text and transform
-  input.value = EXAMPLES[currentMode]
+  // Restore saved input or use example text for the current mode
+  const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
+  input.value = savedInput ?? EXAMPLES[currentMode]
+
+  // Sync mode button active state with restored mode
+  for (const b of modeButtons) {
+    b.classList.toggle("active", b.dataset.mode === currentMode)
+  }
+
   runTransform()
 
   // Live transform on input
@@ -268,34 +254,32 @@ document.addEventListener("nav", () => {
     opt.addEventListener("change", runTransform, { signal })
   }
 
-  // Copy output button
+  // Copy output button — reuses clipboard icon style from code blocks
   if (copyBtn) {
+    copyBtn.innerHTML = svgCopy
     copyBtn.addEventListener(
       "click",
       () => {
         if (!output) return
         navigator.clipboard.writeText(output.value).then(
           () => {
-            const original = copyBtn.textContent
-            copyBtn.textContent = "Copied!"
-            setTimeout(() => {
-              copyBtn.textContent = original
-            }, 1500)
+            copyBtn.blur()
+            copyBtn.innerHTML = svgCheck
+            animate(
+              2000,
+              () => {
+                // No per-frame updates needed
+              },
+              () => {
+                copyBtn.innerHTML = svgCopy
+                copyBtn.style.borderColor = ""
+              },
+            )
           },
-          () => {
-            copyBtn.textContent = "Failed"
-            setTimeout(() => {
-              copyBtn.textContent = "Copy"
-            }, 1500)
-          },
+          (error) => console.error(error),
         )
       },
       { signal },
     )
-  }
-
-  // Diff toggle
-  if (diffToggle) {
-    diffToggle.addEventListener("change", runTransform, { signal })
   }
 })

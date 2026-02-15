@@ -1,8 +1,26 @@
 import { test, expect, type Page } from "@playwright/test"
 
+import { takeRegressionScreenshot } from "./visual_utils"
+
 const PUNCTILIO_URL = "http://localhost:8080/punctilio"
 
+// Visual regression tests don't need assertions
+/* eslint-disable playwright/expect-expect */
+
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (!navigator.clipboard) {
+      Object.defineProperty(navigator, "clipboard", {
+        value: {},
+        writable: true,
+      })
+    }
+    Object.defineProperty(navigator.clipboard, "writeText", {
+      value: () => Promise.resolve(),
+      writable: true,
+    })
+  })
+
   await page.goto(PUNCTILIO_URL, { waitUntil: "domcontentloaded" })
 })
 
@@ -13,7 +31,6 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-output")).toBeAttached()
     await expect(page.locator("#punctilio-diff")).toBeAttached()
     await expect(page.locator("#punctilio-copy-btn")).toBeVisible()
-    await expect(page.locator("#punctilio-diff-toggle")).toBeChecked()
   })
 
   test("input is pre-filled with example text and output is non-empty", async ({ page }) => {
@@ -53,34 +70,35 @@ test.describe("Diff highlighting", () => {
     await expect(diffInserts.first()).toBeAttached()
   })
 
-  test("toggling diff off shows the raw output textarea", async ({ page }) => {
-    const diffToggle = page.locator("#punctilio-diff-toggle")
+  test("diff view is always visible with output textarea hidden", async ({ page }) => {
     const outputTextarea = page.locator("#punctilio-output")
     const diffDiv = page.locator("#punctilio-diff")
 
-    // Diff is on by default
     await expect(diffDiv).toBeVisible()
     await expect(outputTextarea).toBeHidden()
-
-    // Toggle diff off
-    await diffToggle.uncheck()
-    await expect(outputTextarea).toBeVisible()
-    await expect(diffDiv).toBeHidden()
   })
 })
 
 test.describe("Copy output button", () => {
-  test("copy button changes text to 'Copied!' on click", async ({ page, context }) => {
-    // Grant clipboard permissions
-    await context.grantPermissions(["clipboard-read", "clipboard-write"])
-
+  test("copy button shows SVG copy icon and swaps to checkmark on click", async ({ page }) => {
     const copyBtn = page.locator("#punctilio-copy-btn")
-    await expect(copyBtn).toHaveText("Copy")
-    await copyBtn.click()
-    await expect(copyBtn).toHaveText("Copied!")
+    await expect(copyBtn).toBeVisible()
 
-    // Reverts back after timeout
-    await expect(copyBtn).toHaveText("Copy", { timeout: 3000 })
+    // Initially shows the copy icon SVG
+    const initialSvg = copyBtn.locator("svg")
+    await expect(initialSvg).toBeAttached()
+    const initialHtml = await copyBtn.innerHTML()
+
+    await copyBtn.click()
+
+    // After clicking, SVG changes to the checkmark (green fill)
+    await expect(copyBtn.locator('svg path[fill="rgb(63, 185, 80)"]')).toBeAttached()
+
+    // Reverts back to copy icon after timeout
+    await expect(async () => {
+      const currentHtml = await copyBtn.innerHTML()
+      expect(currentHtml).toBe(initialHtml)
+    }).toPass({ timeout: 4000 })
   })
 })
 
@@ -253,5 +271,83 @@ test.describe("SPA navigation", () => {
     // Demo should be reinitialized with example text
     const inputValue = await page.locator("#punctilio-input").inputValue()
     expect(inputValue.length).toBeGreaterThan(0)
+  })
+})
+
+test.describe("Visual regression", () => {
+  test("Punctilio demo in plaintext mode (lostpixel)", async ({ page }, testInfo) => {
+    await page.locator("#punctilio-demo").waitFor({ state: "visible" })
+
+    await takeRegressionScreenshot(page, testInfo, "punctilio-demo-plaintext", {
+      elementToScreenshot: page.locator("#punctilio-demo"),
+    })
+  })
+
+  test("Punctilio demo in HTML mode with preview (lostpixel)", async ({ page }, testInfo) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    await expect(page.locator("#punctilio-html-preview")).toBeVisible()
+
+    await takeRegressionScreenshot(page, testInfo, "punctilio-demo-html", {
+      elementToScreenshot: page.locator("#punctilio-demo"),
+    })
+  })
+})
+
+test.describe("Clipboard button interaction", () => {
+  test("clipboard button uses SVG icon matching code block style", async ({ page }) => {
+    const copyBtn = page.locator("#punctilio-copy-btn")
+    await expect(copyBtn).toHaveClass(/clipboard-button/)
+
+    // Should contain an SVG element
+    const svg = copyBtn.locator("svg")
+    await expect(svg).toBeAttached()
+    await expect(svg).toHaveAttribute("height", "16")
+    await expect(svg).toHaveAttribute("width", "16")
+  })
+
+  test("clipboard button is visible without hovering", async ({ page }) => {
+    const copyBtn = page.locator("#punctilio-copy-btn")
+    await expect(copyBtn).toBeVisible()
+    await expect(copyBtn).toHaveCSS("opacity", "1")
+  })
+})
+
+test.describe("Mode button navigation", () => {
+  const modes = ["plaintext", "markdown", "html"] as const
+
+  test("cycling through all modes updates input each time", async ({ page }) => {
+    const previousValues = new Set<string>()
+
+    for (const mode of modes) {
+      const btn = page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`)
+      await btn.click()
+      await expect(btn).toHaveClass(/active/)
+
+      const inputValue = await page.locator("#punctilio-input").inputValue()
+      expect(inputValue.length).toBeGreaterThan(0)
+      // Each mode has distinct example text
+      expect(previousValues.has(inputValue)).toBe(false)
+      previousValues.add(inputValue)
+    }
+  })
+
+  test("clicking the already-active mode does not clear input", async ({ page }) => {
+    const btn = page.locator('.punctilio-mode-btn[data-mode="plaintext"]')
+    await expect(btn).toHaveClass(/active/)
+
+    const inputBefore = await page.locator("#punctilio-input").inputValue()
+    await btn.click()
+    const inputAfter = await page.locator("#punctilio-input").inputValue()
+
+    expect(inputAfter).toBe(inputBefore)
+  })
+
+  test("inactive mode buttons do not have active class", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+
+    for (const mode of ["plaintext", "markdown"]) {
+      const btn = page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`)
+      await expect(btn).not.toHaveClass(/active/)
+    }
   })
 })
