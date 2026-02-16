@@ -17,7 +17,7 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
-  // 5% chance of a randomly colored dropcap (from the pond demo palette)
+  // 5% chance of a randomly colored dropcap (colors match --dropcap-background-* in colors.scss)
   if (Math.random() < 0.05) {
     const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
     const color = colors[Math.floor(Math.random() * colors.length)]
