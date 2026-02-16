@@ -288,7 +288,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 
   // Close and reopen search
   await page.keyboard.press("Escape")
-  await page.keyboard.press("/")
+  await openSearch(page)
 
   // Search again and trigger preview
   await search(page, "Steering")
@@ -491,7 +491,7 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
   const checkedAfterClicked = await isElementChecked(checkboxAfterHeader)
   expect(checkedAfterClicked).toBe(true)
 
-  await page.keyboard.press("/")
+  await openSearch(page)
   await search(page, "Checkboxes")
 
   const preview = await waitForPreviewArticle(page)
@@ -580,7 +580,7 @@ test("Search preview shows after searching, closing, and reopening", async ({ pa
   await page.keyboard.press("Escape")
   await expect(previewContainer).toBeHidden()
 
-  await page.keyboard.press("/")
+  await openSearch(page)
   await search(page, "Shrek")
   await expect(getPreviewLocator(page)).toBeVisible()
 })
@@ -838,8 +838,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   })
 
   // Open search - this triggers index initialization
-  await page.keyboard.press("/")
-  await expect(page.locator("#search-container")).toHaveClass(/active/)
+  await openSearch(page)
 
   // Type immediately without waiting - before the fix, this would be ignored
   // because the search bar was disabled during index loading
