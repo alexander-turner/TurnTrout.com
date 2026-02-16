@@ -1,8 +1,10 @@
-import { test, expect, type PageScreenshotOptions } from "@playwright/test"
+import type { PageScreenshotOptions } from "@playwright/test"
+
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import {
   setTheme,
   getNextElementMatchingSelector,

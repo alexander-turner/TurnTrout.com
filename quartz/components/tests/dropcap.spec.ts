@@ -4,18 +4,16 @@ import { DROPCAP_COLORS } from "../constants"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
 
-/** Mock Math.random so the first call returns `triggerValue` and the second returns `colorFraction`. */
-function mockRandom(triggerValue: number, colorFraction = 0.5) {
-  return () => {
-    const values = [triggerValue, colorFraction]
-    let i = 0
-    Math.random = () => values[i++] ?? 0.5
-  }
+/** Mock Math.random so sequential calls return the given values (then 0.5).
+ *  Must accept values as a parameter (not closure) because addInitScript serializes the function. */
+const mockRandom = (vals: number[]) => {
+  let i = 0
+  Math.random = () => vals[i++] ?? 0.5
 }
 
 test.describe("Random dropcap color", () => {
   test("no color applied when Math.random >= 0.05", async ({ page }) => {
-    await page.addInitScript(mockRandom(0.5))
+    await page.addInitScript(mockRandom, [0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
     const color = await page.evaluate(() =>
@@ -26,7 +24,8 @@ test.describe("Random dropcap color", () => {
 
   for (const [i, color] of DROPCAP_COLORS.entries()) {
     test(`applies --dropcap-background-${color}`, async ({ page }) => {
-      await page.addInitScript(mockRandom(0.01, (i + 0.5) / DROPCAP_COLORS.length))
+      const colorFraction = (i + 0.5) / DROPCAP_COLORS.length
+      await page.addInitScript(mockRandom, [0.01, colorFraction])
       await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
       const value = await page.evaluate(() =>
@@ -37,7 +36,7 @@ test.describe("Random dropcap color", () => {
   }
 
   test("colored dropcap looks different from default", async ({ page }) => {
-    await page.addInitScript(mockRandom(0.5))
+    await page.addInitScript(mockRandom, [0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
     const dropcap = page
@@ -47,7 +46,7 @@ test.describe("Random dropcap color", () => {
     const defaultShot = await dropcap.screenshot()
 
     // Reload with red forced
-    await page.addInitScript(mockRandom(0.01, 0.0))
+    await page.addInitScript(mockRandom, [0.01, 0.0])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
     await dropcap.scrollIntoViewIfNeeded()
 
@@ -55,7 +54,7 @@ test.describe("Random dropcap color", () => {
   })
 
   test("color persists through SPA navigation", async ({ page }) => {
-    await page.addInitScript(mockRandom(0.01, 0.0))
+    await page.addInitScript(mockRandom, [0.01, 0.0])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
     const getColor = () =>
@@ -64,12 +63,10 @@ test.describe("Random dropcap color", () => {
     expect(await getColor()).toBe("var(--dropcap-background-red)")
 
     // SPA-navigate away; CSS custom property on <html> should survive
-    const link = page.locator("article a.internal").first()
-    // eslint-disable-next-line playwright/no-conditional-in-test
-    if ((await link.count()) > 0) {
-      await link.click()
-      await page.waitForURL(/localhost:8080/)
-      expect(await getColor()).toBe("var(--dropcap-background-red)")
-    }
+    const link = page.locator("article a.internal:not(.same-page-link)").first()
+    await link.scrollIntoViewIfNeeded()
+    await link.click()
+    await page.waitForURL(/localhost:8080/)
+    expect(await getColor()).toBe("var(--dropcap-background-red)")
   })
 })

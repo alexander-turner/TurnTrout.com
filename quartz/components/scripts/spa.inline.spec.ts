@@ -7,9 +7,10 @@
  *  - Playwright implicitly scrolling when clicking on an anchor
  */
 
-import { type Page, test, expect } from "@playwright/test"
+import type { Page } from "@playwright/test"
 
 import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
+import { test, expect } from "../tests/fixtures"
 import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
