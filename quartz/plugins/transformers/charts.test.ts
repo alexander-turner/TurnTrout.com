@@ -276,27 +276,32 @@ describe("renderLineChart", () => {
       }
     })
     expect(pointGroups).toHaveLength(3)
-    // Each group has a circle and a tooltip text
+    // Each group has a circle + tooltip bg + tooltip fg
     const circle = pointGroups[0].children.find(
       (c): c is Element => c.type === "element" && c.tagName === "circle",
     )
     expect(circle?.properties?.["data-series"]).toBe("Series1")
     // No native <title> (has ~500ms browser delay)
-    const titleEl = circle?.children.find(
-      (c): c is Element => c.type === "element" && c.tagName === "title",
+    expect(
+      circle?.children.find((c) => c.type === "element" && c.tagName === "title"),
+    ).toBeUndefined()
+    // Blurred background + readable foreground tooltip texts
+    const tooltipBg = pointGroups[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip-bg",
     )
-    expect(titleEl).toBeUndefined()
-    // Tooltip is a sibling <text> with class smart-chart-tooltip
-    const tooltip = pointGroups[0].children.find(
-      (c): c is Element =>
-        c.type === "element" &&
-        c.tagName === "text" &&
-        c.properties?.class === "smart-chart-tooltip",
+    const tooltipFg = pointGroups[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
     )
-    expect(tooltip).toBeDefined()
-    const tooltipText = tooltip?.children[0]
-    // First point is (0, 0) after sorting; tooltip uses axis labels
-    expect(tooltipText?.type === "text" && tooltipText.value).toBe("X Axis: 0, Y Axis: 0")
+    expect(tooltipBg).toBeDefined()
+    expect(tooltipFg).toBeDefined()
+    // Each tooltip has two <tspan> children (X line, Y line)
+    const tspans = (tooltipFg as Element).children.filter(
+      (c): c is Element => c.type === "element" && c.tagName === "tspan",
+    )
+    expect(tspans).toHaveLength(2)
+    // First point is (0, 0) after sorting
+    expect((tspans[0].children[0] as Text).value).toBe("X Axis: 0")
+    expect((tspans[1].children[0] as Text).value).toBe("Y Axis: 0")
   })
 
   it("renders a line path", () => {
@@ -321,32 +326,34 @@ describe("renderLineChart", () => {
       }
     })
     expect(annotations).toHaveLength(1)
-    // Find dashed annotation line
+    // Find dashed annotation line (no native <title>)
     const annotLine = annotations[0].children.find(
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(annotLine?.properties?.["stroke-dasharray"]).toBe("6,4")
-    // No native <title> on the line
-    const lineTitle = annotLine?.children.find(
-      (c): c is Element => c.type === "element" && c.tagName === "title",
+    expect(
+      annotLine?.children.find((c) => c.type === "element" && c.tagName === "title"),
+    ).toBeUndefined()
+    // Blurred background + readable foreground tooltip
+    const tooltipBg = annotations[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip-bg",
     )
-    expect(lineTitle).toBeUndefined()
-    // Tooltip is a sibling <text> with class smart-chart-tooltip
-    const tooltip = annotations[0].children.find(
-      (c): c is Element =>
-        c.type === "element" &&
-        c.tagName === "text" &&
-        c.properties?.class === "smart-chart-tooltip",
+    const tooltipFg = annotations[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
     )
-    expect(tooltip).toBeDefined()
-    const tooltipText = tooltip?.children[0]
-    expect(tooltipText?.type === "text" && tooltipText.value).toBe("Target: 75")
+    expect(tooltipBg).toBeDefined()
+    expect(tooltipFg).toBeDefined()
+    // Annotation tooltip has a single <tspan>
+    const tspan = (tooltipFg as Element).children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "tspan",
+    )
+    expect((tspan?.children[0] as Text).value).toBe("Target: 75")
     // Find annotation label (separate visible text, not a tooltip)
     const annotLabel = annotations[0].children.find(
       (c): c is Element =>
         c.type === "element" &&
         c.tagName === "text" &&
-        c.properties?.class !== "smart-chart-tooltip",
+        !["smart-chart-tooltip", "smart-chart-tooltip-bg"].includes(String(c.properties?.class)),
     )
     const labelNode = annotLabel?.children[0]
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
@@ -511,14 +518,14 @@ describe("renderLineChart", () => {
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(line?.properties?.["stroke-dasharray"]).toBe("none")
-    // Only the tooltip text, no visible label text
-    const texts = annotations[0].children.filter(
+    // Only tooltip bg/fg, no visible label text
+    const visibleLabels = annotations[0].children.filter(
       (c): c is Element =>
         c.type === "element" &&
         c.tagName === "text" &&
-        c.properties?.class !== "smart-chart-tooltip",
+        !["smart-chart-tooltip", "smart-chart-tooltip-bg"].includes(String(c.properties?.class)),
     )
-    expect(texts).toHaveLength(0)
+    expect(visibleLabels).toHaveLength(0)
   })
 
   it("extends y domain to include annotation values", () => {

@@ -969,10 +969,23 @@ figure#goose-terminal {
   stroke-linecap: round;
 }
 
-.smart-chart-tooltip {
+.smart-chart-tooltip,
+.smart-chart-tooltip-bg {
   display: none;
-  fill: var(--foreground);
   pointer-events: none;
+}
+
+.smart-chart-tooltip {
+  fill: var(--foreground);
+}
+
+.smart-chart-tooltip-bg {
+  fill: inherit;
+  stroke: inherit;
+  stroke-width: 8px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+  filter: blur(3px);
 }
 
 .smart-chart-point {
@@ -984,7 +997,10 @@ figure#goose-terminal {
   }
 }
 
-.smart-chart-point-group:hover .smart-chart-tooltip,
-.smart-chart-annotation:hover > .smart-chart-tooltip {
-  display: block;
+.smart-chart-point-group:hover,
+.smart-chart-annotation:hover {
+  > .smart-chart-tooltip,
+  > .smart-chart-tooltip-bg {
+    display: block;
+  }
 }

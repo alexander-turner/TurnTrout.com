@@ -70,6 +70,34 @@ function createTextElement(
   ])
 }
 
+const TOOLTIP_LINE_HEIGHT = 14
+
+/** Build a pair of <text> elements: blurred background + readable foreground.
+ *  Each line gets its own <tspan> for multi-line support. */
+function createTooltipElements(x: number, y: number, lines: string[]): Element[] {
+  function makeTspans(): ElementContent[] {
+    return lines.map((text, i) =>
+      createSvgElement("tspan", { x, dy: i === 0 ? 0 : TOOLTIP_LINE_HEIGHT }, [
+        { type: "text" as const, value: text },
+      ]),
+    )
+  }
+
+  const shared: Record<string, string | number | boolean> = {
+    x,
+    y,
+    "text-anchor": "middle",
+    "font-size": "11px",
+    "font-family": "var(--font-main)",
+    "pointer-events": "none",
+  }
+
+  return [
+    createSvgElement("text", { ...shared, class: "smart-chart-tooltip-bg" }, makeTspans()),
+    createSvgElement("text", { ...shared, class: "smart-chart-tooltip" }, makeTspans()),
+  ]
+}
+
 function renderXAxis(xScale: ScaleContinuousNumeric<number, number>, label: string): Element {
   const ticks = generateTicks(xScale, 8)
   const tickElements: Element[] = ticks.map((t) => {
@@ -185,7 +213,10 @@ function renderSeries(
   const points: Element[] = sortedData.map((d) => {
     const cx = xScale(d[0])
     const cy = yScale(d[1])
-    const tooltipText = `${axisLabels.x}: ${formatTick(d[0])}, ${axisLabels.y}: ${formatTick(d[1])}`
+    const tooltipLines = [
+      `${axisLabels.x}: ${formatTick(d[0])}`,
+      `${axisLabels.y}: ${formatTick(d[1])}`,
+    ]
 
     return createSvgElement("g", { class: "smart-chart-point-group" }, [
       createSvgElement("circle", {
@@ -198,13 +229,7 @@ function renderSeries(
         "data-y": d[1],
         "data-series": series.name,
       }),
-      createTextElement(cx, cy - 10, tooltipText, {
-        class: "smart-chart-tooltip",
-        "text-anchor": "middle",
-        "font-size": "11px",
-        "font-family": "var(--font-main)",
-        "pointer-events": "none",
-      }),
+      ...createTooltipElements(cx, cy - TOOLTIP_LINE_HEIGHT - 10, tooltipLines),
     ])
   })
 
@@ -240,13 +265,7 @@ function renderAnnotations(
         "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
         "pointer-events": "stroke",
       }),
-      createTextElement(INNER_WIDTH / 2, yPos - 8, tooltipLabel, {
-        class: "smart-chart-tooltip",
-        "text-anchor": "middle",
-        "font-size": "11px",
-        "font-family": "var(--font-main)",
-        "pointer-events": "none",
-      }),
+      ...createTooltipElements(INNER_WIDTH / 2, yPos - 8, [tooltipLabel]),
     ]
 
     if (ann.label) {
