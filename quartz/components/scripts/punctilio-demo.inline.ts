@@ -211,7 +211,7 @@ document.addEventListener("nav", () => {
     // Update output sub-heading (hidden in plaintext, visible in code modes)
     if (outputHeading) {
       if (currentMode === "html") {
-        outputHeading.innerHTML = '<abbr class="small-caps">html</abbr> source'
+        outputHeading.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
         outputHeading.style.display = ""
       } else if (currentMode === "markdown") {
         outputHeading.textContent = "Markdown source"
