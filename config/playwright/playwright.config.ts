@@ -65,9 +65,9 @@ function sanitizeConfigForBrowser(
 
 export default defineConfig({
   timeout: 30000,
-  workers: 1, // Parallelism causes flakiness
+  fullyParallel: true,
 
-  retries: process.env.CI ? 3 : 1,
+  retries: process.env.CI ? 2 : 1,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
