@@ -276,7 +276,6 @@ describe("renderLineChart", () => {
       }
     })
     expect(pointGroups).toHaveLength(3)
-    // Each group has a circle + tooltip bg + tooltip fg
     const circle = pointGroups[0].children.find(
       (c): c is Element => c.type === "element" && c.tagName === "circle",
     )
@@ -285,17 +284,12 @@ describe("renderLineChart", () => {
     expect(
       circle?.children.find((c) => c.type === "element" && c.tagName === "title"),
     ).toBeUndefined()
-    // Blurred background + readable foreground tooltip texts
-    const tooltipBg = pointGroups[0].children.find(
-      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip-bg",
-    )
-    const tooltipFg = pointGroups[0].children.find(
+    // Tooltip <text> with two <tspan> children (X line, Y line)
+    const tooltip = pointGroups[0].children.find(
       (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
     )
-    expect(tooltipBg).toBeDefined()
-    expect(tooltipFg).toBeDefined()
-    // Each tooltip has two <tspan> children (X line, Y line)
-    const tspans = (tooltipFg as Element).children.filter(
+    expect(tooltip).toBeDefined()
+    const tspans = (tooltip as Element).children.filter(
       (c): c is Element => c.type === "element" && c.tagName === "tspan",
     )
     expect(tspans).toHaveLength(2)
@@ -334,17 +328,12 @@ describe("renderLineChart", () => {
     expect(
       annotLine?.children.find((c) => c.type === "element" && c.tagName === "title"),
     ).toBeUndefined()
-    // Blurred background + readable foreground tooltip
-    const tooltipBg = annotations[0].children.find(
-      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip-bg",
-    )
-    const tooltipFg = annotations[0].children.find(
+    // Tooltip <text> with a single <tspan>
+    const tooltip = annotations[0].children.find(
       (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
     )
-    expect(tooltipBg).toBeDefined()
-    expect(tooltipFg).toBeDefined()
-    // Annotation tooltip has a single <tspan>
-    const tspan = (tooltipFg as Element).children.find(
+    expect(tooltip).toBeDefined()
+    const tspan = (tooltip as Element).children.find(
       (c): c is Element => c.type === "element" && c.tagName === "tspan",
     )
     expect((tspan?.children[0] as Text).value).toBe("Target: 75")
@@ -353,7 +342,7 @@ describe("renderLineChart", () => {
       (c): c is Element =>
         c.type === "element" &&
         c.tagName === "text" &&
-        !["smart-chart-tooltip", "smart-chart-tooltip-bg"].includes(String(c.properties?.class)),
+        c.properties?.class !== "smart-chart-tooltip",
     )
     const labelNode = annotLabel?.children[0]
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
@@ -518,12 +507,12 @@ describe("renderLineChart", () => {
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(line?.properties?.["stroke-dasharray"]).toBe("none")
-    // Only tooltip bg/fg, no visible label text
+    // Only the tooltip text, no visible label text
     const visibleLabels = annotations[0].children.filter(
       (c): c is Element =>
         c.type === "element" &&
         c.tagName === "text" &&
-        !["smart-chart-tooltip", "smart-chart-tooltip-bg"].includes(String(c.properties?.class)),
+        c.properties?.class !== "smart-chart-tooltip",
     )
     expect(visibleLabels).toHaveLength(0)
   })
