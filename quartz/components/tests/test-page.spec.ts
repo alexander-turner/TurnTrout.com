@@ -319,9 +319,14 @@ test.describe("Table of contents", () => {
       { timeout: 10_000 },
     )
 
-    const initialHighlightText = page.locator("#table-of-contents .active").first()
-
-    await expect(initialHighlightText).toHaveText()
+    // Need the raw string to pass into waitForFunction below
+    const initialHighlightText = await page
+      .locator("#table-of-contents .active")
+      .first()
+      .textContent()
+    if (!initialHighlightText) {
+      throw new Error("Expected initial TOC highlight text to be non-null")
+    }
 
     // Scroll to a different heading
     await page.evaluate(() => document.querySelector("#lists")?.scrollIntoView())
@@ -337,9 +342,7 @@ test.describe("Table of contents", () => {
     )
 
     const highlightText = page.locator("#table-of-contents .active").first()
-
-    expect(highlightText).not.toBeNull()
-    await expect(highlightText).not.toHaveText(initialHighlightText as string)
+    await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 })
 
