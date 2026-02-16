@@ -96,15 +96,11 @@ $panel-min-height: 200px;
   }
 }
 
-// Scoped to the options list inside the Markdown-generated admonition
-// (no longer under .punctilio-options blockquote class)
 #punctilio-demo .punctilio-options-list {
   list-style: none;
   margin: 0;
   padding: 0;
 
-  // Config toggles, not task items — override global checkbox-toggle
-  // positioning and checked-state decorations (line-through/opacity).
   li.punctilio-option {
     display: flex;
     align-items: center;
@@ -118,18 +114,6 @@ $panel-min-height: 200px;
       align-items: center;
       gap: $base-margin;
       flex: 1;
-    }
-
-    input.checkbox-toggle {
-      position: relative;
-      top: auto;
-      left: auto;
-      flex-shrink: 0;
-    }
-
-    &:has(input.checkbox-toggle:checked) {
-      text-decoration: none;
-      opacity: 1;
     }
 
     select {
