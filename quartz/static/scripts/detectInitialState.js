@@ -17,6 +17,16 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
+  // 5% chance of a randomly colored dropcap (from the pond demo palette)
+  if (Math.random() < 0.05) {
+    const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
+    const color = colors[Math.floor(Math.random() * colors.length)]
+    document.documentElement.style.setProperty(
+      "--random-dropcap-color",
+      `var(--dropcap-background-${color})`,
+    )
+  }
+
   // Set video autoplay button state in CSS custom properties
   const autoplayEnabled = localStorage.getItem("pond-video-autoplay") === "true" // Default to true
   document.documentElement.style.setProperty(
