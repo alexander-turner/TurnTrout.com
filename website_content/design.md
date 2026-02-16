@@ -461,7 +461,9 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 > }
 > ```
 
-A less theme-disciplined man than myself might even flaunt dropcap colorings!
+### Rare dropcap coloring
+
+Every time the page loads, there's a 10% chance to get a random dropcap color. :)
 
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
@@ -695,7 +697,7 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position. 
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
 ### I only include recognizable favicons
 
