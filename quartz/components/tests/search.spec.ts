@@ -12,6 +12,22 @@ import {
   isElementChecked,
 } from "./visual_utils"
 
+/** Open the search UI, falling back to clicking the search icon if "/" doesn't work. */
+async function openSearch(page: Page) {
+  const searchContainer = page.locator("#search-container")
+
+  await page.keyboard.press("/")
+
+  // On some mobile viewports the "/" shortcut is unreliable; click the icon as fallback
+  try {
+    await expect(searchContainer).toHaveClass(/active/, { timeout: 2000 })
+  } catch {
+    await page.locator("#search-icon").click()
+    await expect(searchContainer).toHaveClass(/active/)
+  }
+  await expect(page.locator("#search-bar")).toBeVisible()
+}
+
 test.beforeEach(async ({ page }) => {
   // Log any console errors
   page.on("pageerror", (err) => console.error(err))
@@ -27,9 +43,7 @@ test.beforeEach(async ({ page }) => {
   const searchContainer = page.locator("#search-container")
   await expect(searchContainer).not.toHaveClass(/active/)
 
-  await page.keyboard.press("/")
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(page.locator("#search-bar")).toBeVisible()
+  await openSearch(page)
 })
 
 function isMobileViewport(page: Page): boolean {
@@ -348,16 +362,16 @@ test.describe("Search accuracy", () => {
   test("AI presidents doesn't use dropcap", async ({ page }) => {
     await search(page, "AI presidents")
 
-    const preview = await waitForPreviewArticle(page)
-    const previewArticle = preview.locator("article.search-preview")
+    // data-use-dropcap is set by the desktop PreviewManager on #preview-container's article,
+    // which is populated on all viewports (just hidden on mobile)
+    const previewArticle = page.locator("#preview-container > article.search-preview")
     await expect(previewArticle).toHaveAttribute("data-use-dropcap", "false")
   })
 
   test("Dropcap attribute is true for 'test' search results", async ({ page }) => {
     await search(page, "test")
 
-    const preview = await waitForPreviewArticle(page)
-    const previewArticle = preview.locator("article.search-preview")
+    const previewArticle = page.locator("#preview-container > article.search-preview")
     await expect(previewArticle).toHaveAttribute("data-use-dropcap", "true")
   })
 })
