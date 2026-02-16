@@ -727,6 +727,7 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
+  opacity: 0.5;
 
   // Safari needs this
   & > * {
@@ -792,21 +793,6 @@ img.emoji {
   &:has(.edgeLabel:empty) {
     display: none !important;
     background-color: transparent !important;
-  }
-}
-
-// Ensure all mermaid diagram text has sufficient contrast
-[id^="mermaid-"] {
-  font-size: 14px !important;
-  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
-
-  & span,
-  & p,
-  & .label,
-  & .nodeLabel,
-  & .edgeLabel {
-    color: var(--foreground) !important;
-    fill: var(--foreground) !important;
   }
 }
 

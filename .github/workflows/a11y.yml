@@ -2,15 +2,7 @@ name: Accessibility
 
 on:
   push:
-    branches: ["main", "dev"]
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-  pull_request:
+    branches: ["main"]
     paths:
       - "quartz/**"
       - "website_content/**"
