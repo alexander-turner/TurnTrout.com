@@ -12,7 +12,7 @@ const mockRandom = (vals: number[]) => {
 }
 
 test.describe("Random dropcap color", () => {
-  test("no color applied when Math.random >= 0.05", async ({ page }) => {
+  test("no color applied when Math.random >= 0.1", async ({ page }) => {
     await page.addInitScript(mockRandom, [0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 

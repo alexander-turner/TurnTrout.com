@@ -17,8 +17,8 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
-  // 5% chance of a randomly colored dropcap (keep in sync with DROPCAP_COLORS in constants.ts)
-  if (Math.random() < 0.05) {
+  // 10% chance of a randomly colored dropcap (keep in sync with DROPCAP_COLORS in constants.ts)
+  if (Math.random() < 0.1) {
     const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
     const color = colors[Math.floor(Math.random() * colors.length)]
     document.documentElement.style.setProperty(
