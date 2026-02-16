@@ -246,17 +246,7 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Open search and search for a term that will have internal links
-  const searchContainer = page.locator("#search-container")
-  await page.keyboard.press("/")
-
-  // Fall back to clicking the search icon if "/" shortcut is unreliable
-  try {
-    await expect(searchContainer).toHaveClass(/active/, { timeout: 2000 })
-  } catch {
-    await page.locator("#search-icon").click()
-    await expect(searchContainer).toHaveClass(/active/)
-  }
-
+  await page.locator("#search-icon").click()
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
   await searchBar.fill("Test page")
