@@ -50,8 +50,14 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
-if ! command -v shellcheck &>/dev/null && is_root; then
-	{ apt-get update -qq && apt-get install -y -qq shellcheck; } || warn "Failed to install shellcheck"
+if is_root; then
+	apt_pkgs=()
+	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
+	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	if [ ${#apt_pkgs[@]} -gt 0 ]; then
+		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
+			warn "Failed to install ${apt_pkgs[*]}"
+	fi
 fi
 
 #######################################
@@ -88,6 +94,12 @@ fi
 #   http://local_proxy@127.0.0.1:18393/git/owner/repo
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
+#
+# Lessons learned: `gh repo set-default` still needs at least one remote
+# that points to a recognized GitHub host — exporting GH_REPO alone is
+# not enough. We therefore add a "github" remote with the real URL so
+# that both `gh repo set-default` and `gh pr create --head` resolve
+# correctly without manual workarounds.
 
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
@@ -97,6 +109,12 @@ if [ -z "${GH_REPO:-}" ]; then
 		export GH_REPO
 		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
 			echo "export GH_REPO=\"$GH_REPO\"" >>"$CLAUDE_ENV_FILE"
+		fi
+
+		# Add a real GitHub remote so gh CLI can resolve the host
+		if ! git -C "$PROJECT_DIR" remote get-url github &>/dev/null; then
+			git -C "$PROJECT_DIR" remote add github "https://github.com/${GH_REPO}.git" ||
+				warn "Failed to add github remote"
 		fi
 	fi
 fi

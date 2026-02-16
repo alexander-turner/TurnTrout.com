@@ -12,9 +12,16 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build
+pnpm build        # Production build (requires network access)
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
+```
+
+**Offline builds**: In environments without network access (e.g. CI, sandboxed sessions), use the `--offline` flag to skip remote asset fetching and link counting:
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
 ### Testing
