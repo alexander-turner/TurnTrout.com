@@ -709,16 +709,20 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   await expect(secondResult).toHaveClass(/focus/)
   await expect(firstResult).not.toHaveClass(/focus/)
 
-  // Check mouse interaction
+  // Check mouse interaction — move the mouse away first so the mouseenter
+  // event fires reliably when hovering the third result.
   const thirdResult = page.locator(".result-card").nth(2)
   await expect(thirdResult).not.toHaveClass(/focus/)
+  await page.mouse.move(0, 0)
 
   // Wait for mouse lock to expire after keyboard navigation
   // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(mouseFocusDelay * 3)
 
-  await thirdResult.hover()
-  await expect(thirdResult).toHaveClass(/focus/)
+  await expect(async () => {
+    await thirdResult.hover()
+    await expect(thirdResult).toHaveClass(/focus/)
+  }).toPass({ timeout: 5_000 })
   await expect(secondResult).not.toHaveClass(/focus/)
 })
 
