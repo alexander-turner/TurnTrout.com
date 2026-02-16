@@ -37,7 +37,7 @@ function isMobileViewport(page: Page): boolean {
 
 function getPreviewLocator(page: Page): Locator {
   if (isMobileViewport(page)) {
-    return page.locator(".result-card.focus .inline-preview").first()
+    return page.locator(".result-card.focus .card-preview").first()
   }
   return page.locator("#preview-container")
 }
@@ -52,7 +52,7 @@ async function waitForPreviewArticle(page: Page): Promise<Locator> {
 
 /**
  * Navigate by clicking the preview (desktop) or the focused result card (mobile).
- * On mobile, the inline preview has pointer-events: none, so we click the card directly.
+ * On mobile, the card preview has pointer-events: none, so we click the card directly.
  */
 async function clickPreviewToNavigate(page: Page): Promise<void> {
   if (isMobileViewport(page)) {
@@ -345,15 +345,16 @@ test.describe("Search accuracy", () => {
   })
 
   test("AI presidents doesn't use dropcap", async ({ page }) => {
+    // data-use-dropcap is only set by the desktop PreviewManager
+    test.skip(isMobileViewport(page), "Dropcap attribute is desktop-only")
     await search(page, "AI presidents")
 
-    // data-use-dropcap is set by the desktop PreviewManager on #preview-container's article,
-    // which is populated on all viewports (just hidden on mobile)
     const previewArticle = page.locator("#preview-container > article.search-preview")
     await expect(previewArticle).toHaveAttribute("data-use-dropcap", "false")
   })
 
   test("Dropcap attribute is true for 'test' search results", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Dropcap attribute is desktop-only")
     await search(page, "test")
 
     const previewArticle = page.locator("#preview-container > article.search-preview")
@@ -839,16 +840,16 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchBar).toHaveValue(testText)
 })
 
-test("Mobile search results show inline preview slices", async ({ page }) => {
-  await page.setViewportSize({ width: 480, height: 800 })
+test("Mobile search results show card preview snippets", async ({ page }) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
   await search(page, "Steering")
 
   const firstResult = page.locator(".result-card").first()
-  const inlinePreview = firstResult.locator(".inline-preview")
-  await expect(inlinePreview).toBeAttached()
+  const cardPreview = firstResult.locator(".card-preview")
+  await expect(cardPreview).toBeAttached()
 
   // Preview content loads asynchronously
-  const article = inlinePreview.locator("article.search-preview")
+  const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
   await expect(article).not.toBeEmpty()
 })

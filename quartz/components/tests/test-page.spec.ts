@@ -44,8 +44,9 @@ test.beforeEach(async ({ page }) => {
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   // Dispatch the 'nav' event to initialize clipboard functionality
+  // Use document (not window) — component listeners bind to document
   await page.evaluate(() => {
-    window.dispatchEvent(new Event("nav"))
+    document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" } }))
   })
 
   // Hide all video and audio controls
@@ -310,18 +311,21 @@ test.describe("Table of contents", () => {
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 
-    const headerLocator = page.locator("h1").last()
-    await headerLocator.scrollIntoViewIfNeeded()
+    // Scroll to a mid-page heading (not the last h1, which is the sr-only Footnotes heading)
+    const spoilerHeading = page.locator("#spoilers").first()
+    await spoilerHeading.scrollIntoViewIfNeeded()
+
     const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    await expect(tocHighlightLocator).toBeVisible()
+    await expect(tocHighlightLocator).toBeVisible({ timeout: 10_000 })
 
     const initialHighlightText = await tocHighlightLocator.textContent()
     expect(initialHighlightText).not.toBeNull()
 
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
+    // Scroll to a different heading
+    const listsHeading = page.locator("#lists").first()
+    await listsHeading.scrollIntoViewIfNeeded()
 
-    // Wait for scroll event to fire and TOC to update
+    // Wait for IntersectionObserver to fire and TOC to update
     await page.waitForFunction((initialText) => {
       const activeElement = document.querySelector("#table-of-contents .active")
       return activeElement && activeElement.textContent !== initialText
