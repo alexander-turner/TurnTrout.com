@@ -336,6 +336,22 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
+/** Open the search UI, falling back to clicking the search icon if "/" doesn't work. */
+export async function openSearch(page: Page) {
+  const searchContainer = page.locator("#search-container")
+
+  await page.keyboard.press("/")
+
+  // On some mobile viewports the "/" shortcut is unreliable; click the icon as fallback
+  try {
+    await expect(searchContainer).toHaveClass(/active/, { timeout: 2000 })
+  } catch {
+    await page.locator("#search-icon").click()
+    await expect(searchContainer).toHaveClass(/active/)
+  }
+  await expect(page.locator("#search-bar")).toBeVisible()
+}
+
 export async function waitForSearchBar(page: Page): Promise<Locator> {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")

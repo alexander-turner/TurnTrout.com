@@ -7,6 +7,7 @@ import {
   isDesktopViewport,
   getAllWithWait,
   isElementChecked,
+  openSearch,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -245,7 +246,7 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Open search and search for a term that will have internal links
-  await page.keyboard.press("/")
+  await openSearch(page)
   const searchBar = page.locator("#search-bar")
   await searchBar.fill("Test page")
 

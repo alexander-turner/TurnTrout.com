@@ -10,23 +10,8 @@ import {
   search,
   getAllWithWait,
   isElementChecked,
+  openSearch,
 } from "./visual_utils"
-
-/** Open the search UI, falling back to clicking the search icon if "/" doesn't work. */
-async function openSearch(page: Page) {
-  const searchContainer = page.locator("#search-container")
-
-  await page.keyboard.press("/")
-
-  // On some mobile viewports the "/" shortcut is unreliable; click the icon as fallback
-  try {
-    await expect(searchContainer).toHaveClass(/active/, { timeout: 2000 })
-  } catch {
-    await page.locator("#search-icon").click()
-    await expect(searchContainer).toHaveClass(/active/)
-  }
-  await expect(page.locator("#search-bar")).toBeVisible()
-}
 
 test.beforeEach(async ({ page }) => {
   // Log any console errors
@@ -730,7 +715,7 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 
   // Wait for mouse lock to expire after keyboard navigation
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(mouseFocusDelay + 50)
+  await page.waitForTimeout(mouseFocusDelay * 3)
 
   await thirdResult.hover()
   await expect(thirdResult).toHaveClass(/focus/)
