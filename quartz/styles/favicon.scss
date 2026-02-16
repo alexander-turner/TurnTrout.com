@@ -113,6 +113,7 @@ svg.favicon {
       var(--attenuated-blue) 35deg 360deg
     );
   }
+
 }
 
 // Per-domain SVG colors
@@ -122,6 +123,7 @@ $domain-svg-colors: (
   "cnn_com": var(--red),
   "deepmind_com": var(--blue),
   "discord_gg": color-mix(in srgb, var(--purple) 50%, var(--blue)),
+  "fatebook_io": var(--purple),
   "forum_effectivealtruism_org": var(--teal),
   "colab_research_google_com": var(--gold),
   "docs_google_com": var(--blue),

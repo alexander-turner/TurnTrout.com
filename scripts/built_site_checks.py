@@ -4,12 +4,15 @@
 import argparse
 import copy
 import html
+import json
+import mimetypes
 import os
 import re
 import subprocess
 import sys
 import urllib.parse
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
@@ -1274,6 +1277,109 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
+def _build_favicon_lists(
+    git_root: Path,
+) -> tuple[list[str], list[str]]:
+    """
+    Build favicon whitelist and blacklist by calling the shared TS module.
+
+    Runs ``scripts/compute_favicon_lists.ts`` (which imports from
+    ``quartz/util/favicon-config.ts``) so that the Python validation
+    uses the exact same inclusion predicate -- including PSL-normalised
+    blacklist entries -- as the Quartz transformer.
+
+    Returns a (whitelist, blacklist) tuple.
+    """
+    result = subprocess.run(  # skipcq: BAN-B607
+        ["npx", "tsx", str(git_root / "scripts" / "compute_favicon_lists.ts")],
+        capture_output=True,
+        text=True,
+        cwd=str(git_root),
+        check=True,
+    )
+    data = json.loads(result.stdout)
+    return data["whitelist"], data["blacklist"]
+
+
+def _is_asset_href(href: str) -> bool:
+    """
+    Check if an href points to an asset file (image/video/audio/pdf).
+
+    Mirrors the TS ``isAssetLink()`` which uses the ``mime-types``
+    library; here we use Python's stdlib ``mimetypes`` module.
+    """
+    path = href.split("?")[0].split("#")[0]
+    mime_type, _ = mimetypes.guess_type(path)
+    if not mime_type:
+        return False
+    return (
+        mime_type.startswith(("image/", "video/", "audio/"))
+        or mime_type == "application/pdf"
+    )
+
+
+def check_whitelisted_links_have_favicons(
+    soup: BeautifulSoup,
+    favicon_whitelist: list[str],
+    favicon_blacklist: list[str] | None = None,
+) -> list[str]:
+    """
+    Check that external links to whitelisted domains have favicons.
+
+    For each ``<a class="external">`` link inside ``<article>`` whose
+    domain matches a whitelist entry (and is NOT blacklisted), verifies
+    the link contains a ``.favicon`` descendant element.
+
+    Args:
+        soup: Parsed HTML page.
+        favicon_whitelist: Underscore-separated domain entries (e.g.
+            ``["apple_com", "scholar_google_com"]``).  Matching is by
+            substring inclusion in the underscore-normalised hostname.
+        favicon_blacklist: Underscore-separated domain entries that should
+            never receive favicons.  Blacklist takes priority over
+            whitelist (mirroring the TS logic).
+
+    Returns:
+        List of human-readable issue strings for whitelisted links missing
+        favicons.
+    """
+    issues: list[str] = []
+    blacklist = favicon_blacklist or []
+
+    # Only check links inside <article>; component-generated links (nav,
+    # aside) never pass through the favicon transformer.
+    for link in soup.select("article a.external[href]"):
+        href = str(link.get("href", ""))
+        if not href.startswith(("http://", "https://")):
+            continue
+
+        if _is_asset_href(href):
+            continue
+
+        parsed = urlparse(href)
+        hostname = parsed.hostname or ""
+        if not hostname:
+            continue
+
+        # Normalise: strip www., convert dots to underscores
+        normalised = hostname.removeprefix("www.").replace(".", "_")
+
+        # Blacklist takes priority (mirrors TS shouldIncludeFavicon)
+        if any(entry in normalised for entry in blacklist):
+            continue
+        if not any(entry in normalised for entry in favicon_whitelist):
+            continue
+
+        has_favicon = bool(link.select_one("svg.favicon, img.favicon"))
+        if not has_favicon:
+            _append_to_list(
+                issues,
+                f"Whitelisted link missing favicon: {hostname} ({href})",
+            )
+
+    return issues
+
+
 def _check_populate_commit_count(
     soup: BeautifulSoup, *, min_commit_count: int
 ) -> list[str]:
@@ -1540,12 +1646,21 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
+@dataclass(frozen=True)
+class CheckOptions:
+    """Configuration options shared across all file checks."""
+
+    should_check_fonts: bool = False
+    defined_css_variables: Set[str] | None = None
+    favicon_whitelist: list[str] | None = None
+    favicon_blacklist: list[str] | None = None
+
+
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
-    should_check_fonts: bool,
-    defined_css_variables: Set[str] | None = None,
+    opts: CheckOptions,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1554,8 +1669,7 @@ def check_file_for_issues(
         file_path: Path to the HTML file to check
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
-        should_check_fonts: Whether to check for preloaded fonts
-        defined_css_variables: Set of defined CSS variables
+        opts: Shared configuration for all file checks.
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1608,7 +1722,7 @@ def check_file_for_issues(
             soup
         ),
         "inline_style_variables": check_inline_style_variables(
-            soup, defined_css_variables
+            soup, opts.defined_css_variables
         ),
         "problematic_iframe_embeds": check_iframe_embeds(soup),
         "empty_populate_elements": check_populate_elements_nonempty(soup),
@@ -1622,7 +1736,14 @@ def check_file_for_issues(
         "invalid_class_names": check_invalid_class_names(soup),
     }
 
-    if should_check_fonts:
+    if opts.favicon_whitelist is not None:
+        issues["whitelisted_missing_favicons"] = (
+            check_whitelisted_links_have_favicons(
+                soup, opts.favicon_whitelist, opts.favicon_blacklist
+            )
+        )
+
+    if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
 
     if md_path and md_path.is_file():
@@ -2199,6 +2320,15 @@ def _process_html_files(  # pylint: disable=too-many-locals
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
 
+    favicon_whitelist, favicon_blacklist = _build_favicon_lists(
+        public_dir.parent
+    )
+    check_opts = CheckOptions(
+        should_check_fonts=check_fonts,
+        defined_css_variables=defined_css_vars,
+        favicon_whitelist=favicon_whitelist,
+        favicon_blacklist=favicon_blacklist,
+    )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
         if "drafts" in root_path.parts:
@@ -2222,11 +2352,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
                     )
 
             issues = check_file_for_issues(
-                file_path,
-                public_dir,
-                md_path,
-                should_check_fonts=check_fonts,
-                defined_css_variables=defined_css_vars,
+                file_path, public_dir, md_path, check_opts
             )
 
             if any(lst for lst in issues.values()):

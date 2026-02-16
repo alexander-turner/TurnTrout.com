@@ -21,7 +21,8 @@ import {
   urlCache,
   shouldIncludeFavicon,
 } from "../transformers/favicons"
-import { createNowrapSpan, hasClass } from "../transformers/utils"
+import { createWordJoinerSpan } from "../transformers/utils"
+import { hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
 const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
@@ -205,7 +206,9 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createNowrapSpan("", faviconElement)]
+    const wordJoiner = createWordJoinerSpan()
+    wordJoiner.children.push(faviconElement)
+    return [wordJoiner]
   }
 }
 

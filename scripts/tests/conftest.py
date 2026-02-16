@@ -1,3 +1,4 @@
+import json
 import subprocess
 import tempfile
 from pathlib import Path
@@ -33,18 +34,29 @@ def quartz_project_structure(tmp_path: Path):
     """
     Create a minimal Quartz directory layout under *tmp_path*.
 
-    The structure mirrors the directories expected by many scripts:
-    ├── public/
-    ├── quartz/static/
-    └── website_content/
+    The structure mirrors the directories expected by many scripts.
     """
     dirs = {
         "public": tmp_path / "public",
         "static": tmp_path / "quartz" / "static",
         "content": tmp_path / "website_content",
+        "config": tmp_path / "config",
     }
     for d in dirs.values():
         d.mkdir(parents=True, exist_ok=True)
+
+    # Minimal constants.json used by _build_favicon_lists
+    (dirs["config"] / "constants.json").write_text(
+        json.dumps(
+            {
+                "faviconCountWhitelist": [],
+                "googleSubdomainWhitelist": [],
+                "faviconSubstringBlacklist": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
     return dirs
 
 
