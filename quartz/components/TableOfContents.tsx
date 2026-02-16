@@ -298,68 +298,72 @@ document.addEventListener('nav', function() {
     });
   }
 
-  const allSections = document.querySelectorAll("#center-content h1, #center-content h2");
-  const navLinks = document.querySelectorAll("#toc-content a");
-
-  // Filter sections to only those with IDs
-  const sections = Array.from(allSections).filter(section => section.id);
-
-  if (sections.length === 0 || navLinks.length === 0) return;
-
   // Disconnect previous observer to prevent memory leak
   if (window.tocObserver) {
     window.tocObserver.disconnect();
   }
 
-  let currentSection = "";
+  // Defer observer setup to after paint so all DOM elements are available
+  // (Firefox may not have finished layout when nav fires)
+  requestAnimationFrame(() => {
+    const allSections = document.querySelectorAll("#center-content h1, #center-content h2");
+    const navLinks = document.querySelectorAll("#toc-content a");
 
-  function updateActiveLink(newSection) {
-    if (newSection === currentSection) return;
-    currentSection = newSection;
+    // Filter sections to only those with IDs
+    const sections = Array.from(allSections).filter(section => section.id);
 
-    navLinks.forEach((link) => {
-      const slug = link.getAttribute('href').split("#")[1];
-      link.classList.toggle("active", currentSection && slug === currentSection);
-    });
-  }
+    if (sections.length === 0 || navLinks.length === 0) return;
 
-  // Track which sections are currently inside the observation zone
-  const visibleSections = new Set();
+    let currentSection = "";
 
-  // Use IntersectionObserver to detect visible sections without forced reflows
-  const observerOptions = {
-    rootMargin: "0px 0px -70% 0px", // Top 30% of viewport
-    threshold: 0
-  };
+    function updateActiveLink(newSection) {
+      if (newSection === currentSection) return;
+      currentSection = newSection;
 
-  window.tocObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        visibleSections.add(entry.target.id);
-      } else {
-        visibleSections.delete(entry.target.id);
-      }
-    });
+      navLinks.forEach((link) => {
+        const slug = link.getAttribute('href').split("#")[1];
+        link.classList.toggle("active", currentSection && slug === currentSection);
+      });
+    }
 
-    // Pick the last visible section in document order (furthest scrolled past)
-    if (visibleSections.size > 0) {
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (visibleSections.has(sections[i].id)) {
-          updateActiveLink(sections[i].id);
-          return;
+    // Track which sections are currently inside the observation zone
+    const visibleSections = new Set();
+
+    // Use IntersectionObserver to detect visible sections without forced reflows
+    const observerOptions = {
+      rootMargin: "0px 0px -70% 0px", // Top 30% of viewport
+      threshold: 0
+    };
+
+    window.tocObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          visibleSections.add(entry.target.id);
+        } else {
+          visibleSections.delete(entry.target.id);
+        }
+      });
+
+      // Pick the last visible section in document order (furthest scrolled past)
+      if (visibleSections.size > 0) {
+        for (let i = sections.length - 1; i >= 0; i--) {
+          if (visibleSections.has(sections[i].id)) {
+            updateActiveLink(sections[i].id);
+            return;
+          }
         }
       }
+    }, observerOptions);
+
+    sections.forEach((section) => window.tocObserver.observe(section));
+
+    // Set initial active link based on hash or first section with ID
+    const hash = window.location.hash.slice(1);
+    const firstSectionId = sections[0]?.id;
+    if (hash || firstSectionId) {
+      updateActiveLink(hash || firstSectionId);
     }
-  }, observerOptions);
-
-  sections.forEach((section) => window.tocObserver.observe(section));
-
-  // Set initial active link based on hash or first section with ID
-  const hash = window.location.hash.slice(1);
-  const firstSectionId = sections[0]?.id;
-  if (hash || firstSectionId) {
-    updateActiveLink(hash || firstSectionId);
-  }
+  });
 });
 `
 
