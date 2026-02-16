@@ -305,30 +305,43 @@ test.describe("Table of contents", () => {
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 
-    // Scroll to a mid-page heading (not the last h1, which is the sr-only Footnotes heading)
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
+    // Wait for the TOC observer to initialize and set an active link
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active") !== null,
+      { timeout: 10_000 },
+    )
 
-    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    await expect(tocHighlightLocator).toBeVisible({ timeout: 10_000 })
+    // Scroll a mid-page heading to the top of the viewport so it enters
+    // the IntersectionObserver's detection zone (top 30%)
+    await page.evaluate(() => document.querySelector("#spoilers")?.scrollIntoView())
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
+      { timeout: 10_000 },
+    )
 
-    const initialHighlightText = await tocHighlightLocator.textContent()
+    const initialHighlightText = await page
+      .locator("#table-of-contents .active")
+      .first()
+      .textContent()
     expect(initialHighlightText).not.toBeNull()
 
     // Scroll to a different heading
-    const listsHeading = page.locator("#lists").first()
-    await listsHeading.scrollIntoViewIfNeeded()
+    await page.evaluate(() => document.querySelector("#lists")?.scrollIntoView())
 
     // Wait for IntersectionObserver to fire and TOC to update
-    await page.waitForFunction((initialText) => {
-      const activeElement = document.querySelector("#table-of-contents .active")
-      return activeElement && activeElement.textContent !== initialText
-    }, initialHighlightText)
+    await page.waitForFunction(
+      (initialText) => {
+        const activeElement = document.querySelector("#table-of-contents .active")
+        return activeElement && activeElement.textContent !== initialText
+      },
+      initialHighlightText,
+      { timeout: 10_000 },
+    )
 
-    const highlightText = await tocHighlightLocator.textContent()
+    const highlightText = page.locator("#table-of-contents .active").first()
+
     expect(highlightText).not.toBeNull()
-    // skipcq: JS-0339
-    await expect(tocHighlightLocator).not.toHaveText(initialHighlightText!)
+    await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 })
 
