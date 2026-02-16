@@ -267,25 +267,36 @@ describe("renderLineChart", () => {
     expect(texts).toContain("Y Axis")
   })
 
-  it("renders data points with data attributes and hover titles", () => {
+  it("renders data points with data attributes and instant CSS tooltips", () => {
     const svg = renderLineChart(BASIC_SPEC)
-    const points: Element[] = []
+    const pointGroups: Element[] = []
     visit(svg, "element", (node: Element) => {
-      if (node.tagName === "circle" && node.properties?.class === "smart-chart-point") {
-        points.push(node)
+      if (node.properties?.class === "smart-chart-point-group") {
+        pointGroups.push(node)
       }
     })
-    expect(points).toHaveLength(3)
-    // Points should have data-x, data-y, data-series attributes
-    expect(points[0].properties?.["data-series"]).toBe("Series1")
-    // Each point should have a <title> child with axis labels and values
-    const titleEl = points[0].children.find(
+    expect(pointGroups).toHaveLength(3)
+    // Each group has a circle and a tooltip text
+    const circle = pointGroups[0].children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "circle",
+    )
+    expect(circle?.properties?.["data-series"]).toBe("Series1")
+    // No native <title> (has ~500ms browser delay)
+    const titleEl = circle?.children.find(
       (c): c is Element => c.type === "element" && c.tagName === "title",
     )
-    expect(titleEl).toBeDefined()
-    const titleText = titleEl?.children[0]
+    expect(titleEl).toBeUndefined()
+    // Tooltip is a sibling <text> with class smart-chart-tooltip
+    const tooltip = pointGroups[0].children.find(
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class === "smart-chart-tooltip",
+    )
+    expect(tooltip).toBeDefined()
+    const tooltipText = tooltip?.children[0]
     // First point is (0, 0) after sorting; tooltip uses axis labels
-    expect(titleText?.type === "text" && titleText.value).toBe("X Axis: 0\nY Axis: 0")
+    expect(tooltipText?.type === "text" && tooltipText.value).toBe("X Axis: 0, Y Axis: 0")
   })
 
   it("renders a line path", () => {
@@ -301,7 +312,7 @@ describe("renderLineChart", () => {
     expect(paths[0].properties?.d).toBeTruthy()
   })
 
-  it("renders annotations", () => {
+  it("renders annotations with instant CSS tooltips", () => {
     const svg = renderLineChart(BASIC_SPEC)
     const annotations: Element[] = []
     visit(svg, "element", (node: Element) => {
@@ -315,19 +326,30 @@ describe("renderLineChart", () => {
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(annotLine?.properties?.["stroke-dasharray"]).toBe("6,4")
-    // Find annotation label
-    const annotText = annotations[0].children.find(
-      (c): c is Element => c.type === "element" && c.tagName === "text",
-    )
-    const labelNode = annotText?.children[0]
-    expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
-    // Annotation line should have a hover <title> with exact value
+    // No native <title> on the line
     const lineTitle = annotLine?.children.find(
       (c): c is Element => c.type === "element" && c.tagName === "title",
     )
-    expect(lineTitle).toBeDefined()
-    const lineTitleText = lineTitle?.children[0]
-    expect(lineTitleText?.type === "text" && lineTitleText.value).toBe("Target: 75")
+    expect(lineTitle).toBeUndefined()
+    // Tooltip is a sibling <text> with class smart-chart-tooltip
+    const tooltip = annotations[0].children.find(
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class === "smart-chart-tooltip",
+    )
+    expect(tooltip).toBeDefined()
+    const tooltipText = tooltip?.children[0]
+    expect(tooltipText?.type === "text" && tooltipText.value).toBe("Target: 75")
+    // Find annotation label (separate visible text, not a tooltip)
+    const annotLabel = annotations[0].children.find(
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class !== "smart-chart-tooltip",
+    )
+    const labelNode = annotLabel?.children[0]
+    expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
   })
 
   it("includes accessible <desc> with data summary instead of root <title>", () => {
@@ -489,9 +511,12 @@ describe("renderLineChart", () => {
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(line?.properties?.["stroke-dasharray"]).toBe("none")
-    // No text child for label
+    // Only the tooltip text, no visible label text
     const texts = annotations[0].children.filter(
-      (c) => c.type === "element" && c.tagName === "text",
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class !== "smart-chart-tooltip",
     )
     expect(texts).toHaveLength(0)
   })

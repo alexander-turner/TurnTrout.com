@@ -969,6 +969,12 @@ figure#goose-terminal {
   stroke-linecap: round;
 }
 
+.smart-chart-tooltip {
+  display: none;
+  fill: var(--foreground);
+  pointer-events: none;
+}
+
 .smart-chart-point {
   cursor: pointer;
   transition: r 0.15s ease;
@@ -976,4 +982,9 @@ figure#goose-terminal {
   &:hover {
     r: 6;
   }
+}
+
+.smart-chart-point-group:hover .smart-chart-tooltip,
+.smart-chart-annotation:hover > .smart-chart-tooltip {
+  display: block;
 }

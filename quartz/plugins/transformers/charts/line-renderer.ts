@@ -181,30 +181,32 @@ function renderSeries(
     class: "smart-chart-line",
   })
 
-  // Data points
-  const points: Element[] = sortedData.map((d) =>
-    createSvgElement(
-      "circle",
-      {
-        cx: xScale(d[0]),
-        cy: yScale(d[1]),
+  // Data points with instant CSS tooltips (native <title> has ~500ms browser delay)
+  const points: Element[] = sortedData.map((d) => {
+    const cx = xScale(d[0])
+    const cy = yScale(d[1])
+    const tooltipText = `${axisLabels.x}: ${formatTick(d[0])}, ${axisLabels.y}: ${formatTick(d[1])}`
+
+    return createSvgElement("g", { class: "smart-chart-point-group" }, [
+      createSvgElement("circle", {
+        cx,
+        cy,
         r: POINT_RADIUS,
         fill: color,
         class: "smart-chart-point",
         "data-x": d[0],
         "data-y": d[1],
         "data-series": series.name,
-      },
-      [
-        createSvgElement("title", {}, [
-          {
-            type: "text" as const,
-            value: `${axisLabels.x}: ${formatTick(d[0])}\n${axisLabels.y}: ${formatTick(d[1])}`,
-          },
-        ]),
-      ],
-    ),
-  )
+      }),
+      createTextElement(cx, cy - 10, tooltipText, {
+        class: "smart-chart-tooltip",
+        "text-anchor": "middle",
+        "font-size": "11px",
+        "font-family": "var(--font-main)",
+        "pointer-events": "none",
+      }),
+    ])
+  })
 
   return createSvgElement(
     "g",
@@ -226,28 +228,25 @@ function renderAnnotations(
 
   return spec.annotations.map((ann) => {
     const yPos = yScale(ann.value)
+    const tooltipLabel = `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`
     const children: Element[] = [
-      createSvgElement(
-        "line",
-        {
-          x1: 0,
-          x2: INNER_WIDTH,
-          y1: yPos,
-          y2: yPos,
-          stroke: "var(--midground-faint)",
-          "stroke-width": "1.5",
-          "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
-          "pointer-events": "stroke",
-        },
-        [
-          createSvgElement("title", {}, [
-            {
-              type: "text" as const,
-              value: `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`,
-            },
-          ]),
-        ],
-      ),
+      createSvgElement("line", {
+        x1: 0,
+        x2: INNER_WIDTH,
+        y1: yPos,
+        y2: yPos,
+        stroke: "var(--midground-faint)",
+        "stroke-width": "1.5",
+        "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
+        "pointer-events": "stroke",
+      }),
+      createTextElement(INNER_WIDTH / 2, yPos - 8, tooltipLabel, {
+        class: "smart-chart-tooltip",
+        "text-anchor": "middle",
+        "font-size": "11px",
+        "font-family": "var(--font-main)",
+        "pointer-events": "none",
+      }),
     ]
 
     if (ann.label) {
