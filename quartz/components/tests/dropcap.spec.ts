@@ -53,8 +53,9 @@ test.describe("Random dropcap color", () => {
     expect(await dropcap.screenshot()).not.toEqual(defaultShot)
   })
 
-  test("color persists through SPA navigation", async ({ page }) => {
-    await page.addInitScript(mockRandom, [0.01, 0.0])
+  test("color re-rolls on SPA navigation", async ({ page }) => {
+    // First roll: colored (0.01 < 0.1 → pick color), second roll on nav: no color (0.5 >= 0.1)
+    await page.addInitScript(mockRandom, [0.01, 0.0, 0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
     const getColor = () =>
@@ -62,11 +63,11 @@ test.describe("Random dropcap color", () => {
 
     expect(await getColor()).toBe("var(--dropcap-background-red)")
 
-    // SPA-navigate away; CSS custom property on <html> should survive
+    // SPA-navigate away; nav event should re-roll and clear the color
     const link = page.locator("article a.internal:not(.same-page-link)").first()
     await link.scrollIntoViewIfNeeded()
     await link.click()
     await page.waitForURL(/localhost:8080/)
-    expect(await getColor()).toBe("var(--dropcap-background-red)")
+    expect(await getColor()).toBe("")
   })
 })
