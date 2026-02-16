@@ -1,7 +1,7 @@
 /**
  * This file implements the TableOfContents component for Quartz.
  * It renders a table of contents based on the headings in the current page,
- * supporting small caps and LaTeX rendering.
+ * supporting small caps and LaTeX rendering in headings.
  */
 
 import type { RootContent, Parent, Element, Root } from "hast"
