@@ -40,7 +40,7 @@ const MAX_DIFF_LENGTH = 10_000
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
 const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
-const OPTION_INPUTS_SELECTOR = ".punctilio-options input, .punctilio-options select"
+const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-options-list select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -161,6 +161,7 @@ document.addEventListener("nav", () => {
   const preview = document.getElementById("punctilio-preview") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
+  const outputHeading = document.getElementById("punctilio-output-heading")
 
   if (!input || !output) return
 
@@ -206,6 +207,20 @@ document.addEventListener("nav", () => {
       diffOutput.style.display = ""
       output.style.display = "none"
     }
+
+    // Update output heading text and monospace styling per mode
+    if (outputHeading) {
+      if (currentMode === "html") {
+        outputHeading.innerHTML = '<abbr class="small-caps">html</abbr>'
+      } else if (currentMode === "markdown") {
+        outputHeading.textContent = "Markdown"
+      } else {
+        outputHeading.textContent = "Output"
+      }
+    }
+    const isCodeMode = currentMode === "markdown" || currentMode === "html"
+    diffOutput?.classList.toggle("monospace-output", isCodeMode)
+    output.classList.toggle("monospace-output", isCodeMode)
 
     if (!previewSection || !preview) return
 

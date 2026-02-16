@@ -166,8 +166,8 @@ test.describe("Live transform", () => {
 
 test.describe("Options panel", () => {
   test("changing punctuation style to 'none' disables smart quotes", async ({ page }) => {
-    // Expand the collapsed options admonition
-    await page.locator(".punctilio-options").click()
+    // Expand the collapsed options admonition (Markdown-generated admonition)
+    await page.locator("#punctilio-demo .admonition.abstract").click()
 
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
@@ -295,9 +295,9 @@ test.describe("Mode button navigation", () => {
 
     const inputBefore = await page.locator("#punctilio-input").inputValue()
     await btn.click()
-    const inputAfter = await page.locator("#punctilio-input").inputValue()
+    const inputAfter = page.locator("#punctilio-input")
 
-    expect(inputAfter).toBe(inputBefore)
+    await expect(inputAfter).toHaveValue(inputBefore)
   })
 
   test("inactive mode buttons do not have active class", async ({ page }) => {
