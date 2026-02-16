@@ -45,16 +45,17 @@ Type or paste text in the input area below and see the transformed output.
 > </ul>
 
 <div class="no-formatting">
-<h3>Input</h3>
+<h1>Input</h1>
 <textarea id="punctilio-input" spellcheck="false"></textarea>
-<h4 id="punctilio-output-heading">Output</h4>
+<h1>Output</h1>
+<h2 id="punctilio-output-heading" style="display: none"></h2>
 <div class="punctilio-output-wrapper">
 <textarea id="punctilio-output" readonly spellcheck="false"></textarea>
 <div id="punctilio-diff" class="punctilio-diff"></div>
 <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 </div>
 <div id="punctilio-preview-section" style="display: none">
-<h4>Preview</h4>
+<h2>Preview</h2>
 <div id="punctilio-preview" class="punctilio-preview"></div>
 </div>
 </div>

@@ -208,14 +208,16 @@ document.addEventListener("nav", () => {
       output.style.display = "none"
     }
 
-    // Update output heading text and monospace styling per mode
+    // Update output sub-heading (hidden in plaintext, visible in code modes)
     if (outputHeading) {
       if (currentMode === "html") {
-        outputHeading.innerHTML = '<abbr class="small-caps">html</abbr>'
+        outputHeading.innerHTML = '<abbr class="small-caps">html</abbr> source'
+        outputHeading.style.display = ""
       } else if (currentMode === "markdown") {
-        outputHeading.textContent = "Markdown"
+        outputHeading.textContent = "Markdown source"
+        outputHeading.style.display = ""
       } else {
-        outputHeading.textContent = "Output"
+        outputHeading.style.display = "none"
       }
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
