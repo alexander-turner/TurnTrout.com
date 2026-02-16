@@ -15,8 +15,8 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    branches: ["main"]
-    types: [labeled, synchronize, opened, reopened]
+    branches: ["main", "dev"]
+    types: [synchronize, opened, reopened]
   merge_group:
 
 permissions:
@@ -24,29 +24,8 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present
-  should-run:
-    name: visual-should-run
-    runs-on: ubuntu-24.04
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - id: check
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "run=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
     name: visual-testing-build
-    needs: should-run
-    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
