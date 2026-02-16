@@ -23,7 +23,8 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present
+  # Gate: only run on PRs if the ci:full-tests label is present.
+  # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: playwright-should-run
     runs-on: ubuntu-24.04

@@ -15,7 +15,7 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
   merge_group:
 
@@ -24,7 +24,8 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present
+  # Gate: only run on PRs if the ci:full-tests label is present.
+  # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: visual-should-run
     runs-on: ubuntu-24.04
