@@ -727,6 +727,7 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
+  opacity: 0.5;
 
   // Safari needs this
   & > * {
@@ -792,21 +793,6 @@ img.emoji {
   &:has(.edgeLabel:empty) {
     display: none !important;
     background-color: transparent !important;
-  }
-}
-
-// Ensure all mermaid diagram text has sufficient contrast
-[id^="mermaid-"] {
-  font-size: 14px !important;
-  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
-
-  & span,
-  & p,
-  & .label,
-  & .nodeLabel,
-  & .edgeLabel {
-    color: var(--foreground) !important;
-    fill: var(--foreground) !important;
   }
 }
 
@@ -974,12 +960,24 @@ figure#goose-terminal {
   max-width: 100%;
   height: auto;
   margin-bottom: 0;
+  overflow: visible;
 }
 
 .smart-chart-line {
   fill: none;
   stroke-linejoin: round;
   stroke-linecap: round;
+}
+
+.smart-chart-tooltip {
+  display: none;
+  fill: var(--foreground);
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: var(--background);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px var(--background)) drop-shadow(0 0 3px var(--background));
 }
 
 .smart-chart-point {
@@ -991,23 +989,7 @@ figure#goose-terminal {
   }
 }
 
-.smart-chart-tooltip {
-  position: fixed;
-  z-index: 1000;
-  padding: calc(0.5 * $base-margin) $base-margin;
-  background: var(--background);
-  border: 1px solid var(--midground-faint);
-  border-radius: 4px;
-  font-size: var(--font-size-minus-1);
-  font-family: var(--font-main);
-  color: var(--foreground);
-  pointer-events: none;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
-  white-space: nowrap;
-}
-
-@media print {
-  .smart-chart-tooltip {
-    display: none !important;
-  }
+.smart-chart-point-group:hover > .smart-chart-tooltip,
+.smart-chart-annotation:hover > .smart-chart-tooltip {
+  display: block;
 }

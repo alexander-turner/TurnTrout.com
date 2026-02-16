@@ -14,7 +14,11 @@ function parseAxisSpec(raw: unknown, name: string): AxisSpec {
   if (scale !== undefined && scale !== "linear" && scale !== "log") {
     throw new Error(`Chart "${name}" axis scale must be "linear" or "log"`)
   }
-  return { label: obj.label, scale: scale ?? "linear" }
+  const minVal = obj.min as number | undefined
+  if (minVal !== undefined && typeof minVal !== "number") {
+    throw new Error(`Chart "${name}" axis min must be a number`)
+  }
+  return { label: obj.label, scale: scale ?? "linear", min: minVal }
 }
 
 function parseDataPoint(raw: unknown, seriesName: string, index: number): [number, number] {

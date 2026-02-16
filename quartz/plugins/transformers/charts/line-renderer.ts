@@ -9,8 +9,8 @@ import { line } from "d3-shape"
 import type { ChartSpec, SeriesSpec } from "./types"
 
 const CHART_WIDTH = 600
-const CHART_HEIGHT = 350
-const MARGIN = { top: 30, right: 20, bottom: 50, left: 60 }
+const CHART_HEIGHT = 370
+const MARGIN = { top: 30, right: 20, bottom: 70, left: 60 }
 const INNER_WIDTH = CHART_WIDTH - MARGIN.left - MARGIN.right
 const INNER_HEIGHT = CHART_HEIGHT - MARGIN.top - MARGIN.bottom
 const POINT_RADIUS = 3.5
@@ -22,9 +22,9 @@ function createScale(
   scaleType: "linear" | "log",
 ): ScaleContinuousNumeric<number, number> {
   if (scaleType === "log") {
-    return scaleLog().domain(domain).range(range).nice()
+    return scaleLog().domain(domain).range(range)
   }
-  return scaleLinear().domain(domain).range(range).nice()
+  return scaleLinear().domain(domain).range(range)
 }
 
 function computeDomain(
@@ -68,6 +68,32 @@ function createTextElement(
   return createSvgElement("text", { x, y, fill: "var(--foreground)", ...extraProps }, [
     { type: "text" as const, value: text },
   ])
+}
+
+const TOOLTIP_LINE_HEIGHT = 14
+
+/** Build a single <text> tooltip with <tspan> children for multi-line support.
+ *  Background is handled via CSS paint-order + drop-shadow. */
+function createTooltipElement(x: number, y: number, lines: string[]): Element {
+  const tspans: ElementContent[] = lines.map((text, i) =>
+    createSvgElement("tspan", { x, dy: i === 0 ? 0 : TOOLTIP_LINE_HEIGHT }, [
+      { type: "text" as const, value: text },
+    ]),
+  )
+
+  return createSvgElement(
+    "text",
+    {
+      x,
+      y,
+      "text-anchor": "middle",
+      "font-size": "11px",
+      "font-family": "var(--font-main)",
+      "pointer-events": "none",
+      class: "smart-chart-tooltip",
+    },
+    tspans,
+  )
 }
 
 function renderXAxis(xScale: ScaleContinuousNumeric<number, number>, label: string): Element {
@@ -143,7 +169,7 @@ function renderYAxis(yScale: ScaleContinuousNumeric<number, number>, label: stri
 
   // Label (rotated)
   const axisLabel = createTextElement(0, 0, label, {
-    transform: `translate(-45,${INNER_HEIGHT / 2}) rotate(-90)`,
+    transform: `translate(-25,${INNER_HEIGHT / 2}) rotate(-90)`,
     "text-anchor": "middle",
     "font-size": "13px",
     "font-family": "var(--font-main)",
@@ -161,6 +187,7 @@ function renderSeries(
   xScale: ScaleContinuousNumeric<number, number>,
   yScale: ScaleContinuousNumeric<number, number>,
   seriesIndex: number,
+  axisLabels: { x: string; y: string },
 ): Element {
   const color = series.color ?? DEFAULT_COLOR
   const sortedData = [...series.data].sort((a, b) => a[0] - b[0])
@@ -180,19 +207,29 @@ function renderSeries(
     class: "smart-chart-line",
   })
 
-  // Data points
-  const points: Element[] = sortedData.map((d) =>
-    createSvgElement("circle", {
-      cx: xScale(d[0]),
-      cy: yScale(d[1]),
-      r: POINT_RADIUS,
-      fill: color,
-      class: "smart-chart-point",
-      "data-x": d[0],
-      "data-y": d[1],
-      "data-series": series.name,
-    }),
-  )
+  // Data points with instant CSS tooltips (native <title> has ~500ms browser delay)
+  const points: Element[] = sortedData.map((d) => {
+    const cx = xScale(d[0])
+    const cy = yScale(d[1])
+    const tooltipLines = [
+      `${axisLabels.x}: ${formatTick(d[0])}`,
+      `${axisLabels.y}: ${formatTick(d[1])}`,
+    ]
+
+    return createSvgElement("g", { class: "smart-chart-point-group" }, [
+      createSvgElement("circle", {
+        cx,
+        cy,
+        r: POINT_RADIUS,
+        fill: color,
+        class: "smart-chart-point",
+        "data-x": d[0],
+        "data-y": d[1],
+        "data-series": series.name,
+      }),
+      createTooltipElement(cx, cy - TOOLTIP_LINE_HEIGHT - 10, tooltipLines),
+    ])
+  })
 
   return createSvgElement(
     "g",
@@ -214,6 +251,7 @@ function renderAnnotations(
 
   return spec.annotations.map((ann) => {
     const yPos = yScale(ann.value)
+    const tooltipLabel = `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`
     const children: Element[] = [
       createSvgElement("line", {
         x1: 0,
@@ -223,12 +261,14 @@ function renderAnnotations(
         stroke: "var(--midground-faint)",
         "stroke-width": "1.5",
         "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
+        "pointer-events": "stroke",
       }),
+      createTooltipElement(INNER_WIDTH / 2, yPos - 8, [tooltipLabel]),
     ]
 
     if (ann.label) {
       children.push(
-        createTextElement(INNER_WIDTH + 5, yPos + 4, ann.label, {
+        createTextElement(5, yPos - 6, ann.label, {
           "font-size": "11px",
           "font-family": "var(--font-main)",
           fill: "var(--midground)",
@@ -244,15 +284,49 @@ function renderTitle(title: string): Element {
   return createTextElement(CHART_WIDTH / 2, 18, title, {
     "text-anchor": "middle",
     "font-size": "14px",
-    "font-weight": "600",
+    "text-decoration": "none",
     "font-family": "var(--font-main)",
   })
+}
+
+/** Build a screen-reader description summarising the chart data. */
+function buildAccessibleDescription(spec: ChartSpec): string {
+  const parts: string[] = []
+
+  parts.push(
+    `${spec.x.label}: ${formatTick(computeDomain(spec.series, (d) => d[0])[0])} to ${formatTick(computeDomain(spec.series, (d) => d[0])[1])}.`,
+  )
+  parts.push(
+    `${spec.y.label}: ${formatTick(computeDomain(spec.series, (d) => d[1])[0])} to ${formatTick(computeDomain(spec.series, (d) => d[1])[1])}.`,
+  )
+
+  for (const s of spec.series) {
+    const sorted = [...s.data].sort((a, b) => a[0] - b[0])
+    const first = sorted[0]
+    const last = sorted[sorted.length - 1]
+    parts.push(
+      `${s.name}: ${sorted.length} points, from (${formatTick(first[0])}, ${formatTick(first[1])}) to (${formatTick(last[0])}, ${formatTick(last[1])}).`,
+    )
+  }
+
+  if (spec.annotations) {
+    for (const ann of spec.annotations) {
+      const label = ann.label ?? "Annotation"
+      parts.push(`${label} at y = ${formatTick(ann.value)}.`)
+    }
+  }
+
+  return parts.join(" ")
 }
 
 export function renderLineChart(spec: ChartSpec): Element {
   // Compute domains
   const xDomain = computeDomain(spec.series, (d) => d[0])
   const yDomain = computeDomain(spec.series, (d) => d[1])
+
+  // Apply explicit axis min overrides
+  if (spec.x.min !== undefined) xDomain[0] = spec.x.min
+  if (spec.y.min !== undefined) yDomain[0] = spec.y.min
 
   // Extend y domain to include annotations
   if (spec.annotations) {
@@ -268,10 +342,14 @@ export function renderLineChart(spec: ChartSpec): Element {
 
   // Build chart elements
   const chartChildren: Element[] = []
-  const titleText = spec.title ?? "Line chart"
 
-  // Accessible <title> element
-  chartChildren.push(createSvgElement("title", {}, [{ type: "text" as const, value: titleText }]))
+  // Accessible <desc> (no native tooltip, unlike <title>)
+  const descId = `chart-desc-${spec.series.map((s) => s.name).join("-")}`.replace(/\s+/g, "-")
+  chartChildren.push(
+    createSvgElement("desc", { id: descId }, [
+      { type: "text" as const, value: buildAccessibleDescription(spec) },
+    ]),
+  )
 
   // Visible title (outside the inner group)
   if (spec.title) {
@@ -283,7 +361,9 @@ export function renderLineChart(spec: ChartSpec): Element {
     renderXAxis(xScale, spec.x.label),
     renderYAxis(yScale, spec.y.label),
     ...renderAnnotations(spec, xScale, yScale),
-    ...spec.series.map((s, i) => renderSeries(s, xScale, yScale, i)),
+    ...spec.series.map((s, i) =>
+      renderSeries(s, xScale, yScale, i, { x: spec.x.label, y: spec.y.label }),
+    ),
   ]
 
   chartChildren.push(
@@ -300,6 +380,7 @@ export function renderLineChart(spec: ChartSpec): Element {
       class: "smart-chart",
       role: "img",
       "aria-label": spec.title ?? "Line chart",
+      "aria-describedby": descId,
     },
     chartChildren,
   )
