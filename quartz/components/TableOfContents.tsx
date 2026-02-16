@@ -1,7 +1,7 @@
 /**
  * This file implements the TableOfContents component for Quartz.
  * It renders a table of contents based on the headings in the current page,
- * supporting small caps and LaTeX rendering.
+ * supporting small caps and LaTeX rendering in headings.
  */
 
 import type { RootContent, Parent, Element, Root } from "hast"
@@ -323,29 +323,32 @@ document.addEventListener('nav', function() {
     });
   }
 
+  // Track which sections are currently inside the observation zone
+  const visibleSections = new Set();
+
   // Use IntersectionObserver to detect visible sections without forced reflows
   const observerOptions = {
-    rootMargin: "-25% 0px -75% 0px", // Trigger when section is in middle 50% of viewport
+    rootMargin: "0px 0px -70% 0px", // Top 30% of viewport
     threshold: 0
   };
 
   window.tocObserver = new IntersectionObserver((entries) => {
-    // Find the topmost visible section
-    let topmostSection = null;
-    let topmostY = Infinity;
-
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        const rect = entry.boundingClientRect;
-        if (rect.top < topmostY) {
-          topmostY = rect.top;
-          topmostSection = entry.target.id;
-        }
+        visibleSections.add(entry.target.id);
+      } else {
+        visibleSections.delete(entry.target.id);
       }
     });
 
-    if (topmostSection) {
-      updateActiveLink(topmostSection);
+    // Pick the last visible section in document order (furthest scrolled past)
+    if (visibleSections.size > 0) {
+      for (let i = sections.length - 1; i >= 0; i--) {
+        if (visibleSections.has(sections[i].id)) {
+          updateActiveLink(sections[i].id);
+          return;
+        }
+      }
     }
   }, observerOptions);
 
