@@ -24,8 +24,7 @@ test.describe("Random dropcap color", () => {
     expect(color).toBe("")
   })
 
-  for (let i = 0; i < DROPCAP_COLORS.length; i++) {
-    const color = DROPCAP_COLORS[i]
+  for (const [i, color] of DROPCAP_COLORS.entries()) {
     test(`applies --dropcap-background-${color}`, async ({ page }) => {
       await page.addInitScript(mockRandom(0.01, (i + 0.5) / DROPCAP_COLORS.length))
       await page.goto(DROPCAP_URL, { waitUntil: "load" })
