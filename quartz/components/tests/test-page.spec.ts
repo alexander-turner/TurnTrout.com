@@ -43,12 +43,6 @@ test.beforeEach(async ({ page }) => {
 
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
-  // Dispatch the 'nav' event to initialize clipboard functionality
-  // Use document (not window) — component listeners bind to document
-  await page.evaluate(() => {
-    document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" } }))
-  })
-
   // Hide all video and audio controls
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
