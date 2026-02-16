@@ -66,7 +66,7 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true, // Distribute individual tests (not whole files) across shards
-  workers: 1, // Sequential execution within each shard to avoid flakiness
+  workers: 1, // Sequential within each shard to avoid flakiness
 
   retries: process.env.CI ? 2 : 1,
   testDir: "../../quartz/",
