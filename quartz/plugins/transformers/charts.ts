@@ -146,17 +146,23 @@ export const Charts: QuartzTransformerPlugin = () => ({
           const svg = renderLineChart(spec)
 
           // Replace the <pre> block with the rendered SVG wrapped in a figure
-          const script: Element = {
-            type: "element",
-            tagName: "script",
-            properties: {},
-            children: [{ type: "text" as const, value: ANNOTATION_TOOLTIP_SCRIPT }],
+          const figureChildren: Element[] = [svg]
+
+          // Only inject tooltip script when annotations exist (avoids duplicate scripts)
+          if (spec.annotations && spec.annotations.length > 0) {
+            figureChildren.push({
+              type: "element",
+              tagName: "script",
+              properties: {},
+              children: [{ type: "text" as const, value: ANNOTATION_TOOLTIP_SCRIPT }],
+            })
           }
+
           const figure: Element = {
             type: "element",
             tagName: "figure",
             properties: { className: ["smart-chart-container"] },
-            children: [svg, script],
+            children: figureChildren,
           }
 
           parent.children[index] = figure

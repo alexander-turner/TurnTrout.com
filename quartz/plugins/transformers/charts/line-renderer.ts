@@ -361,7 +361,11 @@ function buildAccessibleDescription(spec: ChartSpec): string {
   return parts.join(" ")
 }
 
+let chartCounter = 0
+
 export function renderLineChart(spec: ChartSpec): Element {
+  chartCounter++
+
   // Compute domains
   const xDomain = computeDomain(spec.series, (d) => d[0])
   const yDomain = computeDomain(spec.series, (d) => d[1])
@@ -386,7 +390,10 @@ export function renderLineChart(spec: ChartSpec): Element {
   const chartChildren: Element[] = []
 
   // Accessible <desc> (no native tooltip, unlike <title>)
-  const descId = `chart-desc-${spec.series.map((s) => s.name).join("-")}`.replace(/\s+/g, "-")
+  const descId = `chart-desc-${chartCounter}-${spec.series.map((s) => s.name).join("-")}`.replace(
+    /\s+/g,
+    "-",
+  )
   chartChildren.push(
     createSvgElement("desc", { id: descId }, [
       { type: "text" as const, value: buildAccessibleDescription(spec) },
