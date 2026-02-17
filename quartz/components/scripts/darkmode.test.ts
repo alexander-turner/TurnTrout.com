@@ -5,6 +5,7 @@
 import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
 
 import { type FullSlug } from "../../util/path"
+import { savedThemeKey } from "../constants"
 import { rotateTheme, setupDarkMode } from "./darkmode"
 
 // Test constants
@@ -111,7 +112,7 @@ describe("darkmode", () => {
 
     it("should respect stored theme preference over system preference", () => {
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false)) // system prefers light
-      localStorage.setItem("saved-theme", "dark")
+      localStorage.setItem(savedThemeKey, "dark")
 
       setupDarkMode()
       document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
@@ -132,7 +133,7 @@ describe("darkmode", () => {
       initializeAndDispatchNav()
       triggerToggle()
 
-      expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "light")
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "light")
       expect(getThemeLabelContent()).toBe("Light")
     })
   })
@@ -163,13 +164,13 @@ describe("darkmode", () => {
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
 
       // But localStorage should preserve auto mode
-      expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "auto")
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "auto")
     })
   })
 
   describe("auto mode", () => {
     it("should follow system preference when in auto mode", () => {
-      localStorage.setItem("saved-theme", "auto")
+      localStorage.setItem(savedThemeKey, "auto")
       const mediaQueryList = createMockMediaQueryList(true)
       matchMediaSpy.mockReturnValue(mediaQueryList)
 
@@ -200,7 +201,7 @@ describe("darkmode", () => {
 
   describe("theme cycling", () => {
     it("should cycle through themes in order: auto -> light -> dark -> auto", () => {
-      localStorage.setItem("saved-theme", "auto")
+      localStorage.setItem(savedThemeKey, "auto")
       // Mock a system preference of dark
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
 
@@ -211,21 +212,21 @@ describe("darkmode", () => {
 
       // auto -> light
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("light")
+      expect(localStorage.getItem(savedThemeKey)).toBe("light")
       expect(document.documentElement.getAttribute("data-theme")).toBe("light")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("light")
       expect(getThemeLabelContent()).toBe("Light")
 
       // light -> dark
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("dark")
+      expect(localStorage.getItem(savedThemeKey)).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("dark")
       expect(getThemeLabelContent()).toBe("Dark")
 
       // dark -> auto
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("auto")
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
@@ -233,14 +234,14 @@ describe("darkmode", () => {
 
     it("should default to auto for invalid stored theme", () => {
       // Set an invalid theme in localStorage
-      localStorage.setItem("saved-theme", "invalid-theme")
+      localStorage.setItem(savedThemeKey, "invalid-theme")
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
 
       initializeAndDispatchNav()
 
       // Clicking the toggle should go from invalid -> auto (default) -> light
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("auto")
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
     })

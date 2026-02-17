@@ -4,11 +4,10 @@ import { setupHamburgerMenu } from "./hamburgerMenu"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
-const autoplayKey = autoplayStorageKey
 let pondVideoCleanupController: AbortController | null = null
 
 function getAutoplayEnabled(): boolean {
-  const saved = localStorage.getItem(autoplayKey)
+  const saved = localStorage.getItem(autoplayStorageKey)
   return saved !== null ? saved === "true" : false // Default to disabled
 }
 
@@ -46,7 +45,7 @@ function setupAutoplayToggle(): void {
 
 function handleVideoToggle(): void {
   const autoplayEnabled = getAutoplayEnabled()
-  localStorage.setItem(autoplayKey, (!autoplayEnabled).toString())
+  localStorage.setItem(autoplayStorageKey, (!autoplayEnabled).toString())
   updatePlayPauseButton()
 
   // Immediately apply the new autoplay state to the video
