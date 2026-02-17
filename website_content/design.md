@@ -128,7 +128,7 @@ Figure: The four Catppuccin palettes.
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Light mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
@@ -146,7 +146,7 @@ Figure: The four Catppuccin palettes.
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
     <div class="centered">Dark mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
@@ -461,7 +461,9 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 > }
 > ```
 
-A less theme-disciplined man than myself might even flaunt dropcap colorings!
+### Rare dropcap coloring
+
+Every time you navigate to a new page, there's a 10% chance to get a random dropcap color. :)
 
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
@@ -1162,7 +1164,7 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-  Sadly, Playwright test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
+  I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.

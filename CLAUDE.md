@@ -177,14 +177,14 @@ After pushing to main:
 
 - **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~40 parallel shards to complete in ~10 minutes
+- Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis
 
 ### CI Cost Optimization
 
-- **Playwright/visual tests on PRs**: These only run when the `ci:full-tests` label is added to a PR. They always run on push to main/dev and in the merge queue.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. They always run on push to main/dev and in the merge queue, enforcing that all tests pass before merge.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: Workflows only trigger when relevant files change. Playwright tests skip content-only changes.
 - **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.

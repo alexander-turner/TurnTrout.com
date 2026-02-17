@@ -2,6 +2,7 @@ import { test, expect, type Page, type Locator } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
+import { test, expect } from "./fixtures"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile, mouseFocusDelay } = simpleConstants
 import {

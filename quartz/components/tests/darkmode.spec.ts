@@ -1,6 +1,7 @@
-import { test, expect, type Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
 
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import { setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect
