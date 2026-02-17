@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Locator } from "@playwright/test"
+import { type Page, type Locator } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
