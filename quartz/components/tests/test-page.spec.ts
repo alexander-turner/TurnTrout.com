@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test"
 import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import { tightScrollTolerance, listTolerance } from "../constants"
+import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   setTheme,
