@@ -33,7 +33,7 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-demo")).toBeVisible()
     await expect(page.locator("#punctilio-input")).toBeVisible()
     await expect(page.locator(OUTPUT_CONTENT)).toBeAttached()
-    await expect(page.locator("#punctilio-copy-btn")).toBeVisible()
+    await expect(page.locator("#punctilio-copy-btn")).toBeAttached()
   })
 
   test("input is pre-filled with example text and output is non-empty", async ({ page }) => {
@@ -88,7 +88,10 @@ test.describe("Diff highlighting", () => {
 test.describe("Copy output button", () => {
   test("copy button shows SVG copy icon and swaps to checkmark on click", async ({ page }) => {
     const copyBtn = page.locator("#punctilio-copy-btn")
-    await expect(copyBtn).toBeVisible()
+
+    // Hover to reveal the button
+    await page.locator(".punctilio-output-wrapper").hover()
+    await expect(copyBtn).toHaveCSS("opacity", "1")
 
     // Initially shows the copy icon SVG
     const initialSvg = copyBtn.locator("svg")
@@ -236,9 +239,12 @@ test.describe("Clipboard button interaction", () => {
     await expect(svg).toHaveAttribute("width", "16")
   })
 
-  test("clipboard button is visible without hovering", async ({ page }) => {
+  test("clipboard button appears on hover of output wrapper", async ({ page }) => {
     const copyBtn = page.locator("#punctilio-copy-btn")
-    await expect(copyBtn).toBeVisible()
+    await expect(copyBtn).toHaveCSS("opacity", "0")
+
+    // Hover over the output wrapper to reveal the button
+    await page.locator(".punctilio-output-wrapper").hover()
     await expect(copyBtn).toHaveCSS("opacity", "1")
   })
 })

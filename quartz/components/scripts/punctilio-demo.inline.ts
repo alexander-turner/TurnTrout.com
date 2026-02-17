@@ -8,7 +8,7 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
+import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
 const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
 
@@ -40,6 +40,12 @@ const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
 const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-options-list select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
+
+const INPUT_PLACEHOLDERS: Record<TransformMode, string> = {
+  plaintext: "Input your text here",
+  markdown: "Input your Markdown text here",
+  html: "Input your HTML text here",
+}
 
 function getConfig(): TransformOptions {
   return {
@@ -193,19 +199,21 @@ document.addEventListener("nav", () => {
 
     // Update admonition title to reflect the active mode
     if (outputTitleInner) {
-      // Preserve the icon span, update only the text after it
       const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
+        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source output'
       } else if (currentMode === "markdown") {
-        outputTitleInner.textContent = "Markdown source"
+        outputTitleInner.textContent = "Markdown source output"
       } else {
-        outputTitleInner.textContent = "Output"
+        outputTitleInner.textContent = "text output"
       }
       if (icon) outputTitleInner.prepend(icon)
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
+
+    // Update input placeholder for the active mode
+    input.placeholder = INPUT_PLACEHOLDERS[currentMode]
   }
 
   const debouncedTransform = debounce(runTransform, 100)
@@ -253,31 +261,8 @@ document.addEventListener("nav", () => {
     )
   }
 
-  // Copy output button — reuses clipboard icon style from code blocks
+  // Copy output button — reuses shared clipboard button setup from code blocks
   if (copyBtn) {
-    copyBtn.innerHTML = svgCopy
-    copyBtn.addEventListener(
-      "click",
-      () => {
-        navigator.clipboard.writeText(lastResult).then(
-          () => {
-            copyBtn.blur()
-            copyBtn.innerHTML = svgCheck
-            animate(
-              2000,
-              () => {
-                // No per-frame updates needed
-              },
-              () => {
-                copyBtn.innerHTML = svgCopy
-                copyBtn.style.borderColor = ""
-              },
-            )
-          },
-          (error) => console.error(error),
-        )
-      },
-      { signal },
-    )
+    setupCopyButton(copyBtn, () => lastResult, { signal })
   }
 })
