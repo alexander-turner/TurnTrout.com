@@ -140,8 +140,16 @@ fi
 #######################################
 
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
-	git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" ||
-		warn "Failed to clone .timestamps repo"
+	# In web sessions, direct GitHub URLs may not work through the local proxy.
+	# Use GH_TOKEN for authentication if available.
+	if [ -n "${GH_TOKEN:-}" ]; then
+		git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git" \
+			"$PROJECT_DIR/.timestamps" ||
+			warn "Failed to clone .timestamps repo"
+	else
+		git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" ||
+			warn "Failed to clone .timestamps repo"
+	fi
 fi
 
 # Configure .timestamps push access using GH_TOKEN (the local proxy only
