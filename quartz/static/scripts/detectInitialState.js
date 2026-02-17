@@ -17,6 +17,23 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
+  // 10% chance of a randomly colored dropcap (keep in sync with DROPCAP_COLORS in constants.ts)
+  // Re-rolls on every SPA navigation via the "nav" event listener below.
+  const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
+  function rollDropcapColor() {
+    if (Math.random() < 0.1) {
+      const color = colors[Math.floor(Math.random() * colors.length)]
+      document.documentElement.style.setProperty(
+        "--random-dropcap-color",
+        `var(--dropcap-background-${color})`,
+      )
+    } else {
+      document.documentElement.style.removeProperty("--random-dropcap-color")
+    }
+  }
+  rollDropcapColor()
+  document.addEventListener("nav", rollDropcapColor)
+
   // Set video autoplay button state in CSS custom properties
   const autoplayEnabled = localStorage.getItem("pond-video-autoplay") === "true" // Default to true
   document.documentElement.style.setProperty(

@@ -1,7 +1,8 @@
-import { test as base, expect, type Locator } from "@playwright/test"
+import type { Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { scrollTolerance, popoverScrollOffset } from "../constants"
+import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
