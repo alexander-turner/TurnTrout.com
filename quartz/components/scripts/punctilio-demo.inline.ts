@@ -157,11 +157,13 @@ document.addEventListener("nav", () => {
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
   const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
   const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
-  const previewSection = document.getElementById("punctilio-preview-section") as HTMLElement | null
   const preview = document.getElementById("punctilio-preview") as HTMLElement | null
+  const previewSection = preview?.closest(".admonition") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
-  const outputHeading = document.getElementById("punctilio-output-heading")
+  const outputTitleInner = output
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
   if (!input || !output) return
 
@@ -208,17 +210,18 @@ document.addEventListener("nav", () => {
       output.style.display = "none"
     }
 
-    // Update output sub-heading (hidden in plaintext, visible in code modes)
-    if (outputHeading) {
+    // Update admonition title to reflect the active mode
+    if (outputTitleInner) {
+      // Preserve the icon span, update only the text after it
+      const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        outputHeading.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
-        outputHeading.style.display = ""
+        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
       } else if (currentMode === "markdown") {
-        outputHeading.textContent = "Markdown source"
-        outputHeading.style.display = ""
+        outputTitleInner.textContent = "Markdown source"
       } else {
-        outputHeading.style.display = "none"
+        outputTitleInner.textContent = "Output"
       }
+      if (icon) outputTitleInner.prepend(icon)
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     diffOutput?.classList.toggle("monospace-output", isCodeMode)
@@ -227,13 +230,13 @@ document.addEventListener("nav", () => {
     if (!previewSection || !preview) return
 
     if (currentMode === "html") {
-      previewSection.style.display = ""
+      previewSection.style.display = "block"
       preview.innerHTML = result
     } else if (currentMode === "markdown") {
-      previewSection.style.display = ""
+      previewSection.style.display = "block"
       preview.innerHTML = renderMarkdownToHtml(input.value, config)
     } else {
-      previewSection.style.display = "none"
+      previewSection.style.display = ""
     }
   }
 

@@ -51,6 +51,7 @@ Type or paste text in the input area below and see the transformed output.
 
 > [!info] Output
 > <div class="punctilio-output-wrapper no-formatting">
+> <textarea id="punctilio-output" readonly spellcheck="false" style="display: none"></textarea>
 > <div id="punctilio-diff" class="punctilio-diff"></div>
 > <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 > </div>

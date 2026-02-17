@@ -87,6 +87,11 @@ $panel-min-height: 200px;
     }
   }
 
+  // Preview admonition is hidden by default; JS shows it for HTML/Markdown modes
+  .admonition:has(.punctilio-preview) {
+    display: none;
+  }
+
   .punctilio-preview {
     padding: 0;
   }
