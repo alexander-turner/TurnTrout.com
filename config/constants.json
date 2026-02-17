@@ -103,6 +103,7 @@
   "cdnBaseUrl": "https://assets.turntrout.com",
   "popoverRemovalDelayMs": 300,
   "dropcapColors": ["red", "orange", "yellow", "green", "blue", "purple", "pink"],
+  "colorDropcapProbability": 0.1,
   "specialDomainMappings": [
     {
       "pattern": "^.*transformer-circuits\\.pub",

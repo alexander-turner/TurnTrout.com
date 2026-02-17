@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test"
 
-import { DROPCAP_COLORS } from "../constants"
+import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
 
@@ -12,7 +12,7 @@ const mockRandom = (vals: number[]) => {
 }
 
 test.describe("Random dropcap color", () => {
-  test("no color applied when Math.random >= 0.1", async ({ page }) => {
+  test(`no color applied when Math.random >= ${colorDropcapProbability}`, async ({ page }) => {
     await page.addInitScript(mockRandom, [0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
@@ -54,7 +54,7 @@ test.describe("Random dropcap color", () => {
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {
-    // First roll: colored (0.01 < 0.1 → pick color), second roll on nav: no color (0.5 >= 0.1)
+    // First roll: colored (0.01 < probability → pick color), second roll on nav: no color (0.5 >= probability)
     await page.addInitScript(mockRandom, [0.01, 0.0, 0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 

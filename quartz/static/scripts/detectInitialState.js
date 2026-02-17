@@ -1,4 +1,4 @@
-/* global SAVED_THEME_KEY, AUTOPLAY_STORAGE_KEY, DROPCAP_COLORS -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+/* global SAVED_THEME_KEY, AUTOPLAY_STORAGE_KEY, DROPCAP_COLORS, COLOR_DROPCAP_PROBABILITY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(() => {
   const themeMode = localStorage.getItem(SAVED_THEME_KEY) || "auto"
   document.documentElement.setAttribute("data-theme-mode", themeMode)
@@ -18,11 +18,11 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
-  // 10% chance of a randomly colored dropcap (keep in sync with --dropcap-background-* in colors.scss)
+  // Random chance of a colored dropcap (keep in sync with --dropcap-background-* in colors.scss)
   // Re-rolls on every SPA navigation via the "nav" event listener below.
   const colors = DROPCAP_COLORS
   function rollDropcapColor() {
-    if (Math.random() < 0.1) {
+    if (Math.random() < COLOR_DROPCAP_PROBABILITY) {
       const color = colors[Math.floor(Math.random() * colors.length)]
       document.documentElement.style.setProperty(
         "--random-dropcap-color",

@@ -47,6 +47,7 @@ export const {
   cdnBaseUrl,
   popoverRemovalDelayMs,
   dropcapColors: DROPCAP_COLORS,
+  colorDropcapProbability,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
