@@ -50,7 +50,7 @@ body,
 
 .text-highlight {
   padding: 0 0.1rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 ::selection {
@@ -353,7 +353,7 @@ figure[data-rehype-pretty-code-figure] {
     padding: 0.1rem 0.5rem;
     border: 1px solid var(--midground-faint);
     width: max-content;
-    border-radius: 5px;
+    border-radius: $border-radius;
     margin-bottom: -0.5rem;
   }
 
@@ -365,7 +365,7 @@ figure[data-rehype-pretty-code-figure] {
 pre {
   font-family: var(--font-monospace);
   padding: 0 0.5rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
   overflow-x: auto;
   position: relative;
 
@@ -382,7 +382,7 @@ pre {
     padding: 0.5rem 0;
 
     & [data-highlighted-chars] {
-      border-radius: 5px;
+      border-radius: $border-radius;
     }
 
     & > [data-line] {
@@ -453,7 +453,7 @@ dd {
 
 img {
   max-width: 87.5%;
-  border-radius: 5px;
+  border-radius: $border-radius;
   margin: calc(2 * $base-margin) 0;
 }
 
@@ -471,7 +471,7 @@ hr {
 audio,
 video {
   width: 100%;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .spacer {
