@@ -994,10 +994,12 @@ figure#goose-terminal {
 }
 
 .smart-chart-point-group:hover > .smart-chart-tooltip,
-.smart-chart-annotation:hover > .smart-chart-tooltip {
+.smart-chart-point-group:hover > .smart-chart-tooltip-bg {
   display: block;
 }
 
+/* Annotation tooltips: JS positions on first hover; CSS hover as no-JS fallback */
+.smart-chart-annotation:hover > .smart-chart-tooltip,
 .smart-chart-annotation:hover > .smart-chart-tooltip-bg {
   display: block;
 }

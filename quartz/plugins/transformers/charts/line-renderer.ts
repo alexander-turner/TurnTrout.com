@@ -216,6 +216,7 @@ function renderSeries(
       `${axisLabels.y}: ${formatTick(d[1])}`,
     ]
 
+    const tooltipY = cy - TOOLTIP_LINE_HEIGHT - 10
     return createSvgElement("g", { class: "smart-chart-point-group" }, [
       createSvgElement("circle", {
         cx,
@@ -227,7 +228,8 @@ function renderSeries(
         "data-y": d[1],
         "data-series": series.name,
       }),
-      createTooltipElement(cx, cy - TOOLTIP_LINE_HEIGHT - 10, tooltipLines),
+      createTooltipBg(cx, tooltipY, tooltipLines),
+      createTooltipElement(cx, tooltipY, tooltipLines),
     ])
   })
 
@@ -245,14 +247,18 @@ function renderSeries(
 const TOOLTIP_CHAR_WIDTH = 5.5
 const TOOLTIP_BG_PAD_X = 8
 const TOOLTIP_BG_PAD_Y = 4
+const FONT_ASCENT = 9
+const FONT_DESCENT = 3
+const ANNOTATION_HIT_HEIGHT = 20
 
-function createTooltipBackground(x: number, y: number, text: string): Element {
-  const textWidth = text.length * TOOLTIP_CHAR_WIDTH
-  const bgWidth = textWidth + 2 * TOOLTIP_BG_PAD_X
-  const bgHeight = TOOLTIP_LINE_HEIGHT + 2 * TOOLTIP_BG_PAD_Y
+function createTooltipBg(x: number, y: number, lines: string[]): Element {
+  const maxLineWidth = Math.max(...lines.map((l) => l.length)) * TOOLTIP_CHAR_WIDTH
+  const bgWidth = maxLineWidth + 2 * TOOLTIP_BG_PAD_X
+  const bgHeight =
+    FONT_ASCENT + FONT_DESCENT + (lines.length - 1) * TOOLTIP_LINE_HEIGHT + 2 * TOOLTIP_BG_PAD_Y
   return createSvgElement("rect", {
     x: x - bgWidth / 2,
-    y: y - TOOLTIP_LINE_HEIGHT + TOOLTIP_BG_PAD_Y / 2,
+    y: y - FONT_ASCENT - TOOLTIP_BG_PAD_Y,
     width: bgWidth,
     height: bgHeight,
     rx: 3,
@@ -283,9 +289,19 @@ function renderAnnotations(
         stroke: "var(--midground-faint)",
         "stroke-width": "1.5",
         "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
-        "pointer-events": "stroke",
+        "pointer-events": "none",
       }),
-      createTooltipBackground(tooltipX, tooltipY, tooltipLabel),
+      // Wide transparent hit area for easier hovering
+      createSvgElement("rect", {
+        x: 0,
+        y: yPos - ANNOTATION_HIT_HEIGHT / 2,
+        width: INNER_WIDTH,
+        height: ANNOTATION_HIT_HEIGHT,
+        fill: "transparent",
+        "pointer-events": "all",
+        class: "smart-chart-annotation-hit",
+      }),
+      createTooltipBg(tooltipX, tooltipY, [tooltipLabel]),
       createTooltipElement(tooltipX, tooltipY, [tooltipLabel]),
     ]
 
@@ -303,8 +319,46 @@ function renderAnnotations(
   })
 }
 
+const TITLE_CASE_SMALL_WORDS = new Set([
+  "a",
+  "an",
+  "the",
+  "and",
+  "but",
+  "or",
+  "nor",
+  "for",
+  "yet",
+  "so",
+  "at",
+  "by",
+  "in",
+  "of",
+  "on",
+  "to",
+  "up",
+  "vs",
+])
+
+export function toTitleCase(text: string): string {
+  const len = text.length
+  return text.replace(/\S+/g, (word, offset: number) => {
+    // Keep words with no lowercase letters as-is (ALL-CAPS, numbers, etc.)
+    if (!/[a-z]/.test(word)) return word
+    // Check if this is a small word (strip leading punctuation for lookup)
+    const stripped = word.replace(/^[^a-zA-Z]+/, "").toLowerCase()
+    const isFirst = offset === 0
+    const isLast = offset + word.length === len
+    if (!isFirst && !isLast && TITLE_CASE_SMALL_WORDS.has(stripped)) {
+      return word.toLowerCase()
+    }
+    // Capitalize first alphabetic character (case-insensitive match to find it)
+    return word.replace(/[a-z]/i, (c) => c.toUpperCase())
+  })
+}
+
 function renderTitle(title: string): Element {
-  return createTextElement(CHART_WIDTH / 2, 18, title, {
+  return createTextElement(CHART_WIDTH / 2, 18, toTitleCase(title), {
     "text-anchor": "middle",
     "font-size": "14px",
     "text-decoration": "none",
@@ -379,14 +433,14 @@ export function renderLineChart(spec: ChartSpec): Element {
     chartChildren.push(renderTitle(spec.title))
   }
 
-  // Inner group with margin offset
+  // Inner group with margin offset — annotations render AFTER series for z-order
   const innerChildren: Element[] = [
     renderXAxis(xScale, spec.x.label),
     renderYAxis(yScale, spec.y.label),
-    ...renderAnnotations(spec, xScale, yScale),
     ...spec.series.map((s, i) =>
       renderSeries(s, xScale, yScale, i, { x: spec.x.label, y: spec.y.label }),
     ),
+    ...renderAnnotations(spec, xScale, yScale),
   ]
 
   chartChildren.push(

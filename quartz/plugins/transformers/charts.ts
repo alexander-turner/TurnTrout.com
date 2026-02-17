@@ -7,6 +7,38 @@ import type { QuartzTransformerPlugin } from "../types"
 import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
 
+/** Inline script that positions annotation tooltips at the user's initial hover x. */
+const ANNOTATION_TOOLTIP_SCRIPT = `(function(){
+  var fig=document.currentScript&&document.currentScript.parentElement;
+  var svg=fig&&fig.querySelector('svg.smart-chart');
+  if(!svg)return;
+  svg.querySelectorAll('.smart-chart-annotation').forEach(function(ann){
+    var hit=ann.querySelector('.smart-chart-annotation-hit');
+    var tt=ann.querySelector('.smart-chart-tooltip');
+    var bg=ann.querySelector('.smart-chart-tooltip-bg');
+    if(!hit||!tt)return;
+    hit.addEventListener('mouseenter',function(e){
+      var ctm=svg.getScreenCTM();
+      if(!ctm)return;
+      var x=(e.clientX-ctm.e)/ctm.a;
+      var g=ann.parentElement;
+      if(g){var t=g.getAttribute('transform');var m=t&&t.match(/translate\\(([^,)]+)/);if(m)x-=parseFloat(m[1]);}
+      var w=bg?parseFloat(bg.getAttribute('width')||'0'):0;
+      var iw=parseFloat(hit.getAttribute('width')||'0');
+      x=Math.max(w/2,Math.min(iw-w/2,x));
+      tt.setAttribute('x',''+x);
+      tt.querySelectorAll('tspan').forEach(function(ts){ts.setAttribute('x',''+x);});
+      if(bg)bg.setAttribute('x',''+(x-w/2));
+      tt.style.display='block';
+      if(bg)bg.style.display='block';
+    });
+    hit.addEventListener('mouseleave',function(){
+      tt.style.display='';
+      if(bg)bg.style.display='';
+    });
+  });
+})();`
+
 /**
  * Finds the text content of a code element (the YAML chart spec).
  * Shiki-processed code blocks have nested spans — collect all text.
@@ -96,11 +128,17 @@ export const Charts: QuartzTransformerPlugin = () => ({
           const svg = renderLineChart(spec)
 
           // Replace the <pre> block with the rendered SVG wrapped in a figure
+          const script: Element = {
+            type: "element",
+            tagName: "script",
+            properties: {},
+            children: [{ type: "text" as const, value: ANNOTATION_TOOLTIP_SCRIPT }],
+          }
           const figure: Element = {
             type: "element",
             tagName: "figure",
             properties: { className: ["smart-chart-container"] },
-            children: [svg],
+            children: [svg, script],
           }
 
           parent.children[index] = figure
