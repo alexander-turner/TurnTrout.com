@@ -46,7 +46,7 @@ Type or paste text in the input area below and see the transformed output.
 
 > [!info] Input
 > <div class="no-formatting">
-> <textarea id="punctilio-input" spellcheck="false"></textarea>
+> <textarea id="punctilio-input" spellcheck="false" aria-label="Text input for punctilio transformation"></textarea>
 > </div>
 
 > [!info] Output
