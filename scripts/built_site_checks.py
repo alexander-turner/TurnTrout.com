@@ -740,6 +740,33 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all ``.subfigure`` elements are direct children of
+    ``<figure>``.
+
+    When the markdown parser breaks a ``<figure>`` structure (e.g. inside
+    a definition list continuation), ``.subfigure`` divs can end up as
+    orphaned elements outside any ``<figure>``, breaking the flex layout.
+
+    Returns:
+        list of strings describing orphaned subfigure elements
+    """
+    issues: list[str] = []
+
+    for subfig in _tags_only(soup.find_all(class_="subfigure")):
+        parent = subfig.parent
+        if not isinstance(parent, Tag) or parent.name != "figure":
+            tag_preview = str(subfig)[:120]
+            _append_to_list(
+                issues,
+                f"Orphaned .subfigure (parent is <{parent.name if isinstance(parent, Tag) else 'non-tag'}>,"
+                f" expected <figure>): {tag_preview}",
+            )
+
+    return issues
+
+
 def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
     """
     Check for class names that contain commas or start with dots.
@@ -1620,6 +1647,7 @@ def check_file_for_issues(
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
+        "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
     if should_check_fonts:

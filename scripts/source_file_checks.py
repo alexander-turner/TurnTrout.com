@@ -721,6 +721,54 @@ def check_footnote_references(text: str) -> List[str]:
     return errors
 
 
+_NON_VOID_ELEMENTS = frozenset(
+    {
+        "iframe",
+        "div",
+        "span",
+        "textarea",
+        "script",
+        "style",
+        "canvas",
+        "video",
+        "audio",
+        "table",
+        "select",
+        "object",
+    }
+)
+
+_SELF_CLOSING_NON_VOID_RE = re.compile(
+    r"<(" + "|".join(_NON_VOID_ELEMENTS) + r")\b[^>]*/\s*>",
+    re.IGNORECASE,
+)
+
+
+def check_self_closing_non_void_elements(text: str) -> List[str]:
+    """Check for self-closing syntax on non-void HTML elements.
+
+    Elements like ``<iframe ... />`` cause parsing bugs because
+    the browser treats them as unclosed tags, swallowing subsequent
+    content.  Only void elements (``<img>``, ``<br>``, ``<hr>``, etc.)
+    may use self-closing syntax.
+    """
+    errors: List[str] = []
+    for match in _SELF_CLOSING_NON_VOID_RE.finditer(text):
+        # Skip matches inside code blocks (indented 4+ spaces or fenced)
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        line_prefix = text[line_start : match.start()]
+        if line_prefix.startswith("    ") or line_prefix.startswith("\t"):
+            continue
+
+        line_num = text[: match.start()].count("\n") + 1
+        tag_name = match.group(1)
+        errors.append(
+            f"Self-closing <{tag_name} .../> at line {line_num}"
+            f" (use <{tag_name} ...></{tag_name}> instead)"
+        )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -759,6 +807,7 @@ def check_file_data(
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),
+        "self_closing_non_void": check_self_closing_non_void_elements(text),
         "invalid_filename": check_spaces_in_path(file_path),
     }
 
