@@ -61,6 +61,7 @@ $panel-min-height: 200px;
 
   #punctilio-input {
     font-family: var(--font-monospace);
+    font-size: var(--font-size-code);
   }
 
   .punctilio-output-wrapper {
@@ -90,6 +91,7 @@ $panel-min-height: 200px;
 
     &.monospace-output {
       font-family: var(--font-monospace);
+      font-size: var(--font-size-code);
     }
   }
 }
