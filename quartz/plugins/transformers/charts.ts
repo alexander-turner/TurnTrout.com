@@ -8,33 +8,51 @@ import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
 
 /** Inline script that positions annotation tooltips at the user's initial hover x. */
-const ANNOTATION_TOOLTIP_SCRIPT = `(function(){
-  var fig=document.currentScript&&document.currentScript.parentElement;
-  var svg=fig&&fig.querySelector('svg.smart-chart');
-  if(!svg)return;
-  svg.querySelectorAll('.smart-chart-annotation').forEach(function(ann){
-    var hit=ann.querySelector('.smart-chart-annotation-hit');
-    var tt=ann.querySelector('.smart-chart-tooltip');
-    var bg=ann.querySelector('.smart-chart-tooltip-bg');
-    if(!hit||!tt)return;
-    hit.addEventListener('mouseenter',function(e){
-      var ctm=svg.getScreenCTM();
-      if(!ctm)return;
-      var x=(e.clientX-ctm.e)/ctm.a;
-      var g=ann.parentElement;
-      if(g){var t=g.getAttribute('transform');var m=t&&t.match(/translate\\(([^,)]+)/);if(m)x-=parseFloat(m[1]);}
-      var w=bg?parseFloat(bg.getAttribute('width')||'0'):0;
-      var iw=parseFloat(hit.getAttribute('width')||'0');
-      x=Math.max(w/2,Math.min(iw-w/2,x));
-      tt.setAttribute('x',''+x);
-      tt.querySelectorAll('tspan').forEach(function(ts){ts.setAttribute('x',''+x);});
-      if(bg)bg.setAttribute('x',''+(x-w/2));
-      tt.style.display='block';
-      if(bg)bg.style.display='block';
+const ANNOTATION_TOOLTIP_SCRIPT = `(function () {
+  var figure = document.currentScript && document.currentScript.parentElement;
+  var svg = figure && figure.querySelector("svg.smart-chart");
+  if (!svg) return;
+
+  svg.querySelectorAll(".smart-chart-annotation").forEach(function (annotation) {
+    var hitArea = annotation.querySelector(".smart-chart-annotation-hit");
+    var tooltip = annotation.querySelector(".smart-chart-tooltip");
+    var tooltipBg = annotation.querySelector(".smart-chart-tooltip-bg");
+    if (!hitArea || !tooltip) return;
+
+    hitArea.addEventListener("mouseenter", function (e) {
+      // Convert mouse clientX to SVG coordinates
+      var ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      var x = (e.clientX - ctm.e) / ctm.a;
+
+      // Subtract the inner group's translate offset
+      var innerGroup = annotation.parentElement;
+      if (innerGroup) {
+        var transform = innerGroup.getAttribute("transform");
+        var match = transform && transform.match(/translate\\(([^,)]+)/);
+        if (match) x -= parseFloat(match[1]);
+      }
+
+      // Clamp so the tooltip background stays within the chart area
+      var bgWidth = tooltipBg ? parseFloat(tooltipBg.getAttribute("width") || "0") : 0;
+      var chartWidth = parseFloat(hitArea.getAttribute("width") || "0");
+      x = Math.max(bgWidth / 2, Math.min(chartWidth - bgWidth / 2, x));
+
+      // Position the tooltip text and all its tspan children
+      tooltip.setAttribute("x", "" + x);
+      tooltip.querySelectorAll("tspan").forEach(function (tspan) {
+        tspan.setAttribute("x", "" + x);
+      });
+      if (tooltipBg) tooltipBg.setAttribute("x", "" + (x - bgWidth / 2));
+
+      // Show tooltip
+      tooltip.style.display = "block";
+      if (tooltipBg) tooltipBg.style.display = "block";
     });
-    hit.addEventListener('mouseleave',function(){
-      tt.style.display='';
-      if(bg)bg.style.display='';
+
+    hitArea.addEventListener("mouseleave", function () {
+      tooltip.style.display = "";
+      if (tooltipBg) tooltipBg.style.display = "";
     });
   });
 })();`

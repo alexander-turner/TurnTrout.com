@@ -7,7 +7,7 @@ import type { BuildCtx } from "../../util/ctx"
 import type { ChartSpec } from "./charts/types"
 
 import { Charts } from "./charts"
-import { renderLineChart, toTitleCase } from "./charts/line-renderer"
+import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
 
 const mockCtx = {} as BuildCtx
@@ -586,27 +586,6 @@ describe("renderLineChart", () => {
     // Tick labels for 0, 20, 40, 60, 80, 100 should not have decimals
     const tickTexts = texts.filter((t) => /^\d+$/.test(t))
     expect(tickTexts.length).toBeGreaterThan(0)
-  })
-})
-
-// ── toTitleCase ──────────────────────────────────────────────────────
-
-describe("toTitleCase", () => {
-  it.each([
-    ["already title case", "Layer Horizon vs Loss", "Layer Horizon vs Loss"],
-    ["lowercase words", "layer horizon vs loss", "Layer Horizon vs Loss"],
-    ["small words stay lowercase in middle", "loss for the model", "Loss for the Model"],
-    ["small word capitalized at start", "the quick fox", "The Quick Fox"],
-    ["small word capitalized at end", "what models are for", "What Models Are For"],
-    ["ALL-CAPS words preserved", "GPT2-XL is great", "GPT2-XL Is Great"],
-    ["numbers preserved", "(48 layers)", "(48 Layers)"],
-    [
-      "mixed example",
-      "layer horizon vs loss for GPT2-XL (48 layers)",
-      "Layer Horizon vs Loss for GPT2-XL (48 Layers)",
-    ],
-  ])("%s: %s → %s", (_desc, input, expected) => {
-    expect(toTitleCase(input)).toBe(expected)
   })
 })
 

@@ -5,8 +5,11 @@ import { max, min } from "d3-array"
 import { format } from "d3-format"
 import { scaleLinear, scaleLog } from "d3-scale"
 import { line } from "d3-shape"
+import { titleCase } from "title-case"
 
 import type { ChartSpec, SeriesSpec } from "./types"
+
+import { locale } from "../../../components/constants"
 
 const CHART_WIDTH = 600
 const CHART_HEIGHT = 370
@@ -319,46 +322,8 @@ function renderAnnotations(
   })
 }
 
-const TITLE_CASE_SMALL_WORDS = new Set([
-  "a",
-  "an",
-  "the",
-  "and",
-  "but",
-  "or",
-  "nor",
-  "for",
-  "yet",
-  "so",
-  "at",
-  "by",
-  "in",
-  "of",
-  "on",
-  "to",
-  "up",
-  "vs",
-])
-
-export function toTitleCase(text: string): string {
-  const len = text.length
-  return text.replace(/\S+/g, (word, offset: number) => {
-    // Keep words with no lowercase letters as-is (ALL-CAPS, numbers, etc.)
-    if (!/[a-z]/.test(word)) return word
-    // Check if this is a small word (strip leading punctuation for lookup)
-    const stripped = word.replace(/^[^a-zA-Z]+/, "").toLowerCase()
-    const isFirst = offset === 0
-    const isLast = offset + word.length === len
-    if (!isFirst && !isLast && TITLE_CASE_SMALL_WORDS.has(stripped)) {
-      return word.toLowerCase()
-    }
-    // Capitalize first alphabetic character (case-insensitive match to find it)
-    return word.replace(/[a-z]/i, (c) => c.toUpperCase())
-  })
-}
-
 function renderTitle(title: string): Element {
-  return createTextElement(CHART_WIDTH / 2, 18, toTitleCase(title), {
+  return createTextElement(CHART_WIDTH / 2, 18, titleCase(title, { locale }), {
     "text-anchor": "middle",
     "font-size": "14px",
     "text-decoration": "none",
