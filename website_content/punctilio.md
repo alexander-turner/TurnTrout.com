@@ -22,14 +22,14 @@ Type or paste text in the input area below and see the transformed output.
 
 > [!abstract]- Options
 > <ul class="punctilio-options-list">
-> <li class="punctilio-option"><label>Punctuation style
+> <li class="punctilio-option"><label>Punctuation style:
 > <select id="opt-punctuation-style">
 > <option value="american" selected>American</option>
 > <option value="british">British</option>
 > <option value="none">None</option>
 > </select>
 > </label></li>
-> <li class="punctilio-option"><label>Dash style
+> <li class="punctilio-option"><label>Dash style:
 > <select id="opt-dash-style">
 > <option value="american" selected>American</option>
 > <option value="british">British</option>
@@ -46,7 +46,7 @@ Type or paste text in the input area below and see the transformed output.
 
 > [!info] Input
 > <div class="no-formatting">
-> <textarea id="punctilio-input" spellcheck="false"></textarea>
+> <textarea id="punctilio-input" spellcheck="false" aria-label="Text input for punctilio transformation"></textarea>
 > </div>
 
 > [!info] Output

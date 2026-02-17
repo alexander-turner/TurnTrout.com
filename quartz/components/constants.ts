@@ -41,6 +41,13 @@ export const {
   scrollTolerance,
   listTolerance,
   playwrightConfigs,
+  savedThemeKey,
+  autoplayStorageKey,
+  instantScrollRestoreKey,
+  cdnBaseUrl,
+  popoverRemovalDelayMs,
+  dropcapColors: DROPCAP_COLORS,
+  colorDropcapProbability,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
@@ -92,6 +99,14 @@ export const specialDomainMappings: Array<{ pattern: RegExp; to: string }> = [
     to: mapping.to,
   })),
 ]
+
+// External link attributes
+export const EXTERNAL_LINK_REL = "noopener noreferrer"
+
+// Shared CSS class names (used across multiple components/scripts)
+export const PREVIEWABLE_CLASS = "previewable"
+export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
+export const SEARCH_MATCH_CLASS = "search-match"
 
 // UI strings for various components
 export const uiStrings = {
