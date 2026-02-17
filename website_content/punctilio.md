@@ -44,19 +44,16 @@ Type or paste text in the input area below and see the transformed output.
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
 > </ul>
 
-<div class="no-formatting">
-<h1>Input</h1>
-<textarea id="punctilio-input" spellcheck="false"></textarea>
-<h1>Output</h1>
-<h2 id="punctilio-output-heading" style="display: none"></h2>
-<div class="punctilio-output-wrapper">
-<textarea id="punctilio-output" readonly spellcheck="false"></textarea>
-<div id="punctilio-diff" class="punctilio-diff"></div>
-<button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
-</div>
-<div id="punctilio-preview-section" style="display: none">
-<h2>Preview</h2>
-<div id="punctilio-preview" class="punctilio-preview"></div>
-</div>
-</div>
-</div>
+> [!info] Input
+> <div class="no-formatting">
+> <textarea id="punctilio-input" spellcheck="false"></textarea>
+> </div>
+
+> [!info] Output
+> <div class="punctilio-output-wrapper no-formatting">
+> <div id="punctilio-diff" class="punctilio-diff"></div>
+> <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
+> </div>
+
+> [!info] Preview
+> <div id="punctilio-preview" class="punctilio-preview"></div>
