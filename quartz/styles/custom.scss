@@ -948,3 +948,58 @@ figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;
 }
+
+/* Smart Charts */
+.smart-chart-container {
+  margin: calc(2 * $base-margin) 0;
+  max-width: 100%;
+}
+
+.smart-chart {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0;
+  overflow: visible;
+}
+
+.smart-chart-line {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.smart-chart-tooltip {
+  display: none;
+  fill: var(--foreground);
+  pointer-events: none;
+  paint-order: stroke fill;
+  stroke: var(--background);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px var(--background)) drop-shadow(0 0 3px var(--background));
+}
+
+.smart-chart-point {
+  cursor: pointer;
+  transition: r 0.15s ease;
+
+  &:hover {
+    r: 6;
+  }
+}
+
+.smart-chart-tooltip-bg {
+  display: none;
+}
+
+.smart-chart-point-group:hover > .smart-chart-tooltip,
+.smart-chart-point-group:hover > .smart-chart-tooltip-bg {
+  display: block;
+}
+
+/* Annotation tooltips: JS positions on first hover; CSS hover as no-JS fallback */
+.smart-chart-annotation:hover > .smart-chart-tooltip,
+.smart-chart-annotation:hover > .smart-chart-tooltip-bg {
+  display: block;
+}
