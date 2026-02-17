@@ -242,6 +242,26 @@ function renderSeries(
   )
 }
 
+const TOOLTIP_CHAR_WIDTH = 5.5
+const TOOLTIP_BG_PAD_X = 8
+const TOOLTIP_BG_PAD_Y = 4
+
+function createTooltipBackground(x: number, y: number, text: string): Element {
+  const textWidth = text.length * TOOLTIP_CHAR_WIDTH
+  const bgWidth = textWidth + 2 * TOOLTIP_BG_PAD_X
+  const bgHeight = TOOLTIP_LINE_HEIGHT + 2 * TOOLTIP_BG_PAD_Y
+  return createSvgElement("rect", {
+    x: x - bgWidth / 2,
+    y: y - TOOLTIP_LINE_HEIGHT + TOOLTIP_BG_PAD_Y / 2,
+    width: bgWidth,
+    height: bgHeight,
+    rx: 3,
+    fill: "var(--background)",
+    class: "smart-chart-tooltip-bg",
+    "pointer-events": "none",
+  })
+}
+
 function renderAnnotations(
   spec: ChartSpec,
   xScale: ScaleContinuousNumeric<number, number>,
@@ -252,6 +272,8 @@ function renderAnnotations(
   return spec.annotations.map((ann) => {
     const yPos = yScale(ann.value)
     const tooltipLabel = `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`
+    const tooltipX = INNER_WIDTH / 2
+    const tooltipY = yPos - 8
     const children: Element[] = [
       createSvgElement("line", {
         x1: 0,
@@ -263,7 +285,8 @@ function renderAnnotations(
         "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
         "pointer-events": "stroke",
       }),
-      createTooltipElement(INNER_WIDTH / 2, yPos - 8, [tooltipLabel]),
+      createTooltipBackground(tooltipX, tooltipY, tooltipLabel),
+      createTooltipElement(tooltipX, tooltipY, [tooltipLabel]),
     ]
 
     if (ann.label) {

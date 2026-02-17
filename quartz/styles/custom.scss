@@ -989,7 +989,15 @@ figure#goose-terminal {
   }
 }
 
+.smart-chart-tooltip-bg {
+  display: none;
+}
+
 .smart-chart-point-group:hover > .smart-chart-tooltip,
 .smart-chart-annotation:hover > .smart-chart-tooltip {
+  display: block;
+}
+
+.smart-chart-annotation:hover > .smart-chart-tooltip-bg {
   display: block;
 }
