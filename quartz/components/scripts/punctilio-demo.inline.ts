@@ -44,7 +44,7 @@ type TransformMode = "plaintext" | "markdown" | "html"
 const INPUT_PLACEHOLDERS: Record<TransformMode, string> = {
   plaintext: "Input your text here",
   markdown: "Input your Markdown text here",
-  html: "Input your HTML text here",
+  html: "Input your HTML code here",
 }
 
 function getConfig(): TransformOptions {
@@ -201,18 +201,17 @@ document.addEventListener("nav", () => {
     if (outputTitleInner) {
       const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source output'
+        outputTitleInner.innerHTML = '<abbr class="small-caps">Html</abbr> source output'
       } else if (currentMode === "markdown") {
         outputTitleInner.textContent = "Markdown source output"
       } else {
-        outputTitleInner.textContent = "text output"
+        outputTitleInner.textContent = "Text output"
       }
       if (icon) outputTitleInner.prepend(icon)
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
 
-    // Update input placeholder for the active mode
     input.placeholder = INPUT_PLACEHOLDERS[currentMode]
   }
 
