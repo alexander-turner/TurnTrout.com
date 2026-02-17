@@ -87,7 +87,7 @@ input.checkbox-toggle {
 // absolute-positioned margin checkboxes used in task lists.
 #punctilio-demo input.checkbox-toggle {
   position: relative;
-  top: 1px;
+  top: -1px;
   left: auto;
   flex-shrink: 0;
 }

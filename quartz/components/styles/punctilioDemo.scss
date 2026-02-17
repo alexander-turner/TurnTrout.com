@@ -42,7 +42,11 @@ $panel-min-height: 200px;
   }
 
   textarea {
+    all: inherit;
+    display: block;
     box-sizing: border-box;
+    overflow: auto;
+    white-space: pre-wrap;
     width: 100%;
     min-height: $panel-min-height;
     padding: $base-margin calc(2 * $base-margin);
@@ -53,11 +57,10 @@ $panel-min-height: 200px;
     &:focus {
       outline: none;
     }
+  }
 
-    &[readonly] {
-      background-color: $panel-bg-readonly;
-      cursor: default;
-    }
+  #punctilio-input {
+    font-family: var(--font-monospace);
   }
 
   .punctilio-output-wrapper {
@@ -69,7 +72,7 @@ $panel-min-height: 200px;
     }
   }
 
-  .punctilio-diff {
+  .punctilio-output-content {
     box-sizing: border-box;
     width: 100%;
     min-height: $panel-min-height;
@@ -85,19 +88,10 @@ $panel-min-height: 200px;
       background-color: color-mix(in srgb, #22c55e 20%, transparent);
       border-radius: 2px;
     }
-  }
 
-  // Preview admonition is hidden by default; JS shows it for HTML/Markdown modes
-  .admonition:has(.punctilio-preview) {
-    display: none;
-  }
-
-  .punctilio-preview {
-    padding: 0;
-  }
-
-  .monospace-output {
-    font-family: var(--font-monospace);
+    &.monospace-output {
+      font-family: var(--font-monospace);
+    }
   }
 }
 
@@ -119,6 +113,10 @@ $panel-min-height: 200px;
       align-items: center;
       gap: $base-margin;
       flex: 1;
+
+      &:not(:has(select)) {
+        cursor: text;
+      }
     }
 
     select {

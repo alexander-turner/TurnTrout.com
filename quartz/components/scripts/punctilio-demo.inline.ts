@@ -5,15 +5,12 @@ import { remarkPunctilio } from "punctilio/remark"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
-import remarkRehype from "remark-rehype"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
 import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
 
 const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
-
-The temperature was 72F -- perfect for Mr. Smith.
 
 (c) 2024 Acme Corp. 2x + 3 != 5`
 
@@ -81,17 +78,6 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
   return String(result)
 }
 
-/** Render transformed Markdown as HTML for the preview panel. */
-function renderMarkdownToHtml(text: string, config: TransformOptions): string {
-  const result = unified()
-    .use(remarkParse)
-    .use(remarkPunctilio, config)
-    .use(remarkRehype)
-    .use(rehypeStringify)
-    .processSync(text)
-  return String(result)
-}
-
 // ─── HTML mode ───────────────────────────────────────────────────────
 
 /**
@@ -155,17 +141,16 @@ document.addEventListener("nav", () => {
   if (!container) return
 
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
-  const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
-  const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
-  const preview = document.getElementById("punctilio-preview") as HTMLElement | null
-  const previewSection = preview?.closest(".admonition") as HTMLElement | null
+  const outputContent = container.querySelector(".punctilio-output-content") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
-  const outputTitleInner = output
+  const outputTitleInner = outputContent
     ?.closest(".admonition")
     ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
-  if (!input || !output) return
+  if (!input || !outputContent) return
+
+  let lastResult = ""
 
   const controller = new AbortController()
   abortController = controller
@@ -189,26 +174,22 @@ document.addEventListener("nav", () => {
   }
 
   function runTransform() {
-    if (!input || !output) return
+    if (!input || !outputContent) return
     const config = getConfig()
     const result = doTransform(input.value, currentMode, config)
-    output.value = result
+    lastResult = result
+
+    // Diff highlighting
+    if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+      outputContent.textContent = result
+    } else {
+      const segments = diffChars(input.value, result)
+      outputContent.innerHTML = renderDiffHtml(segments)
+    }
 
     // Persist input text and mode
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
     localStorage.setItem(STORAGE_KEY_MODE, currentMode)
-
-    // Diff highlighting (always shown)
-    if (diffOutput) {
-      if (input.value.length + result.length > MAX_DIFF_LENGTH) {
-        diffOutput.textContent = result
-      } else {
-        const segments = diffChars(input.value, result)
-        diffOutput.innerHTML = renderDiffHtml(segments)
-      }
-      diffOutput.style.display = ""
-      output.style.display = "none"
-    }
 
     // Update admonition title to reflect the active mode
     if (outputTitleInner) {
@@ -224,20 +205,7 @@ document.addEventListener("nav", () => {
       if (icon) outputTitleInner.prepend(icon)
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
-    diffOutput?.classList.toggle("monospace-output", isCodeMode)
-    output.classList.toggle("monospace-output", isCodeMode)
-
-    if (!previewSection || !preview) return
-
-    if (currentMode === "html") {
-      previewSection.style.display = "block"
-      preview.innerHTML = result
-    } else if (currentMode === "markdown") {
-      previewSection.style.display = "block"
-      preview.innerHTML = renderMarkdownToHtml(input.value, config)
-    } else {
-      previewSection.style.display = ""
-    }
+    outputContent.classList.toggle("monospace-output", isCodeMode)
   }
 
   const debouncedTransform = debounce(runTransform, 100)
@@ -291,8 +259,7 @@ document.addEventListener("nav", () => {
     copyBtn.addEventListener(
       "click",
       () => {
-        if (!output) return
-        navigator.clipboard.writeText(output.value).then(
+        navigator.clipboard.writeText(lastResult).then(
           () => {
             copyBtn.blur()
             copyBtn.innerHTML = svgCheck
