@@ -1,5 +1,6 @@
+/* global SAVED_THEME_KEY, AUTOPLAY_STORAGE_KEY, DROPCAP_COLORS, COLOR_DROPCAP_PROBABILITY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(() => {
-  const themeMode = localStorage.getItem("saved-theme") || "auto"
+  const themeMode = localStorage.getItem(SAVED_THEME_KEY) || "auto"
   document.documentElement.setAttribute("data-theme-mode", themeMode)
 
   // Determine the actual theme to apply
@@ -17,8 +18,25 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
+  // Random chance of a colored dropcap (keep in sync with --dropcap-background-* in colors.scss)
+  // Re-rolls on every SPA navigation via the "nav" event listener below.
+  const colors = DROPCAP_COLORS
+  function rollDropcapColor() {
+    if (Math.random() < COLOR_DROPCAP_PROBABILITY) {
+      const color = colors[Math.floor(Math.random() * colors.length)]
+      document.documentElement.style.setProperty(
+        "--random-dropcap-color",
+        `var(--dropcap-background-${color})`,
+      )
+    } else {
+      document.documentElement.style.removeProperty("--random-dropcap-color")
+    }
+  }
+  rollDropcapColor()
+  document.addEventListener("nav", rollDropcapColor)
+
   // Set video autoplay button state in CSS custom properties
-  const autoplayEnabled = localStorage.getItem("pond-video-autoplay") === "true" // Default to true
+  const autoplayEnabled = localStorage.getItem(AUTOPLAY_STORAGE_KEY) === "true" // Default to true
   document.documentElement.style.setProperty(
     "--video-play-display",
     autoplayEnabled ? "none" : "block",

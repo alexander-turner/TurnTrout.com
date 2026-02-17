@@ -11,7 +11,7 @@ pre {
 pre:hover > .clipboard-button,
 .punctilio-output-wrapper:hover > .clipboard-button {
   opacity: 1;
-  transition: opacity 0.2s;
+  transition: opacity $transition-duration-quick;
 }
 
 .clipboard-button {
@@ -23,9 +23,9 @@ pre:hover > .clipboard-button,
   color: var(--midground);
   border: 1px solid var(--midground-faint);
   background-color: var(--background);
-  border-radius: 5px;
+  border-radius: $border-radius;
   opacity: 0;
-  transition: 0.2s;
+  transition: $transition-duration-quick;
   right: 0;
 
   & > svg {

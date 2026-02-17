@@ -1,4 +1,6 @@
-import { test, expect, type Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
+
+import { test, expect } from "./fixtures"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")

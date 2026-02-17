@@ -38,7 +38,7 @@ pre {
 article[data-use-dropcap="true"] {
   --dropcap-vertical-offset: #{$dropcap-vertical-offset};
   --dropcap-font-size: #{$dropcap-font-size};
-  --before-color: var(--midground-faint);
+  --before-color: var(--random-dropcap-color, var(--midground-faint));
   --font-main: "EBGaramond__subset", "EBGaramond";
   --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
   --font-italic-situational: var(--font-italic);

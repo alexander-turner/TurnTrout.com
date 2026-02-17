@@ -33,11 +33,15 @@
 
   // Dropcap background colors
   --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
   --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
   --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
   --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
   --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 
   & img,
@@ -79,11 +83,15 @@
 
   // Dropcap background colors
   --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
   --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
   --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
   --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
   --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy

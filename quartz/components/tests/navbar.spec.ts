@@ -1,7 +1,8 @@
-import { test, expect, type Page, type Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants

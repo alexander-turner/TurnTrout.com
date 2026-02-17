@@ -80,7 +80,7 @@ a[id*="fnref-"] {
   // Dotted border signals "click for interaction" (same pattern as Elvish text)
   border: 1px dotted var(--midground-fainter);
   padding: 0 calc(0.25 * $base-margin);
-  border-radius: 5px;
+  border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
@@ -465,7 +465,7 @@ figcaption,
   & .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.2s ease-out;
+    transition: max-height $transition-duration-quick ease-out;
   }
 }
 
@@ -482,7 +482,7 @@ svg.fold-icon {
   width: var(--icon-size);
   height: var(--icon-size);
   fill: var(--midground); /* Set the default color here */
-  transition: transform 0.2s ease-out; /* Add a smooth transition */
+  transition: transform $transition-duration-quick ease-out; /* Add a smooth transition */
   transform: rotate(-90deg); /* Initial 90-degree rotation */
 
   &[aria-expanded="true"] {
@@ -728,6 +728,7 @@ img.emoji {
 
 .spoiler-content {
   filter: blur(4px);
+  opacity: 0.5;
 
   // Safari needs this
   & > * {
@@ -761,7 +762,7 @@ img.emoji {
   align-items: baseline !important;
   background-color: var(--midground-faintest) !important;
   padding: calc(0.5 * $base-margin);
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .flowchart {
@@ -793,21 +794,6 @@ img.emoji {
   &:has(.edgeLabel:empty) {
     display: none !important;
     background-color: transparent !important;
-  }
-}
-
-// Ensure all mermaid diagram text has sufficient contrast
-[id^="mermaid-"] {
-  font-size: 14px !important;
-  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
-
-  & span,
-  & p,
-  & .label,
-  & .nodeLabel,
-  & .edgeLabel {
-    color: var(--foreground) !important;
-    fill: var(--foreground) !important;
   }
 }
 
@@ -845,7 +831,7 @@ foreignObject {
   width: 100%;
   height: 18rem;
   max-width: 35rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .after-article-components {
@@ -858,7 +844,7 @@ foreignObject {
 }
 
 #subscription-and-contact {
-  border-radius: 5px;
+  border-radius: $border-radius;
   border: 1px solid var(--midground);
   padding-bottom: 1rem;
   padding-left: 1rem;
@@ -875,7 +861,7 @@ foreignObject {
 iframe {
   border: none;
   width: 95%;
-  border-radius: 5px;
+  border-radius: $border-radius;
   margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
 

@@ -6,8 +6,12 @@ import micromorph from "micromorph"
 import { escape } from "validator"
 
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
-import { simpleConstants } from "../constants"
-import { debounceWaitMs } from "../constants"
+import {
+  simpleConstants,
+  debounceWaitMs,
+  instantScrollRestoreKey,
+  SEARCH_MATCH_CLASS,
+} from "../constants"
 import { debounce } from "./component_script_utils"
 import { matchHTML } from "./search"
 import { isLocalUrl } from "./spa_utils"
@@ -46,7 +50,7 @@ const updateScrollState = debounce(
 
     // Firefox fallback: also save to sessionStorage for reload cases
     if (typeof Storage !== "undefined") {
-      sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
+      sessionStorage.setItem(instantScrollRestoreKey, currentScroll.toString())
     }
   }) as () => void,
   debounceWaitMs,
@@ -114,11 +118,11 @@ function scrollToMatch(searchText: string): boolean {
   let hasTitleMatch = false
   if (titleEl) {
     const matchedTitle = matchHTML(searchText, titleEl)
-    hasTitleMatch = matchedTitle.querySelectorAll(".search-match").length > 0
+    hasTitleMatch = matchedTitle.querySelectorAll(`.${SEARCH_MATCH_CLASS}`).length > 0
     titleEl.replaceWith(matchedTitle)
   }
 
-  const bodyMatches = matchedArticle.querySelectorAll(".search-match")
+  const bodyMatches = matchedArticle.querySelectorAll(`.${SEARCH_MATCH_CLASS}`)
   if (bodyMatches.length === 0 && !hasTitleMatch) return false
 
   // If the search term matched in the article title, stay at the top of the page
@@ -496,7 +500,7 @@ async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }):
 
   // Firefox fallback: also save to sessionStorage for reload cases
   if (typeof Storage !== "undefined") {
-    sessionStorage.setItem("instantScrollRestore", currentScroll.toString())
+    sessionStorage.setItem(instantScrollRestoreKey, currentScroll.toString())
   }
 
   // Only push a new history entry if the URL is actually changing. The new

@@ -1,4 +1,5 @@
 import { normalizeRelativeURLs, stripSlashes } from "../../util/path"
+import { PREVIEWABLE_CLASS } from "../constants"
 
 interface WindowWithCheckboxStates extends Window {
   __quartz_checkbox_states?: Map<string, boolean>
@@ -38,7 +39,7 @@ export async function fetchHTMLContent(
  * @returns Array of previewable elements
  */
 export function extractPreviewables(html: Document): Element[] {
-  return Array.from(html.getElementsByClassName("previewable"))
+  return Array.from(html.getElementsByClassName(PREVIEWABLE_CLASS))
 }
 
 /**
