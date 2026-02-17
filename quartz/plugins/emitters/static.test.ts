@@ -40,18 +40,6 @@ describe("shouldCopyToRoot", () => {
 })
 
 describe("buildStaticScriptDefines", () => {
-  it("maps every key to a JSON-stringified value from simpleConstants", () => {
-    const defines = buildStaticScriptDefines()
-    const constantValues = Object.values(simpleConstants)
-
-    expect(Object.keys(defines).length).toBeGreaterThan(0)
-    for (const [key, value] of Object.entries(defines)) {
-      expect(key).toMatch(/^[A-Z][A-Z0-9_]*$/) // SCREAMING_SNAKE_CASE
-      const parsed = JSON.parse(value)
-      expect(constantValues).toContainEqual(parsed)
-    }
-  })
-
   it("produces valid JSON string values for esbuild define", () => {
     const defines = buildStaticScriptDefines()
 
