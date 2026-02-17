@@ -53,7 +53,7 @@
       .search-path {
         stroke: var(--midground);
         stroke-width: 2px;
-        transition: stroke $transition-slow ease;
+        transition: stroke $transition-duration-slow ease;
       }
     }
   }
@@ -209,7 +209,7 @@
           text-decoration: none;
           padding: 1em;
           cursor: pointer;
-          transition: background $transition-quick ease;
+          transition: background $transition-duration-quick ease;
           border-bottom: 1px solid var(--midground-faint);
           width: 100%;
           display: block;

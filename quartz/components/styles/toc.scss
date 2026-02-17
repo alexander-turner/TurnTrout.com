@@ -39,7 +39,7 @@
 #post-statistics {
   list-style: none;
   max-height: none;
-  transition: max-height $transition-slow ease;
+  transition: max-height $transition-duration-slow ease;
   position: relative;
   font-size: var(--font-size-minus-1);
 

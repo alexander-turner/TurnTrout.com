@@ -464,7 +464,7 @@ figcaption,
   & .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height $transition-quick ease-out;
+    transition: max-height $transition-duration-quick ease-out;
   }
 }
 
@@ -481,7 +481,7 @@ svg.fold-icon {
   width: var(--icon-size);
   height: var(--icon-size);
   fill: var(--midground); /* Set the default color here */
-  transition: transform $transition-quick ease-out; /* Add a smooth transition */
+  transition: transform $transition-duration-quick ease-out; /* Add a smooth transition */
   transform: rotate(-90deg); /* Initial 90-degree rotation */
 
   &[aria-expanded="true"] {

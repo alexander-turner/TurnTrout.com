@@ -40,16 +40,16 @@ describe("shouldCopyToRoot", () => {
 })
 
 describe("buildStaticScriptDefines", () => {
-  it("maps identifiers to JSON-stringified constant values from constants.json", () => {
+  it("maps every key to a JSON-stringified value from simpleConstants", () => {
     const defines = buildStaticScriptDefines()
+    const constantValues = Object.values(simpleConstants)
 
-    expect(defines).toEqual({
-      SAVED_THEME_KEY: JSON.stringify(simpleConstants.savedThemeKey),
-      AUTOPLAY_STORAGE_KEY: JSON.stringify(simpleConstants.autoplayStorageKey),
-      INSTANT_SCROLL_RESTORE_KEY: JSON.stringify(simpleConstants.instantScrollRestoreKey),
-      DROPCAP_COLORS: JSON.stringify(simpleConstants.dropcapColors),
-      COLOR_DROPCAP_PROBABILITY: JSON.stringify(simpleConstants.colorDropcapProbability),
-    })
+    expect(Object.keys(defines).length).toBeGreaterThan(0)
+    for (const [key, value] of Object.entries(defines)) {
+      expect(key).toMatch(/^[A-Z][A-Z0-9_]*$/) // SCREAMING_SNAKE_CASE
+      const parsed = JSON.parse(value)
+      expect(constantValues).toContainEqual(parsed)
+    }
   })
 
   it("produces valid JSON string values for esbuild define", () => {

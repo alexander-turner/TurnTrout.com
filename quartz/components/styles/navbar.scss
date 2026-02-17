@@ -19,7 +19,7 @@
 
       & > a {
         color: var(--midground);
-        transition: opacity $transition-slow ease-out;
+        transition: opacity $transition-duration-slow ease-out;
         text-decoration: none;
       }
     }
@@ -233,6 +233,8 @@
   object-fit: contain;
 }
 
+$header-video-size: 188px;
+
 #header-video-container {
   @media all and (min-width: $min-desktop-width) {
     width: $header-video-size;
@@ -324,7 +326,7 @@
 
   & #theme-label {
     color: var(--midground);
-    transition: opacity $transition-slow ease;
+    transition: opacity $transition-duration-slow ease;
     margin: 0;
     margin-right: calc(0.75 * $base-margin);
     margin-top: calc(0.25 * $base-margin);
@@ -396,7 +398,7 @@
 .theme-toggle-auto {
   visibility: hidden;
   opacity: 0;
-  transition: opacity $transition-medium ease;
+  transition: opacity $transition-duration-medium ease;
 }
 
 :root[data-theme-mode="auto"] .theme-toggle-auto {

@@ -215,7 +215,7 @@
 
 // The initial animation is more complicated and is handled via JS
 .popover-visible {
-  animation: dropin $transition-medium ease;
+  animation: dropin $transition-duration-medium ease;
   animation-fill-mode: forwards;
-  animation-delay: $transition-medium;
+  animation-delay: $transition-duration-medium;
 }

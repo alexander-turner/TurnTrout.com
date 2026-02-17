@@ -102,7 +102,19 @@
   "instantScrollRestoreKey": "instantScrollRestore",
   "cdnBaseUrl": "https://assets.turntrout.com",
   "popoverRemovalDelayMs": 300,
-  "dropcapColors": ["red", "orange", "yellow", "green", "blue", "purple", "pink"],
+  "dropcapColors": [
+    "red",
+    "maroon",
+    "orange",
+    "gold",
+    "green",
+    "teal",
+    "sky",
+    "blue",
+    "purple",
+    "lavender",
+    "pink"
+  ],
   "colorDropcapProbability": 0.1,
   "specialDomainMappings": [
     {

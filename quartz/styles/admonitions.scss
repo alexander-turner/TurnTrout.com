@@ -41,7 +41,7 @@
   background-color: var(--bg);
   scrollbar-color: var(--midground-fainter) var(--bg);
   border-radius: $border-radius;
-  transition: max-height $transition-medium ease;
+  transition: max-height $transition-duration-medium ease;
   box-sizing: border-box;
 
   & blockquote {
@@ -170,7 +170,7 @@
 
   &.is-collapsible {
     > .admonition-content {
-      transition: max-height $transition-medium ease;
+      transition: max-height $transition-duration-medium ease;
       overflow: hidden;
     }
   }

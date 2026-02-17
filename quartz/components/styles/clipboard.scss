@@ -5,7 +5,7 @@ pre {
 
   &:hover > .clipboard-button {
     opacity: 1;
-    transition: opacity $transition-quick;
+    transition: opacity $transition-duration-quick;
   }
 
   & > code {
@@ -24,7 +24,7 @@ pre {
   background-color: var(--background);
   border-radius: $border-radius;
   opacity: 0;
-  transition: $transition-quick;
+  transition: $transition-duration-quick;
   right: 0;
 
   & > svg {

@@ -39,11 +39,10 @@ export const dropcapMinHeight = "4.2rem"
 
 // Design tokens — shared across SCSS files
 export const borderRadius = 5
-export const transitionQuick = "0.2s"
-export const transitionMedium = "0.3s"
-export const transitionSlow = "0.5s"
+export const transitionDurationQuick = "0.2s"
+export const transitionDurationMedium = "0.3s"
+export const transitionDurationSlow = "0.5s"
 export const fauxBoldOffset = "0.3px"
-export const headerVideoSize = 188
 
 // WCAG AA-compliant overrides for Shiki github-light theme.
 // Contrast ratios measured against code block background #f2f3f7
@@ -95,11 +94,10 @@ export const variables = {
   dropcapFontSize,
   dropcapMinHeight,
   borderRadius,
-  transitionQuick,
-  transitionMedium,
-  transitionSlow,
+  transitionDurationQuick,
+  transitionDurationMedium,
+  transitionDurationSlow,
   fauxBoldOffset,
-  headerVideoSize,
 } as const
 
 export type Variables = typeof variables
