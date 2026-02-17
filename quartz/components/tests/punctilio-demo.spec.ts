@@ -3,8 +3,7 @@ import { test, expect } from "@playwright/test"
 import { takeRegressionScreenshot } from "./visual_utils"
 
 const PUNCTILIO_URL = "http://localhost:8080/punctilio"
-const PREVIEW_SECTION = "#punctilio-preview-section"
-const PREVIEW = "#punctilio-preview"
+const OUTPUT_CONTENT = ".punctilio-output-content"
 
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
@@ -33,8 +32,7 @@ test.describe("Punctilio demo page loads correctly", () => {
   test("demo container and core elements are present", async ({ page }) => {
     await expect(page.locator("#punctilio-demo")).toBeVisible()
     await expect(page.locator("#punctilio-input")).toBeVisible()
-    await expect(page.locator("#punctilio-output")).toBeAttached()
-    await expect(page.locator("#punctilio-diff")).toBeAttached()
+    await expect(page.locator(OUTPUT_CONTENT)).toBeAttached()
     await expect(page.locator("#punctilio-copy-btn")).toBeVisible()
   })
 
@@ -42,9 +40,8 @@ test.describe("Punctilio demo page loads correctly", () => {
     const inputValue = await page.locator("#punctilio-input").inputValue()
     expect(inputValue.length).toBeGreaterThan(0)
 
-    // Diff view is shown by default (output textarea is hidden)
-    const diffHtml = await page.locator("#punctilio-diff").innerHTML()
-    expect(diffHtml.length).toBeGreaterThan(0)
+    const outputHtml = await page.locator(OUTPUT_CONTENT).innerHTML()
+    expect(outputHtml.length).toBeGreaterThan(0)
   })
 })
 
@@ -79,16 +76,12 @@ test.describe("Mode switching", () => {
 test.describe("Diff highlighting", () => {
   test("diff view shows insertions highlighted in green", async ({ page }) => {
     // Default diff view should show diff-insert spans for transformed characters
-    const diffInserts = page.locator("#punctilio-diff .diff-insert")
+    const diffInserts = page.locator(`${OUTPUT_CONTENT} .diff-insert`)
     await expect(diffInserts.first()).toBeAttached()
   })
 
-  test("diff view is always visible with output textarea hidden", async ({ page }) => {
-    const outputTextarea = page.locator("#punctilio-output")
-    const diffDiv = page.locator("#punctilio-diff")
-
-    await expect(diffDiv).toBeVisible()
-    await expect(outputTextarea).toBeHidden()
+  test("output content is visible", async ({ page }) => {
+    await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
   })
 })
 
@@ -115,44 +108,6 @@ test.describe("Copy output button", () => {
   })
 })
 
-test.describe("Rendered preview", () => {
-  test("preview section is hidden in plaintext mode", async ({ page }) => {
-    await expect(page.locator(PREVIEW_SECTION)).toBeHidden()
-  })
-
-  test("preview shows rendered output in HTML mode", async ({ page }) => {
-    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-
-    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
-    const preview = page.locator(PREVIEW)
-    await expect(preview).toBeVisible()
-
-    // Should contain rendered HTML elements (e.g. <p> tags from the HTML example)
-    const paragraphs = preview.locator("p")
-    await expect(paragraphs.first()).toBeAttached()
-  })
-
-  test("preview shows rendered output in Markdown mode", async ({ page }) => {
-    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
-
-    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
-    const preview = page.locator(PREVIEW)
-    await expect(preview).toBeVisible()
-
-    // Should contain rendered HTML from Markdown (e.g. <p> tags, <em> tags)
-    const paragraphs = preview.locator("p")
-    await expect(paragraphs.first()).toBeAttached()
-  })
-
-  test("preview is hidden when switching back to plaintext", async ({ page }) => {
-    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
-
-    await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
-    await expect(page.locator(PREVIEW_SECTION)).toBeHidden()
-  })
-})
-
 test.describe("Live transform", () => {
   test("typing custom text updates the output", async ({ page }) => {
     const input = page.locator("#punctilio-input")
@@ -160,20 +115,20 @@ test.describe("Live transform", () => {
     await input.pressSequentially('"Hello"', { delay: 30 })
 
     // Auto-retrying assertion waits for debounced transform
-    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
   })
 })
 
 test.describe("Options panel", () => {
   test("changing punctuation style to 'none' disables smart quotes", async ({ page }) => {
-    // Expand the collapsed options admonition
-    await page.locator(".punctilio-options").click()
+    // Expand the collapsed options admonition (Markdown-generated admonition)
+    await page.locator("#punctilio-demo .admonition.abstract").click()
 
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
 
     // Auto-retrying assertion waits for re-transform
-    await expect(page.locator("#punctilio-output")).not.toHaveValue(/\u201c/) // no left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).not.toContainText("\u201c") // no left double quote
   })
 })
 
@@ -185,8 +140,8 @@ test.describe("Cross-element HTML transform", () => {
     await input.fill('<p>"Hello <em>world</em>"</p>')
 
     // The diff view should contain properly paired smart quotes
-    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
-    await expect(page.locator("#punctilio-diff")).toContainText("\u201d") // right double quote
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201d") // right double quote
   })
 })
 
@@ -198,8 +153,8 @@ test.describe("Markdown protection", () => {
     await input.fill('The formula $E = mc^2$ is "famous".')
 
     // Math should be preserved, but quotes should be transformed
-    await expect(page.locator("#punctilio-diff")).toContainText("$E = mc^2$")
-    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("$E = mc^2$")
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
   })
 
   test("fenced code blocks with ~~~ are preserved", async ({ page }) => {
@@ -209,7 +164,7 @@ test.describe("Markdown protection", () => {
     await input.fill('~~~\nx = "don\'t change"\n~~~')
 
     // Code block content should be preserved verbatim
-    await expect(page.locator("#punctilio-diff")).toContainText('"don\'t change"')
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText('"don\'t change"')
   })
 
   test("mismatched fence delimiters are not treated as a code block", async ({ page }) => {
@@ -220,7 +175,7 @@ test.describe("Markdown protection", () => {
     // should be transformed (not protected as a code block)
     await input.fill('```\n"hello"\n~~~')
 
-    await expect(page.locator("#punctilio-diff")).toContainText("\u201c") // left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
   })
 })
 
@@ -250,18 +205,18 @@ test.describe("Visual regression", () => {
     })
   })
 
-  test("Punctilio demo in HTML mode with preview (lostpixel)", async ({ page }, testInfo) => {
+  test("Punctilio demo in HTML mode (lostpixel)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
+    await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-html", {
       elementToScreenshot: page.locator("#punctilio-demo"),
     })
   })
 
-  test("Punctilio demo in Markdown mode with preview (lostpixel)", async ({ page }, testInfo) => {
+  test("Punctilio demo in Markdown mode (lostpixel)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
-    await expect(page.locator(PREVIEW_SECTION)).toBeVisible()
+    await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-markdown", {
       elementToScreenshot: page.locator("#punctilio-demo"),
@@ -295,9 +250,9 @@ test.describe("Mode button navigation", () => {
 
     const inputBefore = await page.locator("#punctilio-input").inputValue()
     await btn.click()
-    const inputAfter = await page.locator("#punctilio-input").inputValue()
+    const inputAfter = page.locator("#punctilio-input")
 
-    expect(inputAfter).toBe(inputBefore)
+    await expect(inputAfter).toHaveValue(inputBefore)
   })
 
   test("inactive mode buttons do not have active class", async ({ page }) => {

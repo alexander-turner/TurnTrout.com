@@ -5,15 +5,12 @@ import { remarkPunctilio } from "punctilio/remark"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
-import remarkRehype from "remark-rehype"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
 import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
 
 const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
-
-The temperature was 72F -- perfect for Mr. Smith.
 
 (c) 2024 Acme Corp. 2x + 3 != 5`
 
@@ -40,7 +37,7 @@ const MAX_DIFF_LENGTH = 10_000
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
 const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
-const OPTION_INPUTS_SELECTOR = ".punctilio-options input, .punctilio-options select"
+const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-options-list select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
@@ -77,17 +74,6 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
     .use(remarkParse)
     .use(remarkPunctilio, config)
     .use(remarkStringify)
-    .processSync(text)
-  return String(result)
-}
-
-/** Render transformed Markdown as HTML for the preview panel. */
-function renderMarkdownToHtml(text: string, config: TransformOptions): string {
-  const result = unified()
-    .use(remarkParse)
-    .use(remarkPunctilio, config)
-    .use(remarkRehype)
-    .use(rehypeStringify)
     .processSync(text)
   return String(result)
 }
@@ -155,14 +141,16 @@ document.addEventListener("nav", () => {
   if (!container) return
 
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
-  const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
-  const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
-  const previewSection = document.getElementById("punctilio-preview-section") as HTMLElement | null
-  const preview = document.getElementById("punctilio-preview") as HTMLElement | null
+  const outputContent = container.querySelector(".punctilio-output-content") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
+  const outputTitleInner = outputContent
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
-  if (!input || !output) return
+  if (!input || !outputContent) return
+
+  let lastResult = ""
 
   const controller = new AbortController()
   abortController = controller
@@ -186,38 +174,38 @@ document.addEventListener("nav", () => {
   }
 
   function runTransform() {
-    if (!input || !output) return
+    if (!input || !outputContent) return
     const config = getConfig()
     const result = doTransform(input.value, currentMode, config)
-    output.value = result
+    lastResult = result
+
+    // Diff highlighting
+    if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+      outputContent.textContent = result
+    } else {
+      const segments = diffChars(input.value, result)
+      outputContent.innerHTML = renderDiffHtml(segments)
+    }
 
     // Persist input text and mode
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
     localStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
-    // Diff highlighting (always shown)
-    if (diffOutput) {
-      if (input.value.length + result.length > MAX_DIFF_LENGTH) {
-        diffOutput.textContent = result
+    // Update admonition title to reflect the active mode
+    if (outputTitleInner) {
+      // Preserve the icon span, update only the text after it
+      const icon = outputTitleInner.querySelector(".admonition-icon")
+      if (currentMode === "html") {
+        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
+      } else if (currentMode === "markdown") {
+        outputTitleInner.textContent = "Markdown source"
       } else {
-        const segments = diffChars(input.value, result)
-        diffOutput.innerHTML = renderDiffHtml(segments)
+        outputTitleInner.textContent = "Output"
       }
-      diffOutput.style.display = ""
-      output.style.display = "none"
+      if (icon) outputTitleInner.prepend(icon)
     }
-
-    if (!previewSection || !preview) return
-
-    if (currentMode === "html") {
-      previewSection.style.display = ""
-      preview.innerHTML = result
-    } else if (currentMode === "markdown") {
-      previewSection.style.display = ""
-      preview.innerHTML = renderMarkdownToHtml(input.value, config)
-    } else {
-      previewSection.style.display = "none"
-    }
+    const isCodeMode = currentMode === "markdown" || currentMode === "html"
+    outputContent.classList.toggle("monospace-output", isCodeMode)
   }
 
   const debouncedTransform = debounce(runTransform, 100)
@@ -271,8 +259,7 @@ document.addEventListener("nav", () => {
     copyBtn.addEventListener(
       "click",
       () => {
-        if (!output) return
-        navigator.clipboard.writeText(output.value).then(
+        navigator.clipboard.writeText(lastResult).then(
           () => {
             copyBtn.blur()
             copyBtn.innerHTML = svgCheck

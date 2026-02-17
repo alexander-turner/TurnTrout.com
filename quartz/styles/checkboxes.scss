@@ -83,6 +83,15 @@ input.checkbox-toggle {
   }
 }
 
+// Punctilio options use inline-flow checkboxes, not the
+// absolute-positioned margin checkboxes used in task lists.
+#punctilio-demo input.checkbox-toggle {
+  position: relative;
+  top: -1px;
+  left: auto;
+  flex-shrink: 0;
+}
+
 // Make lighter in a way that includes eg favicons
 
 :is(

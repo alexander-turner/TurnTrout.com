@@ -42,7 +42,11 @@ $panel-min-height: 200px;
   }
 
   textarea {
+    all: inherit;
+    display: block;
     box-sizing: border-box;
+    overflow: auto;
+    white-space: pre-wrap;
     width: 100%;
     min-height: $panel-min-height;
     padding: $base-margin calc(2 * $base-margin);
@@ -53,11 +57,10 @@ $panel-min-height: 200px;
     &:focus {
       outline: none;
     }
+  }
 
-    &[readonly] {
-      background-color: $panel-bg-readonly;
-      cursor: default;
-    }
+  #punctilio-input {
+    font-family: var(--font-monospace);
   }
 
   .punctilio-output-wrapper {
@@ -69,7 +72,7 @@ $panel-min-height: 200px;
     }
   }
 
-  .punctilio-diff {
+  .punctilio-output-content {
     box-sizing: border-box;
     width: 100%;
     min-height: $panel-min-height;
@@ -85,57 +88,45 @@ $panel-min-height: 200px;
       background-color: color-mix(in srgb, #22c55e 20%, transparent);
       border-radius: 2px;
     }
-  }
 
-  .punctilio-preview {
-    padding: 0;
-  }
-
-  .punctilio-options {
-    .punctilio-options-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
+    &.monospace-output {
+      font-family: var(--font-monospace);
     }
+  }
+}
 
-    // Config toggles, not task items — override global checkbox-toggle
-    // positioning and checked-state decorations (line-through/opacity).
-    li.punctilio-option {
+#punctilio-demo .punctilio-options-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li.punctilio-option {
+    display: flex;
+    align-items: center;
+    gap: $base-margin;
+    padding: calc(0.5 * $base-margin) 0;
+    width: 100%;
+    max-width: 100%;
+
+    label {
       display: flex;
       align-items: center;
       gap: $base-margin;
-      padding: calc(0.5 * $base-margin) 0;
-      width: 100%;
-      max-width: 100%;
+      flex: 1;
 
-      label {
-        display: flex;
-        align-items: center;
-        gap: $base-margin;
-        flex: 1;
+      &:not(:has(select)) {
+        cursor: text;
       }
+    }
 
-      input.checkbox-toggle {
-        position: relative;
-        top: auto;
-        left: auto;
-        flex-shrink: 0;
-      }
-
-      &:has(input.checkbox-toggle:checked) {
-        text-decoration: none;
-        opacity: 1;
-      }
-
-      select {
-        padding: calc(0.25 * $base-margin);
-        border: 1px solid var(--midground-faint);
-        border-radius: 5px;
-        background: var(--background);
-        color: var(--foreground);
-        font-family: inherit;
-        font-size: inherit;
-      }
+    select {
+      padding: calc(0.25 * $base-margin);
+      border: none;
+      border-radius: 5px;
+      background: inherit;
+      color: var(--foreground);
+      font-family: inherit;
+      font-size: inherit;
     }
   }
 }
