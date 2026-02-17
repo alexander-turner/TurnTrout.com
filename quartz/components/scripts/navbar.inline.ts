@@ -1,10 +1,10 @@
-import { sessionStoragePondVideoKey } from "../constants"
+import { sessionStoragePondVideoKey, autoplayStorageKey, pondVideoId } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
-const autoplayKey = "pond-video-autoplay"
+const autoplayKey = autoplayStorageKey
 let pondVideoCleanupController: AbortController | null = null
 
 function getAutoplayEnabled(): boolean {
@@ -50,7 +50,7 @@ function handleVideoToggle(): void {
   updatePlayPauseButton()
 
   // Immediately apply the new autoplay state to the video
-  const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
   if (videoElement) {
     if (!autoplayEnabled) {
       // If we're enabling autoplay
@@ -70,7 +70,7 @@ function setupPondVideo(): void {
     pondVideoCleanupController.abort()
   }
 
-  const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
   if (!videoElement) return
 
   pondVideoCleanupController = new AbortController()

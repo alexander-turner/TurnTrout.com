@@ -17,6 +17,7 @@ export const maxSidebarGap = "4rem" // 8 * baseMargin
 export const maxContentWidth = pageWidth + rightSidebarWidth + 100 // 100 for gap
 export const boldWeight = 700
 export const semiBoldWeight = 600
+export const mediumWeight = 500
 export const normalWeight = 400
 export const lineHeight = "1.8rem"
 export const listPaddingLeft = "1.875rem"
@@ -69,6 +70,7 @@ export const variables = {
   foregroundLight,
   boldWeight,
   semiBoldWeight,
+  mediumWeight,
   normalWeight,
   lineHeight,
   listPaddingLeft,

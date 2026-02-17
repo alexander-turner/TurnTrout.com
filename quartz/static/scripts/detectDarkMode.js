@@ -1,3 +1,6 @@
+// INLINE SCRIPT: Cannot import modules. The following constants are duplicated
+// from config/constants.json and must be kept in sync manually:
+//   "saved-theme" → savedThemeKey
 ;(() => {
   let theme = localStorage.getItem("saved-theme") || "auto"
   document.documentElement.setAttribute("data-theme-mode", theme)

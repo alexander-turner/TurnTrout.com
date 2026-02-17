@@ -1,3 +1,6 @@
+// INLINE SCRIPT: Cannot import modules. The following constants are duplicated
+// from config/constants.json and must be kept in sync manually:
+//   "instantScrollRestore" → instantScrollRestoreKey
 ;(function () {
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
