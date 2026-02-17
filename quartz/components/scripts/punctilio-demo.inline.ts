@@ -10,25 +10,7 @@ import { unified } from "unified"
 
 import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
-
-(c) 2024 Acme Corp. 2x + 3 != 5`
-
-const EXAMPLE_MARKDOWN = `She said, "It's *beautiful*" -- really.
-
-\`\`\`python
-x = "don't transform this"
-\`\`\`
-
-Inline math like $E = mc^2$ is preserved.
-
-(c) 2024 Acme Corp. 2x faster!`
-
-const EXAMPLE_HTML = `<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
-
-<p>(c) 2024 Acme Corp. 2x faster!</p>
-
-<pre><code>x = "don't transform this"</code></pre>`
+const DEFAULT_INPUT = "Type here!"
 
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
@@ -116,12 +98,6 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
   }
 }
 
-const EXAMPLES: Record<TransformMode, string> = {
-  plaintext: EXAMPLE_PLAINTEXT,
-  markdown: EXAMPLE_MARKDOWN,
-  html: EXAMPLE_HTML,
-}
-
 // ─── Inline diff highlighting ────────────────────────────────────────
 
 /** Render diff changes as HTML spans, showing only additions (green) and unchanged text. */
@@ -153,6 +129,9 @@ document.addEventListener("nav", () => {
   const outputTitleInner = outputContent
     ?.closest(".admonition")
     ?.querySelector(".admonition-title-inner") as HTMLElement | null
+  const inputTitleInner = input
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
   if (!input || !outputContent) return
 
@@ -164,7 +143,8 @@ document.addEventListener("nav", () => {
 
   // Restore saved mode and input, or fall back to defaults
   const savedMode = localStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
-  let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
+  let currentMode: TransformMode =
+    savedMode && savedMode in INPUT_PLACEHOLDERS ? savedMode : "plaintext"
 
   const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
     OPTION_INPUTS_SELECTOR,
@@ -197,7 +177,7 @@ document.addEventListener("nav", () => {
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
     localStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
-    // Update admonition title to reflect the active mode
+    // Update admonition titles to reflect the active mode
     if (outputTitleInner) {
       const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
@@ -209,6 +189,15 @@ document.addEventListener("nav", () => {
       }
       if (icon) outputTitleInner.prepend(icon)
     }
+    if (inputTitleInner) {
+      const icon = inputTitleInner.querySelector(".admonition-icon")
+      if (currentMode === "html") {
+        inputTitleInner.innerHTML = 'Input your <abbr class="small-caps">Html</abbr> code'
+      } else {
+        inputTitleInner.textContent = "Input"
+      }
+      if (icon) inputTitleInner.prepend(icon)
+    }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
 
@@ -217,9 +206,9 @@ document.addEventListener("nav", () => {
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Restore saved input or use example text for the current mode
+  // Restore saved input or use default text
   const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
-  input.value = savedInput ?? EXAMPLES[currentMode]
+  input.value = savedInput ?? DEFAULT_INPUT
 
   // Sync mode button active state with restored mode
   for (const b of modeButtons) {

@@ -36,9 +36,8 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-copy-btn")).toBeAttached()
   })
 
-  test("input is pre-filled with example text and output is non-empty", async ({ page }) => {
-    const inputValue = await page.locator("#punctilio-input").inputValue()
-    expect(inputValue.length).toBeGreaterThan(0)
+  test("input is pre-filled with 'Type here!' and output is non-empty", async ({ page }) => {
+    await expect(page.locator("#punctilio-input")).toHaveValue("Type here!")
 
     const outputHtml = await page.locator(OUTPUT_CONTENT).innerHTML()
     expect(outputHtml.length).toBeGreaterThan(0)
@@ -74,8 +73,12 @@ test.describe("Mode switching", () => {
 })
 
 test.describe("Diff highlighting", () => {
-  test("diff view shows insertions highlighted in green", async ({ page }) => {
-    // Default diff view should show diff-insert spans for transformed characters
+  test("diff view shows insertions highlighted in green for transformable text", async ({
+    page,
+  }) => {
+    const input = page.locator("#punctilio-input")
+    await input.fill('"Hello" (c) 2024')
+
     const diffInserts = page.locator(`${OUTPUT_CONTENT} .diff-insert`)
     await expect(diffInserts.first()).toBeAttached()
   })
@@ -124,6 +127,10 @@ test.describe("Live transform", () => {
 
 test.describe("Options panel", () => {
   test("changing punctuation style to 'none' disables smart quotes", async ({ page }) => {
+    // Fill with text containing quotes
+    await page.locator("#punctilio-input").fill('"Hello world"')
+    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote present
+
     // Expand the collapsed options admonition (Markdown-generated admonition)
     await page.locator("#punctilio-demo .admonition.abstract").click()
 
@@ -193,9 +200,8 @@ test.describe("SPA navigation", () => {
     await page.waitForURL("**/punctilio")
     await expect(page.locator("#punctilio-demo")).toBeVisible()
 
-    // Demo should be reinitialized with example text
-    const inputValue = await page.locator("#punctilio-input").inputValue()
-    expect(inputValue.length).toBeGreaterThan(0)
+    // Demo should be reinitialized with default text
+    await expect(page.locator("#punctilio-input")).toHaveValue("Type here!")
   })
 })
 
@@ -225,6 +231,15 @@ test.describe("Visual regression", () => {
       elementToScreenshot: page.locator("#punctilio-demo"),
     })
   })
+
+  test("Punctilio demo with options expanded (lostpixel)", async ({ page }, testInfo) => {
+    await page.locator("#punctilio-demo .admonition.abstract").click()
+    await page.locator("#opt-punctuation-style").waitFor({ state: "visible" })
+
+    await takeRegressionScreenshot(page, testInfo, "punctilio-demo-options-expanded", {
+      elementToScreenshot: page.locator("#punctilio-demo"),
+    })
+  })
 })
 
 test.describe("Clipboard button interaction", () => {
@@ -246,6 +261,126 @@ test.describe("Clipboard button interaction", () => {
     // Hover over the output wrapper to reveal the button
     await page.locator(".punctilio-output-wrapper").hover()
     await expect(copyBtn).toHaveCSS("opacity", "1")
+  })
+})
+
+test.describe("Admonition titles update per mode", () => {
+  test("output title says 'Text output' in plaintext mode", async ({ page }) => {
+    // Plaintext is the default mode
+    const outputAdmonition = page
+      .locator(OUTPUT_CONTENT)
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText("Text output")
+  })
+
+  test("output title says 'Markdown source output' in markdown mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    const outputAdmonition = page
+      .locator(OUTPUT_CONTENT)
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
+      "Markdown source output",
+    )
+  })
+
+  test("output title says 'Html source output' in HTML mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    const outputAdmonition = page
+      .locator(OUTPUT_CONTENT)
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
+      "Html source output",
+    )
+    await expect(outputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
+  })
+
+  test("input title says 'Input' in plaintext mode", async ({ page }) => {
+    const inputAdmonition = page
+      .locator("#punctilio-input")
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
+  })
+
+  test("input title changes to 'Input your Html code' in HTML mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    const inputAdmonition = page
+      .locator("#punctilio-input")
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(inputAdmonition.locator(".admonition-title-inner")).toContainText("Input your")
+    await expect(inputAdmonition.locator(".admonition-title-inner")).toContainText("code")
+    await expect(inputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
+  })
+
+  test("input title stays 'Input' in markdown mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    const inputAdmonition = page
+      .locator("#punctilio-input")
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
+  })
+
+  test("input title reverts to 'Input' when switching back from HTML mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
+    const inputAdmonition = page
+      .locator("#punctilio-input")
+      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+    await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
+  })
+})
+
+test.describe("Placeholder text per mode", () => {
+  for (const [mode, placeholder] of [
+    ["plaintext", "Input your text here"],
+    ["markdown", "Input your Markdown text here"],
+    ["html", "Input your HTML code here"],
+  ] as const) {
+    test(`placeholder is '${placeholder}' in ${mode} mode`, async ({ page }) => {
+      await page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`).click()
+      await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", placeholder)
+    })
+  }
+})
+
+test.describe("Input styling", () => {
+  test("input has monospace font", async ({ page }) => {
+    const input = page.locator("#punctilio-input")
+    await expect(input).toHaveCSS("font-family", /monospace/)
+  })
+})
+
+test.describe("Options panel labels", () => {
+  test("style options have colons after labels", async ({ page }) => {
+    // Expand the collapsed options admonition
+    await page.locator("#punctilio-demo .admonition.abstract").click()
+
+    // Check that the label text for select-based options includes a colon
+    const punctuationLabel = page.locator("label:has(#opt-punctuation-style)")
+    await expect(punctuationLabel).toContainText("Punctuation style:")
+
+    const dashLabel = page.locator("label:has(#opt-dash-style)")
+    await expect(dashLabel).toContainText("Dash style:")
+  })
+})
+
+test.describe("Output monospace styling", () => {
+  test("output has monospace class in markdown and html modes, not plaintext", async ({ page }) => {
+    const output = page.locator(OUTPUT_CONTENT)
+
+    // Plaintext: no monospace
+    await expect(output).not.toHaveClass(/monospace-output/)
+
+    // Markdown: monospace
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    await expect(output).toHaveClass(/monospace-output/)
+
+    // HTML: monospace
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    await expect(output).toHaveClass(/monospace-output/)
+
+    // Back to plaintext: no monospace
+    await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
+    await expect(output).not.toHaveClass(/monospace-output/)
   })
 })
 
