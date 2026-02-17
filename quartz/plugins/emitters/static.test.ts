@@ -1,7 +1,8 @@
 import { describe, it, expect } from "@jest/globals"
 
+import { simpleConstants } from "../../components/constants"
 import { type FilePath } from "../../util/path"
-import { isLocalFavicon, shouldCopyToRoot } from "./static"
+import { buildStaticScriptDefines, isLocalFavicon, shouldCopyToRoot } from "./static"
 
 describe("isLocalFavicon", () => {
   it.each([
@@ -35,5 +36,27 @@ describe("shouldCopyToRoot", () => {
     { file: "fonts/font.woff2", expected: false },
   ])("returns $expected for $file", ({ file, expected }) => {
     expect(shouldCopyToRoot(file as FilePath)).toBe(expected)
+  })
+})
+
+describe("buildStaticScriptDefines", () => {
+  it("maps identifiers to JSON-stringified constant values from constants.json", () => {
+    const defines = buildStaticScriptDefines()
+
+    expect(defines).toEqual({
+      SAVED_THEME_KEY: JSON.stringify(simpleConstants.savedThemeKey),
+      AUTOPLAY_STORAGE_KEY: JSON.stringify(simpleConstants.autoplayStorageKey),
+      INSTANT_SCROLL_RESTORE_KEY: JSON.stringify(simpleConstants.instantScrollRestoreKey),
+      DROPCAP_COLORS: JSON.stringify(simpleConstants.dropcapColors),
+    })
+  })
+
+  it("produces valid JSON string values for esbuild define", () => {
+    const defines = buildStaticScriptDefines()
+
+    // Each value should be a valid JSON-encoded string (double-quoted for esbuild)
+    for (const value of Object.values(defines)) {
+      expect(() => JSON.parse(value)).not.toThrow()
+    }
   })
 })

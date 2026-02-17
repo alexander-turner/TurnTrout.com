@@ -46,11 +46,9 @@ export const {
   instantScrollRestoreKey,
   cdnBaseUrl,
   popoverRemovalDelayMs,
+  dropcapColors: DROPCAP_COLORS,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
-
-// Dropcap color palette (must match detectInitialState.js and --dropcap-background-* in colors.scss)
-export const DROPCAP_COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
 
 // Unicode typography constants
 export const NBSP = "\u00A0"

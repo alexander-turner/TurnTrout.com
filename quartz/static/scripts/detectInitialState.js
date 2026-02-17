@@ -1,11 +1,6 @@
-// INLINE SCRIPT: Cannot import modules. The following constants are duplicated
-// from config/constants.json and must be kept in sync manually:
-//   "saved-theme"          → savedThemeKey
-//   "pond-video-autoplay"  → autoplayStorageKey
-// And from quartz/components/constants.ts:
-//   colors array           → DROPCAP_COLORS
+/* global SAVED_THEME_KEY, AUTOPLAY_STORAGE_KEY, DROPCAP_COLORS -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(() => {
-  const themeMode = localStorage.getItem("saved-theme") || "auto"
+  const themeMode = localStorage.getItem(SAVED_THEME_KEY) || "auto"
   document.documentElement.setAttribute("data-theme-mode", themeMode)
 
   // Determine the actual theme to apply
@@ -23,9 +18,9 @@
     `"${themeMode[0].toUpperCase()}${themeMode.slice(1)}"`,
   )
 
-  // 10% chance of a randomly colored dropcap (keep in sync with DROPCAP_COLORS in constants.ts)
+  // 10% chance of a randomly colored dropcap (keep in sync with --dropcap-background-* in colors.scss)
   // Re-rolls on every SPA navigation via the "nav" event listener below.
-  const colors = ["red", "orange", "yellow", "green", "blue", "purple", "pink"]
+  const colors = DROPCAP_COLORS
   function rollDropcapColor() {
     if (Math.random() < 0.1) {
       const color = colors[Math.floor(Math.random() * colors.length)]
@@ -41,7 +36,7 @@
   document.addEventListener("nav", rollDropcapColor)
 
   // Set video autoplay button state in CSS custom properties
-  const autoplayEnabled = localStorage.getItem("pond-video-autoplay") === "true" // Default to true
+  const autoplayEnabled = localStorage.getItem(AUTOPLAY_STORAGE_KEY) === "true" // Default to true
   document.documentElement.style.setProperty(
     "--video-play-display",
     autoplayEnabled ? "none" : "block",
