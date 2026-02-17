@@ -1,3 +1,5 @@
+import { savedThemeKey } from "../constants"
+
 export type Theme = "light" | "dark" | "auto"
 
 /* istanbul ignore next: Browser API, tested in darkmode.spec.ts */
@@ -38,14 +40,14 @@ function setThemeClassOnRoot(theme: Theme) {
  * @param theme - The theme state to apply
  */
 export function handleThemeUpdate(theme: Theme): void {
-  localStorage.setItem("saved-theme", theme)
+  localStorage.setItem(savedThemeKey, theme)
   setThemeClassOnRoot(theme)
   updateThemeLabel(theme)
 }
 
 /* istanbul ignore next: localStorage API, tested in darkmode.spec.ts */
 const getNextTheme = (): Theme => {
-  const currentTheme = localStorage.getItem("saved-theme") || "auto"
+  const currentTheme = localStorage.getItem(savedThemeKey) || "auto"
   let nextTheme: Theme
 
   switch (currentTheme) {
@@ -82,7 +84,7 @@ export const rotateTheme = () => {
  * - Manages theme label based on current theme
  */
 function setupDarkMode() {
-  const savedTheme = localStorage.getItem("saved-theme")
+  const savedTheme = localStorage.getItem(savedThemeKey)
   const theme = savedTheme || "auto"
   handleThemeUpdate(theme as Theme)
 
@@ -96,7 +98,7 @@ function setupDarkMode() {
    * @param e - MediaQueryList event containing the new preference
    */
   function doSystemPreference(e: MediaQueryListEvent): void {
-    const savedTheme = localStorage.getItem("saved-theme")
+    const savedTheme = localStorage.getItem(savedThemeKey)
     if (savedTheme === "auto") {
       const newTheme = e.matches ? "dark" : "light"
       document.documentElement.setAttribute("data-theme", newTheme)
@@ -108,7 +110,7 @@ function setupDarkMode() {
 
   document.addEventListener("nav", () => {
     // Update theme state after navigation
-    const currentTheme = localStorage.getItem("saved-theme") || "auto"
+    const currentTheme = localStorage.getItem(savedThemeKey) || "auto"
     setThemeClassOnRoot(currentTheme as Theme)
     updateThemeLabel(currentTheme as Theme)
   })

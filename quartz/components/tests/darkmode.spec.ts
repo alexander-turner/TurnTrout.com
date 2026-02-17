@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test"
 
+import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
 import { setTheme as utilsSetTheme } from "./visual_utils"
@@ -49,7 +50,7 @@ class DarkModeHelper {
   }
 
   async verifyStorage(expectedTheme: Theme): Promise<void> {
-    const storedTheme = await this.page.evaluate(() => localStorage.getItem("saved-theme"))
+    const storedTheme = await this.page.evaluate((key) => localStorage.getItem(key), savedThemeKey)
     expect(storedTheme).toBe(expectedTheme)
   }
 
@@ -168,10 +169,13 @@ test("No flash of unstyled content on page load", async ({ page }) => {
 
   for (const initialTheme of ["light", "dark", "auto"] as const) {
     // Set up initial conditions before loading page
-    await page.addInitScript((initialTheme: Theme) => {
-      localStorage.clear()
-      localStorage.setItem("saved-theme", initialTheme)
-    }, initialTheme)
+    await page.addInitScript(
+      ({ initialTheme, key }: { initialTheme: Theme; key: string }) => {
+        localStorage.clear()
+        localStorage.setItem(key, initialTheme)
+      },
+      { initialTheme, key: savedThemeKey },
+    )
     // eslint-disable-next-line playwright/no-conditional-in-test
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })

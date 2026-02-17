@@ -5,7 +5,7 @@ import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
 import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
-import { simpleConstants } from "../constants"
+import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 
@@ -156,7 +156,7 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
           const sanitizedSearchTok = escapeRegExp(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, '<span class="search-match">$&</span>')
+          return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
       return tok
@@ -182,7 +182,7 @@ export { escapeRegExp } from "../../util/escape"
  */
 export const createMatchSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
-  span.className = "search-match"
+  span.className = SEARCH_MATCH_CLASS
   span.textContent = text
   return span
 }
@@ -215,7 +215,7 @@ export const matchTextNodes = (node: Node, term: string) => {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement
     if (element.closest("#toc-content-mobile")) return
-    if (element.classList.contains("search-match")) return
+    if (element.classList.contains(SEARCH_MATCH_CLASS)) return
 
     Array.from(node.childNodes).forEach((child) => matchTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {

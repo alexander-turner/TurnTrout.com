@@ -1,5 +1,5 @@
 import { normalizeRelativeURLs } from "../../util/path"
-import { popoverPadding } from "../constants"
+import { popoverPadding, popoverRemovalDelayMs, CAN_TRIGGER_POPOVER_CLASS } from "../constants"
 import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "./content_renderer"
 
 // Regex to detect footnote forward links (not back arrows which use fnref)
@@ -45,8 +45,8 @@ function processFootnoteForPopover(
   modifyElementIds([clonedFootnote], "-popover")
 
   // Prevent meta-popovers: strip popover triggers from links inside footnote content
-  for (const link of clonedFootnote.querySelectorAll(".can-trigger-popover")) {
-    link.classList.remove("can-trigger-popover")
+  for (const link of clonedFootnote.querySelectorAll(`.${CAN_TRIGGER_POPOVER_CLASS}`)) {
+    link.classList.remove(CAN_TRIGGER_POPOVER_CLASS)
   }
 
   // Extract the content from the <li> wrapper and return as a fragment
@@ -279,7 +279,7 @@ export function attachPopoverEventListeners(
         popoverElement.remove()
         onRemove()
       }
-    }, 300)
+    }, popoverRemovalDelayMs)
   }
 
   const showPopover = () => {
