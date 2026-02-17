@@ -128,7 +128,7 @@ Figure: The four Catppuccin palettes.
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Light mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
@@ -146,7 +146,7 @@ Figure: The four Catppuccin palettes.
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
     <div class="centered">Dark mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
