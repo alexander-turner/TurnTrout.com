@@ -324,6 +324,7 @@ figure {
 
 .subfigure {
   margin: $base-margin;
+  min-width: 0; // Allow flex items to shrink below content's intrinsic width
 }
 
 figure,
