@@ -8,13 +8,13 @@ const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible
 async function spaNavigateToAbout(page: Page): Promise<void> {
   await page.evaluate(() => window.spaNavigate(new URL("/about", window.location.origin)))
   await page.waitForURL("**/about")
-  await page.waitForSelector('body[data-slug="about"]')
+  await expect(page.locator('body[data-slug="about"]')).toBeAttached()
 }
 
 async function goBackToTestPage(page: Page): Promise<void> {
   await page.goBack()
   await page.waitForURL("**/test-page")
-  await page.waitForSelector('body[data-slug="test-page"]')
+  await expect(page.locator('body[data-slug="test-page"]')).toBeAttached()
 }
 
 test.beforeEach(async ({ page }) => {

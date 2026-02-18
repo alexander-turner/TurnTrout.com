@@ -33,7 +33,16 @@
     }
   }
   rollDropcapColor()
-  document.addEventListener("nav", rollDropcapColor)
+  // Skip the first "nav" event (initial page load) since the IIFE already
+  // rolled above. Only re-roll on subsequent SPA navigations.
+  let isInitialNav = true
+  document.addEventListener("nav", () => {
+    if (isInitialNav) {
+      isInitialNav = false
+      return
+    }
+    rollDropcapColor()
+  })
 
   // Set video autoplay button state in CSS custom properties
   const autoplayEnabled = localStorage.getItem(AUTOPLAY_STORAGE_KEY) === "true" // Default to true

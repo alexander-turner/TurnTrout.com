@@ -2,7 +2,7 @@ import { type Locator, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
-import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
+import { minDesktopWidth } from "../../styles/variables"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
@@ -340,8 +340,15 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
-/** Open the search UI by clicking the search icon. */
+/** Open the search UI by clicking the search icon.
+ *  Waits for the search handlers to be fully initialized (onNav completes
+ *  its async getContentIndex() call) before clicking, by checking for the
+ *  dynamically-created #results-container element. */
 export async function openSearch(page: Page) {
+  // #results-container is created by onNav after the async getContentIndex()
+  // resolves and just before the click handlers are registered. Waiting for
+  // it ensures the search icon's click handler is ready.
+  await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
   await page.locator("#search-icon").click()
   await expect(page.locator("#search-container")).toHaveClass(/active/)
   await expect(page.locator("#search-bar")).toBeVisible()
