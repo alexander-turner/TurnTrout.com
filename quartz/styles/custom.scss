@@ -314,7 +314,7 @@ figure:has(> .subfigure) {
   flex-wrap: wrap;
 
   > figcaption {
-    flex-basis: 100%;
+    flex: 0 0 100%;
   }
 }
 
@@ -324,7 +324,6 @@ figure {
 
 .subfigure {
   margin: $base-margin;
-  min-width: 0; // Allow flex items to shrink below content's intrinsic width
 }
 
 figure,
