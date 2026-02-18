@@ -58,6 +58,8 @@ pnpm check          # Lint and type check
 
 ## Architecture
 
+Place any "magic numbers" or constants used in >1 file in `config/constants.json` (for static quantities) or `quartz/components/constants.ts` (for dynamically generated values).
+
 ### Quartz Plugin System (TypeScript)
 
 The build follows a three-stage pipeline: **Transform → Filter → Emit**

@@ -231,7 +231,7 @@ b,
 strong,
 .admonition-title-inner,
 dt {
-  text-shadow: 0.3px 0.3px;
+  text-shadow: $faux-bold-offset $faux-bold-offset;
   font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
 
   .right & {

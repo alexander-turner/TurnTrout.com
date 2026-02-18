@@ -2,7 +2,8 @@ import { type Locator, type TestInfo, expect } from "@playwright/test"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
-import { minDesktopWidth } from "../../styles/variables"
+import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
+import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
 /**
@@ -25,24 +26,27 @@ export async function isElementChecked(locator: Locator): Promise<boolean> {
 
 // skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
-  await page.evaluate((t) => {
-    localStorage.setItem("saved-theme", t)
+  await page.evaluate(
+    ({ t, key }) => {
+      localStorage.setItem(key, t)
 
-    // Set theme label content via CSS custom property (not textContent to avoid duplication)
-    const themeLabel = t.charAt(0).toUpperCase() + t.slice(1)
-    document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
+      // Set theme label content via CSS custom property (not textContent to avoid duplication)
+      const themeLabel = t.charAt(0).toUpperCase() + t.slice(1)
+      document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
 
-    const root = document.documentElement
-    root.setAttribute("data-theme-mode", t)
-    if (t === "auto") {
-      const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      root.setAttribute("data-theme", systemPreference)
-    } else {
-      root.setAttribute("data-theme", t)
-    }
-  }, theme)
+      const root = document.documentElement
+      root.setAttribute("data-theme-mode", t)
+      if (t === "auto") {
+        const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        root.setAttribute("data-theme", systemPreference)
+      } else {
+        root.setAttribute("data-theme", t)
+      }
+    },
+    { t: theme, key: savedThemeKey },
+  )
 
   // Wait a frame for theme to apply
   await page.evaluate(() => {

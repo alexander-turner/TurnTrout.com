@@ -8,7 +8,7 @@ import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { visit } from "unist-util-visit"
 
-import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
@@ -185,7 +185,7 @@ const addPngExtension = (path: string): string => {
 const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
   await Promise.all(
     pngPaths.map(async (pngPath) => {
-      const svgUrl = `https://assets.turntrout.com${pngPath.replace(".png", ".svg")}`
+      const svgUrl = `${cdnBaseUrl}${pngPath.replace(".png", ".svg")}`
       try {
         const response = await fetch(svgUrl)
         if (response.ok) {

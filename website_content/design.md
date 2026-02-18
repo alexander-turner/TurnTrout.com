@@ -468,7 +468,7 @@ Every time you navigate to a new page, there's a 10% chance to get a random drop
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
 <span class="dropcap" data-first-letter="H" style="--before-color: var(--dropcap-background-orange);">H</span>
-<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-yellow);">E</span>
+<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-gold);">E</span>
 <br/>
 <span class="dropcap" data-first-letter="P"  style="--before-color: var(--dropcap-background-green);">P</span>
 <span class="dropcap" data-first-letter="O"  style="--before-color: var(--dropcap-background-blue);">O</span>

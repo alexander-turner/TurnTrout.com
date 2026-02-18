@@ -106,7 +106,7 @@
 
     border: 1px solid var(--midground-faint);
     background-color: var(--background);
-    border-radius: 5px;
+    border-radius: $border-radius;
     box-shadow: 6px 6px 36px 0 rgb(0 0 0 / 25%);
     overflow: auto;
     white-space: normal;
@@ -215,7 +215,7 @@
 
 // The initial animation is more complicated and is handled via JS
 .popover-visible {
-  animation: dropin 0.3s ease;
+  animation: dropin $transition-duration-medium ease;
   animation-fill-mode: forwards;
-  animation-delay: 0.3s;
+  animation-delay: $transition-duration-medium;
 }
