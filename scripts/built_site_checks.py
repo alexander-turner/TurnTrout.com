@@ -742,11 +742,15 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
 
 def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all `.subfigure` elements are direct children of `<figure>`.
+    Check that all `.subfigure` elements have a `<figure>` ancestor.
 
     When the markdown parser breaks a `<figure>` structure (e.g. inside
     a definition list continuation), `.subfigure` divs can end up as
     orphaned elements outside any `<figure>`, breaking the flex layout.
+
+    Subfigures may be nested inside intermediate wrapper elements (e.g.
+    `<div role="img">` for accessibility), so this checks ancestors
+    rather than requiring a direct parent.
 
     Returns:
         list of strings describing orphaned subfigure elements
@@ -754,13 +758,11 @@ def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
     issues: list[str] = []
 
     for subfig in _tags_only(soup.find_all(class_="subfigure")):
-        parent = subfig.parent
-        if not isinstance(parent, Tag) or parent.name != "figure":
+        if not subfig.find_parent("figure"):
             tag_preview = str(subfig)[:120]
             _append_to_list(
                 issues,
-                f"Orphaned .subfigure (parent is <{parent.name if isinstance(parent, Tag) else 'non-tag'}>,"
-                f" expected <figure>): {tag_preview}",
+                f"Orphaned .subfigure (no <figure> ancestor): {tag_preview}",
             )
 
     return issues

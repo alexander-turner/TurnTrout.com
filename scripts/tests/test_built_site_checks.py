@@ -5758,21 +5758,29 @@ def test_find_duplicate_citations_multiple_duplicates():
         ),
         # Multiple subfigures inside <figure> (valid)
         (
-            '<figure><figcaption>Caption</figcaption>'
+            "<figure><figcaption>Caption</figcaption>"
             '<div class="subfigure"><img src="a.jpg"></div>'
             '<div class="subfigure"><img src="b.jpg"></div></figure>',
             [],
         ),
-        # Orphaned subfigure outside <figure> (invalid — parent is <div>)
+        # Subfigures inside wrapper div inside <figure> (valid — e.g.
+        # accessibility wrapper <div role="img">)
+        (
+            '<figure><div role="img" aria-label="description">'
+            '<div class="subfigure"><img src="a.jpg"></div>'
+            '<div class="subfigure"><img src="b.jpg"></div>'
+            "</div></figure>",
+            [],
+        ),
+        # Orphaned subfigure outside <figure> (invalid — no figure ancestor)
         (
             '<div><div class="subfigure"><img src="a.jpg"></div></div>',
-            ["Orphaned .subfigure (parent is <div>, expected <figure>):"],
+            ["Orphaned .subfigure (no <figure> ancestor):"],
         ),
-        # Orphaned subfigure at article top level (invalid — parent is <body>
-        # in html.parser)
+        # Orphaned subfigure at article top level (invalid)
         (
             '<div class="subfigure"><img src="a.jpg"></div>',
-            ["Orphaned .subfigure (parent is <"],
+            ["Orphaned .subfigure (no <figure> ancestor):"],
         ),
         # No subfigures at all (valid)
         ("<p>No subfigures here</p>", []),
