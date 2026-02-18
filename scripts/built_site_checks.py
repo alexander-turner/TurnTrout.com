@@ -742,12 +742,11 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
 
 def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all ``.subfigure`` elements are direct children of
-    ``<figure>``.
+    Check that all `.subfigure` elements are direct children of `<figure>`.
 
-    When the markdown parser breaks a ``<figure>`` structure (e.g. inside
-    a definition list continuation), ``.subfigure`` divs can end up as
-    orphaned elements outside any ``<figure>``, breaking the flex layout.
+    When the markdown parser breaks a `<figure>` structure (e.g. inside
+    a definition list continuation), `.subfigure` divs can end up as
+    orphaned elements outside any `<figure>`, breaking the flex layout.
 
     Returns:
         list of strings describing orphaned subfigure elements

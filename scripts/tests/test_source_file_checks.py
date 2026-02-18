@@ -2453,26 +2453,6 @@ tags: [test]
         ),
         # Properly closed iframe (valid)
         ('<iframe src="https://example.com"></iframe>', []),
-        # Self-closing div (invalid)
-        (
-            '<div class="test" />',
-            [
-                "Self-closing <div .../> at line 1"
-                " (use <div ...></div> instead)"
-            ],
-        ),
-        # Self-closing video (invalid)
-        (
-            "<video />",
-            [
-                "Self-closing <video .../> at line 1"
-                " (use <video ...></video> instead)"
-            ],
-        ),
-        # Self-closing img (valid — img IS a void element, not in the check)
-        ('<img src="test.jpg" />', []),
-        # Self-closing br (valid — br IS a void element)
-        ("<br />", []),
         # Multiple self-closing non-void elements
         (
             '<iframe src="a" />\n<div class="b" />',
@@ -2502,3 +2482,22 @@ def test_check_self_closing_non_void_elements(
 ) -> None:
     errors = source_file_checks.check_self_closing_non_void_elements(text)
     assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "tag", sorted(source_file_checks._NON_VOID_ELEMENTS)
+)
+def test_each_non_void_element_is_caught(tag: str) -> None:
+    """Every element in _NON_VOID_ELEMENTS should be flagged."""
+    text = f"<{tag} />"
+    errors = source_file_checks.check_self_closing_non_void_elements(text)
+    assert len(errors) == 1
+    assert tag in errors[0]
+
+
+@pytest.mark.parametrize("tag", ["img", "br", "hr", "input", "meta", "link"])
+def test_void_elements_are_allowed_self_closing(tag: str) -> None:
+    """Void elements should never be flagged."""
+    text = f"<{tag} />"
+    errors = source_file_checks.check_self_closing_non_void_elements(text)
+    assert errors == []
