@@ -115,7 +115,7 @@
     "lavender",
     "pink"
   ],
-  "colorDropcapProbability": 0.1,
+  "colorDropcapProbability": 0.06666666666666667,
   "specialDomainMappings": [
     {
       "pattern": "^.*transformer-circuits\\.pub",

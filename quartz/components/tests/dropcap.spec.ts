@@ -54,7 +54,7 @@ test.describe("Random dropcap color", () => {
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {
-    // First roll: colored (0.01 < probability → pick color), second roll on nav: no color (0.5 >= probability)
+    // IIFE roll: colored (0.01 < probability → pick red), SPA nav roll: no color (0.5 >= probability)
     await page.addInitScript(mockRandom, [0.01, 0.0, 0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 

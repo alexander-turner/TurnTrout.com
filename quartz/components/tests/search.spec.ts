@@ -18,10 +18,9 @@ test.beforeEach(async ({ page }) => {
   // Log any console errors
   page.on("pageerror", (err) => console.error(err))
 
-  // Navigate and wait for full initialization
-  await page.goto("http://localhost:8080/welcome", { waitUntil: "domcontentloaded" })
+  // Navigate and wait for full initialization (including scripts)
+  await page.goto("http://localhost:8080/welcome", { waitUntil: "load" })
 
-  // Wait for search to be fully initialized
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
 
