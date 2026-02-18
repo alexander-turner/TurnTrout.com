@@ -5746,3 +5746,49 @@ def test_find_duplicate_citations_multiple_duplicates():
     assert len(result) == 2
     assert any("Turner2024A" in issue for issue in result)
     assert any("Smith2023X" in issue and "3 files" in issue for issue in result)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Subfigures correctly inside <figure> (valid)
+        (
+            '<figure><div class="subfigure"><img src="a.jpg"></div></figure>',
+            [],
+        ),
+        # Multiple subfigures inside <figure> (valid)
+        (
+            "<figure><figcaption>Caption</figcaption>"
+            '<div class="subfigure"><img src="a.jpg"></div>'
+            '<div class="subfigure"><img src="b.jpg"></div></figure>',
+            [],
+        ),
+        # Subfigures inside wrapper div inside <figure> (valid — e.g.
+        # accessibility wrapper <div role="img">)
+        (
+            '<figure><div role="img" aria-label="description">'
+            '<div class="subfigure"><img src="a.jpg"></div>'
+            '<div class="subfigure"><img src="b.jpg"></div>'
+            "</div></figure>",
+            [],
+        ),
+        # Orphaned subfigure outside <figure> (invalid — no figure ancestor)
+        (
+            '<div><div class="subfigure"><img src="a.jpg"></div></div>',
+            ["Orphaned .subfigure (no <figure> ancestor):"],
+        ),
+        # Orphaned subfigure at article top level (invalid)
+        (
+            '<div class="subfigure"><img src="a.jpg"></div>',
+            ["Orphaned .subfigure (no <figure> ancestor):"],
+        ),
+        # No subfigures at all (valid)
+        ("<p>No subfigures here</p>", []),
+    ],
+)
+def test_check_orphaned_subfigures(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_orphaned_subfigures(soup)
+    assert len(result) == len(expected)
+    for issue, exp in zip(result, expected):
+        assert issue.startswith(exp)

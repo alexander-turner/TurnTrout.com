@@ -314,7 +314,7 @@ figure:has(> .subfigure) {
   flex-wrap: wrap;
 
   > figcaption {
-    flex-basis: 100%;
+    flex: 0 0 100%;
   }
 }
 

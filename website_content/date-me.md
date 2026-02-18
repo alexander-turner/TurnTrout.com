@@ -77,38 +77,37 @@ Dancing
 AI-fueled house parties
 : I like bringing a ton of my friends together in my 2BR apartment. To commemorate such an occasion, I personalize a name tag for each of them! The tag has their name and then a picture of them. Only, the picture is tailored to the theme of the party:
 
-  <figure>
-  <figcaption><b>The <em>gigachad</em> house party</b>: MidJourney v3 interpolating my image with gigachad's in order to create a "gigachad Alex" to go on the name tag.</figcaption>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/static/images/posts/alex-gigachad-side.avif" style="width: 218px; height: 30vh; object-fit: cover; object-position: 80%;" alt="Me smiling, bearing some resemblance to gigachad."/>
-  <figcaption>(a) Alex</figcaption>
-  </div>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/Attachments/gigachad.avif"     style="width: 218px; height: 30vh; object-fit: cover; object-position: top;" alt="The popular 'gigachad' meme image."/>
-  <figcaption>(b) Gigachad</figcaption>
-  </div>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/Attachments/GCAlex.avif"style="width: 218px; height: 30vh; object-fit: cover; object-position: top;" alt="A picture of me with my features exaggerated to resemble gigachad's."/>
-  <figcaption>(c) Gigachad Alex</figcaption>
-  </div>
-  </figure>
+<figure>
+<figcaption><b>The <em>gigachad</em> house party</b>: MidJourney v3 interpolating my image with gigachad's in order to create a "gigachad Alex" to go on the name tag.</figcaption>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/static/images/posts/alex-gigachad-side.avif" style="max-width: 218px; height: 30vh; object-fit: cover; object-position: 80%;" alt="Me smiling, bearing some resemblance to gigachad."/>
+<figcaption>(a) Alex</figcaption>
+</div>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/Attachments/gigachad.avif" style="max-width: 218px; height: 30vh; object-fit: cover; object-position: top;" alt="The popular 'gigachad' meme image."/>
+<figcaption>(b) Gigachad</figcaption>
+</div>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/Attachments/GCAlex.avif" style="max-width: 218px; height: 30vh; object-fit: cover; object-position: top;" alt="A picture of me with my features exaggerated to resemble gigachad's."/>
+<figcaption>(c) Gigachad Alex</figcaption>
+</div>
+</figure>
 
-  <figure>
-  <figcaption><b>The <em>house</em> house party</b>: Each of my friends has their own spirit and vibe! I made them houses which capture their <em>essences</em>.</figcaption>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/Attachments/rivendellHouse.avif" alt="An AI image of a house which is reminiscent of Rivendell."/>
-  <figcaption>(a) Tolkienesque</figcaption>
-  </div>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/Attachments/severeManor.avif" alt="A grim manor at night-time."/>
-  <figcaption>(b) Grimdark</figcaption>
-  </div>
-  <div class="subfigure">
-  <img src="https://assets.turntrout.com/Attachments/marioHouse.avif" alt="A Mario-esque house."/>
-  <figcaption>(c) Mario</figcaption>
-  </div>
-
-  </figure>
+<figure>
+<figcaption><b>The <em>house</em> house party</b>: Each of my friends has their own spirit and vibe! I made them houses which capture their <em>essences</em>.</figcaption>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/Attachments/rivendellHouse.avif" alt="An AI image of a house which is reminiscent of Rivendell."/>
+<figcaption>(a) Tolkienesque</figcaption>
+</div>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/Attachments/severeManor.avif" alt="A grim manor at night-time."/>
+<figcaption>(b) Grimdark</figcaption>
+</div>
+<div class="subfigure">
+<img src="https://assets.turntrout.com/Attachments/marioHouse.avif" alt="A Mario-esque house."/>
+<figcaption>(c) Mario</figcaption>
+</div>
+</figure>
 
 Design & art
 : I [designed this website](/design), for example!
@@ -171,4 +170,4 @@ OK, I've written enough! Get to know me if you want to know more. 🪿
 
 # Let's get in touch?
 
-<iframe title="Express interest in a date!" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2ARWY71R7B?f=fat_0NG2BKQ971N53#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800px" width="600px" />
+<iframe title="Express interest in a date!" src="https://dash.palform.app/fill/org_0NG2AE3H31YRM/form_0NG2ARWY71R7B?f=fat_0NG2BKQ971N53#ak=EA80023B7BCF4EB0A8A6518C17E25669550FDB9B" height="800px" width="600px"></iframe>
