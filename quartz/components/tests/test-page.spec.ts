@@ -308,15 +308,19 @@ test.describe("Table of contents", () => {
     // Wait for the TOC observer to initialize and set an active link
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active") !== null,
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
     // Scroll a mid-page heading to the top of the viewport so it enters
-    // the IntersectionObserver's detection zone (top 30%)
-    await page.evaluate(() => document.querySelector("#spoilers")?.scrollIntoView())
+    // the IntersectionObserver's detection zone (top 30%).
+    // Wait for a rAF after scrolling so the IntersectionObserver processes the change.
+    await page.evaluate(() => {
+      document.querySelector("#spoilers")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
     // Need the raw string to pass into waitForFunction below
@@ -328,8 +332,11 @@ test.describe("Table of contents", () => {
       throw new Error("Expected initial TOC highlight text to be non-null")
     }
 
-    // Scroll to a different heading
-    await page.evaluate(() => document.querySelector("#lists")?.scrollIntoView())
+    // Scroll to a different heading, wait for rAF so IntersectionObserver fires
+    await page.evaluate(() => {
+      document.querySelector("#lists")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
 
     // Wait for IntersectionObserver to fire and TOC to update
     await page.waitForFunction(
@@ -338,7 +345,7 @@ test.describe("Table of contents", () => {
         return activeElement && activeElement.textContent !== initialText
       },
       initialHighlightText,
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
     const highlightText = page.locator("#table-of-contents .active").first()

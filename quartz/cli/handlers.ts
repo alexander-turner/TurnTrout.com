@@ -423,8 +423,10 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       let replacedCss = manualCriticalCss
       const scssVars: Record<string, string> = generateScssRecord()
       // Fill in the SCSS variables since they are not in the CSS
+      // Handle both SCSS interpolation syntax #{$var} and bare $var references
       for (const [key, value] of Object.entries(scssVars)) {
-        replacedCss = replacedCss.replace(`$${key}`, value)
+        replacedCss = replacedCss.replaceAll(`#{$${key}}`, value)
+        replacedCss = replacedCss.replaceAll(`$${key}`, value)
       }
 
       cachedCriticalCSS = css + replacedCss
