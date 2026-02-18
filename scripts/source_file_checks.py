@@ -745,7 +745,8 @@ _SELF_CLOSING_NON_VOID_RE = re.compile(
 
 
 def check_self_closing_non_void_elements(text: str) -> List[str]:
-    """Check for self-closing syntax on non-void HTML elements.
+    """
+    Check for self-closing syntax on non-void HTML elements.
 
     Elements like `<iframe ... />` cause parsing bugs because the browser
     treats them as unclosed tags, swallowing subsequent content.  Only void

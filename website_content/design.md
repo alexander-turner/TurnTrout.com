@@ -374,7 +374,7 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 >
 > Subtitle: Click a line to see the translation
 >
-> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></div>
+> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls></audio></div>
 >
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 >

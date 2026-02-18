@@ -1,6 +1,5 @@
 import { describe, it, expect } from "@jest/globals"
 
-import { simpleConstants } from "../../components/constants"
 import { type FilePath } from "../../util/path"
 import { buildStaticScriptDefines, isLocalFavicon, shouldCopyToRoot } from "./static"
 
