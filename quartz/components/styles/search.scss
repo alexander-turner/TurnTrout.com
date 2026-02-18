@@ -131,12 +131,8 @@
         flex: 0 0 min(30%, $right-sidebar-width);
       }
 
-      @media all and (min-width: $mobile-breakpoint) {
+      @media all and (min-width: $tablet-breakpoint) {
         &[data-preview] {
-          & .result-card > p.preview {
-            display: none;
-          }
-
           & > div {
             &:first-child {
               border-right: 1px solid var(--midground-faint);
@@ -253,6 +249,35 @@
 
           & > p {
             margin-bottom: 0;
+          }
+
+          & .card-preview {
+            height: 6rem;
+            overflow: hidden;
+            pointer-events: none;
+            margin-top: $base-margin;
+            border-top: 1px solid var(--midground-faint);
+            padding-top: $base-margin;
+
+            // Fade in at the top (hides abrupt content start) and out at the bottom
+            mask-image: linear-gradient(
+              to bottom,
+              transparent 0%,
+              var(--foreground) 15%,
+              var(--foreground) 40%,
+              transparent 100%
+            );
+
+            // Hide on desktop where the side preview panel is used instead
+            @media all and (min-width: $tablet-breakpoint) {
+              display: none;
+            }
+
+            & .search-preview {
+              margin: 0 auto;
+              width: 100%;
+              font-size: 0.85em;
+            }
           }
         }
       }

@@ -12,7 +12,6 @@ import {
   isDesktopViewport,
   takeRegressionScreenshot,
   pauseMediaElements,
-  showingPreview,
   getH1Screenshots,
   getScreenshotName,
   wrapH1SectionsInSpans,
@@ -715,23 +714,6 @@ test.describe("pauseMediaElements", () => {
 
     expect(await notMedia.innerHTML()).toBe(initialHtml)
   })
-})
-
-test.describe("showingPreview", () => {
-  const viewports = [
-    { width: 1580, height: 800, expected: true }, // Desktop
-    { width: 1024, height: 768, expected: true }, // Tablet landscape (above breakpoint)
-    { width: 991, height: 768, expected: false }, // Tablet portrait (below breakpoint)
-    { width: 800, height: 600, expected: false }, // Smaller Tablet
-    { width: 480, height: 800, expected: false }, // Mobile
-  ]
-
-  for (const { width, height, expected } of viewports) {
-    test(`returns ${expected} for viewport ${width}x${height}`, async ({ page }) => {
-      await page.setViewportSize({ width, height })
-      expect(showingPreview(page)).toBe(expected)
-    })
-  }
 })
 
 test.describe("getAllWithWait", () => {

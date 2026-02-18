@@ -43,11 +43,6 @@ test.beforeEach(async ({ page }) => {
 
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
-  // Dispatch the 'nav' event to initialize clipboard functionality
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("nav"))
-  })
-
   // Hide all video and audio controls
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
@@ -310,27 +305,44 @@ test.describe("Table of contents", () => {
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 
-    const headerLocator = page.locator("h1").last()
-    await headerLocator.scrollIntoViewIfNeeded()
-    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    await expect(tocHighlightLocator).toBeVisible()
+    // Wait for the TOC observer to initialize and set an active link
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active") !== null,
+      { timeout: 10_000 },
+    )
 
-    const initialHighlightText = await tocHighlightLocator.textContent()
-    expect(initialHighlightText).not.toBeNull()
+    // Scroll a mid-page heading to the top of the viewport so it enters
+    // the IntersectionObserver's detection zone (top 30%)
+    await page.evaluate(() => document.querySelector("#spoilers")?.scrollIntoView())
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
+      { timeout: 10_000 },
+    )
 
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
+    // Need the raw string to pass into waitForFunction below
+    const initialHighlightText = await page
+      .locator("#table-of-contents .active")
+      .first()
+      .textContent()
+    if (!initialHighlightText) {
+      throw new Error("Expected initial TOC highlight text to be non-null")
+    }
 
-    // Wait for scroll event to fire and TOC to update
-    await page.waitForFunction((initialText) => {
-      const activeElement = document.querySelector("#table-of-contents .active")
-      return activeElement && activeElement.textContent !== initialText
-    }, initialHighlightText)
+    // Scroll to a different heading
+    await page.evaluate(() => document.querySelector("#lists")?.scrollIntoView())
 
-    const highlightText = await tocHighlightLocator.textContent()
-    expect(highlightText).not.toBeNull()
-    // skipcq: JS-0339
-    await expect(tocHighlightLocator).not.toHaveText(initialHighlightText!)
+    // Wait for IntersectionObserver to fire and TOC to update
+    await page.waitForFunction(
+      (initialText) => {
+        const activeElement = document.querySelector("#table-of-contents .active")
+        return activeElement && activeElement.textContent !== initialText
+      },
+      initialHighlightText,
+      { timeout: 10_000 },
+    )
+
+    const highlightText = page.locator("#table-of-contents .active").first()
+    await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 })
 

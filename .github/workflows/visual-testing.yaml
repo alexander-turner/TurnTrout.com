@@ -17,6 +17,13 @@ on:
   pull_request:
     branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
   merge_group:
 
 permissions:

@@ -100,8 +100,13 @@ Customize these commands based on your project's tooling.
 ### Step 5: Push and Create the Pull Request
 
 1. Push the branch: `git push -u origin HEAD`
+2. **If Playwright/visual tests are relevant** (e.g., the PR modifies or fixes Playwright specs, changes UI behavior, or fixes interaction bugs), add the `ci:full-tests` label so the full Playwright suite runs on the PR:
 
-2. Create the PR with `gh pr create`:
+   ```bash
+   gh pr edit --add-label "ci:full-tests"
+   ```
+
+3. Create the PR with `gh pr create`:
 
 ```bash
 gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'

@@ -6,9 +6,9 @@ import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
-  showingPreview,
   getAllWithWait,
   isElementChecked,
+  openSearch,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -247,13 +247,13 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Open search and search for a term that will have internal links
-  await page.keyboard.press("/")
+  await openSearch(page)
   const searchBar = page.locator("#search-bar")
   await searchBar.fill("Test page")
 
   // Wait for search results and preview
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  await expect(previewContainer).toBeVisible()
 
   // Find an internal link in the preview and hover over it
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")

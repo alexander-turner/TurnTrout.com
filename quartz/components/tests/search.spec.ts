@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test"
+import { type Page, type Locator } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
@@ -9,9 +9,9 @@ import {
   takeRegressionScreenshot,
   setTheme,
   search,
-  showingPreview,
   getAllWithWait,
   isElementChecked,
+  openSearch,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -29,10 +29,39 @@ test.beforeEach(async ({ page }) => {
   const searchContainer = page.locator("#search-container")
   await expect(searchContainer).not.toHaveClass(/active/)
 
-  await page.keyboard.press("/")
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(page.locator("#search-bar")).toBeVisible()
+  await openSearch(page)
 })
+
+function isMobileViewport(page: Page): boolean {
+  return (page.viewportSize()?.width ?? 0) <= tabletBreakpoint
+}
+
+function getPreviewLocator(page: Page): Locator {
+  if (isMobileViewport(page)) {
+    return page.locator(".result-card.focus .card-preview").first()
+  }
+  return page.locator("#preview-container")
+}
+
+/** Wait for the preview article content to be loaded */
+async function waitForPreviewArticle(page: Page): Promise<Locator> {
+  const preview = getPreviewLocator(page)
+  const article = preview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+  return preview
+}
+
+/**
+ * Navigate by clicking the preview (desktop) or the focused result card (mobile).
+ * On mobile, the card preview has pointer-events: none, so we click the card directly.
+ */
+async function clickPreviewToNavigate(page: Page): Promise<void> {
+  if (isMobileViewport(page)) {
+    await page.locator(".result-card.focus").click()
+  } else {
+    await page.locator("#preview-container").click()
+  }
+}
 
 async function closeSearch(page: Page) {
   const searchContainer = page.locator("#search-container")
@@ -74,8 +103,6 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
 
@@ -91,12 +118,8 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   const secondResult = resultCards.nth(1)
   await expect(secondResult).toHaveClass(/focus/)
 
-  const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible()
-
-  // Should have children -- means there's content
-  await expect(previewContainer.first()).toBeAttached()
-  await expect(previewContainer.first()).toBeVisible()
+  const previewContainer = await waitForPreviewArticle(page)
+  await expect(previewContainer).toBeAttached()
 
   await page.waitForLoadState("load")
   await takeRegressionScreenshot(page, testInfo, "search-steering", {
@@ -161,7 +184,8 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
+  await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
 
 test("Search placeholder changes based on viewport", async ({ page }) => {
@@ -185,18 +209,15 @@ test("matched search terms appear in results", async ({ page }) => {
 })
 
 test("search matches in headers have correct color styling", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Steering")
 
-  const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible()
+  const previewContainer = await waitForPreviewArticle(page)
 
   // Find a search match within a header element
   const headerMatch = previewContainer
     .locator("h1 .search-match, h2 .search-match, h3 .search-match")
     .first()
-  await expect(headerMatch).toBeVisible()
+  await expect(headerMatch).toBeAttached()
 
   // Verify the match has the green color applied, not the default foreground color
   const { matchColor, foregroundColor } = await headerMatch.evaluate((el) => {
@@ -246,16 +267,14 @@ test("Search results work for a single character", async ({ page }) => {
 })
 
 test("Preview element persists after closing and reopening search", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Steering")
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = getPreviewLocator(page)
   const previewArticle = previewContainer.locator("article.search-preview")
   await expect(previewArticle).toBeAttached()
 
   // Close and reopen search
   await page.keyboard.press("Escape")
-  await page.keyboard.press("/")
+  await openSearch(page)
 
   // Search again and trigger preview
   await search(page, "Steering")
@@ -274,9 +293,8 @@ test.describe("Search accuracy", () => {
     test(`Search results prioritize full term matches for ${term}`, async ({ page }) => {
       await search(page, term)
 
-      const previewContainer = page.locator("#preview-container")
-      const firstResult = previewContainer.first()
-      await expect(firstResult).toContainText(term)
+      const preview = await waitForPreviewArticle(page)
+      await expect(preview).toContainText(term)
     })
   })
 
@@ -298,14 +316,14 @@ test.describe("Search accuracy", () => {
   const previewTerms = ["Shrek", "AI presidents", "virus", "Emoji"]
   previewTerms.forEach((term) => {
     test(`Term ${term} is previewed in the viewport`, async ({ page }) => {
-      test.skip(!showingPreview(page))
       await search(page, term)
 
-      const previewContent = page.locator("#preview-container > article")
-      await expect(previewContent).toBeVisible()
+      const preview = await waitForPreviewArticle(page)
+      const previewArticle = preview.locator("article.search-preview")
+      await expect(previewArticle).toBeAttached()
 
       // Get first matched match
-      const matchedMatches = previewContent.locator(`span.search-match:text("${term}")`).first()
+      const matchedMatches = previewArticle.locator(`span.search-match:text("${term}")`).first()
       await expect(matchedMatches).toBeInViewport()
     })
   })
@@ -315,8 +333,8 @@ test.describe("Search accuracy", () => {
   }) => {
     await search(page, "date-me")
 
-    const firstResult = page.locator("#preview-container").first()
-    await expect(firstResult).toContainText("wife")
+    const preview = await waitForPreviewArticle(page)
+    await expect(preview).toContainText("wife")
   })
 
   test("Nothing shows up for nonsense search terms", async ({ page }) => {
@@ -328,25 +346,28 @@ test.describe("Search accuracy", () => {
   })
 
   test("AI presidents doesn't use dropcap", async ({ page }) => {
-    test.skip(!showingPreview(page))
+    // data-use-dropcap is only set by the desktop PreviewManager
+    test.skip(isMobileViewport(page), "Dropcap attribute is desktop-only")
     await search(page, "AI presidents")
 
-    const previewElement = page.locator("#preview-container > article")
-    await expect(previewElement).toHaveAttribute("data-use-dropcap", "false")
+    const previewArticle = page.locator("#preview-container > article.search-preview")
+    await expect(previewArticle).toHaveAttribute("data-use-dropcap", "false")
   })
 
   test("Dropcap attribute is true for 'test' search results", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Dropcap attribute is desktop-only")
     await search(page, "test")
 
-    const previewElement = page.locator("#preview-container > article")
-    await expect(previewElement).toHaveAttribute("data-use-dropcap", "true")
+    const previewArticle = page.locator("#preview-container > article.search-preview")
+    await expect(previewArticle).toHaveAttribute("data-use-dropcap", "true")
   })
 })
 
 test("Search preview footnote backref has no underline", async ({ page }) => {
   await search(page, "test")
 
-  const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
+  const preview = await waitForPreviewArticle(page)
+  const footnoteLink = preview.locator("a[data-footnote-backref]").first()
   await expect(footnoteLink).toHaveCSS("text-decoration-line", "none")
 })
 
@@ -407,15 +428,13 @@ test("Search matching title text stays at top even with body matches", async ({ 
 })
 
 test("Search URL updates as we select different results", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   const initialUrl = page.url()
   await search(page, "Shrek")
-  const previewContainer = page.locator("#preview-container")
 
-  const firstResult = page.locator(".result-card").first()
-  await firstResult.hover()
-  await previewContainer.click()
+  // Verify preview content loads for the first result
+  await waitForPreviewArticle(page)
+
+  await clickPreviewToNavigate(page)
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
@@ -428,9 +447,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.locator("#search-icon").click()
   await search(page, "Shrek")
 
-  const secondResult = page.locator(".result-card").nth(1)
-  await secondResult.hover()
-  await previewContainer.click()
+  // Navigate to the second result
+  await page.keyboard.press("ArrowDown")
+  await waitForPreviewArticle(page)
+  await clickPreviewToNavigate(page)
 
   const urlsSoFar = new Set([initialUrl, firstResultUrl])
   await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
@@ -438,19 +458,15 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Checkboxes")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
     elementToScreenshot: previewContainer,
   })
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   const baseSelector = "h1 + ol #checkbox-0"
@@ -462,20 +478,19 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
   const checkedAfterClicked = await isElementChecked(checkboxAfterHeader)
   expect(checkedAfterClicked).toBe(true)
 
-  await page.keyboard.press("/")
+  await openSearch(page)
   await search(page, "Checkboxes")
 
-  const previewCheckbox = page.locator(`#preview-container ${baseSelector}`).first()
+  const preview = await waitForPreviewArticle(page)
+  const previewCheckbox = preview.locator(baseSelector).first()
   const previewBoxIsChecked = await isElementChecked(previewCheckbox)
   expect(previewBoxIsChecked).toBe(true)
 })
 
 test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Emoji examples")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   const emojiHeader = previewContainer.locator("#emoji-examples").first()
   await expect(emojiHeader).toBeAttached()
   await emojiHeader.scrollIntoViewIfNeeded()
@@ -487,12 +502,11 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
 })
 
 test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Testing site")
   await page.waitForLoadState("load")
 
-  const footnoteLink = page.locator("#preview-container a[data-footnote-backref]").first()
+  const preview = await waitForPreviewArticle(page)
+  const footnoteLink = preview.locator("a[data-footnote-backref]").first()
   await footnoteLink.scrollIntoViewIfNeeded()
   await expect(footnoteLink).toContainText("⤴")
   await expect(footnoteLink).toBeVisible()
@@ -505,29 +519,26 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
 test.describe("Image's mix-blend-mode attribute", () => {
   test.beforeEach(async ({ page }) => {
     await search(page, "Testing site")
+    await waitForPreviewArticle(page)
   })
 
   test("is multiply in light mode", async ({ page }) => {
-    const image = page.locator("#preview-container img").first()
+    const image = getPreviewLocator(page).locator("img").first()
     await expect(image).toHaveCSS("mix-blend-mode", "multiply")
   })
 
   test("is normal in dark mode", async ({ page }) => {
     await setTheme(page, "dark")
-    const image = page.locator("#preview-container img").first()
+    const image = getPreviewLocator(page).locator("img").first()
     await expect(image).toHaveCSS("mix-blend-mode", "normal")
   })
 })
 
 test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
-  test.skip(!showingPreview(page))
   await search(page, "Testing site")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   await expect(previewContainer).toBeVisible()
-  // Ensures the content loaded
-  const previewInner = previewContainer.locator("article.search-preview")
-  await expect(previewInner).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "search-testing-site-features", {
     elementToScreenshot: previewContainer,
@@ -535,13 +546,12 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
 })
 
 test("Search preview shows after bad entry", async ({ page }) => {
-  test.skip(!showingPreview(page))
   await search(page, "zzzzzz")
   await search(page, "Testing site")
   await search(page, "zzzzzz")
   await search(page, "Testing site")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   await expect(previewContainer).toBeVisible()
 
   // If preview fails, it'll have no children
@@ -550,28 +560,24 @@ test("Search preview shows after bad entry", async ({ page }) => {
 })
 
 test("Search preview shows after searching, closing, and reopening", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
-  const previewContainer = page.locator("#preview-container")
-
   await search(page, "Testing site")
+  const previewContainer = getPreviewLocator(page)
   await expect(previewContainer).toBeVisible()
 
   await page.keyboard.press("Escape")
   await expect(previewContainer).toBeHidden()
 
-  await page.keyboard.press("/")
+  await openSearch(page)
   await search(page, "Shrek")
-  await expect(previewContainer).toBeVisible()
+  await expect(getPreviewLocator(page)).toBeVisible()
 })
 
 test("Show search preview, search invalid, then show again", async ({ page }) => {
-  test.skip(!showingPreview(page))
   await search(page, "Testing site")
   await search(page, "zzzzzz")
   await search(page, "Testing site")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   await expect(previewContainer).toBeVisible()
 
   // If preview fails, it'll have no children
@@ -582,11 +588,10 @@ test("Show search preview, search invalid, then show again", async ({ page }) =>
 test("The pond dropcaps, search preview visual regression test (lostpixel)", async ({
   page,
 }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Testing site")
 
-  const searchPondDropcaps = page.locator("#the-pond-dropcaps")
+  const preview = await waitForPreviewArticle(page)
+  const searchPondDropcaps = preview.locator("#the-pond-dropcaps")
   await expect(searchPondDropcaps).toBeAttached()
   await searchPondDropcaps.scrollIntoViewIfNeeded()
 
@@ -598,11 +603,6 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
 test("Preview container click navigates to the correct page and scrolls to the first match", async ({
   page,
 }) => {
-  test.skip(!showingPreview(page))
-
-  // Set viewport to desktop size to ensure preview is visible
-  await page.setViewportSize({ width: tabletBreakpoint + 100, height: 800 })
-
   await search(page, "Shrek")
 
   // Get the URL of the first result for comparison
@@ -611,8 +611,9 @@ test("Preview container click navigates to the correct page and scrolls to the f
   const expectedUrl = await firstResult.getAttribute("href")
   expect(expectedUrl).not.toBeNull()
 
-  // Navigate to the page
-  await page.locator("#preview-container").click()
+  // Wait for preview content to load, then navigate
+  await waitForPreviewArticle(page)
+  await clickPreviewToNavigate(page)
   await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
 
   // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
@@ -623,12 +624,9 @@ test("Preview container click navigates to the correct page and scrolls to the f
 })
 
 test("Search preview shows multiple highlighted terms", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "test")
 
-  const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible()
+  const previewContainer = await waitForPreviewArticle(page)
 
   // Check that multiple matches are highlighted
   const matches = previewContainer.locator(".search-match")
@@ -637,14 +635,13 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 })
 
 test("Search matches in preview do not have fade animation", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "test")
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  const previewMatch = page.locator("#preview-container .search-match").first()
-  await expect(previewMatch).toBeVisible()
+  const preview = await waitForPreviewArticle(page)
+  const previewMatch = preview.locator(".search-match").first()
+  await expect(previewMatch).toBeAttached()
 
   const previewAnimation = await previewMatch.evaluate((el) => {
     const styles = window.getComputedStyle(el)
@@ -673,14 +670,13 @@ test("Search matches on navigated page have fade animation", async ({ page }) =>
 })
 
 test("Navigated page properly orients the first match in viewport", async ({ page }) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "Shrek")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  await page.locator("#preview-container").click()
+  await waitForPreviewArticle(page)
+  await clickPreviewToNavigate(page)
   await page.waitForLoadState("load")
 
   const firstMatch = page.locator("article .search-match").first()
@@ -697,7 +693,11 @@ test("Navigated page properly orients the first match in viewport", async ({ pag
 })
 
 test("Result card matching stays synchronized with preview", async ({ page }) => {
-  test.skip(!showingPreview(page))
+  // This test uses hover() for mouse interaction, which requires a desktop viewport
+  test.skip(
+    (page.viewportSize()?.width ?? 0) <= tabletBreakpoint,
+    "Requires hover for mouse interaction",
+  )
 
   await search(page, "test")
 
@@ -711,16 +711,20 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   await expect(secondResult).toHaveClass(/focus/)
   await expect(firstResult).not.toHaveClass(/focus/)
 
-  // Check mouse interaction
+  // Check mouse interaction — move the mouse away first so the mouseenter
+  // event fires reliably when hovering the third result.
   const thirdResult = page.locator(".result-card").nth(2)
   await expect(thirdResult).not.toHaveClass(/focus/)
+  await page.mouse.move(0, 0)
 
   // Wait for mouse lock to expire after keyboard navigation
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(mouseFocusDelay + 50)
+  await page.waitForTimeout(mouseFocusDelay * 3)
 
-  await thirdResult.hover()
-  await expect(thirdResult).toHaveClass(/focus/)
+  await expect(async () => {
+    await thirdResult.hover()
+    await expect(thirdResult).toHaveClass(/focus/)
+  }).toPass({ timeout: 5_000 })
   await expect(secondResult).not.toHaveClass(/focus/)
 })
 
@@ -754,15 +758,13 @@ test("should not select a search result on initial render, even if the mouse is 
 test("Footnote table displays within boundaries in search preview (lostpixel)", async ({
   page,
 }, testInfo) => {
-  test.skip(!showingPreview(page))
-
   await search(page, "test page")
 
-  const previewContainer = page.locator("#preview-container")
+  const previewContainer = await waitForPreviewArticle(page)
   await expect(previewContainer).toBeVisible()
 
   const tableFootnote = previewContainer.locator("ol #user-content-fn-table")
-  await expect(tableFootnote).toBeVisible()
+  await expect(tableFootnote).toBeAttached()
   await tableFootnote.scrollIntoViewIfNeeded()
 
   await takeRegressionScreenshot(page, testInfo, "search-preview-footnote-table", {
@@ -827,8 +829,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   })
 
   // Open search - this triggers index initialization
-  await page.keyboard.press("/")
-  await expect(page.locator("#search-container")).toHaveClass(/active/)
+  await openSearch(page)
 
   // Type immediately without waiting - before the fix, this would be ignored
   // because the search bar was disabled during index loading
@@ -838,4 +839,18 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
 
   // The text should appear in the search bar even while loading
   await expect(searchBar).toHaveValue(testText)
+})
+
+test("Mobile search results show card preview snippets", async ({ page }) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+  await search(page, "Steering")
+
+  const firstResult = page.locator(".result-card").first()
+  const cardPreview = firstResult.locator(".card-preview")
+  await expect(cardPreview).toBeAttached()
+
+  // Preview content loads asynchronously
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty()
 })
