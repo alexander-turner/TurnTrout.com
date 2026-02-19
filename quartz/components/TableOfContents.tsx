@@ -305,7 +305,7 @@ document.addEventListener('nav', function() {
 
   // Runs synchronously — the nav event fires from a defer script so the DOM
   // is fully parsed. Avoid rAF here: it doesn't reliably fire in headless CI.
-  const allSections = document.querySelectorAll("#center-content h1, #center-content h2");
+  const allSections = document.querySelectorAll("#center-content article h1, #center-content article h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
   // Filter sections to only those with IDs

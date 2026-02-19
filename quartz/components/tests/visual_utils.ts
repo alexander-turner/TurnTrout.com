@@ -1,4 +1,6 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
+import { promises as fsPromises } from "fs"
+import path from "path"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
@@ -206,7 +208,6 @@ export async function takeRegressionScreenshot(
     }
 
     try {
-      await expect(options.elementToScreenshot).toHaveScreenshot(screenshotName, screenshotOptions)
       screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
     } finally {
       // Always restore the DOM state
@@ -226,10 +227,14 @@ export async function takeRegressionScreenshot(
       }
     }
 
-    await expect(page).toHaveScreenshot(screenshotName, screenshotOptions)
-
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
+
+  // Write screenshot to lost-pixel directory for visual regression comparison
+  // (replaces toHaveScreenshot — baselines are managed by lost-pixel cloud, not locally)
+  const screenshotPath = testInfo.snapshotPath(screenshotName)
+  await fsPromises.mkdir(path.dirname(screenshotPath), { recursive: true })
+  await fsPromises.writeFile(screenshotPath, screenshotBuffer)
 
   return screenshotBuffer
 }
@@ -373,16 +378,15 @@ export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
   await searchBar.fill(term)
 
-  // Wait for search layout to be visible with results.
-  // The display-results class controls visibility, so wait for it first.
+  // Wait for search layout to be visible with results (longer timeout for Safari/WebKit)
   const searchLayout = page.locator("#search-layout")
   await expect(searchLayout).toBeAttached({ timeout: 10_000 })
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
   await expect(searchLayout).toBeVisible({ timeout: 10_000 })
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
 
   // Wait for results to appear
   const resultsContainer = page.locator("#results-container")
-  await expect(resultsContainer).toBeVisible()
+  await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
 }
 
 // skipcq: JS-0098

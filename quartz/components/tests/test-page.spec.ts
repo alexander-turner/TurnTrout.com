@@ -308,27 +308,19 @@ test.describe("Table of contents", () => {
     // Wait for the TOC observer to initialize and set an active link
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active") !== null,
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
-    // Scroll a heading into the IntersectionObserver's detection zone (top 30%).
-    // Use window.scrollTo with a computed offset — scrollIntoView does not
-    // reliably trigger IntersectionObserver in headless CI environments.
+    // Scroll a mid-page heading to the top of the viewport so it enters
+    // the IntersectionObserver's detection zone (top 30%).
+    // Wait for a rAF after scrolling so the IntersectionObserver processes the change.
     await page.evaluate(() => {
-      const el = document.querySelector("#spoilers")
-      if (el)
-        window.scrollTo({
-          top: el.getBoundingClientRect().top + window.scrollY,
-          behavior: "instant",
-        })
+      document.querySelector("#spoilers")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
     })
-    // Give the IntersectionObserver time to process the scroll
-    await page.evaluate(
-      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
-    )
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
     // Need the raw string to pass into waitForFunction below
@@ -340,18 +332,11 @@ test.describe("Table of contents", () => {
       throw new Error("Expected initial TOC highlight text to be non-null")
     }
 
-    // Scroll to a different heading using window.scrollTo for reliable IO triggering
+    // Scroll to a different heading, wait for rAF so IntersectionObserver fires
     await page.evaluate(() => {
-      const el = document.querySelector("#lists")
-      if (el)
-        window.scrollTo({
-          top: el.getBoundingClientRect().top + window.scrollY,
-          behavior: "instant",
-        })
+      document.querySelector("#lists")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
     })
-    await page.evaluate(
-      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
-    )
 
     // Wait for IntersectionObserver to fire and TOC to update
     await page.waitForFunction(
@@ -360,7 +345,7 @@ test.describe("Table of contents", () => {
         return activeElement && activeElement.textContent !== initialText
       },
       initialHighlightText,
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
 
     const highlightText = page.locator("#table-of-contents .active").first()

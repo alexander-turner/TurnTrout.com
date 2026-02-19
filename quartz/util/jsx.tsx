@@ -26,10 +26,9 @@ export function htmlToJsx(fp: FilePath, tree: Node): JSX.Element | undefined {
       }
       tableCounter++
       return (
-        // skipcq: JS-0762 -- tabIndex on scrollable region is intentional for keyboard accessibility
         <div
           className="table-container"
-          tabIndex={0}
+          tabIndex={0} // skipcq: JS-0762 -- scrollable region needs keyboard accessibility
           role="region"
           aria-label={`Scrollable table ${tableCounter}`}
         >

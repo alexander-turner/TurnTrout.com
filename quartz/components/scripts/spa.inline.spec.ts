@@ -403,7 +403,10 @@ test.describe("Instant Scroll Restoration", () => {
       .poll(() => consoleMessages.length, { message: "waiting for monitoring to start" })
       .toBeGreaterThan(0)
 
+    // Dispatch a real user interaction event so the scroll handler recognizes
+    // it as user-initiated (the code tracks wheel/touch/pointer/key events).
     await page.evaluate(() => {
+      window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
       window.scrollBy(0, 100)
     })
 

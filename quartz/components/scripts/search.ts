@@ -884,6 +884,7 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
   cardPreview.classList.add("card-preview")
   card.appendChild(cardPreview)
 
+  // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
   void fetchContent(slug).then(({ content: contentElements }) => {
     if (!contentElements) return
     const article = document.createElement("article")
