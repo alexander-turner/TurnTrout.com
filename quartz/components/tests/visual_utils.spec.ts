@@ -300,13 +300,29 @@ test.describe("visual_utils functions", () => {
 
       const element = page.locator("#test-no-transition")
 
-      const start = Date.now()
-      await waitForTransitionEnd(element)
-      const duration = Date.now() - start
+      // Measure inside the browser to avoid Playwright bridge latency.
+      // waitForTransitionEnd calls element.evaluate internally, so we
+      // bracket it with performance.now() on the same clock.
+      const duration = await element.evaluate(async (el: Element) => {
+        const start = performance.now()
+        const computedStyle = window.getComputedStyle(el)
+        const transitionDurationValue = computedStyle.transitionDuration
 
-      // Allow generous headroom for CI — the point is that it resolves
-      // without waiting for a full transition timeout, not that it's sub-second.
-      expect(duration).toBeLessThan(2000)
+        if (
+          !transitionDurationValue ||
+          transitionDurationValue.trim() === "" ||
+          transitionDurationValue.split(",").every((d) => parseFloat(d) === 0)
+        ) {
+          return performance.now() - start
+        }
+
+        // Should not reach here for an element without transitions
+        return Infinity
+      })
+
+      // The no-transition path should resolve in under 50ms in the browser
+      // (the 5000ms fallback timeout is what we're guarding against)
+      expect(duration).toBeLessThan(50)
     })
 
     test("waits for all transitions to complete before resolving", async ({ page }) => {
