@@ -1,9 +1,9 @@
-"""Strip [!quote] callout blocks from Markdown files for linting
-preprocessing.
+"""
+Strip [!quote] callout blocks from Markdown files for linting preprocessing.
 
-Creates temporary copies of Markdown files with quote callout blocks
-removed, so that linters (vale, spellcheck) don't flag errors in
-quoted text from external sources.
+Creates temporary copies of Markdown files with quote callout blocks removed, so
+that linters (vale, spellcheck) don't flag errors in quoted text from external
+sources.
 """
 
 import argparse
@@ -24,7 +24,8 @@ _QUOTE_CALLOUT_RE = re.compile(
 
 
 def get_quote_level(line: str) -> int:
-    """Count the blockquote nesting level of a line.
+    """
+    Count the blockquote nesting level of a line.
 
     Each ``>`` character at the start (with optional surrounding
     spaces) adds one level. Returns 0 for non-blockquote lines.
@@ -51,7 +52,8 @@ def is_quote_callout_start(line: str) -> bool:
 
 
 def strip_quote_blocks(text: str) -> str:
-    """Remove ``[!quote]`` callout blocks from markdown text.
+    """
+    Remove ``[!quote]`` callout blocks from markdown text.
 
     Replaces quote block lines with empty lines to preserve line
     numbering. Only removes ``[!quote]`` blocks, not other callout
@@ -78,7 +80,8 @@ def strip_quote_blocks(text: str) -> str:
 def create_stripped_directory(
     source_dir: Path, output_dir: Path | None = None
 ) -> Path:
-    """Create a directory with quote-stripped copies of Markdown files.
+    """
+    Create a directory with quote-stripped copies of Markdown files.
 
     Args:
         source_dir: Directory containing source Markdown files.

@@ -166,7 +166,8 @@ jobs:
         id: strip-quotes
         if: needs.detect-changes.outputs.content == 'true'
         run: |
-          STRIPPED_DIR=$(uv run python scripts/strip_quotes.py --source-dir website_content)
+          STRIPPED_DIR=".stripped_quotes"
+          uv run python scripts/strip_quotes.py --source-dir website_content --output-dir "$STRIPPED_DIR"
           echo "dir=$STRIPPED_DIR" >> $GITHUB_OUTPUT
 
       - name: Run spellcheck
