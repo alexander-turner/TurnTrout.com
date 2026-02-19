@@ -810,12 +810,56 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+I want `turntrout.com` to be usable by everyone. The site targets WCAG 2.0 AA compliance, enforced automatically via [`pa11y`](https://pa11y.org/) running both `axe` and `htmlcs` against every page in CI. Here's what that entails.
+
+### Alt text for every image
+
+I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`. The pre-push pipeline scans for any images missing alt text before changes reach `main`.
 
 > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
 To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+
+### Keyboard navigation
+
+Every interactive element on the site is reachable and operable via keyboard:
+
+- A **skip link** lets keyboard users jump straight to the main content, bypassing the navigation bar.
+- **Spoiler blocks** are focusable and toggled with Enter or Space --- keyboard users can also reveal spoilers via `:focus-visible`.
+- **Footnote popovers** trap focus while pinned open, cycling Tab through their internal links, and dismiss on Escape.
+- **Hamburger menu** announces its expanded state via `aria-expanded` and returns focus to the toggle button on Escape.
+- **Code blocks**, **KaTeX display math**, **scrollable tables**, and **Mermaid diagrams** all receive `tabIndex` so keyboard users can scroll their overflow content.
+
+### Screen readers and semantic HTML
+
+- **SPA route announcements.** Because Quartz navigates without full page reloads, screen readers wouldn't normally announce new pages. A `<route-announcer>` element with `aria-live="assertive"` announces each navigation.
+- **Heading links.** [`rehype-autolink-headings`](https://github.com/rehypejs/rehype-autolink-headings) wraps heading text in anchor links. When a heading contains only KaTeX math (no visible text), the build extracts the LaTeX source from the rendered `<annotation>` element and sets it as the link's `aria-label`.
+- **Definition lists.** The build repairs invalid `<dl>` structures to satisfy the `axe` `definition-list` rule --- adopting orphaned `<dd>` elements under proper `<dt>` headings, or demoting unfixable lists to plain `<div>`s.
+- **Footnote sections** receive a screen-reader-only `<h1>Footnotes</h1>` heading, giving assistive technology a landmark for the footnote region.
+- **Decorative elements** (nav icons, the pond video, favicon SVGs without descriptions, [horizontal rule ornaments](/test-page#horizontal-rules)) are marked `aria-hidden="true"` so screen readers skip them. Meaningful favicons carry `role="img"` and an `aria-label`.
+- **Elvish text** on this page is togglable between [Tengwar](#font-selection) and English. A `.visually-hidden` help span describes the interaction, linked via `aria-describedby`. A no-JS fallback ensures screen readers always receive the translation text.
+
+### Color contrast
+
+- **Syntax highlighting.** The default Shiki `github-light` token colors failed WCAG AA against my code block background. I replaced all five token colors with hand-measured alternatives, each exceeding a 5:1 contrast ratio.
+- **Focus indicators.** All interactive elements share a consistent `2px solid` outline on `:focus-visible`, using the site's link color.
+
+### Reduced motion
+
+A `prefers-reduced-motion: reduce` media query disables animations and transitions site-wide, respecting the user's OS-level preference.
+
+### SVG deduplication for valid HTML
+
+When multiple Mermaid diagrams appear on the same page, their internal SVG element IDs (markers, clip paths, node IDs) collide. Duplicate IDs violate the HTML spec (and WCAG 4.1.1). A build-time pass prefixes every SVG's internal IDs with a unique counter (`svg-0-`, `svg-1-`, ...) and remaps all `href`, `xlink:href`, `url(#...)`, and `<style>` references to match.
+
+### Video captions
+
+Every `<video>` element automatically receives a `<track kind="captions">` element if one isn't already present, satisfying the `axe` `video-caption` rule.
+
+### Automated enforcement
+
+Beyond CI, the [pre-push pipeline](#pre-push-the-quality-assurance-gauntlet) catches accessibility regressions before they reach `main`: the alt-text scan, spellchecker, and built-site checks all run locally. On GitHub, a [dedicated accessibility workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/a11y.yml) runs `pa11y-ci` against every page in the built sitemap after each push to `main`.
 
 ## Auto-generated repository statistics
 
