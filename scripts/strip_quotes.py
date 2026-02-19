@@ -30,18 +30,12 @@ def get_quote_level(line: str) -> int:
     Each ``>`` character at the start (with optional surrounding
     spaces) adds one level. Returns 0 for non-blockquote lines.
     """
+    stripped = line.lstrip(" ")
     level = 0
-    i = 0
-    while i < len(line):
-        if line[i] == ">":
+    for char in stripped:
+        if char == ">":
             level += 1
-            i += 1
-            # Skip optional space after >
-            if i < len(line) and line[i] == " ":
-                i += 1
-        elif line[i] == " ":
-            i += 1
-        else:
+        elif char != " ":
             break
     return level
 
@@ -61,18 +55,24 @@ def strip_quote_blocks(text: str) -> str:
     """
     lines = text.split("\n")
     result: list[str] = []
-    i = 0
+    line_iter = enumerate(lines)
 
-    while i < len(lines):
-        if is_quote_callout_start(lines[i]):
-            level = get_quote_level(lines[i])
-            # Strip all lines at this nesting level or deeper
-            while i < len(lines) and get_quote_level(lines[i]) >= level:
-                result.append("")
-                i += 1
+    for _i, line in line_iter:
+        if not is_quote_callout_start(line):
+            result.append(line)
+            continue
+
+        # Strip all lines at this nesting level or deeper
+        level = get_quote_level(line)
+        result.append("")
+        for _j, next_line in line_iter:
+            if get_quote_level(next_line) < level:
+                result.append(next_line)
+                break
+            result.append("")
         else:
-            result.append(lines[i])
-            i += 1
+            # Quote block extends to end of file (no break hit)
+            pass
 
     return "\n".join(result)
 
@@ -106,7 +106,7 @@ def create_stripped_directory(
     return output_dir
 
 
-def main() -> int:
+def main() -> None:
     """Strip quote blocks from Markdown files."""
     parser = argparse.ArgumentParser(
         description="Strip [!quote] blocks from Markdown files."
@@ -132,8 +132,7 @@ def main() -> int:
 
     output_dir = create_stripped_directory(source_dir, args.output_dir)
     print(output_dir)
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

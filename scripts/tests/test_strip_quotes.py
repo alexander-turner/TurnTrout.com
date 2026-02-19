@@ -158,31 +158,23 @@ class TestStripQuoteBlocks:
 
 
 class TestCreateStrippedDirectory:
-    def test_creates_stripped_files(self, tmp_path: Path):
+    def test_strips_quotes_and_preserves_structure(self, tmp_path: Path):
         source = tmp_path / "source"
-        source.mkdir()
-        (source / "test.md").write_text(
+        subdir = source / "subdir"
+        subdir.mkdir(parents=True)
+        (source / "root.md").write_text(
             "> [!quote]\n> Quoted\n\nKept", encoding="utf-8"
         )
+        (subdir / "nested.md").write_text("content", encoding="utf-8")
+        (source / "ignored.txt").write_text("txt content", encoding="utf-8")
 
         output = tmp_path / "output"
         result = strip_quotes.create_stripped_directory(source, output)
 
         assert result == output
-        stripped = (output / "test.md").read_text(encoding="utf-8")
-        assert stripped == "\n\n\nKept"
-
-    def test_preserves_subdirectory_structure(self, tmp_path: Path):
-        source = tmp_path / "source"
-        subdir = source / "subdir"
-        subdir.mkdir(parents=True)
-        (subdir / "test.md").write_text("content", encoding="utf-8")
-
-        output = tmp_path / "output"
-        strip_quotes.create_stripped_directory(source, output)
-
-        assert (output / "subdir" / "test.md").exists()
-        assert (output / "subdir" / "test.md").read_text() == "content"
+        assert (output / "root.md").read_text(encoding="utf-8") == "\n\n\nKept"
+        assert (output / "subdir" / "nested.md").read_text() == "content"
+        assert not (output / "ignored.txt").exists()
 
     def test_creates_temp_dir_when_no_output(self, tmp_path: Path):
         source = tmp_path / "source"
@@ -194,18 +186,6 @@ class TestCreateStrippedDirectory:
         assert result.exists()
         assert "stripped_quotes_" in result.name
         shutil.rmtree(result)
-
-    def test_only_processes_md_files(self, tmp_path: Path):
-        source = tmp_path / "source"
-        source.mkdir()
-        (source / "test.md").write_text("md content", encoding="utf-8")
-        (source / "test.txt").write_text("txt content", encoding="utf-8")
-
-        output = tmp_path / "output"
-        strip_quotes.create_stripped_directory(source, output)
-
-        assert (output / "test.md").exists()
-        assert not (output / "test.txt").exists()
 
 
 class TestMain:
@@ -230,9 +210,8 @@ class TestMain:
             ],
         )
 
-        result = strip_quotes.main()
+        strip_quotes.main()
 
-        assert result == 0
         captured = capsys.readouterr()
         assert str(output) in captured.out
         assert (output / "test.md").read_text() == "\n"
@@ -253,8 +232,7 @@ class TestMain:
             ["strip_quotes.py", "--output-dir", str(output)],
         )
 
-        result = strip_quotes.main()
+        strip_quotes.main()
 
-        assert result == 0
         captured = capsys.readouterr()
         assert str(output) in captured.out
