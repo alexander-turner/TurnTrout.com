@@ -141,5 +141,17 @@
       "pattern": "^xcancel\\.com$",
       "to": "x.com"
     }
-  ]
+  ],
+  "unicodeTypography": {
+    "nbsp": "\u00A0",
+    "leftSingleQuote": "\u2018",
+    "rightSingleQuote": "\u2019",
+    "leftDoubleQuote": "\u201C",
+    "rightDoubleQuote": "\u201D",
+    "ellipsis": "\u2026",
+    "zeroWidthSpace": "\u200B",
+    "zeroWidthNbsp": "\uFEFF",
+    "wordJoiner": "\u2060",
+    "modifierLetterApostrophe": "\u02BC"
+  }
 }

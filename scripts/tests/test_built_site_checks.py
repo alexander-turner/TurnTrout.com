@@ -11,8 +11,11 @@ from bs4 import BeautifulSoup
 
 from .. import utils as script_utils
 from ..utils import (
+    LEFT_DOUBLE_QUOTE,
     LEFT_SINGLE_QUOTE,
+    MODIFIER_LETTER_APOSTROPHE,
     NBSP,
+    RIGHT_DOUBLE_QUOTE,
     RIGHT_SINGLE_QUOTE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -5789,6 +5792,234 @@ def test_find_duplicate_citations_multiple_duplicates():
 def test_check_orphaned_subfigures(html: str, expected: list[str]):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_orphaned_subfigures(soup)
+    assert len(result) == len(expected)
+    for issue, exp in zip(result, expected):
+        assert issue.startswith(exp)
+
+
+# --- Balanced delimiter tests ---
+
+LDQ = LEFT_DOUBLE_QUOTE
+RDQ = RIGHT_DOUBLE_QUOTE
+LSQ = LEFT_SINGLE_QUOTE
+RSQ = RIGHT_SINGLE_QUOTE
+APOS = MODIFIER_LETTER_APOSTROPHE
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Balanced
+        ("<p>Hello (world).</p>", []),
+        ("<p>Nested (a (b) c).</p>", []),
+        # Unbalanced - extra close
+        (
+            "<p>Hello world).</p>",
+            ["Unbalanced parentheses (0 open, 1 close): Hello world)."],
+        ),
+        # Unbalanced - extra open
+        (
+            "<p>(Hello world.</p>",
+            ["Unbalanced parentheses (1 open, 0 close): (Hello world."],
+        ),
+        # Code excluded
+        ("<p>Text <code>(unbalanced</code>.</p>", []),
+        # KaTeX excluded
+        ('<p>Text <span class="katex">(math</span>.</p>', []),
+        # no-formatting excluded
+        ('<p class="no-formatting">(unbalanced</p>', []),
+        # Empty paragraph
+        ("<p></p>", []),
+        # Multiple elements checked independently
+        (
+            "<p>Hello (world).</p><p>Extra ).</p>",
+            ["Unbalanced parentheses (0 open, 1 close): Extra )."],
+        ),
+        # Table cells
+        ("<table><tr><td>Hello (world).</td></tr></table>", []),
+        # List items
+        ("<li>Item (with parens).</li>", []),
+    ],
+)
+def test_check_balanced_parentheses(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_balanced_parentheses(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Balanced
+        ("<p>Set {a, b}.</p>", []),
+        # Unbalanced
+        (
+            "<p>Set {a, b.</p>",
+            ["Unbalanced curly braces (1 open, 0 close): Set {a, b."],
+        ),
+        # Code excluded
+        ("<p>Text <code>{unbalanced</code>.</p>", []),
+        # KaTeX excluded
+        ('<p>Text <span class="katex">{math</span>.</p>', []),
+    ],
+)
+def test_check_balanced_curly_braces(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_balanced_curly_braces(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Balanced
+        ("<p>Array [1, 2].</p>", []),
+        # Unbalanced
+        (
+            "<p>Array [1, 2.</p>",
+            ["Unbalanced square brackets (1 open, 0 close): Array [1, 2."],
+        ),
+        # Code excluded
+        ("<p>Text <code>[unbalanced</code>.</p>", []),
+    ],
+)
+def test_check_balanced_square_brackets(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_balanced_square_brackets(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Balanced double quotes
+        (f"<p>{LDQ}Hello{RDQ}.</p>", []),
+        # Multiple balanced pairs
+        (f"<p>{LDQ}A{RDQ} and {LDQ}B{RDQ}.</p>", []),
+        # Unbalanced - missing close
+        (
+            f"<p>{LDQ}Hello.</p>",
+            [f"Unbalanced double quotes (1 open, 0 close): {LDQ}Hello."],
+        ),
+        # Unbalanced - extra close
+        (
+            f"<p>Hello{RDQ}.</p>",
+            [f"Unbalanced double quotes (0 open, 1 close): Hello{RDQ}."],
+        ),
+        # Code excluded
+        (f"<p>Text <code>{LDQ}unbalanced</code>.</p>", []),
+        # no-formatting excluded
+        (f'<p class="no-formatting">{LDQ}unbalanced</p>', []),
+    ],
+)
+def test_check_balanced_double_quotes(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_balanced_double_quotes(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Balanced single quotes
+        (f"<p>{LSQ}Hello{RSQ}.</p>", []),
+        # Apostrophes (U+02BC) should NOT count
+        (f"<p>Don{APOS}t worry.</p>", []),
+        (f"<p>The dog{APOS}s bone.</p>", []),
+        # Unbalanced - missing close
+        (
+            f"<p>{LSQ}Hello.</p>",
+            [f"Unbalanced single quotes (1 open, 0 close): {LSQ}Hello."],
+        ),
+        # Mixed apostrophes and quotes - balanced
+        (f"<p>{LSQ}Don{APOS}t{RSQ}.</p>", []),
+        # Code excluded
+        (f"<p><code>{LSQ}code</code>.</p>", []),
+    ],
+)
+def test_check_balanced_single_quotes(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_balanced_single_quotes(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Correct nesting: double wraps single
+        (f"<p>{LDQ}She said {LSQ}hi{RSQ}{RDQ}.</p>", []),
+        # Wrong nesting: single wraps double
+        (
+            f"<p>{LSQ}She said {LDQ}hi{RDQ}{RSQ}.</p>",
+            [
+                f"Single quotes wrap double quotes (should be reversed): {LSQ}She said {LDQ}hi{RDQ}{RSQ}."
+            ],
+        ),
+        # No nesting - just double quotes
+        (f"<p>{LDQ}Hello{RDQ}.</p>", []),
+        # No nesting - just single quotes
+        (f"<p>{LSQ}Hello{RSQ}.</p>", []),
+        # No quotes at all
+        ("<p>Hello world.</p>", []),
+        # Code excluded
+        (f"<p><code>{LSQ}She said {LDQ}hi{RDQ}{RSQ}</code>.</p>", []),
+        # Skipped element (no-formatting)
+        (f'<p class="no-formatting">{LSQ}She said {LDQ}hi{RDQ}{RSQ}</p>', []),
+        # Empty paragraph
+        ("<p></p>", []),
+        # Complex correct nesting: double wraps single with double inside single closing before outer
+        (f"<p>{LDQ}She said {LSQ}hi{RSQ} and {LSQ}bye{RSQ}{RDQ}.</p>", []),
+        # Exercise nesting pop: closing double quote pops past unclosed items
+        (f"<p>{LDQ}Hello {LSQ}world{RDQ}.</p>", []),
+        # Exercise nesting pop: closing single quote pops past unclosed items
+        (
+            f"<p>{LSQ}Hello {LDQ}world{RSQ}.</p>",
+            [
+                f"Single quotes wrap double quotes (should be reversed): {LSQ}Hello {LDQ}world{RSQ}.",
+            ],
+        ),
+    ],
+)
+def test_check_quote_nesting(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_quote_nesting(soup)
+    assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Properly nested
+        (f"<p>{LDQ}Hello (world){RDQ}.</p>", []),
+        # Mismatched nesting: paren crosses quote boundary
+        (
+            f"<p>({LDQ}Hello){RDQ}.</p>",
+            [
+                f"Mismatched delimiter nesting (expected closing for {LDQ!r}, got ')'):"
+            ],
+        ),
+        # Properly nested brackets inside parens
+        ("<p>Call (func [arg]).</p>", []),
+        # Mismatched: bracket inside paren but paren closes first
+        (
+            "<p>Call ([arg).</p>",
+            [
+                "Mismatched delimiter nesting (expected closing for '[', got ')'):"
+            ],
+        ),
+        # Code excluded
+        ("<p><code>([mismatched)</code>.</p>", []),
+        # No delimiters
+        ("<p>Hello world.</p>", []),
+        # Skipped element (no-formatting)
+        ('<p class="no-formatting">([mismatched)</p>', []),
+        # Empty paragraph
+        ("<p></p>", []),
+    ],
+)
+def test_check_delimiter_nesting(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_delimiter_nesting(soup)
     assert len(result) == len(expected)
     for issue, exp in zip(result, expected):
         assert issue.startswith(exp)

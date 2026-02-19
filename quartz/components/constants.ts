@@ -51,12 +51,31 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
-// Unicode typography constants
-export const NBSP = "\u00A0"
-export const LEFT_SINGLE_QUOTE = "\u2018"
-export const RIGHT_SINGLE_QUOTE = "\u2019"
-export const LEFT_DOUBLE_QUOTE = "\u201C"
-export const RIGHT_DOUBLE_QUOTE = "\u201D"
+// Unicode typography constants (from constants.json — single source of truth for TS + Python)
+const {
+  nbsp: NBSP,
+  leftSingleQuote: LEFT_SINGLE_QUOTE,
+  rightSingleQuote: RIGHT_SINGLE_QUOTE,
+  leftDoubleQuote: LEFT_DOUBLE_QUOTE,
+  rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
+  ellipsis: ELLIPSIS,
+  zeroWidthSpace: ZERO_WIDTH_SPACE,
+  zeroWidthNbsp: ZERO_WIDTH_NBSP,
+  wordJoiner: WORD_JOINER,
+  modifierLetterApostrophe: MODIFIER_LETTER_APOSTROPHE,
+} = constantsJson.unicodeTypography
+export {
+  NBSP,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
+  LEFT_DOUBLE_QUOTE,
+  RIGHT_DOUBLE_QUOTE,
+  ELLIPSIS,
+  ZERO_WIDTH_SPACE,
+  ZERO_WIDTH_NBSP,
+  WORD_JOINER,
+  MODIFIER_LETTER_APOSTROPHE,
+}
 
 /** Normalize non-breaking spaces to regular spaces */
 export function normalizeNbsp(s: string): string {

@@ -31,6 +31,7 @@ from scripts.utils import (
     ELLIPSIS,
     LEFT_DOUBLE_QUOTE,
     LEFT_SINGLE_QUOTE,
+    MODIFIER_LETTER_APOSTROPHE,
     NBSP,
     RIGHT_DOUBLE_QUOTE,
     RIGHT_SINGLE_QUOTE,
@@ -143,7 +144,14 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+VALID_PARAGRAPH_ENDING_CHARACTERS = (
+    ".!?:;)]}"
+    + RIGHT_SINGLE_QUOTE
+    + RIGHT_DOUBLE_QUOTE
+    + ELLIPSIS
+    + "\u2014"
+    + MODIFIER_LETTER_APOSTROPHE
+)
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
 
@@ -1526,7 +1534,7 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
+    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{MODIFIER_LETTER_APOSTROPHE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
@@ -1566,6 +1574,175 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
             )
 
     return problematic_metadata
+
+
+# --- Balanced delimiter checks ---
+
+_BALANCE_CHECK_ELEMENTS = (
+    "p",
+    "dt",
+    "figcaption",
+    "dd",
+    "li",
+    *(f"h{i}" for i in range(1, 7)),
+    "td",
+    "th",
+)
+
+# Paired delimiters: (open, close, label)
+_DELIMITER_PAIRS: list[tuple[str, str, str]] = [
+    ("(", ")", "parentheses"),
+    ("{", "}", "curly braces"),
+    ("[", "]", "square brackets"),
+    (LEFT_DOUBLE_QUOTE, RIGHT_DOUBLE_QUOTE, "double quotes"),
+    (LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE, "single quotes"),
+]
+
+
+def _get_visible_text(element: Tag) -> str:
+    """Get visible text from a block element, excluding code/katex/etc."""
+    return script_utils.get_non_code_text(element)
+
+
+def _check_balanced_delimiters(
+    soup: BeautifulSoup,
+    open_char: str,
+    close_char: str,
+    label: str,
+) -> list[str]:
+    """Check for unbalanced delimiter pairs in visible text of block elements."""
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(_BALANCE_CHECK_ELEMENTS)):
+        if should_skip(element):
+            continue
+
+        text = _get_visible_text(element)
+        if not text.strip():
+            continue
+
+        open_count = text.count(open_char)
+        close_count = text.count(close_char)
+        if open_count != close_count:
+            _append_to_list(
+                issues,
+                text.strip(),
+                prefix=f"Unbalanced {label} ({open_count} open, {close_count} close): ",
+            )
+
+    return issues
+
+
+def check_balanced_parentheses(soup: BeautifulSoup) -> list[str]:
+    """Check for unbalanced parentheses in visible text."""
+    return _check_balanced_delimiters(soup, "(", ")", "parentheses")
+
+
+def check_balanced_curly_braces(soup: BeautifulSoup) -> list[str]:
+    """Check for unbalanced curly braces in visible text."""
+    return _check_balanced_delimiters(soup, "{", "}", "curly braces")
+
+
+def check_balanced_square_brackets(soup: BeautifulSoup) -> list[str]:
+    """Check for unbalanced square brackets in visible text."""
+    return _check_balanced_delimiters(soup, "[", "]", "square brackets")
+
+
+def check_balanced_double_quotes(soup: BeautifulSoup) -> list[str]:
+    """Check for unbalanced curly double quotes in visible text."""
+    return _check_balanced_delimiters(
+        soup, LEFT_DOUBLE_QUOTE, RIGHT_DOUBLE_QUOTE, "double quotes"
+    )
+
+
+def check_balanced_single_quotes(soup: BeautifulSoup) -> list[str]:
+    """Check for unbalanced curly single quotes in visible text.
+
+    Requires punctilio to emit U+02BC for apostrophes, so U+2019 is only
+    used as a closing single quote.
+    """
+    return _check_balanced_delimiters(
+        soup, LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE, "single quotes"
+    )
+
+
+def check_quote_nesting(soup: BeautifulSoup) -> list[str]:
+    """Check that double quotes wrap single quotes, not vice versa.
+
+    Flags cases where single quotes are the outermost quote level
+    (American English convention: double quotes for primary quotation).
+    """
+    issues: list[str] = []
+
+    for element in _tags_only(soup.find_all(_BALANCE_CHECK_ELEMENTS)):
+        if should_skip(element):
+            continue
+
+        text = _get_visible_text(element)
+        if not text.strip():
+            continue
+
+        # Track nesting: look for single-quote opening that contains
+        # double-quote opening before the single closes.
+        # The break-on-violation means closing quotes only run in
+        # correctly-nested cases (stack top always matches).
+        nesting: list[str] = []
+        for char in text:
+            if char == LEFT_SINGLE_QUOTE:
+                nesting.append("single")
+            elif char == LEFT_DOUBLE_QUOTE:
+                if nesting and nesting[-1] == "single":
+                    _append_to_list(
+                        issues,
+                        text.strip(),
+                        prefix="Single quotes wrap double quotes (should be reversed): ",
+                    )
+                    break
+                nesting.append("double")
+            elif char in (RIGHT_SINGLE_QUOTE, RIGHT_DOUBLE_QUOTE):
+                if nesting:
+                    nesting.pop()
+
+    return issues
+
+
+def check_delimiter_nesting(soup: BeautifulSoup) -> list[str]:
+    """Check that paired delimiters nest properly (LIFO order).
+
+    Catches interleaving like "(text}" or '"(text")' where different
+    delimiter types cross boundaries.
+    """
+    issues: list[str] = []
+
+    openers = {p[0] for p in _DELIMITER_PAIRS}
+    closer_to_opener = {p[1]: p[0] for p in _DELIMITER_PAIRS}
+
+    for element in _tags_only(soup.find_all(_BALANCE_CHECK_ELEMENTS)):
+        if should_skip(element):
+            continue
+
+        text = _get_visible_text(element)
+        if not text.strip():
+            continue
+
+        stack: list[str] = []
+        for char in text:
+            if char in openers:
+                stack.append(char)
+            elif char in closer_to_opener:
+                expected_opener = closer_to_opener[char]
+                if stack and stack[-1] == expected_opener:
+                    stack.pop()
+                elif stack:
+                    # Mismatched nesting
+                    _append_to_list(
+                        issues,
+                        text.strip(),
+                        prefix=f"Mismatched delimiter nesting (expected closing for {stack[-1]!r}, got {char!r}): ",
+                    )
+                    break
+
+    return issues
 
 
 def check_file_for_issues(
@@ -1649,6 +1826,13 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
+        "unbalanced_parentheses": check_balanced_parentheses(soup),
+        "unbalanced_curly_braces": check_balanced_curly_braces(soup),
+        "unbalanced_square_brackets": check_balanced_square_brackets(soup),
+        "unbalanced_double_quotes": check_balanced_double_quotes(soup),
+        "unbalanced_single_quotes": check_balanced_single_quotes(soup),
+        "incorrect_quote_nesting": check_quote_nesting(soup),
+        "mismatched_delimiter_nesting": check_delimiter_nesting(soup),
     }
 
     if should_check_fonts:
@@ -1826,6 +2010,7 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-—~×+"
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
+    + MODIFIER_LETTER_APOSTROPHE
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
