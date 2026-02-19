@@ -125,8 +125,8 @@ jobs:
               - '!quartz/**/tests/**'
               - '!quartz/**/__snapshots__/**'
               - 'scripts/source_file_checks.py'
-              - 'config/**'
-              - '!config/playwright/**'
+              - 'config/quartz/**'
+              - 'config/constants.json'
               - '.github/actions/**'
 
   lint:
