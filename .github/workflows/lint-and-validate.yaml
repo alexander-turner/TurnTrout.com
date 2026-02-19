@@ -123,7 +123,6 @@ jobs:
               - '!quartz/**/*.test.ts'
               - '!quartz/**/*.test.tsx'
               - '!quartz/**/tests/**'
-              - '!quartz/**/__snapshots__/**'
               - 'scripts/source_file_checks.py'
               - 'config/quartz/**'
               - 'config/constants.json'
