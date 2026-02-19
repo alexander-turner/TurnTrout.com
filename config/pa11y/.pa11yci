@@ -16,8 +16,7 @@
       ".ignore-pa11y",
       ".katex",
       "#trout-ornament-container",
-      ".mermaid svg",
-      ".spoiler-content"
+      ".mermaid svg"
     ],
     "ignore": [
       "frame-tested"
