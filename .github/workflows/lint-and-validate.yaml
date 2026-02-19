@@ -186,7 +186,7 @@ jobs:
         id: vale
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: vale --config config/vale/.vale.ini ${{ steps.strip-quotes.outputs.dir }}
+        run: vale --config config/vale/.vale.ini "${{ steps.strip-quotes.outputs.dir }}"
 
       - name: Clean up stripped quotes
         if: always() && steps.strip-quotes.outputs.dir
