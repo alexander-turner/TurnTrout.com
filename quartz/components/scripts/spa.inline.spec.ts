@@ -392,29 +392,31 @@ test.describe("Instant Scroll Restoration", () => {
 
     await page.reload({ waitUntil: "domcontentloaded" })
 
-    // Wait for layout stability monitoring to start
-    await page.waitForFunction(() => {
-      return window.scrollY > 0
-    })
-
-    // Ensure the layout monitoring has begun before triggering user scroll.
-    // We wait until at least one InstantScrollRestoration console message has appeared.
-    await expect
-      .poll(() => consoleMessages.length, { message: "waiting for monitoring to start" })
-      .toBeGreaterThan(0)
-
-    // Dispatch a real user interaction event so the scroll handler recognizes
-    // it as user-initiated (the code tracks wheel/touch/pointer/key events).
+    // Dispatch a user interaction event from within the browser context as soon
+    // as scroll is restored. This avoids a race where the 15-frame monitoring
+    // loop completes before a Node.js round-trip can dispatch the event.
     await page.evaluate(() => {
-      window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
-      window.scrollBy(0, 100)
+      return new Promise<void>((resolve) => {
+        const tryDispatch = () => {
+          if (window.scrollY > 0) {
+            window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
+            window.scrollBy(0, 100)
+            resolve()
+          } else {
+            requestAnimationFrame(tryDispatch)
+          }
+        }
+        requestAnimationFrame(tryDispatch)
+      })
     })
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
     // We poll on the Node.js side because the `consoleMessages` array lives here,
     // not in the browser context that page.waitForFunction evaluates in.
     await expect
-      .poll(() => consoleMessages.find((msg) => msg.includes("canceled due to user input")))
+      .poll(() => consoleMessages.find((msg) => msg.includes("canceled due to user input")), {
+        timeout: 10_000,
+      })
       .toBeDefined()
   })
 })

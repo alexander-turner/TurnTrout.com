@@ -219,10 +219,18 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
+      // Ensure the page is fully loaded before navigating again so WebKit
+      // doesn't crash from overlapping navigations (beforeEach uses domcontentloaded).
+      await page.waitForLoadState("load")
+
       // Navigate to a different internal page
       // NOTE I think it should be fine to not click
-      await page.goto("http://localhost:8080/test-page")
-      await helper.verifyThemeLabel(theme)
+      await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+      // CSS custom property may not be set synchronously after navigation
+      await expect(async () => {
+        await helper.verifyThemeLabel(theme)
+      }).toPass({ timeout: 5_000 })
       await helper.verifyTheme(theme)
     })
   })

@@ -105,6 +105,9 @@ test.describe("Unique content around the site", () => {
 
     await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
+    // Wait for the SPA router to finish initializing so a late navigation
+    // doesn't destroy the execution context during evaluate.
+    await page.waitForFunction(() => window.__routerInitialized === true)
 
     await page.evaluate(() => {
       const article = document.querySelector("article")
@@ -327,6 +330,7 @@ test.describe("Table of contents", () => {
       .locator("#table-of-contents .active")
       .first()
       .textContent()
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!initialHighlightText) {
       throw new Error("Expected initial TOC highlight text to be non-null")
     }

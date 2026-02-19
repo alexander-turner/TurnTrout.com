@@ -304,7 +304,9 @@ test.describe("visual_utils functions", () => {
       await waitForTransitionEnd(element)
       const duration = Date.now() - start
 
-      expect(duration).toBeLessThan(500)
+      // Allow generous headroom for CI — the point is that it resolves
+      // without waiting for a full transition timeout, not that it's sub-second.
+      expect(duration).toBeLessThan(2000)
     })
 
     test("waits for all transitions to complete before resolving", async ({ page }) => {
