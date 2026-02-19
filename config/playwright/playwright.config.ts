@@ -67,7 +67,7 @@ export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
 
-  retries: 0,
+  retries: process.env.CI ? 2 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
