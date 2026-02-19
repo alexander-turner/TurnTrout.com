@@ -24,6 +24,12 @@ on:
       - ".github/actions/**"
   # Tests always run in the merge queue — this is the primary gate for dev
   merge_group:
+    paths:
+      - "quartz/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
