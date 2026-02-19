@@ -83,78 +83,69 @@ def test_is_quote_callout_start(line: str, expected: bool):
     assert strip_quotes.is_quote_callout_start(line) == expected
 
 
-class TestStripQuoteBlocks:
-    def test_simple_quote_block(self):
-        text = "> [!quote] Title\n> Content line\n\nAfter quote"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n\n\nAfter quote"
-
-    def test_preserves_non_quote_callouts(self):
-        text = "> [!note]\n> Note content\n> More note"
-        assert strip_quotes.strip_quote_blocks(text) == text
-
-    def test_nested_quote_inside_other_callout(self):
-        text = (
-            "> [!note]\n"
-            "> Text\n"
-            "> > [!quote] Attribution\n"
-            "> > Quoted text\n"
-            "> Back to note"
-        )
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == (
-            "> [!note]\n" "> Text\n" "\n" "\n" "> Back to note"
-        )
-
-    def test_empty_text(self):
-        assert strip_quotes.strip_quote_blocks("") == ""
-
-    def test_no_quotes(self):
-        text = "Regular text\nMore text\n\nAnother paragraph"
-        assert strip_quotes.strip_quote_blocks(text) == text
-
-    def test_multiple_quote_blocks(self):
-        text = (
-            "> [!quote] First\n"
-            "> Content1\n"
-            "\n"
-            "> [!quote] Second\n"
-            "> Content2"
-        )
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n\n\n\n"
-
-    def test_line_count_preserved(self):
-        text = "Line 1\n> [!quote]\n> Content\n> More\nLine 5"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result.count("\n") == text.count("\n")
-
-    def test_quote_with_blank_blockquote_line(self):
-        """Quote block containing bare ``>`` (blank line within blockquote)."""
-        text = "> [!quote] Title\n>\n> Content\n\nAfter"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n\n\n\nAfter"
-
-    def test_collapsible_quote(self):
-        text = "> [!quote]- Collapsible title\n> Hidden content"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n"
-
-    def test_quote_at_end_of_file(self):
-        text = "Before\n> [!quote]\n> Content"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "Before\n\n"
-
-    def test_case_insensitive(self):
-        text = "> [!Quote] Title\n> Content"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n"
-
-    def test_no_title_with_blank_line(self):
-        """Quote with no title and blank ``>`` before content."""
-        text = "> [!quote]\n>\n> Content\n\nKept"
-        result = strip_quotes.strip_quote_blocks(text)
-        assert result == "\n\n\n\nKept"
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        # Identity cases (no modification)
+        ("", ""),
+        ("Regular text\nMore text\n\nAnother paragraph",
+         "Regular text\nMore text\n\nAnother paragraph"),
+        ("> [!note]\n> Note content\n> More note",
+         "> [!note]\n> Note content\n> More note"),
+        # Basic stripping
+        ("> [!quote] Title\n> Content line\n\nAfter quote",
+         "\n\n\nAfter quote"),
+        ("> [!quote]- Collapsible title\n> Hidden content", "\n"),
+        ("> [!Quote] Title\n> Content", "\n"),
+        ("Before\n> [!quote]\n> Content", "Before\n\n"),
+        # Bare > (blank blockquote line) inside quote
+        ("> [!quote] Title\n>\n> Content\n\nAfter", "\n\n\n\nAfter"),
+        ("> [!quote]\n>\n> Content\n\nKept", "\n\n\n\nKept"),
+        # Multiple blocks separated by blank line
+        ("> [!quote] First\n> Content1\n\n> [!quote] Second\n> Content2",
+         "\n\n\n\n"),
+        # Nested quote inside other callout
+        ("> [!note]\n> Text\n> > [!quote] Attr\n> > Quoted\n> Back",
+         "> [!note]\n> Text\n\n\n> Back"),
+        # Stress: quote-only file (no surrounding text)
+        ("> [!quote]\n> Content", "\n"),
+        # Stress: header only, no content lines
+        ("> [!quote]\nPlain text", "\nPlain text"),
+        # Stress: back-to-back quotes with no blank line
+        ("> [!quote]\n> A\n> [!quote]\n> B", "\n\n\n"),
+        # Stress: deeply nested quote (level 3) returning to level 2
+        ("> > > [!quote]\n> > > Deep\n> > Outer", "\n\n> > Outer"),
+        # Stress: many content lines
+        ("> [!quote]\n" + "\n".join(f"> Line {i}" for i in range(20)),
+         "\n" * 20),
+        # Stress: quote sandwiched between non-quote callouts
+        ("> [!note]\n> N1\n\n> [!quote]\n> Q\n\n> [!warning]\n> W1",
+         "> [!note]\n> N1\n\n\n\n\n> [!warning]\n> W1"),
+    ],
+    ids=[
+        "empty",
+        "no-quotes",
+        "preserves-non-quote-callout",
+        "simple-quote",
+        "collapsible",
+        "case-insensitive",
+        "quote-at-end",
+        "bare-gt-in-quote",
+        "no-title-with-bare-gt",
+        "multiple-blocks",
+        "nested-in-other-callout",
+        "quote-only-file",
+        "header-only-no-content",
+        "back-to-back-quotes",
+        "deeply-nested-level-3",
+        "many-content-lines",
+        "quote-between-callouts",
+    ],
+)
+def test_strip_quote_blocks(text: str, expected: str):
+    result = strip_quotes.strip_quote_blocks(text)
+    assert result == expected
+    assert result.count("\n") == text.count("\n"), "Line count must be preserved"
 
 
 class TestCreateStrippedDirectory:
