@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "dev", "jest-coverage"]
+    branches: ["main"]
     paths:
       - "quartz/**"
       - "config/**"
@@ -22,7 +22,14 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+  # Tests always run in the merge queue — this is the primary gate for dev
   merge_group:
+    paths:
+      - "quartz/**"
+      - "config/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
@@ -31,8 +38,10 @@ permissions:
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present.
   # Tests always run in the merge queue to enforce passing before merge.
+  # Skip entirely for bot actors (dependabot, renovate, etc.).
   should-run:
     name: playwright-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
@@ -138,7 +147,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} --update-snapshots | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV

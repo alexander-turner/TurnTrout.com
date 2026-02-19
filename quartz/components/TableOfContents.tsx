@@ -308,8 +308,10 @@ document.addEventListener('nav', function() {
   const allSections = document.querySelectorAll("#center-content article h1, #center-content article h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
-  // Filter sections to only those with IDs
-  const sections = Array.from(allSections).filter(section => section.id);
+  // Only observe sections that have a matching TOC link (e.g. article-title has
+  // no TOC entry and would prevent the observer from highlighting real links).
+  const navLinkSlugs = new Set(Array.from(navLinks).map(l => l.getAttribute("href")?.split("#")[1]));
+  const sections = Array.from(allSections).filter(section => section.id && navLinkSlugs.has(section.id));
 
   if (sections.length === 0 || navLinks.length === 0) return;
 
