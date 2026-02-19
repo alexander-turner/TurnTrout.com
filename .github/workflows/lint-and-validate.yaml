@@ -119,8 +119,13 @@ jobs:
             source-checks:
               - 'website_content/**'
               - 'quartz/**'
+              - '!quartz/**/*.spec.ts'
+              - '!quartz/**/*.test.ts'
+              - '!quartz/**/*.test.tsx'
+              - '!quartz/**/tests/**'
               - 'scripts/source_file_checks.py'
-              - 'config/**'
+              - 'config/quartz/**'
+              - 'config/constants.json'
               - '.github/actions/**'
 
   lint:

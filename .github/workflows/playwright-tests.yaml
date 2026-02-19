@@ -9,7 +9,9 @@ on:
     branches: ["main"]
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -18,7 +20,9 @@ on:
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -26,7 +30,9 @@ on:
   merge_group:
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"

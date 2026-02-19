@@ -10,7 +10,10 @@ on:
     paths:
       - "quartz/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
+      - "config/lostpixel/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -20,7 +23,10 @@ on:
     paths:
       - "quartz/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
+      - "config/lostpixel/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
