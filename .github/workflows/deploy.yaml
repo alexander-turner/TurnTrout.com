@@ -11,8 +11,14 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
+      - "!quartz/**/__snapshots__/**"
       - "website_content/**"
       - "config/**"
+      - "!config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
