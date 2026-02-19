@@ -442,7 +442,7 @@ async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInpu
 export async function showSearch(
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
-): Promise<undefined> {
+): Promise<void> {
   if (!container || !searchBar) return
 
   // Initialize search when opening the search UI
