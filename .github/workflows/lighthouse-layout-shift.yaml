@@ -15,7 +15,6 @@ on:
       - "!quartz/**/*.spec.ts"
       - "!quartz/**/*.test.ts"
       - "!quartz/**/tests/**"
-      - "!quartz/**/__snapshots__/**"
       - "quartz/static/**"
       - "config/quartz/**"
       - "config/constants.json"
