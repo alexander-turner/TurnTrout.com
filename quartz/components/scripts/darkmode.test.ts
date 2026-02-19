@@ -5,7 +5,21 @@
 import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
 
 import { type FullSlug } from "../../util/path"
+import { savedThemeKey } from "../constants"
 import { rotateTheme, setupDarkMode } from "./darkmode"
+
+// Test constants
+const SYSTEM_PREFERENCES = ["dark", "light"] as const
+const DOM_SETUP = `
+  <div id="darkmode-span">
+    <button id="theme-toggle" type="button" aria-label="Toggle theme">
+      <svg id="day-icon"></svg>
+      <svg id="night-icon"></svg>
+    </button>
+    <p id="theme-label">Auto</p>
+  </div>
+`
+const NAV_EVENT_DETAIL = { url: "" as FullSlug }
 
 // Mock MediaQueryListEvent if not available in test environment
 class MockMediaQueryListEvent extends Event {
@@ -52,17 +66,13 @@ describe("darkmode", () => {
     return customPropertyValue.replace(/"/g, "")
   }
 
-  beforeEach(() => {
-    document.body.innerHTML = `
-      <div id="darkmode-span">
-        <button id="theme-toggle" type="button" aria-label="Toggle theme">
-          <svg id="day-icon"></svg>
-          <svg id="night-icon"></svg>
-        </button>
-        <p id="theme-label">Auto</p>
-      </div>
-    `
+  const initializeAndDispatchNav = () => {
+    setupDarkMode()
+    document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
+  }
 
+  beforeEach(() => {
+    document.body.innerHTML = DOM_SETUP
     localStorageSpy = jest.spyOn(Storage.prototype, "setItem")
 
     // Mock window.matchMedia
@@ -88,23 +98,24 @@ describe("darkmode", () => {
   })
 
   describe("theme initialization", () => {
-    for (const systemPrefers of ["dark", "light"]) {
-      it(`should set theme to ${systemPrefers} when system prefers ${systemPrefers}`, () => {
+    it.each(SYSTEM_PREFERENCES)(
+      "should set theme to %s when system prefers %s",
+      (systemPrefers) => {
         matchMediaSpy.mockReturnValue(createMockMediaQueryList(systemPrefers === "dark"))
         setupDarkMode()
-        document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+        document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
 
         expect(document.documentElement.getAttribute("data-theme")).toBe(systemPrefers)
         expect(getThemeLabelContent()).toBe("Auto")
-      })
-    }
+      },
+    )
 
     it("should respect stored theme preference over system preference", () => {
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false)) // system prefers light
-      localStorage.setItem("saved-theme", "dark")
+      localStorage.setItem(savedThemeKey, "dark")
 
       setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      document.dispatchEvent(new CustomEvent("nav", { detail: NAV_EVENT_DETAIL }))
 
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(getThemeLabelContent()).toBe("Dark")
@@ -113,20 +124,16 @@ describe("darkmode", () => {
 
   describe("theme toggle", () => {
     it("should emit theme change event when toggle is clicked", () => {
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
-
+      initializeAndDispatchNav()
       triggerToggle()
       expect(getThemeLabelContent()).toBe("Light")
     })
 
     it("should update localStorage when theme is changed", () => {
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
-
+      initializeAndDispatchNav()
       triggerToggle()
 
-      expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "light")
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "light")
       expect(getThemeLabelContent()).toBe("Light")
     })
   })
@@ -136,8 +143,7 @@ describe("darkmode", () => {
       const mediaQueryList = createMockMediaQueryList(false)
       matchMediaSpy.mockReturnValue(mediaQueryList)
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Initially in auto mode
       expect(document.documentElement.getAttribute("data-theme")).toBe("light")
@@ -158,18 +164,17 @@ describe("darkmode", () => {
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
 
       // But localStorage should preserve auto mode
-      expect(localStorageSpy).toHaveBeenCalledWith("saved-theme", "auto")
+      expect(localStorageSpy).toHaveBeenCalledWith(savedThemeKey, "auto")
     })
   })
 
   describe("auto mode", () => {
     it("should follow system preference when in auto mode", () => {
-      localStorage.setItem("saved-theme", "auto")
+      localStorage.setItem(savedThemeKey, "auto")
       const mediaQueryList = createMockMediaQueryList(true)
       matchMediaSpy.mockReturnValue(mediaQueryList)
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Initially dark theme but auto mode
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
@@ -196,33 +201,32 @@ describe("darkmode", () => {
 
   describe("theme cycling", () => {
     it("should cycle through themes in order: auto -> light -> dark -> auto", () => {
-      localStorage.setItem("saved-theme", "auto")
+      localStorage.setItem(savedThemeKey, "auto")
       // Mock a system preference of dark
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
 
       // auto -> light
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("light")
+      expect(localStorage.getItem(savedThemeKey)).toBe("light")
       expect(document.documentElement.getAttribute("data-theme")).toBe("light")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("light")
       expect(getThemeLabelContent()).toBe("Light")
 
       // light -> dark
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("dark")
+      expect(localStorage.getItem(savedThemeKey)).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("dark")
       expect(getThemeLabelContent()).toBe("Dark")
 
       // dark -> auto
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("auto")
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
       expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
@@ -230,15 +234,14 @@ describe("darkmode", () => {
 
     it("should default to auto for invalid stored theme", () => {
       // Set an invalid theme in localStorage
-      localStorage.setItem("saved-theme", "invalid-theme")
+      localStorage.setItem(savedThemeKey, "invalid-theme")
       matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
 
-      setupDarkMode()
-      document.dispatchEvent(new CustomEvent("nav", { detail: { url: "" as FullSlug } }))
+      initializeAndDispatchNav()
 
       // Clicking the toggle should go from invalid -> auto (default) -> light
       rotateTheme()
-      expect(localStorage.getItem("saved-theme")).toBe("auto")
+      expect(localStorage.getItem(savedThemeKey)).toBe("auto")
       expect(document.documentElement.getAttribute("data-theme-mode")).toBe("auto")
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
     })

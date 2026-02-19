@@ -87,9 +87,11 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 1. Push the branch: `git push -u origin HEAD`
 2. Check if a PR already exists for the current branch:
+
    ```bash
    EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
    ```
+
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
 3. Create the PR using `gh pr create` with the template from the resource file
 
@@ -121,11 +123,14 @@ Provide the PR URL and confirm all CI checks have passed.
 5. Fixes the null check, commits: `fix: add null check for empty session token`
 6. Runs `pnpm check && pnpm test && pnpm lint` — all pass
 7. Pushes and creates PR:
-   ```
+
+   ```bash
    gh pr create --title "fix: handle null session token in login flow" --body "..."
    ```
+
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Reports: "PR #47 created and all CI checks pass: https://github.com/org/repo/pull/47"
+9. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — no issues found
+10. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
 
 ### Example 2: Multi-Commit Feature
 

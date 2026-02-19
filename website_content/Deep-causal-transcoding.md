@@ -9,7 +9,9 @@ tags:
   - mats-program
 description: Principled derivation of unsupervised steering vector discovery methods.
   Unlocks password-locked models and breaks jailbreak defenses.
-authors: Andrew Mack and Alex Turner
+authors:
+  - Andrew Mack
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
@@ -101,7 +103,7 @@ In this post, I introduce and evaluate a novel feature detection method which I 
 **Matrix/tensor decompositions**
 : Previous work has found that the right singular vectors of the Jacobian of the generator network in GANs yield a small number (~32) of interpretable feature directions in generative image models ([Ramesh et al. (2018)](https://arxiv.org/abs/1812.01161), see also [Park et al. (2023)](https://arxiv.org/abs/2307.12868)). This algorithm is essentially equivalent to the algorithm I give below for training "linear DCTs". Meanwhile, other work has found that Jacobian-based feature detection schemes are less successful when applied to LLMs ([Bushnaq et al. (2024)](https://arxiv.org/abs/2405.10928)[^bignote-only-shallow]).
 
-: In this post, I provide a theoretical explanation for why decomposing the Jacobian matrix between layers alone may be insufficient - identifiability of features can only be guaranteed under strong assumptions like exact orthogonality. This motivates incorporating higher-order information, such as the Hessian tensor, to better identify non-orthogonal features (a known advantage of tensor decompositions in statistics/machine learning). I validate this theory empirically, showing improved generalization with tensor decomposition-based methods (e.g., quadratic/exponential DCTs, as defined below).
+  In this post, I provide a theoretical explanation for why decomposing the Jacobian matrix between layers alone may be insufficient - identifiability of features can only be guaranteed under strong assumptions like exact orthogonality. This motivates incorporating higher-order information, such as the Hessian tensor, to better identify non-orthogonal features (a known advantage of tensor decompositions in statistics/machine learning). I validate this theory empirically, showing improved generalization with tensor decomposition-based methods (e.g., quadratic/exponential DCTs, as defined below).
 
 [^bignote-only-shallow]: Although in contrast to ([Ramesh et al. (2018)](https://arxiv.org/abs/1812.01161) and my work, that paper only considers the Jacobian of a *shallow* rather than deep slice.
 

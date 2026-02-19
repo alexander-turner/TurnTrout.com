@@ -15,7 +15,7 @@ describe("normalizeHastElement", () => {
 
     expect(result.children[0]).toMatchObject({
       type: "text",
-      value: "This is a test with quotes “like this” and dashes—here",
+      value: "This is a test with quotes “like this” and dashes—here",
     })
   })
 
@@ -31,7 +31,7 @@ describe("normalizeHastElement", () => {
     // Check that text formatting is applied within the link
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "A link with “quotes”",
+      value: "A link with “quotes”",
     })
   })
 
@@ -56,36 +56,16 @@ describe("normalizeHastElement", () => {
     expect(textChild.value).toBe(originalValue)
   })
 
-  it("should rebase anchor-only links to point to original page", () => {
-    const input = h("p", [h("a", { href: "#section" }, "Link to section")])
-
+  it.each([
+    ["simple anchor", "#section", "../other/page#section"],
+    ["intro anchor", "#intro", "../other/page#intro"],
+    ["conclusion anchor", "#conclusion", "../other/page#conclusion"],
+    ["nested anchor", "#nested", "../other/page#nested"],
+  ])("should rebase anchor-only link %s to point to original page", (_, href, expected) => {
+    const input = h("p", [h("a", { href }, "Link")])
     const result = normalizeHastElement(input, baseSlug, newSlug)
 
     const child = result.children[0] as Element
-    expect(child.properties?.href).toBe("../other/page#section")
-  })
-
-  it("should rebase multiple anchor links correctly", () => {
-    const input = h("div", [
-      h("a", { href: "#intro" }, "Intro"),
-      h("a", { href: "#conclusion" }, "Conclusion"),
-    ])
-
-    const result = normalizeHastElement(input, baseSlug, newSlug)
-
-    const firstLink = result.children[0] as Element
-    const secondLink = result.children[1] as Element
-    expect(firstLink.properties?.href).toBe("../other/page#intro")
-    expect(secondLink.properties?.href).toBe("../other/page#conclusion")
-  })
-
-  it("should rebase anchor links in nested elements", () => {
-    const input = h("div", [h("p", [h("a", { href: "#nested" }, "Nested anchor")])])
-
-    const result = normalizeHastElement(input, baseSlug, newSlug)
-
-    const paragraph = result.children[0] as Element
-    const link = paragraph.children[0] as Element
-    expect(link.properties?.href).toBe("../other/page#nested")
+    expect(child.properties?.href).toBe(expected)
   })
 })

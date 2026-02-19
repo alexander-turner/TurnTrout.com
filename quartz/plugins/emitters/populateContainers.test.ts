@@ -25,7 +25,7 @@ import { type StaticResources } from "../../util/resources"
 const { minFaviconCount, defaultPath } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
-import * as linkfavicons from "../transformers/linkfavicons"
+import * as favicons from "../transformers/favicons"
 import { type QuartzEmitterPlugin } from "../types"
 
 let populateModule: typeof import("./populateContainers")
@@ -55,7 +55,7 @@ describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
   const mockOutputDir = "/mock/output"
   const mockStaticResources: StaticResources = { css: [], js: [] }
-  const urlCache = linkfavicons.urlCache
+  const urlCache = favicons.urlCache
 
   beforeAll(async () => {
     populateModule = await import("./populateContainers")
@@ -540,16 +540,17 @@ describe("PopulateContainers", () => {
       it.each([
         ["turntrout", specialFaviconPaths.turntrout],
         ["anchor", specialFaviconPaths.anchor],
-      ])("should generate %s favicon element with word joiner", async (_name, faviconPath) => {
+      ])("should generate %s favicon element inside favicon-span", async (_name, faviconPath) => {
         const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
-        expect(elements).toHaveLength(2)
+        expect(elements).toHaveLength(1)
 
-        expect(elements[0]).toMatchObject({
+        const faviconSpan = elements[0]
+        expect(faviconSpan).toMatchObject({
           tagName: "span",
-          properties: { className: "word-joiner" },
+          properties: { className: "favicon-span" },
         })
-        expect(elements[1]).toMatchObject({
+        expect(faviconSpan.children[1]).toMatchObject({
           tagName: "svg",
           properties: {
             class: expect.stringContaining("favicon"),
@@ -565,9 +566,9 @@ describe("PopulateContainers", () => {
           altText,
         )
         const elements = await generator()
-        expect(elements).toHaveLength(2)
+        expect(elements).toHaveLength(1)
 
-        const faviconElement = elements[1]
+        const faviconElement = elements[0].children[1] as Element
         expect(faviconElement).toMatchObject({
           tagName: "svg",
           properties: {

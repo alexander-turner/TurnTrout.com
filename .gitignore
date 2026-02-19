@@ -15,19 +15,19 @@ tsconfig.tsbuildinfo
 .quartz_checks
 .timestamps
 *variables.scss
+*critical.scss
 *__pycache__*
 
 # Testing & Coverage
 .coverage*
 coverage
-*snapshots*
-*__snapshots__
 lost-pixel/*
 .lostpixel
 /test-results/
 /blob-report/
 /playwright-report/
 /playwright/.cache/
+quartz/**snapshots*
 
 # Temporary & Backup Files
 *~

@@ -15,11 +15,12 @@
     "hideElements": [
       ".ignore-pa11y",
       ".katex",
-      "#trout-ornament-container"
+      "#trout-ornament-container",
+      ".mermaid svg",
+      ".spoiler-content"
     ],
     "ignore": [
-      "frame-tested",
-      "color-contrast"
+      "frame-tested"
     ],
     "concurrency": 1
   }

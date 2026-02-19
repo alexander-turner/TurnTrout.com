@@ -8,7 +8,8 @@ tags:
   - practical
   - community
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.jpg
 aliases:
@@ -482,7 +483,7 @@ GrapheneOS instructions
 iOS instructions
 : On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
 
-: ![[https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
+  ![[https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
 
 : Similarly, make simple automations which encompass your use cases.
 
@@ -534,12 +535,12 @@ Stingrays can pick up metadata from plain old texts and calls. Avoid by [using S
 GrapheneOS
 : GrapheneOS has more comprehensive protections than just disabling 2G. But you should also do that.
 
-: - [ ] Enable "2G network protection" -- just search "2G" in settings.
+  - [ ] Enable "2G network protection" -- just search "2G" in settings.
 
 Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
-: - [ ] Disable 2G.
+  - [ ] Disable 2G.
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.

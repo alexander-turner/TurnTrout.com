@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test"
 import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import { tightScrollTolerance, listTolerance } from "../constants"
+import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -15,6 +15,13 @@ import {
 
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
+
+// Test constants
+const THEMES = ["dark", "light"] as const
+const LIGHT_THEMES = ["light", "dark"] as const
+const MOCK_PAGE_SLUGS = ["404"]
+const DYNAMIC_PAGE_SLUGS = ["recent", "tags/personal"]
+const FOLD_STATES = ["open", "collapse"] as const
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -35,11 +42,6 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => console.error(err))
 
   await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-  // Dispatch the 'nav' event to initialize clipboard functionality
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("nav"))
-  })
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -86,13 +88,13 @@ async function setDummyContentMeta(page: Page) {
 }
 
 test.describe("Test page sections", () => {
-  for (const theme of ["dark", "light"]) {
+  THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
-  }
+  })
 })
 
 test.describe("Unique content around the site", () => {
@@ -121,17 +123,17 @@ test.describe("Unique content around the site", () => {
     await takeRegressionScreenshot(page, testInfo, "site-page-welcome")
   })
 
-  for (const pageSlug of ["404"]) {
+  MOCK_PAGE_SLUGS.forEach((pageSlug) => {
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(`http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
-  }
+  })
 
   // Several pages update based on new posts
   // Mock the data to prevent needless updating of the screenshots
-  for (const pageSlug of ["recent", "tags/personal"]) {
+  DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
       await page.goto(url)
@@ -166,7 +168,7 @@ test.describe("Unique content around the site", () => {
         elementToScreenshot: page.locator("#center-content"),
       })
     })
-  }
+  })
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
@@ -303,27 +305,51 @@ test.describe("Table of contents", () => {
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 
-    const headerLocator = page.locator("h1").last()
-    await headerLocator.scrollIntoViewIfNeeded()
-    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    await expect(tocHighlightLocator).toBeVisible()
+    // Wait for the TOC observer to initialize and set an active link
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active") !== null,
+      { timeout: 15_000 },
+    )
 
-    const initialHighlightText = await tocHighlightLocator.textContent()
-    expect(initialHighlightText).not.toBeNull()
+    // Scroll a mid-page heading to the top of the viewport so it enters
+    // the IntersectionObserver's detection zone (top 30%).
+    // Wait for a rAF after scrolling so the IntersectionObserver processes the change.
+    await page.evaluate(() => {
+      document.querySelector("#spoilers")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
+      { timeout: 15_000 },
+    )
 
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
+    // Need the raw string to pass into waitForFunction below
+    const initialHighlightText = await page
+      .locator("#table-of-contents .active")
+      .first()
+      .textContent()
+    if (!initialHighlightText) {
+      throw new Error("Expected initial TOC highlight text to be non-null")
+    }
 
-    // Wait for scroll event to fire and TOC to update
-    await page.waitForFunction((initialText) => {
-      const activeElement = document.querySelector("#table-of-contents .active")
-      return activeElement && activeElement.textContent !== initialText
-    }, initialHighlightText)
+    // Scroll to a different heading, wait for rAF so IntersectionObserver fires
+    await page.evaluate(() => {
+      document.querySelector("#lists")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
 
-    const highlightText = await tocHighlightLocator.textContent()
-    expect(highlightText).not.toBeNull()
-    // skipcq: JS-0339
-    await expect(tocHighlightLocator).not.toHaveText(initialHighlightText!)
+    // Wait for IntersectionObserver to fire and TOC to update
+    await page.waitForFunction(
+      (initialText) => {
+        const activeElement = document.querySelector("#table-of-contents .active")
+        return activeElement && activeElement.textContent !== initialText
+      },
+      initialHighlightText,
+      { timeout: 15_000 },
+    )
+
+    const highlightText = page.locator("#table-of-contents .active").first()
+    await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 })
 
@@ -379,7 +405,7 @@ test.describe("Admonitions", () => {
     })
   }
 
-  for (const status of ["open", "collapse"]) {
+  FOLD_STATES.forEach((status) => {
     test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
       page,
     }, testInfo) => {
@@ -392,7 +418,7 @@ test.describe("Admonitions", () => {
         preserveSiblings: true,
       })
     })
-  }
+  })
 
   test("color demo text isn't wrapping", async ({ page }) => {
     for (const identifier of ["#light-demo", "#dark-demo"]) {
@@ -420,7 +446,7 @@ test.describe("Admonitions", () => {
 })
 
 test.describe("Clipboard button", () => {
-  for (const theme of ["light", "dark"]) {
+  LIGHT_THEMES.forEach((theme) => {
     test(`Clipboard button is visible when hovering over code block in ${theme} mode`, async ({
       page,
     }) => {
@@ -443,7 +469,7 @@ test.describe("Clipboard button", () => {
       const screenshotAfterClicking = await clipboardButton.screenshot()
       expect(screenshotAfterClicking).not.toEqual(screenshotBeforeClicking)
     })
-  }
+  })
 })
 
 test.describe("Right sidebar", () => {
@@ -753,12 +779,12 @@ test.describe("Video Speed Controller visibility", () => {
     }, videoId)
   }
 
-  const testCases = [
+  const videoTestCases = [
     { name: "no-vsc videos", html: '<video class="no-vsc" id="test-video"></video>' },
     { name: "loop+autoplay videos", html: '<video loop autoplay id="test-video"></video>' },
   ]
 
-  for (const testCase of testCases) {
+  videoTestCases.forEach((testCase) => {
     test(`locks playback rate to 1.0 for ${testCase.name}`, async ({ page }) => {
       await page.addScriptTag({ path: "quartz/static/scripts/lockVideoPlaybackRate.js" })
 
@@ -790,7 +816,7 @@ test.describe("Video Speed Controller visibility", () => {
       const resetPlaybackRate = await getVideoPlaybackRate(page, "test-video")
       expect(resetPlaybackRate).toBe(1.0)
     })
-  }
+  })
 })
 
 test("First paragraph is the same before and after clicking on a heading", async ({

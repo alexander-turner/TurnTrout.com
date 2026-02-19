@@ -114,8 +114,10 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
+        # Use 30s timeout to accommodate Cloudflare CDN latency. The 10s default
+        # caused intermittent failures in CI when the CDN was slow to respond.
         response = requests.head(
-            card_url, timeout=10, allow_redirects=True, headers=headers
+            card_url, timeout=30, allow_redirects=True, headers=headers
         )
 
         if not response.ok:
@@ -552,6 +554,60 @@ def check_stray_katex(text: str) -> List[str]:
     return errors
 
 
+def check_description_list_continuations(text: str) -> List[str]:
+    """
+    Check for improperly formatted description list continuations.
+
+    In Markdown description lists, after a definition line (starting with `: `),
+    if there's a blank line followed by another line starting with `: `, this is
+    likely an error. Continuation paragraphs should be indented (typically 2 spaces)
+    without the `:` prefix.
+
+    Pattern that triggers error:
+        : Definition text
+        <blank line>
+        : Another line starting with colon  <- Should be indented continuation
+
+    Correct format:
+        : Definition text
+        <blank line>
+          Indented continuation (no colon)
+
+    Code and math blocks are ignored during checking.
+    """
+    # Remove code and math blocks while preserving line structure
+    processed_text = remove_math(
+        remove_code(text, mark_boundaries=True), mark_boundaries=True
+    )
+
+    errors = []
+    lines = processed_text.split("\n")
+
+    i = 0
+    while i < len(lines) - 2:
+        current = lines[i]
+        next_line = lines[i + 1]
+        line_after_next = lines[i + 2]
+
+        # Check pattern: definition line -> blank line -> another `: ` line
+        if (
+            current.startswith(": ")
+            and not next_line.strip()
+            and line_after_next.startswith(": ")
+        ):
+            errors.append(
+                f"Line {i + 3}: Description list continuation should be indented "
+                f"(typically 2 spaces), not start with `: `. "
+                f"Found: {line_after_next[:60]}..."
+            )
+            # Skip ahead to avoid duplicate errors
+            i += 2
+        else:
+            i += 1
+
+    return errors
+
+
 def check_html_with_braces(text: str) -> List[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
@@ -665,6 +721,54 @@ def check_footnote_references(text: str) -> List[str]:
     return errors
 
 
+_NON_VOID_ELEMENTS = frozenset(
+    {
+        "iframe",
+        "div",
+        "span",
+        "textarea",
+        "script",
+        "style",
+        "canvas",
+        "video",
+        "audio",
+        "table",
+        "select",
+        "object",
+    }
+)
+
+_SELF_CLOSING_NON_VOID_RE = re.compile(
+    r"<(" + "|".join(_NON_VOID_ELEMENTS) + r")\b[^>]*/\s*>",
+    re.IGNORECASE,
+)
+
+
+def check_self_closing_non_void_elements(text: str) -> List[str]:
+    """
+    Check for self-closing syntax on non-void HTML elements.
+
+    Elements like `<iframe ... />` cause parsing bugs because the browser
+    treats them as unclosed tags, swallowing subsequent content.  Only void
+    elements (`<img>`, `<br>`, `<hr>`, etc.) may use self-closing syntax.
+    """
+    errors: List[str] = []
+    for match in _SELF_CLOSING_NON_VOID_RE.finditer(text):
+        # Skip matches inside code blocks (indented 4+ spaces or fenced)
+        line_start = text.rfind("\n", 0, match.start()) + 1
+        line_prefix = text[line_start : match.start()]
+        if line_prefix.startswith("    ") or line_prefix.startswith("\t"):
+            continue
+
+        line_num = text[: match.start()].count("\n") + 1
+        tag_name = match.group(1)
+        errors.append(
+            f"Self-closing <{tag_name} .../> at line {line_num}"
+            f" (use <{tag_name} ...></{tag_name}> instead)"
+        )
+    return errors
+
+
 def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
@@ -697,9 +801,13 @@ def check_file_data(
         "video_tags": validate_video_tags(text),
         "forbidden_patterns": check_no_forbidden_patterns(text),
         "stray_katex": check_stray_katex(text),
+        "description_list_continuations": check_description_list_continuations(
+            text
+        ),
         "html_braces": check_html_with_braces(text),
         "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),
+        "self_closing_non_void": check_self_closing_non_void_elements(text),
         "invalid_filename": check_spaces_in_path(file_path),
     }
 
@@ -737,7 +845,11 @@ def compile_scss(scss_file_path: Path) -> str:
         return ""
 
     styles_dir = scss_file_path.parent
-    sass_path = Path(str(shutil.which("sass")))
+    sass_path = shutil.which("sass")
+    if sass_path is None:
+        raise FileNotFoundError(
+            "sass executable not found. Install it via pnpm."
+        )
 
     result = subprocess.run(
         [sass_path, f"--load-path={styles_dir}", str(scss_file_path)],

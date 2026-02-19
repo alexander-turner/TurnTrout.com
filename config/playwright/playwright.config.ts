@@ -65,9 +65,9 @@ function sanitizeConfigForBrowser(
 
 export default defineConfig({
   timeout: 30000,
-  workers: 1, // Parallelism causes flakiness
+  fullyParallel: true,
 
-  retries: process.env.CI ? 5 : 1,
+  retries: process.env.CI ? 2 : 1,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
@@ -82,7 +82,7 @@ export default defineConfig({
     baseURL: "http://localhost:8080",
     trace: "on-first-retry",
     screenshot: {
-      mode: "on",
+      mode: "only-on-failure",
       fullPage: true,
     },
     // Stabilize device scale across runners to reduce text subpixel jitter.

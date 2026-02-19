@@ -33,6 +33,28 @@ export const midgroundFaintLight = "#9ca0b0"
 export const midgroundLight = "#74747b"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
+export const dropcapVerticalOffset = "0.15rem"
+export const dropcapFontSize = "3.95rem"
+export const dropcapMinHeight = "4.2rem"
+
+// Design tokens — shared across SCSS files
+export const borderRadius = 5
+export const transitionDurationQuick = "0.2s"
+export const transitionDurationMedium = "0.3s"
+export const transitionDurationSlow = "0.5s"
+export const fauxBoldOffset = "0.3px"
+
+// WCAG AA-compliant overrides for Shiki github-light theme.
+// Contrast ratios measured against code block background #f2f3f7
+// (= color-mix(in srgb, #fcfcff 90%, #9ca0b0)).
+// Must set `color` directly — overriding the CSS custom property doesn't work
+// because inline styles (set by Shiki on each <span>) have higher specificity.
+export const shikiRed = "#c11e2a" // Keywords/operators: #D73A49 (4.13:1) → 5.43:1
+export const shikiOrange = "#a24100" // Parameters/attributes: #E36209 (3.15:1) → 5.75:1
+export const shikiGray = "#57606a" // Comments: #6A737D (4.34:1) → 5.76:1
+export const shikiGreen = "#116329" // Strings/literals: #22863A (4.17:1) → 6.67:1
+export const shikiBlue = "#0550ae" // Constants/builtins: #005CC5 (5.68:1) → 7.25:1
+
 // Shared variables between SCSS and TypeScript
 export const variables = {
   pageWidth,
@@ -63,6 +85,19 @@ export const variables = {
   midgroundLight,
   fontScaleFactor,
   liPaddingLeft,
+  shikiRed,
+  shikiOrange,
+  shikiGray,
+  shikiGreen,
+  shikiBlue,
+  dropcapVerticalOffset,
+  dropcapFontSize,
+  dropcapMinHeight,
+  borderRadius,
+  transitionDurationQuick,
+  transitionDurationMedium,
+  transitionDurationSlow,
+  fauxBoldOffset,
 } as const
 
 export type Variables = typeof variables

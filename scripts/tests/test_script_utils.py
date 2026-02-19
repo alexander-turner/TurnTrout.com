@@ -11,6 +11,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 from .. import utils as script_utils
+from ..utils import get_git_root as _original_get_git_root
 from .utils import create_markdown_file
 
 
@@ -40,6 +41,9 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
             stderr="",
         )
 
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
     monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
     assert script_utils.get_git_root() == Path(expected_output)
@@ -54,7 +58,9 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
             output="",
         )
 
-    # Mock both find_executable and subprocess.run
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
     monkeypatch.setattr(subprocess, "run", mock_subprocess_run)
 
@@ -1192,9 +1198,7 @@ def test_get_imagemagick_version_returns_6_when_im6_detected(
 
 
 def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setattr(
-        script_utils, "_get_imagemagick_version", lambda: 7
-    )
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 7)
     monkeypatch.setattr(
         script_utils, "find_executable", lambda name: f"/usr/bin/{name}"
     )
@@ -1206,9 +1210,7 @@ def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
 def test_get_imagemagick_command_im6_operation_found(
     monkeypatch: pytest.MonkeyPatch,
 ):
-    monkeypatch.setattr(
-        script_utils, "_get_imagemagick_version", lambda: 6
-    )
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
 
     result = script_utils.get_imagemagick_command("identify")
@@ -1218,10 +1220,10 @@ def test_get_imagemagick_command_im6_operation_found(
 def test_get_imagemagick_command_im6_operation_not_found(
     monkeypatch: pytest.MonkeyPatch,
 ):
-    monkeypatch.setattr(
-        script_utils, "_get_imagemagick_version", lambda: 6
-    )
+    monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
     monkeypatch.setattr(shutil, "which", lambda name: None)
 
-    with pytest.raises(FileNotFoundError, match="ImageMagick 'identify' not found"):
+    with pytest.raises(
+        FileNotFoundError, match="ImageMagick 'identify' not found"
+    ):
         script_utils.get_imagemagick_command("identify")

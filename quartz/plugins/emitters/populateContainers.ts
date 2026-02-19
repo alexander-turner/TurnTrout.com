@@ -8,7 +8,7 @@ import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { visit } from "unist-util-visit"
 
-import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
@@ -20,9 +20,8 @@ import {
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
-} from "../transformers/linkfavicons"
-import { createWordJoinerSpan } from "../transformers/utils"
-import { hasClass } from "../transformers/utils"
+} from "../transformers/favicons"
+import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
 const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
@@ -186,7 +185,7 @@ const addPngExtension = (path: string): string => {
 const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
   await Promise.all(
     pngPaths.map(async (pngPath) => {
-      const svgUrl = `https://assets.turntrout.com${pngPath.replace(".png", ".svg")}`
+      const svgUrl = `${cdnBaseUrl}${pngPath.replace(".png", ".svg")}`
       try {
         const response = await fetch(svgUrl)
         if (response.ok) {
@@ -206,7 +205,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createWordJoinerSpan(), faviconElement]
+    return [createNowrapSpan("", faviconElement)]
   }
 }
 
@@ -274,7 +273,7 @@ export const generateFaviconContent = (): ContentGenerator => {
         // istanbul ignore if
         if (url === defaultPath) return null
 
-        // Use helper from linkfavicons.ts to check if favicon should be included
+        // Use helper from favicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
         return { url, count } as const

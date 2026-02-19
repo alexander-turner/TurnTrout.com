@@ -19,7 +19,12 @@ af-num-comments-on-upload: 63
 title: Steering GPT-2-XL by adding an activation vector
 lw-latest-edit: 2024-02-19T23:31:07.877000Z
 lw-is-linkpost: "false"
-authors: Alex Turner, Monte MacDiarmid, David Udell, Lisa Thiergart, and Ulisse Mini
+authors:
+  - Alex Turner
+  - Monte MacDiarmid
+  - David Udell
+  - Lisa Thiergart
+  - Ulisse Mini
 tags:
   - AI
   - shard-theory
@@ -38,6 +43,7 @@ original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-x
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
 date_updated: 2026-01-25 23:47:56.984113
+createBibtex: true
 ---
 
 
@@ -940,7 +946,7 @@ Activation additions are _way cheaper_ than finetuning
 Activation additions may preserve model interpretability, even while changing the model's alignment properties
 : If you're finetuning the whole model, then a single gradient can potentially change _every parameter in your model_, thereby undoing your interpretability work (unless you can understand the update itself).
 
-: But activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
+  However, activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
 
 : Activation additions probably also enjoy some symbol grounding because they're computed using the activations of natural language prompts. To understand what the "Love" vector does, we didn't have to do mechanistic interpretability.
 
@@ -1074,7 +1080,7 @@ White notes that high-quality smile vectors must be computed from gender-balance
 > The approach of building attribute vectors from means of labeled data has been noted to suffer from correlated labels (Larsen et al., 2016). While many correlations would be expected from ground truths (e.g., heavy makeup and wearing lipstick) we discovered others that appear to be from sampling bias. For example, male and smiling attributes have unexpected negative correlations because women in the CelebA dataset are much more likely to be smiling than men.
 >
 > …
-> 
+>
 > As an example, the two attributes smiling and mouth open are highly correlated in the CelebA training set (Table 2). This is not surprising, as  
 > physically most people photographed smiling would also have their mouth open. However by forcing these attributes to be balanced, we can construct two decoupled attribute vectors. This allows for more flexibility in applying each attribute separately to varying degrees
 

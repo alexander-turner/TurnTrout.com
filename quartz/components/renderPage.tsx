@@ -16,7 +16,7 @@ import {
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
-import { locale } from "./constants"
+import { locale, PREVIEWABLE_CLASS } from "./constants"
 import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
@@ -236,7 +236,15 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  const contentIndexScript = `const fetchData = fetch("${contentIndexPath}").then(data => data.json())`
+  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
+  const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
+let fetchData = null;
+function getContentIndex() {
+  if (!fetchData) {
+    fetchData = fetch(contentIndexPath).then(data => data.json());
+  }
+  return fetchData;
+}`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],
@@ -420,7 +428,7 @@ export function renderPage(
           <HeaderComponent {...componentData} key={HeaderComponent.name} />
         ))}
       </Header>
-      <div className="previewable">
+      <div className={PREVIEWABLE_CLASS}>
         {beforeBody.map((BodyComponent) => (
           <BodyComponent {...componentData} key={BodyComponent.name} />
         ))}

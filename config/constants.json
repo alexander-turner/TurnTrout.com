@@ -97,6 +97,25 @@
   "listTolerance": 5,
   "maxCardImageSizeKb": 300,
   "playwrightConfigs": 9,
+  "savedThemeKey": "saved-theme",
+  "autoplayStorageKey": "pond-video-autoplay",
+  "instantScrollRestoreKey": "instantScrollRestore",
+  "cdnBaseUrl": "https://assets.turntrout.com",
+  "popoverRemovalDelayMs": 300,
+  "dropcapColors": [
+    "red",
+    "maroon",
+    "orange",
+    "gold",
+    "green",
+    "teal",
+    "sky",
+    "blue",
+    "purple",
+    "lavender",
+    "pink"
+  ],
+  "colorDropcapProbability": 0.06666666666666667,
   "specialDomainMappings": [
     {
       "pattern": "^.*transformer-circuits\\.pub",

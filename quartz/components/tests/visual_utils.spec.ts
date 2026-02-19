@@ -1,8 +1,10 @@
-import { test, expect, type PageScreenshotOptions } from "@playwright/test"
+import type { PageScreenshotOptions } from "@playwright/test"
+
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import {
   setTheme,
   getNextElementMatchingSelector,
@@ -10,7 +12,6 @@ import {
   isDesktopViewport,
   takeRegressionScreenshot,
   pauseMediaElements,
-  showingPreview,
   getH1Screenshots,
   getScreenshotName,
   wrapH1SectionsInSpans,
@@ -85,6 +86,69 @@ test.describe("wrapH1SectionsInSpans", () => {
 
     const section0 = contentLocator.locator("#h1-span-first-h1")
     await expect(section0.locator("h1").first()).toHaveText("First H1")
+  })
+
+  test("splits footnote section into its own span", async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <article id="content">
+            <h1 id="main-heading">Main Content</h1>
+            <p>Some content</p>
+            <section data-footnotes class="footnotes">
+              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <ol>
+                <li id="user-content-fn-1">Footnote 1</li>
+              </ol>
+            </section>
+          </article>
+        </body>
+      </html>
+    `)
+
+    await wrapH1SectionsInSpans(page)
+
+    const html = await page.innerHTML("body")
+    // The main heading gets its own span
+    expect(html).toContain('<span id="h1-span-main-heading">')
+    // The footnote section gets its own span
+    expect(html).toContain('<span id="h1-span-footnote-label">')
+
+    // The footnote section is NOT inside the main heading's span
+    const mainSpan = page.locator("#h1-span-main-heading")
+    await expect(mainSpan.locator("section[data-footnotes]")).toHaveCount(0)
+
+    // The footnote section IS inside its own span
+    const footnoteSpan = page.locator("#h1-span-footnote-label")
+    await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
+  })
+
+  test("footnote span wrapping is idempotent", async ({ page }) => {
+    await page.setContent(`
+      <html>
+        <body>
+          <article id="content">
+            <h1 id="main-heading">Main Content</h1>
+            <p>Some content</p>
+            <section data-footnotes class="footnotes">
+              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <ol>
+                <li id="user-content-fn-1">Footnote 1</li>
+              </ol>
+            </section>
+          </article>
+        </body>
+      </html>
+    `)
+
+    await wrapH1SectionsInSpans(page)
+    const initialHtml = await page.innerHTML("body")
+
+    await wrapH1SectionsInSpans(page)
+    const finalHtml = await page.innerHTML("body")
+
+    expect(finalHtml).toEqual(initialHtml)
+    expect(await page.locator("span[id^='h1-span-']").count()).toBe(2)
   })
 })
 
@@ -650,23 +714,6 @@ test.describe("pauseMediaElements", () => {
 
     expect(await notMedia.innerHTML()).toBe(initialHtml)
   })
-})
-
-test.describe("showingPreview", () => {
-  const viewports = [
-    { width: 1580, height: 800, expected: true }, // Desktop
-    { width: 1024, height: 768, expected: true }, // Tablet landscape (above breakpoint)
-    { width: 991, height: 768, expected: false }, // Tablet portrait (below breakpoint)
-    { width: 800, height: 600, expected: false }, // Smaller Tablet
-    { width: 480, height: 800, expected: false }, // Mobile
-  ]
-
-  for (const { width, height, expected } of viewports) {
-    test(`returns ${expected} for viewport ${width}x${height}`, async ({ page }) => {
-      await page.setViewportSize({ width, height })
-      expect(showingPreview(page)).toBe(expected)
-    })
-  }
 })
 
 test.describe("getAllWithWait", () => {

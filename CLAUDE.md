@@ -23,13 +23,7 @@ pnpm preview      # Build and serve
 pnpm test                   # TypeScript tests with coverage (requires 100% branch coverage)
 pnpm check                  # Type checking without emitting files
 pnpm test:visual            # Visual regression tests with Playwright
-pytest <path>               # Python tests (NOT python -m pytest)
-```
-
-**Python environment**: Always activate conda environment before running Python scripts:
-
-```bash
-conda init && conda activate website
+uv run pytest <path>        # Python tests
 ```
 
 ### Running Playwright Tests Locally
@@ -63,6 +57,8 @@ pnpm check          # Lint and type check
 ```
 
 ## Architecture
+
+Place any "magic numbers" or constants used in >1 file in `config/constants.json` (for static quantities) or `quartz/components/constants.ts` (for dynamically generated values).
 
 ### Quartz Plugin System (TypeScript)
 
@@ -112,7 +108,6 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - Stashes uncommitted changes
 - Runs comprehensive validation (tests, linting, spellcheck, link validation)
 - Compresses/uploads assets to CDN
-- Updates publication dates
 - Can resume from last failure: `RESUME=true git push`
 
 ## Content Structure
@@ -177,21 +172,21 @@ When pushing to main, these checks run automatically:
 8. Built site checks (no localhost links, all favicons wrapped, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
-11. Publication date updates
 
 ## GitHub Actions (Post-push)
 
 After pushing to main:
 
+- **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~40 parallel shards to complete in ~10 minutes
+- Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis
 
 ### CI Cost Optimization
 
-- **Playwright/visual tests on PRs**: These only run when the `ci:full-tests` label is added to a PR. They always run on push to main/dev and in the merge queue.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. They always run on push to main/dev and in the merge queue, enforcing that all tests pass before merge.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: Workflows only trigger when relevant files change. Playwright tests skip content-only changes.
 - **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.
@@ -216,6 +211,11 @@ Per `.cursorrules` and `design.md`:
 - Check for existing libraries before rolling custom solutions
 - Look for existing patterns in the codebase before creating new ones
 
+### Documentation
+
+- When modifying functionality described in `website_content/design.md`, update that file to reflect the changes
+- The design document explains implementation details for site features, deployment pipeline, and CI/CD workflows
+
 ### Code Style
 
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
@@ -223,10 +223,19 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
+### Error Handling
+
+- **Never use empty catch blocks** - errors should either be handled or propagated
+- Don't catch exceptions just to ignore them - if an error isn't expected to occur, let it fail loudly
+- Only catch specific errors you know how to handle; let unexpected errors propagate
+- If you must catch for cleanup, rethrow the error after cleanup
+- Don't use try/catch to silence errors unless there's a specific, documented reason
+
 ### Testing
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
 - Write focused, non-duplicative tests
+- **NEVER update test expectations without asking the user first.**
 
 ### Dependencies
 

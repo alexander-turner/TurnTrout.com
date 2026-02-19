@@ -14,6 +14,7 @@ import "@testing-library/jest-dom"
 
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FilePath } from "../../util/path"
+import { normalizeNbsp } from "../constants"
 import {
   ContentMetadata,
   RenderPublicationInfo,
@@ -62,7 +63,7 @@ jest.mock("../Date", () => ({
   DateElement: () => <span data-testid="date-element">Mocked Date</span>,
 }))
 
-jest.mock("../../plugins/transformers/linkfavicons", () => ({
+jest.mock("../../plugins/transformers/favicons", () => ({
   GetQuartzPath: jest.fn(),
   urlCache: new Map(),
   getFaviconPath: () => "/mock/favicon.avif",
@@ -124,14 +125,11 @@ describe("processReadingTime", () => {
 })
 
 describe("RenderPublicationInfo", () => {
-  it("should return null when no date_published", () => {
-    const fileData = createFileData({ date_published: undefined })
-    const result = RenderPublicationInfo(mockConfig, fileData)
-    expect(result).toBeNull()
-  })
-
-  it("should return null when hide_metadata is true", () => {
-    const fileData = createFileData({ hide_metadata: true })
+  it.each([
+    ["no date_published", { date_published: undefined }],
+    ["hide_metadata is true", { hide_metadata: true }],
+  ])("should return null when %s", (_, overrides) => {
+    const fileData = createFileData(overrides)
     const result = RenderPublicationInfo(mockConfig, fileData)
     expect(result).toBeNull()
   })
@@ -180,15 +178,11 @@ describe("RenderPublicationInfo", () => {
 })
 
 describe("renderLastUpdated", () => {
-  it("should return null when no date_updated", () => {
-    const fileData = createFileData()
-
-    const result = renderLastUpdated(mockConfig, fileData)
-    expect(result).toBeNull()
-  })
-
-  it("should return null when hide_metadata is true", () => {
-    const fileData = createFileData({ hide_metadata: true })
+  it.each([
+    ["no date_updated", {}],
+    ["hide_metadata is true", { hide_metadata: true }],
+  ])("should return null when %s", (_, overrides) => {
+    const fileData = createFileData(overrides)
     const result = renderLastUpdated(mockConfig, fileData)
     expect(result).toBeNull()
   })
@@ -328,18 +322,11 @@ describe("renderTags", () => {
     },
   })
 
-  it("should return an empty fragment when no tags are present", () => {
-    const fileData = createFileData({ tags: undefined })
-    const props = mockProps(fileData)
-    const result = renderTags(props)
-    const div = document.createElement("div")
-    const root = createRoot(div)
-    root.render(result as React.ReactElement)
-    expect(div.innerHTML).toBe("")
-  })
-
-  it("should return an empty fragment when tags array is empty", () => {
-    const fileData = createFileData({ tags: [] })
+  it.each([
+    ["no tags are present", { tags: undefined }],
+    ["tags array is empty", { tags: [] }],
+  ])("should return an empty fragment when %s", (_, overrides) => {
+    const fileData = createFileData(overrides)
     const props = mockProps(fileData)
     const result = renderTags(props)
     const div = document.createElement("div")
@@ -400,7 +387,7 @@ describe("renderPreviousPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(PREV_POST_SLUG)
-    expect(link.props.children).toBe(PREV_POST_TITLE)
+    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -410,7 +397,7 @@ describe("renderPreviousPostJsx", () => {
     })
     const result = renderPreviousPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(link.props.children).toBe(PREV_POST_TITLE_CAPS)
+    expect(normalizeNbsp(link.props.children)).toBe(PREV_POST_TITLE_CAPS)
   })
 })
 
@@ -432,7 +419,7 @@ describe("renderNextPostJsx", () => {
     const link = result?.props.children[2]
     expect(link.type).toBe("a")
     expect(link.props.href).toBe(NEXT_POST_SLUG)
-    expect(link.props.children).toBe(NEXT_POST_TITLE)
+    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE)
   })
 
   it("should format all-caps title", () => {
@@ -442,7 +429,7 @@ describe("renderNextPostJsx", () => {
     })
     const result = renderNextPostJsx(fileData)
     const link = result?.props.children[2]
-    expect(link.props.children).toBe(NEXT_POST_TITLE_CAPS)
+    expect(normalizeNbsp(link.props.children)).toBe(NEXT_POST_TITLE_CAPS)
   })
 })
 

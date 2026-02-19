@@ -16,10 +16,11 @@ import {
   specialFaviconPaths,
   defaultPath,
   specialDomainMappings,
+  cdnBaseUrl,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import { createWinstonLogger } from "../../util/log"
-import { createWordJoinerSpan, hasClass } from "./utils"
+import { hasClass, spliceAndWrapLastChars } from "./utils"
 
 const {
   minFaviconCount,
@@ -326,7 +327,7 @@ export function getFaviconUrl(faviconPath: string): string {
 
   // SVG files don't need conversion, serve directly via CDN
   if (faviconPath.endsWith(".svg")) {
-    return `https://assets.turntrout.com${faviconPath}`
+    return `${cdnBaseUrl}${faviconPath}`
   }
 
   // Normalize path to .png for cache lookup (cache keys are always .png paths)
@@ -340,7 +341,7 @@ export function getFaviconUrl(faviconPath: string): string {
     }
     // Cache contains SVG path, construct CDN URL
     if (cached.endsWith(".svg")) {
-      return `https://assets.turntrout.com${cached}`
+      return `${cdnBaseUrl}${cached}`
     }
   }
 
@@ -350,14 +351,14 @@ export function getFaviconUrl(faviconPath: string): string {
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
     // SVG exists locally, return SVG CDN URL
-    return `https://assets.turntrout.com${svgPath}`
+    return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
   }
 
   // Fallback to AVIF
   const avifPath = pngPath.replace(".png", ".avif")
-  return `https://assets.turntrout.com${avifPath}`
+  return `${cdnBaseUrl}${avifPath}`
 }
 
 /**
@@ -681,7 +682,10 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
   }
 
   const toAppend: FaviconNode = createFaviconElement(imgPath)
-  appendFaviconWithWordJoiner(node, toAppend)
+  const result = maybeSpliceText(node, toAppend)
+  if (result) {
+    node.children.push(result)
+  }
 }
 
 // Glyphs where top-right corner occupied
@@ -689,19 +693,19 @@ export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'"]
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**
- * Appends a favicon to a node, preceded by a word joiner character (U+2060)
- * to prevent line breaking between the text and the favicon.
+ * Splices the last few characters from a text node and wraps them
+ * with the favicon in a nowrap span, preventing line-break orphaning.
  *
  * This function:
  * 1. Finds the last meaningful child node
  * 2. Recurses into inline elements (code, em, strong, etc.)
- * 3. Adds close-text class if the last character needs extra margin
- * 4. Appends a word joiner + favicon
+ * 3. If an existing favicon-span exists, appends to it
+ * 4. Splices the last 4 characters and wraps them + favicon in a nowrap span
+ * 5. Adds close-text class if the last character needs extra margin
  *
- * @param node - The Element node to process
- * @param imgNodeToAppend - The favicon node to append
+ * @returns The nowrap span to append to the parent, or null if already handled
  */
-export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: FaviconNode): void {
+export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): Element | null {
   // Find the last non-empty child
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
   const lastChild = [...node.children]
@@ -711,26 +715,40 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
   // If no valid last child found, just append the favicon
   if (!lastChild) {
     logger.debug("No valid last child found, appending favicon directly")
-    node.children.push(imgNodeToAppend)
-    return
+    return imgNodeToAppend
+  }
+
+  // If the last child is a span.favicon-span, append the favicon directly to it
+  if (
+    lastChild.type === "element" &&
+    lastChild.tagName === "span" &&
+    hasClass(lastChild, "favicon-span")
+  ) {
+    logger.debug("Appending favicon to existing favicon-span")
+    lastChild.children.push(imgNodeToAppend)
+    return null
   }
 
   // If the last child is a tag that should be zoomed into, recurse
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
     logger.debug(`Zooming into nested element ${lastChild.tagName}`)
-    appendFaviconWithWordJoiner(lastChild as Element, imgNodeToAppend)
-    return
+    const result = maybeSpliceText(lastChild as Element, imgNodeToAppend)
+    if (result) {
+      lastChild.children.push(result)
+    }
+    return null
   }
 
-  // If last child is not a text node or has no value, just append
+  // If last child is not a text node or has no value, just append the favicon
   if (lastChild.type !== "text" || !lastChild.value) {
     logger.debug("Appending favicon directly to node")
-    node.children.push(imgNodeToAppend)
-    return
+    return imgNodeToAppend
   }
 
+  const lastChildText = lastChild as Text
+
   // Some characters render particularly close to the favicon, so we add a small margin
-  const lastChar = lastChild.value.at(-1)
+  const lastChar = lastChildText.value.at(-1)
   if (lastChar && charsToSpace.includes(lastChar)) {
     logger.debug("Adding margin-left to appended element")
     // istanbul ignore next
@@ -738,8 +756,7 @@ export function appendFaviconWithWordJoiner(node: Element, imgNodeToAppend: Favi
     imgNodeToAppend.properties.class = "favicon close-text"
   }
 
-  // Append word joiner + favicon to prevent line-break orphaning
-  node.children.push(createWordJoinerSpan(), imgNodeToAppend)
+  return spliceAndWrapLastChars(lastChildText, node, imgNodeToAppend)
 }
 
 /**

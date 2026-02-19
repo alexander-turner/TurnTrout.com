@@ -41,8 +41,27 @@ export const {
   scrollTolerance,
   listTolerance,
   playwrightConfigs,
+  savedThemeKey,
+  autoplayStorageKey,
+  instantScrollRestoreKey,
+  cdnBaseUrl,
+  popoverRemovalDelayMs,
+  dropcapColors: DROPCAP_COLORS,
+  colorDropcapProbability,
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
+
+// Unicode typography constants
+export const NBSP = "\u00A0"
+export const LEFT_SINGLE_QUOTE = "\u2018"
+export const RIGHT_SINGLE_QUOTE = "\u2019"
+export const LEFT_DOUBLE_QUOTE = "\u201C"
+export const RIGHT_DOUBLE_QUOTE = "\u201D"
+
+/** Normalize non-breaking spaces to regular spaces */
+export function normalizeNbsp(s: string): string {
+  return s.replace(new RegExp(NBSP, "g"), " ")
+}
 
 // Private Use Area marker characters (U+F000 range to avoid conflict with Tengwar fonts at U+E000)
 export const markerChar = "\uF000" // Used for text transformation markers
@@ -80,6 +99,14 @@ export const specialDomainMappings: Array<{ pattern: RegExp; to: string }> = [
     to: mapping.to,
   })),
 ]
+
+// External link attributes
+export const EXTERNAL_LINK_REL = "noopener noreferrer"
+
+// Shared CSS class names (used across multiple components/scripts)
+export const PREVIEWABLE_CLASS = "previewable"
+export const CAN_TRIGGER_POPOVER_CLASS = "can-trigger-popover"
+export const SEARCH_MATCH_CLASS = "search-match"
 
 // UI strings for various components
 export const uiStrings = {

@@ -6246,5 +6246,137 @@
   "https://assets.turntrout.com/static/images/test.avif": {
     "width": 200,
     "height": 150
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wikipedia_org.svg": {
+    "width": 24,
+    "height": 15
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/substack_com.svg": {
+    "width": 21,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/rss.svg": {
+    "width": 17,
+    "height": 17
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/mail.svg": {
+    "width": 800,
+    "height": 800
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/lesswrong_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/gwern_net.svg": {
+    "width": 661,
+    "height": 531
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/slatestarcodex_com.svg": {
+    "width": 22,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/amazon_com.svg": {
+    "width": 23,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/npmjs_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arxiv_org.svg": {
+    "width": 18,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/readthesequences_com.svg": {
+    "width": 15,
+    "height": 15
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/wordpress_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/arbital_com.svg": {
+    "width": 12,
+    "height": 11
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/ai-alignment_com.svg": {
+    "width": 1024,
+    "height": 1024
+  },
+  "./asset_staging/design-02142026-1.png": {
+    "width": 1622,
+    "height": 1734
+  },
+  "./asset_staging/design-02142026.png": {
+    "width": 2506,
+    "height": 1240
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/matsprogram_org.svg": {
+    "width": 13,
+    "height": 15
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/forum_effectivealtruism_org.svg": {
+    "width": 13,
+    "height": 20
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/alignmentforum_org.svg": {
+    "width": 14,
+    "height": 8
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/intelligence_org.svg": {
+    "width": 23,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/linkedin_com.svg": {
+    "width": 24,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/nytimes_com.svg": {
+    "width": 19,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/sfchronicle_com.svg": {
+    "width": 18,
+    "height": 19
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/whitehouse_gov.svg": {
+    "width": 24,
+    "height": 11
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/msnbc_com.svg": {
+    "width": 24,
+    "height": 15
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/proton_me.svg": {
+    "width": 19,
+    "height": 24
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/cnn_com.svg": {
+    "width": 24,
+    "height": 11
+  },
+  "https://assets.turntrout.com/static/images/external-favicons/abcnews_go_com.svg": {
+    "width": 16,
+    "height": 16
+  },
+  "https://assets.turntrout.com/static/images/posts/design-02142026-1.avif": {
+    "width": 1622,
+    "height": 1734
+  },
+  "https://assets.turntrout.com/static/images/posts/design-02142026.avif": {
+    "width": 2506,
+    "height": 1240
+  },
+  "./asset_staging/design-02152026.png": {
+    "width": 2650,
+    "height": 1384
+  },
+  "https://assets.turntrout.com/static/images/posts/design-02152026-1.avif": {
+    "width": 1346,
+    "height": 788
+  },
+  "https://assets.turntrout.com/static/images/posts/design-02152026.avif": {
+    "width": 2696,
+    "height": 1948
   }
 }

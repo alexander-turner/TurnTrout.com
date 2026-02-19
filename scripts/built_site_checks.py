@@ -27,6 +27,17 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
+from scripts.utils import (
+    ELLIPSIS,
+    LEFT_DOUBLE_QUOTE,
+    LEFT_SINGLE_QUOTE,
+    NBSP,
+    RIGHT_DOUBLE_QUOTE,
+    RIGHT_SINGLE_QUOTE,
+    WORD_JOINER,
+    ZERO_WIDTH_NBSP,
+    ZERO_WIDTH_SPACE,
+)
 
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
@@ -147,6 +158,11 @@ def _should_skip_paragraph(p: Tag) -> bool:
     ):
         return True
 
+    # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
+    text = p.get_text()
+    if "·" in text:
+        return True
+
     # Skip paragraphs that only contain inline styling elements
     # (e.g. typography examples like <span class="h2">Header 2</span>)
     return all(
@@ -175,9 +191,9 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
         TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH
     )
     # Strip zero-width spaces and other invisible characters
-    text = text.replace("\u200b", "")  # zero-width space
-    text = text.replace("\ufeff", "")  # zero-width no-break space
-    text = text.replace("\u2060", "")  # word joiner
+    text = text.replace(ZERO_WIDTH_SPACE, "")
+    text = text.replace(ZERO_WIDTH_NBSP, "")
+    text = text.replace(WORD_JOINER, "")
     return text.strip()
 
 
@@ -236,6 +252,10 @@ def _check_anchor_classes(
      Not all same-page links are specified like that.
     """
     classes = set(script_utils.get_classes(link))
+
+    # Skip accessibility skip-to-content link (not a content link)
+    if "skip-to-content" in classes:
+        return
 
     required_classes = {"internal", "same-page-link"}
     if not required_classes.issubset(classes):
@@ -388,18 +408,20 @@ def _append_to_list(
     lst.append(prefix + to_append)
 
 
+_S = f"[ {NBSP}]"  # Space or non-breaking space
 _CANARY_BAD_ANYWHERE = (
-    r"> \[\![a-zA-Z]+\]",  # Callout syntax
-    r"\[ \]",  # Unrendered checkbox
-    r"Table: ",
-    r"Figure: ",
-    r"Code: ",
-    r"Caption: ",
+    rf">{_S}\[\![a-zA-Z]+\]",  # Callout syntax
+    rf"\[{_S}\]",  # Unrendered checkbox
+    rf"Table:{_S}",
+    rf"Figure:{_S}",
+    rf"Code:{_S}",
+    rf"Caption:{_S}",
 )
 _CANARY_BAD_PREFIXES = (
-    r": ",  # Unrendered description
+    rf":{_S}",  # Unrendered description
     r"#",  # Unrendered heading
-    r"\[(\s|\u200B)*\]",  # image alt declaration, may contain 0width space
+    # image alt declaration, may contain 0width space
+    rf"\[(\s|{ZERO_WIDTH_SPACE})*\]",
 )
 
 
@@ -718,6 +740,34 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all `.subfigure` elements have a `<figure>` ancestor.
+
+    When the markdown parser breaks a `<figure>` structure (e.g. inside
+    a definition list continuation), `.subfigure` divs can end up as
+    orphaned elements outside any `<figure>`, breaking the flex layout.
+
+    Subfigures may be nested inside intermediate wrapper elements (e.g.
+    `<div role="img">` for accessibility), so this checks ancestors
+    rather than requiring a direct parent.
+
+    Returns:
+        list of strings describing orphaned subfigure elements
+    """
+    issues: list[str] = []
+
+    for subfig in _tags_only(soup.find_all(class_="subfigure")):
+        if not subfig.find_parent("figure"):
+            tag_preview = str(subfig)[:120]
+            _append_to_list(
+                issues,
+                f"Orphaned .subfigure (no <figure> ancestor): {tag_preview}",
+            )
+
+    return issues
+
+
 def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
     """
     Check for class names that contain commas or start with dots.
@@ -865,7 +915,9 @@ def check_unrendered_emphasis(soup: BeautifulSoup) -> list[str]:
         # Get text excluding code and KaTeX elements
         stripped_text = script_utils.get_non_code_text(text_elt)
 
-        if stripped_text and (re.search(r"\*|\_(?!\_* +\%)", stripped_text)):
+        if stripped_text and (
+            re.search(rf"\*|\_(?!\_*[ {NBSP}]+\%)", stripped_text)
+        ):
             _append_to_list(
                 problematic_texts,
                 stripped_text,
@@ -1089,7 +1141,10 @@ def check_consecutive_periods(soup: BeautifulSoup) -> list[str]:
             continue
         if element.strip() and not should_skip(element):
             # Look for two periods with optional quote marks between
-            if re.search(r"(?!\.\.\?)\.[\u0022\u201c\u201d]*\.", str(element)):
+            if re.search(
+                rf'(?!\.\.\?)\.["{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]*\.',
+                str(element),
+            ):
                 _append_to_list(
                     problematic_texts,
                     str(element),
@@ -1160,25 +1215,26 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
     ]
 
 
-def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
+def check_favicon_span(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all favicons are preceded by a word joiner span element.
+    Check that all favicons are inside a favicon-span element.
 
-    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
-    the favicon from orphaning onto a new line. Every favicon should have this
-    span as its immediately preceding sibling, unless it's inside a
+    The <span class="favicon-span"> with white-space: nowrap wraps the last
+    few characters of text together with the favicon to prevent the favicon
+    from orphaning onto a new line.
+    Every favicon should be a child of this span, unless it's inside a
     .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons missing word joiner spans.
+        list of strings describing favicons missing favicon-span parents.
     """
     issues: list[str] = []
 
     for favicon in _get_favicons_to_check(soup):
-        prev_sibling = favicon.previous_sibling
+        parent = favicon.parent
         if isinstance(
-            prev_sibling, Tag
-        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            parent, Tag
+        ) and "favicon-span" in script_utils.get_classes(parent):
             continue
 
         # Identify the favicon for the error message
@@ -1189,8 +1245,7 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
 
         _append_to_list(
             issues,
-            f"Favicon ({context}) missing word-joiner span as "
-            f"previous sibling",
+            f"Favicon ({context}) missing favicon-span as parent",
         )
 
     return issues
@@ -1471,9 +1526,11 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    simple_quotes_label = re.sub(r"['‘’“”]", '"', lower_label)
+    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
+    simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
-    return unescaped_label.strip()
+    normalized_spaces = unescaped_label.replace(NBSP, " ")
+    return normalized_spaces.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
@@ -1566,7 +1623,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
-        "missing_word_joiner": check_favicon_word_joiner(soup),
+        "missing_favicon_span": check_favicon_span(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
@@ -1591,6 +1648,7 @@ def check_file_for_issues(
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
+        "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
     if should_check_fonts:
@@ -1761,8 +1819,17 @@ def check_spacing(
     return []
 
 
-ALLOWED_ELT_PRECEDING_CHARS = "[({-—~×“=+‘ \n\t\r"
-ALLOWED_ELT_FOLLOWING_CHARS = "])}.,;!?:-—~×+”…=’ \n\t\r"
+ALLOWED_ELT_PRECEDING_CHARS = (
+    "[({-—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r" + NBSP
+)
+ALLOWED_ELT_FOLLOWING_CHARS = (
+    "])}.,;!?:-—~×+"
+    + RIGHT_DOUBLE_QUOTE
+    + RIGHT_SINGLE_QUOTE
+    + ELLIPSIS
+    + "=' \n\t\r"
+    + NBSP
+)
 
 
 def _check_element_spacing(

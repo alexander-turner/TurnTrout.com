@@ -9,7 +9,8 @@ tags:
   - understanding-the-world
   - community
 description: In 2025, America is different. Reduce your chance of persecution via smart technical choices.
-authors: Alex Turner
+authors:
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/J9EZDFI.jpg
 aliases:
@@ -154,12 +155,12 @@ I've structured my recommendations around two key principles.
 Open source code
 :  If a program is open source, then that means anyone can see its code. In turn, that means if the developers put something suspicious or sneaky in the program, someone will probably read the code and notice. You don't need to *trust* that the people who made the app didn't include creepy tracking.
 
-:  Open source programs are usually free as well!
+   Open source programs are usually free as well!
 
 End-to-end encryption (E2EE)
 : While Apple Calendar might encrypt the events you schedule, that'll only prevent outside people from taking a peek. If Apple wanted to, they could look at your calendar. More concerningly and more likely, if a government demands that Apple hand over your schedule, they're able to and need to comply. However, if you enable end-to-end encryption, that's no longer possible, because only you can unlock or decrypt that information.  
 
-: Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
+  Pessimistically, you should assume that anything which isn't E2EE can be read by the government.
 
 Unless I mention otherwise, all of my recommendations are both open source and E2EE. By following this guide's recommendations, you will create "dark spots" where the surveillance apparatus has trouble looking. Even in the face of an authoritarian crackdown on [thoughtcrime](https://en.wikipedia.org/wiki/Thoughtcrime), you will have space in which to think freely and to organize discreetly.
 

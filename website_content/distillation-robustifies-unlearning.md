@@ -6,7 +6,16 @@ tags:
   - AI
   - mats-program
 description: Current “unlearning” methods only hide bad abilities without removing them. By distilling an “unlearned” model into a new one, unlearning becomes real.
-authors: Bruce Lee, Addie Foote, Alex Infanger, Leni Shor, Harish Kamath, Jacob Goldman-Wetzler, Bryce Woodworth, Alex Cloud, and Alex Turner
+authors:
+  - Bruce Lee
+  - Addie Foote
+  - Alex Infanger
+  - Leni Shor
+  - Harish Kamath
+  - Jacob Goldman-Wetzler
+  - Bryce Woodworth
+  - Alex Cloud
+  - Alex Turner
 hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/TJSBvVy.jpg
 aliases:
@@ -18,6 +27,7 @@ original_url: https://www.lesswrong.com/posts/anX4QrNjhJqGFvrBr/distillation-rob
 date_published: 2025-06-13 08:23:57.381894
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue liquid is distilled. A tube transfers vapor to a second flask, which collects only blue liquid, leaving the red behind.
+createBibtex: true
 ---
 
 
@@ -48,7 +58,7 @@ Misalignment risk
 
 : Robust unlearning could remove strategic knowledge and skills that an unaligned AI might rely on. Potential removal targets include knowledge of: AI control protocols or datacenter security practices; weight exfiltration; self-modification techniques; the fact that it is an AI system; or even the ability to [be influenced by negative stereotypes about AI.](https://turntrout.com/self-fulfilling-misalignment) Robust unlearning could maybe even cripple an AI’s hacking or biology skills, or make it a less convincing liar.
 
-: Perhaps robust unlearning simply makes it harder for an AI to reason about an area, but doesn’t stop the AI entirely. That outcome would still be less risky.
+  Perhaps robust unlearning simply makes it harder for an AI to reason about an area, but doesn’t stop the AI entirely. That outcome would still be less risky.
 
 # Perfect data filtering is the current unlearning gold standard
 
@@ -166,7 +176,7 @@ Distillation is not just a compression tool[^1]
 
 : Distillation also changes safety-relevant model properties – e.g. distillation makes unlearning robust. If you first unlearn and then distill into a randomly initialized student, the student keeps the desired behavior but loses the unwanted capability, even under relearning attacks. In a sense, distilling a suppressed model allows you to only train on “good” data.[^2] UNDO decomposes “robust unlearning” into “choice of shallow-unlearning method” and “how distillation is performed.”
 
-: Therefore, developers can mix and match suppression methods. As suppression / shallow unlearning improves, so does UNDO!
+  Therefore, developers can mix and match suppression methods. As suppression / shallow unlearning improves, so does UNDO!
 
 We can trade off compute and robustness
 
@@ -210,19 +220,6 @@ UNDO is a viable approach for creating genuinely capability-limited models. Whil
 
 > [!idea] Join Team Shard
 > Want to become more skilled at alignment research? Apply to work with us later this year in the next round of [MATS](https://www.matsprogram.org/apply#Turner).
-
-## Citation
-
-```bibtex
-@misc{lee2025distillationrobustifiesunlearning,
-      title={Distillation Robustifies Unlearning}, 
-      author={Bruce W. Lee and Addie Foote and Alex Infanger and Leni Shor and Harish Kamath and Jacob Goldman-Wetzler and Bryce Woodworth and Alex Cloud and Alexander Matt Turner},
-      year={2025},
-      eprint={2506.06278},
-      archivePrefix={arXiv},
-      url={https://arxiv.org/abs/2506.06278}, 
-}
-```
 
 [^1]: Other work has used distillation in contexts other than model compression, including [improving](https://arxiv.org/pdf/1805.04770) [performance](https://arxiv.org/pdf/1911.04252), dataset [privacy](https://arxiv.org/pdf/2110.08324) [protection](https://arxiv.org/pdf/1610.05755), and [continual](https://arxiv.org/pdf/1606.09282) [learning](https://arxiv.org/pdf/2302.00487).
 

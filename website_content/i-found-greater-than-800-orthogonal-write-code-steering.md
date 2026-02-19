@@ -21,7 +21,9 @@ af-num-comments-on-upload: 0
 title: I found >800 orthogonal 'write code' steering vectors
 lw-latest-edit: 2024-07-17T21:40:13.035000Z
 lw-is-linkpost: 'true'
-authors: Jacob Goldman-Wetzler and Alex Turner
+authors:
+  - Jacob Goldman-Wetzler
+  - Alex Turner
 tags:
   - AI
   - mats-program
@@ -222,14 +224,14 @@ After thinking for a while and talking to a bunch of people, I have a few hypoth
 The model needs to be able represent common features redundantly since it represents features in superposition.
 : If there is a common feature (like coding), the model needs to compose it with lots of other features. If this were the case, the model might actually have multiple (orthogonal!) features to represent coding and it could select the coding vector to use that interfered least with whatever else it was trying to represent. This hypothesis makes the prediction that _the more common a feature is, the more orthogonal steering vectors exist for it_.
 
-: I think the Appendix provides some evidence for this: both the 'becomes an alien species' and 'STEM problem' vectors don't have many vectors that have close to 0 KL divergence in outputs w.r.t the original MELBO vector the way that the 'coding' and 'jailbreak' vectors do. This plausibly makes sense because they seem like less common features than coding in python and something like instruction following (which is what I predict the jailbreak vector is activating).
+  I think the Appendix provides some evidence for this: both the 'becomes an alien species' and 'STEM problem' vectors don't have many vectors that have close to 0 KL divergence in outputs w.r.t the original MELBO vector the way that the 'coding' and 'jailbreak' vectors do. This plausibly makes sense because they seem like less common features than coding in python and something like instruction following (which is what I predict the jailbreak vector is activating).
 
 : But this is also a post-hoc observation so to really test this I would need to make an advance prediction with a different steering vector. I also don't think it would need 800 steering vectors for coding to represent the concept redundantly if this hypothesis were true. I suspect it would need fewer vectors.
 
 These orthogonal steering vectors are just adversarial vectors that are out of distribution for the model.
 : Some evidence for this hypothesis: the orthogonal steering vectors all have magnitudes much higher than the original MELBO vector (shown at $x=0$ in the plots), suggesting that there is something 'unnatural' going on. However, I also didn't impose a penalty on the magnitudes of the generated orthogonal vectors, so it's plausible that if there was a $L_2$ penalty term in the loss function, the optimization process would be able to find vectors of similar magnitudes.
 
-: I think there's also further evidence against this hypothesis: the KL divergence plots don't look the same for different vectors. They are clearly different for the 'coding' and 'jailbreak' vectors than for the 'STEM' and 'alien species' vectors. If the optimization process was just finding adversarial vectors, I don't see why it should find different numbers of adversarial vectors for different concepts.
+  I think there's also further evidence against this hypothesis: the KL divergence plots don't look the same for different vectors. They are clearly different for the 'coding' and 'jailbreak' vectors than for the 'STEM' and 'alien species' vectors. If the optimization process was just finding adversarial vectors, I don't see why it should find different numbers of adversarial vectors for different concepts.
 
 : Lastly, these vectors **do generalize across prompts**, which provides evidence against them being out of distribution for the model. To test this hypothesis, you could just have the model code a bunch of times and then see if any of the generated orthogonal vectors are strongly present in the residual stream.
 

@@ -257,7 +257,7 @@ describe("createLinkWithFavicon", () => {
     expect(result.props["data-slug"]).toBe("another-page")
   })
 
-  it("should include word joiner and favicon in link children", () => {
+  it("should include favicon-span with spliced text in link children", () => {
     const result = createLinkWithFavicon(
       "Link with favicon",
       "/page",
@@ -266,37 +266,41 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    // text + word joiner span + favicon
-    expect(children.length).toBe(3)
-    expect(typeof children[0]).toBe("string")
+    // text (spliced) + favicon-span (last 4 chars + favicon)
+    expect(children.length).toBe(2)
+    expect(children[0]).toBe("Link with fav")
 
-    const wordJoiner = children[1] as JSX.Element
-    assertJSXElement(wordJoiner)
-    expect(wordJoiner.type).toBe("span")
-    expect(wordJoiner.props.class).toBe("word-joiner")
+    const faviconSpan = children[1] as JSX.Element
+    assertJSXElement(faviconSpan)
+    expect(faviconSpan.type).toBe("span")
+    expect(faviconSpan.props.class).toBe("favicon-span")
 
-    const favicon = children[2]
-    assertJSXElement(favicon)
-    expect(favicon.props.class).toContain("favicon")
+    const spanChildren = faviconSpan.props.children as unknown[]
+    expect(spanChildren[0]).toBe("icon")
+    const favicon = spanChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 
-  it("should preserve full text with word joiner before favicon", () => {
+  it("should splice text and wrap with favicon-span", () => {
     const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // text + word joiner span + favicon
-    expect(children.length).toBe(3)
-    expect(children[0]).toBe("Test text")
+    // text (spliced) + favicon-span (last 4 chars + favicon)
+    expect(children.length).toBe(2)
+    expect(children[0]).toBe("Test ")
 
-    const wordJoiner = children[1] as JSX.Element
-    assertJSXElement(wordJoiner)
-    expect(wordJoiner.type).toBe("span")
-    expect(wordJoiner.props.class).toBe("word-joiner")
+    const faviconSpan = children[1] as JSX.Element
+    assertJSXElement(faviconSpan)
+    expect(faviconSpan.type).toBe("span")
+    expect(faviconSpan.props.class).toBe("favicon-span")
 
-    const favicon = children[2]
-    assertJSXElement(favicon)
-    expect(favicon.props.class).toContain("favicon")
+    const spanChildren = faviconSpan.props.children as unknown[]
+    expect(spanChildren[0]).toBe("text")
+    const favicon = spanChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 })

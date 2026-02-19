@@ -1,7 +1,8 @@
-import { test, expect, type Page, type Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -111,7 +112,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
@@ -168,6 +169,35 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   expect(newMenuButtonState).toEqual(originalMenuButtonState)
   await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
+})
+
+test("Pressing Escape closes the menu and returns focus to button", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  const menuButton = page.locator("#menu-button")
+  const navbarRightMenu = page.locator("#navbar-right .menu")
+
+  await menuButton.click()
+  await expect(navbarRightMenu).toBeVisible()
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true")
+
+  await page.keyboard.press("Escape")
+  await expect(navbarRightMenu).toBeHidden()
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false")
+
+  // Focus should return to the hamburger button
+  const focused = page.locator(":focus")
+  await expect(focused).toHaveId("menu-button")
+})
+
+test("Menu button has aria-controls pointing to nav-menu", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  const menuButton = page.locator("#menu-button")
+  await expect(menuButton).toHaveAttribute("aria-controls", "nav-menu")
+
+  const navMenu = page.locator("#nav-menu")
+  await expect(navMenu).toBeAttached()
 })
 
 test("Can't see the menu at desktop size", async ({ page }) => {

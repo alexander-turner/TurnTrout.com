@@ -15,6 +15,7 @@ import { FrontmatterData, type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
 import { Backlinks, getBacklinkFileData, elementToJsx } from "../Backlinks"
+import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>
@@ -133,7 +134,7 @@ describe("Backlinks", () => {
       'class="admonition link admonition-metadata is-collapsible is-collapsed"',
     )
     expect(html).toContain("Links to this page")
-    expect(html).toContain("Linking Page")
+    expect(normalizeNbsp(html)).toContain("Linking Page")
   })
 
   // Test self-referential links are excluded
@@ -185,8 +186,8 @@ describe("Backlinks", () => {
     expect(element).toBeTruthy()
 
     const html = render(element)
-    expect(html).toContain("Link 1")
-    expect(html).toContain("Link 2")
+    expect(normalizeNbsp(html)).toContain("Link 1")
+    expect(normalizeNbsp(html)).toContain("Link 2")
     expect(html.match(/<li/g)?.length).toBe(2)
   })
 

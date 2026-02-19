@@ -66,12 +66,7 @@ export function generateScss(): void {
 
 // Run generation if this is the main module
 /* istanbul ignore next */
-try {
-  if (process.argv[1] === fileURLToPath(import.meta.url)) {
-    generateScss()
-    console.log("SCSS variables generated successfully!")
-  }
-} catch {
-  // Ignore any errors in the execution check
-  // This allows the module to be imported without issues
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  generateScss()
+  console.log("SCSS variables generated successfully!")
 }
