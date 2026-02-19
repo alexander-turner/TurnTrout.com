@@ -1,4 +1,3 @@
-import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
@@ -106,6 +105,9 @@ test.describe("Unique content around the site", () => {
 
     await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
+    // Wait for the SPA router to finish initializing so a late navigation
+    // doesn't destroy the execution context during evaluate.
+    await page.waitForFunction(() => window.__routerInitialized === true)
 
     await page.evaluate(() => {
       const article = document.querySelector("article")
@@ -328,6 +330,7 @@ test.describe("Table of contents", () => {
       .locator("#table-of-contents .active")
       .first()
       .textContent()
+    // eslint-disable-next-line playwright/no-conditional-in-test
     if (!initialHighlightText) {
       throw new Error("Expected initial TOC highlight text to be non-null")
     }
@@ -819,30 +822,19 @@ test.describe("Video Speed Controller visibility", () => {
   })
 })
 
-test("First paragraph is the same before and after clicking on a heading", async ({
-  page,
-}, testInfo) => {
-  const snapshotPath = testInfo.snapshotPath("first-paragraph.png")
-  try {
-    const firstParagraph = page.locator("#center-content article > p").first()
+test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
+  const firstParagraph = page.locator("#center-content article > p").first()
 
-    // First, assert the initial state against a snapshot.
-    // This either creates the snapshot or confirms the element is in the expected state.
-    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
-      maxDiffPixels: 0,
-    })
+  // Capture the paragraph before navigating to a heading anchor.
+  const screenshotBefore = await firstParagraph.screenshot()
 
-    // Then, perform the action that might change the state.
-    await page.goto(`${page.url()}#header-3`)
-    await firstParagraph.scrollIntoViewIfNeeded()
+  // Navigate to a heading anchor (triggers SPA navigation).
+  await page.goto(`${page.url()}#header-3`)
+  await firstParagraph.scrollIntoViewIfNeeded()
 
-    // Assert that the element's state still matches the original snapshot.
-    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
-      maxDiffPixels: 0,
-    })
-  } finally {
-    await fs.rm(snapshotPath, { force: true })
-  }
+  // The paragraph should look identical after the navigation.
+  const screenshotAfter = await firstParagraph.screenshot()
+  expect(screenshotAfter).toEqual(screenshotBefore)
 })
 
 test.describe("Link color states", () => {
