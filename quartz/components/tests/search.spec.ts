@@ -466,7 +466,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()

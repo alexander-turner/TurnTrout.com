@@ -180,6 +180,11 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
+    // Mock the external URL to avoid real network requests in CI
+    await page.route("https://www.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
+    )
+
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "https://www.example.com"
@@ -549,9 +554,14 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 
 // eslint-disable-next-line playwright/expect-expect
 test("restores scroll position when returning from external page", async ({ page }) => {
+  // Mock the external URL to avoid real network requests in CI
+  await page.route("https://example.com/**", (route) =>
+    route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
+  )
+
   await page.evaluate(() => {
     const link = document.createElement("a")
-    link.href = "https://github.com/alexander-turner"
+    link.href = "https://example.com/external"
     link.textContent = "External link"
     document.body.prepend(link)
   })

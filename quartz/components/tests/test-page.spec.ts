@@ -311,9 +311,21 @@ test.describe("Table of contents", () => {
       { timeout: 10_000 },
     )
 
-    // Scroll a mid-page heading to the top of the viewport so it enters
-    // the IntersectionObserver's detection zone (top 30%)
-    await page.evaluate(() => document.querySelector("#spoilers")?.scrollIntoView())
+    // Scroll a heading into the IntersectionObserver's detection zone (top 30%).
+    // Use window.scrollTo with a computed offset — scrollIntoView does not
+    // reliably trigger IntersectionObserver in headless CI environments.
+    await page.evaluate(() => {
+      const el = document.querySelector("#spoilers")
+      if (el)
+        window.scrollTo({
+          top: el.getBoundingClientRect().top + window.scrollY,
+          behavior: "instant",
+        })
+    })
+    // Give the IntersectionObserver time to process the scroll
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    )
     await page.waitForFunction(
       () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
       { timeout: 10_000 },
@@ -328,8 +340,18 @@ test.describe("Table of contents", () => {
       throw new Error("Expected initial TOC highlight text to be non-null")
     }
 
-    // Scroll to a different heading
-    await page.evaluate(() => document.querySelector("#lists")?.scrollIntoView())
+    // Scroll to a different heading using window.scrollTo for reliable IO triggering
+    await page.evaluate(() => {
+      const el = document.querySelector("#lists")
+      if (el)
+        window.scrollTo({
+          top: el.getBoundingClientRect().top + window.scrollY,
+          behavior: "instant",
+        })
+    })
+    await page.evaluate(
+      () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
+    )
 
     // Wait for IntersectionObserver to fire and TOC to update
     await page.waitForFunction(

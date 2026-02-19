@@ -6,7 +6,7 @@ concurrency:
 
 on:
   push:
-    branches: ["main", "dev", "jest-coverage"]
+    branches: ["main"]
     paths:
       - "quartz/**"
       - "website_content/**"
@@ -24,6 +24,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+  # Tests always run in the merge queue — this is the primary gate for dev
   merge_group:
 
 permissions:
@@ -127,7 +128,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"

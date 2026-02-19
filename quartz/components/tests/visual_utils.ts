@@ -373,11 +373,12 @@ export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
   await searchBar.fill(term)
 
-  // Wait for search layout to be visible with results
+  // Wait for search layout to be visible with results.
+  // The display-results class controls visibility, so wait for it first.
   const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toBeAttached()
-  await expect(searchLayout).toBeVisible()
-  await expect(searchLayout).toHaveClass(/display-results/)
+  await expect(searchLayout).toBeAttached({ timeout: 10_000 })
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+  await expect(searchLayout).toBeVisible({ timeout: 10_000 })
 
   // Wait for results to appear
   const resultsContainer = page.locator("#results-container")
