@@ -265,7 +265,7 @@ function createTooltipBg(x: number, y: number, lines: string[]): Element {
     width: bgWidth,
     height: bgHeight,
     rx: 3,
-    fill: "var(--background)",
+    fill: "var(--bg, var(--background))",
     class: "smart-chart-tooltip-bg",
     "pointer-events": "none",
   })

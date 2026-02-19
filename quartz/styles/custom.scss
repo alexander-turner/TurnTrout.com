@@ -974,10 +974,11 @@ figure#goose-terminal {
   fill: var(--foreground);
   pointer-events: none;
   paint-order: stroke fill;
-  stroke: var(--background);
+  stroke: var(--bg, var(--background));
   stroke-width: 5px;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px var(--background)) drop-shadow(0 0 3px var(--background));
+  filter: drop-shadow(0 0 3px var(--bg, var(--background)))
+    drop-shadow(0 0 3px var(--bg, var(--background)));
 }
 
 .smart-chart-point {
