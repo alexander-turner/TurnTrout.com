@@ -437,7 +437,6 @@ If you want to browse the original site again, you can disable the extension or 
 
 Subtitle: Time: 20 minutes.
 
-<!-- vale Custom.OxfordComma = NO -->
 
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
 > ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif|An isometric diagram of a grocery store aisle illustrates how beacons track shoppers. An annotation points to a beacon on a shelf, explaining: "The beacons are like little lighthouses that emit one-way messages to nearby devices." A close-up of a phone shows an app icon highlighted.]]
@@ -454,7 +453,6 @@ Subtitle: Time: 20 minutes.
 >
 > Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
 
-<!-- vale Custom.OxfordComma = YES -->
 
 ### Disable location tracking on Android
 

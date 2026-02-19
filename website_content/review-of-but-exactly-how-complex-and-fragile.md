@@ -148,7 +148,6 @@ If no such decomposition takes place, I think debate is just too hard and opaque
 
 To concretely point out something I consider somewhat confused:
 
-<!-- vale off -->
 > [!quote] `johnswentworth`'s [the top-rated comment](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=36Zaej9ppdApxcmFc)
 >
 > I think \[Katja's summary\] is an oversimplification of the fragility argument, which people tend to use in discussion because there's some nontrivial conceptual distance on the way to a more rigorous fragility argument.
@@ -156,7 +155,6 @@ To concretely point out something I consider somewhat confused:
 > The main conceptual gap is the idea that "distance" is not a pre-defined concept. Two points which are close together in human-concept-space may be far apart in a neural network's learned representation space or in an AGI's world-representation-space. It may be that value is not very fragile in human-concept-space; points close together in human-concept-space may usually have similar value. But that will definitely not be true in all possible representations of the world, and we don't know how to reliably formalize/automate human-concept-space.
 >
 > The key point is not "if there is any distance between your description and what is truly good, you will lose everything", but rather, "we don't even know what the relevant distance metric is or how to formalize it". And it is definitely the case, at least, that many mathematically simple distance metrics _do_ display value fragility.
-<!-- vale on -->
 
 John makes good points. But what exactly _happens_ between "we write down something too distant from the 'truth'" and the result? The AI happens. But this part, the dynamics, it's kept invisible.
 

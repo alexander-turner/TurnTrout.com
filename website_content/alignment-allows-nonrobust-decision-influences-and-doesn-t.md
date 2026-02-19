@@ -285,7 +285,6 @@ def plan(self):
 
 I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning). I liked the comment in the context of e.g. caring about your family and locally evaluating plans on that basis, but also knowing that your evaluation ability itself is compromised and will mis-rate some plans:
 
-<!-- vale off -->
 > [!quote] Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning)
 >
 > My attempt at a framework where "improving one's own evaluator" and "believing in adversarial examples to one's own evaluator" make sense:
@@ -294,7 +293,6 @@ I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxL
 > - "Improving `Eval`" makes sense because Eval will gladly replace itself with `Eval_2` if it believes that `Eval_2` is a better approximation for $U_{ideal}$ (and hence replacing itself will cause the outcome to score better on $U_{ideal}$)
 >
 > Are there other distinct frameworks which make sense here?
-<!-- vale on -->
 
 (I'm not sure whether Vivek meant to imply "and this is how I think people work, mechanistically." I'm going to respond to a _hypothetical other person_ who did in fact mean that.)
 

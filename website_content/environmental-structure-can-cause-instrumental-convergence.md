@@ -344,11 +344,9 @@ I'm optimistic that these symmetry arguments will help us better understand a ra
 - [convergent evolution](https://en.wikipedia.org/wiki/Convergent_evolution)
   - flight has independently evolved several times, suggesting that flight is adaptive in response to a wide range of conditions.
 
-<!-- vale off -->
 > [!quote] Wikipedia
 >
 > In his 1989 book [_Wonderful Life_](https://en.wikipedia.org/wiki/Wonderful_Life_\(book\)), [Stephen Jay Gould](https://en.wikipedia.org/wiki/Stephen_Jay_Gould) argued that if one could "rewind the tape of life \[and\] the same conditions were encountered again, evolution could take a very different course." [Simon Conway Morris](https://en.wikipedia.org/wiki/Simon_Conway_Morris) disputes this conclusion, arguing that convergence is a dominant force in evolution, and given that the same environmental and physical constraints are at work, life will inevitably evolve toward an "optimum" body plan, and at some point, evolution is bound to stumble upon intelligence, a trait presently identified with at least [primates](https://en.wikipedia.org/wiki/Primates), [corvids](https://en.wikipedia.org/wiki/Corvids), and [cetaceans](https://en.wikipedia.org/wiki/Cetaceans).
-<!-- vale on -->
 
 - the prevalence of [deceptive alignment](https://www.lesswrong.com/posts/zthDPAjh9w6Ytbeks/deceptive-alignment)
   - given inner misalignment, there are (potentially combinatorially) many more unaligned terminal reasons to lie (and survive), and relatively few unaligned terminal reasons to tell the truth about the misalignment (and be modified).
