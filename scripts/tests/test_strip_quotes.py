@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from .. import utils as script_utils
-
 sys.path.append(str(Path(__file__).parent.parent))
 
 if TYPE_CHECKING:
@@ -58,6 +56,7 @@ def test_get_quote_level(line: str, expected: int):
         ("> > [!quote] Nested", True),
         ("> [!Quote]", True),  # case insensitive
         ("> [!QUOTE]", True),  # case insensitive
+        ("> [!quote]Author Name", True),  # no space before title
         ("> [!note]", False),
         ("> [!warning]", False),
         ("regular text", False),
@@ -72,6 +71,7 @@ def test_get_quote_level(line: str, expected: int):
         "nested",
         "mixed-case",
         "upper-case",
+        "no-space-title",
         "note-callout",
         "warning-callout",
         "plain-text",

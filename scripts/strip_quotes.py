@@ -19,7 +19,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from scripts import utils as script_utils  # noqa: E402
 
 _QUOTE_CALLOUT_RE = re.compile(
-    r"^(?:>\s*)+\[!quote\](?![a-zA-Z])", re.IGNORECASE
+    r"^(?:>\s*)+\[!quote\][+-]?", re.IGNORECASE
 )
 
 
