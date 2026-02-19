@@ -810,7 +810,7 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want `turntrout.com` to be usable by everyone. The site targets WCAG 2.0 AA compliance, enforced automatically via [`pa11y`](https://pa11y.org/) running both `axe` and `htmlcs` against every page in CI. Here's what that entails.
+I want `turntrout.com` to be usable by everyone. The site targets WCAG AA compliance, enforced automatically via [`pa11y`](https://pa11y.org/) running both `axe` and `htmlcs` against every page in CI. Here's what that entails.
 
 ### Alt text for every image
 
