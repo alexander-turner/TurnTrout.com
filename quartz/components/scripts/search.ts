@@ -480,6 +480,8 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
   document.body.classList.remove("no-mix-blend-mode")
   if (searchBar) {
     searchBar.value = ""
+    searchBar.setAttribute("aria-expanded", "false")
+    searchBar.removeAttribute("aria-activedescendant")
   }
   if (results) {
     removeAllChildren(results)
@@ -705,6 +707,8 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   const enablePreview = searchLayout?.dataset?.preview === "true"
   results.id = "results-container"
+  results.setAttribute("role", "listbox")
+  results.setAttribute("aria-label", "Search results")
   appendLayout(results)
 
   if (enablePreview) {
@@ -803,15 +807,22 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
+    card.setAttribute("aria-selected", "false")
   })
 
+  const searchBar = document.getElementById("search-bar")
   if (el) {
     el.classList.add("focus")
+    el.setAttribute("aria-selected", "true")
     currentHover = el
+
+    searchBar?.setAttribute("aria-activedescendant", el.id)
 
     if (keyboardFocus) {
       el.focus()
     }
+  } else {
+    searchBar?.removeAttribute("aria-activedescendant")
   }
 }
 
@@ -945,6 +956,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
   itemTile.id = slug
+  itemTile.setAttribute("role", "option")
   itemTile.href = resolveSlug(slug, currentSlug).toString()
 
   content = replaceEmojiConvertArrows(content)
@@ -1047,6 +1059,8 @@ async function displayResults(
   if (!results) return
 
   removeAllChildren(results)
+  const searchBar = document.getElementById("search-bar")
+  searchBar?.setAttribute("aria-expanded", finalResults.length > 0 ? "true" : "false")
   if (finalResults.length === 0) {
     results.innerHTML = `<a class="result-card no-match">
         <h3>No results</h3>
