@@ -1601,11 +1601,68 @@ _OPENERS = {p[0] for p in _DELIMITER_PAIRS}
 _CLOSER_TO_OPENER = {p[1]: p[0] for p in _DELIMITER_PAIRS}
 
 
+def _check_balance(
+    text: str, stripped: str, results: dict[str, list[str]]
+) -> None:
+    """Check each delimiter type for balanced open/close counts."""
+    for open_char, close_char, label in _DELIMITER_PAIRS:
+        open_count = text.count(open_char)
+        close_count = text.count(close_char)
+        if open_count != close_count:
+            key = f"unbalanced_{label.replace(' ', '_')}"
+            _append_to_list(
+                results[key],
+                stripped,
+                prefix=f"Unbalanced {label} ({open_count} open, {close_count} close): ",
+            )
+
+
+def _check_quote_nesting(text: str, stripped: str, issues: list[str]) -> None:
+    """Flag single quotes that wrap double quotes (American English: double first)."""
+    nesting: list[str] = []
+    for char in text:
+        if char == LEFT_SINGLE_QUOTE:
+            nesting.append("single")
+        elif char == LEFT_DOUBLE_QUOTE:
+            if nesting and nesting[-1] == "single":
+                _append_to_list(
+                    issues,
+                    stripped,
+                    prefix="Single quotes wrap double quotes (should be reversed): ",
+                )
+                return
+            nesting.append("double")
+        elif char in (RIGHT_SINGLE_QUOTE, RIGHT_DOUBLE_QUOTE):
+            if nesting:
+                nesting.pop()
+
+
+def _check_delimiter_nesting(
+    text: str, stripped: str, issues: list[str]
+) -> None:
+    """Ensure paired delimiters nest in LIFO order (no interleaving)."""
+    stack: list[str] = []
+    for char in text:
+        if char in _OPENERS:
+            stack.append(char)
+        elif char in _CLOSER_TO_OPENER:
+            expected_opener = _CLOSER_TO_OPENER[char]
+            if stack and stack[-1] == expected_opener:
+                stack.pop()
+            elif stack:
+                _append_to_list(
+                    issues,
+                    stripped,
+                    prefix=f"Mismatched delimiter nesting (expected closing for {stack[-1]!r}, got {char!r}): ",
+                )
+                return
+
+
 def check_all_delimiters(soup: BeautifulSoup) -> dict[str, list[str]]:
     """Check delimiter balance, quote nesting, and delimiter nesting in one pass.
 
     Iterates over block elements once, extracting visible text once per
-    element, then runs all checks on that text.
+    element, then delegates to helpers for each check type.
     """
     results: dict[str, list[str]] = {
         f"unbalanced_{label.replace(' ', '_')}": []
@@ -1623,52 +1680,11 @@ def check_all_delimiters(soup: BeautifulSoup) -> dict[str, list[str]]:
         if not stripped:
             continue
 
-        # Balance checks for each delimiter type
-        for open_char, close_char, label in _DELIMITER_PAIRS:
-            open_count = text.count(open_char)
-            close_count = text.count(close_char)
-            if open_count != close_count:
-                key = f"unbalanced_{label.replace(' ', '_')}"
-                _append_to_list(
-                    results[key],
-                    stripped,
-                    prefix=f"Unbalanced {label} ({open_count} open, {close_count} close): ",
-                )
-
-        # Quote nesting: single quotes should not wrap double quotes
-        nesting: list[str] = []
-        for char in text:
-            if char == LEFT_SINGLE_QUOTE:
-                nesting.append("single")
-            elif char == LEFT_DOUBLE_QUOTE:
-                if nesting and nesting[-1] == "single":
-                    _append_to_list(
-                        results["incorrect_quote_nesting"],
-                        stripped,
-                        prefix="Single quotes wrap double quotes (should be reversed): ",
-                    )
-                    break
-                nesting.append("double")
-            elif char in (RIGHT_SINGLE_QUOTE, RIGHT_DOUBLE_QUOTE):
-                if nesting:
-                    nesting.pop()
-
-        # Delimiter nesting: LIFO order across all delimiter types
-        stack: list[str] = []
-        for char in text:
-            if char in _OPENERS:
-                stack.append(char)
-            elif char in _CLOSER_TO_OPENER:
-                expected_opener = _CLOSER_TO_OPENER[char]
-                if stack and stack[-1] == expected_opener:
-                    stack.pop()
-                elif stack:
-                    _append_to_list(
-                        results["mismatched_delimiter_nesting"],
-                        stripped,
-                        prefix=f"Mismatched delimiter nesting (expected closing for {stack[-1]!r}, got {char!r}): ",
-                    )
-                    break
+        _check_balance(text, stripped, results)
+        _check_quote_nesting(text, stripped, results["incorrect_quote_nesting"])
+        _check_delimiter_nesting(
+            text, stripped, results["mismatched_delimiter_nesting"]
+        )
 
     return results
 

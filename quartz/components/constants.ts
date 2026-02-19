@@ -52,7 +52,7 @@ export const {
 } = simpleConstants
 
 // Unicode typography constants (from constants.json — single source of truth for TS + Python)
-const {
+export const {
   nbsp: NBSP,
   leftSingleQuote: LEFT_SINGLE_QUOTE,
   rightSingleQuote: RIGHT_SINGLE_QUOTE,
@@ -64,18 +64,6 @@ const {
   wordJoiner: WORD_JOINER,
   modifierLetterApostrophe: MODIFIER_LETTER_APOSTROPHE,
 } = constantsJson.unicodeTypography
-export {
-  NBSP,
-  LEFT_SINGLE_QUOTE,
-  RIGHT_SINGLE_QUOTE,
-  LEFT_DOUBLE_QUOTE,
-  RIGHT_DOUBLE_QUOTE,
-  ELLIPSIS,
-  ZERO_WIDTH_SPACE,
-  ZERO_WIDTH_NBSP,
-  WORD_JOINER,
-  MODIFIER_LETTER_APOSTROPHE,
-}
 
 /** Normalize non-breaking spaces to regular spaces */
 export function normalizeNbsp(s: string): string {
