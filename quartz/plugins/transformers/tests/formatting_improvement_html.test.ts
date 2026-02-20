@@ -21,6 +21,7 @@ import {
   RIGHT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
+  MODIFIER_LETTER_APOSTROPHE,
   NBSP,
   normalizeNbsp,
 } from "../../../components/constants"
@@ -73,7 +74,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
-        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+        `<p><a>${LEFT_DOUBLE_QUOTE}How steering vectors impact GPT-2${MODIFIER_LETTER_APOSTROPHE}s capabilities.${RIGHT_DOUBLE_QUOTE}</a></p>`,
       ],
       [
         '<p>"<span class="katex"></span> alignment metric</p>',
