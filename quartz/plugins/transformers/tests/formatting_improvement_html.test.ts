@@ -89,11 +89,11 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="favicon-span"><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
-        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="favicon-span"><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
+        '<p>I was born in ʼ94. Now, Iʼm a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMindʼs<span class="favicon-span"><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
       ],
       [
         '<div><p>not confident in that plan - "</p><p>"Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>',
-        "<div><p>not confident in that plan—”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>",
+        "<div><p>not confident in that plan—”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you donʼt like this idea?” she asked, anger rising in her voice.</p></div>",
       ],
       [
         "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></div>",
@@ -138,7 +138,7 @@ describe("HTMLFormattingImprovement", () => {
     const mathHTML = `<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>'s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>`
 
     const targetMathHTML =
-      '<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>’s return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>'
+      '<p><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">return</span></span><span class="mopen">(</span><span class="mord mathnormal">s</span><span class="mclose">)</span></span></span></span> averages strategy <span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span>ʼs return over the first state being cooperate <code>c</code> and being defect <code>d</code>. <a href="#user-content-fnref-5" data-footnote-backref="" aria-label="Back to reference 6" class="data-footnote-backref internal">↩</a></p>'
 
     it("should handle apostrophe right after math mode", () => {
       const processedHtml = testHtmlFormattingImprovement(mathHTML)
@@ -682,7 +682,7 @@ describe("HTMLFormattingImprovement", () => {
       ["<p>p1-2</p>", "<p>p1–2</p>"], // Page range
       [
         "<p>Hi you're a test <code>ABC</code> - file</p>",
-        "<p>Hi you’re a test <code>ABC</code>—file</p>",
+        "<p>Hi youʼre a test <code>ABC</code>—file</p>",
       ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
@@ -1199,7 +1199,7 @@ describe("setFirstLetterAttribute", () => {
     `,
       `
       
-      <p data-first-letter="’">’Twas the night before Christmas.</p>
+      <p data-first-letter="ʼ">ʼTwas the night before Christmas.</p>
     
     `,
     ],
@@ -1211,7 +1211,7 @@ describe("setFirstLetterAttribute", () => {
     [
       "second character is an apostrophe and a direct text node exists",
       "<p><span></span>X's story</p>",
-      '<p data-first-letter="X"><span></span>X ’s story</p>',
+      '<p data-first-letter="X"><span></span>X ʼs story</p>',
     ],
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
@@ -1821,7 +1821,7 @@ describe("transformElement error conditions", () => {
 describe("applyTextTransforms function", () => {
   it("should apply all text transformations", () => {
     const input = "The data are i.i.d. and it's -5x larger than github... So naive!"
-    const expected = "The data are IID and it’s −5× larger than GitHub… So naïve!"
+    const expected = "The data are IID and itʼs −5× larger than GitHub… So naïve!"
 
     const result = applyTextTransforms(input)
     expect(normalizeNbsp(result)).toBe(expected)

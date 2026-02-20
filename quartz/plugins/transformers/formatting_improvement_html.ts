@@ -13,6 +13,7 @@ import {
   charsToMoveIntoLinkFromRight,
   markerChar,
   hatTipPlaceholder,
+  MODIFIER_LETTER_APOSTROPHE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -134,7 +135,7 @@ const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
   // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
   (text: string) => primeMarks(text, { separator: markerChar }),
-  (text: string) => niceQuotes(text, { separator: markerChar }),
+  (text: string) => niceQuotes(text, { separator: markerChar, useModifierLetterApostrophe: true }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
   // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
@@ -580,7 +581,7 @@ export function setFirstLetterAttribute(tree: Root): void {
 
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
-  if (["'", "’", "‘"].includes(secondLetter)) {
+  if (["'", "’", "‘", MODIFIER_LETTER_APOSTROPHE].includes(secondLetter)) {
     const firstTextNode = firstParagraph.children.find(
       (child): child is Text => child.type === "text",
     )
