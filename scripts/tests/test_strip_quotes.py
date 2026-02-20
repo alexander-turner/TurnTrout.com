@@ -18,28 +18,16 @@ else:
 @pytest.mark.parametrize(
     "line, expected",
     [
-        ("", 0),
-        ("regular text", 0),
-        ("> text", 1),
-        ("> > text", 2),
-        ("> > > text", 3),
-        (">text", 1),
-        ("> ", 1),
-        (">", 1),
-        ("  > text", 1),  # leading spaces before >
-        (">> text", 2),  # consecutive > without space
-    ],
-    ids=[
-        "empty",
-        "plain-text",
-        "level-1",
-        "level-2",
-        "level-3",
-        "no-space-after-gt",
-        "trailing-space",
-        "bare-gt",
-        "leading-spaces",
-        "consecutive-gt",
+        pytest.param("", 0, id="empty"),
+        pytest.param("regular text", 0, id="plain-text"),
+        pytest.param("> text", 1, id="level-1"),
+        pytest.param("> > text", 2, id="level-2"),
+        pytest.param("> > > text", 3, id="level-3"),
+        pytest.param(">text", 1, id="no-space-after-gt"),
+        pytest.param("> ", 1, id="trailing-space"),
+        pytest.param(">", 1, id="bare-gt"),
+        pytest.param("  > text", 1, id="leading-spaces"),
+        pytest.param(">> text", 2, id="consecutive-gt"),
     ],
 )
 def test_get_quote_level(line: str, expected: int):
@@ -72,61 +60,94 @@ def test_is_quote_callout_start(line: str, expected: bool):
     "text, expected",
     [
         # Identity cases (no modification)
-        ("", ""),
-        ("Regular text\nMore text\n\nAnother paragraph",
-         "Regular text\nMore text\n\nAnother paragraph"),
-        ("> [!note]\n> Note content\n> More note",
-         "> [!note]\n> Note content\n> More note"),
+        pytest.param("", "", id="empty"),
+        pytest.param(
+            "Regular text\nMore text\n\nAnother paragraph",
+            "Regular text\nMore text\n\nAnother paragraph",
+            id="no-quotes",
+        ),
+        pytest.param(
+            "> [!note]\n> Note content\n> More note",
+            "> [!note]\n> Note content\n> More note",
+            id="preserves-non-quote-callout",
+        ),
         # Basic stripping
-        ("> [!quote] Title\n> Content line\n\nAfter quote",
-         "\n\n\nAfter quote"),
-        ("> [!quote]- Collapsible title\n> Hidden content", "\n"),
+        pytest.param(
+            "> [!quote] Title\n> Content line\n\nAfter quote",
+            "\n\n\nAfter quote",
+            id="simple-quote",
+        ),
+        pytest.param(
+            "> [!quote]- Collapsible title\n> Hidden content",
+            "\n",
+            id="collapsible",
+        ),
         # Mixed-case [!Quote] is NOT matched (case-sensitive)
-        ("> [!Quote] Title\n> Content",
-         "> [!Quote] Title\n> Content"),
-        ("Before\n> [!quote]\n> Content", "Before\n\n"),
+        pytest.param(
+            "> [!Quote] Title\n> Content",
+            "> [!Quote] Title\n> Content",
+            id="mixed-case-not-stripped",
+        ),
+        pytest.param(
+            "Before\n> [!quote]\n> Content",
+            "Before\n\n",
+            id="quote-at-end",
+        ),
         # Bare > (blank blockquote line) inside quote
-        ("> [!quote] Title\n>\n> Content\n\nAfter", "\n\n\n\nAfter"),
-        ("> [!quote]\n>\n> Content\n\nKept", "\n\n\n\nKept"),
+        pytest.param(
+            "> [!quote] Title\n>\n> Content\n\nAfter",
+            "\n\n\n\nAfter",
+            id="bare-gt-in-quote",
+        ),
+        pytest.param(
+            "> [!quote]\n>\n> Content\n\nKept",
+            "\n\n\n\nKept",
+            id="no-title-with-bare-gt",
+        ),
         # Multiple blocks separated by blank line
-        ("> [!quote] First\n> Content1\n\n> [!quote] Second\n> Content2",
-         "\n\n\n\n"),
+        pytest.param(
+            "> [!quote] First\n> Content1\n\n> [!quote] Second\n> Content2",
+            "\n\n\n\n",
+            id="multiple-blocks",
+        ),
         # Nested quote inside other callout
-        ("> [!note]\n> Text\n> > [!quote] Attr\n> > Quoted\n> Back",
-         "> [!note]\n> Text\n\n\n> Back"),
+        pytest.param(
+            "> [!note]\n> Text\n> > [!quote] Attr\n> > Quoted\n> Back",
+            "> [!note]\n> Text\n\n\n> Back",
+            id="nested-in-other-callout",
+        ),
         # Stress: quote-only file (no surrounding text)
-        ("> [!quote]\n> Content", "\n"),
+        pytest.param("> [!quote]\n> Content", "\n", id="quote-only-file"),
         # Stress: header only, no content lines
-        ("> [!quote]\nPlain text", "\nPlain text"),
+        pytest.param(
+            "> [!quote]\nPlain text",
+            "\nPlain text",
+            id="header-only-no-content",
+        ),
         # Stress: back-to-back quotes with no blank line
-        ("> [!quote]\n> A\n> [!quote]\n> B", "\n\n\n"),
+        pytest.param(
+            "> [!quote]\n> A\n> [!quote]\n> B",
+            "\n\n\n",
+            id="back-to-back-quotes",
+        ),
         # Stress: deeply nested quote (level 3) returning to level 2
-        ("> > > [!quote]\n> > > Deep\n> > Outer", "\n\n> > Outer"),
+        pytest.param(
+            "> > > [!quote]\n> > > Deep\n> > Outer",
+            "\n\n> > Outer",
+            id="deeply-nested-level-3",
+        ),
         # Stress: many content lines
-        ("> [!quote]\n" + "\n".join(f"> Line {i}" for i in range(20)),
-         "\n" * 20),
+        pytest.param(
+            "> [!quote]\n" + "\n".join(f"> Line {i}" for i in range(20)),
+            "\n" * 20,
+            id="many-content-lines",
+        ),
         # Stress: quote sandwiched between non-quote callouts
-        ("> [!note]\n> N1\n\n> [!quote]\n> Q\n\n> [!warning]\n> W1",
-         "> [!note]\n> N1\n\n\n\n\n> [!warning]\n> W1"),
-    ],
-    ids=[
-        "empty",
-        "no-quotes",
-        "preserves-non-quote-callout",
-        "simple-quote",
-        "collapsible",
-        "mixed-case-not-stripped",
-        "quote-at-end",
-        "bare-gt-in-quote",
-        "no-title-with-bare-gt",
-        "multiple-blocks",
-        "nested-in-other-callout",
-        "quote-only-file",
-        "header-only-no-content",
-        "back-to-back-quotes",
-        "deeply-nested-level-3",
-        "many-content-lines",
-        "quote-between-callouts",
+        pytest.param(
+            "> [!note]\n> N1\n\n> [!quote]\n> Q\n\n> [!warning]\n> W1",
+            "> [!note]\n> N1\n\n\n\n\n> [!warning]\n> W1",
+            id="quote-between-callouts",
+        ),
     ],
 )
 def test_strip_quote_blocks(text: str, expected: str):
