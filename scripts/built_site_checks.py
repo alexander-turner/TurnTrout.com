@@ -158,6 +158,10 @@ PRESENTATIONAL_TAGS = ("span", "br")
 
 def _should_skip_paragraph(p: Tag) -> bool:
     """Check if a paragraph should be skipped for punctuation checking."""
+    # Skip paragraphs inside quote callouts (quoted external content)
+    if p.find_parent("blockquote", {"data-callout": "quote"}):
+        return True
+
     classes = script_utils.get_classes(p)
     if (
         "subtitle" in classes

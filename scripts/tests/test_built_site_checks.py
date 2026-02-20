@@ -5535,6 +5535,11 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             "<article><p><strong>Bold feature</strong> · <strong>Another</strong></p></article>",
             [],
         ),
+        # Quote callout content should be skipped
+        (
+            '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
+            [],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
@@ -5547,6 +5552,14 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         soup
     )
     assert issues == expected_issues
+
+
+def test_should_skip_paragraph_inside_quote_callout():
+    """Paragraphs inside quote callouts should be skipped."""
+    html = '<blockquote data-callout="quote"><p>Content without punct</p></blockquote>'
+    soup = BeautifulSoup(html, "html.parser")
+    p = soup.find("p")
+    assert built_site_checks._should_skip_paragraph(p) is True
 
 
 @pytest.mark.parametrize(

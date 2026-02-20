@@ -264,8 +264,8 @@ describe("hideSearch", () => {
   beforeEach(() => {
     document.body.innerHTML = `
       <div id="search-container" class="active">
-        <input id="search-bar" type="text" value="test" />
-        <div id="results-container">
+        <input id="search-bar" type="text" value="test" role="combobox" aria-expanded="true" aria-activedescendant="some-result" />
+        <div id="results-container" role="listbox">
           <div>Result 1</div>
         </div>
         <div id="preview-container" class="active"></div>
@@ -280,6 +280,8 @@ describe("hideSearch", () => {
     hideSearch(null)
     expect(searchContainer.classList.contains("active")).toBe(false)
     expect(searchBar.value).toBe("")
+    expect(searchBar.getAttribute("aria-expanded")).toBe("false")
+    expect(searchBar.hasAttribute("aria-activedescendant")).toBe(false)
     expect(searchResults.children.length).toBe(0)
   })
 

@@ -9,6 +9,12 @@ import { h } from "hastscript"
 import { BuildCtx } from "../../../util/ctx"
 import { TroutOrnamentHr, maybeInsertOrnament, ornamentNode, insertOrnamentNode } from "../trout_hr"
 
+describe("ornamentNode", () => {
+  it("should have role='separator' for accessibility", () => {
+    expect(ornamentNode.properties.role).toBe("separator")
+  })
+})
+
 describe("TroutOrnamentHr", () => {
   it("should return a plugin with the correct name and htmlPlugins", () => {
     const plugin = TroutOrnamentHr()

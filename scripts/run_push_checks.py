@@ -514,13 +514,22 @@ def run_command(
 
 def get_check_steps(
     git_root_path: Path,
+    stripped_content_dir: Path | None = None,
 ) -> tuple[list[CheckStep], list[CheckStep]]:
     """
     Get the check steps for pre-server and post-server phases.
 
     Isolating this allows for better testing and configuration management.
+
+    Args:
+        git_root_path: Path to the git repository root.
+        stripped_content_dir: Optional path to a directory containing
+            quote-stripped Markdown files (for vale/spellcheck).
     """
     script_files = glob.glob(f"{git_root_path}/scripts/*.py")
+    content_dir = str(
+        stripped_content_dir or (git_root_path / "website_content")
+    )
 
     steps_before_server = [
         CheckStep(
@@ -592,7 +601,7 @@ def get_check_steps(
                 "vale",
                 "--config",
                 f"{git_root_path}/config/vale/.vale.ini",
-                f"{git_root_path}/website_content",
+                content_dir,
             ],
             interactive=True,
         ),
@@ -750,6 +759,7 @@ def main() -> int:
 
     server_manager = ServerManager()
     stash_created = False
+    stripped_dir: Path | None = None
 
     git_path = shutil.which("git") or "git"
     try:
@@ -773,7 +783,19 @@ def main() -> int:
             stash_created = True
             console.log("[cyan]Stashed uncommitted changes[/cyan]")
 
-        steps_before_server, steps_after_server = get_check_steps(_GIT_ROOT)
+        # Create quote-stripped copies for vale/spellcheck
+        from scripts.strip_quotes import (  # pylint: disable=import-outside-toplevel
+            create_stripped_directory,
+        )
+
+        stripped_dir = create_stripped_directory(
+            _GIT_ROOT / "website_content"
+        )
+        os.environ["STRIP_QUOTES_CONTENT_DIR"] = str(stripped_dir)
+
+        steps_before_server, steps_after_server = get_check_steps(
+            _GIT_ROOT, stripped_dir
+        )
         all_steps = steps_before_server + steps_after_server
         all_step_names = [step.name for step in all_steps]
 
@@ -799,6 +821,11 @@ def main() -> int:
         console.log("\n[yellow]Process interrupted by user.[/yellow]")
         return 130  # Standard exit code for SIGINT
     finally:
+        # Clean up quote-stripped temp directory
+        os.environ.pop("STRIP_QUOTES_CONTENT_DIR", None)
+        if stripped_dir is not None and stripped_dir.exists():
+            shutil.rmtree(stripped_dir)
+
         server_manager.cleanup()
         # Restore stashed changes if we created a stash
         if stash_created:

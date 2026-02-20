@@ -104,6 +104,7 @@ jobs:
               - 'website_content/**'
               - 'config/spellcheck/**'
               - 'config/vale/**'
+              - 'scripts/strip_quotes.py'
             code:
               - 'quartz/**'
               - 'config/javascript/**'
@@ -161,6 +162,14 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
+      - name: Strip quote blocks for linting
+        id: strip-quotes
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          STRIPPED_DIR=".stripped_quotes"
+          uv run python scripts/strip_quotes.py --source-dir website_content --output-dir "$STRIPPED_DIR"
+          echo "dir=$STRIPPED_DIR" >> $GITHUB_OUTPUT
+
       - name: Run spellcheck
         id: spellcheck
         if: needs.detect-changes.outputs.content == 'true'
@@ -170,7 +179,7 @@ jobs:
             --no-suggestions \
             --quiet \
             --dictionaries config/spellcheck/.wordlist.txt \
-            --files "website_content/**/*.md" \
+            --files "${{ steps.strip-quotes.outputs.dir }}/**/*.md" \
             --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
             --plugins spell indefinite-article repeated-words syntax-urls frontmatter
 
@@ -178,7 +187,11 @@ jobs:
         id: vale
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: vale --config config/vale/.vale.ini website_content
+        run: vale --config config/vale/.vale.ini "${{ steps.strip-quotes.outputs.dir }}"
+
+      - name: Clean up stripped quotes
+        if: always() && steps.strip-quotes.outputs.dir
+        run: rm -rf "${{ steps.strip-quotes.outputs.dir }}"
 
       - name: Run ESLint
         id: eslint

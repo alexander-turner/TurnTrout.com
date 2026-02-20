@@ -185,12 +185,23 @@ def test_upload_and_move_failures(
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
 
-    with (
-        patch(mock_func, side_effect=mock_side_effect),
-        patch("scripts.r2_upload.check_exists_on_r2", return_value=False),
-        pytest.raises(expected_exception),
-    ):
-        r2_upload.upload_and_move(test_file, move_to_dir=mock_git_root)
+    from contextlib import ExitStack
+
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(mock_func, side_effect=mock_side_effect)
+        )
+        stack.enter_context(
+            patch("scripts.r2_upload.check_exists_on_r2", return_value=False)
+        )
+        # When testing shutil.move failure, subprocess.run (rclone upload)
+        # must also be mocked so the upload step succeeds before move fails.
+        if mock_func != "scripts.r2_upload.subprocess.run":
+            stack.enter_context(
+                patch("scripts.r2_upload.subprocess.run")
+            )
+        with pytest.raises(expected_exception):
+            r2_upload.upload_and_move(test_file, move_to_dir=mock_git_root)
 
 
 @pytest.mark.parametrize(
@@ -224,7 +235,11 @@ def test_main_function(
             "--references-dir",
             str(mock_git_root / "quartz" / "website_content"),
         ] + args
-    with patch("sys.argv", ["r2_upload.py"] + args):
+    with (
+        patch("sys.argv", ["r2_upload.py"] + args),
+        patch("scripts.r2_upload.subprocess.run"),
+        patch("scripts.r2_upload.check_exists_on_r2", return_value=False),
+    ):
         if expected_exception:
             with pytest.raises(expected_exception):
                 r2_upload.main()
@@ -554,6 +569,7 @@ def test_upload_to_r2_overwrite_print(
     with (
         patch("scripts.r2_upload.check_exists_on_r2", return_value=True),
         patch("scripts.r2_upload._download_from_r2"),
+        patch("scripts.r2_upload.subprocess.run"),
     ):
         r2_upload.upload_to_r2(test_file, verbose=True, overwrite_existing=True)
 
@@ -583,6 +599,7 @@ def test_upload_to_r2_download_backup(mock_git_root: Path, tmp_path: Path):
         patch("scripts.r2_upload.check_exists_on_r2", return_value=True),
         patch("scripts.r2_upload._download_from_r2") as mock_download,
         patch("scripts.r2_upload.tempfile.gettempdir", return_value=tmp_path),
+        patch("scripts.r2_upload.subprocess.run"),
     ):
         r2_upload.upload_to_r2(
             test_file,
@@ -643,10 +660,14 @@ def test_move_uploaded_file_error_handling(mock_git_root: Path, tmp_path: Path):
     move_to_dir = tmp_path / "backup"
     move_to_dir.mkdir()
 
-    # Make the target directory read-only to force a permission error
-    move_to_dir.chmod(0o444)
-
-    with pytest.raises(OSError):
+    # Mock shutil.move to raise OSError (chmod doesn't work when running as root)
+    with (
+        patch(
+            "scripts.r2_upload.shutil.move",
+            side_effect=OSError("Permission denied"),
+        ),
+        pytest.raises(OSError),
+    ):
         r2_upload.move_uploaded_file(source_file, move_to_dir)
 
 
