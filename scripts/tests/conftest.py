@@ -78,6 +78,16 @@ def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     project_root = tmp_path / "turntrout.com"
     project_root.mkdir(parents=True, exist_ok=True)
 
+    # Copy config/constants.json so load_shared_constants() works
+    real_constants = (
+        Path(__file__).resolve().parents[2] / "config" / "constants.json"
+    )
+    config_dir = project_root / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "constants.json").write_text(
+        real_constants.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+
     # Mock the git.Repo to return our fake repository
     mock_repo = MagicMock()
     mock_repo.working_tree_dir = str(project_root)

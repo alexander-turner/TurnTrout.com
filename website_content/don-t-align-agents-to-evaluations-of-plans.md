@@ -115,13 +115,11 @@ Why? There's "goal divergence from 'true diamond-motivation'" in both cases, no?
 
 Grader optimization is also bad because it violates the non-adversarial principle:
 
-<!-- vale off -->
 > [!quote] [Non-adversarial principle, Arbital](https://arbital.com/p/nonadversarial/)
 >
 > We should not be constructing a computation that is _trying_ to hurt us. At the point that computation is running, we've already done something foolish--willfully shot ourselves in the foot. Even if the AI doesn't find any way to do the bad thing, we are, at the very least, wasting computing power.
 >
 > \[...\] If you're building a toaster, you don't build one element that heats the toast and then add a tiny refrigerator that cools down the toast.
-<!-- vale on -->
 
 In the intended motivational structure, the actor tries to trick the grader, and the grader tries to avoid being tricked. I think we can realize massive alignment benefits by not designing motivational architectures which require extreme robustness properties and whose parts work at internal cross-purposes.
 
@@ -270,7 +268,6 @@ Someone messaged me:
 
 I replied:
 
-<!-- vale off -->
 > [!quote]
 >
 > This is fair and I should have clarified. In fact, Evan Hubinger pointed out something like this a few months back but I... never got around to adding it to this article?
@@ -284,11 +281,9 @@ I replied:
 > Does that make more sense?
 >
 > Like, consider the proposal "you grade whether the AI picked 5 flowers", and the AI optimizes for that evaluation. it's not that you "don't know what it means" to pick 5 flowers. It's not that you don't contain enough of the [True Name](https://www.lesswrong.com/posts/FWvzwCDRgcjb9sigb/why-agent-foundations-an-overly-abstract-explanation#Goodhart_Is_Not_Inevitable) of Flowers. It's that, in these design patterns, you _aren't aligning the AI to flowers, you're aligning it to your evaluations, and your evaluations can be hacked to hell and back by plans which have **absolutely nothing to do with flowers**_
-<!-- vale on -->
 
 I separately privately commented to `tailcalled`:
 
-<!-- vale off -->
 > [!quote]
 >
 > my point wasn't meant to be "argmax always bad", it's meant to be "argmax over all plans instantly ensures you have to grade the worst possible adversarial inputs." And so for any given cognitive setup, we can ask "what kinds, if any, of adversarial examples might this run into, and with what probability, and in what situations?"
@@ -296,7 +291,6 @@ I separately privately commented to `tailcalled`:
 > e.g. if value-child is being fed observations by a hard work minimizer, he's in an adversarial regime and i do expect his lines of thought to hit upon adversarial inputs relative to his decision-making procedures. Such that he gets fooled.
 >
 > But values-child is not, by his own purposes, searching for these adversarial inputs.
-<!-- vale on -->
 
 ## Value-child is still vulnerable to adversarial inputs
 
@@ -316,7 +310,6 @@ In private communication (reproduced with permission), `tailcalled` wrote:
 
 I replied:
 
-<!-- vale off -->
 > [!quote]
 >
 > Yeah, I agree that he could be mistaken and take a dumb course of action. This is indeed an upwards evaluation error, so to speak. It's not that I think e.g. shard-agents can freely avoid serious upwards errors, it's that they aren't _seeking them out on purpose_. As I wrote to Daniel K [in a recent comment](https://www.lesswrong.com/posts/k4AQqboXz8iE5TNXK/a-shot-at-the-diamond-alignment-problem?commentId=3BFBhgQeHzBvJmjzi):
@@ -324,7 +317,6 @@ I replied:
 > > One of the main threads is [Don't design agents which exploit adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs). The point isn't that people can't or don't fall victim to plans which, by virtue of spurious appeal to a person's value shards, cause the person to unwisely pursue the plan. The point here is that (I claim) intelligent people convergently want to avoid this happening to them.
 > >
 > > A diamond-shard will not try to find adversarial inputs to itself. That was my original point, and I think it stands.
-<!-- vale on -->
 
 Furthermore, I think that, in systems with multiple optimizers (e.g. shards), some optimizers can feed the _other optimizers_ adversarial inputs. (Adversarial inputs are most common in the presence of an adversary, after all!)
 
@@ -342,13 +334,11 @@ So, even in value-child, adversarial inputs can still crop up, but via a differe
 
 Abram Demski writes about Everitt et al.'s [_Self-Modification of Policy and Utility Function in Rational Agents_](https://arxiv.org/abs/1605.03142):
 
-<!-- vale off -->
 > [!quote] [Stable Pointers to Value: An Agent Embedded in Its Own Utility Function](https://www.alignmentforum.org/posts/5bd75cc58225bf06703754b3/stable-pointers-to-value-an-agent-embedded-in-its-own-utility-function)
 >
 > As a first example, consider the wireheading problem for AIXI-like agents in the case of a fixed utility function which we know how to estimate from sense data. As discussed in Daniel Dewey's [Learning What to Value](https://intelligence.org/files/LearningValue.pdf) and other places, if you try to implement this by putting the utility calculation in a box which rewards an AIXI-like RL agent, the agent can eventually learn to modify or remove the box, and happily does so if it can get more reward by doing so. This is because the RL agent predicts, and attempts to maximize, reward received. If it understands that it can modify the reward-giving box to get more reward, it will.
 >
 > We can fix this problem by integrating the same reward box with the agent in a better way. Rather than having the RL agent learn what the output of the box will be and plan to maximize the output of the box, we use the box _directly_ to evaluate possible futures, and have the agent plan to maximize that evaluation. Now, if the agent considers modifying the box, it evaluates that future _with the current box_. The box as currently configured sees no advantage to such tampering. This is called an observation-utility maximizer (to contrast it with reinforcement learning). Daniel Dewey goes on to show that we can incorporate uncertainty about the utility function into observation-utility maximizers, recovering the kind of "learning what is being rewarded" that RL agents were supposed to provide\[...\]
-<!-- vale on -->
 
 The point of this post isn't _just_ that e.g. value-child evaluates the future with his own values, as opposed to putting the utility calculation in a box. I'm not describing a failure of tampering with the grader. I'm describing a failure of _optimizing the output of a box / grader_, even if the box is _directly evaluating possible futures._ After all, evaluation-child uses the box to directly evaluate possible futures! Evaluation-child wants to maximize the evaluation of his model of his mother!
 
