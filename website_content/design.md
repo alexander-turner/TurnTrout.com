@@ -968,7 +968,7 @@ Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I c
 
 I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
 
-Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quoted text comes from external sources and shouldn't trigger linting errors for my own prose. The preprocessor (`scripts/strip_quotes.py`) creates temporary copies of the Markdown files with quote block contents replaced by empty lines, preserving line numbering so that error locations still map back to the original files.
+Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quotes come from external sources and shouldn't trigger linting -- any errors within are not my responsibility.
 
 I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
