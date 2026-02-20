@@ -5925,6 +5925,10 @@ APOS = MODIFIER_LETTER_APOSTROPHE
         ),
         (f"<p>{LSQ}Don{APOS}t{RSQ}.</p>", "unbalanced_single_quotes", []),
         (f"<p><code>{LSQ}code</code>.</p>", "unbalanced_single_quotes", []),
+        # Right single quote used as apostrophe (preceded by letter) should not
+        # count as a closing quote
+        (f"<p>Don{RSQ}t worry.</p>", "unbalanced_single_quotes", []),
+        (f"<p>The dog{RSQ}s bone.</p>", "unbalanced_single_quotes", []),
         # --- Quote nesting ---
         (
             f"<p>{LDQ}She said {LSQ}hi{RSQ}{RDQ}.</p>",

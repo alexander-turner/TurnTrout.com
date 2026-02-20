@@ -10,6 +10,7 @@ import remarkGfm from "remark-gfm"
 import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
+import { MODIFIER_LETTER_APOSTROPHE } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"
 import { spliceAndWrapLastChars } from "./utils"
 
@@ -459,7 +460,7 @@ const slugger = new GithubSlugger()
 
 // skipcq: JS-D1001
 export function preprocessSlug(headerText: string): string {
-  const charsToConvert = ["'", "’", "/", "&", "—", "‘"]
+  const charsToConvert = ["'", "’", "/", "&", "—", "‘", MODIFIER_LETTER_APOSTROPHE]
 
   let protoSlug = headerText
   for (const char of charsToConvert) {

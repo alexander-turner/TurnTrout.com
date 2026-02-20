@@ -94,6 +94,11 @@ describe("slugify function", () => {
       "example-s-header",
     ],
     [
+      "should handle modifier letter apostrophe (U+02BC) like regular apostrophe",
+      "Exampleʼs Header",
+      "example-s-header",
+    ],
+    [
       "should maintain compatibility with LessWrong slug behavior: slash",
       "Understanding AI/ML Techniques",
       "understanding-ai-ml-techniques",
@@ -353,6 +358,7 @@ describe("preprocessSlug function", () => {
     ["Text/&/Combo", "Text-Combo"],
     ["", ""],
     ["Normal Text", "Normal Text"],
+    ["Textʼs header", "Text-s header"],
   ])("should process '%s' to '%s'", (input: string, expected: string) => {
     expect(preprocessSlug(input)).toBe(expected)
   })

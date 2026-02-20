@@ -32,10 +32,7 @@ MODIFIER_LETTER_APOSTROPHE: str = _UNICODE_TYPO["modifierLetterApostrophe"]
 
 def load_shared_constants() -> dict:  # pragma: no cover
     """Load shared constants from config/constants.json."""
-    git_root = get_git_root()
-    constants_path = git_root / "config" / "constants.json"
-
-    with open(constants_path, encoding="utf-8") as f:
+    with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 

@@ -1605,13 +1605,34 @@ _OPENERS = {p[0] for p in _DELIMITER_PAIRS}
 _CLOSER_TO_OPENER = {p[1]: p[0] for p in _DELIMITER_PAIRS}
 
 
+def _count_non_apostrophe_right_single_quotes(text: str) -> int:
+    """
+    Count right single quotes that are actual closing quotes, not apostrophes.
+
+    A right single quote between two letters is treated as an intra-word
+    apostrophe (e.g., "don\u2019t", "it\u2019s") and excluded from the count.
+    """
+    count = 0
+    for i, char in enumerate(text):
+        if char == RIGHT_SINGLE_QUOTE:
+            preceded_by_letter = i > 0 and text[i - 1].isalpha()
+            followed_by_letter = i < len(text) - 1 and text[i + 1].isalpha()
+            if preceded_by_letter and followed_by_letter:
+                continue  # Intra-word apostrophe, not a closing quote
+            count += 1
+    return count
+
+
 def _check_balance(
     text: str, stripped: str, results: dict[str, list[str]]
 ) -> None:
     """Check each delimiter type for balanced open/close counts."""
     for open_char, close_char, label in _DELIMITER_PAIRS:
         open_count = text.count(open_char)
-        close_count = text.count(close_char)
+        if label == "single quotes":
+            close_count = _count_non_apostrophe_right_single_quotes(text)
+        else:
+            close_count = text.count(close_char)
         if open_count != close_count:
             key = f"unbalanced_{label.replace(' ', '_')}"
             _append_to_list(
@@ -1622,7 +1643,8 @@ def _check_balance(
 
 
 def _check_quote_nesting(text: str, stripped: str, issues: list[str]) -> None:
-    """Flag single quotes that wrap double quotes (American English: double first)."""
+    """Flag single quotes that wrap double quotes (American English: double
+    first)."""
     nesting: list[str] = []
     for char in text:
         if char == LEFT_SINGLE_QUOTE:
@@ -1663,10 +1685,11 @@ def _check_delimiter_nesting(
 
 
 def check_all_delimiters(soup: BeautifulSoup) -> dict[str, list[str]]:
-    """Check delimiter balance, quote nesting, and delimiter nesting in one pass.
+    """
+    Check delimiter balance, quote nesting, and delimiter nesting in one pass.
 
-    Iterates over block elements once, extracting visible text once per
-    element, then delegates to helpers for each check type.
+    Iterates over block elements once, extracting visible text once per element,
+    then delegates to helpers for each check type.
     """
     results: dict[str, list[str]] = {
         f"unbalanced_{label.replace(' ', '_')}": []
