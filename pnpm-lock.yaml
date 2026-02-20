@@ -161,7 +161,7 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: github:alexander-turner/punctilio
+        specifier: github:alexander-turner/punctilio#33d91dc77c6f10f14424793671815c7482318c97
         version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/33d91dc77c6f10f14424793671815c7482318c97(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
