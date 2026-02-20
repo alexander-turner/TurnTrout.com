@@ -1605,34 +1605,13 @@ _OPENERS = {p[0] for p in _DELIMITER_PAIRS}
 _CLOSER_TO_OPENER = {p[1]: p[0] for p in _DELIMITER_PAIRS}
 
 
-def _count_non_apostrophe_right_single_quotes(text: str) -> int:
-    """
-    Count right single quotes that are actual closing quotes, not apostrophes.
-
-    A right single quote between two letters is treated as an intra-word
-    apostrophe (e.g., "don\u2019t", "it\u2019s") and excluded from the count.
-    """
-    count = 0
-    for i, char in enumerate(text):
-        if char == RIGHT_SINGLE_QUOTE:
-            preceded_by_letter = i > 0 and text[i - 1].isalpha()
-            followed_by_letter = i < len(text) - 1 and text[i + 1].isalpha()
-            if preceded_by_letter and followed_by_letter:
-                continue  # Intra-word apostrophe, not a closing quote
-            count += 1
-    return count
-
-
 def _check_balance(
     text: str, stripped: str, results: dict[str, list[str]]
 ) -> None:
     """Check each delimiter type for balanced open/close counts."""
     for open_char, close_char, label in _DELIMITER_PAIRS:
         open_count = text.count(open_char)
-        if label == "single quotes":
-            close_count = _count_non_apostrophe_right_single_quotes(text)
-        else:
-            close_count = text.count(close_char)
+        close_count = text.count(close_char)
         if open_count != close_count:
             key = f"unbalanced_{label.replace(' ', '_')}"
             _append_to_list(
