@@ -49,34 +49,19 @@ def test_get_quote_level(line: str, expected: int):
 @pytest.mark.parametrize(
     "line, expected",
     [
-        ("> [!quote]", True),
-        ("> [!quote] Title", True),
-        ("> [!quote]- Collapsible", True),
-        ("> [!quote]+ Expanded", True),
-        ("> > [!quote] Nested", True),
-        ("> [!Quote]", True),  # case insensitive
-        ("> [!QUOTE]", True),  # case insensitive
-        ("> [!quote]Author Name", True),  # no space before title
-        ("> [!note]", False),
-        ("> [!warning]", False),
-        ("regular text", False),
-        ("", False),
-        ("> [!quotation]", False),  # must not match partial
-    ],
-    ids=[
-        "basic",
-        "with-title",
-        "collapsible",
-        "expanded",
-        "nested",
-        "mixed-case",
-        "upper-case",
-        "no-space-title",
-        "note-callout",
-        "warning-callout",
-        "plain-text",
-        "empty",
-        "quotation-not-quote",
+        pytest.param("> [!quote]", True, id="basic-quote"),
+        pytest.param("> [!quote] Title", True, id="quote-with-title"),
+        pytest.param("> [!quote]- Collapsible", True, id="collapsible-minus"),
+        pytest.param("> [!quote]+ Expanded", True, id="expanded-plus"),
+        pytest.param("> > [!quote] Nested", True, id="nested-level-2"),
+        pytest.param("> [!quote]Author Name", True, id="no-space-before-title"),
+        pytest.param("> [!Quote]", False, id="mixed-case-rejected"),
+        pytest.param("> [!QUOTE]", False, id="upper-case-rejected"),
+        pytest.param("> [!note]", False, id="note-not-quote"),
+        pytest.param("> [!warning]", False, id="warning-not-quote"),
+        pytest.param("regular text", False, id="plain-text"),
+        pytest.param("", False, id="empty-string"),
+        pytest.param("> [!quotation]", False, id="quotation-not-quote"),
     ],
 )
 def test_is_quote_callout_start(line: str, expected: bool):
@@ -96,7 +81,9 @@ def test_is_quote_callout_start(line: str, expected: bool):
         ("> [!quote] Title\n> Content line\n\nAfter quote",
          "\n\n\nAfter quote"),
         ("> [!quote]- Collapsible title\n> Hidden content", "\n"),
-        ("> [!Quote] Title\n> Content", "\n"),
+        # Mixed-case [!Quote] is NOT matched (case-sensitive)
+        ("> [!Quote] Title\n> Content",
+         "> [!Quote] Title\n> Content"),
         ("Before\n> [!quote]\n> Content", "Before\n\n"),
         # Bare > (blank blockquote line) inside quote
         ("> [!quote] Title\n>\n> Content\n\nAfter", "\n\n\n\nAfter"),
@@ -128,7 +115,7 @@ def test_is_quote_callout_start(line: str, expected: bool):
         "preserves-non-quote-callout",
         "simple-quote",
         "collapsible",
-        "case-insensitive",
+        "mixed-case-not-stripped",
         "quote-at-end",
         "bare-gt-in-quote",
         "no-title-with-bare-gt",

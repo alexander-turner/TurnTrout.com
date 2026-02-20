@@ -18,16 +18,14 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import utils as script_utils  # noqa: E402
 
-_QUOTE_CALLOUT_RE = re.compile(
-    r"^(?:>\s*)+\[!quote\][+-]?", re.IGNORECASE
-)
+_QUOTE_CALLOUT_RE = re.compile(r"^(?:>\s*)+\[!quote\][+-]?")
 
 
 def get_quote_level(line: str) -> int:
     """
     Count the blockquote nesting level of a line.
 
-    Each ``>`` character at the start (with optional surrounding
+    Each `>` character at the start (with optional surrounding
     spaces) adds one level. Returns 0 for non-blockquote lines.
     """
     stripped = line.lstrip(" ")
@@ -41,17 +39,17 @@ def get_quote_level(line: str) -> int:
 
 
 def is_quote_callout_start(line: str) -> bool:
-    """Check if a line starts a ``[!quote]`` callout block."""
+    """Check if a line starts a `[!quote]` callout block."""
     return bool(_QUOTE_CALLOUT_RE.match(line))
 
 
 def strip_quote_blocks(text: str) -> str:
     """
-    Remove ``[!quote]`` callout blocks from markdown text.
+    Remove `[!quote]` callout blocks from markdown text.
 
     Replaces quote block lines with empty lines to preserve line
-    numbering. Only removes ``[!quote]`` blocks, not other callout
-    types like ``[!note]``, ``[!warning]``, etc.
+    numbering. Only removes `[!quote]` blocks, not other callout
+    types like `[!note]`, `[!warning]`, etc.
     """
     lines = text.split("\n")
     result: list[str] = []
@@ -85,7 +83,7 @@ def create_stripped_directory(
 
     Args:
         source_dir: Directory containing source Markdown files.
-        output_dir: Output directory. If ``None``, creates a temporary
+        output_dir: Output directory. If `None`, creates a temporary
             directory.
 
     Returns:
