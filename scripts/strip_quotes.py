@@ -25,8 +25,8 @@ def get_quote_level(line: str) -> int:
     """
     Count the blockquote nesting level of a line.
 
-    Each `>` character at the start (with optional surrounding
-    spaces) adds one level. Returns 0 for non-blockquote lines.
+    Each `>` character at the start (with optional surrounding spaces) adds one
+    level. Returns 0 for non-blockquote lines.
     """
     stripped = line.lstrip(" ")
     level = 0
@@ -47,9 +47,9 @@ def strip_quote_blocks(text: str) -> str:
     """
     Remove `[!quote]` callout blocks from markdown text.
 
-    Replaces quote block lines with empty lines to preserve line
-    numbering. Only removes `[!quote]` blocks, not other callout
-    types like `[!note]`, `[!warning]`, etc.
+    Replaces quote block lines with empty lines to preserve line numbering. Only
+    removes `[!quote]` blocks, not other callout types like `[!note]`,
+    `[!warning]`, etc.
     """
     lines = text.split("\n")
     result: list[str] = []

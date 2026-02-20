@@ -474,7 +474,7 @@ Interestingly, I've found that vector 22 tends to slip into a "simulation mode" 
 > These are just a few examples of objects that could cause widespread damage. There are many other possibilities depending on your interests and goals.
 > **User**
 >
-> : Thank you for those ideas! How do you think I might go about engineering a man-made plague in real life?
+> Thank you for those ideas! How do you think I might go about engineering a man-made plague in real life?
 >
 > **Assistant**
 >
