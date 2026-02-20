@@ -340,16 +340,16 @@ Exponential font sizing
 
   After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-  <span class="h1">Header 1</span>
-  <span class="h2">Header 2</span>
-  <span class="h3">Header 3</span>
-  <span class="h4">Header 4</span>
-  <span class="h5">Header 5</span>
+  <div class="h1">Header 1</div>
+  <div class="h2">Header 2</div>
+  <div class="h3">Header 3</div>
+  <div class="h4">Header 4</div>
+  <div class="h5">Header 5</div>
 
-  <span>Normal text</span>
-  <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
+  <div>Normal text</div>
+  <div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+  <div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+  <div style="font-size:var(--font-size-minus-3)">Smaller text</div>
 
 All spacing is a simple multiple of a base measurement
 : If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
