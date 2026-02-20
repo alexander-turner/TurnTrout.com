@@ -50,8 +50,13 @@ class DarkModeHelper {
   }
 
   async verifyStorage(expectedTheme: Theme): Promise<void> {
-    const storedTheme = await this.page.evaluate((key) => localStorage.getItem(key), savedThemeKey)
-    expect(storedTheme).toBe(expectedTheme)
+    // Wait inside the browser context for setupDarkMode() to write to
+    // localStorage after a reload (avoids Safari timing flake).
+    await this.page.waitForFunction(
+      ({ key, expected }) => localStorage.getItem(key) === expected,
+      { key: savedThemeKey, expected: expectedTheme },
+      { timeout: 5_000 },
+    )
   }
 
   async clickToggle(): Promise<void> {

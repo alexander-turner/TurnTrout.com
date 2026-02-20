@@ -728,7 +728,10 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 
 test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
   page,
-}) => {
+}, testInfo) => {
+  // This test performs two full search operations with 10s timeouts each,
+  // plus a focus wait with 10s timeout, so the default 30s budget is tight.
+  testInfo.setTimeout(60_000)
   await search(page, "alignment")
 
   // Figure out where the second result is, and hover over it

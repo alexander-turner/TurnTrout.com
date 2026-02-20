@@ -390,25 +390,23 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    await page.reload({ waitUntil: "domcontentloaded" })
-
-    // Dispatch a user interaction event from within the browser context as soon
-    // as scroll is restored. This avoids a race where the 15-frame monitoring
-    // loop completes before a Node.js round-trip can dispatch the event.
-    await page.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        const tryDispatch = () => {
-          if (window.scrollY > 0) {
-            window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
-            window.scrollBy(0, 100)
-            resolve()
-          } else {
-            requestAnimationFrame(tryDispatch)
-          }
+    // Register an init script that dispatches a user scroll event as early as
+    // possible during page load. Running inside the page context (via
+    // addInitScript) avoids the race where the 15-frame monitoring loop
+    // completes before a post-reload page.evaluate round-trip can fire.
+    await page.addInitScript(() => {
+      const tryDispatch = () => {
+        if (window.scrollY > 0) {
+          window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
+          window.scrollBy(0, 100)
+        } else {
+          requestAnimationFrame(tryDispatch)
         }
-        requestAnimationFrame(tryDispatch)
-      })
+      }
+      requestAnimationFrame(tryDispatch)
     })
+
+    await page.reload({ waitUntil: "domcontentloaded" })
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
     // We poll on the Node.js side because the `consoleMessages` array lives here,
