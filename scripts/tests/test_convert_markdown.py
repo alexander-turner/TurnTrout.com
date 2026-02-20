@@ -6,6 +6,7 @@ import pytest
 
 from .. import convert_markdown_yaml, source_file_checks
 from .. import utils as script_utils
+from .conftest import requires_media_tools
 from .utils import create_markdown_file
 
 try:
@@ -67,6 +68,7 @@ Content with non-AVIF card_image.
 """,
     ],
 )
+@requires_media_tools
 def test_process_card_image_in_markdown_skips_cases(
     setup_test_env, mock_git_root, markdown_content
 ):
@@ -159,6 +161,7 @@ Some content without YAML front matter.
         ),
     ],
 )
+@requires_media_tools
 def test_process_card_image_in_markdown_skips(
     setup_test_env,
     mock_git_root,
@@ -515,6 +518,7 @@ card_image: {new_card_image_url}{extra_frontmatter}
         ),
     ],
 )
+@requires_media_tools
 def test_process_card_image_conversion(
     setup_test_env,
     mock_git_root,
@@ -540,6 +544,7 @@ card_image: {card_image_url}{extra_frontmatter}
     )
 
 
+@requires_media_tools
 def test_process_card_image_in_markdown_process_failure(
     setup_test_env, mock_git_root
 ):

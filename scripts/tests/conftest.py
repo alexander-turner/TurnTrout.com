@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -7,6 +8,39 @@ import git
 import pytest
 
 from .. import utils as script_utils
+
+# --- Skip markers for missing external tools ---
+
+requires_imagemagick = pytest.mark.skipif(
+    shutil.which("convert") is None and shutil.which("magick") is None,
+    reason="ImageMagick not found",
+)
+
+requires_ffmpeg = pytest.mark.skipif(
+    shutil.which("ffmpeg") is None,
+    reason="ffmpeg not found",
+)
+
+requires_rclone = pytest.mark.skipif(
+    shutil.which("rclone") is None,
+    reason="rclone not found",
+)
+
+requires_fish = pytest.mark.skipif(
+    shutil.which("fish") is None,
+    reason="fish shell not found",
+)
+
+requires_linkchecker = pytest.mark.skipif(
+    shutil.which("linkchecker") is None,
+    reason="linkchecker not found",
+)
+
+requires_media_tools = pytest.mark.skipif(
+    shutil.which("ffmpeg") is None
+    or (shutil.which("convert") is None and shutil.which("magick") is None),
+    reason="ffmpeg and/or ImageMagick not found",
+)
 
 
 @pytest.fixture()
