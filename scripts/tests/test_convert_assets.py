@@ -7,7 +7,6 @@ import pytest
 
 from .. import compress, convert_assets
 from .. import utils as script_utils
-from .conftest import requires_media_tools
 
 try:
     from . import utils as test_utils
@@ -19,8 +18,6 @@ except ImportError:
 
 mock_r2_upload = mock.MagicMock()
 mock.patch.dict("sys.modules", {"r2_upload": mock_r2_upload}).start()
-
-pytestmark = requires_media_tools
 
 
 @pytest.mark.parametrize("ext", compress.ALLOWED_IMAGE_EXTENSIONS)

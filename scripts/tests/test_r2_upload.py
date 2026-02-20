@@ -10,11 +10,8 @@ from .. import r2_upload
 from .. import utils as script_utils
 from .utils import create_markdown_file
 
-# Skip all tests in this module if rclone is not available
-pytestmark = pytest.mark.skipif(
-    shutil.which("rclone") is None,
-    reason="rclone not found",
-)
+# Skip all tests in this module if R2 credentials are not configured
+pytestmark = pytest.mark.requires_r2
 
 
 @pytest.fixture()

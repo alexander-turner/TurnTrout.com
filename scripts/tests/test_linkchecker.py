@@ -1,6 +1,5 @@
 import http.server
 import os
-import shutil
 import socketserver
 import subprocess
 import threading
@@ -9,13 +8,7 @@ import time
 import pytest
 
 # Disable parallel execution for this test file to avoid port conflicts
-pytestmark = [
-    pytest.mark.xdist_group(name="linkchecker_serial"),
-    pytest.mark.skipif(
-        shutil.which("linkchecker") is None,
-        reason="linkchecker not found",
-    ),
-]
+pytestmark = pytest.mark.xdist_group(name="linkchecker_serial")
 
 
 @pytest.fixture

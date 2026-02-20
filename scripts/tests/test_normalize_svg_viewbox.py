@@ -166,7 +166,6 @@ def test_normalize_svg_viewbox_success(sample_svg: Path, mock_subprocess_run):
     """Test normalize_svg_viewbox when Inkscape is available."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
-        patch("shutil.which", return_value="/usr/bin/inkscape"),
         patch("builtins.print") as mock_print,
     ):
         normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
@@ -219,7 +218,6 @@ def test_normalize_svg_viewbox_default_size(
     """Test normalize_svg_viewbox with default size."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
-        patch("shutil.which", return_value="/usr/bin/inkscape"),
         patch("builtins.print"),
     ):
         normalize_svg_viewbox.normalize_svg_viewbox(sample_svg)
@@ -236,7 +234,6 @@ def test_main_success(
         "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
     )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
-    monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/inkscape")
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
     result = normalize_svg_viewbox.main()
@@ -325,7 +322,6 @@ def test_main_custom_size(
         ["normalize_svg_viewbox.py", "--size", "48", str(sample_svg)],
     )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
-    monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/inkscape")
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
     result = normalize_svg_viewbox.main()
@@ -347,7 +343,6 @@ def test_main_multiple_files(
         ["normalize_svg_viewbox.py", str(sample_svg), str(square_svg)],
     )
     monkeypatch.setattr("normalize_svg_viewbox.check_inkscape", lambda: True)
-    monkeypatch.setattr("shutil.which", lambda cmd: "/usr/bin/inkscape")
     monkeypatch.setattr("builtins.print", lambda *args, **kwargs: None)
 
     result = normalize_svg_viewbox.main()
