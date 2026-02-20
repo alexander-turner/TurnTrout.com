@@ -463,7 +463,7 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 
 ### Rare dropcap coloring
 
-Every time you navigate to a new page, there's a 10% chance to get a random dropcap color. :)
+Every time you navigate to a new page, there's a <span id="populate-dropcap-probability"></span> chance to get a random dropcap color. :)
 
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
