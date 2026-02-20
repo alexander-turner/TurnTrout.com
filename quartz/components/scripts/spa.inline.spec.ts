@@ -390,15 +390,25 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    // Register an init script that dispatches a user scroll event as early as
-    // possible during page load. Running inside the page context (via
-    // addInitScript) avoids the race where the 15-frame monitoring loop
-    // completes before a post-reload page.evaluate round-trip can fire.
+    // Register an init script that dispatches a user scroll event during page
+    // load. Using addInitScript avoids the race where the 15-frame monitoring
+    // loop completes before a post-reload page.evaluate round-trip can fire.
+    // We wait for scrollY > 0 (scroll restoration happened), then skip two
+    // extra frames so the programmaticScroll flag (set during
+    // scrollToProgrammatic and cleared on the next rAF) has been reset.
     await page.addInitScript(() => {
       const tryDispatch = () => {
         if (window.scrollY > 0) {
-          window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
-          window.scrollBy(0, 100)
+          // Skip two frames: the programmaticScroll flag is cleared in the
+          // first rAF after scrollToProgrammatic, and our addInitScript rAF
+          // was registered before it. Waiting two frames guarantees the flag
+          // is false when we fire the scroll event.
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
+              window.scrollBy(0, 100)
+            })
+          })
         } else {
           requestAnimationFrame(tryDispatch)
         }

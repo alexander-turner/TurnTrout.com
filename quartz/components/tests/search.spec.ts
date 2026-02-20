@@ -729,8 +729,6 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
   page,
 }, testInfo) => {
-  // This test performs two full search operations with 10s timeouts each,
-  // plus a focus wait with 10s timeout, so the default 30s budget is tight.
   testInfo.setTimeout(60_000)
   await search(page, "alignment")
 
@@ -746,8 +744,13 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
-  // The first result should gain focus once the mouseover lock expires
+  // The search input is debounced (400ms), so `search()` may return before
+  // the new results render. Wait for the first result card to reflect the
+  // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
+  await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
+
+  // The first result should gain focus once the mouseover lock expires
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
 
   await page.keyboard.press("Enter")
