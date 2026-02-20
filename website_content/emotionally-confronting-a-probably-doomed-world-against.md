@@ -137,7 +137,6 @@ And this is what I have done in a few months. Who could I grow into in ten years
 
 # Against motivation via dignity points
 
-<!-- vale off -->
 > [!quote] [MIRI announces new "Death With Dignity" strategy](https://www.lesswrong.com/posts/j9Q8bRmwCgXRYAgcJ/miri-announces-new-death-with-dignity-strategy)
 >
 > When Earth's prospects are that far underwater in the basement of the logistic success curve, it may be hard to feel motivated about continuing to fight, since doubling our chances of survival will only take them from 0% to 0%.
@@ -151,7 +150,6 @@ And this is what I have done in a few months. Who could I grow into in ten years
 > ...
 >
 > But if enough people can contribute enough bits of dignity like that, wouldn't that mean we didn't die at all? Yes, but again, don't get your hopes up. Don't focus your emotions on a goal you're probably not going to obtain. Realistically, we find a handful of projects that contribute a few more bits of counterfactual dignity; get a bunch more not-specifically-expected bad news that makes the first-order object-level situation look even worse (where to second order, of course, the good Bayesians already knew that was how it would go); and then we all die.
-<!-- vale on -->
 
 Again, I am not, in this post, disputing Eliezer’s object-level model. I have supposed he is correct about our probable doom. Obviously, if we are in a probably doomed world, I will keep that in mind. I do actually want to _win_, and finding winning plans requires entangling my brain with the details of each expected danger. Sharp danger awaits when you lose sight of the fact that reality is allowed to kill you.
 
@@ -161,7 +159,6 @@ _However_—if you work at all like I do, I think this is _not_ how you should i
 
 A search for _dignified plans_ is different from a search for plans which _get my mother out of the damn vault_. I can, in fact, conduct the latter search while _still remembering how unlikely I am to actually open the vault_, and the latter search has a _better chance of actually finding dignified plans_!
 
-<!-- vale off -->
 > [!quote] [Trying to Try](https://www.readthesequences.com/Trying-To-Try)
 >
 > Want to try to make a million dollars? Buy a [lottery ticket](https://www.readthesequences.com/LotteriesAWasteOfHope). Your odds of winning may not be very good, but you did try, and trying was what you wanted. In fact, you tried your _best_, since you only had one dollar left after buying lunch. Maximizing the odds of goal achievement using available resources: is this not intelligence?
@@ -171,7 +168,6 @@ A search for _dignified plans_ is different from a search for plans which _get m
 > But if all you want is to “maximize the probability of success using available resources,” then that’s the easiest thing in the world to convince yourself you’ve done. The very first plan you hit upon will serve quite well as “maximizing”—if necessary, you can generate an inferior alternative to prove its optimality. And any tiny resource that you care to put in will be what is “available.” Remember to congratulate yourself on putting in 100% of it!
 >
 > Don’t try your best. Win, or fail. There is no best.
-<!-- vale on -->
 
 I hope you do not let this “dignity” orientation cloud your intent to win.[^3] In fact, I think you should lean in the opposite direction, and sharpen your intent. _Search only for plans which actually win, given your best understanding of the AI alignment problem. Be honest with yourself; do not flinch away from reality; do not take your eyes off the goal._
 

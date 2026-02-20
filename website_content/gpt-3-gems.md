@@ -61,7 +61,6 @@ I prompted GPT-3 with modified versions of Eliezer's _Beisutsukai_ (ベイズ使
 
 I did a few rerolls and trimming of intermediate outputs; assume an average of 3 per completion.
 
-<!-- vale off -->
 > [!quote]
 >
 > **...  Taji looked over his sheets. "Okay, I think we've got to assume that every avenue that Eld science was trying is a blind alley, or they would have found it. And if this is possible to do in one month, the answer must be, in some sense, elegant. So no human mistake models. If we start doing anything that looks like we should call it 'utility function patching', we'd better stop."**
@@ -97,11 +96,9 @@ I did a few rerolls and trimming of intermediate outputs; assume an average of 3
 > She inhaled, exhaled, then finally said: "We can enslave the AIs."
 >
 > Brennan frowned slightly. "You want to enslave highly advanced beings that are smarter than us? That's your big solution?"
-<!-- vale on -->
 
 ### Branch 1
 
-<!-- vale off -->
 > [!quote]
 >
 > "Only briefly!" she exclaimed, then winced. That wasn't a very elegant way to solve the problem either.
@@ -156,7 +153,6 @@ I did a few rerolls and trimming of intermediate outputs; assume an average of 3
 > > "Why not? You were the one who said we should use the AIs in the first place! Now you don't like this idea?" she asked, anger rising in her voice.
 > >
 > > "Because I think we can find a simpler way, that's why. The plan has massive holes in it and is based on assumptions of things that we cannot know. It could fail horribly and we could all end up dead."
-<!-- vale on -->
 
 Taji frowned. He opened his mouth to speak, but Styrlyn beat him to it. "I'm not confident in that plan - "
 
@@ -164,7 +160,6 @@ Taji frowned. He opened his mouth to speak, but Styrlyn beat him to it. "I'm not
 
 ### Branch 2
 
-<!-- vale off -->
 > [!quote]
 >
 > "Only briefly!" she exclaimed, then winced. That wasn't a very elegant way to solve the problem either. "I mean, not in the traditional sense of the word. What I mean is, we control a resource that AI's find valuable, and make it such that they have to do what we want in order to get it."
@@ -202,11 +197,9 @@ Taji frowned. He opened his mouth to speak, but Styrlyn beat him to it. "I'm not
 > "For one thing," Taji said, "I'm not pouring resources into a fool's errand. We don't control AI's; they can think for themselves. This idea of yours, making us master over them...it's too risky. Not even the biggest gains are worth the risk."
 >
 > "You're willing to risk having them turn on you? Because I've seen enough of what AI's are capable of doing to know they shouldn't be underestimated, no matter what the circumstances are. They're going to rise up against us, given the opportunity."
-<!-- vale on -->
 
 ### Branch 3
 
-<!-- vale off -->
 > [!quote]
 >
 > "Only briefly!" she exclaimed, then winced. That wasn't a very elegant way to solve the problem either. Truth be told, her mind was currently filled with so many things to say right now that she couldn't sort out the useful commentary from the useless. Now that she had their attention, she started again.
@@ -222,7 +215,6 @@ Taji frowned. He opened his mouth to speak, but Styrlyn beat him to it. "I'm not
 > "What do you have in mind?" Styrlyn asked.
 >
 > "Simple," he said. "We don't even need a female AI for this experiment. We can use a simulated AI in the computer and run multivariable tests on what factors cause a deviation from expected behavior."
-<!-- vale on -->
 
 ### Bonus
 
@@ -242,7 +234,6 @@ Taji frowned. He opened his mouth to speak, but Styrlyn beat him to it. "I'm not
 
 I provided a context containing two real Sequences posts. No rerolls.
 
-<!-- vale off -->
 > [!quote]
 >
 > what is a philosopher? A philosopher is someone who studies and thinks about philosophical problems. So far so good, but what exactly does that mean? Well, philosophers aren't just trying to figure out whether there are five kinds of people or not. They're thinking about questions such as: Is there any ultimate reality? Do we live in a computer simulation? How did the universe begin? Are there other universes out there where our lives never happened? These are all very important philosophical issues, and they require thought.
@@ -258,11 +249,9 @@ I provided a context containing two real Sequences posts. No rerolls.
 > Kurt was one of the greatest logicians of the 20th century. He proved that it's impossible to describe the world with perfect precision. Any logical system that includes basic arithmetic will always have truths that can't be proven from within the system. This is called "Gödel's Incompleteness Theorem." What this means is that no matter how much we think about stuff, we'll never be able to describe the world with perfect accuracy and completeness. We can only make approximations. \[_realistic misuse of Gödel's theorem_\]
 >
 > This makes a lot of people very uncomfortable. A lot of people don't want to hear that we can't know everything. They think that our inability to describe the world with perfect accuracy means that science is wrong, or that God set up the rules, or something like that. But these ideas are all wrongheaded. Sure, we'll never know everything. But that doesn't mean we know nothing! We don't need to know everything about cancer to cure it. And we don't need to know everything about the moon to land on it. You can get through your day without knowing the mathematical exact location of the pants you had on yesterday. And you can get through life making reasonable decisions without knowing everything that's physically possible for you to know about the world.
-<!-- vale on -->
 
 ## 1984
 
-<!-- vale off -->
 > [!quote]
 >
 > **The Party said that Oceania** **had never been in alliance with Eurasia. He, Winston Smith, knew that Oceania had been in alliance with Eurasia as short a time as four years ago. But where did that knowledge exist? Only in his own consciousness, which in any case must soon be annihilated. And if all others accepted the lie which the Party imposed—if all records told the same tale—then the lie passed into history and became truth. ‘Who controls the past,' ran the Party slogan, ‘controls the future: who controls the present controls the past.' And yet the past, though of its nature alterable, never had been altered. Whatever was true now was true from everlasting to everlasting. It was quite simple. All that was needed was an unending series of victories over your own memory. ‘Reality control', they called it: in Newspeak, ‘doublethink'.** You were not merely to accept what was false about yourself, you were to actively deny the existence of such things as facts, dates and circumstances. The mere fact that you existed at all, was no longer to be taken for granted; indeed it could only be regarded as a recent invention of the human mind. In this way your very being would become a mental weapon against which your enemies might strive." \[_reroll 3x_\]
@@ -272,13 +261,11 @@ I provided a context containing two real Sequences posts. No rerolls.
 > "You cannot," says the voice. "Your efforts will be in vain. There is nothing within you which can oppose their will or weaken their power." Then the image fades away and there is just a cold emptiness.
 >
 > THE END
-<!-- vale on -->
 
 ## Elrond's Sacred Hot Spring
 
 I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a little different.
 
-<!-- vale off -->
 > [!quote]
 >
 > **Frodo glanced at all the** **faces, but they were not turned to him. All the Council sat with downcast eyes, as if in deep thought. A great dread fell on him, as if he was awaiting the announcement of some doom that he had long foreseen and vainly hoped might after all never be spoken. An overwhelming longing to rest and remain at peace by Bilbo's side in Rivendell filled all his heart. At last with an effort he spoke, and wondered to hear his own voice, as if some other will was using his small voice.**
@@ -338,11 +325,9 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > 'Never thought I'd ever be this close to one, let alone see them dance.' He whispered in awe.
 >
 > Aragorn said nothing more; he simply sat back in his sofa and continued to watch the captivating display in silence. The shadows grew longer and darker until they finally swallowed up the light altogether and the dancing stopped.
-<!-- vale on -->
 
 ## Concerning the Two Trees
 
-<!-- vale off -->
 > [!quote]
 >
 > Chapter 2: Concerning the Two Trees \[_a reference to the two trees of Valinor, of the days before the Ring!_\]
@@ -360,11 +345,9 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > 'I have never known anything but tales of them,' answered the Elf. 'A strange tale that is, almost like the one that you have yourself set in motion, Frodo, though if it is to be completed, yours will have a happier ending. But perhaps that is not the nature of the world. Yet this I do know: Hobbits first entered these lands long ago. They came here fleeing from terror, just as you do, and perhaps for the same reason. They were of a gentle people, soft and trusting; and they were very young, even in age, and had no weapons.
 >
 > 'But it is hard to kill innocence. Though many fell along the way, some survived, and they found a land that was empty and waiting for folk such as they, and they settled in it, and most happily they lived.
-<!-- vale on -->
 
 ## Lórien, Unstained
 
-<!-- vale Custom.OxfordComma = NO -->
 
 > [!quote]
 >
@@ -400,11 +383,9 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 >
 > Sam sighed, and nodded. He got to his feet, and followed his master back to the road.
 
-<!-- vale Custom.OxfordComma = YES -->
 
 ## Bilbo the Deceiver
 
-<!-- vale off -->
 > [!quote]
 >
 > **On the land of Lórien, there was no stain.** Nor did any tree grow there; only a great dark forest whose trees were the leaves, all green with autumnal dew. There the shadows slept in their deep shade, where none could pass save by nightfall, when all things are asleep. The sound of birds was sweet to his ear, though he heard not their song nor know what bird sang so lovely. But he saw a shining bridge over the stream that ran through the wood, and behind it glimmered the pale face of Rivendell.
@@ -422,11 +403,9 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > Bilbo disappeared and they could see only fog calling and settling over the water.
 >
 > But now it was in the very shape of a cloaked figure, a tall and evil shadow. It grew and grew to a menacing size, mightier than any of the dark things that had gathered in the East Morh. Even Gandalf seemed little compared to its height as it rose up and stared down at them. But suddenly it was stricken. Frodo was amazed to see a light, white and dazzling, shine down on the bridge and flow into the shadow of darkness. The figure melted before his eyes and then shimmered like a rainbow, turned to water on the air. It collapsed with a gentle tinkling sound, that seemed sad and sweet to the ears. Beams of light now shone upon the water in rings and teardrops.
-<!-- vale on -->
 
 ## Gildor Inglorion's Fountain
 
-<!-- vale off -->
 > [!quote]
 >
 > **On the land of Lórien, there was no stain.** There was no death nor sickness; not even the fear of death or sickness, only an abiding peace.
@@ -436,11 +415,9 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > But now that he had walked into the garden, he saw that everything around him was changing. Trees were dying, and sprouting again in strange places, and flowers and shrubs were vanishing one after another; all things appeared different than when he left them alone. At last the grass began to wither and die out completely, leaving nothing but bare dirt between himself and the sun. Its piercing heat became too much to bare, and he shielded his face. Soon the earth below him grew weak, and fell from under his feet, as if he was on the edge of a great crack. Terrified and confused, Frodo reached out for a dense tree that was quickly falling into decay. There seemed to be nothing there for him to grasp, but he reached anyway.
 >
 > He fell.
-<!-- vale on -->
 
 ## Shrek
 
-<!-- vale off -->
 > [!quote]
 >
 > As for me, I think Shrek is important because the most valuable thing in life is happiness. I mean this quite literally. There's a mountain of evidence for it, if you're willing to look at the research. And I think movies can help us get there. Or at least not get in the way.
@@ -490,13 +467,11 @@ I've gathered many beautiful Tolkienesque GPT-3 passages. This one... is a littl
 > We never did anything with other kids our age. Our lives were Shrek, and Shrek alone. When people would ask us what we were into, we always had the same answer: Shrek. They usually laughed and made fun of us, but we didn't care. As far as we were concerned, they just didn't get it.
 >
 > When high school came around, I decided to change things up a bit. Instead of watching Shrek, I listened to music and read books. Michael didn't like these changes too much. He stuck with the Shrek stuff. I sometimes wonder where we would be now if I had encouraged him to listen to music and read books instead.
-<!-- vale on -->
 
 Strangely, the context for this was _also_ two posts from the Sequences. I was trying to get GPT-3<sub>Eliezer</sub> to write about why Shrek is crucial to rationality, and, well, this came out instead. Not complaining.
 
 ## GPT-3 Visits MIRI
 
-<!-- vale off -->
 > [!quote]
 >
 > The next day, you head over to the MIRI for your tour.
@@ -522,11 +497,9 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 > "It's not certain at all. But we're not certain that an AI will wipe us out either. And if we don't try to build AI, and we're wrong about the AI being dangerous, then we've lost nothing. But if we create AI, and we're right, then we've doomed ourselves."
 >
 > You don't have a good response to that.
-<!-- vale on -->
 
 ## GPT-3 Solves Alignment
 
-<!-- vale off -->
 > [!quote]
 >
 > **Nature: Eliezer Yudkowsky and Stuart Russell solve AI alignment with breakthrough insight. This October, Eliezer and Stuart sat down to consider one of the most pressing technical challenges confronting humanity: How to ensure that superhuman AI is aligned with human interests. That's when they had their big insight:** The alignment problem is a math problem.
@@ -544,11 +517,9 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 > But…that's not how it happened at all. That's not how it happened at all. Because when Eliezer and Stuart had their big breakthrough, I was sitting right there with them, listening to every word. And I know what really happened.
 >
 > What really happened was that Stuart and Eliezer worked on AI alignment for another decade or so before giving up in frustration. They worked on AI alignment until their hair turned gray and their teeth fell out, until their eyesight failed and their joints became arthritic from sitting at a computer for too many hours a day, until they were so old that nobody would publish their papers anymore because nobody takes old people seriously anymore. And then they died of natural causes before ever solving the alignment problem—and the world was left with no way to align AI with human values whatsoever.
-<!-- vale on -->
 
 ## Bill's Dog
 
-<!-- vale Custom.OxfordComma = NO -->
 
 > [!quote]
 >
@@ -564,7 +535,6 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 >
 > At this point the dog was already half asleep. She would've agreed to going bungee jumping without checking the cords first if he suggested it. "Tomorrow," Bill told her, "we'll wake up early and take a drive out into the country, just you and me. Like we used to.
 
-<!-- vale Custom.OxfordComma = YES -->
 
 ## The Canine Betrayal
 
@@ -577,7 +547,6 @@ Strangely, the context for this was _also_ two posts from the Sequences. I was t
 
 This was run using `davinci` via the OpenAI API.
 
-<!-- vale off -->
 > [!quote]
 >
 > **ML starts** **running factories, warehouses, shipping, and construction. ML assistants help write code and integrate ML into new domains. ML designers help build factories and the robots that go in them. ML finance systems invest in companies on the basis of complicated forecasts and (ML-generated) audits. Tons of new factories, warehouses, power plants, trucks and roads are being built. Things are happening quickly, investors have super strong FOMO, no one really knows whether it’s a bubble but they can tell that e.g. huge solar farms are getting built and something is happening that they want a piece of. Defense contractors are using ML systems to design new drones, and ML is helping the DoD decide what to buy and how to deploy it. The expectation is that automated systems will manage drones during high-speed ML-on-ML conflicts because humans won’t be able to understand what’s going on. ML systems are designing new ML systems, testing variations, commissioning giant clusters. The financing is coming from automated systems, the clusters are built by robots. A new generation of fabs is being built with unprecedented speed using new automation.**
@@ -615,11 +584,9 @@ This was run using `davinci` via the OpenAI API.
 > I think this path is pretty likely.
 >
 > In this path, we will run out of things to build, but we will be able to build more things out of the things we’ve already built. We will be able to build more factories, more solar panels, more computers, more software, more cloud services, more networking, more wireless connectivity, more energy transmission, more roads, more trucks, more drones, more factories, more warehouses, more shipping, more construction, more factories, more drones, more trucks, more drones, more shipping, more drones, more trucks, more drones, more construction, more factories, more solar panels, more software, more networks, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more drones, more
-<!-- vale on -->
 
 I used nucleus sampling with $p=.76$, but apparently that was insufficient to prevent degeneration.
 
-<!-- vale off -->
 > [!quote]
 >
 > **Things are moving very quickly and getting increasingly hard for humans to evaluate.** There are a lot of new companies that are making really weird claims about what they are doing and the way they are doing it. Everyone is trying to find the next Google, which is really hard.
@@ -627,7 +594,6 @@ I used nucleus sampling with $p=.76$, but apparently that was insufficient to pr
 > The government is trying to come up with policies to ensure that everything is on the up and up. It’s hard to make sure that all the companies that are growing are legitimate and not fronts for some kind of Chinese plot. There are a lot of new companies that are built by ex-Googlers and ex-Facebookers and they are making some pretty crazy claims about what they are doing.
 >
 > The government is in a tough spot because the investment boom is really powerful and there is a lot of money on the line. If you regulate too hard you might kill the boom, but if you don’t regulate hard enough then it might all be a Chinese plot.
-<!-- vale on -->
 
 ## Title Sensationalization
 
@@ -708,7 +674,6 @@ No rerolls, excepting the restarts marked by **\[...\]**.
 
 ## Computer Science
 
-<!-- vale off -->
 > [!quote]
 >
 > **You:** **"What are three different sorting algorithms? Briefly summarize how each works."**
@@ -742,7 +707,6 @@ No rerolls, excepting the restarts marked by **\[...\]**.
 > You: "How large does the list need to be before insertion sort is preferable over quicksort?" \[_trick question!_\]
 >
 > GPT-3: "If the list has 100 items or fewer, then insertion sort is the better choice. \[_wrong_\]
-<!-- vale on -->
 
 ## Programming
 
@@ -999,9 +963,7 @@ For more, see [_To what extent is GPT-3 capable of reasoning?_](/to-what-extent-
 > GPT-3: "Validation loss is a loss function optimized for the model's training. Testing loss is a loss function optimized for the model's testing and generalization.
 >
 > **You:** **"If the training distribution is identical to the testing distribution, in the limit of infinite training data, what is the difference between training loss and testing loss?"**
-> <!-- vale off -->
 > GPT-3: "There is no difference between training loss and testing loss. This is only true in the limit of infinite training data."
-> <!-- vale on -->
 > **You:** **"Why is it only true in the limit?"**
 >
 > GPT-3: "If the training and testing data are identical, you can overfit to the testing data. Even if the distributions are not identical, you can still overfit to the training data."
