@@ -5,18 +5,9 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main"]
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/playwright/**"
-      - "config/lostpixel/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   pull_request:
     branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
@@ -30,7 +21,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  # Tests always run in the merge queue — this is the primary gate for dev
   merge_group:
 
 permissions:
