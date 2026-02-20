@@ -186,10 +186,11 @@ After pushing to main:
 
 ### CI Cost Optimization
 
-- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. They always run on push to main/dev and in the merge queue, enforcing that all tests pass before merge.
+- **Playwright/visual tests always run on main**: Pushes to main always trigger Playwright and visual tests (no path filters). Both workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
-- **Path filters**: Workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
-- **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.
+- **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
+- **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.
 - **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
