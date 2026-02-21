@@ -161,8 +161,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: github:alexander-turner/punctilio#12fe567
-        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/12fe567(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        specifier: github:alexander-turner/punctilio#ab53700
+        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/ab53700(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -7666,8 +7666,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/12fe567:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/12fe567}
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/ab53700:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/ab53700}
     version: 0.0.0-git
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -18620,7 +18620,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/12fe567(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/ab53700(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
