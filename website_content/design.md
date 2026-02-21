@@ -606,7 +606,7 @@ No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
 Balanced text wrapping
-: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) on headings, captions, and subtitles so that line lengths are equalized rather than leaving a short runt on the last line. For body text, I use `text-wrap: pretty`, which lets the browser optimize line-break positions to reduce orphans. Both complement `punctilio`'s [non-breaking spaces](#non-breaking-spaces) --- the NBSPs set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s [non-breaking spaces](#non-breaking-spaces) set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
 
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
