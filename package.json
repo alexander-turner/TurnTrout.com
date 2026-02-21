@@ -173,7 +173,7 @@
     "@napi-rs/simple-git-freebsd-x64": "0.1.19",
     "@napi-rs/simple-git-linux-arm-gnueabihf": "0.1.19",
     "@napi-rs/simple-git-linux-arm64-gnu": "0.1.19",
-    "@napi-rs/simple-git-linux-arm64-musl": "0.1.19",
+    "@napi-rs/simple-git-linux-arm64-musl": "0.1.22",
     "@napi-rs/simple-git-linux-powerpc64le-gnu": "0.1.19",
     "@napi-rs/simple-git-linux-s390x-gnu": "0.1.19",
     "@napi-rs/simple-git-linux-x64-gnu": "0.1.19",
