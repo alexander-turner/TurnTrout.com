@@ -51,7 +51,7 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
-// Unicode typography constants (from constants.json — single source of truth for TS + Python)
+// Unicode typography constants 
 export const {
   nbsp: NBSP,
   leftSingleQuote: LEFT_SINGLE_QUOTE,
