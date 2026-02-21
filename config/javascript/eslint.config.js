@@ -1,6 +1,7 @@
 import pluginJs from "@eslint/js"
 import eslintConfigPrettier from "eslint-config-prettier"
 import jestPlugin from "eslint-plugin-jest"
+import jsxA11y from "eslint-plugin-jsx-a11y"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
@@ -33,6 +34,7 @@ export default [
   pluginJs.configs.recommended,
   ...tseslintConfigs.recommended,
   pluginReact.configs.flat.recommended,
+  jsxA11y.flatConfigs.recommended,
 
   // Playwright specific config for test files
   {
