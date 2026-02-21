@@ -816,19 +816,28 @@ Asset accessibility
   I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
 
 Color contrast
-: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context. 
+: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
 
 ID uniqueness
-: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). 
+: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410).
+
+Skip-to-content link
+: A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
+
+Scrollable content regions
+: Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
+
+Video caption tracks
+: A build plugin automatically injects `<track kind="captions">` into every `<video>` element that lacks one, ensuring no video triggers an accessibility violation for missing captions.
 
 Miscellaneous improvements
-: * Every interactive element is keyboard-navigable. 
-  * Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
-  * I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
-  * For screen readers, a route announcer announces new pages even though my site is a single-page application.
-  * Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
-  * A `prefers-reduced-motion` media query disables animations site-wide.
-  * I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
+: * Every interactive element is keyboard-navigable.
+  - Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
+  - I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
+  - For screen readers, a route announcer announces new pages even though my site is a single-page application.
+  - Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
+  - A `prefers-reduced-motion` media query disables animations site-wide.
+  - I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
 
 ## Auto-generated repository statistics
 
