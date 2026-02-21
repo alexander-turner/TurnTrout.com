@@ -111,7 +111,9 @@ test.describe("Theme persistence and UI states", () => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      await page.reload()
+      // Use goto instead of reload to avoid transient WebKit "internal error"
+      // driver crashes. Equivalent for localStorage-based persistence.
+      await page.goto(page.url())
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)

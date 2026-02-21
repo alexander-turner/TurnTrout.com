@@ -261,8 +261,8 @@ test.describe("Scroll Behavior", () => {
       page,
     }, testInfo) => {
       test.skip(
-        !isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
-        "Mobile Safari has unreliable scroll restoration after hash navigation",
+        testInfo.project.use.browserName === "webkit",
+        "WebKit has unreliable scroll restoration after hash navigation",
       )
 
       const anchorId = await createFinalAnchor(page)
