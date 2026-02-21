@@ -250,7 +250,6 @@ By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve th
 
 Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
 
-
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
 > In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
@@ -260,7 +259,6 @@ Previously, I followed `gwern`'s suggestion and arranged the video to only play 
 > I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
 >
 > I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
-
 
 ### Caching improves load times
 
@@ -366,7 +364,6 @@ Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
 
 My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Artano" renders Elvish glyphs in proper Quenya mode.
 
-
 > [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
 >
 > Subtitle: Click a line to see the translation
@@ -413,7 +410,6 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
 >
-
 
 <span class="float-right" style="margin-top: 2rem; ">
 <div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
@@ -608,6 +604,9 @@ Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="
 
 No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
+
+Balanced text wrapping
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) on headings, captions, and subtitles so that line lengths are equalized rather than leaving a short runt on the last line. For body text, I use `text-wrap: pretty`, which lets the browser optimize line-break positions to reduce orphans. Both complement `punctilio`'s [non-breaking spaces](#non-breaking-spaces) --- the NBSPs set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
 
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
