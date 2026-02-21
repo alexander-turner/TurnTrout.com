@@ -208,6 +208,16 @@
 
       // Correct if we've drifted more than 2px from target
       if (Math.abs(currentScroll - targetPos) > 2) {
+        // If a user interaction event (wheel/touch/pointer/key) has been detected,
+        // this "drift" is actually user-initiated scroll. Scroll events fire
+        // asynchronously after rAF callbacks, so the scrollHandler may not have
+        // run yet—but the interaction flag is set synchronously and is reliable.
+        if (userInteracted) {
+          userHasScrolled = true
+          window.removeEventListener("scroll", scrollHandler, { passive: true })
+          console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
+          return
+        }
         console.debug(
           `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
         )
