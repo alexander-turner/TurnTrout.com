@@ -4,7 +4,7 @@ This directory contains configuration and skills for Claude Code.
 
 ## Structure
 
-```text
+```
 .claude/
 ├── settings.json              # Claude Code hooks configuration
 ├── hooks/
