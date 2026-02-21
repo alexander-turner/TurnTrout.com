@@ -26,7 +26,8 @@ export function htmlToJsx(fp: FilePath, tree: Node): JSX.Element | undefined {
       }
       tableCounter++
       return (
-        // skipcq: JS-0762 -- tabIndex on scrollable region is intentional for keyboard accessibility
+        /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- tabIndex on scrollable region is intentional for keyboard accessibility */
+        // skipcq: JS-0762
         <div
           className="table-container"
           tabIndex={0}
@@ -35,6 +36,7 @@ export function htmlToJsx(fp: FilePath, tree: Node): JSX.Element | undefined {
         >
           <table {...tableProps} />
         </div>
+        /* eslint-enable jsx-a11y/no-noninteractive-tabindex */
       )
     },
   }
