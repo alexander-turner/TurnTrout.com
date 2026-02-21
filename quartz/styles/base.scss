@@ -69,6 +69,7 @@ ol,
 .math {
   overflow-wrap: anywhere;
   hyphens: none;
+  text-wrap: pretty;
 }
 
 .math {
@@ -287,6 +288,7 @@ h5,
 h6,
 thead {
   position: relative; // For anchor links
+  text-wrap: balance;
 
   article & > a[role="anchor"] {
     color: var(--midground-faint);

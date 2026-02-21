@@ -377,6 +377,7 @@ p:has(+ .subtitle),
   color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
+  text-wrap: balance;
 
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));
@@ -405,6 +406,7 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
+  text-wrap: balance;
 }
 
 img,
