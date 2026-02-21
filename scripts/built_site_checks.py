@@ -31,7 +31,6 @@ from scripts.utils import (
     ELLIPSIS,
     LEFT_DOUBLE_QUOTE,
     LEFT_SINGLE_QUOTE,
-    MODIFIER_LETTER_APOSTROPHE,
     NBSP,
     RIGHT_DOUBLE_QUOTE,
     RIGHT_SINGLE_QUOTE,
@@ -145,12 +144,7 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 
 
 VALID_PARAGRAPH_ENDING_CHARACTERS = (
-    ".!?:;)]}"
-    + RIGHT_SINGLE_QUOTE
-    + RIGHT_DOUBLE_QUOTE
-    + ELLIPSIS
-    + "\u2014"
-    + MODIFIER_LETTER_APOSTROPHE
+    ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
 )
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
@@ -1538,7 +1532,7 @@ def check_html_tags_in_text(soup: BeautifulSoup) -> list[str]:
 
 def _untransform_text(label: str) -> str:
     lower_label = label.lower()
-    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{MODIFIER_LETTER_APOSTROPHE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
+    quote_chars = f"['{LEFT_SINGLE_QUOTE}{RIGHT_SINGLE_QUOTE}{LEFT_DOUBLE_QUOTE}{RIGHT_DOUBLE_QUOTE}]"
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
@@ -1838,7 +1832,6 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-—~×+"
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
-    + MODIFIER_LETTER_APOSTROPHE
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP

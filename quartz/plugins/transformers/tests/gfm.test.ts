@@ -94,11 +94,6 @@ describe("slugify function", () => {
       "example-s-header",
     ],
     [
-      "should handle modifier letter apostrophe (U+02BC) like regular apostrophe",
-      "Exampleʼs Header",
-      "example-s-header",
-    ],
-    [
       "should maintain compatibility with LessWrong slug behavior: slash",
       "Understanding AI/ML Techniques",
       "understanding-ai-ml-techniques",
@@ -192,10 +187,10 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     // Arrow appended into the empty paragraph
     expect(node.children).toHaveLength(1)
-    const paragraph = node.children[0] as Element
-    expect(paragraph.tagName).toBe("p")
-    expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(mockBackArrow)
+    const p = node.children[0] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect(p.children[0]).toBe(mockBackArrow)
   })
 
   test("should handle empty paragraph with table sibling", () => {
@@ -207,10 +202,10 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     // Arrow appended into the empty paragraph after the table
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("table")
-    const paragraph = node.children[1] as Element
-    expect(paragraph.tagName).toBe("p")
-    expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(mockBackArrow)
+    const p = node.children[1] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect(p.children[0]).toBe(mockBackArrow)
   })
 
   test("should handle paragraph with only whitespace", () => {
@@ -358,7 +353,6 @@ describe("preprocessSlug function", () => {
     ["Text/&/Combo", "Text-Combo"],
     ["", ""],
     ["Normal Text", "Normal Text"],
-    ["Textʼs header", "Text-s header"],
   ])("should process '%s' to '%s'", (input: string, expected: string) => {
     expect(preprocessSlug(input)).toBe(expected)
   })
@@ -728,10 +722,10 @@ describe("gfmVisitor function", () => {
 
     // Arrow appended into the now-empty paragraph
     expect(footnoteItem.children).toHaveLength(1)
-    const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.tagName).toBe("p")
-    expect(paragraph.children).toHaveLength(1)
-    expect((paragraph.children[0] as Element).tagName).toBe("a")
+    const p = footnoteItem.children[0] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect((p.children[0] as Element).tagName).toBe("a")
   })
 
   test("should handle table-only footnote by appending arrow into paragraph after table", () => {
@@ -744,10 +738,10 @@ describe("gfmVisitor function", () => {
     // Arrow appended into the now-empty paragraph after the table
     expect(footnoteItem.children).toHaveLength(2)
     expect((footnoteItem.children[0] as Element).tagName).toBe("table")
-    const paragraph = footnoteItem.children[1] as Element
-    expect(paragraph.tagName).toBe("p")
-    expect(paragraph.children).toHaveLength(1)
-    expect((paragraph.children[0] as Element).tagName).toBe("a")
+    const p = footnoteItem.children[1] as Element
+    expect(p.tagName).toBe("p")
+    expect(p.children).toHaveLength(1)
+    expect((p.children[0] as Element).tagName).toBe("a")
   })
 
   test("should handle complex footnote structure", () => {

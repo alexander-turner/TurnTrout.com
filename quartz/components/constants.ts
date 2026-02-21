@@ -58,11 +58,6 @@ export const {
   rightSingleQuote: RIGHT_SINGLE_QUOTE,
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
-  ellipsis: ELLIPSIS,
-  zeroWidthSpace: ZERO_WIDTH_SPACE,
-  zeroWidthNbsp: ZERO_WIDTH_NBSP,
-  wordJoiner: WORD_JOINER,
-  modifierLetterApostrophe: MODIFIER_LETTER_APOSTROPHE,
 } = constantsJson.unicodeTypography
 
 /** Normalize non-breaking spaces to regular spaces */

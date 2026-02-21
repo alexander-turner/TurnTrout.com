@@ -27,7 +27,6 @@ ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
 ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
 WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
-MODIFIER_LETTER_APOSTROPHE: str = _UNICODE_TYPO["modifierLetterApostrophe"]
 
 
 def load_shared_constants() -> dict:  # pragma: no cover

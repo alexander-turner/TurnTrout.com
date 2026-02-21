@@ -1,13 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import {
-  classifyApostrophes,
-  hyphenReplace,
-  symbolTransform,
-  primeMarks,
-  nbspTransform,
-} from "punctilio"
+import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
 import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -19,7 +13,6 @@ import {
   charsToMoveIntoLinkFromRight,
   markerChar,
   hatTipPlaceholder,
-  MODIFIER_LETTER_APOSTROPHE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -134,14 +127,14 @@ const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: 
 
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance: these transforms accept a `separator` and intentionally
-// use it to respect element boundaries (e.g., classifyApostrophes won't pair quotes across elements).
+// use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
 // Because they behave differently with vs. without markers, the invariance property
 // transform(text_with_markers) == transform(text_without_markers) does not hold.
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
-  // Prime marks must run before classifyApostrophes to convert 5'10" → 5′10″ before quote processing
+  // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
   (text: string) => primeMarks(text, { separator: markerChar }),
-  (text: string) => classifyApostrophes(text, { separator: markerChar }),
+  (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
   // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
@@ -587,7 +580,7 @@ export function setFirstLetterAttribute(tree: Root): void {
 
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
-  if (["'", "’", "‘", MODIFIER_LETTER_APOSTROPHE].includes(secondLetter)) {
+  if (["'", "’", "‘"].includes(secondLetter)) {
     const firstTextNode = firstParagraph.children.find(
       (child): child is Text => child.type === "text",
     )

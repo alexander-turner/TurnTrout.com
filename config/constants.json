@@ -151,7 +151,6 @@
     "ellipsis": "\u2026",
     "zeroWidthSpace": "\u200B",
     "zeroWidthNbsp": "\uFEFF",
-    "wordJoiner": "\u2060",
-    "modifierLetterApostrophe": "\u02BC"
+    "wordJoiner": "\u2060"
   }
 }

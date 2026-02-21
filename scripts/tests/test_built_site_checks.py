@@ -5807,33 +5807,33 @@ def test_check_orphaned_subfigures(html: str, expected: list[str]):
         assert issue.startswith(exp)
 
 
-def test_maybe_collect_citation_keys_redirect(tmp_path: Path):
-    """Redirect pages should be skipped for citation collection."""
-    html_file = tmp_path / "redirect.html"
-    html_file.write_text(
-        '<html><head><meta http-equiv="refresh" content="0; url=/other"></head></html>',
-        encoding="utf-8",
-    )
-    citation_to_files: dict[str, list[str]] = {}
-    built_site_checks._maybe_collect_citation_keys(
-        html_file, tmp_path, citation_to_files
-    )
-    assert citation_to_files == {}
-
-
-def test_maybe_collect_citation_keys_with_citations(tmp_path: Path):
-    """Citation keys should be collected from non-redirect pages."""
+@pytest.mark.parametrize(
+    "html_content,expected_keys",
+    [
+        # Redirect pages should be skipped
+        (
+            '<html><head><meta http-equiv="refresh" content="0; url=/other"></head></html>',
+            [],
+        ),
+        # Citation keys should be collected from non-redirect pages
+        (
+            "<html><body><code>@misc{TestKey2024,\n}</code></body></html>",
+            ["TestKey2024"],
+        ),
+    ],
+)
+def test_maybe_collect_citation_keys(
+    tmp_path: Path, html_content: str, expected_keys: list[str]
+):
     html_file = tmp_path / "page.html"
-    html_file.write_text(
-        "<html><body><code>@misc{TestKey2024,\n}</code></body></html>",
-        encoding="utf-8",
-    )
+    html_file.write_text(html_content, encoding="utf-8")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
     built_site_checks._maybe_collect_citation_keys(
         html_file, tmp_path, citation_to_files
     )
-    assert "TestKey2024" in citation_to_files
-    assert citation_to_files["TestKey2024"] == ["page.html"]
+    assert sorted(citation_to_files.keys()) == sorted(expected_keys)
+    for key in expected_keys:
+        assert citation_to_files[key] == ["page.html"]
 
 
 def test_process_html_files_duplicate_citations(tmp_path: Path):
