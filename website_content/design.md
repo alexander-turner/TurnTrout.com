@@ -827,9 +827,6 @@ Skip-to-content link
 Scrollable content regions
 : Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
 
-Video caption tracks
-: A build plugin automatically injects `<track kind="captions">` into every `<video>` element that lacks one, ensuring no video triggers an accessibility violation for missing captions.
-
 Miscellaneous improvements
 : * Every interactive element is keyboard-navigable.
   - Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
