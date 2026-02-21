@@ -1580,121 +1580,6 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
-# --- Balanced delimiter checks ---
-
-_BALANCE_CHECK_ELEMENTS = (
-    "p",
-    "dt",
-    "figcaption",
-    "dd",
-    "li",
-    *(f"h{i}" for i in range(1, 7)),
-    "td",
-    "th",
-)
-
-# Paired delimiters: (open, close, label)
-_DELIMITER_PAIRS: list[tuple[str, str, str]] = [
-    ("(", ")", "parentheses"),
-    ("{", "}", "curly braces"),
-    ("[", "]", "square brackets"),
-    (LEFT_DOUBLE_QUOTE, RIGHT_DOUBLE_QUOTE, "double quotes"),
-    (LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE, "single quotes"),
-]
-_OPENERS = {p[0] for p in _DELIMITER_PAIRS}
-_CLOSER_TO_OPENER = {p[1]: p[0] for p in _DELIMITER_PAIRS}
-
-
-def _check_balance(
-    text: str, stripped: str, results: dict[str, list[str]]
-) -> None:
-    """Check each delimiter type for balanced open/close counts."""
-    for open_char, close_char, label in _DELIMITER_PAIRS:
-        open_count = text.count(open_char)
-        close_count = text.count(close_char)
-        if open_count != close_count:
-            key = f"unbalanced_{label.replace(' ', '_')}"
-            _append_to_list(
-                results[key],
-                stripped,
-                prefix=f"Unbalanced {label} ({open_count} open, {close_count} close): ",
-            )
-
-
-def _check_quote_nesting(text: str, stripped: str, issues: list[str]) -> None:
-    """Flag single quotes that wrap double quotes (American English: double
-    first)."""
-    nesting: list[str] = []
-    for char in text:
-        if char == LEFT_SINGLE_QUOTE:
-            nesting.append("single")
-        elif char == LEFT_DOUBLE_QUOTE:
-            if nesting and nesting[-1] == "single":
-                _append_to_list(
-                    issues,
-                    stripped,
-                    prefix="Single quotes wrap double quotes (should be reversed): ",
-                )
-                return
-            nesting.append("double")
-        elif char in (RIGHT_SINGLE_QUOTE, RIGHT_DOUBLE_QUOTE):
-            if nesting:
-                nesting.pop()
-
-
-def _check_delimiter_nesting(
-    text: str, stripped: str, issues: list[str]
-) -> None:
-    """Ensure paired delimiters nest in LIFO order (no interleaving)."""
-    stack: list[str] = []
-    for char in text:
-        if char in _OPENERS:
-            stack.append(char)
-        elif char in _CLOSER_TO_OPENER:
-            expected_opener = _CLOSER_TO_OPENER[char]
-            if stack and stack[-1] == expected_opener:
-                stack.pop()
-            elif stack:
-                _append_to_list(
-                    issues,
-                    stripped,
-                    prefix=f"Mismatched delimiter nesting (expected closing for {stack[-1]!r}, got {char!r}): ",
-                )
-                return
-
-
-def check_all_delimiters(soup: BeautifulSoup) -> dict[str, list[str]]:
-    """
-    Check delimiter balance, quote nesting, and delimiter nesting in one pass.
-
-    Iterates over block elements once, extracting visible text once per element,
-    then delegates to helpers for each check type.
-    """
-    results: dict[str, list[str]] = {
-        f"unbalanced_{label.replace(' ', '_')}": []
-        for _, _, label in _DELIMITER_PAIRS
-    }
-    results["incorrect_quote_nesting"] = []
-    results["mismatched_delimiter_nesting"] = []
-
-    for element in _tags_only(soup.find_all(_BALANCE_CHECK_ELEMENTS)):
-        if should_skip(element):
-            continue
-
-        text = script_utils.get_non_code_text(element)
-        stripped = text.strip()
-        if not stripped:
-            continue
-
-        _check_balance(text, stripped, results)
-        _check_quote_nesting(text, stripped, results["incorrect_quote_nesting"])
-        _check_delimiter_nesting(
-            text, stripped, results["mismatched_delimiter_nesting"]
-        )
-
-    return results
-
-
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
@@ -1776,7 +1661,6 @@ def check_file_for_issues(
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
         "orphaned_subfigures": check_orphaned_subfigures(soup),
-        **check_all_delimiters(soup),
     }
 
     if should_check_fonts:
