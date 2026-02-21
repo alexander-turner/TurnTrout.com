@@ -119,11 +119,6 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 # Color scheme
 
-The color scheme derives from the [Catppuccin](https://catppuccin.com) "latte" (light mode) and "frappe" (dark mode) [palettes](https://github.com/catppuccin/catppuccin/tree/main?tab=readme-ov-file#-palette).
-
-![The four Catppuccin color palettes demonstrated in overlapping code editor windows. The themes include one light mode (Latte) and three dark modes (Frappé, Macchiato, Mocha), set against a soft landscape background with the word "CATPPUCCIN".](https://assets.turntrout.com/static/images/posts/catppuccin.avif)
-Figure: The four Catppuccin palettes.
-
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
@@ -810,20 +805,30 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want `turntrout.com` to be usable by everyone. The site targets WCAG AA compliance, enforced by [`pa11y`](https://pa11y.org/) running against every page in CI.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse accessibility checks](https://developer.chrome.com/docs/lighthouse/overview/) for six of my pages, demanding a perfect score of 100. Here are some highlights from my pipeline.
 
-I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+Asset accessibility
+: I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
-> ![[/open-source#automatic-alt-text-generation]]
+  > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+  > ![[/open-source#automatic-alt-text-generation]]
 
-To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+  I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
 
-Every interactive element is keyboard-navigable. Spoiler blocks, footnote popovers, and the hamburger menu all handle focus management and Escape-to-dismiss. Since Quartz uses SPA-style navigation, screen readers wouldn't normally announce new pages --- a route announcer fixes this. Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
+Color contrast
+: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context. 
 
-The default Shiki syntax highlighting colors failed WCAG AA contrast against my code block background, so I replaced them with hand-measured alternatives exceeding 5:1. A `prefers-reduced-motion` media query disables animations site-wide.
+ID uniqueness
+: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). 
 
-Some trickier problems: math-only headings (where KaTeX renders no visible text) get `aria-label`s extracted from their LaTeX source. Mermaid SVGs generate duplicate element IDs when multiple diagrams share a page, violating the HTML spec --- a build-time pass deduplicates them. And Obsidian-flavored Markdown can produce invalid `<dl>` structures, which the build repairs to satisfy the `axe` `definition-list` rule.
+Miscellaneous improvements
+: * Every interactive element is keyboard-navigable. 
+  * Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
+  * I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
+  * For screen readers, a route announcer announces new pages even though my site is a single-page application.
+  * Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
+  * A `prefers-reduced-motion` media query disables animations site-wide.
+  * I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
 
 ## Auto-generated repository statistics
 
@@ -857,7 +862,7 @@ Metadata
 
   <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
 
-Spoilers hide text until hovered
+Spoilers hide text until clicked
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
 
   >! Have you heard? Snape kills Dumbledore.
