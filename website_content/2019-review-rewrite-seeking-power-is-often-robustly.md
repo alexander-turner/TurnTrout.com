@@ -92,7 +92,7 @@ This choice is not costless: many are already acclimated to the existing "instru
 
 The original post claimed that “optimal policies tend to seek power”, _period_. This was partially based on a result which I’d incorrectly interpreted. Vanessa Kosoy and Rohin Shah pointed out this error to me, and I quickly amended the original post and [posted a follow-up explanation](https://www.alignmentforum.org/posts/cwpKagyTvqSyAJB7q/clarifying-power-seeking-and-instrumental-convergence).
 
-At the time, I’d wondered whether this was still true in general via some other result. The answer is "no’: it _isn’t_ always more probable for optimal policies to navigate towards states which give them more control over the future. Here’s a surprising counterexample which doesn’t even depend on my formalization of "power."
+At the time, I’d wondered whether this was still true in general via some other result. The answer is "no": it _isn’t_ always more probable for optimal policies to navigate towards states which give them more control over the future. Here’s a surprising counterexample which doesn’t even depend on my formalization of "power."
 
 ![The agent starts at a crossroads (state 1). They can head to a glade (2) which loops on itself, or an oasis (3) that leads to a rock (4). The rock can access sunlit mountains (5) with a self-loop, or a house (6) with a self-loop.](https://assets.turntrout.com/static/images/posts/6e57042283c8eb981b2be10d266bfcf804d06653cfc04809.avif)
 <br/>Figure: The paths are one-directional; the agent can’t go back from **3** to **1**. The agent starts at **1**. Under a certain state reward distribution, the vast majority of agents go _up_ to **2**.

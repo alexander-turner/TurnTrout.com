@@ -103,7 +103,7 @@ You can avoid psychological annoyances throughout the year (tickets, unanticipat
 >
 > Paul Samuelson... offered a colleague a coin-toss gamble. If the colleague won the coin toss, he would receive \$200, but if he lost, he would lose \$100. Samuelson was offering his colleague a positive expected value with risk. The colleague, being risk-averse, refused the single bet, but said that he would be happy to toss the coin 100 times! The colleague understood that the bet had a positive expected value and that across lots of bets, the odds virtually guaranteed a profit. Yet with only one trial, he had a 50% chance of regretting taking the bet.
 >
-> Notably, Samuelson‘s colleague doubtless faced many gambles in life… He would have fared better in the long run by maximizing his expected value on each decision... all of us encounter such “small gambles” in life, and we should try to follow the same strategy. **Risk aversion is likely to tempt us to turn down each individual opportunity for gain. Yet the aggregated risk of all of the positive expected value gambles that we come across would eventually become infinitesimal, and potential profit quite large.**
+> Notably, Samuelson’s colleague doubtless faced many gambles in life… He would have fared better in the long run by maximizing his expected value on each decision... all of us encounter such “small gambles” in life, and we should try to follow the same strategy. **Risk aversion is likely to tempt us to turn down each individual opportunity for gain. Yet the aggregated risk of all of the positive expected value gambles that we come across would eventually become infinitesimal, and potential profit quite large.**
 
 ## Biological explanation for hedonic treadmill?
 

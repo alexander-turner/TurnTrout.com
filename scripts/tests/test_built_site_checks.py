@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
@@ -5805,3 +5805,66 @@ def test_check_orphaned_subfigures(html: str, expected: list[str]):
     assert len(result) == len(expected)
     for issue, exp in zip(result, expected):
         assert issue.startswith(exp)
+
+
+@pytest.mark.parametrize(
+    "html_content,expected_keys",
+    [
+        # Redirect pages should be skipped
+        (
+            '<html><head><meta http-equiv="refresh" content="0; url=/other"></head></html>',
+            [],
+        ),
+        # Citation keys should be collected from non-redirect pages
+        (
+            "<html><body><code>@misc{TestKey2024,\n}</code></body></html>",
+            ["TestKey2024"],
+        ),
+    ],
+)
+def test_maybe_collect_citation_keys(
+    tmp_path: Path, html_content: str, expected_keys: list[str]
+):
+    html_file = tmp_path / "page.html"
+    html_file.write_text(html_content, encoding="utf-8")
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        html_file, tmp_path, citation_to_files
+    )
+    assert sorted(citation_to_files.keys()) == sorted(expected_keys)
+    for key in expected_keys:
+        assert citation_to_files[key] == ["page.html"]
+
+
+def test_process_html_files_duplicate_citations(tmp_path: Path):
+    """Duplicate citation keys across files should be reported."""
+    content_dir = tmp_path / "content"
+    content_dir.mkdir()
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+
+    # Create two HTML files with the same citation key
+    for name in ("page1.html", "page2.html"):
+        (public_dir / name).write_text(
+            "<html><head><title>T</title></head><body>"
+            "<article><p>Text.</p></article>"
+            "<code>@misc{DuplicateKey2024,\n}</code>"
+            "</body></html>",
+            encoding="utf-8",
+        )
+
+    # Mock functions that validate paths against git root or produce output.
+    # We're testing the citation collection + duplicate detection path.
+    with (
+        patch.object(
+            built_site_checks, "check_file_for_issues", return_value={}
+        ),
+        patch.object(built_site_checks, "_print_issues"),
+        patch.object(script_utils, "build_html_to_md_map", return_value={}),
+        patch.object(script_utils, "collect_aliases", return_value=set()),
+        patch.object(script_utils, "should_have_md", return_value=False),
+    ):
+        result = built_site_checks._process_html_files(
+            public_dir, content_dir, check_fonts=False
+        )
+    assert result is True

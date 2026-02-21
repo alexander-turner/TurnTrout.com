@@ -51,12 +51,14 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
-// Unicode typography constants
-export const NBSP = "\u00A0"
-export const LEFT_SINGLE_QUOTE = "\u2018"
-export const RIGHT_SINGLE_QUOTE = "\u2019"
-export const LEFT_DOUBLE_QUOTE = "\u201C"
-export const RIGHT_DOUBLE_QUOTE = "\u201D"
+// Unicode typography constants 
+export const {
+  nbsp: NBSP,
+  leftSingleQuote: LEFT_SINGLE_QUOTE,
+  rightSingleQuote: RIGHT_SINGLE_QUOTE,
+  leftDoubleQuote: LEFT_DOUBLE_QUOTE,
+  rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
+} = constantsJson.unicodeTypography
 
 /** Normalize non-breaking spaces to regular spaces */
 export function normalizeNbsp(s: string): string {

@@ -73,7 +73,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
-        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+        "<p><a>\u201CHow steering vectors impact GPT-2\u2019s capabilities.\u201D</a></p>",
       ],
       [
         '<p>"<span class="katex"></span> alignment metric</p>',
