@@ -54,7 +54,7 @@ if command -v conda >/dev/null 2>&1; then
     CONDA_BASE=$(conda info --base)
     # shellcheck source=/dev/null
     . "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda activate website
+    conda activate website || echo "WARNING: Could not activate conda environment 'website'" >&2
   fi
 fi
 
