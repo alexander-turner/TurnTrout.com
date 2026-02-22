@@ -1,1 +1,1 @@
-Template updates available for: .claude/README.md .claude/hooks/verify_ci.py .claude/hooks/pre-push-check.sh .claude/hooks/session-setup.sh .claude/skills/pr-creation/SKILL.md .hooks/commit-msg .hooks/pre-commit .github/scripts/track_ci_failures.py .github/workflows/template-sync.yaml .github/workflows/claude.yaml 
+Template updates available for: .github/workflows/template-sync.yaml .github/workflows/claude.yaml

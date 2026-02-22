@@ -12,9 +12,10 @@ rollback() {
   exit 1
 }
 
-# Check if .timestamps is a git repo
+# Check if .timestamps is a git repo — skip gracefully in CI where it's not cloned
 if [ ! -d "$timestamps_repo/.git" ]; then
-  rollback ".timestamps is not a git repo! Clone with: git clone https://github.com/alexander-turner/.timestamps .timestamps"
+  echo "INFO: .timestamps repo not set up, skipping OpenTimestamp proof" >&2
+  exit 0
 fi
 
 # Find ots binary (check multiple locations)
@@ -25,8 +26,10 @@ elif command -v ots >/dev/null 2>&1; then
   OTS_BIN="$(command -v ots)"
 fi
 
+# Skip gracefully in CI environments where ots isn't installed
 if [ -z "$OTS_BIN" ]; then
-  rollback "ots not found! Install with: pip3 install opentimestamps-client"
+  echo "INFO: ots not found, skipping OpenTimestamp proof" >&2
+  exit 0
 fi
 
 mkdir -p "$timestamps_dir"
