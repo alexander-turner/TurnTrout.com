@@ -89,10 +89,11 @@ jobs:
   detect-changes:
     runs-on: ubuntu-24.04
     outputs:
-      content: ${{ steps.changes.outputs.content }}
-      code: ${{ steps.changes.outputs.code }}
-      styles: ${{ steps.changes.outputs.styles }}
-      source-checks: ${{ steps.changes.outputs.source-checks }}
+      # Always run all checks on pushes to main; use path filtering otherwise
+      content: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'true' || steps.changes.outputs.content }}
+      code: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'true' || steps.changes.outputs.code }}
+      styles: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'true' || steps.changes.outputs.styles }}
+      source-checks: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'true' || steps.changes.outputs.source-checks }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

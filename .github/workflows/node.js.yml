@@ -10,15 +10,6 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-    paths:
-      - "quartz/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/javascript/**"
-      - "config/typescript/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   pull_request:
     paths:
       - "quartz/**"

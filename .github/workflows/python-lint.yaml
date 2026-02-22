@@ -18,7 +18,8 @@ jobs:
   detect-changes:
     runs-on: ubuntu-24.04
     outputs:
-      python: ${{ steps.changes.outputs.python }}
+      # Always run all checks on pushes to main; use path filtering otherwise
+      python: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'true' || steps.changes.outputs.python }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

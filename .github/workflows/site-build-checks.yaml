@@ -7,21 +7,6 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-    paths:
-      - "quartz/**"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/*.test.tsx"
-      - "!quartz/**/tests/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/stylelint/.variables-only-stylelintrc.json"
-      - "scripts/built_site_checks.py"
-      - "scripts/check_internal_links.py"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   pull_request:
     paths:
       - "quartz/**"
