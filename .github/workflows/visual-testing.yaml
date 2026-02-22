@@ -5,22 +5,19 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
-    branches: ["main", "dev", "jest-coverage"]
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
+    branches: ["main"]
   pull_request:
     branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
+      - "config/lostpixel/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -127,7 +124,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" --update-snapshots | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"

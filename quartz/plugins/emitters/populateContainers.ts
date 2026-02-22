@@ -24,7 +24,13 @@ import {
 import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
+const {
+  minFaviconCount,
+  defaultPath,
+  maxCardImageSizeKb,
+  playwrightConfigs,
+  colorDropcapProbability,
+} = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -393,6 +399,10 @@ const createPopulatorMap = (
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
+    [
+      "populate-dropcap-probability",
+      generateConstantContent(`${Math.round(colorDropcapProbability * 100)}%`),
+    ],
     [
       "populate-turntrout-favicon",
       generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),

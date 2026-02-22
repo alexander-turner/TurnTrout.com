@@ -30,7 +30,7 @@ export function htmlToJsx(fp: FilePath, tree: Node): JSX.Element | undefined {
         // skipcq: JS-0762
         <div
           className="table-container"
-          tabIndex={0}
+          tabIndex={0} // skipcq: JS-0762 -- scrollable region needs keyboard accessibility
           role="region"
           aria-label={`Scrollable table ${tableCounter}`}
         >

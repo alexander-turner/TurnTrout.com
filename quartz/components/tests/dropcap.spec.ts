@@ -64,10 +64,16 @@ test.describe("Random dropcap color", () => {
     expect(await getColor()).toBe("var(--dropcap-background-red)")
 
     // SPA-navigate away; nav event should re-roll and clear the color
+    const currentPath = new URL(page.url()).pathname
     const link = page.locator("article a.internal:not(.same-page-link)").first()
     await link.scrollIntoViewIfNeeded()
     await link.click()
-    await page.waitForURL(/localhost:8080/)
+    await page.waitForURL((url) => url.pathname !== currentPath)
+    // Wait for the nav event to fire and rollDropcapColor() to clear the property
+    await page.waitForFunction(
+      () => document.documentElement.style.getPropertyValue("--random-dropcap-color") === "",
+      { timeout: 5_000 },
+    )
     expect(await getColor()).toBe("")
   })
 })

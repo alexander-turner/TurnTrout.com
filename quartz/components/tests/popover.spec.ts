@@ -251,9 +251,12 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const searchBar = page.locator("#search-bar")
   await searchBar.fill("Test page")
 
-  // Wait for search results and preview
+  // Wait for search results to render before checking preview
+  const searchLayout = page.locator("#search-layout")
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible()
+  await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
   // Find an internal link in the preview and hover over it
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")

@@ -183,6 +183,7 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
   const previewContainer = page.locator("#preview-container")
+  // eslint-disable-next-line playwright/no-conditional-in-test
   const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
@@ -426,6 +427,7 @@ test("Search matching title text stays at top even with body matches", async ({ 
   expect(scrollY).toBe(0)
 })
 
+// eslint-disable-next-line playwright/expect-expect
 test("Search URL updates as we select different results", async ({ page }) => {
   const initialUrl = page.url()
   await search(page, "Shrek")
@@ -438,12 +440,9 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
-  // Search again
+  // Search again — use openSearch to wait for component initialization after goBack
   await page.goBack({ waitUntil: "load" })
-  await expect(page.locator("#search-icon")).toBeVisible()
-
-  // Click search icon instead of "/" shortcut for cross-device reliability
-  await page.locator("#search-icon").click()
+  await openSearch(page)
   await search(page, "Shrek")
 
   // Navigate to the second result
@@ -466,7 +465,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()
@@ -729,7 +728,8 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 
 test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
   page,
-}) => {
+}, testInfo) => {
+  testInfo.setTimeout(60_000)
   await search(page, "alignment")
 
   // Figure out where the second result is, and hover over it
@@ -743,12 +743,15 @@ test("should not select a search result on initial render, even if the mouse is 
   await page.mouse.move(x + width / 2, y + height / 2)
 
   await search(page, "test")
-  // Wait for mouseover to be unlocked
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(5 * mouseFocusDelay)
 
+  // The search input is debounced (400ms), so `search()` may return before
+  // the new results render. Wait for the first result card to reflect the
+  // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
-  await expect(firstResult).toHaveClass(/focus/)
+  await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
+
+  // The first result should gain focus once the mouseover lock expires
+  await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
 
   await page.keyboard.press("Enter")
   await page.waitForURL("**/test-page**")
