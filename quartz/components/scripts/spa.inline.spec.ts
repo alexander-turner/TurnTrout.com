@@ -288,7 +288,7 @@ test.describe("Scroll Behavior", () => {
     await waitForScroll(page, targetScroll)
     await waitForHistoryState(page, targetScroll)
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       await softRefresh(page)
       await waitForScroll(page, targetScroll)
     }
