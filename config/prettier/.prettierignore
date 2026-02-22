@@ -3,7 +3,12 @@ public
 **.min.*
 node_modules
 .quartz-cache
-coverage
-.venv
+**/.github/workflows/*.yaml
+.github/
+coverage/
+htmlcov/
+.venv/
 .vale-styles
-.logs
+.logs/
+test-results/
+pnpm-lock.yaml

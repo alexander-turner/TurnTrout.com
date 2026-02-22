@@ -364,7 +364,8 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
 def test_convert_to_jpeg_warns_when_cannot_compress_below_limit(
     jpeg_conversion_setup, capsys
 ):
-    """Test that _convert_to_jpeg warns when file cannot be compressed below limit."""
+    """Test that _convert_to_jpeg warns when file cannot be compressed below
+    limit."""
     input_path, output_path = jpeg_conversion_setup
     max_size_kb = source_file_checks.get_max_card_image_size_kb()
     # File size that exceeds the limit

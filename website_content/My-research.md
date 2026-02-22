@@ -151,7 +151,7 @@ _See also_ the [Reframing Impact sequence.](/posts#reframing-impact)
 
 Subtitle: Fall 2019 through June 2022
 
-I don't want to die. Animals try to avoid dying. Why was this behavior selected into so many different kinds of animals? While the question may seem facile, it is not. For nearly all biological "subgoals" (like "find food" or "impress a potential mate"), a dead animal cannot accomplish any of those goals. Otherwise put: Certain strategies (like "staying alive") are pre-requisite for _almost all goals._ This observation is called "instrumental convergence."[^instr]
+I don't want to die. Animals try to avoid dying. Why was this behavior selected into so many different kinds of animals? While the question may seem facile, it is not. For nearly all biological "subgoals" (like "find food" or "impress a potential mate"), a dead animal cannot accomplish any of those goals. Otherwise put: Certain strategies (like "staying alive") are prerequisite for _almost all goals._ This observation is called "instrumental convergence."[^instr]
 
 In 2019, [I had a keen sense](/problem-relaxation-as-a-tactic) that instrumental convergence ought to be mathematically provable. To date, [only one paper](./toy-instrumental-convergence-paper-walkthrough) had tried such a formalization - and that only in a toy setting. I figured I should be able to say what actions were instrumentally convergent in a tiny Markov decision process. Easy, right?
 
@@ -272,7 +272,6 @@ Subtitle: January 2023 through November 2024
 In 2023, I popularized _steering vectors_[^steering] as a cheap way to control model outputs at inference time. I first discovered the [cheese vector](/understanding-and-controlling-a-maze-solving-policy-network#subtract-the-cheese-vector-subtract-the-cheese-seeking) in a maze-solving RL environment:
 
 <figure>
-<div style="display:flex; justify-content: center; ">
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/original_maze_field.avif" alt="The original probability vectors. The mouse seems 'torn' between the cheese and the right side of the maze."/>
 <figcaption>(a) Original probabilities</figcaption>
@@ -284,7 +283,6 @@ In 2023, I popularized _steering vectors_[^steering] as a cheap way to control m
 <div class="subfigure">
 <img src="https://assets.turntrout.com/static/images/posts/maze_field_diff.avif" alt="The change in the action probability vectors, shown in green. They point away from the cheese."/>
 <figcaption>(c) Steered minus original</figcaption>
-</div>
 </div>
 <figcaption><b>Left:</b> The net probability vectors induced by the unmodified forward passes.  <br/> <b>Middle:</b> After subtracting the cheese vector, we plot the new probability vectors induced by the modified forward passes. <br/><b>Right:</b> The agent now heads away from the cheese.</figcaption>
 </figure>

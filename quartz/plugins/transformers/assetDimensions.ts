@@ -1,6 +1,7 @@
 import type { Element, ElementContent, Root } from "hast"
 
 import { spawnSync, type SpawnSyncReturns } from "child_process"
+import crypto from "crypto"
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
 import sizeOf from "image-size"
@@ -102,14 +103,22 @@ class AssetProcessor {
   public async maybeSaveAssetDimensions(): Promise<void> {
     if (this.assetDimensionsCache && this.needToSaveCache) {
       // Use unique temp file to avoid race conditions with parallel workers
-      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${Date.now()}`
+      const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${crypto.randomUUID()}`
       const data = JSON.stringify(this.assetDimensionsCache, null, 2)
 
       await fs.writeFile(tempFilePath, data, "utf-8")
       try {
         await fs.rename(tempFilePath, paths.assetDimensions)
       } catch (error) {
-        await fs.unlink(tempFilePath).catch(() => {})
+        // Clean up temp file on failure (ignore errors - file may already be gone)
+        await fs.unlink(tempFilePath).catch(() => undefined)
+        // ENOENT means another worker may have saved successfully, or there was a race
+        // In either case, the cache should be saved, so we can continue
+        // istanbul ignore next -- race condition that's hard to reliably test
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+          this.needToSaveCache = false
+          return
+        }
         throw error
       }
       this.needToSaveCache = false
@@ -427,6 +436,7 @@ export const addAssetDimensionsFromSrc = () => {
   return {
     name: "AddAssetDimensionsFromSrc",
     htmlPlugins(ctx: BuildCtx) {
+      /* istanbul ignore next -- defensive default for offline flag */
       const offline = ctx.argv.offline ?? false
       return [
         () => {

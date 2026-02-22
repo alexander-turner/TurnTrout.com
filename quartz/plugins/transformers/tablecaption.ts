@@ -1,18 +1,13 @@
-import type { Element, Root, Text, ElementContent } from "hast"
+import type { Element, ElementContent } from "hast"
 import type { Parent } from "unist"
 
 import { fromHtml } from "hast-util-from-html"
 import { h } from "hastscript"
-import { visit } from "unist-util-visit"
 
-import type { QuartzTransformerPlugin } from "../types"
+import { createElementVisitorPlugin, isTextNode, isElementNode } from "./utils"
 
-/**
- * Type guard to check if a node is a Text node
- */
-export function isTextNode(node: ElementContent): node is Text {
-  return node.type === "text"
-}
+// Re-export type guards for use by tests and other modules
+export { isTextNode, isElementNode }
 
 /**
  * Checks if a text node starts with the table caption prefix "^Table: "
@@ -37,13 +32,6 @@ export function createFigcaption(captionText: string): Element[] {
     fragment: true,
   })
   return captionHtml.children as Element[]
-}
-
-/**
- * Type guard to check if an element is an Element node
- */
-export function isElementNode(element: ElementContent): element is Element {
-  return element.type === "element"
 }
 
 // skipcq: JS-D1001
@@ -127,17 +115,4 @@ function processNode(node: Element, index: number | undefined, parent: Parent | 
  * </figure>
  * ```
  */
-export const TableCaption: QuartzTransformerPlugin = () => {
-  return {
-    name: "TableCaption",
-    htmlPlugins() {
-      return [
-        () => {
-          return (tree: Root) => {
-            visit(tree, "element", processNode)
-          }
-        },
-      ]
-    },
-  }
-}
+export const TableCaption = createElementVisitorPlugin("TableCaption", processNode)

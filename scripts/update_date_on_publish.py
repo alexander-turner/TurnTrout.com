@@ -32,15 +32,47 @@ current_date = TimeStamp(
 )
 
 
-def is_file_modified(file_path: Path) -> bool:
+def _determine_commit_range(commit_range: str | None) -> str:
     """
-    Check if file has unpushed changes in git.
+    Determine the git commit range to check for file modifications.
+
+    Args:
+        commit_range (str | None): Git commit range from CI (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
+
+    Returns:
+        str: The commit range to check
+    """
+    # Local environment: check for unpushed changes
+    if not commit_range:
+        return "origin/main..HEAD"
+
+    # CI environment: extract before and after commits
+    if ".." not in commit_range:
+        return commit_range
+
+    before_commit, after_commit = commit_range.split("..", 1)
+
+    # Handle edge case: initial push has before=0000000000000000000000000000000000000000
+    if before_commit.strip("0"):
+        # Normal case: compare the range
+        return commit_range
+
+    # First push: check the after commit only
+    return f"{after_commit}^..{after_commit}"
+
+
+def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
+    """
+    Check if file was modified in the relevant commit range.
 
     Args:
         file_path (Path): Path to the file to check
+        commit_range (str | None): Git commit range to check (e.g., "abc123..def456").
+            If None, checks for unpushed changes against origin/main.
 
     Returns:
-        bool: True if file has unpushed changes, False otherwise
+        bool: True if file was modified, False otherwise
     """
     try:
         # Get the relative path from git root
@@ -50,13 +82,16 @@ def is_file_modified(file_path: Path) -> bool:
         ).strip()
         rel_path = file_path.resolve().relative_to(Path(git_root))
 
-        # Check for unpushed changes
+        # Determine commit range to check
+        range_to_check = _determine_commit_range(commit_range)
+
+        # Check if file changed in the range
         result = subprocess.check_output(
             [
                 git_executable,
                 "diff",
                 "--name-only",
-                "origin/main..HEAD",
+                range_to_check,
                 str(rel_path),
             ],
             text=True,
@@ -168,13 +203,17 @@ def commit_changes(message: str) -> None:
     subprocess.run([git_executable, "commit", "-m", message], check=True)
 
 
-def main(content_dir: Path = Path("website_content")) -> None:
+def main(
+    content_dir: Path = Path("website_content"), commit_range: str | None = None
+) -> None:
     """
     Main function to update dates in markdown files.
 
     Args:
         content_dir (Path, optional): Directory containing markdown files.
             Defaults to "website_content" in current directory.
+        commit_range (str | None, optional): Git commit range to check for modifications
+            (e.g., "abc123..def456"). If None, checks for unpushed changes.
     """
     for md_file_path in content_dir.glob("*.md"):
         metadata, content = script_utils.split_yaml(md_file_path)
@@ -186,7 +225,7 @@ def main(content_dir: Path = Path("website_content")) -> None:
         maybe_update_publish_date(metadata)
 
         # Check for unpushed changes and update date_updated if needed
-        if is_file_modified(md_file_path):
+        if is_file_modified(md_file_path, commit_range):
             metadata["date_updated"] = current_date
 
         # Ensure that date fields are timestamps
@@ -203,4 +242,22 @@ def main(content_dir: Path = Path("website_content")) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Update publication dates in markdown files"
+    )
+    parser.add_argument(
+        "--commit-range",
+        type=str,
+        help="Git commit range to check (e.g., abc123..def456)",
+    )
+    parser.add_argument(
+        "--content-dir",
+        type=Path,
+        default=Path("website_content"),
+        help="Directory containing markdown files",
+    )
+    args = parser.parse_args()
+
+    main(content_dir=args.content_dir, commit_range=args.commit_range)

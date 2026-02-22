@@ -15,48 +15,9 @@ import {
   processParagraph,
   rehypeCustomSubtitle,
 } from "../subtitles"
+import { removePositions, createRehypeProcessor } from "./test-utils"
 
-/**
- * Recursively removes 'position' properties from AST nodes for testing purposes.
- * This helps in comparing AST nodes without considering their position information.
- *
- * @param obj - The Element object to process, typically a HAST (HTML Abstract Syntax Tree) node
- * @returns A new object with all 'position' properties removed, preserving the rest of the structure
- *
- * @example
- * const node = {
- *   type: 'element',
- *   position: { start: { line: 1, column: 1 }, end: { line: 1, column: 10 } },
- *   children: []
- * }
- * const cleaned = removePositions(node) // Returns object without position property
- */
-function removePositions(obj: Element): unknown {
-  if (Array.isArray(obj)) {
-    return obj.map(removePositions)
-  } else if (typeof obj === "object") {
-    const newObj: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(obj)) {
-      if (key !== "position") {
-        newObj[key] = removePositions(value)
-      }
-    }
-    return newObj
-  } else {
-    return obj
-  }
-}
-
-async function process(input: string) {
-  const result = await unified()
-    .use(rehypeParse, { fragment: true })
-    .use(() => (tree: Root) => {
-      visit(tree, "element", modifyNode)
-    })
-    .use(rehypeStringify)
-    .process(input)
-  return result.toString()
-}
+const process = createRehypeProcessor(modifyNode)
 
 describe("rehype-custom-subtitle", () => {
   it.each([

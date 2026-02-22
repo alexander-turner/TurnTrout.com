@@ -11,6 +11,27 @@ html {
   width: 100%;
 }
 
+.skip-to-content {
+  position: absolute;
+  left: -9999px;
+  z-index: 9999;
+  padding: 0.5em 1em;
+  background: var(--background);
+  color: var(--foreground);
+  text-decoration: underline;
+
+  // Use a pseudo-element so the text is not searchable via Ctrl+F
+  &::after {
+    content: "Skip to main content";
+  }
+
+  &:focus {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+  }
+}
+
 body,
 section {
   margin: 0;
@@ -18,28 +39,18 @@ section {
   box-sizing: border-box;
 }
 
-/* Define the scrollbar style */
+/* Scrollbar styling using the standard property (avoids Chromium repaint
+   bug where ::-webkit-scrollbar pseudo-elements render as white rectangles
+   after a tab switch). scrollbar-color is supported in all modern browsers. */
 body,
 .right {
   scrollbar-color: var(--midground-fainter) var(--background);
-}
-
-.right::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-/* Define the thumb style */
-.right::-webkit-scrollbar-thumb,
-body::-webkit-scrollbar-thumb {
-  background: var(--midground-fainter);
-  border-radius: 5px;
+  scrollbar-width: thin;
 }
 
 .text-highlight {
   padding: 0 0.1rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 ::selection {
@@ -207,6 +218,7 @@ a {
           max-width: $page-width;
           height: auto;
           overflow-y: visible;
+          pointer-events: none;
         }
       }
 
@@ -341,7 +353,7 @@ figure[data-rehype-pretty-code-figure] {
     padding: 0.1rem 0.5rem;
     border: 1px solid var(--midground-faint);
     width: max-content;
-    border-radius: 5px;
+    border-radius: $border-radius;
     margin-bottom: -0.5rem;
   }
 
@@ -353,7 +365,7 @@ figure[data-rehype-pretty-code-figure] {
 pre {
   font-family: var(--font-monospace);
   padding: 0 0.5rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
   overflow-x: auto;
   position: relative;
 
@@ -370,7 +382,7 @@ pre {
     padding: 0.5rem 0;
 
     & [data-highlighted-chars] {
-      border-radius: 5px;
+      border-radius: $border-radius;
     }
 
     & > [data-line] {
@@ -441,7 +453,7 @@ dd {
 
 img {
   max-width: 87.5%;
-  border-radius: 5px;
+  border-radius: $border-radius;
   margin: calc(2 * $base-margin) 0;
 }
 
@@ -459,7 +471,7 @@ hr {
 audio,
 video {
   width: 100%;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .spacer {
@@ -501,4 +513,15 @@ ul {
 // Nested ol and ul should have margin before them
 ol:not(ol > ol, li > ol) {
   margin-top: calc(1.5 * $base-margin);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

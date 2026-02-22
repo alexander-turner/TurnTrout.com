@@ -1,13 +1,13 @@
-import { sessionStoragePondVideoKey } from "../constants"
+import { sessionStoragePondVideoKey, autoplayStorageKey, pondVideoId } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
-const autoplayKey = "pond-video-autoplay"
+let pondVideoCleanupController: AbortController | null = null
 
 function getAutoplayEnabled(): boolean {
-  const saved = localStorage.getItem(autoplayKey)
+  const saved = localStorage.getItem(autoplayStorageKey)
   return saved !== null ? saved === "true" : false // Default to disabled
 }
 
@@ -45,11 +45,11 @@ function setupAutoplayToggle(): void {
 
 function handleVideoToggle(): void {
   const autoplayEnabled = getAutoplayEnabled()
-  localStorage.setItem(autoplayKey, (!autoplayEnabled).toString())
+  localStorage.setItem(autoplayStorageKey, (!autoplayEnabled).toString())
   updatePlayPauseButton()
 
   // Immediately apply the new autoplay state to the video
-  const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
   if (videoElement) {
     if (!autoplayEnabled) {
       // If we're enabling autoplay
@@ -64,8 +64,16 @@ function handleVideoToggle(): void {
 }
 
 function setupPondVideo(): void {
-  const videoElement = document.getElementById("pond-video") as HTMLVideoElement | null
+  // Clean up listeners from previous invocations to prevent accumulation
+  if (pondVideoCleanupController) {
+    pondVideoCleanupController.abort()
+  }
+
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
   if (!videoElement) return
+
+  pondVideoCleanupController = new AbortController()
+  const { signal } = pondVideoCleanupController
 
   const savedTime = sessionStorage.getItem(sessionStoragePondVideoKey)
   const autoplayEnabled = getAutoplayEnabled()
@@ -102,7 +110,7 @@ function setupPondVideo(): void {
     restoreVideoState()
   } else {
     console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
-    videoElement.addEventListener("canplay", restoreVideoState, { once: true })
+    videoElement.addEventListener("canplay", restoreVideoState, { once: true, signal })
   }
 
   // Save timestamp before page unload/refresh
@@ -111,13 +119,17 @@ function setupPondVideo(): void {
     console.debug("[setupPondVideo] Saving video timestamp", videoElement.currentTime)
   }
 
-  window.addEventListener("beforeunload", saveTimestamp)
-  window.addEventListener("pagehide", saveTimestamp)
+  window.addEventListener("beforeunload", saveTimestamp, { signal })
+  window.addEventListener("pagehide", saveTimestamp, { signal })
 
   // Save timestamp periodically during playback
-  videoElement.addEventListener("timeupdate", () => {
-    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-  })
+  videoElement.addEventListener(
+    "timeupdate",
+    () => {
+      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+    },
+    { signal },
+  )
 }
 
 // Initial setup

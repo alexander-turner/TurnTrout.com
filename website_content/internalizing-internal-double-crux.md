@@ -89,16 +89,11 @@ Realist
 Fire
 : I agree that not getting the internship would be evidence that there are others who are more promising _right now_. I think, however, that you're missing a few key points here:
 
-<dd>
-<ul>
-<li>We’ve made important connections at <abbr class="small-caps">chai</abbr> and <abbr class="small-caps">miri</abbr>.</li>
-<li>Your main point is a total buckets error. Being “promising” is not an ontologically basic or immutable property. Granted, there are biological and environmental factors outside our control here, but I think we score high <em>enough</em> on these metrics to be able to succeed through effort, passion, and increased mastery of instrumental rationality.</li>
-<li>We’ve been studying AI safety for just a few months (in our free time, no less); most of the studying has been dedicated towards building up foundational skills (and not reviewing the literature itself). The applicants who are chosen may have a year or more of familiarity with the literature / relevant math on us (or perhaps not), and this should be included in the model.</li>
-<li>One of the main sticking points raised during my final interview has since been fixed, but I couldn’t signal that afterwards without seeming overbearing.</li>
-</ul>
-</dd>
-
-<dd>I guess the main thrust here is that although that would be a data point against our being able to have a tectonic impact <em>right now</em>, we simply don't have enough evidence to responsibly generalize. I'm worried that you're overly pessimistic, and it's pulling down our chances of <em>actually</em> being able to <em>do something</em>.</dd>
+  - We've made important connections at CHAI and MIRI.
+  - Your main point is a total buckets error. Being "promising" is not an ontologically basic or immutable property. Granted, there are biological and environmental factors outside our control here, but I think we score high _enough_ on these metrics to be able to succeed through effort, passion, and increased mastery of instrumental rationality.
+  - We've been studying AI safety for just a few months (in our free time, no less); most of the studying has been dedicated towards building up foundational skills (and not reviewing the literature itself). The applicants who are chosen may have a year or more of familiarity with the literature / relevant math on us (or perhaps not), and this should be included in the model.
+  - One of the main sticking points raised during my final interview has since been fixed, but I couldn't signal that afterwards without seeming overbearing.
+: I guess the main thrust here is that although that would be a data point against our being able to have a tectonic impact _right now_, we simply don't have enough evidence to responsibly generalize. I'm worried that you're overly pessimistic, and it's pulling down our chances of _actually_ being able to _do something_.
 
 Realist
 : I definitely hear you that we've made lots of great progress, but is it enough? I'm so nervous about timelines, and the universe isn't magically calibrated to what we can do now. We either succeed, or we don't - and pay the price. Do we really have time to tolerate _almost_ being extraordinary? How is that going to do the impossible? I'm scared.

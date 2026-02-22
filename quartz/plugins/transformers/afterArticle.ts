@@ -3,6 +3,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
+import { EXTERNAL_LINK_REL } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createSequenceLinksComponent } from "./sequenceLinks"
@@ -12,10 +13,9 @@ const newsletterElement = h("a", { href: "https://turntrout.substack.com/subscri
   "newsletter",
 ])
 
-const rssSpan = h("span", { className: "favicon-span" }, [
+export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [
   h("abbr", { class: "small-caps" }, "rss"),
 ])
-export const rssElement = h("a", { href: "/rss.xml", id: "rss-link" }, [rssSpan])
 const subscriptionElement = h("div", { className: "centered" }, [
   h("div", h("p", ["Find out when I post more content: ", newsletterElement, " & ", rssElement])),
 ])
@@ -26,7 +26,7 @@ const pgpLink = h(
   "a",
   {
     href: "https://keys.openpgp.org/search?q=alex%40turntrout.com",
-    rel: "noopener noreferrer",
+    rel: EXTERNAL_LINK_REL,
     target: "_blank",
   },
   [h("abbr", { className: "small-caps" }, "pgp")],

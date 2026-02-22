@@ -18,7 +18,7 @@ import {
   normalizePathForCounting,
   normalizeUrl,
   readFaviconCounts,
-} from "./linkfavicons"
+} from "./favicons"
 
 const logger = createWinstonLogger("countlinks")
 
@@ -41,13 +41,13 @@ export function getFaviconCounts(): Map<string, number> {
   // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
   logger.info(`In-memory favicon counter is empty, attempting to read from ${faviconCountsFile}`)
 
-  // Use the centralized reading function from linkfavicons.ts
+  // Use the centralized reading function from favicons.ts
   return readFaviconCounts()
 }
 
 /**
  * Determines what favicon path a link would get based on its URL.
- * Uses the same logic as linkfavicons.ts to predict favicon paths.
+ * Uses the same logic as favicons.ts to predict favicon paths.
  * Returns format-agnostic path (without extension) for counting.
  */
 function getFaviconPathForLink(url: string): string | null {
@@ -63,13 +63,13 @@ function getFaviconPathForLink(url: string): string | null {
     return specialFaviconPaths.rss
   }
 
-  // Skip asset links (reuse centralized check from linkfavicons.ts)
+  // Skip asset links (reuse centralized check from favicons.ts)
   if (isAssetLink(url)) {
     return null
   }
 
   try {
-    // Normalize relative URLs to absolute (reuse from linkfavicons.ts)
+    // Normalize relative URLs to absolute (reuse from favicons.ts)
     const normalizedUrl = normalizeUrl(url)
     const urlObj = new URL(normalizedUrl)
     const hostname = urlObj.hostname
@@ -139,8 +139,23 @@ function countLinksInMarkdownTree(tree: MDRoot): void {
 }
 
 /**
+ * Applies text transforms from configured transformer plugins to raw file content.
+ * This ensures that dynamically injected content (e.g., from PopulateExternalMarkdown)
+ * is included in the link count.
+ */
+function applyTextTransforms(ctx: BuildCtx, content: string): string {
+  let result: string | Buffer = content
+  for (const plugin of ctx.cfg.plugins.transformers.filter((p) => p.textTransform)) {
+    result = plugin.textTransform?.(ctx, result) ?? result
+  }
+  return typeof result === "string" ? result : result.toString()
+}
+
+/**
  * Pre-processes all markdown files to count links before HTML conversion.
  * This must complete before AddFavicons processes any files.
+ * Applies text transforms first so that dynamically injected content
+ * (e.g., external README files) is included in the count.
  */
 export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Promise<void> {
   logger.debug(`Counting links across ${filePaths.length} files`)
@@ -151,7 +166,9 @@ export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Pr
   for (const filePath of filePaths) {
     try {
       const file = await read(filePath)
-      const tree = processor.parse(file) as MDRoot
+      const rawContent = file.value.toString().trim()
+      const transformedContent = applyTextTransforms(ctx, rawContent)
+      const tree = processor.parse(transformedContent) as MDRoot
       countLinksInMarkdownTree(tree)
     } catch (error) {
       logger.error(`Failed to count links in ${filePath}: ${error}`)

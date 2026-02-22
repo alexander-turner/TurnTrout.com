@@ -23,13 +23,30 @@ pnpm preview      # Build and serve
 pnpm test                   # TypeScript tests with coverage (requires 100% branch coverage)
 pnpm check                  # Type checking without emitting files
 pnpm test:visual            # Visual regression tests with Playwright
-pytest <path>               # Python tests (NOT python -m pytest)
+uv run pytest <path>        # Python tests
 ```
 
-**Python environment**: Always activate conda environment before running Python scripts:
+### Running Playwright Tests Locally
+
+1. Install browsers and WebKit system dependencies:
 
 ```bash
-conda init && conda activate website
+npx playwright install chromium firefox
+npx playwright install-deps webkit
+npx playwright install webkit
+```
+
+2. Start the local server in offline mode (uses Playwright's Chromium for critical CSS generation):
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --serve --offline &
+```
+
+3. Wait for the server to be ready at `http://localhost:8080`, then run tests:
+
+```bash
+npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
 ```
 
 ### Code Quality
@@ -40,6 +57,8 @@ pnpm check          # Lint and type check
 ```
 
 ## Architecture
+
+Place any "magic numbers" or constants used in >1 file in `config/constants.json` (for static quantities) or `quartz/components/constants.ts` (for dynamically generated values).
 
 ### Quartz Plugin System (TypeScript)
 
@@ -78,7 +97,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Git Workflow
 
-**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook. Manual setup: `git config core.hooksPath .hooks`
+**Hooks auto-configured**: Git hooks are automatically enabled via `.claude/settings.json` SessionStart hook, which also detects the GitHub repo from proxy remotes and exports `GH_REPO` so `gh` CLI commands work in web sessions. Manual setup: `git config core.hooksPath .hooks`
 
 **Pre-commit**: Runs lint-staged formatters/linters on changed files
 
@@ -89,7 +108,6 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - Stashes uncommitted changes
 - Runs comprehensive validation (tests, linting, spellcheck, link validation)
 - Compresses/uploads assets to CDN
-- Updates publication dates
 - Can resume from last failure: `RESUME=true git push`
 
 ## Content Structure
@@ -104,6 +122,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
 - Visual regression tests use Playwright with `lost-pixel`
+- **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details
 
@@ -153,17 +172,26 @@ When pushing to main, these checks run automatically:
 8. Built site checks (no localhost links, all favicons wrapped, etc.)
 9. Internal link validation with `linkchecker`
 10. Asset compression and CDN upload
-11. Publication date updates
 
 ## GitHub Actions (Post-push)
 
 After pushing to main:
 
+- **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~40 parallel shards to complete in ~10 minutes
+- Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis
+
+### CI Cost Optimization
+
+- **Playwright/visual tests always run on main**: Pushes to main always trigger Playwright and visual tests (no path filters). Both workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes.
+- **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
+- **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
+- **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.
+- **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
 
@@ -184,6 +212,11 @@ Per `.cursorrules` and `design.md`:
 - Check for existing libraries before rolling custom solutions
 - Look for existing patterns in the codebase before creating new ones
 
+### Documentation
+
+- When modifying functionality described in `website_content/design.md`, update that file to reflect the changes
+- The design document explains implementation details for site features, deployment pipeline, and CI/CD workflows
+
 ### Code Style
 
 - Prefer throwing errors that "fail loudly" over logging warnings for critical issues
@@ -191,10 +224,19 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 
+### Error Handling
+
+- **Never use empty catch blocks** - errors should either be handled or propagated
+- Don't catch exceptions just to ignore them - if an error isn't expected to occur, let it fail loudly
+- Only catch specific errors you know how to handle; let unexpected errors propagate
+- If you must catch for cleanup, rethrow the error after cleanup
+- Don't use try/catch to silence errors unless there's a specific, documented reason
+
 ### Testing
 
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
 - Write focused, non-duplicative tests
+- **NEVER update test expectations without asking the user first.**
 
 ### Dependencies
 

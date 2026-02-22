@@ -263,12 +263,16 @@ describe("Asset Dimensions Plugin", () => {
 
       // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        expect.stringMatching(
+          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+        ),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
       expect(renameSpy).toHaveBeenCalledWith(
-        expect.stringMatching(new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)),
+        expect.stringMatching(
+          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+        ),
         actualAssetDimensionsFilePath,
       )
       expect(assetProcessor["needToSaveCache"]).toBe(false)
@@ -353,6 +357,25 @@ describe("Asset Dimensions Plugin", () => {
 
       await expect(assetProcessor.maybeSaveAssetDimensions()).rejects.toThrow("Rename failed")
       expect(unlinkSpy).toHaveBeenCalled()
+    })
+
+    it("should handle ENOENT rename error gracefully (race condition)", async () => {
+      const cacheData: AssetDimensionMap = {
+        "https://assets.turntrout.com/img.png": { width: 100, height: 50 },
+      }
+      assetProcessor.setDirectCache(cacheData)
+      assetProcessor.setDirectDirtyFlag(true)
+
+      jest.spyOn(fs, "writeFile").mockResolvedValue(undefined as never)
+      jest
+        .spyOn(fs, "rename")
+        .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
+      const unlinkSpy = jest.spyOn(fs, "unlink").mockResolvedValue(undefined as never)
+
+      // Should not throw - ENOENT means another worker succeeded
+      await assetProcessor.maybeSaveAssetDimensions()
+      expect(unlinkSpy).toHaveBeenCalled()
+      expect(assetProcessor["needToSaveCache"]).toBe(false)
     })
   })
 
@@ -1076,7 +1099,9 @@ describe("Asset Dimensions Plugin", () => {
       await assetProcessor.maybeSaveAssetDimensions()
       expect(writeFileSpy).toHaveBeenCalledTimes(2)
       // Temp file includes process.pid and timestamp for uniqueness
-      const tempFilePattern = new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.\\d+$`)
+      const tempFilePattern = new RegExp(
+        `^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`,
+      )
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringMatching(tempFilePattern),
         expect.any(String),
@@ -1095,7 +1120,7 @@ describe("Asset Dimensions Plugin", () => {
       const tree: Root = { type: "root", children: [] }
 
       const pluginInstance = addAssetDimensionsFromSrc()
-      const mockCtx = { argv: { offline: false } } as BuildCtx
+      const mockCtx = { argv: {} } as BuildCtx
       const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
       await transformer(tree)
 
@@ -1143,12 +1168,19 @@ describe("Asset Dimensions Plugin", () => {
       expect(imgNode.properties?.height).toBeUndefined()
     })
 
-    it("should default to online mode when offline is undefined", () => {
+    it("should default to online mode when offline flag is not provided", async () => {
+      const tree: Root = {
+        type: "root",
+        children: [h("p", ["No assets"]) as Element],
+      }
       const pluginInstance = addAssetDimensionsFromSrc()
-      // When offline is undefined, htmlPlugins should not throw
+      // argv without offline property to test the ?? false branch
       const mockCtx = { argv: {} } as BuildCtx
-      const plugins = pluginInstance.htmlPlugins(mockCtx)
-      expect(plugins).toHaveLength(1)
+      const transformer = pluginInstance.htmlPlugins(mockCtx)[0]()
+      await transformer(tree)
+
+      // Should work without errors (offline defaults to false)
+      expect(tree.children).toHaveLength(1)
     })
   })
 

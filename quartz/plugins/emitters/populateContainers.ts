@@ -5,9 +5,12 @@ import { type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
+import { render } from "preact-render-to-string"
 import { visit } from "unist-util-visit"
 
-import { simpleConstants, specialFaviconPaths } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
+import { renderPostStatistics } from "../../components/ContentMeta"
+import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
 import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
@@ -17,11 +20,17 @@ import {
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
-} from "../transformers/linkfavicons"
-import { hasClass } from "../transformers/utils"
+} from "../transformers/favicons"
+import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb } = simpleConstants
+const {
+  minFaviconCount,
+  defaultPath,
+  maxCardImageSizeKb,
+  playwrightConfigs,
+  colorDropcapProbability,
+} = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -84,11 +93,17 @@ export const generateTestCountContent = (): ContentGenerator => {
   }
 }
 
+interface GitCountOptions {
+  author?: string
+  grep?: string
+}
+
 // skipcq: JS-D1001
-export async function countGitCommits(author: string): Promise<number> {
-  const output = execSync(`git rev-list --all --count --author="${author}"`, {
-    encoding: "utf-8",
-  })
+export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  let cmd = "git rev-list --all --count"
+  if (options.author) cmd += ` --author="${options.author}"`
+  if (options.grep) cmd += ` --grep="${options.grep}"`
+  const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -138,6 +153,7 @@ export async function countLinesOfCode(): Promise<number> {
 
 export interface RepoStats {
   commitCount: number
+  aiCommitCount: number
   jsTestCount: number
   playwrightTestCount: number
   pytestCount: number
@@ -146,16 +162,17 @@ export interface RepoStats {
 
 // skipcq: JS-D1001
 export async function computeRepoStats(): Promise<RepoStats> {
-  const [commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
+  const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
-      countGitCommits("Alex Turner"),
+      countGitCommits({ author: "Alex Turner" }),
+      countGitCommits({ grep: "claude.ai/code/session" }),
       countJsTests(),
       countPlaywrightTests(),
       countPythonTests(),
       countLinesOfCode(),
     ])
 
-  return { commitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
+  return { commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode }
 }
 
 /**
@@ -174,7 +191,7 @@ const addPngExtension = (path: string): string => {
 const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
   await Promise.all(
     pngPaths.map(async (pngPath) => {
-      const svgUrl = `https://assets.turntrout.com${pngPath.replace(".png", ".svg")}`
+      const svgUrl = `${cdnBaseUrl}${pngPath.replace(".png", ".svg")}`
       try {
         const response = await fetch(svgUrl)
         if (response.ok) {
@@ -194,7 +211,43 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [h("span", { className: "favicon-span" }, [faviconElement])]
+    return [createNowrapSpan("", faviconElement)]
+  }
+}
+
+/**
+ * Generates a metadata admonition ("About this post" box) with dummy data,
+ * using the same component that renders real post metadata.
+ */
+export const generateMetadataAdmonition = (): ContentGenerator => {
+  return async (): Promise<Element[]> => {
+    const dummyProps = {
+      cfg: {},
+      fileData: {
+        text: "word ".repeat(1600), // ~8 minutes reading time
+        relativePath: "welcome-to-the-pond.md",
+        frontmatter: {
+          date_published: new Date("2024-10-30"),
+          date_updated: "2024-11-12",
+        },
+      },
+    } as unknown as QuartzComponentProps
+
+    const jsx = renderPostStatistics(dummyProps)
+    // istanbul ignore next
+    if (!jsx) return []
+
+    const html = render(jsx)
+    const root = fromHtml(html, { fragment: true })
+
+    // Strip the post-statistics ID to avoid duplicate IDs on the page
+    visit(root, "element", (node) => {
+      if (node.properties?.id === "post-statistics") {
+        delete node.properties.id
+      }
+    })
+
+    return root.children.filter((c): c is Element => c.type === "element")
   }
 }
 
@@ -226,7 +279,7 @@ export const generateFaviconContent = (): ContentGenerator => {
         // istanbul ignore if
         if (url === defaultPath) return null
 
-        // Use helper from linkfavicons.ts to check if favicon should be included
+        // Use helper from favicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
         return { url, count } as const
@@ -254,6 +307,15 @@ export const generateFaviconContent = (): ContentGenerator => {
 
     return [h("table", { class: "center-table-headings" }, tableRows)]
   }
+}
+
+/**
+ * Converts an HTML file path to a slug by removing the .html extension.
+ * @param htmlFile - The HTML file path (e.g., "design.html" or "posts/foo.html")
+ * @returns The slug (e.g., "design" or "posts/foo")
+ */
+export function htmlFileToSlug(htmlFile: string): string {
+  return htmlFile.replace(/\.html$/, "")
 }
 
 /**
@@ -333,9 +395,14 @@ const createPopulatorMap = (
 ): Map<string, ContentGenerator> => {
   return new Map([
     // IDs
+    ["populate-metadata-admonition", generateMetadataAdmonition()],
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
+    [
+      "populate-dropcap-probability",
+      generateConstantContent(`${Math.round(colorDropcapProbability * 100)}%`),
+    ],
     [
       "populate-turntrout-favicon",
       generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),
@@ -346,10 +413,19 @@ const createPopulatorMap = (
     ],
     // Classes
     ["populate-commit-count", generateConstantContent(stats.commitCount.toLocaleString())],
+    [
+      "populate-human-commit-count",
+      generateConstantContent((stats.commitCount - stats.aiCommitCount).toLocaleString()),
+    ],
     ["populate-js-test-count", generateConstantContent(stats.jsTestCount.toLocaleString())],
     [
       "populate-playwright-test-count",
       generateConstantContent(stats.playwrightTestCount.toLocaleString()),
+    ],
+    ["populate-playwright-configs", generateConstantContent(playwrightConfigs.toLocaleString())],
+    [
+      "populate-playwright-total-tests",
+      generateConstantContent((stats.playwrightTestCount * playwrightConfigs).toLocaleString()),
     ],
     ["populate-pytest-count", generateConstantContent(stats.pytestCount.toLocaleString())],
     ["populate-lines-of-code", generateConstantContent(stats.linesOfCode.toLocaleString())],

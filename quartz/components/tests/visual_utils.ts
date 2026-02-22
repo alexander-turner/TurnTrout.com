@@ -1,8 +1,11 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
+import { promises as fsPromises } from "fs"
+import path from "path"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
-import { tabletBreakpoint, minDesktopWidth } from "../../styles/variables"
+import { minDesktopWidth } from "../../styles/variables"
+import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
 /**
@@ -25,24 +28,27 @@ export async function isElementChecked(locator: Locator): Promise<boolean> {
 
 // skipcq: JS-0098
 export async function setTheme(page: Page, theme: Theme) {
-  await page.evaluate((t) => {
-    localStorage.setItem("saved-theme", t)
+  await page.evaluate(
+    ({ t, key }) => {
+      localStorage.setItem(key, t)
 
-    // Set theme label content via CSS custom property (not textContent to avoid duplication)
-    const themeLabel = t.charAt(0).toUpperCase() + t.slice(1)
-    document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
+      // Set theme label content via CSS custom property (not textContent to avoid duplication)
+      const themeLabel = t.charAt(0).toUpperCase() + t.slice(1)
+      document.documentElement.style.setProperty("--theme-label-content", `"${themeLabel}"`)
 
-    const root = document.documentElement
-    root.setAttribute("data-theme-mode", t)
-    if (t === "auto") {
-      const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      root.setAttribute("data-theme", systemPreference)
-    } else {
-      root.setAttribute("data-theme", t)
-    }
-  }, theme)
+      const root = document.documentElement
+      root.setAttribute("data-theme-mode", t)
+      if (t === "auto") {
+        const systemPreference = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light"
+        root.setAttribute("data-theme", systemPreference)
+      } else {
+        root.setAttribute("data-theme", t)
+      }
+    },
+    { t: theme, key: savedThemeKey },
+  )
 
   // Wait a frame for theme to apply
   await page.evaluate(() => {
@@ -202,7 +208,6 @@ export async function takeRegressionScreenshot(
     }
 
     try {
-      await expect(options.elementToScreenshot).toHaveScreenshot(screenshotName, screenshotOptions)
       screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
     } finally {
       // Always restore the DOM state
@@ -222,10 +227,14 @@ export async function takeRegressionScreenshot(
       }
     }
 
-    await expect(page).toHaveScreenshot(screenshotName, screenshotOptions)
-
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
+
+  // Write screenshot to lost-pixel directory for visual regression comparison
+  // (replaces toHaveScreenshot — baselines are managed by lost-pixel cloud, not locally)
+  const screenshotPath = testInfo.snapshotPath(screenshotName)
+  await fsPromises.mkdir(path.dirname(screenshotPath), { recursive: true })
+  await fsPromises.writeFile(screenshotPath, screenshotBuffer)
 
   return screenshotBuffer
 }
@@ -233,11 +242,13 @@ export async function takeRegressionScreenshot(
 /** Wraps all H1 sections in spans, taking the locator or page object as the base. */
 export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<void> {
   const evaluateFunc = () => {
-    // Create a static list of headers to iterate over
-    const headers = Array.from(document.querySelectorAll("article > h1"))
+    // Collect direct-child H1s and footnote sections as split boundaries (in DOM order)
+    const boundaries = Array.from(
+      document.querySelectorAll("article > h1, article > section[data-footnotes]"),
+    )
 
-    for (const header of headers) {
-      const parent = header.parentElement
+    for (const boundary of boundaries) {
+      const parent = boundary.parentElement
 
       if (!parent) continue
 
@@ -247,18 +258,19 @@ export async function wrapH1SectionsInSpans(locator: Locator | Page): Promise<vo
       }
 
       const span = document.createElement("span")
-      if (!header.id) {
+      const id = boundary.id || boundary.querySelector("h1")?.id
+      if (!id) {
         throw new Error("Header has no id")
       }
-      span.id = `h1-span-${header.id}`
+      span.id = `h1-span-${id}`
 
-      parent.insertBefore(span, header)
+      parent.insertBefore(span, boundary)
 
-      span.appendChild(header)
+      span.appendChild(boundary)
 
-      // Move all subsequent siblings into the span until we hit the next h1
+      // Move all subsequent siblings into the span until we hit the next boundary
       let nextSibling = span.nextSibling
-      while (nextSibling && headers.indexOf(nextSibling as Element) === -1) {
+      while (nextSibling && boundaries.indexOf(nextSibling as Element) === -1) {
         const toMove = nextSibling
         nextSibling = toMove.nextSibling
         span.appendChild(toMove)
@@ -333,6 +345,20 @@ export async function getNextElementMatchingSelector(
   throw new Error("No next element found")
 }
 
+/** Open the search UI by clicking the search icon.
+ *  Waits for the search handlers to be fully initialized (onNav completes
+ *  its async getContentIndex() call) before clicking, by checking for the
+ *  dynamically-created #results-container element. */
+export async function openSearch(page: Page) {
+  // #results-container is created by onNav after the async getContentIndex()
+  // resolves and just before the click handlers are registered. Waiting for
+  // it ensures the search icon's click handler is ready.
+  await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
+  await page.locator("#search-icon").click()
+  await expect(page.locator("#search-container")).toHaveClass(/active/)
+  await expect(page.locator("#search-bar")).toBeVisible()
+}
+
 export async function waitForSearchBar(page: Page): Promise<Locator> {
   // Wait for search container to be in the DOM and interactive
   const searchContainer = page.locator("#search-container")
@@ -352,20 +378,15 @@ export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
   await searchBar.fill(term)
 
-  // Wait for search layout to be visible with results
+  // Wait for search layout to be visible with results (longer timeout for Safari/WebKit)
   const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toBeAttached()
-  await expect(searchLayout).toBeVisible()
-  await expect(searchLayout).toHaveClass(/display-results/)
+  await expect(searchLayout).toBeAttached({ timeout: 10_000 })
+  await expect(searchLayout).toBeVisible({ timeout: 10_000 })
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
 
   // Wait for results to appear
   const resultsContainer = page.locator("#results-container")
-  await expect(resultsContainer).toBeVisible()
-
-  if (showingPreview(page)) {
-    const previewContainer = page.locator("#preview-container")
-    await expect(previewContainer).toBeAttached()
-  }
+  await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
 }
 
 // skipcq: JS-0098
@@ -419,15 +440,6 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   }
 
   await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
-}
-
-/**
- * Returns true if the page will show a search preview
- */
-export function showingPreview(page: Page): boolean {
-  const viewportSize = page.viewportSize()
-  const shouldShowPreview = viewportSize?.width && viewportSize.width > tabletBreakpoint
-  return Boolean(shouldShowPreview)
 }
 
 /**

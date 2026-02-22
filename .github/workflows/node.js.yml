@@ -3,24 +3,33 @@
 
 name: Node tests
 
+concurrency:
+  group: node-tests-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
   pull_request:
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
+  merge_group:
 
 permissions:
   actions: read
@@ -30,6 +39,7 @@ jobs:
   build:
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
 
     strategy:
       matrix:
@@ -39,4 +49,6 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
-      - run: pnpm test -- -u
+        with:
+          install-python: "false"
+      - run: pnpm test

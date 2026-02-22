@@ -1,7 +1,7 @@
 /**
  * This file implements the TableOfContents component for Quartz.
  * It renders a table of contents based on the headings in the current page,
- * supporting small caps and LaTeX rendering.
+ * supporting small caps and LaTeX rendering in headings.
  */
 
 import type { RootContent, Parent, Element, Root } from "hast"
@@ -59,7 +59,7 @@ export const CreateTableOfContents: QuartzComponent = ({
   }
 
   return (
-    <div id="table-of-contents" className="desktop-only">
+    <nav id="table-of-contents" className="desktop-only" aria-label="Table of contents">
       <h1 id="toc-title" className="h6">
         <button className="internal same-page-link">
           {formatTitle(fileData.frontmatter?.title || "Table of Contents")}
@@ -68,7 +68,7 @@ export const CreateTableOfContents: QuartzComponent = ({
       <div id="toc-content">
         <ol>{toc}</ol>
       </div>
-    </div>
+    </nav>
   )
 }
 
@@ -284,6 +284,7 @@ export function elementToJsx(elt: RootContent): JSX.Element | null {
 }
 
 CreateTableOfContents.css = modernStyle
+
 CreateTableOfContents.afterDOMLoaded = `
 document.addEventListener('nav', function() {
   // Scroll to top when TOC title is clicked
@@ -297,33 +298,72 @@ document.addEventListener('nav', function() {
     });
   }
 
-  const sections = document.querySelectorAll("#center-content h1, #center-content h2");
+  // Disconnect previous observer to prevent memory leak
+  if (window.tocObserver) {
+    window.tocObserver.disconnect();
+  }
+
+  // Runs synchronously — the nav event fires from a defer script so the DOM
+  // is fully parsed. Avoid rAF here: it doesn't reliably fire in headless CI.
+  const allSections = document.querySelectorAll("#center-content article h1, #center-content article h2");
   const navLinks = document.querySelectorAll("#toc-content a");
 
-  function updateActiveLink() {
-    let currentSection = "";
-    const scrollPosition = window.scrollY + window.innerHeight / 4;
+  // Only observe sections that have a matching TOC link (e.g. article-title has
+  // no TOC entry and would prevent the observer from highlighting real links).
+  const navLinkSlugs = new Set(Array.from(navLinks).map(l => l.getAttribute("href")?.split("#")[1]));
+  const sections = Array.from(allSections).filter(section => section.id && navLinkSlugs.has(section.id));
 
-    sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      if (scrollPosition >= sectionTop) {
-        currentSection = section.id;
-      }
-    });
+  if (sections.length === 0 || navLinks.length === 0) return;
+
+  let currentSection = "";
+
+  function updateActiveLink(newSection) {
+    if (newSection === currentSection) return;
+    currentSection = newSection;
 
     navLinks.forEach((link) => {
-      link.classList.remove("active");
       const slug = link.getAttribute('href').split("#")[1];
-      if (currentSection && slug === currentSection) {
-        link.classList.add("active");
-      }
+      link.classList.toggle("active", currentSection && slug === currentSection);
     });
   }
 
-  window.addEventListener("scroll", updateActiveLink);
+  // Track which sections are currently inside the observation zone
+  const visibleSections = new Set();
 
-  // Initial call to set active link on page load
-  updateActiveLink();
+  // Use IntersectionObserver to detect visible sections without forced reflows
+  const observerOptions = {
+    rootMargin: "0px 0px -70% 0px", // Top 30% of viewport
+    threshold: 0
+  };
+
+  window.tocObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        visibleSections.add(entry.target.id);
+      } else {
+        visibleSections.delete(entry.target.id);
+      }
+    });
+
+    // Pick the last visible section in document order (furthest scrolled past)
+    if (visibleSections.size > 0) {
+      for (let i = sections.length - 1; i >= 0; i--) {
+        if (visibleSections.has(sections[i].id)) {
+          updateActiveLink(sections[i].id);
+          return;
+        }
+      }
+    }
+  }, observerOptions);
+
+  sections.forEach((section) => window.tocObserver.observe(section));
+
+  // Set initial active link based on hash or first section with ID
+  const hash = window.location.hash.slice(1);
+  const firstSectionId = sections[0]?.id;
+  if (hash || firstSectionId) {
+    updateActiveLink(hash || firstSectionId);
+  }
 });
 `
 

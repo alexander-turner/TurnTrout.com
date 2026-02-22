@@ -1,9 +1,6 @@
 import { expect, describe, it, test } from "@jest/globals"
 import { type Element, type Parent, type Root } from "hast"
 import { h } from "hastscript"
-import rehypeParse from "rehype-parse"
-import rehypeStringify from "rehype-stringify"
-import { unified } from "unified"
 import { visit } from "unist-util-visit"
 
 import { BuildCtx } from "../../../util/ctx"
@@ -14,32 +11,9 @@ import {
   processParagraph,
   rehypeCustomSpoiler,
 } from "../spoiler"
+import { removePositions, createRehypeProcessor } from "./test-utils"
 
-function removePositions(obj: unknown): unknown {
-  if (Array.isArray(obj)) {
-    return obj.map(removePositions)
-  } else if (typeof obj === "object" && obj !== null) {
-    const newObj: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(obj)) {
-      if (key !== "position") {
-        newObj[key] = removePositions(value)
-      }
-    }
-    return newObj
-  }
-  return obj
-}
-
-async function process(input: string) {
-  const result = await unified()
-    .use(rehypeParse, { fragment: true })
-    .use(() => (tree: Root) => {
-      visit(tree, "element", modifyNode)
-    })
-    .use(rehypeStringify)
-    .process(input)
-  return result.toString()
-}
+const process = createRehypeProcessor(modifyNode)
 
 describe("rehype-custom-spoiler", () => {
   it.each([
@@ -57,9 +31,10 @@ describe("rehype-custom-spoiler", () => {
     const output = await process(input)
     expect(output).toMatch(/<div class="spoiler-container"[^>]*>/)
     expect(output).toContain('<span class="spoiler-content">')
-    expect(output).toContain('<span class="spoiler-overlay"></span>')
+    expect(output).toMatch(/<span class="spoiler-overlay"[^>]*><\/span>/)
     expect(output).not.toContain("<blockquote>")
     expect(output).toMatch(/onclick="[^"]*"/)
+    expect(output).toContain('role="button"')
   })
 
   it.each([
@@ -88,11 +63,21 @@ describe("rehype-custom-spoiler", () => {
 
     expect(node.tagName).toBe("div")
     expect(node.properties?.className).toContain("spoiler-container")
+    expect(node.properties?.onClick).toBeDefined() // container has click handler
     expect(node.children).toHaveLength(2)
     expect((node.children[0] as Element).tagName).toBe("span")
     expect((node.children[0] as Element).properties?.className).toContain("spoiler-overlay")
     expect((node.children[1] as Element).tagName).toBe("span")
     expect((node.children[1] as Element).properties?.className).toContain("spoiler-content")
+
+    // Accessibility attributes are on the overlay (role, aria-*), click handler on container
+    const overlay = node.children[0] as Element
+    expect(overlay.properties?.role).toBe("button")
+    expect(overlay.properties?.tabIndex).toBe(0)
+    expect(overlay.properties?.ariaExpanded).toBe("false")
+    expect(overlay.properties?.ariaLabel).toContain("Spoiler")
+    expect(overlay.properties?.onKeyDown).toBeDefined()
+    expect(overlay.properties?.onClick).toBeUndefined() // onclick is on container, not overlay
   })
 
   describe("processParagraph function", () => {

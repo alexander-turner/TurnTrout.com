@@ -257,7 +257,7 @@ describe("createLinkWithFavicon", () => {
     expect(result.props["data-slug"]).toBe("another-page")
   })
 
-  it("should include favicon-span in link children", () => {
+  it("should include favicon-span with spliced text in link children", () => {
     const result = createLinkWithFavicon(
       "Link with favicon",
       "/page",
@@ -266,29 +266,41 @@ describe("createLinkWithFavicon", () => {
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
-    expect(children.length).toBeGreaterThan(0)
+    // text (spliced) + favicon-span (last 4 chars + favicon)
+    expect(children.length).toBe(2)
+    expect(children[0]).toBe("Link with fav")
 
-    // The last child should be a span.favicon-span containing the favicon
-    const lastChild = children[children.length - 1]
-    assertJSXElement(lastChild)
-    expect(lastChild.type).toBe("span")
-    expect(lastChild.props.class).toBe("favicon-span")
+    const faviconSpan = children[1] as JSX.Element
+    assertJSXElement(faviconSpan)
+    expect(faviconSpan.type).toBe("span")
+    expect(faviconSpan.props.class).toBe("favicon-span")
+
+    const spanChildren = faviconSpan.props.children as unknown[]
+    expect(spanChildren[0]).toBe("icon")
+    const favicon = spanChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 
-  it("should handle text splicing correctly with maybeSpliceText", () => {
+  it("should splice text and wrap with favicon-span", () => {
     const result = createLinkWithFavicon("Test text", "/page", specialFaviconPaths.turntrout)
 
     assertJSXElement(result)
     const children = result.props.children as unknown[]
 
-    // Should have text before the favicon-span
-    expect(children.length).toBeGreaterThan(1)
-    expect(typeof children[0]).toBe("string")
+    // text (spliced) + favicon-span (last 4 chars + favicon)
+    expect(children.length).toBe(2)
+    expect(children[0]).toBe("Test ")
 
-    // Last child should be the favicon-span with spliced text + favicon
-    const faviconSpan = children[children.length - 1]
+    const faviconSpan = children[1] as JSX.Element
     assertJSXElement(faviconSpan)
     expect(faviconSpan.type).toBe("span")
     expect(faviconSpan.props.class).toBe("favicon-span")
+
+    const spanChildren = faviconSpan.props.children as unknown[]
+    expect(spanChildren[0]).toBe("text")
+    const favicon = spanChildren[1]
+    assertJSXElement(favicon as JSX.Element)
+    expect((favicon as JSX.Element).props.class).toContain("favicon")
   })
 })

@@ -21,7 +21,9 @@ af-num-comments-on-upload: 0
 title: "AI presidents discuss AI alignment agendas"
 lw-latest-edit: 2023-09-09T18:55:38.346000Z
 lw-is-linkpost: "true"
-authors: Alex Turner and Garrett Baker
+authors:
+  - Alex Turner
+  - Garrett Baker
 tags:
   - "AI"
   - "humor"

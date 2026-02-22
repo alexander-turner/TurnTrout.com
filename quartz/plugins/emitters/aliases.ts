@@ -118,7 +118,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
               <meta name="robots" content="noindex">
               <meta http-equiv="refresh" content="0; url=${redirUrl}">
-              <meta name="viewport" content="width=device-width">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
             </head>
             </html>
             `,

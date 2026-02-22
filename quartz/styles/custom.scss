@@ -3,6 +3,7 @@
 @use "table";
 @use "colors";
 @use "favicon";
+@use "scroll-indicator";
 
 body {
   min-height: 100vh;
@@ -40,10 +41,6 @@ li > blockquote:first-child {
     padding-right: 0;
   }
 
-  & li {
-    max-width: 100%;
-  }
-
   // Ordered lists in footnotes should start at 1, 2, 3, etc.
   & > li > ol {
     counter-reset: list;
@@ -79,10 +76,10 @@ a[id*="fnref-"] {
   // When scrolling back to a footnote, scroll up farther than default
   scroll-margin-top: calc(2 * $base-margin);
 
-  // Footnotes should be a bit easier to see
-  background-color: color-mix(in srgb, gray 10%, transparent);
-  padding: 0 0.1rem;
-  border-radius: 5px;
+  // Dotted border signals "click for interaction" (same pattern as Elvish text)
+  border: 1px dotted var(--midground-fainter);
+  padding: 0 calc(0.25 * $base-margin);
+  border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
@@ -314,6 +311,11 @@ sup {
 figure:has(> .subfigure) {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+
+  > figcaption {
+    flex: 0 0 100%;
+  }
 }
 
 figure {
@@ -385,6 +387,10 @@ p:has(+ .subtitle),
         color: inherit;
       }
     }
+  }
+
+  .timeline & {
+    color: var(--midground-strong);
   }
 }
 
@@ -458,7 +464,7 @@ figcaption,
   & .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.2s ease-out;
+    transition: max-height $transition-duration-quick ease-out;
   }
 }
 
@@ -475,7 +481,7 @@ svg.fold-icon {
   width: var(--icon-size);
   height: var(--icon-size);
   fill: var(--midground); /* Set the default color here */
-  transition: transform 0.2s ease-out; /* Add a smooth transition */
+  transition: transform $transition-duration-quick ease-out; /* Add a smooth transition */
   transform: rotate(-90deg); /* Initial 90-degree rotation */
 
   &[aria-expanded="true"] {
@@ -715,13 +721,7 @@ img.emoji {
   justify-content: center;
 
   &::after {
-    content: "Hover to show";
-  }
-
-  @media (max-width: $tablet-breakpoint) {
-    &::after {
-      content: "Tap to show";
-    }
+    content: "Click to show";
   }
 }
 
@@ -732,19 +732,16 @@ img.emoji {
   // Safari needs this
   & > * {
     filter: inherit;
-    opacity: inherit;
   }
 }
 
-.spoiler-container:hover .spoiler-overlay,
-.spoiler-container:focus .spoiler-overlay,
+.spoiler-overlay:focus-visible,
 .spoiler-container.revealed .spoiler-overlay {
   opacity: 0;
   pointer-events: none;
 }
 
-.spoiler-container:hover .spoiler-content,
-.spoiler-container:focus .spoiler-content,
+.spoiler-overlay:focus-visible + .spoiler-content,
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
@@ -764,7 +761,7 @@ img.emoji {
   align-items: baseline !important;
   background-color: var(--midground-faintest) !important;
   padding: calc(0.5 * $base-margin);
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .flowchart {
@@ -799,23 +796,6 @@ img.emoji {
   }
 }
 
-#mermaid-0,
-#mermaid-1,
-#mermaid-2 {
-  font-size: 14px !important;
-
-  & span,
-  & .label {
-    color: var(--foreground) !important;
-    fill: var(--foreground) !important;
-  }
-}
-
-#mermaid-1 {
-  // Needed to ensure arrowheads are visible
-  fill: var(--midground-faint) !important;
-}
-
 .flowchart-link {
   stroke: var(--midground-faint) !important;
 }
@@ -831,7 +811,6 @@ foreignObject {
   overflow: visible !important;
 }
 
-// stylelint-
 .flowchart .nodeLabel,
 .flowchart .label,
 .flowchart .edgeLabel {
@@ -851,7 +830,7 @@ foreignObject {
   width: 100%;
   height: 18rem;
   max-width: 35rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .after-article-components {
@@ -864,7 +843,7 @@ foreignObject {
 }
 
 #subscription-and-contact {
-  border-radius: 5px;
+  border-radius: $border-radius;
   border: 1px solid var(--midground);
   padding-bottom: 1rem;
   padding-left: 1rem;
@@ -881,7 +860,7 @@ foreignObject {
 iframe {
   border: none;
   width: 95%;
-  border-radius: 5px;
+  border-radius: $border-radius;
   margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
 
@@ -899,7 +878,7 @@ iframe {
 // EG ← looks better in FiraCode
 .monospace-arrow {
   font-family: var(--font-monospace);
-  font-weight: 200;
+  color: var(--foreground);
 }
 
 // Specific graph in design doc has too much whitespace in light

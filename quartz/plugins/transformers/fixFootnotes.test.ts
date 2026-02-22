@@ -49,7 +49,7 @@ const footnoteList = () => h("ol", [footnoteListItem()]) as Element
 
 const footnoteSection = (hasHeading = true) =>
   h("section", { dataFootnotes: true, className: ["footnotes"] }, [
-    ...(hasHeading ? [h("h2", { id: "footnote-label" }, ["Footnotes"])] : []),
+    ...(hasHeading ? [h("h1", { id: "footnote-label" }, ["Footnotes"])] : []),
     footnoteList(),
   ]) as Element
 
@@ -70,12 +70,17 @@ describe("FixFootnotes helpers", () => {
 
   describe("hasFootnoteHeading", () => {
     it.each([
-      [footnoteSection(true), true, "section with heading"],
+      [footnoteSection(true), true, "section with h1 heading"],
       [footnoteSection(false), false, "section without heading"],
       [
-        h("section", [h("h2", { id: "wrong-id" }, ["Footnotes"]), footnoteList()]) as Element,
+        h("section", [h("h1", { id: "wrong-id" }, ["Footnotes"]), footnoteList()]) as Element,
         false,
         "section with wrong heading id",
+      ],
+      [
+        h("section", [h("h2", { id: "footnote-label" }, ["Footnotes"]), footnoteList()]) as Element,
+        true,
+        "section with h2 heading (remark-gfm-footnotes style)",
       ],
     ])("returns %s for %s", (section, expected) => {
       expect(hasFootnoteHeading(section)).toBe(expected)
@@ -83,7 +88,7 @@ describe("FixFootnotes helpers", () => {
 
     it("detects heading in parsed HTML", async () => {
       const html =
-        '<section><h2 id="footnote-label">Footnotes</h2><ol><li id="user-content-fn-1">Content</li></ol></section>'
+        '<section><h1 id="footnote-label">Footnotes</h1><ol><li id="user-content-fn-1">Content</li></ol></section>'
       const tree = await parseHtml(html)
       const section = tree.children[0] as Element
       expect(hasFootnoteHeading(section)).toBe(true)
@@ -91,9 +96,9 @@ describe("FixFootnotes helpers", () => {
   })
 
   describe("createFootnoteHeading", () => {
-    it("creates h2 with correct id, class, and text", () => {
+    it("creates h1 with correct id, class, and text", () => {
       const heading = createFootnoteHeading()
-      expect(heading.tagName).toBe("h2")
+      expect(heading.tagName).toBe("h1")
       expect(heading.properties?.id).toBe("footnote-label")
       expect(heading.properties?.className).toContain("sr-only")
       expect(heading.children[0]).toEqual({ type: "text", value: "Footnotes" })
@@ -114,6 +119,18 @@ describe("FixFootnotes helpers", () => {
       addHeadingToSection(section)
       expect(hasFootnoteHeading(section)).toBe(true)
       expect(section.children.length).toBe(initialLength)
+    })
+
+    it("upgrades h2 to h1", () => {
+      const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
+        h("h2", { id: "footnote-label" }, ["Footnotes"]),
+        footnoteList(),
+      ]) as Element
+      addHeadingToSection(section)
+      const heading = section.children[0] as Element
+      expect(heading.tagName).toBe("h1")
+      expect(heading.properties?.className).toContain("sr-only")
+      expect(section.children.length).toBe(2)
     })
   })
 
@@ -213,7 +230,17 @@ describe("FixFootnotes plugin", () => {
     `,
     wrappedFootnotes: `
       <section data-footnotes class="footnotes">
-        <h2 id="footnote-label" class="sr-only">Footnotes</h2>
+        <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+        <ol>
+          <li id="user-content-fn-1">
+            <p>Footnote content <a href="#user-content-fnref-1">↩</a></p>
+          </li>
+        </ol>
+      </section>
+    `,
+    wrappedWithH2: `
+      <section data-footnotes class="footnotes">
+        <h2 id="footnote-label">Footnotes</h2>
         <ol>
           <li id="user-content-fn-1">
             <p>Footnote content <a href="#user-content-fnref-1">↩</a></p>
@@ -250,7 +277,7 @@ describe("FixFootnotes plugin", () => {
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
         expect(result).toContain('id="footnote-label"')
-        expect(result).toContain("<h2")
+        expect(result).toContain("<h1")
         expect(result).toContain("Footnotes")
       },
       "wraps orphaned footnote list in proper section with heading",
@@ -260,10 +287,20 @@ describe("FixFootnotes plugin", () => {
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
         expect(result).toContain('id="footnote-label"')
-        const h2Count = (result.match(/<h2/g) || []).length
-        expect(h2Count).toBe(1)
+        const h1Count = (result.match(/<h1/g) || []).length
+        expect(h1Count).toBe(1)
       },
       "does not modify already properly wrapped footnotes",
+    ],
+    [
+      fixtures.wrappedWithH2,
+      (result: string) => {
+        expect(result).toContain("<h1")
+        expect(result).not.toContain("<h2")
+        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain("sr-only")
+      },
+      "upgrades h2 heading to h1",
     ],
     [
       fixtures.iframeWithFootnotes,
@@ -277,7 +314,7 @@ describe("FixFootnotes plugin", () => {
       fixtures.sectionWithoutHeading,
       (result: string) => {
         expect(result).toContain('id="footnote-label"')
-        expect(result).toContain("<h2")
+        expect(result).toContain("<h1")
       },
       "adds heading to section missing it",
     ],

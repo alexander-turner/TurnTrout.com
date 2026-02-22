@@ -2,10 +2,22 @@ const hamburger = document.querySelector("#menu-button")
 const menu = document.querySelector(".menu")
 const bars = document.querySelectorAll(".bar")
 
+function closeMenu() {
+  menu?.classList.remove("visible")
+  bars.forEach((bar) => bar.classList.remove("x"))
+  updateAriaExpanded()
+}
+
+function updateAriaExpanded() {
+  const isVisible = menu?.classList.contains("visible") ?? false
+  hamburger?.setAttribute("aria-expanded", String(isVisible))
+}
+
 // Toggle menu visibility and animate hamburger icon when clicked
 hamburger?.addEventListener("click", () => {
   menu?.classList.toggle("visible")
   bars.forEach((bar) => bar.classList.toggle("x")) // Hamburger animation
+  updateAriaExpanded()
 })
 
 export function setupHamburgerMenu() {
@@ -17,10 +29,16 @@ export function setupHamburgerMenu() {
       !menu.contains(event.target as Node) &&
       !hamburger?.contains(event.target as Node)
     ) {
-      // Hide the menu
-      menu.classList.remove("visible")
-      // Reset hamburger icon animation
-      bars.forEach((bar) => bar.classList.remove("x"))
+      closeMenu()
+    }
+  })
+
+  // Close menu on Escape key
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && menu?.classList.contains("visible")) {
+      closeMenu()
+      // Return focus to the hamburger button
+      ;(hamburger as HTMLElement | null)?.focus()
     }
   })
 }

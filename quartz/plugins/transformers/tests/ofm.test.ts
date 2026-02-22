@@ -446,7 +446,8 @@ describe("processWikilink", () => {
       input: ["![[video.mp4]]", "video.mp4", "", ""],
       expected: {
         type: "html",
-        value: '<span class="video-container"><video src="video.mp4" controls></video></span>',
+        value:
+          '<span class="video-container"><video src="video.mp4" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
       },
     },
     {
@@ -899,7 +900,8 @@ describe("Branch coverage tests", () => {
     const result1 = processWikilink("![[video.webm]]", "video.webm", "", "")
     expect(result1).toEqual({
       type: "html",
-      value: '<span class="video-container"><video src="video.webm" controls></video></span>',
+      value:
+        '<span class="video-container"><video src="video.webm" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
     })
 
     const result2 = processWikilink("![[video.3gp]]", "video.3gp", "", "")

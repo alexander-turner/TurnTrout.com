@@ -13,6 +13,7 @@ import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 
 import { TocEntry } from "../../plugins/transformers/toc"
+import { normalizeNbsp } from "../constants"
 import {
   CreateTableOfContents,
   processHtmlAst,
@@ -549,9 +550,10 @@ describe("CreateTableOfContents", () => {
     ) as JSX.Element | null
 
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
     expect(result?.props.className).toBe("desktop-only")
+    expect(result?.props["aria-label"]).toBe("Table of contents")
 
     // Verify header structure and content
     const header = result?.props.children[0]
@@ -560,7 +562,7 @@ describe("CreateTableOfContents", () => {
     const button = header.props.children
     expect(button.type).toBe("button")
     expect(button.props.className).toBe("internal same-page-link")
-    expect(button.props.children).toBe("Test Page")
+    expect(normalizeNbsp(button.props.children)).toBe("Test Page")
 
     // Verify content structure
     const content = result?.props.children[1]
@@ -665,7 +667,7 @@ describe("CreateTableOfContents", () => {
       props as unknown as QuartzComponentProps,
     ) as JSX.Element | null
     const button = result?.props.children[0].props.children
-    expect(button.props.children).toBe(expectedTitle)
+    expect(normalizeNbsp(button.props.children)).toBe(expectedTitle)
   })
 
   it("should render complex TOC structure with multiple levels", () => {
@@ -691,13 +693,13 @@ describe("CreateTableOfContents", () => {
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
 
     // Verify the title is correct
     const header = result?.props.children[0]
     const button = header.props.children
-    expect(button.props.children).toBe("Complex Document")
+    expect(normalizeNbsp(button.props.children)).toBe("Complex Document")
 
     // Verify TOC content structure exists
     const content = result?.props.children[1]
@@ -729,7 +731,7 @@ describe("CreateTableOfContents", () => {
 
     // Verify the TOC is rendered successfully
     expect(result).not.toBeNull()
-    expect(result?.type).toBe("div")
+    expect(result?.type).toBe("nav")
     expect(result?.props.id).toBe("table-of-contents")
 
     // Verify TOC content structure exists

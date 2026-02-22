@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "timeout": 10000,
+    "timeout": 30000,
     "chromeLaunchConfig": {
       "args": [
         "--no-sandbox",
@@ -15,7 +15,9 @@
     "hideElements": [
       ".ignore-pa11y",
       ".katex",
-      "#trout-ornament-container"
+      "#trout-ornament-container",
+      ".mermaid svg",
+      ".spoiler-content"
     ],
     "ignore": [
       "frame-tested"

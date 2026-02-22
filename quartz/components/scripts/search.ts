@@ -2,11 +2,17 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
-import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
+import { tabletBreakpoint } from "../../styles/variables"
+import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
-import { simpleConstants } from "../constants"
+import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+
+// Global function injected by renderPage.tsx to lazy-load content index
+declare global {
+  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+}
 
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
@@ -16,7 +22,7 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string
+  authors?: string // Stored as comma-joined string for search indexing
 }
 
 let currentSearchTerm = ""
@@ -26,6 +32,7 @@ const documentType = FlexSearch.Document<Item>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
 let searchInitializing = false
+let initializationPromise: Promise<void> | null = null
 
 /**
  * Creates and configures a new FlexSearch index
@@ -149,7 +156,7 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
           const sanitizedSearchTok = escapeRegExp(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, '<span class="search-match">$&</span>')
+          return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
       return tok
@@ -167,19 +174,15 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
   return `${beginning}${slice}${end}`
 }
 
-/**
- * Escapes special characters in a string for use in RegExp
- */
-export function escapeRegExp(text: string) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-}
+// Re-export escapeRegExp from centralized escape utilities
+export { escapeRegExp } from "../../util/escape"
 
 /**
  * Creates a span element with the class "match" and the given text
  */
 export const createMatchSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
-  span.className = "search-match"
+  span.className = SEARCH_MATCH_CLASS
   span.textContent = text
   return span
 }
@@ -212,17 +215,20 @@ export const matchTextNodes = (node: Node, term: string) => {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement
     if (element.closest("#toc-content-mobile")) return
-    if (element.classList.contains("search-match")) return
+    if (element.classList.contains(SEARCH_MATCH_CLASS)) return
 
     Array.from(node.childNodes).forEach((child) => matchTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
+    // Normalize NBSP (U+00A0) to regular space so multi-word search terms
+    // match across non-breaking spaces inserted by punctilio
+    const normalizedText = nodeText.replace(/\u00A0/gu, " ")
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation
-    const parts = nodeText.split(regex)
+    const parts = normalizedText.split(regex)
     if (parts.length === 1) return // No matches
 
     const fragment = document.createDocumentFragment()
@@ -683,7 +689,13 @@ async function onNav(e: CustomEventMap["nav"]) {
   }
 
   currentSlug = e.detail.url
-  data = await fetchData
+
+  // Verify getContentIndex was injected by renderPage.tsx
+  if (typeof getContentIndex !== "function") {
+    throw new Error("getContentIndex not initialized - check script injection order")
+  }
+
+  data = await getContentIndex()
   if (!data) return
   results = document.createElement("div")
   const container = document.getElementById("search-container")
@@ -737,6 +749,11 @@ async function onNav(e: CustomEventMap["nav"]) {
   )
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
+
+  // Re-render card previews when viewport crosses the tablet breakpoint
+  const debouncedResizeHandler = debounce(handleResizeForCardPreviews, 150, false)
+  window.addEventListener("resize", debouncedResizeHandler)
+  listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
 
   const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
@@ -854,6 +871,68 @@ const getByField = (
 }
 
 /**
+ * Add an card preview to a result card. Fetches the page content and renders
+ * a small preview slice with search matches highlighted.
+ * @param card - The result card element
+ * @param slug - The slug for the page to preview
+ */
+/* istanbul ignore next */
+function addCardPreview(card: HTMLElement, slug: FullSlug): void {
+  if (card.querySelector(".card-preview")) return // Already has one
+
+  const cardPreview = document.createElement("div")
+  cardPreview.classList.add("card-preview")
+  card.appendChild(cardPreview)
+
+  // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
+  void fetchContent(slug).then(({ content: contentElements }) => {
+    if (!contentElements) return
+    const article = document.createElement("article")
+    article.classList.add("search-preview")
+    contentElements.forEach((el) => {
+      article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
+    })
+    cardPreview.appendChild(article)
+
+    // Wait for layout before scrolling to first match
+    requestAnimationFrame(() => {
+      const firstMatch = cardPreview.querySelector(".search-match")
+      if (firstMatch) {
+        const matchRect = firstMatch.getBoundingClientRect()
+        const containerRect = cardPreview.getBoundingClientRect()
+        const relativeTop = matchRect.top - containerRect.top + cardPreview.scrollTop
+        cardPreview.scrollTop = Math.max(0, relativeTop - cardPreview.clientHeight / 3)
+      }
+    })
+  })
+}
+
+/** Track whether the viewport was at mobile/tablet width on last check */
+let wasMobileWidth = typeof window !== "undefined" && window.innerWidth <= tabletBreakpoint
+
+/**
+ * Resize handler: when the viewport crosses from desktop to mobile/tablet
+ * width, lazily add card previews to result cards that were rendered
+ * without them.
+ */
+/* istanbul ignore next */
+function handleResizeForCardPreviews(): void {
+  const isMobileNow = window.innerWidth <= tabletBreakpoint
+  if (isMobileNow === wasMobileWidth) return
+  wasMobileWidth = isMobileNow
+
+  if (!isMobileNow) return // Only need to add previews when going to mobile
+
+  const enablePreview = searchLayout?.dataset?.preview === "true"
+  if (!enablePreview) return
+
+  // Add card previews to all result cards that don't already have them
+  document.querySelectorAll(".result-card:not(.no-match)").forEach((card) => {
+    addCardPreview(card as HTMLElement, card.id as FullSlug)
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -872,10 +951,19 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   content = replaceEmojiConvertArrows(content)
 
   let suffixHTML = ""
-  if (!enablePreview || window.innerWidth <= mobileBreakpoint) {
+  if (!enablePreview) {
     suffixHTML = `<p>${content}</p>`
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+
+  // On mobile/tablet, embed a small card preview slice in each card.
+  // CSS hides .card-preview above the tablet breakpoint, so we always
+  // attach them when preview is enabled — a resize listener
+  // (handleResizeForCardPreviews) lazily adds them to cards rendered at
+  // desktop width when the viewport narrows.
+  if (enablePreview && window.innerWidth <= tabletBreakpoint) {
+    addCardPreview(itemTile, slug as FullSlug)
+  }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
@@ -941,7 +1029,7 @@ const formatForDisplay = (
     slug,
     title: match(term, data[slug].title ?? ""),
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors,
+    authors: data[slug].authors?.join(", "),
   }
 }
 
@@ -992,10 +1080,8 @@ async function displayResults(
 async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   if (!searchLayout) return
 
-  // Initialize search on first input if not already initialized
-  if (!searchInitialized && !searchInitializing) {
-    await initializeSearch()
-  }
+  // Ensure search is initialized (waits if initialization is in progress)
+  await initializeSearch()
 
   if (!index) return
 
@@ -1078,7 +1164,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors,
+      authors: fileData.authors?.join(", "),
     })
   })
 
@@ -1091,45 +1177,56 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
  */
 /* istanbul ignore next */
 async function initializeSearch(): Promise<void> {
-  if (searchInitialized || searchInitializing) return
+  // If already initialized, nothing to do
+  if (searchInitialized) return
+
+  // If initialization is in progress, wait for it to complete
+  if (searchInitializing && initializationPromise) {
+    await initializationPromise
+    return
+  }
 
   searchInitializing = true
 
-  // Show loading indicator
-  const searchBar = document.getElementById("search-bar") as HTMLInputElement
-  if (!searchBar) {
-    console.error("Can't locate the #search-bar element.")
-    return
-  }
-  const originalPlaceholder = searchBar?.placeholder
-  searchBar.placeholder = "Loading search..."
-  searchBar.disabled = true
-
-  try {
-    // Create the index
-    index = createSearchIndex()
-
-    // Fetch and fill the index with data
-    if (data) {
-      await fillDocument(data)
+  // Create a promise that other callers can await
+  initializationPromise = (async () => {
+    // Show loading indicator
+    const searchBar = document.getElementById("search-bar") as HTMLInputElement
+    if (!searchBar) {
+      console.error("Can't locate the #search-bar element.")
+      return
     }
+    const originalPlaceholder = searchBar?.placeholder
+    searchBar.placeholder = "Loading search..."
 
-    searchInitialized = true
-  } catch (error) {
-    console.error("Error initializing search:", error)
-    searchBar.placeholder = "Search failed to load."
-  } finally {
-    searchInitializing = false
+    try {
+      // Create the index
+      index = createSearchIndex()
 
-    // Restore search bar state
-    searchBar.disabled = false
-    if (originalPlaceholder) {
-      searchBar.placeholder = originalPlaceholder
+      // Fetch and fill the index with data
+      if (data) {
+        await fillDocument(data)
+      }
+
+      searchInitialized = true
+    } catch (error) {
+      console.error("Error initializing search:", error)
+      searchBar.placeholder = "Search failed to load."
+    } finally {
+      searchInitializing = false
+
+      // Restore search bar state
+      if (originalPlaceholder) {
+        searchBar.placeholder = originalPlaceholder
+      }
+      updatePlaceholder(searchBar)
+
+      // Ensure focus is maintained (needed for non-Chromium browsers)
+      searchBar.focus()
     }
-    updatePlaceholder(searchBar)
-    // Refocus after re-enabling (disabling causes focus loss)
-    searchBar.focus()
-  }
+  })()
+
+  await initializationPromise
 }
 
 /*

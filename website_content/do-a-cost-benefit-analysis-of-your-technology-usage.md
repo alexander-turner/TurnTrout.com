@@ -120,50 +120,31 @@ The point is that these apps which are [out to get you](https://www.lesswrong.co
 
 I went by a whitelist[^2] in order to ensure there wasn’t a way to weasel around the rules. Here’s what I let myself do:
 
-<dl>
-   <dt>Phone</dt>
-   <dd><ul>
-      <li>Voice & video calls</li>
-      <li><abbr class="small-caps">Gps</abbr></li>
-      <li>Audible</li>
-      <li>Uber / Lyft</li>
-      <li>Authenticators / alarms / other boring utilities</li>
-      <li>Roam / note-taking</li>
-      </ul>
-   </dd>
+Phone
+: - Voice & video calls
+  - GPS
+  - Audible
+  - Uber / Lyft
+  - Authenticators / alarms / other boring utilities
+  - Roam / note-taking
 
-   <dt>iPad</dt>
-   <dd>
-     <ul>
-       <li>Note-taking</li>
-       <li>Reading</li>
-       <li>Drawing</li>
-     </ul>
-   </dd>
+iPad
+: - Note-taking
+  - Reading
+  - Drawing
 
-   <dt>Computer</dt>
-   <dd>
-     <ul>
-       <li>Anything offline (except music or video games)</li>
-       <li>Textbooks and Wikipedia and Arxiv / Google Scholar</li>
-       <li>Overleaf for writing papers</li>
-       <li>Amazon and Upwork (for managing contracted-out labor)</li>
-       <li>Zoom for weekly meetings</li>
-       <li>Anki and Roam</li>
-       <li>Check email at noon on Mondays and Thursdays
-    <ul>
-    <li>I told people to call me if it was important. I didn’t get any calls.</li>
-    <li>I later let myself send emails without looking at my inbox. I recommend <a href="https://inboxwhenready.org/">Inbox When Ready</a>, which hides your inbox by default and prevents you from being attention-sniped.</li>
-  </ul>
- </li>
-       <li>Groceries / other mundane things
-         <ul>
-           <li>No Wealthfront—no reason for me to see how my portfolio is doing.</li>
-         </ul>
-       </li>
-     </ul>
-   </dd>
-   </dl>
+Computer
+: - Anything offline (except music or video games)
+  - Textbooks and Wikipedia and Arxiv / Google Scholar
+  - Overleaf for writing papers
+  - Amazon and Upwork (for managing contracted-out labor)
+  - Zoom for weekly meetings
+  - Anki and Roam
+  - Check email at noon on Mondays and Thursdays
+    - I told people to call me if it was important. I didn't get any calls.
+    - I later let myself send emails without looking at my inbox. I recommend [Inbox When Ready](https://inboxwhenready.org/), which hides your inbox by default and prevents you from being attention-sniped.
+  - Groceries / other mundane things
+    - No Wealthfront—no reason for me to see how my portfolio is doing.
 
 That’s it. No music (see appendix), no messaging, no Facebook, no Twitter, no Slack, no Discord, no anxious email checking, no Youtube, no nothing. I even bought a cheap watch so that I wouldn’t have to check my phone for the time. If I needed an exception, I’d first write a note explaining what I did, to be read by my girlfriend, Emma, who started her declutter soon after.
 
@@ -176,12 +157,12 @@ The world was not going to end because I stopped reading the news for a month—
 `TurnTrout`, my job needs email / \[other special reason why this doesn’t work for me\].
 : I concede that my rules are probably not best for your situation. However, have you thought about the issue for five minutes? Could you ask your boss if you can check email once a day and otherwise take phone calls? Maybe you don’t restrict email, but stop looking at websites like Reddit or Hacker News or Marginal Revolution or Facebook or Twitter? Are there other creative solutions waiting to be uncovered? Have you tried?
 
-: If your team uses Slack for asynchronous communication, once- or twice-daily checks should be fine. If you use it for synchronous communication, perhaps establish a daily “office hour” when you’ll be on Slack, or even coordinate with your team to establish a daily “Slack hour” where people are expected to be online. Or something else. The point is to establish the main benefits you reap from each digital affordance, and then find a plan which minimizes the costs you pay for those benefits.
+  If your team uses Slack for asynchronous communication, once- or twice-daily checks should be fine. If you use it for synchronous communication, perhaps establish a daily “office hour” when you’ll be on Slack, or even coordinate with your team to establish a daily “Slack hour” where people are expected to be online. Or something else. The point is to establish the main benefits you reap from each digital affordance, and then find a plan which minimizes the costs you pay for those benefits.
 
 I’m already good about my internet usage.
 : This might be true! I know exactly one person for whom I’m quite confident this is true (Andrew Critch), and maybe there are more among my friends whom I don’t know about. This might be you if you already use services based on their costs and benefits, often using websites in unintended ways (like blocking all recommendations on YouTube via the Unhook add-on \[[Chrome](https://chrome.google.com/webstore/detail/unhook-remove-youtube-rec/khncfooichmfjbepaaaebmommgaepoid), [Firefox](https://addons.mozilla.org/en-US/firefox/addon/youtube-recommended-videos/)\]), and spending far less time than average (e.g. only checking email infrequently).
 
-: I’d still bet against it. I would have said I was good about my internet usage, and it _was_ true—in a relative sense. I think people (motivatedly) underestimate how much time they waste, perhaps because it can feel bad and embarrassing to admit the problem.
+  I’d still bet against it. I would have said I was good about my internet usage, and it _was_ true—in a relative sense. I think people (motivatedly) underestimate how much time they waste, perhaps because it can feel bad and embarrassing to admit the problem.
 
 How will I stay in touch with people? I’m already lonely.
 : Excellent question! Reallocate low-quality social time to high-quality social time. Instead of checking if some half-friends liked your FB status, call up a buddy and grab a beer, or go to a meetup, or join a club.

@@ -1,7 +1,10 @@
-import type { Parent, RootContent, Text, Element, Root } from "hast"
+import type { Parent, RootContent, Text, Element, Root, ElementContent } from "hast"
 
 import { toString } from "hast-util-to-string"
 import { h } from "hastscript"
+import { visit } from "unist-util-visit"
+
+import type { QuartzTransformerPlugin } from "../types"
 
 export const urlRegex = new RegExp(
   /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z.-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
@@ -187,6 +190,55 @@ export function hasAncestor(
   return ancestors.some((anc) => ancestorPredicate(anc as Element))
 }
 
+/**
+ * Maximum characters to splice from the end of a text node when wrapping
+ * an inline icon (favicon, back arrow, etc.) in a nowrap span.
+ */
+export const maxCharsToRead = 4
+
+/**
+ * Creates a nowrap span element that wraps the given text and child element
+ * to prevent line-break orphaning via white-space: nowrap.
+ */
+export function createNowrapSpan(text: string, child: Element): Element {
+  return {
+    type: "element",
+    tagName: "span",
+    properties: { className: "favicon-span" },
+    children: [{ type: "text" as const, value: text }, child],
+  } as Element
+}
+
+/**
+ * Splices the last few characters from a text node and wraps them with
+ * the given element in a nowrap span, preventing line-break orphaning.
+ *
+ * Mutates `lastTextNode.value` in place. If all text is consumed, removes
+ * the text node from `parent.children`.
+ *
+ * @returns The nowrap span containing [spliced text, elementToWrap].
+ */
+export function spliceAndWrapLastChars(
+  lastTextNode: Text,
+  parent: Element,
+  elementToWrap: Element,
+): Element {
+  const text = lastTextNode.value
+  const charsToRead = Math.min(maxCharsToRead, text.length)
+  const lastChars = text.slice(-charsToRead)
+  lastTextNode.value = text.slice(0, -charsToRead)
+
+  // Remove the text node entirely if all text was moved into the span
+  if (lastChars === text) {
+    const idx = parent.children.indexOf(lastTextNode as unknown as ElementContent)
+    if (idx !== -1) {
+      parent.children.splice(idx, 1)
+    }
+  }
+
+  return createNowrapSpan(lastChars, elementToWrap)
+}
+
 // Does node have a class that includes the given className?
 export function hasClass(node: Element, className: string): boolean {
   // Check both className and class properties (hastscript uses class)
@@ -195,4 +247,62 @@ export function hasClass(node: Element, className: string): boolean {
     return classProp.includes(className)
   }
   return false
+}
+
+/**
+ * Type guard to check if a node is a Text node.
+ * @param node - The node to check
+ * @returns True if the node is a Text node
+ */
+export function isTextNode(node: ElementContent): node is Text {
+  return node.type === "text"
+}
+
+/**
+ * Type guard to check if a node is an Element node.
+ * @param node - The node to check
+ * @returns True if the node is an Element node
+ */
+export function isElementNode(node: ElementContent): node is Element {
+  return node.type === "element"
+}
+
+/**
+ * Check if an element is a code element.
+ * @param node - The element to check
+ * @returns True if the element's tagName is "code"
+ */
+export function isCode(node: Element): boolean {
+  return node.tagName === "code"
+}
+
+/**
+ * Factory function to create a Quartz transformer plugin that visits all elements in the HTML AST.
+ * Reduces boilerplate for simple transformer plugins that just need to visit and modify elements.
+ *
+ * @param name - The name of the plugin (e.g., "customSpoiler")
+ * @param visitor - A function that processes each element node in the tree
+ * @returns A QuartzTransformerPlugin that applies the visitor to all elements
+ *
+ * @example
+ * export const MyPlugin = createElementVisitorPlugin("MyPlugin", (node, index, parent) => {
+ *   if (node.tagName === "p") {
+ *     // Modify paragraph elements
+ *   }
+ * })
+ */
+export function createElementVisitorPlugin(
+  name: string,
+  visitor: (node: Element, index: number | undefined, parent: Parent | undefined) => void,
+): QuartzTransformerPlugin {
+  return () => ({
+    name,
+    htmlPlugins() {
+      return [
+        () => (tree: Root) => {
+          visit(tree, "element", visitor)
+        },
+      ]
+    },
+  })
 }

@@ -52,7 +52,7 @@ describe("formatDate", () => {
     const date = new Date("2023-09-05T12:00:00Z")
     // Only pass date to rely on all defaults
     expect(formatDate(date)).toBe(
-      'Sep <span class="ordinal-num">5</span><span class="ordinal-suffix">th</span>, 2023',
+      'Sep <span class="date-ordinal-num">5</span><span class="ordinal-suffix">th</span>, 2023',
     )
   })
 
@@ -60,7 +60,7 @@ describe("formatDate", () => {
     it("formats ordinal suffix with HTML when formatOrdinalSuffix is true", () => {
       const date = new Date("2023-08-01T12:00:00Z")
       expect(formatDate(date, "short", true, true)).toBe(
-        'Aug <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2023',
+        'Aug <span class="date-ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2023',
       )
     })
 
@@ -72,7 +72,7 @@ describe("formatDate", () => {
     it("applies extra styling to ordinal suffix", () => {
       const date = new Date("2023-08-01T12:00:00Z")
       expect(formatDate(date, "short", true, true, "color: red")).toBe(
-        'Aug <span class="ordinal-num">1</span><span class="ordinal-suffix" style="color: red">st</span>, 2023',
+        'Aug <span class="date-ordinal-num">1</span><span class="ordinal-suffix" style="color: red">st</span>, 2023',
       )
     })
 
@@ -115,7 +115,7 @@ describe("DateElement", () => {
 
     expect(element.type).toBe("time")
     expect(element.props.dateTime).toBe(validDate.toISOString())
-    expect(element.props.dangerouslySetInnerHTML.__html).toContain("ordinal-num")
+    expect(element.props.dangerouslySetInnerHTML.__html).toContain("date-ordinal-num")
     expect(element.props.dangerouslySetInnerHTML.__html).toContain("ordinal-suffix")
   })
 

@@ -14,6 +14,7 @@ import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, resolveRelative } from "../../util/path"
+import { normalizeNbsp } from "../constants"
 import {
   PageList,
   byDateAndAlphabetical,
@@ -216,8 +217,8 @@ describe("PageList", () => {
     const props = createProps(files[0], files)
     const html = render(preactH(PageList, props))
 
-    expect(html).toContain("Page 1")
-    expect(html).toContain("Page 2")
+    expect(normalizeNbsp(html)).toContain("Page 1")
+    expect(normalizeNbsp(html)).toContain("Page 2")
     expect(html).toContain("tag1")
     expect(html).toContain("tag2")
   })
@@ -287,7 +288,7 @@ describe("createPageTitleElement", () => {
 })
 
 describe("createTagsElement", () => {
-  it("creates an unordered list of tag links", () => {
+  it("creates an unordered list of tag links wrapped in li elements", () => {
     const tags = ["tagA", "tagB"]
     const fileDataSlug = "src/page" as FullSlug
 
@@ -295,9 +296,12 @@ describe("createTagsElement", () => {
     expect(element.tagName).toBe("ul")
     expect(element.properties?.className).toEqual(["tags"])
 
-    // Validate each generated anchor
+    // Validate each <li> contains an <a> tag
     element.children.forEach((child, idx) => {
-      const anchor = child as HastElement
+      const li = child as HastElement
+      expect(li.tagName).toBe("li")
+
+      const anchor = li.children[0] as HastElement
       expect(anchor.tagName).toBe("a")
       expect(anchor.properties?.href).toBe(
         resolveRelative(fileDataSlug, `tags/${tags[idx]}` as FullSlug),
@@ -340,10 +344,13 @@ describe("createPageItemElement", () => {
     const tagsUl = (descDiv.children?.find((c) => (c as HastElement).tagName === "ul") ??
       {}) as HastElement
 
-    const anchorChildren = tagsUl.children as HastElement[]
-    expect(anchorChildren).toHaveLength(2)
+    const liChildren = tagsUl.children as HastElement[]
+    expect(liChildren).toHaveLength(2)
 
-    const firstAnchorText = (anchorChildren[0].children[0] as { value: string }).value
+    // Each child is an <li> containing an <a>
+    const firstLi = liChildren[0] as HastElement
+    const firstAnchor = firstLi.children[0] as HastElement
+    const firstAnchorText = (firstAnchor.children[0] as { value: string }).value
     expect(firstAnchorText).toBe(longerTag)
   })
 

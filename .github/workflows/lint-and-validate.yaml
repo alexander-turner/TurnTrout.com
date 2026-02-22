@@ -1,0 +1,230 @@
+name: Lint and validate
+
+concurrency:
+  group: lint-validate-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+  merge_group:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  update-dates:
+    needs: detect-changes
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # Only this job needs write access
+    outputs:
+      pushed: ${{ steps.push-result.outputs.pushed }}
+    # Only run on push to main when triggered by a user (not by github-actions bot)
+    # and only when content files changed
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor != 'github-actions[bot]' &&
+      needs.detect-changes.outputs.content == 'true'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # Fetch enough history to access before/after commits from the push event
+          fetch-depth: 0
+
+      - name: Setup Base Environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Update article dates
+        run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        id: push-result
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add website_content/*.md README.md
+          git commit -m "chore: updated publication dates"
+
+          # Retry push with pull/rebase to handle concurrent pushes
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            if git push; then
+              echo "Push succeeded on attempt $attempt"
+              echo "pushed=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+
+            if [ $attempt -lt $max_attempts ]; then
+              echo "Push failed on attempt $attempt, retrying after pull --rebase..."
+              git pull --rebase origin main
+              attempt=$((attempt + 1))
+              sleep 2
+            else
+              echo "Push failed after $max_attempts attempts"
+              exit 1
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set output if no push
+        if: steps.check-changes.outputs.has_changes != 'true'
+        run: echo "pushed=false" >> $GITHUB_OUTPUT
+
+  detect-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      content: ${{ steps.changes.outputs.content }}
+      code: ${{ steps.changes.outputs.code }}
+      styles: ${{ steps.changes.outputs.styles }}
+      source-checks: ${{ steps.changes.outputs.source-checks }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: changes
+        with:
+          filters: |
+            content:
+              - 'website_content/**'
+              - 'config/spellcheck/**'
+              - 'config/vale/**'
+            code:
+              - 'quartz/**'
+              - 'config/javascript/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            styles:
+              - 'quartz/**/*.scss'
+              - 'config/stylelint/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+            source-checks:
+              - 'website_content/**'
+              - 'quartz/**'
+              - '!quartz/**/*.spec.ts'
+              - '!quartz/**/*.test.ts'
+              - '!quartz/**/*.test.tsx'
+              - '!quartz/**/tests/**'
+              - 'scripts/source_file_checks.py'
+              - 'config/quartz/**'
+              - 'config/constants.json'
+              - '.github/actions/**'
+
+  lint:
+    needs: [update-dates, detect-changes]
+    # Run if detect-changes found changes, and not a deepsource PR
+    # update-dates is allowed to be skipped (runs only on push to main by users)
+    # Skip if update-dates pushed changes (the new commit will trigger a fresh workflow)
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.content == 'true' ||
+       needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.source-checks == 'true') &&
+      always() && !cancelled() && !contains(needs.*.result, 'failure') &&
+      needs.update-dates.outputs.pushed != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup base environment
+        uses: ./.github/actions/setup-base-env
+
+      - name: Install Vale
+        if: needs.detect-changes.outputs.content == 'true'
+        run: |
+          wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
+          tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
+          sudo mv vale /usr/local/bin/
+
+      - name: Generate SCSS variables
+        if: >
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Add node_modules/.bin to PATH
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+
+      - name: Run spellcheck
+        id: spellcheck
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec spellchecker \
+            --no-suggestions \
+            --quiet \
+            --dictionaries config/spellcheck/.wordlist.txt \
+            --files "website_content/**/*.md" \
+            --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
+            --plugins spell indefinite-article repeated-words syntax-urls frontmatter
+
+      - name: Run Vale
+        id: vale
+        if: needs.detect-changes.outputs.content == 'true'
+        continue-on-error: true
+        run: vale --config config/vale/.vale.ini website_content
+
+      - name: Run ESLint
+        id: eslint
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint . --config config/javascript/eslint.config.js
+
+      - name: Run Stylelint
+        id: stylelint
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec stylelint \
+            --config config/stylelint/.stylelintrc.json \
+            "quartz/**/*.scss"
+
+      - name: Set publication date check flag
+        id: pub-date-flag
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        run: |
+          # Check publication dates on PRs and merge queue (pre-merge validation)
+          # Skip on push to main/dev (dates are auto-added by update-dates job)
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
+            echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run source file checks
+        id: source-checks
+        if: needs.detect-changes.outputs.source-checks == 'true'
+        continue-on-error: true
+        run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
+
+      - name: Check results
+        run: |
+          failed=""
+          if [[ "${{ steps.spellcheck.outcome }}" == "failure" ]]; then failed="$failed spellcheck"; fi
+          if [[ "${{ steps.vale.outcome }}" == "failure" ]]; then failed="$failed vale"; fi
+          if [[ "${{ steps.eslint.outcome }}" == "failure" ]]; then failed="$failed eslint"; fi
+          if [[ "${{ steps.stylelint.outcome }}" == "failure" ]]; then failed="$failed stylelint"; fi
+          if [[ "${{ steps.source-checks.outcome }}" == "failure" ]]; then failed="$failed source-file-checks"; fi
+          if [[ -n "$failed" ]]; then
+            echo "The following checks failed:$failed"
+            exit 1
+          fi

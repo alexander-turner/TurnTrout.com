@@ -1,5 +1,3 @@
-// NOTE: Docstrings generated via AI; take with a grain of salt
-
 import { type Element, type ElementContent, type Root } from "hast"
 import { render } from "preact-render-to-string"
 // skipcq: JS-W1028
@@ -18,7 +16,7 @@ import {
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
-import { locale } from "./constants"
+import { locale, PREVIEWABLE_CLASS } from "./constants"
 import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
@@ -73,6 +71,8 @@ export function createTranscludeSourceAnchor(href: string): Element {
     properties: {
       href,
       class: ["internal", "transclude-src"],
+      ariaHidden: "true",
+      tabIndex: -1,
     },
     children: [] as ElementContent[],
   }
@@ -236,7 +236,15 @@ export function pageResources(
   staticResources: StaticResources,
 ): StaticResources {
   const contentIndexPath = joinSegments(baseDir, "static/contentIndex.json")
-  const contentIndexScript = `const fetchData = fetch("${contentIndexPath}").then(data => data.json())`
+  // Lazy-load contentIndex.json only when search is initialized to avoid blocking initial page load
+  const contentIndexScript = `const contentIndexPath = "${contentIndexPath}";
+let fetchData = null;
+function getContentIndex() {
+  if (!fetchData) {
+    fetchData = fetch(contentIndexPath).then(data => data.json());
+  }
+  return fetchData;
+}`
 
   return {
     css: [joinSegments("/", "index.css"), ...staticResources.css],
@@ -398,19 +406,19 @@ export function renderPage(
   const Body = BodyConstructor()
 
   const LeftComponent = (
-    <div id="left-sidebar" className="sidebar">
+    <aside id="left-sidebar" className="sidebar" aria-label="Site navigation">
       {left.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
-    </div>
+    </aside>
   )
 
   const RightComponent = (
-    <div id="right-sidebar" className="sidebar">
+    <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
       {right.map((BodyComponent) => (
         <BodyComponent {...componentData} key={BodyComponent.name} />
       ))}
-    </div>
+    </aside>
   )
 
   const pageHeader = (
@@ -420,7 +428,7 @@ export function renderPage(
           <HeaderComponent {...componentData} key={HeaderComponent.name} />
         ))}
       </Header>
-      <div className="previewable">
+      <div className={PREVIEWABLE_CLASS}>
         {beforeBody.map((BodyComponent) => (
           <BodyComponent {...componentData} key={BodyComponent.name} />
         ))}
@@ -430,14 +438,19 @@ export function renderPage(
 
   const body = (
     <body data-slug={slug}>
+      <a
+        href="#center-content"
+        className="skip-to-content internal same-page-link"
+        aria-label="Skip to main content"
+      />
       <div id="quartz-root" className="page">
         <Body {...componentData}>
           {LeftComponent}
           {RightComponent}
-          <div id="center-content">
+          <main id="center-content">
             {pageHeader}
             <Content {...componentData} />
-          </div>
+          </main>
         </Body>
         <Footer {...componentData} />
       </div>

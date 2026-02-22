@@ -38,6 +38,9 @@ dependencies = [
     "types-tqdm>=4.67.0.20250809",
     "docformatter>=1.7.7",
     "pylint>=4.0.4",
+    "autoflake>=2.3.1",
+    "autopep8>=2.3.1",
+    "isort>=5.13.2",
 ]
 
 [tool.black]

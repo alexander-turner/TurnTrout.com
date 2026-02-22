@@ -16,21 +16,9 @@ tags:
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
 ---
 
+# Some of my favorite posts
 
-
-
-
-
-
-
-
-# My favorite posts
-
-1. [Looking back on my alignment PhD](/alignment-phd)
-2. [The shard theory of human values](/shard-theory)
-3. [Bruce Wayne and the cost of inaction](/bruce-wayne-and-the-cost-of-inaction)
-4. [Formalizing “defection” using game theory](/what-counts-as-defection)
-5. [English writes numbers backwards](/backwards-numbers)
+![[welcome#Start here]]
 
 # My recent posts
 
@@ -54,7 +42,7 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 
 > [!quote] Original sequence description
 >
-> >[!quote] [The Verres family motto](https://hpmor.com/chapter/7)
+> > [!quote] [The Verres family motto](https://hpmor.com/chapter/7)
 > > You can never have enough books.
 >
 > My journey through the MIRI research guide.
@@ -118,10 +106,12 @@ I didn't remember much formal math or computer science, but I wanted to give my 
 This sequence generalizes the math of [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps). The posts follow up on [Seeking Power is Often Convergently Instrumental in MDPs](./seeking-power-is-often-convergently-instrumental-in-mdps) and [The Catastrophic Convergence Conjecture](./the-catastrophic-convergence-conjecture).
 
 <!-- vale off -->
+
 > [!quote] Original sequence description
 > Instrumental convergence posits that smart goal-directed agents will tend to take certain actions (e.g. gain resources, stay alive) in order to achieve their goals. These actions seem to involve taking power _from_ humans. Human disempowerment seems like a key part of how AI might go very, very wrong.
 >
 > But where does instrumental convergence come from? When does it occur, and how strongly? And what does the math look like?
+
 <!-- vale on -->
 
 ![A cartoon illustrating the paperclip maximizer thought experiment from AI safety. A blocky robot lounges on a huge pile of paperclips that covers the Earth, as an anthropomorphic paperclip with eyes looks on.](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)

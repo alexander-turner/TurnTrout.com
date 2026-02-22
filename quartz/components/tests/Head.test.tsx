@@ -162,7 +162,7 @@ describe("Head Component", () => {
       const html = render(h(Head, mockProps))
 
       expect(html).toContain('name="viewport"')
-      expect(html).toContain('content="width=device-width"')
+      expect(html).toContain('content="width=device-width, initial-scale=1"')
     })
   })
 

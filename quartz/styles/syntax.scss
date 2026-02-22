@@ -1,9 +1,31 @@
+@use "variables.scss" as *;
+
 code[data-theme*=" "] {
   color: var(--shiki-light);
 }
 
 code[data-theme*=" "] span {
   color: var(--shiki-light);
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#D73A49"] {
+  color: $shiki-red;
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#E36209"] {
+  color: $shiki-orange;
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#6A737D"] {
+  color: $shiki-gray;
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#22863A"] {
+  color: $shiki-green;
+}
+
+code[data-theme*=" "] span[style*="--shiki-light:#005CC5"] {
+  color: $shiki-blue;
 }
 
 [data-theme="dark"] code[data-theme*=" "] {

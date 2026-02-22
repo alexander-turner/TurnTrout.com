@@ -67,6 +67,3 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
 fi
 
 uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
-
-# Auto-compile requirements.txt and update publication dates
-sh "$GIT_ROOT/scripts/fast_pre_push.sh"

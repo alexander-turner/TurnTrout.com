@@ -6,12 +6,14 @@ import { type GlobalConfiguration } from "../../cfg"
 import {
   defaultCardUrl,
   defaultDescription,
+  normalizeNbsp,
   defaultTitle,
   appleTouchIconUrl,
   faviconUrl,
   faviconMimeType,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
+import { backgroundDark, backgroundLight } from "../../styles/variables"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"
@@ -69,13 +71,23 @@ describe("renderHead", () => {
         slug: "test-article" as FullSlug,
       })
 
-      expect(result).toContain("<title>My Test Article</title>")
-      expect(result).toContain('<meta name="description" content="This is a test description">')
-      expect(result).toContain('<meta property="og:title" content="My Test Article" />')
-      expect(result).toContain('<meta property="og:type" content="article" />')
-      expect(result).toContain('<meta property="og:site_name" content="The Pond" />')
-      expect(result).toContain('<meta name="twitter:card" content="summary_large_image" />')
-      expect(result).toContain('<meta name="twitter:site" content="@Turn_Trout" />')
+      const normalized = normalizeNbsp(result)
+      expect(normalized).toContain("<title>My Test Article</title>")
+      expect(normalized).toContain('<meta name="description" content="This is a test description">')
+      expect(normalized).toContain(
+        '<link rel="canonical" href="https://turntrout.com/test-article" />',
+      )
+      expect(normalized).toContain(
+        `<meta name="theme-color" content="${backgroundLight}" media="(prefers-color-scheme: light)" />`,
+      )
+      expect(normalized).toContain(
+        `<meta name="theme-color" content="${backgroundDark}" media="(prefers-color-scheme: dark)" />`,
+      )
+      expect(normalized).toContain('<meta property="og:title" content="My Test Article" />')
+      expect(normalized).toContain('<meta property="og:type" content="article" />')
+      expect(normalized).toContain('<meta property="og:site_name" content="The Pond" />')
+      expect(normalized).toContain('<meta name="twitter:card" content="summary_large_image" />')
+      expect(normalized).toContain('<meta name="twitter:site" content="@Turn_Trout" />')
     })
 
     it("should generate basic meta tags for ProcessedContent input", () => {
@@ -90,9 +102,12 @@ describe("renderHead", () => {
         slug: "processed-content" as FullSlug,
       })
 
-      expect(result).toContain("<title>Processed Content Title</title>")
-      expect(result).toContain('<meta name="description" content="Processed content description">')
-      expect(result).toContain('<meta property="og:title" content="Processed Content Title" />')
+      const normalized = normalizeNbsp(result)
+      expect(normalized).toContain("<title>Processed Content Title</title>")
+      expect(normalized).toContain(
+        '<meta name="description" content="Processed content description">',
+      )
+      expect(normalized).toContain('<meta property="og:title" content="Processed Content Title" />')
     })
 
     it("should use default values when frontmatter is missing", () => {
@@ -104,19 +119,20 @@ describe("renderHead", () => {
         slug: "no-frontmatter" as FullSlug,
       })
 
-      expect(result).toContain(`<title>${defaultTitle}</title>`)
-      expect(result).toContain(`<meta name="description" content="${defaultDescription}">`)
-      expect(result).toContain(
+      const normalized = normalizeNbsp(result)
+      expect(normalized).toContain(`<title>${defaultTitle}</title>`)
+      expect(normalized).toContain(`<meta name="description" content="${defaultDescription}">`)
+      expect(normalized).toContain(
         `<link rel="icon" href="${escapeHTML(faviconUrl)}" type="${escapeHTML(faviconMimeType)}" />`,
       )
-      expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
+      expect(normalized).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
 
     it("should include all required meta tags in complete structure", () => {
       const data = createMockData({
         title: "Complete Test",
         description: "Complete description",
-        authors: "Test Author",
+        authors: ["Test Author"],
       })
 
       const result = renderHead({
@@ -125,32 +141,40 @@ describe("renderHead", () => {
         slug: "complete-test" as FullSlug,
       })
 
+      const normalized = normalizeNbsp(result)
       // Verify all major sections are present
-      expect(result).toContain("<title>Complete Test</title>")
-      expect(result).toContain('<meta name="description" content="Complete description">')
+      expect(normalized).toContain("<title>Complete Test</title>")
+      expect(normalized).toContain('<meta name="description" content="Complete description">')
+      expect(normalized).toContain(
+        '<link rel="canonical" href="https://turntrout.com/complete-test" />',
+      )
 
       // Open Graph tags
-      expect(result).toContain('<meta property="og:title" content="Complete Test" />')
-      expect(result).toContain('<meta property="og:type" content="article" />')
-      expect(result).toContain('<meta property="og:description" content="Complete description">')
-      expect(result).toContain('<meta property="og:site_name" content="The Pond" />')
-      expect(result).toContain(`<meta property="og:image" content="${defaultCardUrl}" />`)
+      expect(normalized).toContain('<meta property="og:title" content="Complete Test" />')
+      expect(normalized).toContain('<meta property="og:type" content="article" />')
+      expect(normalized).toContain(
+        '<meta property="og:description" content="Complete description">',
+      )
+      expect(normalized).toContain('<meta property="og:site_name" content="The Pond" />')
+      expect(normalized).toContain(`<meta property="og:image" content="${defaultCardUrl}" />`)
 
       // Twitter tags
-      expect(result).toContain('<meta name="twitter:card" content="summary_large_image" />')
-      expect(result).toContain('<meta name="twitter:title" content="Complete Test" />')
-      expect(result).toContain('name="twitter:description"')
-      expect(result).toContain('content="Complete description"')
-      expect(result).toContain('<meta name="twitter:site" content="@Turn_Trout" />')
-      expect(result).toContain(`<meta name="twitter:image" content="${defaultCardUrl}" />`)
+      expect(normalized).toContain('<meta name="twitter:card" content="summary_large_image" />')
+      expect(normalized).toContain('<meta name="twitter:title" content="Complete Test" />')
+      expect(normalized).toContain('name="twitter:description"')
+      expect(normalized).toContain('content="Complete description"')
+      expect(normalized).toContain('<meta name="twitter:site" content="@Turn_Trout" />')
+      expect(normalized).toContain(`<meta name="twitter:image" content="${defaultCardUrl}" />`)
 
       // Author tags
-      expect(result).toContain('<meta name="twitter:label1" content="Written by" />')
-      expect(result).toContain('<meta name="twitter:data1" content="Test Author" />')
+      expect(normalized).toContain('<meta name="twitter:label1" content="Written by" />')
+      expect(normalized).toContain('<meta name="twitter:data1" content="Test Author" />')
 
       // Favicon tags
-      expect(result).toContain(`<link rel="icon" href="${faviconUrl}" type="${faviconMimeType}" />`)
-      expect(result).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
+      expect(normalized).toContain(
+        `<link rel="icon" href="${faviconUrl}" type="${faviconMimeType}" />`,
+      )
+      expect(normalized).toContain(`<link rel="apple-touch-icon" href="${appleTouchIconUrl}" />`)
     })
   })
 
@@ -166,6 +190,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta property="og:url" content="https://example.com/test-page" />')
+      expect(result).toContain('<link rel="canonical" href="https://example.com/test-page" />')
     })
 
     it("should handle redirect URLs correctly", () => {
@@ -286,7 +311,7 @@ describe("renderHead", () => {
   describe("author handling", () => {
     it("should include author meta tags when authors are provided", () => {
       const data = createMockData({
-        authors: "John Doe, Jane Smith",
+        authors: ["John Doe", "Jane Smith"],
       })
 
       const result = renderHead({
@@ -296,7 +321,7 @@ describe("renderHead", () => {
       })
 
       expect(result).toContain('<meta name="twitter:label1" content="Written by" />')
-      expect(result).toContain('<meta name="twitter:data1" content="John Doe, Jane Smith" />')
+      expect(result).toContain('<meta name="twitter:data1" content="John Doe and Jane Smith" />')
     })
 
     it("should not include author meta tags when authors are missing", () => {
@@ -404,8 +429,10 @@ describe("renderHead", () => {
         slug: "test-page" as FullSlug,
       })
 
-      expect(result).toContain(`<title>${defaultTitle}</title>`)
-      expect(result).toContain(`<meta property="og:site_name" content="${defaultTitle}" />`)
+      expect(normalizeNbsp(result)).toContain(`<title>${defaultTitle}</title>`)
+      expect(normalizeNbsp(result)).toContain(
+        `<meta property="og:site_name" content="${defaultTitle}" />`,
+      )
     })
 
     it("should handle missing baseUrl by using default", () => {
@@ -457,7 +484,7 @@ describe("renderHead", () => {
 
   it("should escape special characters in author names", () => {
     const data = createMockData({
-      authors: "Author <Name>",
+      authors: ["Author <Name>"],
     })
 
     const result = renderHead({
