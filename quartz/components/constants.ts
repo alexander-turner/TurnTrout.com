@@ -51,7 +51,7 @@ export const {
   specialDomainMappings: specialDomainMappingsConfig,
 } = simpleConstants
 
-// Unicode typography constants 
+// Unicode typography constants
 export const {
   nbsp: NBSP,
   leftSingleQuote: LEFT_SINGLE_QUOTE,
