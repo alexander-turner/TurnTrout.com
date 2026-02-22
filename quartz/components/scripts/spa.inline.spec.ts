@@ -80,8 +80,8 @@ async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000)
 
 // Normal page.reload() will wipe the history state
 async function softRefresh(page: Page): Promise<void> {
-  await page.goBack()
-  await page.goForward()
+  await page.goBack({ waitUntil: "domcontentloaded" })
+  await page.goForward({ waitUntil: "domcontentloaded" })
 }
 
 async function addMarker(page: Page): Promise<void> {
