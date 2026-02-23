@@ -13,6 +13,7 @@
     --font-size-plus-#{$i}: #{calculate-scale($i)};
   }
 
+  --font-size-code: 0.81em;
   --base-line-height: 1.4;
   --min-font-size: 0.875rem; // 14px
   --max-font-size: 1.5rem; // 24px
@@ -231,7 +232,7 @@ b,
 strong,
 .admonition-title-inner,
 dt {
-  text-shadow: 0.3px 0.3px;
+  text-shadow: $faux-bold-offset $faux-bold-offset;
   font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
 
   .right & {
@@ -274,7 +275,7 @@ code,
 pre {
   font-family: var(--font-monospace);
   color: inherit;
-  font-size: 0.81em;
+  font-size: var(--font-size-code);
   font-variant-caps: normal; // Ignore small-caps in code
 }
 
@@ -315,7 +316,7 @@ code {
 article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   --dropcap-vertical-offset: #{$dropcap-vertical-offset};
   --dropcap-font-size: #{$dropcap-font-size};
-  --before-color: var(--midground-faint);
+  --before-color: var(--random-dropcap-color, var(--midground-faint));
 
   // Slanted smallcaps EB italic looks same as slanted normal smallcaps EB
   //  so since real italics need a new font, just use that

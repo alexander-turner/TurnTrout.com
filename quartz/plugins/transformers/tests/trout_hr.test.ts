@@ -9,6 +9,12 @@ import { h } from "hastscript"
 import { BuildCtx } from "../../../util/ctx"
 import { TroutOrnamentHr, maybeInsertOrnament, ornamentNode, insertOrnamentNode } from "../trout_hr"
 
+describe("ornamentNode", () => {
+  it("should have role='separator' for accessibility", () => {
+    expect(ornamentNode.properties.role).toBe("separator")
+  })
+})
+
 describe("TroutOrnamentHr", () => {
   it("should return a plugin with the correct name and htmlPlugins", () => {
     const plugin = TroutOrnamentHr()
@@ -209,6 +215,29 @@ describe("insertOrnamentNode", () => {
 
     expect(tree.children).toHaveLength(3)
     expect(tree.children[2]).toStrictEqual(ornamentNode)
+  })
+})
+
+describe("iframe interaction", () => {
+  it("should insert ornament as sibling after iframe, not as child", () => {
+    const iframeNode = h("iframe", {
+      src: "https://example.com/form",
+      title: "Contact form",
+    }) as HastElement
+    const tree: Root = {
+      type: "root",
+      children: [h("h1", "Contact"), iframeNode],
+    }
+
+    insertOrnamentNode(tree)
+
+    // Ornament should be the 3rd child (after h1 and iframe)
+    expect(tree.children).toHaveLength(3)
+    expect(tree.children[1]).toStrictEqual(iframeNode)
+    expect(tree.children[2]).toStrictEqual(ornamentNode)
+
+    // iframe should have no children (ornament not nested inside)
+    expect(iframeNode.children).toHaveLength(0)
   })
 })
 

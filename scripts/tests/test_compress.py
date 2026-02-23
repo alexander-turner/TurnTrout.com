@@ -31,7 +31,9 @@ def test_avif_creation(temp_dir: Path, image_ext: str) -> None:
 def test_avif_size_reduction(temp_dir: Path, image_ext: str) -> None:
     """Assert that AVIF files are smaller than the original image files."""
     input_file = temp_dir / f"test{image_ext}"
-    utils.create_test_image(input_file, "100x100")
+    # Use a larger image with detail so AVIF compression beats the original.
+    # Solid-color images compress to ~200 bytes in PNG, smaller than AVIF overhead.
+    utils.create_test_image(input_file, "500x500", draw="circle 100,100 50,50")
     original_size = input_file.stat().st_size
 
     compress.image(input_file)
@@ -375,7 +377,7 @@ def test_png_input_has_transparency(temp_dir: Path) -> None:
         check=True,
     )
     assert (
-        "Alpha: 8-bit" in pre_result.stdout
+        "alpha: 8-bit" in pre_result.stdout.lower()
     ), "Input PNG file should have transparency before conversion"
 
 
@@ -401,7 +403,7 @@ def test_avif_output_preserves_transparency(temp_dir: Path) -> None:
         check=True,
     )
     assert (
-        "Alpha: 8-bit" in post_result.stdout
+        "alpha: 8-bit" in post_result.stdout.lower()
     ), "AVIF file should preserve transparency"
 
 
@@ -578,9 +580,7 @@ def test_check_if_hevc_codec(
     assert compress._check_if_hevc_codec(input_file) is expected_result
 
 
-def test_check_if_hevc_codec_ffprobe_error(
-    temp_dir: Path, monkeypatch
-) -> None:
+def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch) -> None:
     """Test `_check_if_hevc_codec` raises error on `ffprobe` failure."""
     input_file = temp_dir / "test_error.mp4"
     input_file.touch()
