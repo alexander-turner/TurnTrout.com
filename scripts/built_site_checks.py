@@ -4,12 +4,15 @@
 import argparse
 import copy
 import html
+import json
+import mimetypes
 import os
 import re
 import subprocess
 import sys
 import urllib.parse
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
@@ -1308,6 +1311,87 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
+def _build_included_favicon_domains(
+    git_root: Path,
+) -> frozenset[str]:
+    """
+    Compute the set of domain entries whose favicons should appear in the built
+    site, by calling the shared TS module which runs the same
+    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold) as
+    the Quartz transformer.
+
+    Returns a frozenset of underscore-separated domain strings (e.g.
+    ``{"apple_com", "openai_com", "scholar_google_com"}``).
+    """
+    script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    result = subprocess.run(  # skipcq: BAN-B607
+        ["pnpm", "exec", "tsx", script],
+        capture_output=True,
+        text=True,
+        cwd=str(git_root),
+        check=True,
+    )
+    data = json.loads(result.stdout.strip())
+    return frozenset(data["includedDomains"])
+
+
+def _is_asset_href(href: str) -> bool:
+    """Check if an href points to an asset file (image/video/audio/pdf)."""
+    path = href.split("?")[0].split("#")[0]
+    mime_type, _ = mimetypes.guess_type(path)
+    if not mime_type:
+        return False
+    return (
+        mime_type.startswith(("image/", "video/", "audio/"))
+        or mime_type == "application/pdf"
+    )
+
+
+def _domain_matches(normalised: str, domain: str) -> bool:
+    """Boundary-aware domain matching (avoids e.g. 'x_com' matching
+    'vox_com')."""
+    return normalised == domain or normalised.endswith(f"_{domain}")
+
+
+def check_external_links_have_favicons(
+    soup: BeautifulSoup,
+    included_domains: frozenset[str],
+) -> list[str]:
+    """
+    Check that external links to included domains have favicons.
+
+    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
+    transformer (whitelist + blacklist + count threshold), pre-computed
+    by ``scripts/compute_favicon_lists.ts``.
+
+    Only checks ``<a class="external">`` links inside ``<article>``;
+    component-generated links (nav, aside) never pass through the
+    favicon transformer.
+    """
+    issues: list[str] = []
+
+    for link in soup.select("article a.external[href]"):
+        href = str(link.get("href", ""))
+        if not href.startswith(("http://", "https://")) or _is_asset_href(href):
+            continue
+
+        hostname = urlparse(href).hostname or ""
+        if not hostname:
+            continue
+
+        normalised = hostname.removeprefix("www.").replace(".", "_")
+        if not any(_domain_matches(normalised, d) for d in included_domains):
+            continue
+
+        if not link.select_one("svg.favicon, img.favicon"):
+            _append_to_list(
+                issues,
+                f"Link missing favicon: {hostname} ({href})",
+            )
+
+    return issues
+
+
 def _check_populate_commit_count(
     soup: BeautifulSoup, *, min_commit_count: int
 ) -> list[str]:
@@ -1574,12 +1658,20 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
+@dataclass(frozen=True)
+class CheckOptions:
+    """Configuration options shared across all file checks."""
+
+    should_check_fonts: bool = False
+    defined_css_variables: Set[str] | None = None
+    favicon_included_domains: frozenset[str] | None = None
+
+
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
-    should_check_fonts: bool,
-    defined_css_variables: Set[str] | None = None,
+    opts: CheckOptions,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1588,8 +1680,7 @@ def check_file_for_issues(
         file_path: Path to the HTML file to check
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
-        should_check_fonts: Whether to check for preloaded fonts
-        defined_css_variables: Set of defined CSS variables
+        opts: Shared configuration for all file checks.
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1642,7 +1733,7 @@ def check_file_for_issues(
             soup
         ),
         "inline_style_variables": check_inline_style_variables(
-            soup, defined_css_variables
+            soup, opts.defined_css_variables
         ),
         "problematic_iframe_embeds": check_iframe_embeds(soup),
         "empty_populate_elements": check_populate_elements_nonempty(soup),
@@ -1657,7 +1748,12 @@ def check_file_for_issues(
         "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
-    if should_check_fonts:
+    if opts.favicon_included_domains is not None:
+        issues["missing_favicons"] = check_external_links_have_favicons(
+            soup, opts.favicon_included_domains
+        )
+
+    if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
 
     if md_path and md_path.is_file():
@@ -2234,6 +2330,12 @@ def _process_html_files(  # pylint: disable=too-many-locals
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
 
+    included_domains = _build_included_favicon_domains(public_dir.parent)
+    check_opts = CheckOptions(
+        should_check_fonts=check_fonts,
+        defined_css_variables=defined_css_vars,
+        favicon_included_domains=included_domains,
+    )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
         if "drafts" in root_path.parts:
@@ -2257,11 +2359,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
                     )
 
             issues = check_file_for_issues(
-                file_path,
-                public_dir,
-                md_path,
-                should_check_fonts=check_fonts,
-                defined_css_variables=defined_css_vars,
+                file_path, public_dir, md_path, check_opts
             )
 
             if any(lst for lst in issues.values()):

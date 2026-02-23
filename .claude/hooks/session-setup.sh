@@ -67,7 +67,8 @@ fi
 # Remove stop-hook retry counter for THIS project so a new session starts fresh
 # (keyed on project dir hash, matching verify_ci.py's _retry_file)
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
-rm -f "/tmp/claude-stop-attempts-${PROJ_HASH}"
+TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
+rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
 
 #######################################
 # Git setup
