@@ -314,13 +314,10 @@
       "tmp": "0.2.4",
       "@eslint/plugin-kit": "0.3.4",
       "qs": "6.15.0",
-      "@isaacs/brace-expansion": "5.0.1",
       "markdown-it": "14.1.1",
       "bn.js": "5.2.3",
       "hono": "4.12.2",
-      "minimatch": "10.2.1",
-      "@modelcontextprotocol/sdk": "1.26.0",
-      "ajv": "8.18.0"
+      "@modelcontextprotocol/sdk": "1.26.0"
     },
     "patchedDependencies": {
       "pa11y@9.0.1": "patches/pa11y@9.0.1.patch"
