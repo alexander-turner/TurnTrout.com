@@ -506,7 +506,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   }, pondVideoId)
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
-  await page.waitForURL("**/design")
+  await expect(page).toHaveURL(/\/design/)
 
   // Setting should persist and video should still be playing
   await expect(isPaused(video)).resolves.toBe(false)

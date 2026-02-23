@@ -14,7 +14,7 @@ const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -226,12 +226,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Ensure the page is fully loaded before navigating again so WebKit
-      // doesn't crash from overlapping navigations (beforeEach uses domcontentloaded).
-      await page.waitForLoadState("load")
-
       // Navigate to a different internal page
-      // NOTE I think it should be fine to not click
       await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
       // CSS custom property may not be set synchronously after navigation

@@ -40,7 +40,7 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   // Hide all video and audio controls
   await page.evaluate(() => {
