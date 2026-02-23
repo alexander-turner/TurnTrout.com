@@ -12,18 +12,22 @@ on:
     branches: ["main", "dev"]
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
   pull_request:
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
   merge_group:
 

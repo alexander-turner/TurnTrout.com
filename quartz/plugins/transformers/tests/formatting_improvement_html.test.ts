@@ -73,7 +73,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
-        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+        "<p><a>\u201CHow steering vectors impact GPT-2\u2019s capabilities.\u201D</a></p>",
       ],
       [
         '<p>"<span class="katex"></span> alignment metric</p>',
@@ -344,6 +344,9 @@ describe("HTMLFormattingImprovement", () => {
       ["I AM A TEST", "I AM A TEST"],
       ["I saw him in the PM", "I saw him in the PM"],
       ["I saw him at 4 PM.", "I saw him at 4 p.m."], // Sentence end
+      ["19 ambiguous questions", "19 ambiguous questions"], // Don't match "am" inside words
+      ["5 amps of current", "5 amps of current"], // Don't match "am" at start of "amps"
+      ["3 améliorer le processus", "3 améliorer le processus"], // Don't match accented Latin chars
     ]
     it.each(timeCases)("should handle time in %s, end-to-end", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)

@@ -5,8 +5,14 @@ on:
     branches: ["main"]
     paths:
       - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/pa11y/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"

@@ -17,7 +17,7 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06 14:34:13.304738
-date_updated: 2026-01-10 10:26:40.099417
+date_updated: 2026-02-23 15:11:07.139539
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
@@ -437,8 +437,6 @@ If you want to browse the original site again, you can disable the extension or 
 
 Subtitle: Time: 20 minutes.
 
-<!-- vale Custom.OxfordComma = NO -->
-
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
 > ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif|An isometric diagram of a grocery store aisle illustrates how beacons track shoppers. An annotation points to a beacon on a shelf, explaining: "The beacons are like little lighthouses that emit one-way messages to nearby devices." A close-up of a phone shows an app icon highlighted.]]
 >
@@ -453,8 +451,6 @@ Subtitle: Time: 20 minutes.
 > Location data companies often collect additional data provided by apps. A location company called Pulsate, for example, encourages app developers to pass them customer email addresses and names.
 >
 > Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
-
-<!-- vale Custom.OxfordComma = YES -->
 
 ### Disable location tracking on Android
 

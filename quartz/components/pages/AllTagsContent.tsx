@@ -9,7 +9,7 @@ import type { QuartzComponent, QuartzComponentProps } from "../types"
 
 import { htmlToJsx } from "../../util/jsx"
 import { type FilePath, type FullSlug } from "../../util/path"
-import { locale } from "../constants"
+import { locale, PREVIEWABLE_CLASS } from "../constants"
 import style from "../styles/listPage.scss"
 import { formatTag } from "../TagList"
 
@@ -61,7 +61,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
 const AllTagsContent: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData } = props
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["previewable", ...cssClasses].join(" ")
+  const classes = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
 
   // Convert HAST to JSX for component rendering
   const tagsListing = generateAllTagsBlock(props)

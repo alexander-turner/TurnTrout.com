@@ -3,23 +3,31 @@
  *
  * Small caps are rendered by lowercasing the text and applying CSS font-variant-caps.
  * When copied, this would result in lowercase text. This module intercepts copy/cut events
- * and uppercases text from .small-caps elements to match the visual appearance.
+ * and restores text from .small-caps elements using data-original-text attributes (set by
+ * the smallcaps transform) for accurate casing, falling back to uppercasing when unavailable.
  */
 
-/** Uppercases text content within small-caps elements in HTML string */
-export function uppercaseSmallCapsInHtml(html: string): string {
+/**
+ * Restores original text in a small-caps element using data-original-text if available,
+ * otherwise falls back to uppercasing all text.
+ */
+function restoreOriginalText(el: Element): void {
+  const originalText = el.getAttribute("data-original-text")
+  if (originalText) {
+    el.textContent = originalText
+  } else {
+    uppercaseAllText(el)
+  }
+}
+
+/** Restores original text within small-caps elements in an HTML string */
+export function restoreSmallCapsInHtml(html: string): string {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, "text/html")
 
   const smallCapsElements = doc.querySelectorAll(".small-caps")
   for (const el of smallCapsElements) {
-    // Uppercase all text nodes within the element
-    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
-    let textNode: Text | null
-    while ((textNode = walker.nextNode() as Text | null)) {
-      // Text nodes always have non-null textContent
-      textNode.textContent = textNode.textContent!.toUpperCase()
-    }
+    restoreOriginalText(el)
   }
 
   return doc.body.innerHTML
@@ -27,16 +35,14 @@ export function uppercaseSmallCapsInHtml(html: string): string {
 
 function uppercaseAllText(element: Element): void {
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
-  let textNode: Text | null
-  while ((textNode = walker.nextNode() as Text | null)) {
-    textNode.textContent = textNode.textContent!.toUpperCase()
+  let textNode = walker.nextNode() as Text | null
+  while (textNode) {
+    textNode.textContent = (textNode.textContent as string).toUpperCase()
+    textNode = walker.nextNode() as Text | null
   }
 }
 
-export function uppercaseSmallCapsInSelection(
-  selection: Selection,
-  isEntirelyInSmallCaps: boolean,
-): string {
+export function restoreSmallCapsInSelection(selection: Selection): string {
   if (selection.rangeCount === 0) return ""
 
   const range = selection.getRangeAt(0)
@@ -45,18 +51,12 @@ export function uppercaseSmallCapsInSelection(
   const tempDiv = document.createElement("div")
   tempDiv.appendChild(fragment)
 
-  if (isEntirelyInSmallCaps) {
-    uppercaseAllText(tempDiv)
-  } else {
-    // Find all small-caps elements and uppercase their text
-    const smallCapsElements = tempDiv.querySelectorAll(".small-caps")
-    for (const el of smallCapsElements) {
-      uppercaseAllText(el)
-    }
+  const smallCapsElements = tempDiv.querySelectorAll(".small-caps")
+  for (const el of smallCapsElements) {
+    restoreOriginalText(el)
   }
 
-  // Elements always have non-null textContent (may be empty string)
-  return tempDiv.textContent!
+  return tempDiv.textContent as string
 }
 
 /** Handles copy/cut events to fix small caps text */
@@ -71,7 +71,8 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
     container.nodeType === Node.ELEMENT_NODE ? (container as Element) : container.parentElement
 
   const containsSmallCaps = containerEl?.querySelector(".small-caps") !== null
-  const isEntirelyInSmallCaps = containerEl?.closest(".small-caps") !== null
+  const smallCapsAncestor = containerEl?.closest(".small-caps")
+  const isEntirelyInSmallCaps = smallCapsAncestor !== null
 
   // Quick check: if no small-caps in the selection area, do nothing
   if (!containsSmallCaps && !isEntirelyInSmallCaps) return
@@ -81,8 +82,19 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
   tempDiv.appendChild(range.cloneContents())
 
   // Handle case where selection is entirely within small-caps (no .small-caps in cloned content)
-  if (isEntirelyInSmallCaps) {
-    uppercaseAllText(tempDiv)
+  if (isEntirelyInSmallCaps && smallCapsAncestor) {
+    const originalText = smallCapsAncestor.getAttribute("data-original-text")
+    if (originalText) {
+      // Map partial selections through the original text using character positions.
+      // Elements always have non-null textContent; indexOf always succeeds since
+      // selectedText was cloned from within the element.
+      const fullText = smallCapsAncestor.textContent!
+      const selectedText = tempDiv.textContent!
+      const startIdx = fullText.indexOf(selectedText)
+      tempDiv.textContent = originalText.slice(startIdx, startIdx + selectedText.length)
+    } else {
+      uppercaseAllText(tempDiv)
+    }
   } else if (tempDiv.querySelector(".small-caps") === null) {
     // Not in small-caps and no small-caps elements found - nothing to do
     return
@@ -90,10 +102,13 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
 
   event.preventDefault()
 
+  // Elements always have non-null textContent (may be empty string)
   const fixedHtml = isEntirelyInSmallCaps
     ? tempDiv.innerHTML
-    : uppercaseSmallCapsInHtml(tempDiv.innerHTML)
-  const fixedText = uppercaseSmallCapsInSelection(selection, isEntirelyInSmallCaps)
+    : restoreSmallCapsInHtml(tempDiv.innerHTML)
+  const fixedText = isEntirelyInSmallCaps
+    ? String(tempDiv.textContent)
+    : restoreSmallCapsInSelection(selection)
 
   event.clipboardData?.setData("text/plain", fixedText)
   event.clipboardData?.setData("text/html", fixedHtml)

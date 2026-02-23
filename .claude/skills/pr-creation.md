@@ -100,8 +100,13 @@ Customize these commands based on your project's tooling.
 ### Step 5: Push and Create the Pull Request
 
 1. Push the branch: `git push -u origin HEAD`
+2. **If Playwright/visual tests are relevant** (e.g., the PR modifies or fixes Playwright specs, changes UI behavior, or fixes interaction bugs), add the `ci:full-tests` label so the full Playwright suite runs on the PR:
 
-2. Create the PR with `gh pr create`:
+   ```bash
+   gh pr edit --add-label "ci:full-tests"
+   ```
+
+3. Create the PR with `gh pr create`:
 
 ```bash
 gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'
@@ -130,7 +135,7 @@ EOF
 
 ### Step 6: Check DeepSource Issues
 
-After pushing, check for DeepSource static analysis issues:
+After pushing, check for DeepSource static analysis issues using the forked CLI (installed by the SessionStart hook). **Never** try to fetch DeepSource URLs via `WebFetch` — the web UI requires authentication and returns no useful content.
 
 1. Get the commit SHA: `git rev-parse HEAD`
 2. Run: `deepsource issues list --commit <SHA>`

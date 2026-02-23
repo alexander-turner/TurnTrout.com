@@ -16,6 +16,11 @@ jest.mock("./trace", () => ({
   trace: mockTrace,
 }))
 
+/** Assert val is defined and narrow its type (replaces non-null assertion `!`). */
+function assertDefined<T>(val: T): asserts val is NonNullable<T> {
+  expect(val).toBeDefined()
+}
+
 describe("jsx utilities", () => {
   const testFilePath = "test/file.md" as FilePath
 
@@ -28,8 +33,8 @@ describe("jsx utilities", () => {
       const tree = h("p", "Hello world")
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("Hello world")
     })
 
@@ -37,8 +42,8 @@ describe("jsx utilities", () => {
       const tree = h("div", [h("p", "Paragraph 1"), h("p", "Paragraph 2")])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("Paragraph 1")
       expect(html).toContain("Paragraph 2")
     })
@@ -47,8 +52,8 @@ describe("jsx utilities", () => {
       const tree = h("a", { href: "https://example.com", class: "link" }, "Link text")
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain('href="https://example.com"')
       expect(html).toContain("Link text")
     })
@@ -57,8 +62,8 @@ describe("jsx utilities", () => {
       const tree = h("div")
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("<div")
     })
 
@@ -71,8 +76,8 @@ describe("jsx utilities", () => {
       }
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("Plain text")
     })
 
@@ -95,8 +100,8 @@ describe("jsx utilities", () => {
       const tree = h("table", [h("tr", [h("td", "Cell 1")])])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain(expected)
     })
 
@@ -109,9 +114,9 @@ describe("jsx utilities", () => {
       ])
 
       const result = htmlToJsx(testFilePath, tree)
-      expect(result).toBeDefined()
+      assertDefined(result)
 
-      const html = render(result!)
+      const html = render(result)
 
       // Extract all aria-labels from the rendered HTML
       const labelMatches = html.match(/aria-label="Scrollable table \d+"/g)
@@ -153,8 +158,8 @@ describe("jsx utilities", () => {
 
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain('class="table-container"')
     })
 
@@ -168,8 +173,8 @@ describe("jsx utilities", () => {
       ])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("<thead")
       expect(html).toContain("<tbody")
       expect(html).toContain("Header 1")
@@ -185,8 +190,8 @@ describe("jsx utilities", () => {
       ])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("Before table")
       expect(html).toContain('class="table-container"')
       expect(html).toContain("Table content")
@@ -201,8 +206,8 @@ describe("jsx utilities", () => {
       ])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
 
       // Count occurrences of table-container
       const matches = html.match(/class="table-container"/g)
@@ -228,8 +233,10 @@ describe("jsx utilities", () => {
       ])
       const result2 = htmlToJsx("page2.md" as FilePath, page2)
 
-      const html1 = render(result1!)
-      const html2 = render(result2!)
+      assertDefined(result1)
+      assertDefined(result2)
+      const html1 = render(result1)
+      const html2 = render(result2)
 
       // Both pages should start counting from 1
       expect(html1).toContain('aria-label="Scrollable table 1"')
@@ -260,8 +267,8 @@ describe("jsx utilities", () => {
       }
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("P1")
       expect(html).toContain("P2")
     })
@@ -270,8 +277,8 @@ describe("jsx utilities", () => {
       const tree = h("div", { class: ["class1", "class2"] }, "Content")
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain("Content")
     })
 
@@ -282,8 +289,8 @@ describe("jsx utilities", () => {
       const tree = h("div", [h(tag)])
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       expect(html).toContain(expected)
     })
 
@@ -291,8 +298,8 @@ describe("jsx utilities", () => {
       const tree = h("p", "Text with <special> & 'characters'")
       const result = htmlToJsx(testFilePath, tree)
 
-      expect(result).toBeDefined()
-      const html = render(result!)
+      assertDefined(result)
+      const html = render(result)
       // Preact should escape these automatically
       expect(html).toBeDefined()
     })

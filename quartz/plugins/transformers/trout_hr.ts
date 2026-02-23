@@ -10,7 +10,7 @@ export const troutContainerId = "trout-ornament-container"
 
 import { h } from "hastscript"
 
-export const ornamentNode: Element = h("div", { id: troutContainerId }, [
+export const ornamentNode: Element = h("div", { id: troutContainerId, role: "separator" }, [
   h("span", { class: "no-select", "aria-hidden": "true" }, "☙"),
   h("img", {
     src: specialFaviconPaths.turntrout,

@@ -45,19 +45,6 @@ stash_and_exit() {
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
-if command -v conda >/dev/null 2>&1; then
-  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
-
-  if [ "$ACTIVE_ENV" != "website" ]; then
-    echo "Activating conda environment: website"
-
-    CONDA_BASE=$(conda info --base)
-    # shellcheck source=/dev/null
-    . "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda activate website
-  fi
-fi
-
 if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
 fi

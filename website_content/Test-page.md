@@ -515,7 +515,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Numbers and units
 
-This computer has 16GB of RAM and runs at 3.2GHz.
+This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
 
 ## Smart quotes
 
@@ -547,7 +547,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 <div id="the-pond-dropcaps" style="font-size:min(4rem, 15vw);line-height:1;" class="centered">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
 <span class="dropcap" data-first-letter="H" style="--before-color: var(--dropcap-background-orange);">H</span>
-<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-yellow);">E</span>
+<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-gold);">E</span>
 <br/>  
 <span class="dropcap" data-first-letter="P"  style="--before-color: var(--dropcap-background-green);">P</span>
 <span class="dropcap" data-first-letter="O"  style="--before-color: var(--dropcap-background-blue);">O</span>
@@ -709,10 +709,8 @@ This is a plain code block without a language specified.
 <!-- spellchecker-disable -->
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-
   <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
-
-: <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+  <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 
 <!-- spellchecker-enable -->
 
@@ -727,6 +725,7 @@ Corrupted text
 
 # What are your timelines?
 
+<!--spellchecker-disable-->
 <div class="timeline">
     <div class="timeline-card">
       <div class="timeline-info">
@@ -765,6 +764,7 @@ Corrupted text
     </div>
   </div>
 </div>
+<!--spellchecker-enable-->
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 
