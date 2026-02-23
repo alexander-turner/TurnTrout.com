@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`assertSmartQuotesMatch should throw for mismatched closing quotes 1`] = `"Mismatched quotes in This has a random ending quote”"`;
+
+exports[`assertSmartQuotesMatch should throw for mismatched closing quotes 2`] = `"Mismatched quotes in “More” nested mismatches”"`;
+
+exports[`assertSmartQuotesMatch should throw for mismatched opening quotes 1`] = `"Mismatched quotes in “This is missing an end quote"`;
+
+exports[`assertSmartQuotesMatch should throw for mismatched opening quotes 2`] = `"Mismatched quotes in “Nested “quotes” that are incorrect"`;

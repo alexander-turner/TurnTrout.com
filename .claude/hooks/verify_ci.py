@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -38,26 +39,57 @@ def _has_script(pkg: dict, name: str) -> bool:
     return bool(script) and "ERROR: Configure" not in script
 
 
-def _run_check(name: str, cmd: list[str]) -> tuple[bool, str]:
-    """
-    Run a check command.
-
-    Returns (passed, output).
-    """
-    print(f"Running {name}...", file=sys.stderr)
-    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+def _run_check(name: str, cmd: str) -> tuple[bool, str]:
+    """Run a check command. Returns (passed, output)."""
+    result = subprocess.run(
+        shlex.split(cmd), capture_output=True, text=True, check=False
+    )
     if result.returncode == 0:
         return True, ""
     output = result.stdout + result.stderr
-    return False, f"=== {name} ===\n{output}\n"
+    return False, f"=== {name} FAILED ===\n{output}\n"
 
 
 def _pluralize(n: int, word: str) -> str:
     return f"{n} {word}" if n == 1 else f"{n} {word}s"
 
 
-def _read_attempt(retry_file: Path) -> int:
-    """Read and increment the attempt counter from the retry file."""
+def _check_nodejs(check_fn) -> None:
+    """Run Node.js checks (test, lint, typecheck)."""
+    pkg_path = Path("package.json")
+    if not pkg_path.exists():
+        return
+    pkg = json.loads(pkg_path.read_text())
+    checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
+    for script, label in checks:
+        if _has_script(pkg, script):
+            check_fn(label, f"pnpm {script}")
+
+
+def _check_python(check_fn) -> None:
+    """Run Python checks (ruff, pytest)."""
+    has_pyproject = Path("pyproject.toml").exists()
+    has_uvlock = Path("uv.lock").exists()
+    if not (has_pyproject or has_uvlock):
+        return
+
+    prefix = "uv run " if has_uvlock and shutil.which("uv") else ""
+    if prefix or shutil.which("ruff"):
+        check_fn("ruff", f"{prefix}ruff check .")
+    elif has_pyproject:
+        print("Warning: ruff not found, skipping lint", file=sys.stderr)
+
+    if Path("tests").is_dir() and (prefix or shutil.which("pytest")):
+        check_fn("pytest", f"{prefix}pytest")
+
+
+def main() -> None:
+    max_retries = _get_max_retries()
+    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
+    os.chdir(project_dir)
+
+    # --- Retry tracking ---
+    retry_file = _retry_file(project_dir)
     attempt = 1
     if retry_file.exists():
         try:
@@ -65,53 +97,21 @@ def _read_attempt(retry_file: Path) -> int:
         except (ValueError, OSError):
             attempt = 1
     retry_file.write_text(str(attempt))
-    return attempt
 
+    # --- Collect checks to run ---
+    failures: list[str] = []
+    outputs: list[str] = []
 
-def _collect_node_checks(failures: list[str], outputs: list[str]) -> None:
-    """Run Node.js checks if package.json exists."""
-    pkg_path = Path("package.json")
-    if not pkg_path.exists():
-        return
-    pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
-    checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
-    for script, label in checks:
-        if _has_script(pkg, script):
-            passed, output = _run_check(label, ["pnpm", script])
-            if not passed:
-                failures.append(label)
-                outputs.append(output)
-
-
-def _collect_python_checks(failures: list[str], outputs: list[str]) -> None:
-    """Run Python checks if pyproject.toml or uv.lock exists."""
-    has_pyproject = Path("pyproject.toml").exists()
-    has_uvlock = Path("uv.lock").exists()
-    if not (has_pyproject or has_uvlock):
-        return
-    prefix = ["uv", "run"] if has_uvlock and shutil.which("uv") else []
-    if prefix or shutil.which("ruff"):
-        passed, output = _run_check("ruff", [*prefix, "ruff", "check", "."])
+    def check(name: str, cmd: str) -> None:
+        passed, output = _run_check(name, cmd)
         if not passed:
-            failures.append("ruff")
-            outputs.append(output)
-    elif has_pyproject:
-        print("Warning: ruff not found, skipping lint", file=sys.stderr)
-    if Path("tests").is_dir() and (prefix or shutil.which("pytest")):
-        passed, output = _run_check("pytest", [*prefix, "pytest"])
-        if not passed:
-            failures.append("pytest")
+            failures.append(name)
             outputs.append(output)
 
+    _check_nodejs(check)
+    _check_python(check)
 
-def _emit_result(
-    failures: list[str],
-    outputs: list[str],
-    attempt: int,
-    max_retries: int,
-    retry_file: Path,
-) -> None:
-    """Print the JSON decision to stdout."""
+    # --- Produce result ---
     if not failures:
         retry_file.unlink(missing_ok=True)
         print(json.dumps({"decision": "approve"}))
@@ -152,22 +152,6 @@ def _emit_result(
             }
         )
     )
-
-
-def main() -> None:
-    """Run CI checks and emit a JSON decision to stdout."""
-    max_retries = _get_max_retries()
-    project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
-    os.chdir(project_dir)
-
-    retry_file = _retry_file(project_dir)
-    attempt = _read_attempt(retry_file)
-
-    failures: list[str] = []
-    outputs: list[str] = []
-    _collect_node_checks(failures, outputs)
-    _collect_python_checks(failures, outputs)
-    _emit_result(failures, outputs, attempt, max_retries, retry_file)
 
 
 if __name__ == "__main__":

@@ -11,8 +11,13 @@ on:
     types: [opened, synchronize, reopened]
     paths:
       - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -27,6 +32,7 @@ permissions:
 jobs:
   prepare-deploy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -131,14 +137,14 @@ jobs:
   verify-tests:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - name: Wait for all tests
         uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|lint|DeepSource:.*|lighthouse_(desktop|mobile)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker)$'
+          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
@@ -148,6 +154,7 @@ jobs:
     needs: [prepare-deploy, verify-tests]
     if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success') }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:

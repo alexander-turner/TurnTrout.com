@@ -17,9 +17,46 @@ aliases:
 prev-post-slug: privacy-despite-authoritarianism
 prev-post-title: An Opinionated Guide to Privacy Despite Authoritarianism
 date_published: 2025-11-06 14:34:13.304738
-date_updated: 2026-01-10 10:26:40.099417
+date_updated: 2026-02-23 15:11:07.139539
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -437,8 +474,6 @@ If you want to browse the original site again, you can disable the extension or 
 
 Subtitle: Time: 20 minutes.
 
-<!-- vale Custom.OxfordComma = NO -->
-
 > [!quote] [In Stores, Secret Surveillance Tracks Your Every Move](https://www.nytimes.com/interactive/2019/06/14/opinion/bluetooth-wireless-tracking-privacy.html)
 > ![[https://assets.turntrout.com/static/images/posts/privacy-20251014232546.avif|An isometric diagram of a grocery store aisle illustrates how beacons track shoppers. An annotation points to a beacon on a shelf, explaining: "The beacons are like little lighthouses that emit one-way messages to nearby devices." A close-up of a phone shows an app icon highlighted.]]
 >
@@ -453,8 +488,6 @@ Subtitle: Time: 20 minutes.
 > Location data companies often collect additional data provided by apps. A location company called Pulsate, for example, encourages app developers to pass them customer email addresses and names.
 >
 > Companies like Reveal Mobile collect data from software development kits inside hundreds of frequently used apps. In the United States, another company, inMarket, covers 38 percent of millennial moms and about one-quarter of all smartphones, and tracks 50 million people each month. Other players have similar reach.
-
-<!-- vale Custom.OxfordComma = YES -->
 
 ### Disable location tracking on Android
 
@@ -483,7 +516,7 @@ GrapheneOS instructions
 iOS instructions
 : On my MacBook, I only use Bluetooth for two reasons: listening to audio and using a wireless game controller. So I made simple automations in the Shortcuts app: `IF $APP opened, THEN turn on Bluetooth` (and have it notify you when it runs). Now, Bluetooth should be turned off when I don't need it.
 
-: ![[https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
+  ![[https://assets.turntrout.com/static/images/posts/privacy-20251022120554.avif|iOS Shortcuts which turn on Bluetooth when Tidal or Steam is opened, and turns off Bluetooth when one is closed.]]
 
 : Similarly, make simple automations which encompass your use cases.
 
@@ -535,12 +568,12 @@ Stingrays can pick up metadata from plain old texts and calls. Avoid by [using S
 GrapheneOS
 : GrapheneOS has more comprehensive protections than just disabling 2G. But you should also do that.
 
-: - [ ] Enable "2G network protection" -- just search "2G" in settings.
+  - [ ] Enable "2G network protection" -- just search "2G" in settings.
 
 Android
 : You can just disable 2G in your settings (search "2G"). The 2G speed sucks anyways and that protocol is basically out of use in the USA at this point. (Just remember, if you later end up without coverage in a remote location, you can try reenabling 2G.)
 
-: - [ ] Disable 2G.
+  - [ ] Disable 2G.
 
 iOS
 : You're less lucky. You can enable [lockdown mode](https://support.apple.com/en-us/105120) to disable 2G connections, but that mode also will break convenient everyday applications. Unless you expect to be under targeted scrutiny (e.g. at a protest if protests become criminalized), you probably shouldn't turn that mode on. Sadly, as of October 2025, Apple has yet to provide a standalone 2G toggle.

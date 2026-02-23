@@ -167,39 +167,6 @@ jobs:
           }
 
           #############################################
-          # Process each sync path
-          #############################################
-
-          for path in $SYNC_PATHS; do
-            # Skip if in exclude list
-            skip=false
-            for exclude in $EXCLUDE_PATHS; do
-              if [ "$path" = "$exclude" ]; then
-                skip=true
-                break
-              fi
-            done
-            [ "$skip" = "true" ] && continue
-
-            # Check if path exists in template
-            if [ ! -e "_template/$path" ]; then
-              echo "Warning: $path not found in template, skipping"
-              continue
-            fi
-
-            # Handle directories by processing files individually
-            # Note: Using process substitution to avoid subshell variable scope issues
-            if [ -d "_template/$path" ]; then
-              while IFS= read -r template_file; do
-                rel_path="${template_file#_template/}"
-                process_file "$rel_path"
-              done < <(find "_template/$path" -type f)
-            else
-              process_file "$path"
-            fi
-          done
-
-          #############################################
           # Detect deleted files
           #############################################
 
@@ -230,6 +197,39 @@ jobs:
               done < /tmp/prev_template_files.txt
             done
           fi
+
+          #############################################
+          # Process sync paths
+          #############################################
+
+          for path in $SYNC_PATHS; do
+            # Skip if in exclude list
+            skip=false
+            for exclude in $EXCLUDE_PATHS; do
+              if [ "$path" = "$exclude" ]; then
+                skip=true
+                break
+              fi
+            done
+            [ "$skip" = "true" ] && continue
+
+            # Check if path exists in template
+            if [ ! -e "_template/$path" ]; then
+              echo "Warning: $path not found in template, skipping"
+              continue
+            fi
+
+            # Handle directories by processing files individually
+            # Note: Using process substitution to avoid subshell variable scope issues
+            if [ -d "_template/$path" ]; then
+              while IFS= read -r template_file; do
+                rel_path="${template_file#_template/}"
+                process_file "$rel_path"
+              done < <(find "_template/$path" -type f)
+            else
+              process_file "$path"
+            fi
+          done
 
           # Clean up template
           rm -rf _template

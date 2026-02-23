@@ -9,8 +9,14 @@ on:
     branches: ["main", "dev"]
     paths:
       - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/stylelint/.variables-only-stylelintrc.json"
       - "scripts/built_site_checks.py"
       - "scripts/check_internal_links.py"
       - "package.json"
@@ -19,8 +25,14 @@ on:
   pull_request:
     paths:
       - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/stylelint/.variables-only-stylelintrc.json"
       - "scripts/built_site_checks.py"
       - "scripts/check_internal_links.py"
       - "package.json"
@@ -37,6 +49,7 @@ jobs:
     name: site-checks-build
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
@@ -58,6 +71,7 @@ jobs:
   built-site-checks:
     needs: build
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -94,6 +108,7 @@ jobs:
   linkchecker:
     needs: build
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 

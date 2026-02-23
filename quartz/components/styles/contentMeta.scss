@@ -56,7 +56,7 @@
 
   & a.tag-link {
     color: var(--midground);
-    border-radius: 5px; /* Add rounded corners to the tags box */
+    border-radius: $border-radius; /* Add rounded corners to the tags box */
     line-height: 1rem;
     padding: 0;
     padding-top: initial;

@@ -14,11 +14,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash(git push*|gh pr *)",
+        "matcher": "Bash(git push*|gh pr create*)",
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== PRE-PR CHECKS ===' && pnpm lint 2>&1 && pnpm typecheck 2>&1 && uvx docformatter --check scripts/*.py 2>&1 && scripts/spellcheck.sh 2>&1 && cat .claude/skills/pre-pr-checklist.md"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/pre-push-check.sh"
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '=== WAITING FOR CI ===' && sleep 10 && timeout 300 gh pr checks --watch 2>&1 || echo 'CI watch timed out or no PR found — check status manually'",
+            "command": "f=/tmp/claude-ci-watch.log; sleep 10 && timeout 300 gh pr checks --watch >\"$f\" 2>&1; rc=$?; if [ $rc -eq 0 ]; then echo 'CI passed'; else echo \"CI failed (exit $rc) — see $f\"; tail -20 \"$f\"; fi",
             "timeout": 360
           }
         ]

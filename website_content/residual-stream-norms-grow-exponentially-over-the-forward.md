@@ -171,7 +171,7 @@ We know that both `attn_out` and `mlp_out` grow exponentially. In the next two s
 **What test do we run and why does that give us evidence?**
 : We test whether the Attention OV-circuit weights grow exponentially with layer number, at the same rate as the actual Attention outputs `attn_out`. If true, this is evidence for theory 1.
 
-: The Attention layer output `attn_out` is determined by the QK-circuits (select which inputs to attend to), and the OV-circuits (determine how the inputs are transformed). For the purposes of understanding the overall residual stream growth—why the outputs have larger norm than the inputs—we want to focus on the OV-circuits, which determine how the norm changes from input to output.
+  The Attention layer output `attn_out` is determined by the QK-circuits (select which inputs to attend to), and the OV-circuits (determine how the inputs are transformed). For the purposes of understanding the overall residual stream growth—why the outputs have larger norm than the inputs—we want to focus on the OV-circuits, which determine how the norm changes from input to output.
 :
 : The OV-circuits consist of the $W_{OV}$ matrices (product of the value $W_V$ and output $W_O$ matrices) and the bias $b_O$.[^4] There are 25 attention heads in GPT-2-XL, i.e. 25 $W_{OV}$ matrices. In the figure below, we plot the Frobenius norm[^5] of the $W_{OV}$ matrices (solid grey lines) and the L2 norm of the $b_O$ vector (pink line). We compare it to the L2 norm of `attn_out` (solid blue line).
 :
@@ -186,7 +186,7 @@ What we would have liked to find
 What we actually found
 : We find that the Attention weights, specifically the $W_{OV}$ norms, grow approximately exponentially at the rate of `attn_out`. This exponential growth is evidence for theory 1: the growth means that the model bothered to learn weights that increase exponentially with layer number. [^6]
 
-: For some unit-normalized, Gaussian-sampled vector $x$, consider the sum of the sum of $W_{OV} \cdot x$ for all 25 $W_{OV}$ matrices (one for each head). This sum's norm is 5 times larger than the `attn_out` norm, as shown in this figure: [^7]
+  For some unit-normalized, Gaussian-sampled vector $x$, consider the sum of the sum of $W_{OV} \cdot x$ for all 25 $W_{OV}$ matrices (one for each head). This sum's norm is 5 times larger than the `attn_out` norm, as shown in this figure: [^7]
 
   ![A log-linear line chart comparing attention component norms to the attention output norm across layers. The Frobenius norms of individual W_OV attention head weights increase with layer number, closely tracking the actual L2-norm of the attention output. The L2-norm of the bias  is negligible until the final layers.](https://assets.turntrout.com/static/images/posts/oqofcuc6vya0jcgdfjy9.avif)
 

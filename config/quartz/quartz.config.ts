@@ -97,7 +97,7 @@ const config: QuartzConfig = {
       AfterArticle(),
       AddFavicons(),
       ColorVariables(),
-      TableOfContents(),
+      TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),
     ],
     filters: [RemoveDrafts()],

@@ -12,6 +12,25 @@ import {
   initializeElvishElements,
 } from "./elvish-toggle"
 
+// Test constants
+const KEYS_THAT_SHOULD_NOT_TOGGLE = ["Tab", "Escape", "a", "1"]
+const TOGGLE_KEYS = ["Enter", " "]
+
+// Helper functions
+function createTestElement(): HTMLSpanElement {
+  const el = document.createElement("span")
+  el.setAttribute("aria-pressed", "false")
+  return el
+}
+
+function createKeyboardEvent(key: string): KeyboardEvent {
+  return new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+  })
+}
+
 describe("elvish-toggle", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
@@ -23,8 +42,7 @@ describe("elvish-toggle", () => {
 
   describe("toggleElvish", () => {
     it("should toggle show-translation class", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
+      const el = createTestElement()
 
       toggleElvish.call(el)
       expect(el.classList.contains("show-translation")).toBe(true)
@@ -37,59 +55,28 @@ describe("elvish-toggle", () => {
   })
 
   describe("handleElvishKeydown", () => {
-    it("should toggle on Enter key", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
-
-      const event = new KeyboardEvent("keydown", {
-        key: "Enter",
-        bubbles: true,
-        cancelable: true,
-      })
+    it.each(TOGGLE_KEYS)("should toggle on %s key", (key) => {
+      const el = createTestElement()
+      const event = createKeyboardEvent(key)
       handleElvishKeydown.call(el, event)
 
       expect(el.classList.contains("show-translation")).toBe(true)
       expect(event.defaultPrevented).toBe(true)
     })
 
-    it("should toggle on Space key", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
-
-      const event = new KeyboardEvent("keydown", {
-        key: " ",
-        bubbles: true,
-        cancelable: true,
-      })
+    it.each(KEYS_THAT_SHOULD_NOT_TOGGLE)("should not toggle on %s key", (key) => {
+      const el = createTestElement()
+      const event = createKeyboardEvent(key)
       handleElvishKeydown.call(el, event)
 
-      expect(el.classList.contains("show-translation")).toBe(true)
-      expect(event.defaultPrevented).toBe(true)
-    })
-
-    it("should not toggle on other keys", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
-
-      for (const key of ["Tab", "Escape", "a", "1"]) {
-        const event = new KeyboardEvent("keydown", {
-          key,
-          bubbles: true,
-          cancelable: true,
-        })
-        handleElvishKeydown.call(el, event)
-        expect(event.defaultPrevented).toBe(false)
-      }
-
+      expect(event.defaultPrevented).toBe(false)
       expect(el.classList.contains("show-translation")).toBe(false)
     })
   })
 
   describe("handleElvishClick", () => {
     it("should toggle on click", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
-
+      const el = createTestElement()
       const event = new MouseEvent("click", { bubbles: true })
       Object.defineProperty(event, "target", { value: el })
       handleElvishClick.call(el, event)
@@ -98,8 +85,7 @@ describe("elvish-toggle", () => {
     })
 
     it("should not toggle when clicking a link", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
+      const el = createTestElement()
       const link = document.createElement("a")
       el.appendChild(link)
 
@@ -111,8 +97,7 @@ describe("elvish-toggle", () => {
     })
 
     it("should not toggle when clicking nested element inside link", () => {
-      const el = document.createElement("span")
-      el.setAttribute("aria-pressed", "false")
+      const el = createTestElement()
       const link = document.createElement("a")
       const strong = document.createElement("strong")
       link.appendChild(strong)
@@ -161,6 +146,29 @@ describe("elvish-toggle", () => {
       expect(helpText).not.toBeNull()
     })
 
+    it("should append help text to main landmark when available", () => {
+      document.body.innerHTML = `
+        <main id="center-content">
+          <span class="elvish"></span>
+        </main>
+      `
+      initializeElvishElements()
+
+      const main = document.getElementById("center-content")
+      const helpText = document.getElementById("elvish-help")
+      expect(helpText).not.toBeNull()
+      expect(main?.contains(helpText)).toBe(true)
+    })
+
+    it("should fallback to body when main landmark is not available", () => {
+      document.body.innerHTML = '<span class="elvish"></span>'
+      initializeElvishElements()
+
+      const helpText = document.getElementById("elvish-help")
+      expect(helpText).not.toBeNull()
+      expect(document.body.contains(helpText)).toBe(true)
+    })
+
     it("should not create help text when no elvish elements exist", () => {
       document.body.innerHTML = '<span class="other"></span>'
       initializeElvishElements()
@@ -201,13 +209,13 @@ describe("elvish-toggle", () => {
       `
       initializeElvishElements()
 
-      const elements = document.querySelectorAll(".elvish")
+      const elements = Array.from(document.querySelectorAll(".elvish"))
       expect(elements.length).toBe(3)
 
-      for (const el of elements) {
+      elements.forEach((el) => {
         expect(el.getAttribute("role")).toBe("button")
         expect(el.getAttribute("aria-pressed")).toBe("false")
-      }
+      })
     })
   })
 

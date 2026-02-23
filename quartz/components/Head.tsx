@@ -12,6 +12,7 @@ import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
+import { cdnBaseUrl } from "./constants"
 import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle"
 import {
   type QuartzComponent,
@@ -114,7 +115,7 @@ export default (() => {
         <link
           key={icon}
           rel="prefetch"
-          href={`https://assets.turntrout.com/static/icons/${icon}.svg`}
+          href={`${cdnBaseUrl}/static/icons/${icon}.svg`}
           as="image"
           type="image/svg+xml"
           crossorigin="anonymous"
@@ -161,7 +162,7 @@ export default (() => {
         {headJsx}
         <link rel="preload" href="/index.css" as="style" spa-preserve />
         <link rel="stylesheet" href="/index.css" spa-preserve />
-        <link rel="preconnect" href="https://assets.turntrout.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />

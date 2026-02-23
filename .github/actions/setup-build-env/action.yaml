@@ -1,15 +1,25 @@
 name: "Setup Build Environment"
 description: "Checks out code, sets up Node and Python, installs dependencies, and caches them."
+inputs:
+  install-node-deps:
+    description: "Whether to install Node.js and dependencies"
+    required: false
+    default: "true"
+  install-python:
+    description: "Whether to install Python and Python dependencies"
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
     - name: Setup base environment
       uses: ./.github/actions/setup-base-env
       with:
+        install-node-deps: ${{ inputs.install-node-deps }}
         install-sharp: "true"
         cache-playwright: "false"
         cache-puppeteer: "false"
-        cache-ffmpeg: "false"
+        install-python: ${{ inputs.install-python }}
 
     - name: Install Build Dependencies
       run: |
@@ -17,22 +27,10 @@ runs:
         sudo apt-get install -y libxml2-utils dos2unix
       shell: bash
 
-    - name: Download and install latest ffmpeg
+    - name: Install ffmpeg from system packages
+      if: inputs.install-node-deps == 'true'
       run: |
-        set -e
-        FFMPEG_URL="https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
-        FFMPEG_DIR="/opt/ffmpeg"
-
-        # Create the target directory
-        sudo mkdir -p "$FFMPEG_DIR"
-
-        # Download and extract ffmpeg, stripping the top-level directory
-        curl -sL "$FFMPEG_URL" | sudo tar -xJ -C "$FFMPEG_DIR" --strip-components=1
-
-        # Create symlinks to make ffmpeg and ffprobe available on the PATH
-        sudo ln -sf "$FFMPEG_DIR"/bin/ffmpeg /usr/local/bin/ffmpeg
-        sudo ln -sf "$FFMPEG_DIR"/bin/ffprobe /usr/local/bin/ffprobe
-
-        # Verify the installation
-        ffmpeg -version
+        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
+        sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5
+        ffprobe -version
       shell: bash

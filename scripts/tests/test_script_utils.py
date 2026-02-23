@@ -11,6 +11,7 @@ import pytest
 from bs4 import BeautifulSoup
 
 from .. import utils as script_utils
+from ..utils import get_git_root as _original_get_git_root
 from .utils import create_markdown_file
 
 
@@ -42,6 +43,9 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Clear the executable cache to avoid stale values
     monkeypatch.setattr(script_utils, "_executable_cache", {})
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
     # Mock subprocess.run in the scripts.utils module where it's used
     monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
@@ -59,7 +63,9 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
 
     # Clear the executable cache to avoid stale values
     monkeypatch.setattr(script_utils, "_executable_cache", {})
-    # Mock both find_executable and subprocess.run
+    # Restore real function: mock.patch in test_download_external_media.py's
+    # mock_git_root fixture can leak get_git_root as MagicMock under xdist
+    monkeypatch.setattr(script_utils, "get_git_root", _original_get_git_root)
     monkeypatch.setattr(script_utils, "find_executable", lambda x: "git")
     # Mock subprocess.run in the scripts.utils module where it's used
     monkeypatch.setattr("scripts.utils.subprocess.run", mock_subprocess_run)
