@@ -23,9 +23,9 @@ type TransformMode = "plaintext" | "markdown" | "html"
 
 /** Mode-specific example text shown as ghost placeholders when the input is empty. */
 const GHOST_INPUTS: Record<TransformMode, string> = {
-  plaintext: `She said "I can't believe it --- we've got 3/4 of the work done (c) 2024..."`,
-  markdown: `She said "I can't *believe* it" --- we've done 3/4...\n\n> "The results speak for themselves," he replied.`,
-  html: `<p>"I can't <em>believe</em> it," she said --- "3/4 done!"</p>`,
+  plaintext: `She said "I can't believe it --- we've got 3/4 of the work done..."`,
+  markdown: `She said "I can't *believe* it --- we've got 3/4 of the work **done**..."`,
+  html: `<p>She said "I can't <em>believe</em> it --- we've got 3/4 of the work <b>done</b>..."</p>`,
 }
 
 function getConfig(): TransformOptions {
