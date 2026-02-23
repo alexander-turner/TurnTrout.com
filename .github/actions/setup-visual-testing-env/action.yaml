@@ -16,9 +16,9 @@ runs:
         cache-puppeteer: "true"
         install-python: "false"
 
-    - name: Install Playwright browsers and system dependencies
+    - name: Install Playwright system dependencies
       if: inputs.install-playwright == 'true'
-      run: pnpm exec playwright install --with-deps chromium webkit firefox
+      run: pnpm exec playwright install-deps chromium webkit firefox
       shell: bash
 
     - name: Install ffmpeg from system packages
