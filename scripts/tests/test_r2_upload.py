@@ -188,18 +188,14 @@ def test_upload_and_move_failures(
     from contextlib import ExitStack
 
     with ExitStack() as stack:
-        stack.enter_context(
-            patch(mock_func, side_effect=mock_side_effect)
-        )
+        stack.enter_context(patch(mock_func, side_effect=mock_side_effect))
         stack.enter_context(
             patch("scripts.r2_upload.check_exists_on_r2", return_value=False)
         )
         # When testing shutil.move failure, subprocess.run (rclone upload)
         # must also be mocked so the upload step succeeds before move fails.
         if mock_func != "scripts.r2_upload.subprocess.run":
-            stack.enter_context(
-                patch("scripts.r2_upload.subprocess.run")
-            )
+            stack.enter_context(patch("scripts.r2_upload.subprocess.run"))
         with pytest.raises(expected_exception):
             r2_upload.upload_and_move(test_file, move_to_dir=mock_git_root)
 
