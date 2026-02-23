@@ -12,8 +12,9 @@ tags:
   - website
   - personal
 date_published: 2024-10-30 18:09:31.133945
-date_updated: 2026-02-23 14:19:04.854979
+date_updated: 2026-02-23 14:20:25.725461
 ---
+
 
 
 For months, I have built a new home for my online content: [`www.turntrout.com`](/). I brooked no compromises. Over [2,220 commits later](https://github.com/alexander-turner/TurnTrout.com/commits/main/),[^commits] I'm ready to publicize.
