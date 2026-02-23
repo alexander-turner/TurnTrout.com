@@ -95,7 +95,7 @@ describe("util/log", () => {
     expect(mockConsoleTransport).not.toHaveBeenCalled()
   })
 
-  it("should add Console transport when CI=true with stderr for warn/error", () => {
+  it("should add Console transport when CI=true with all levels on stderr", () => {
     process.env.CI = "true"
 
     createWinstonLogger("test-logger")
@@ -103,7 +103,7 @@ describe("util/log", () => {
     expect(mockConsoleTransport).toHaveBeenCalledWith(
       expect.objectContaining({
         level: "warn",
-        stderrLevels: ["warn", "error"],
+        stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
       }),
     )
   })

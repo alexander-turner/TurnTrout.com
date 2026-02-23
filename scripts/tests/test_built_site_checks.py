@@ -5969,34 +5969,6 @@ def test_build_included_favicon_domains(mock_run):
     mock_run.assert_called_once()
 
 
-@mock.patch("built_site_checks.subprocess.run")
-def test_build_included_favicon_domains_with_logger_noise(mock_run):
-    """Test that CI logger noise before JSON is ignored."""
-    noisy_stdout = (
-        "[linkFavicons] warn: Favicon counts file not found\n"
-        + json.dumps({"includedDomains": ["example_com"]})
-    )
-    mock_run.return_value = subprocess.CompletedProcess(
-        args=[],
-        returncode=0,
-        stdout=noisy_stdout,
-    )
-    result = built_site_checks._build_included_favicon_domains(Path("/fake"))
-    assert result == frozenset({"example_com"})
-
-
-@mock.patch("built_site_checks.subprocess.run")
-def test_build_included_favicon_domains_no_json(mock_run):
-    """Test that RuntimeError is raised when no JSON is in stdout."""
-    mock_run.return_value = subprocess.CompletedProcess(
-        args=[],
-        returncode=0,
-        stdout="some noise but no json\n",
-    )
-    with pytest.raises(RuntimeError, match="no JSON output"):
-        built_site_checks._build_included_favicon_domains(Path("/fake"))
-
-
 def test_check_file_for_issues_with_included_domains(tmp_path):
     """Test that check_file_for_issues passes favicon_included_domains
     through."""
