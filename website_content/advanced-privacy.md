@@ -27,43 +27,6 @@ card_image_alt: A patriotic man smirks and looks up at a surveillance camera wit
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 As motivated in  [An Opinionated Guide to Privacy Despite Authoritarianism](/privacy), 2025 is a rough time and it might get _way_ worse. I'll assume you've read the previous post and have taken the suggested precautions. This guide seems most appropriate for people at higher risk, like opposition politicians, immigrants, and investigative journalists. However, the Trump regime gives little respect to legal boundaries. I think everyone should gear up for the potentially darker days ahead.
 
 ![[https://assets.turntrout.com/static/images/posts/advanced-privacy-20251026182933.avif|A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. US flag in the background.]]

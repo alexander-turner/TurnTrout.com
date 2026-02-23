@@ -16,43 +16,6 @@ tags:
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Some of my favorite posts
 
 ![[welcome#Start here]]
