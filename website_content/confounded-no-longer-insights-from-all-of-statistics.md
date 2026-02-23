@@ -38,8 +38,9 @@ date_published: 2018-05-03 00:00:00
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-02-23 14:21:41.388495
+date_updated: 2026-02-23 14:23:03.610304
 ---
+
 
 
 
