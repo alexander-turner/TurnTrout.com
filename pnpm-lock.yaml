@@ -182,8 +182,8 @@ importers:
         specifier: 7.0.1
         version: 7.0.1
       rehype-mathjax:
-        specifier: 7.0.0
-        version: 7.0.0
+        specifier: 7.1.0
+        version: 7.1.0
       rehype-mermaid:
         specifier: 3.0.0
         version: 3.0.0(playwright@1.55.1)
@@ -7912,8 +7912,8 @@ packages:
   rehype-katex@7.0.1:
     resolution: {integrity: sha512-OiM2wrZ/wuhKkigASodFoo8wimG3H12LWQaH8qSPVJn9apWKFSH3YOCtbKpBorTVw/eI7cuT21XBbvwEswbIOA==}
 
-  rehype-mathjax@7.0.0:
-    resolution: {integrity: sha512-xdzj8L1y0Zgai/+N3wpi/xIdiHbOJSaz3FFMZLnhnizEMzcl6Zt5LmMZfQ+J5DYo5fyjKGw/pMaJonds1apo/Q==}
+  rehype-mathjax@7.1.0:
+    resolution: {integrity: sha512-mJHNpoqCC5UZ24OKx0wNjlzV18qeJz/Q/LtEjxXzt8vqrZ1Z3GxQnVrHcF5/PogcXUK8cWwJ4U/LWOQWEiABHw==}
 
   rehype-mermaid@3.0.0:
     resolution: {integrity: sha512-fxrD5E4Fa1WXUjmjNDvLOMT4XB1WaxcfycFIWiYU0yEMQhcTDElc9aDFnbDFRLxG1Cfo1I3mfD5kg4sjlWaB+Q==}
@@ -18978,7 +18978,7 @@ snapshots:
       unist-util-visit-parents: 6.0.1
       vfile: 6.0.3
 
-  rehype-mathjax@7.0.0:
+  rehype-mathjax@7.1.0:
     dependencies:
       '@types/hast': 3.0.4
       '@types/mathjax': 0.0.40
@@ -18987,6 +18987,7 @@ snapshots:
       mathjax-full: 3.2.2
       unified: 11.0.5
       unist-util-visit-parents: 6.0.1
+      vfile: 6.0.3
 
   rehype-mermaid@3.0.0(playwright@1.55.1):
     dependencies:
