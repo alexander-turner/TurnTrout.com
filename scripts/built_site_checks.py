@@ -1329,20 +1329,9 @@ def _build_included_favicon_domains(
         capture_output=True,
         text=True,
         cwd=str(git_root),
-        check=False,
+        check=True,
     )
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"compute_favicon_lists.ts failed (exit {result.returncode}):\n"
-            f"stdout: {result.stdout!r}\nstderr: {result.stderr!r}"
-        )
-    stdout = result.stdout.strip()
-    if not stdout:
-        raise RuntimeError(
-            "compute_favicon_lists.ts produced no output.\n"
-            f"stderr: {result.stderr!r}"
-        )
-    data = json.loads(stdout)
+    data = json.loads(result.stdout.strip())
     return frozenset(data["includedDomains"])
 
 
