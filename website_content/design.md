@@ -577,7 +577,9 @@ How do the following sentences feel to read?
 1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
 2. Signed in the 1990's, NAFTA was a trade deal.
 
-Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct.
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. 
+
+Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct. Further, many smallcaps uses (like "500km") actually render from lowercase text. I track `data-original-text` and ensure the clipboard copies the original text exactly.
 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
@@ -988,7 +990,7 @@ I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellche
 
 Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quotes come from external sources and shouldn't trigger linting -- any errors within are not my responsibility.
 
-Spellchecking source Markdown isn't enough — my HTML transforms can corrupt text in ways that only show up in the rendered output (e.g. whitespace eaten between adjacent inline elements). So I also extract visible paragraph text from the built HTML and spellcheck _that_. Smallcaps elements carry a `data-original-text` attribute so the spellchecker sees the original casing (e.g. "ReLU", not "relu").
+However, spellchecking the source Markdown isn't enough because my HTML transformations can corrupt text in ways that only show up in the rendered output. For example, a RegEx bug might change "9 combinations" to "9combinations". To catch this, I spellcheck the finished HTML product. 
 
 I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
@@ -1123,7 +1125,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 3. Consecutive periods (potential typos);
 > 4. Missing spaces before or after links and emphasis elements;
 > 5. Top-level paragraphs lacking end punctuation;
-> 6. Missing whitespace around transform-produced inline elements (smallcaps abbreviations, ordinals, fractions, arrows) — catches bugs like "9combinations" from whitespace-eating transforms;
+> 6. Missing whitespace around inline elements produced by HTML transformations, including smallcaps abbreviations, ordinals, fractions, and arrows;
 >
 > **Math rendering:**
 > 1. $\KaTeX$ rendering errors (indicated by error styling);
