@@ -307,11 +307,11 @@ test.describe("Table of contents", () => {
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 
-    // Wait for the TOC observer to initialize and set an active link
-    await page.waitForFunction(
-      () => document.querySelector("#table-of-contents .active") !== null,
-      { timeout: 15_000 },
-    )
+    const headerLocator = page.locator("h1").last()
+    await headerLocator.scrollIntoViewIfNeeded()
+    const tocHighlightLocator = page.locator("#table-of-contents .active").first()
+    // TOC highlight updates via IntersectionObserver after scroll; allow extra time on Firefox/Safari
+    await expect(tocHighlightLocator).toBeVisible({ timeout: 10_000 })
 
     // Scroll a mid-page heading to the top of the viewport so it enters
     // the IntersectionObserver's detection zone (top 30%).

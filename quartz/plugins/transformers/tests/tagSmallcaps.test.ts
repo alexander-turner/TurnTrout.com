@@ -1175,6 +1175,26 @@ describe("replaceSCInNode", () => {
       )
     })
   })
+
+  describe("SVG context", () => {
+    it("should use tspan instead of abbr when inside SVG", () => {
+      const node = { type: "text", value: "Loss of GPT2-XL" } as Text
+      const textEl = {
+        type: "element",
+        tagName: "text",
+        children: [node],
+        properties: {},
+      } as Parent
+      const svgEl = {
+        type: "element",
+        tagName: "svg",
+        children: [textEl],
+        properties: {},
+      } as Parent
+      replaceSCInNode(node, [svgEl, textEl])
+      expect(getHTML(textEl)).toBe('Loss of <tspan class="small-caps">gpt2-xl</tspan>')
+    })
+  })
 })
 
 describe("data-original-text attribute", () => {

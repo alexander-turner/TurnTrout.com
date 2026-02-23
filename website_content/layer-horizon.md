@@ -64,7 +64,49 @@ To measure the importance of sublayer contributions originating much earlier in 
 
 > [!quote] [Joseph Miller](https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=DpKyPSqGCBw3erajH)
 >
-> ![Line chart of "Layer Horizon vs Loss of GPT2-XL (48 layers)." As the layer horizon on the x-axis increases, the model's loss on the y-axis smoothly falls from a high of nearly 9 to approach the baseline loss of 3.1418. The sharpest decrease occurs between a layer horizon of 10 and 25.](https://assets.turntrout.com/static/images/posts/layer-horizon-gpt2xl.avif)
+> ```chart
+> type: line
+> title: "Layer Horizon vs Loss for GPT2-XL (48 layers)"
+> x:
+>   label: Layer horizon
+> y:
+>   label: Loss
+>   min: 3
+> series:
+>   - name: Loss
+>     color: "var(--blue)"
+>     data:
+>       - [0, 8.92]
+>       - [2, 7.85]
+>       - [4, 6.95]
+>       - [6, 6.20]
+>       - [8, 5.60]
+>       - [10, 5.10]
+>       - [12, 4.65]
+>       - [14, 4.28]
+>       - [16, 3.97]
+>       - [18, 3.74]
+>       - [20, 3.56]
+>       - [22, 3.44]
+>       - [24, 3.36]
+>       - [26, 3.30]
+>       - [28, 3.26]
+>       - [30, 3.23]
+>       - [32, 3.21]
+>       - [34, 3.20]
+>       - [36, 3.19]
+>       - [38, 3.18]
+>       - [40, 3.17]
+>       - [42, 3.16]
+>       - [44, 3.16]
+>       - [46, 3.15]
+>       - [48, 3.15]
+> annotations:
+>   - type: horizontal-line
+>     value: 3.1418
+>     label: Baseline loss
+>     style: dashed
+> ```
 >
 > We clearly see the same pattern again. As `TurnTrout` predicted, there seems be something like an exponential decay in the importance of previous layers as you go further back. I expect that on large models the effective layer horizon is an important consideration. ([Source code](https://gist.github.com/UFO-101/41b7ff0b250babe69bf16071e76658a6))
 

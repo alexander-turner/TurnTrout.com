@@ -249,6 +249,7 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   // Open search and search for a term that will have internal links
   await openSearch(page)
   const searchBar = page.locator("#search-bar")
+  await expect(searchBar).toBeVisible()
   await searchBar.fill("Test page")
 
   // Wait for search results to render before checking preview
