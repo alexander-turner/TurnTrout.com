@@ -46,7 +46,7 @@ test.describe("Punctilio demo page loads correctly", () => {
     const output = page.locator(OUTPUT_CONTENT)
     await expect(output).toHaveClass(/ghost/)
     const outputText = await output.textContent()
-    expect(outputText!.length).toBeGreaterThan(0)
+    expect(outputText?.length ?? 0).toBeGreaterThan(0)
   })
 })
 
