@@ -153,7 +153,9 @@ def test_is_quote_callout_start(line: str, expected: bool):
 def test_strip_quote_blocks(text: str, expected: str):
     result = strip_quotes.strip_quote_blocks(text)
     assert result == expected
-    assert result.count("\n") == text.count("\n"), "Line count must be preserved"
+    assert result.count("\n") == text.count(
+        "\n"
+    ), "Line count must be preserved"
 
 
 class TestCreateStrippedDirectory:

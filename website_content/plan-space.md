@@ -15,8 +15,42 @@ aliases:
   - convergence-psychology
   - success-conditioned-convergence
 date_published: 2026-01-20 10:53:02.330875
-date_updated: 2026-01-25 23:47:56.984113
+date_updated: 2026-02-23 15:06:26.671980
 ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 > [!quote] Zack M. Davis, group discussion
@@ -149,7 +183,6 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
 > The danger is in the cognitive work, not in some complicated or emergent feature of the "agent"; it's in the task itself.
  >
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves.
-
 
 Two key problems with this argument:
 

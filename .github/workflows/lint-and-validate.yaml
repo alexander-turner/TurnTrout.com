@@ -19,7 +19,7 @@ jobs:
     needs: detect-changes
     runs-on: ubuntu-24.04
     permissions:
-      contents: write  # Only this job needs write access
+      contents: write
     outputs:
       pushed: ${{ steps.push-result.outputs.pushed }}
     # Only run on push to main when triggered by a user (not by github-actions bot)
@@ -32,8 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          # Fetch enough history to access before/after commits from the push event
           fetch-depth: 0
+          token: ${{ secrets.PUSH_TOKEN }}
 
       - name: Setup Base Environment
         uses: ./.github/actions/setup-base-env
@@ -58,29 +58,8 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add website_content/*.md README.md
           git commit -m "chore: updated publication dates"
-
-          # Retry push with pull/rebase to handle concurrent pushes
-          max_attempts=3
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            if git push; then
-              echo "Push succeeded on attempt $attempt"
-              echo "pushed=true" >> $GITHUB_OUTPUT
-              exit 0
-            fi
-
-            if [ $attempt -lt $max_attempts ]; then
-              echo "Push failed on attempt $attempt, retrying after pull --rebase..."
-              git pull --rebase origin main
-              attempt=$((attempt + 1))
-              sleep 2
-            else
-              echo "Push failed after $max_attempts attempts"
-              exit 1
-            fi
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push
+          echo "pushed=true" >> $GITHUB_OUTPUT
 
       - name: Set output if no push
         if: steps.check-changes.outputs.has_changes != 'true'
@@ -120,10 +99,6 @@ jobs:
             source-checks:
               - 'website_content/**'
               - 'quartz/**'
-              - '!quartz/**/*.spec.ts'
-              - '!quartz/**/*.test.ts'
-              - '!quartz/**/*.test.tsx'
-              - '!quartz/**/tests/**'
               - 'scripts/source_file_checks.py'
               - 'config/quartz/**'
               - 'config/constants.json'
@@ -140,7 +115,8 @@ jobs:
        needs.detect-changes.outputs.code == 'true' ||
        needs.detect-changes.outputs.styles == 'true' ||
        needs.detect-changes.outputs.source-checks == 'true') &&
-      always() && !cancelled() && !contains(needs.*.result, 'failure') &&
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
       needs.update-dates.outputs.pushed != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
