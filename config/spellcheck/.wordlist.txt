@@ -769,6 +769,7 @@ Bonde
 Bowden
 Braun's
 Bricken
+Bri'ish
 BuzzFeed
 Byrne
 Byrne's
@@ -2278,6 +2279,7 @@ Minification
 750PX
 8pt
 AST
+ASTs
 Annatar
 Callouts
 Cryptographic
@@ -2949,10 +2951,12 @@ heil
 homomorphic
 homomorphically
 hotspot
+html
 iCloud
 iCloud's
 iPhones
 keyring
+localisation
 lockdown
 lookups
 masse
