@@ -53,7 +53,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg
+          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
           pip install linkchecker
 
       - name: Install ImageMagick 7 via Homebrew

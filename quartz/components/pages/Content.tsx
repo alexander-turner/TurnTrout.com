@@ -9,7 +9,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 
 import { insertFavicon } from "../../plugins/transformers/favicons"
 import { htmlToJsx } from "../../util/jsx"
-import { specialFaviconPaths } from "../constants"
+import { specialFaviconPaths, EXTERNAL_LINK_REL, PREVIEWABLE_CLASS } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
 export function createLinkWithFavicon(
@@ -75,7 +75,7 @@ const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
 
   const content = htmlToJsx(fileData.filePath, tree)
   const classes: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classString = ["previewable", ...classes].join(" ")
+  const classString = [PREVIEWABLE_CLASS, ...classes].join(" ")
   const toc = renderTableOfContents(fileData)
   return (
     <article id="top" className={classString} data-use-dropcap={useDropcap}>
@@ -124,7 +124,7 @@ function lessWrongQuestion(url: string): JSX.Element {
     {
       class: "external",
       target: "_blank",
-      rel: "noopener noreferrer",
+      rel: EXTERNAL_LINK_REL,
     },
   )
 

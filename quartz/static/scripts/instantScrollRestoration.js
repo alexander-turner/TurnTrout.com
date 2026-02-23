@@ -1,3 +1,4 @@
+/* global INSTANT_SCROLL_RESTORE_KEY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(function () {
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
@@ -15,14 +16,14 @@
     savedScroll = window.history.state.scroll
   } else if (typeof Storage !== "undefined") {
     // Fallback for Firefox: check sessionStorage
-    const sessionScroll = sessionStorage.getItem("instantScrollRestore")
+    const sessionScroll = sessionStorage.getItem(INSTANT_SCROLL_RESTORE_KEY)
     if (sessionScroll) {
       const parsed = parseInt(sessionScroll, 10)
       if (!isNaN(parsed)) {
         savedScroll = parsed
         console.debug("[InstantScrollRestoration] Using sessionStorage fallback:", savedScroll)
         // Clear it after use to avoid stale data
-        sessionStorage.removeItem("instantScrollRestore")
+        sessionStorage.removeItem(INSTANT_SCROLL_RESTORE_KEY)
       }
     }
   }
@@ -207,6 +208,16 @@
 
       // Correct if we've drifted more than 2px from target
       if (Math.abs(currentScroll - targetPos) > 2) {
+        // If a user interaction event (wheel/touch/pointer/key) has been detected,
+        // this "drift" is actually user-initiated scroll. Scroll events fire
+        // asynchronously after rAF callbacks, so the scrollHandler may not have
+        // run yet—but the interaction flag is set synchronously and is reliable.
+        if (userInteracted) {
+          userHasScrolled = true
+          window.removeEventListener("scroll", scrollHandler, { passive: true })
+          console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
+          return
+        }
         console.debug(
           `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
         )

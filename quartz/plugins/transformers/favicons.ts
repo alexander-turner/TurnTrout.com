@@ -10,7 +10,13 @@ import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
 
-import { simpleConstants, specialFaviconPaths, defaultPath } from "../../components/constants"
+import {
+  simpleConstants,
+  specialFaviconPaths,
+  defaultPath,
+  specialDomainMappings,
+  cdnBaseUrl,
+} from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import {
   normalizeHostname,
@@ -251,7 +257,7 @@ export function getFaviconUrl(faviconPath: string): string {
 
   // SVG files don't need conversion, serve directly via CDN
   if (faviconPath.endsWith(".svg")) {
-    return `https://assets.turntrout.com${faviconPath}`
+    return `${cdnBaseUrl}${faviconPath}`
   }
 
   // Normalize path to .png for cache lookup (cache keys are always .png paths)
@@ -265,7 +271,7 @@ export function getFaviconUrl(faviconPath: string): string {
     }
     // Cache contains SVG path, construct CDN URL
     if (cached.endsWith(".svg")) {
-      return `https://assets.turntrout.com${cached}`
+      return `${cdnBaseUrl}${cached}`
     }
   }
 
@@ -275,14 +281,14 @@ export function getFaviconUrl(faviconPath: string): string {
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
     // SVG exists locally, return SVG CDN URL
-    return `https://assets.turntrout.com${svgPath}`
+    return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
   }
 
   // Fallback to AVIF
   const avifPath = pngPath.replace(".png", ".avif")
-  return `https://assets.turntrout.com${avifPath}`
+  return `${cdnBaseUrl}${avifPath}`
 }
 
 /**

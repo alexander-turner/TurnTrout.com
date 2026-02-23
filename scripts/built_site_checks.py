@@ -146,13 +146,19 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+VALID_PARAGRAPH_ENDING_CHARACTERS = (
+    ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
+)
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
 
 
 def _should_skip_paragraph(p: Tag) -> bool:
     """Check if a paragraph should be skipped for punctuation checking."""
+    # Skip paragraphs inside quote callouts (quoted external content)
+    if p.find_parent("blockquote", {"data-callout": "quote"}):
+        return True
+
     classes = script_utils.get_classes(p)
     if (
         "subtitle" in classes
@@ -739,6 +745,34 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
                 missing.append("height")
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
+def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all `.subfigure` elements have a `<figure>` ancestor.
+
+    When the markdown parser breaks a `<figure>` structure (e.g. inside
+    a definition list continuation), `.subfigure` divs can end up as
+    orphaned elements outside any `<figure>`, breaking the flex layout.
+
+    Subfigures may be nested inside intermediate wrapper elements (e.g.
+    `<div role="img">` for accessibility), so this checks ancestors
+    rather than requiring a direct parent.
+
+    Returns:
+        list of strings describing orphaned subfigure elements
+    """
+    issues: list[str] = []
+
+    for subfig in _tags_only(soup.find_all(class_="subfigure")):
+        if not subfig.find_parent("figure"):
+            tag_preview = str(subfig)[:120]
+            _append_to_list(
+                issues,
+                f"Orphaned .subfigure (no <figure> ancestor): {tag_preview}",
+            )
 
     return issues
 
@@ -1734,6 +1768,7 @@ def check_file_for_issues(
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
+        "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
     if opts.favicon_whitelist is not None:

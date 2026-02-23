@@ -14,7 +14,7 @@ const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
  * @returns JavaScript code as a string for the onclick handler
  */
 function toggleSpoilerJs(className: string): string {
-  return `this.classList.toggle('${className}');this.querySelector('.spoiler-overlay').setAttribute('aria-expanded',this.classList.contains('${className}'))`
+  return `this.classList.toggle('${className}');this.querySelector('.spoiler-overlay').setAttribute('aria-expanded',this.classList.contains('${className}'));this.querySelector('.spoiler-content').setAttribute('aria-hidden',!this.classList.contains('${className}'))`
 }
 
 /**
@@ -50,7 +50,7 @@ export function createSpoilerNode(content: string | Element[]): Element {
         onkeydown:
           "if(event.key==='Enter'||event.key===' '){event.preventDefault();this.parentElement.click()}",
       }),
-      h("span", { className: ["spoiler-content"] }, content),
+      h("span", { className: ["spoiler-content"], ariaHidden: "true" }, content),
     ],
   )
 }
