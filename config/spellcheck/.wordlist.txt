@@ -2302,6 +2302,7 @@ TypeScale
 VP9
 WEBM
 WEBMs
+WCAG
 WEBP
 YAML
 antipatterns
@@ -2328,6 +2329,7 @@ monospace
 navigations
 plaintext
 preloading
+preprocess
 preprocessed
 redeclared
 scatterplot

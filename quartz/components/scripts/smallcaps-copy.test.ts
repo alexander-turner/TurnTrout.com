@@ -168,8 +168,8 @@ describe("smallcaps-copy", () => {
 
     it("does nothing when ancestor has small-caps but selection doesn't include them", () => {
       document.body.innerHTML = '<p>Normal text <abbr class="small-caps">api</abbr> more text</p>'
-      const p = querySelector("p")
-      const textNode = p.firstChild
+      const paragraph = querySelector("p")
+      const textNode = paragraph.firstChild
       if (!textNode) throw new Error("No text node")
       const range = document.createRange()
       range.setStart(textNode, 0)
