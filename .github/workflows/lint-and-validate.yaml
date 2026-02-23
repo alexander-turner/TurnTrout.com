@@ -22,12 +22,12 @@ jobs:
       contents: write
     outputs:
       pushed: ${{ steps.push-result.outputs.pushed }}
-    # Only run on push to main when triggered by a user (not by github-actions bot)
-    # and only when content files changed
+    # Only run on push to main by a human (skip our own automated date commits)
+    # Note: github.actor reflects the PAT owner, not the bot, so we check the commit message
     if: >
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      github.actor != 'github-actions[bot]' &&
+      !startsWith(github.event.head_commit.message, 'chore: updated publication dates') &&
       needs.detect-changes.outputs.content == 'true'
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
