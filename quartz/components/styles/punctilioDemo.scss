@@ -62,6 +62,7 @@ $panel-min-height: 200px;
   #punctilio-input {
     font-family: var(--font-monospace);
     font-size: var(--font-size-code);
+    font-variant-ligatures: none;
     background-color: var(--background);
   }
 
@@ -93,6 +94,7 @@ $panel-min-height: 200px;
     &.monospace-output {
       font-family: var(--font-monospace);
       font-size: var(--font-size-code);
+      font-variant-ligatures: none;
     }
   }
 }
