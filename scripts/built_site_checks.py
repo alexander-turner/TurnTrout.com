@@ -143,13 +143,19 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+VALID_PARAGRAPH_ENDING_CHARACTERS = (
+    ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
+)
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
 
 
 def _should_skip_paragraph(p: Tag) -> bool:
     """Check if a paragraph should be skipped for punctuation checking."""
+    # Skip paragraphs inside quote callouts (quoted external content)
+    if p.find_parent("blockquote", {"data-callout": "quote"}):
+        return True
+
     classes = script_utils.get_classes(p)
     if (
         "subtitle" in classes

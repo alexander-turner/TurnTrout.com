@@ -29,7 +29,11 @@ const searchInterface = (
           id="search-bar"
           name="search"
           type="text"
+          role="combobox"
           aria-label="Search"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="results-container"
           placeholder="Search"
         />
         <div id="search-layout" data-preview />
