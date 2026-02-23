@@ -2635,6 +2635,11 @@ def test_check_link_spacing(html, expected):
             "<p>9<abbr>combinations</abbr> test</p>",
             [],
         ),
+        # Elements inside no-formatting spans should be skipped
+        (
+            '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
+            [],
+        ),
     ],
 )
 def test_check_inline_formatting_spacing(html, expected):
@@ -5928,6 +5933,21 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         (
             '<article><p>Text with <span class="h2">Header 2</span></p></article>',
             ["Paragraph ends with invalid character '2' Text withHeader 2"],
+        ),
+        # Center-dot separated lists should be skipped
+        (
+            "<article><p>Smart quotes\u00b7Em dashes\u00b7Ellipses\u00b7Fractions</p></article>",
+            [],
+        ),
+        # Exactly 2 center dots (threshold) should also be skipped
+        (
+            "<article><p>A\u00b7B\u00b7C</p></article>",
+            [],
+        ),
+        # Single center dot is NOT enough to skip
+        (
+            "<article><p>One\u00b7two</p></article>",
+            ["Paragraph ends with invalid character 'o' One\u00b7two"],
         ),
     ],
 )
