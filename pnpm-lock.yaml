@@ -559,8 +559,8 @@ importers:
         specifier: 0.1.19
         version: 0.1.19
       '@napi-rs/simple-git-linux-arm64-musl':
-        specifier: 0.1.19
-        version: 0.1.19
+        specifier: 0.1.22
+        version: 0.1.22
       '@napi-rs/simple-git-linux-powerpc64le-gnu':
         specifier: 0.1.19
         version: 0.1.19
@@ -2051,6 +2051,12 @@ packages:
 
   '@napi-rs/simple-git-linux-arm64-musl@0.1.19':
     resolution: {integrity: sha512-OwTRF+H4IZYxmDFRi1IrLMfqbdIpvHeYbJl2X94NVsLVOY+3NUHvEzL3fYaVx5urBaMnIK0DD3wZLbcueWvxbA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/simple-git-linux-arm64-musl@0.1.22':
+    resolution: {integrity: sha512-MOs7fPyJiU/wqOpKzAOmOpxJ/TZfP4JwmvPad/cXTOWYwwyppMlXFRms3i98EU3HOazI/wMU2Ksfda3+TBluWA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -11627,6 +11633,9 @@ snapshots:
     optional: true
 
   '@napi-rs/simple-git-linux-arm64-musl@0.1.19':
+    optional: true
+
+  '@napi-rs/simple-git-linux-arm64-musl@0.1.22':
     optional: true
 
   '@napi-rs/simple-git-linux-powerpc64le-gnu@0.1.19':
