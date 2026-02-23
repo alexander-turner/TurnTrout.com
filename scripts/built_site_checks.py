@@ -1311,18 +1311,17 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
     return non_svg_favicons
 
 
-def _build_favicon_lists(
+def _build_included_favicon_domains(
     git_root: Path,
-) -> tuple[list[str], list[str]]:
+) -> frozenset[str]:
     """
-    Build favicon whitelist and blacklist by calling the shared TS module.
+    Compute the set of domain entries whose favicons should appear in the
+    built site, by calling the shared TS module which runs the same
+    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold)
+    as the Quartz transformer.
 
-    Runs ``scripts/compute_favicon_lists.ts`` (which imports from
-    ``quartz/util/favicon-config.ts``) so that the Python validation
-    uses the exact same inclusion predicate -- including PSL-normalised
-    blacklist entries -- as the Quartz transformer.
-
-    Returns a (whitelist, blacklist) tuple.
+    Returns a frozenset of underscore-separated domain strings
+    (e.g. ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
     result = subprocess.run(  # skipcq: BAN-B607
         ["npx", "tsx", str(git_root / "scripts" / "compute_favicon_lists.ts")],
@@ -1332,16 +1331,11 @@ def _build_favicon_lists(
         check=True,
     )
     data = json.loads(result.stdout)
-    return data["whitelist"], data["blacklist"]
+    return frozenset(data["includedDomains"])
 
 
 def _is_asset_href(href: str) -> bool:
-    """
-    Check if an href points to an asset file (image/video/audio/pdf).
-
-    Mirrors the TS ``isAssetLink()`` which uses the ``mime-types``
-    library; here we use Python's stdlib ``mimetypes`` module.
-    """
+    """Check if an href points to an asset file (image/video/audio/pdf)."""
     path = href.split("?")[0].split("#")[0]
     mime_type, _ = mimetypes.guess_type(path)
     if not mime_type:
@@ -1352,63 +1346,45 @@ def _is_asset_href(href: str) -> bool:
     )
 
 
-def check_whitelisted_links_have_favicons(
+def _domain_matches(normalised: str, domain: str) -> bool:
+    """Boundary-aware domain matching (avoids e.g. 'x_com' matching 'vox_com')."""
+    return normalised == domain or normalised.endswith(f"_{domain}")
+
+
+def check_external_links_have_favicons(
     soup: BeautifulSoup,
-    favicon_whitelist: list[str],
-    favicon_blacklist: list[str] | None = None,
+    included_domains: frozenset[str],
 ) -> list[str]:
     """
-    Check that external links to whitelisted domains have favicons.
+    Check that external links to included domains have favicons.
 
-    For each ``<a class="external">`` link inside ``<article>`` whose
-    domain matches a whitelist entry (and is NOT blacklisted), verifies
-    the link contains a ``.favicon`` descendant element.
+    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
+    transformer (whitelist + blacklist + count threshold), pre-computed
+    by ``scripts/compute_favicon_lists.ts``.
 
-    Args:
-        soup: Parsed HTML page.
-        favicon_whitelist: Underscore-separated domain entries (e.g.
-            ``["apple_com", "scholar_google_com"]``).  Matching is by
-            substring inclusion in the underscore-normalised hostname.
-        favicon_blacklist: Underscore-separated domain entries that should
-            never receive favicons.  Blacklist takes priority over
-            whitelist (mirroring the TS logic).
-
-    Returns:
-        List of human-readable issue strings for whitelisted links missing
-        favicons.
+    Only checks ``<a class="external">`` links inside ``<article>``;
+    component-generated links (nav, aside) never pass through the
+    favicon transformer.
     """
     issues: list[str] = []
-    blacklist = favicon_blacklist or []
 
-    # Only check links inside <article>; component-generated links (nav,
-    # aside) never pass through the favicon transformer.
     for link in soup.select("article a.external[href]"):
         href = str(link.get("href", ""))
-        if not href.startswith(("http://", "https://")):
+        if not href.startswith(("http://", "https://")) or _is_asset_href(href):
             continue
 
-        if _is_asset_href(href):
-            continue
-
-        parsed = urlparse(href)
-        hostname = parsed.hostname or ""
+        hostname = urlparse(href).hostname or ""
         if not hostname:
             continue
 
-        # Normalise: strip www., convert dots to underscores
         normalised = hostname.removeprefix("www.").replace(".", "_")
-
-        # Blacklist takes priority (mirrors TS shouldIncludeFavicon)
-        if any(entry in normalised for entry in blacklist):
-            continue
-        if not any(entry in normalised for entry in favicon_whitelist):
+        if not any(_domain_matches(normalised, d) for d in included_domains):
             continue
 
-        has_favicon = bool(link.select_one("svg.favicon, img.favicon"))
-        if not has_favicon:
+        if not link.select_one("svg.favicon, img.favicon"):
             _append_to_list(
                 issues,
-                f"Whitelisted link missing favicon: {hostname} ({href})",
+                f"Link missing favicon: {hostname} ({href})",
             )
 
     return issues
@@ -1686,8 +1662,7 @@ class CheckOptions:
 
     should_check_fonts: bool = False
     defined_css_variables: Set[str] | None = None
-    favicon_whitelist: list[str] | None = None
-    favicon_blacklist: list[str] | None = None
+    favicon_included_domains: frozenset[str] | None = None
 
 
 def check_file_for_issues(
@@ -1771,11 +1746,9 @@ def check_file_for_issues(
         "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
-    if opts.favicon_whitelist is not None:
-        issues["whitelisted_missing_favicons"] = (
-            check_whitelisted_links_have_favicons(
-                soup, opts.favicon_whitelist, opts.favicon_blacklist
-            )
+    if opts.favicon_included_domains is not None:
+        issues["missing_favicons"] = check_external_links_have_favicons(
+            soup, opts.favicon_included_domains
         )
 
     if opts.should_check_fonts:
@@ -2355,14 +2328,11 @@ def _process_html_files(  # pylint: disable=too-many-locals
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
 
-    favicon_whitelist, favicon_blacklist = _build_favicon_lists(
-        public_dir.parent
-    )
+    included_domains = _build_included_favicon_domains(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,
-        favicon_whitelist=favicon_whitelist,
-        favicon_blacklist=favicon_blacklist,
+        favicon_included_domains=included_domains,
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)

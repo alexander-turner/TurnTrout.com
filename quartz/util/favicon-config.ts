@@ -2,7 +2,7 @@
  * Shared favicon configuration: hostname normalization and computed
  * whitelist/blacklist arrays.
  *
- * Imported by both the Quartz transformer (linkfavicons.ts) and the
+ * Imported by both the Quartz transformer (favicons.ts) and the
  * Python validation helper (scripts/compute_favicon_lists.ts) so that
  * the inclusion predicate is defined in one place.
  */
