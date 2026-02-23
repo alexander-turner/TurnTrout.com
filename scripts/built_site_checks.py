@@ -1315,22 +1315,34 @@ def _build_included_favicon_domains(
     git_root: Path,
 ) -> frozenset[str]:
     """
-    Compute the set of domain entries whose favicons should appear in the
-    built site, by calling the shared TS module which runs the same
-    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold)
-    as the Quartz transformer.
+    Compute the set of domain entries whose favicons should appear in the built
+    site, by calling the shared TS module which runs the same
+    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold) as
+    the Quartz transformer.
 
-    Returns a frozenset of underscore-separated domain strings
-    (e.g. ``{"apple_com", "openai_com", "scholar_google_com"}``).
+    Returns a frozenset of underscore-separated domain strings (e.g.
+    ``{"apple_com", "openai_com", "scholar_google_com"}``).
     """
+    script = str(git_root / "scripts" / "compute_favicon_lists.ts")
     result = subprocess.run(  # skipcq: BAN-B607
-        ["npx", "tsx", str(git_root / "scripts" / "compute_favicon_lists.ts")],
+        ["pnpm", "exec", "tsx", script],
         capture_output=True,
         text=True,
         cwd=str(git_root),
-        check=True,
+        check=False,
     )
-    data = json.loads(result.stdout)
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"compute_favicon_lists.ts failed (exit {result.returncode}):\n"
+            f"stdout: {result.stdout!r}\nstderr: {result.stderr!r}"
+        )
+    stdout = result.stdout.strip()
+    if not stdout:
+        raise RuntimeError(
+            "compute_favicon_lists.ts produced no output.\n"
+            f"stderr: {result.stderr!r}"
+        )
+    data = json.loads(stdout)
     return frozenset(data["includedDomains"])
 
 
@@ -1347,7 +1359,8 @@ def _is_asset_href(href: str) -> bool:
 
 
 def _domain_matches(normalised: str, domain: str) -> bool:
-    """Boundary-aware domain matching (avoids e.g. 'x_com' matching 'vox_com')."""
+    """Boundary-aware domain matching (avoids e.g. 'x_com' matching
+    'vox_com')."""
     return normalised == domain or normalised.endswith(f"_{domain}")
 
 
