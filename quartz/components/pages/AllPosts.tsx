@@ -5,6 +5,7 @@ import React from "react"
 import type { QuartzComponent, QuartzComponentProps } from "../types"
 
 import { type FullSlug } from "../../util/path"
+import { PREVIEWABLE_CLASS } from "../constants"
 import { PageList } from "../PageList"
 import style from "../styles/listPage.scss"
 
@@ -32,7 +33,7 @@ export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element 
 export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData, allFiles } = props
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const classes = ["previewable", ...cssClasses].join(" ")
+  const classes = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
   const pageListing = generateAllPostsBlock(props)
 
   return (

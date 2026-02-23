@@ -8,29 +8,9 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
+import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
-
-The temperature was 72F -- perfect for Mr. Smith.
-
-(c) 2024 Acme Corp. 2x + 3 != 5`
-
-const EXAMPLE_MARKDOWN = `She said, "It's *beautiful*" -- really.
-
-\`\`\`python
-x = "don't transform this"
-\`\`\`
-
-Inline math like $E = mc^2$ is preserved.
-
-(c) 2024 Acme Corp. 2x faster!`
-
-const EXAMPLE_HTML = `<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
-
-<p>(c) 2024 Acme Corp. 2x faster!</p>
-
-<pre><code>x = "don't transform this"</code></pre>`
+const DEFAULT_INPUT = "Type here!"
 
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
@@ -38,8 +18,16 @@ const MAX_DIFF_LENGTH = 10_000
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
+const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
+const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-options-list select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
+
+const INPUT_PLACEHOLDERS: Record<TransformMode, string> = {
+  plaintext: "Input your text here",
+  markdown: "Input your Markdown text here",
+  html: "Input your HTML code here",
+}
 
 function getConfig(): TransformOptions {
   return {
@@ -95,28 +83,6 @@ function transformHtmlText(html: string, config: TransformOptions): string {
   return String(result)
 }
 
-/**
- * Sanitize HTML for the rendered preview by stripping event handlers
- * and javascript: URLs.
- */
-function sanitizeHtmlForPreview(html: string): string {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(`<body>${html}</body>`, "text/html")
-  for (const el of doc.body.querySelectorAll("*")) {
-    for (const attr of Array.from(el.attributes)) {
-      const val = attr.value.trim().toLowerCase()
-      if (
-        attr.name.startsWith("on") ||
-        ((attr.name === "href" || attr.name === "src") &&
-          (val.startsWith("javascript:") || val.startsWith("data:")))
-      ) {
-        el.removeAttribute(attr.name)
-      }
-    }
-  }
-  return doc.body.innerHTML
-}
-
 function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
   switch (mode) {
     case "plaintext":
@@ -130,12 +96,6 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
       throw new Error(`Unknown mode: ${exhaustive}`)
     }
   }
-}
-
-const EXAMPLES: Record<TransformMode, string> = {
-  plaintext: EXAMPLE_PLAINTEXT,
-  markdown: EXAMPLE_MARKDOWN,
-  html: EXAMPLE_HTML,
 }
 
 // ─── Inline diff highlighting ────────────────────────────────────────
@@ -163,67 +123,100 @@ document.addEventListener("nav", () => {
   if (!container) return
 
   const input = document.getElementById("punctilio-input") as HTMLTextAreaElement | null
-  const output = document.getElementById("punctilio-output") as HTMLTextAreaElement | null
-  const diffOutput = document.getElementById("punctilio-diff") as HTMLElement | null
-  const htmlPreview = document.getElementById("punctilio-html-preview") as HTMLElement | null
+  const outputContent = container.querySelector(".punctilio-output-content") as HTMLElement | null
   const modeButtons = container.querySelectorAll<HTMLButtonElement>(".punctilio-mode-btn")
   const copyBtn = document.getElementById("punctilio-copy-btn") as HTMLButtonElement | null
+  const outputTitleInner = outputContent
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
+  const inputTitleInner = input
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
-  if (!input || !output) return
+  if (!input || !outputContent) return
+
+  let lastResult = ""
 
   const controller = new AbortController()
   abortController = controller
   const { signal } = controller
 
   // Restore saved mode and input, or fall back to defaults
-  const savedMode = sessionStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
-  let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
+  const savedMode = localStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
+  let currentMode: TransformMode =
+    savedMode && savedMode in INPUT_PLACEHOLDERS ? savedMode : "plaintext"
+
+  const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+    OPTION_INPUTS_SELECTOR,
+  )
+
+  // Restore select values from localStorage
+  for (const opt of optionInputs) {
+    if (!(opt instanceof HTMLSelectElement)) continue
+    const saved = localStorage.getItem(STORAGE_KEY_OPT_PREFIX + opt.id)
+    if (saved && Array.from(opt.options).some((o) => o.value === saved)) {
+      opt.value = saved
+    }
+  }
 
   function runTransform() {
-    if (!input || !output) return
+    if (!input || !outputContent) return
     const config = getConfig()
     const result = doTransform(input.value, currentMode, config)
-    output.value = result
+    lastResult = result
+
+    // Diff highlighting
+    if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+      outputContent.textContent = result
+    } else {
+      const segments = diffChars(input.value, result)
+      outputContent.innerHTML = renderDiffHtml(segments)
+    }
 
     // Persist input text and mode
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
-    sessionStorage.setItem(STORAGE_KEY_MODE, currentMode)
+    localStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
-    // Diff highlighting (always shown)
-    if (diffOutput) {
-      if (input.value.length + result.length > MAX_DIFF_LENGTH) {
-        diffOutput.textContent = result
-      } else {
-        const segments = diffChars(input.value, result)
-        diffOutput.innerHTML = renderDiffHtml(segments)
-      }
-      diffOutput.style.display = ""
-      output.style.display = "none"
-    }
-
-    // HTML rendered preview
-    if (htmlPreview) {
+    // Update admonition titles to reflect the active mode
+    if (outputTitleInner) {
+      const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        htmlPreview.style.display = ""
-        htmlPreview.innerHTML = sanitizeHtmlForPreview(result)
+        outputTitleInner.innerHTML = '<abbr class="small-caps">Html</abbr> source output'
+      } else if (currentMode === "markdown") {
+        outputTitleInner.textContent = "Markdown source output"
       } else {
-        htmlPreview.style.display = "none"
+        outputTitleInner.textContent = "Text output"
       }
+      if (icon) outputTitleInner.prepend(icon)
     }
+    if (inputTitleInner) {
+      const icon = inputTitleInner.querySelector(".admonition-icon")
+      if (currentMode === "html") {
+        inputTitleInner.innerHTML = 'Input your <abbr class="small-caps">Html</abbr> code'
+      } else {
+        inputTitleInner.textContent = "Input"
+      }
+      if (icon) inputTitleInner.prepend(icon)
+    }
+    const isCodeMode = currentMode === "markdown" || currentMode === "html"
+    outputContent.classList.toggle("monospace-output", isCodeMode)
+
+    input.placeholder = INPUT_PLACEHOLDERS[currentMode]
   }
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Restore saved input or use example text for the current mode
+  // Restore saved input or use default text
   const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
-  input.value = savedInput ?? EXAMPLES[currentMode]
+  input.value = savedInput ?? DEFAULT_INPUT
 
   // Sync mode button active state with restored mode
   for (const b of modeButtons) {
     b.classList.toggle("active", b.dataset.mode === currentMode)
   }
 
-  runTransform()
+  // Defer initial transform to run after checkbox.inline.js restores checkbox state
+  queueMicrotask(runTransform)
 
   // Live transform on input
   input.addEventListener("input", debouncedTransform, { signal })
@@ -236,50 +229,28 @@ document.addEventListener("nav", () => {
         for (const b of modeButtons) b.classList.remove("active")
         btn.classList.add("active")
         const newMode = (btn.dataset.mode ?? "plaintext") as TransformMode
-        if (newMode !== currentMode) {
-          currentMode = newMode
-          input.value = EXAMPLES[currentMode]
-        }
+        currentMode = newMode
         runTransform()
       },
       { signal },
     )
   }
 
-  // Options changes trigger re-transform
-  const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
-    ".punctilio-options input, .punctilio-options select",
-  )
+  // Options changes trigger re-transform and persist select values
   for (const opt of optionInputs) {
-    opt.addEventListener("change", runTransform, { signal })
-  }
-
-  // Copy output button — reuses clipboard icon style from code blocks
-  if (copyBtn) {
-    copyBtn.innerHTML = svgCopy
-    copyBtn.addEventListener(
-      "click",
+    opt.addEventListener(
+      "change",
       () => {
-        if (!output) return
-        navigator.clipboard.writeText(output.value).then(
-          () => {
-            copyBtn.blur()
-            copyBtn.innerHTML = svgCheck
-            animate(
-              2000,
-              () => {
-                // No per-frame updates needed
-              },
-              () => {
-                copyBtn.innerHTML = svgCopy
-                copyBtn.style.borderColor = ""
-              },
-            )
-          },
-          (error) => console.error(error),
-        )
+        if (opt instanceof HTMLSelectElement)
+          localStorage.setItem(STORAGE_KEY_OPT_PREFIX + opt.id, opt.value)
+        runTransform()
       },
       { signal },
     )
+  }
+
+  // Copy output button — reuses shared clipboard button setup from code blocks
+  if (copyBtn) {
+    setupCopyButton(copyBtn, () => lastResult, { signal })
   }
 })

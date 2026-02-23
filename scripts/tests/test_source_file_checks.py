@@ -2438,3 +2438,66 @@ tags: [test]
             source_file_checks.main(check_publication_dates=check_dates)
     else:
         source_file_checks.main(check_publication_dates=check_dates)
+
+
+@pytest.mark.parametrize(
+    "text,expected_errors",
+    [
+        # Self-closing iframe (invalid)
+        (
+            '<iframe src="https://example.com" />',
+            [
+                "Self-closing <iframe .../> at line 1"
+                " (use <iframe ...></iframe> instead)"
+            ],
+        ),
+        # Properly closed iframe (valid)
+        ('<iframe src="https://example.com"></iframe>', []),
+        # Multiple self-closing non-void elements
+        (
+            '<iframe src="a" />\n<div class="b" />',
+            [
+                "Self-closing <iframe .../> at line 1"
+                " (use <iframe ...></iframe> instead)",
+                "Self-closing <div .../> at line 2"
+                " (use <div ...></div> instead)",
+            ],
+        ),
+        # Inside indented code block (should be skipped)
+        ('    <iframe src="https://example.com" />', []),
+        # No HTML at all
+        ("Just plain markdown text", []),
+        # Case insensitive
+        (
+            '<IFRAME src="test" />',
+            [
+                "Self-closing <IFRAME .../> at line 1"
+                " (use <IFRAME ...></IFRAME> instead)"
+            ],
+        ),
+    ],
+)
+def test_check_self_closing_non_void_elements(
+    text: str, expected_errors: list[str]
+) -> None:
+    errors = source_file_checks.check_self_closing_non_void_elements(text)
+    assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    "tag", sorted(source_file_checks._NON_VOID_ELEMENTS)
+)
+def test_each_non_void_element_is_caught(tag: str) -> None:
+    """Every element in _NON_VOID_ELEMENTS should be flagged."""
+    text = f"<{tag} />"
+    errors = source_file_checks.check_self_closing_non_void_elements(text)
+    assert len(errors) == 1
+    assert tag in errors[0]
+
+
+@pytest.mark.parametrize("tag", ["img", "br", "hr", "input", "meta", "link"])
+def test_void_elements_are_allowed_self_closing(tag: str) -> None:
+    """Void elements should never be flagged."""
+    text = f"<{tag} />"
+    errors = source_file_checks.check_self_closing_non_void_elements(text)
+    assert errors == []

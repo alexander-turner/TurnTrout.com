@@ -4,6 +4,7 @@ permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
+date_published: 2026-02-14T00:00:00.000Z
 description: Try punctilio's typography transformations in your browser. Transform plaintext, Markdown, or HTML with smart quotes, em-dashes, symbols, and more.
 tags:
   - website
@@ -13,74 +14,44 @@ tags:
 
 Type or paste text in the input area below and see the transformed output.
 
-<div id="punctilio-demo" class="no-formatting">
-<div class="punctilio-mode-selector">
+<div id="punctilio-demo">
+<div class="punctilio-mode-selector no-formatting">
 <button class="punctilio-mode-btn active" data-mode="plaintext">Plaintext</button>
 <button class="punctilio-mode-btn" data-mode="markdown">Markdown</button>
 <button class="punctilio-mode-btn" data-mode="html">HTML</button>
 </div>
-<div class="punctilio-panels">
-<div class="punctilio-panel">
-<div class="punctilio-panel-header">
-<label for="punctilio-input">Input</label>
-</div>
-<textarea id="punctilio-input" spellcheck="false"></textarea>
-</div>
-<div class="punctilio-panel">
-<div class="punctilio-panel-header">
-<label for="punctilio-output">Output</label>
-<div class="punctilio-toolbar">
-<button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
-</div>
-</div>
-<textarea id="punctilio-output" readonly spellcheck="false"></textarea>
-<div id="punctilio-diff" class="punctilio-diff"></div>
-<div id="punctilio-html-preview" class="punctilio-html-preview" style="display: none"></div>
-</div>
-</div>
-<details class="punctilio-options">
-<summary>Options</summary>
-<div class="punctilio-options-grid">
-<label class="punctilio-option">
-Punctuation style
-<select id="opt-punctuation-style">
-<option value="american" selected>American</option>
-<option value="british">British</option>
-<option value="none">None</option>
-</select>
-</label>
-<label class="punctilio-option">
-Dash style
-<select id="opt-dash-style">
-<option value="american" selected>American</option>
-<option value="british">British</option>
-<option value="none">None</option>
-</select>
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-symbols" checked />
-Symbols
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-fractions" />
-Fractions
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-degrees" />
-Degrees
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-superscript" />
-Superscript
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-ligatures" />
-Ligatures
-</label>
-<label class="punctilio-option">
-<input type="checkbox" id="opt-nbsp" checked />
-Non-breaking spaces
-</label>
-</div>
-</details>
-</div>
+
+> [!abstract]- Options
+> <ul class="punctilio-options-list">
+> <li class="punctilio-option"><label>Punctuation style:
+> <select id="opt-punctuation-style">
+> <option value="american" selected>American</option>
+> <option value="british">British</option>
+> <option value="none">None</option>
+> </select>
+> </label></li>
+> <li class="punctilio-option"><label>Dash style:
+> <select id="opt-dash-style">
+> <option value="american" selected>American</option>
+> <option value="british">British</option>
+> <option value="none">None</option>
+> </select>
+> </label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />Symbols</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-fractions" />Fractions</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-degrees" />Degrees</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-superscript" />Superscript</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />Ligatures</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
+> </ul>
+
+> [!info] Input
+> <div class="no-formatting">
+> <textarea id="punctilio-input" spellcheck="false" aria-label="Text input for punctilio transformation"></textarea>
+> </div>
+
+> [!info] Output
+> <div class="punctilio-output-wrapper no-formatting">
+> <div class="punctilio-output-content"></div>
+> <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
+> </div>
