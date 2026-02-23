@@ -20,6 +20,7 @@ import {
   adoptPrecedingSiblingAsDt,
   deduplicateSvgIds,
   isValidDlStructure,
+  ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {
@@ -120,36 +121,40 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     mockBackArrow = h("a", { className: "data-footnote-backref" })
   })
 
-  test("should append word joiner + back arrow after text", () => {
+  test("should splice last 4 chars into favicon-span with back arrow after text", () => {
     const node = h("li", [h("p", ["Long text here"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text here" })
-    expect(paragraph.children[1]).toMatchObject({
+    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span (containing last chars + back arrow)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Long text " })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect(paragraph.children[2]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "here" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle text shorter than 4 characters", () => {
+  test("should handle text shorter than 4 characters by wrapping all text in favicon-span", () => {
     const node = h("li", [h("p", ["Hi"])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
     const paragraph = node.children[0] as Element
-    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    expect(paragraph.children[1]).toMatchObject({
+    // Text node removed (all chars fit in favicon-span), only favicon-span remains
+    expect(paragraph.children).toHaveLength(1)
+    const faviconSpan = paragraph.children[0] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect(paragraph.children[2]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle multiple paragraphs", () => {
@@ -162,22 +167,43 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
     const lastParagraph = node.children[1] as Element
-    expect(lastParagraph.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second paragraph" })
-    expect(lastParagraph.children[1]).toMatchObject({
+    // "Second paragraph" = 16 chars, textIndex = 12, text becomes "Second parag", favicon-span gets "raph"
+    expect(lastParagraph.children).toHaveLength(2) // shortened text + favicon-span
+    expect(lastParagraph.children[0]).toEqual({ type: "text", value: "Second parag" })
+    const faviconSpan = lastParagraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect(lastParagraph.children[2]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "raph" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
-  test("should handle empty paragraph", () => {
+  test("should handle empty paragraph by appending arrow into it", () => {
     const node = h("li", [h("p", [])])
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
+    // Arrow appended into the empty paragraph
+    expect(node.children).toHaveLength(1)
     const paragraph = node.children[0] as Element
+    expect(paragraph.tagName).toBe("p")
+    expect(paragraph.children).toHaveLength(1)
+    expect(paragraph.children[0]).toBe(mockBackArrow)
+  })
+
+  test("should handle empty paragraph with table sibling", () => {
+    const table = h("table", [h("tr", [h("td", ["cell"])])])
+    const node = h("li", [table, h("p", [])])
+
+    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+
+    // Arrow appended into the empty paragraph after the table
+    expect(node.children).toHaveLength(2)
+    expect((node.children[0] as Element).tagName).toBe("table")
+    const paragraph = node.children[1] as Element
+    expect(paragraph.tagName).toBe("p")
     expect(paragraph.children).toHaveLength(1)
     expect(paragraph.children[0]).toBe(mockBackArrow)
   })
@@ -187,9 +213,11 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     maybeSpliceAndAppendBackArrow(node, mockBackArrow)
 
+    // Whitespace paragraph preserved with back arrow appended directly (no span wrapping)
     const paragraph = node.children[0] as Element
-    const span = paragraph.children[0] as Element
-    expect(span).toEqual({ type: "text", value: "  " })
+    expect(paragraph.children).toHaveLength(2)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "  " })
+    expect(paragraph.children[1]).toBe(mockBackArrow)
   })
   test("should handle complex multi-paragraph footnote with rich formatting", () => {
     const node = h("li", [
@@ -218,17 +246,19 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
     expect(firstPara.children).toHaveLength(1)
     expect(firstPara.children[0]).toEqual({ type: "text", value: "First paragraph" })
 
-    // Check second paragraph has the back arrow appended with word joiner
+    // Check second paragraph: old back arrow removed, last 4 chars spliced into favicon-span
     const secondPara = node.children[1] as Element
-    // Old back arrow removed, text preserved, word joiner + new back arrow appended
-    expect(secondPara.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragraph." })
-    expect(secondPara.children[1]).toMatchObject({
+    // "Second paragraph." = 17 chars, textIndex = 13
+    expect(secondPara.children).toHaveLength(2) // shortened text + favicon-span
+    expect(secondPara.children[0]).toEqual({ type: "text", value: "Second paragr" })
+    const faviconSpan = secondPara.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect(secondPara.children[2]).toBe(mockBackArrow)
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should ignore <li> ending with an image", () => {
@@ -239,6 +269,26 @@ describe("maybeSpliceAndAppendBackArrow function", () => {
 
     const paragraph = node.children[0] as Element
     expect(paragraph.children).toEqual(originalChildren)
+  })
+
+  test("should find paragraph even when non-paragraph elements follow it", () => {
+    const node = h("li", [h("p", ["Text content"]), h("div", ["trailing div"])])
+
+    maybeSpliceAndAppendBackArrow(node, mockBackArrow)
+
+    // Paragraph should have favicon-span appended even though it's not the last child
+    // "Text content" = 12 chars, textIndex = 8
+    const paragraph = node.children[0] as Element
+    expect(paragraph.children).toHaveLength(2)
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Text con" })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "favicon-span" },
+    })
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "tent" })
+    expect(faviconSpan.children[1]).toBe(mockBackArrow)
   })
 
   test("should handle node without children property", () => {
@@ -562,6 +612,17 @@ describe("findFootnoteBackArrow function", () => {
     const result = findFootnoteBackArrow(footnoteItem)
     expect(result).toBe(backArrow)
   })
+
+  test("should find back arrow in last paragraph when there are multiple paragraphs", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const footnoteItem = h("li", { id: "user-content-fn-1" }, [
+      h("p", ["First paragraph text."]),
+      h("p", ["Second paragraph text.", backArrow]),
+    ])
+
+    const result = findFootnoteBackArrow(footnoteItem)
+    expect(result).toBe(backArrow)
+  })
 })
 
 describe("gfmVisitor function", () => {
@@ -580,16 +641,18 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + word joiner + back arrow
+    // "Footnote text" = 13 chars, textIndex = 9
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote text" })
-    expect(paragraph.children[1]).toMatchObject({
+    expect(paragraph.children).toHaveLength(2) // shortened text + favicon-span
+    expect(paragraph.children[0]).toEqual({ type: "text", value: "Footnote " })
+    const faviconSpan = paragraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect((paragraph.children[2] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "text" })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
   it.each([
@@ -638,28 +701,47 @@ describe("gfmVisitor function", () => {
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have processed the footnote - text + word joiner + back arrow
+    // "Hi" = 2 chars (< 4), textIndex = 0, text node removed, all text in favicon-span
     const paragraph = footnoteItem.children[0] as Element
-    expect(paragraph.children).toHaveLength(3) // text + word joiner + back arrow
-    expect(paragraph.children[0]).toEqual({ type: "text", value: "Hi" })
-    expect(paragraph.children[1]).toMatchObject({
+    expect(paragraph.children).toHaveLength(1) // only favicon-span (text node removed)
+    const faviconSpan = paragraph.children[0] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect((paragraph.children[2] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "Hi" })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 
-  test("should handle footnote with empty paragraph", () => {
+  test("should handle footnote with empty paragraph by appending arrow into it", () => {
     const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
     const footnoteItem = h("li", { id: "user-content-fn-1" }, [h("p", [backArrow])])
 
     appendArrowToFootnoteListItemVisitor(footnoteItem)
 
-    // Should have added just the back arrow
+    // Arrow appended into the now-empty paragraph
+    expect(footnoteItem.children).toHaveLength(1)
     const paragraph = footnoteItem.children[0] as Element
+    expect(paragraph.tagName).toBe("p")
     expect(paragraph.children).toHaveLength(1)
-    expect(paragraph.children[0]).toBe(backArrow)
+    expect((paragraph.children[0] as Element).tagName).toBe("a")
+  })
+
+  test("should handle table-only footnote by appending arrow into paragraph after table", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const table = h("table", [h("tr", [h("td", ["cell"])])])
+    const footnoteItem = h("li", { id: "user-content-fn-table" }, [table, h("p", [backArrow])])
+
+    appendArrowToFootnoteListItemVisitor(footnoteItem)
+
+    // Arrow appended into the now-empty paragraph after the table
+    expect(footnoteItem.children).toHaveLength(2)
+    expect((footnoteItem.children[0] as Element).tagName).toBe("table")
+    const paragraph = footnoteItem.children[1] as Element
+    expect(paragraph.tagName).toBe("p")
+    expect(paragraph.children).toHaveLength(1)
+    expect((paragraph.children[0] as Element).tagName).toBe("a")
   })
 
   test("should handle complex footnote structure", () => {
@@ -685,20 +767,51 @@ describe("gfmVisitor function", () => {
 
     // Should have processed the footnote
     const paragraph = footnoteItem.children[0] as Element
-    // original content (text, em, text) + word joiner + back arrow
-    expect(paragraph.children).toHaveLength(5)
+    // " and more content." = 18 chars, textIndex = 14
+    // original content (text, em, shortened text) + favicon-span
+    expect(paragraph.children).toHaveLength(4)
     expect(paragraph.children[0]).toEqual({
       type: "text",
       value: "This is a complex footnote with ",
     })
     expect((paragraph.children[1] as Element).tagName).toBe("em")
-    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more content." })
-    expect(paragraph.children[3]).toMatchObject({
+    expect(paragraph.children[2]).toEqual({ type: "text", value: " and more cont" })
+    const faviconSpan = paragraph.children[3] as Element
+    expect(faviconSpan).toMatchObject({
       type: "element",
       tagName: "span",
-      properties: { className: "word-joiner", ariaHidden: "true" },
+      properties: { className: "favicon-span" },
     })
-    expect((paragraph.children[4] as Element).tagName).toBe("a")
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "ent." })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
+  })
+
+  test("should handle multi-paragraph footnote with back arrow in last paragraph", () => {
+    const backArrow = h("a", { className: "data-footnote-backref" }, ["↩"])
+    const footnoteItem = h("li", { id: "user-content-fn-1" }, [
+      h("p", ["First paragraph."]),
+      h("p", ["Second paragraph.", backArrow]),
+    ])
+
+    appendArrowToFootnoteListItemVisitor(footnoteItem)
+
+    // First paragraph unchanged
+    const firstParagraph = footnoteItem.children[0] as Element
+    expect(firstParagraph.children).toHaveLength(1)
+    expect(firstParagraph.children[0]).toEqual({ type: "text", value: "First paragraph." })
+
+    // Second paragraph: "Second paragraph." = 17 chars, textIndex = 13
+    const secondParagraph = footnoteItem.children[1] as Element
+    expect(secondParagraph.children).toHaveLength(2)
+    expect(secondParagraph.children[0]).toEqual({ type: "text", value: "Second paragr" })
+    const faviconSpan = secondParagraph.children[1] as Element
+    expect(faviconSpan).toMatchObject({
+      type: "element",
+      tagName: "span",
+      properties: { className: "favicon-span" },
+    })
+    expect(faviconSpan.children[0]).toEqual({ type: "text", value: "aph." })
+    expect((faviconSpan.children[1] as Element).tagName).toBe("a")
   })
 })
 
@@ -1155,5 +1268,98 @@ describe("isValidDlStructure", () => {
     ["dd after div (orphaned)", [h("div", ["X"]), h("dd", ["D"])], false],
   ])("%s → %s", (_desc, children, expected) => {
     expect(isValidDlStructure(children)).toBe(expected)
+  })
+})
+
+describe("ensureHeadingLinksHaveAccessibleNames", () => {
+  const runPlugin = (tree: Root): void => {
+    const fn = ensureHeadingLinksHaveAccessibleNames()
+    fn(tree)
+  }
+
+  it("adds aria-label from KaTeX annotation to heading link with no direct text", () => {
+    const link = h("a", { href: "#math-heading" }, [
+      h("span", { className: ["katex"] }, [
+        h("span", { className: ["katex-mathml"] }, [
+          h("semantics", [h("annotation", { encoding: "application/x-tex" }, ["E = mc^2"])]),
+        ]),
+      ]),
+    ])
+    const heading = h("h2", { id: "math-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("E = mc^2")
+  })
+
+  it("skips heading links with direct text content", () => {
+    const link = h("a", { href: "#text-heading" }, ["Regular text heading"])
+    const heading = h("h2", { id: "text-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBeUndefined()
+  })
+
+  it("skips headings without links", () => {
+    const heading = h("h2", { id: "no-link" }, ["Just text"])
+    const tree: Root = { type: "root", children: [heading] }
+    expect(() => runPlugin(tree)).not.toThrow()
+  })
+
+  it("falls back to heading id when no annotation found", () => {
+    const link = h("a", { href: "#e-mc2" }, [
+      h("span", { className: ["katex"] }, [h("span", { className: ["katex-html"] })]),
+    ])
+    const heading = h("h2", { id: "e-mc2" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("e mc2")
+  })
+
+  it("falls back to 'heading' when id is empty", () => {
+    const link = h("a", { href: "#" }, [h("span", ["no text content"])])
+    const heading = h("h2", {}, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("heading")
+  })
+
+  it("skips non-heading elements", () => {
+    const link = h("a", { href: "#something" }, [h("span", ["no text"])])
+    const paragraph = h("p", [link])
+    const tree: Root = { type: "root", children: [paragraph] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBeUndefined()
+  })
+
+  it("handles link without properties object", () => {
+    const link: Element = {
+      type: "element",
+      tagName: "a",
+      properties: undefined as unknown as Element["properties"],
+      children: [h("span", ["katex content"])],
+    }
+    const heading = h("h2", { id: "test-heading" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("test heading")
+  })
+
+  it("skips annotations with empty text", () => {
+    const link = h("a", { href: "#math" }, [
+      h("span", { className: ["katex"] }, [
+        h("semantics", [h("annotation", { encoding: "application/x-tex" }, [""])]),
+      ]),
+    ])
+    const heading = h("h2", { id: "math" }, [link])
+    const tree: Root = { type: "root", children: [heading] }
+    runPlugin(tree)
+
+    expect(link.properties?.ariaLabel).toBe("math")
   })
 })

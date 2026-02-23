@@ -11,7 +11,7 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
-import { locale } from "../constants"
+import { locale, normalizeNbsp } from "../constants"
 import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
@@ -184,7 +184,7 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Transcluded block content")
+    expect(normalizeNbsp(html)).toContain("Transcluded block content")
   })
 
   it("handles transclusion when page is not found", () => {
@@ -316,7 +316,7 @@ describe("renderPage", () => {
       } as typeof components,
       pageResources,
     )
-    expectedContain.forEach((text) => expect(html).toContain(text))
+    expectedContain.forEach((text) => expect(normalizeNbsp(html)).toContain(text))
     expectedNotContain.forEach((text) => expect(html).not.toContain(text))
   })
 
@@ -388,7 +388,7 @@ describe("renderPage", () => {
       pageResources,
     )
 
-    expectedContain.forEach((text) => expect(html).toContain(text))
+    expectedContain.forEach((text) => expect(normalizeNbsp(html)).toContain(text))
     expectedNotContain.forEach((text) => expect(html).not.toContain(text))
   })
 
@@ -515,7 +515,7 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Section content")
+    expect(normalizeNbsp(html)).toContain("Section content")
   })
 
   it("handles page transclusion with htmlAst", () => {
@@ -561,8 +561,8 @@ describe("renderPage", () => {
       componentsForTransclusion as typeof components,
       pageResources,
     )
-    expect(html).toContain("Full page content")
-    expect(html).toContain("More content")
+    expect(normalizeNbsp(html)).toContain("Full page content")
+    expect(normalizeNbsp(html)).toContain("More content")
   })
 
   it("renders beforeBody components", () => {

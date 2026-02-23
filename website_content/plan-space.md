@@ -7,7 +7,8 @@ tags:
   - instrumental-convergence
   - critique
 description: Instrumental and success-conditioned convergence both require AI psychology assumptions, so neither is just a "fact about reality."
-authors: Alex Turner
+authors:
+  - Alex Turner
 card_image:
 card_image_alt:
 aliases:
@@ -53,7 +54,6 @@ Both types of convergence require psychological assumptions, as I'll demonstrate
 
 In 2023, Rob Bensinger gave a more detailed presentation of Zack's claim.
 
-<!-- vale off -->
 > [!quote]  [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
 >  Subtitle: By Rob Bensinger
 >
@@ -64,7 +64,6 @@ In 2023, Rob Bensinger gave a more detailed presentation of Zack's claim.
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves. In full generality, plans that succeed in goals like "build WBE" tend to be dangerous.
 >
 >  This isn't true of all plans that successfully push our world into a specific (sufficiently-hard-to-reach) physical state, but it's true of the vast majority of them.
-<!-- vale on -->
 
 # What reality actually determines
 
@@ -112,7 +111,7 @@ In-between
 
 : Reality dictates the alignment tax, which dictates the tradeoffs available to the agent. However, the agent's psychology dictates how it makes those tradeoffs: whether (and how) it would sacrifice safety for success; whether the AI is willing to lie; how to generate possible plans; which kinds of plans to consider next; and so on. Thus, both reality _and_ psychology produce the final output.
 
-: I am not being pedantic. Gemini Pro 3.0 and [MechaHitler](https://www.seangoedecke.com/ai-personality-space/) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
+  I am not being pedantic. Gemini Pro 3.0 and [MechaHitler](https://www.seangoedecke.com/ai-personality-space/) implement starkly different plan-generating functions $f$. Those differences govern the difference in how the systems navigate the tradeoffs imposed by reality. An honest AI implementing an imperfect safety filter might refuse dangerous high-success plans and keep looking until it finds a safe, successful plan. A "human-hating" AI would do the opposite.
 
 # Why both convergence types require psychology
 
@@ -143,7 +142,6 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
 > [!quote] Zack M. Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.
 
-<!-- vale off -->
 > [!quote] [The basic reasons I expect AGI ruin](https://www.lesswrong.com/posts/eaDCgdkbsfGqpWazi/the-basic-reasons-i-expect-agi-ruin)
 >
 > If you sampled a random plan from the space of all writable plans (weighted by length, in any extant formal language), and all we knew about the plan is that executing it would successfully achieve some superhumanly ambitious technological goal like "invent fast-running [whole-brain emulation](https://www.lesswrong.com/w/whole-brain-emulation)", then hitting a button to execute the plan would kill all humans, with very high probability. \[...\]
@@ -152,7 +150,6 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
  >
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves.
 
-<!-- vale on -->
 
 Two key problems with this argument:
 

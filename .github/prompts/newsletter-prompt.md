@@ -14,7 +14,7 @@ You are generating a draft newsletter for Alex Turner (TurnTrout) to review and 
 
 Below is an example showing Alex's preferred formatting. Focus on the structure, not the voice (Alex will add that).
 
-### BEFORE (overly formatted):
+### BEFORE (overly formatted)
 
 ```markdown
 # 'Trout Roundup: The Pond reaches v1.4
@@ -105,7 +105,7 @@ I'm planning to leave X in the coming months. You can find me on:
 - [RSS](https://turntrout.com/index.xml)
 ```
 
-### AFTER (cleaner formatting):
+### AFTER (cleaner formatting)
 
 ```markdown
 # New writing

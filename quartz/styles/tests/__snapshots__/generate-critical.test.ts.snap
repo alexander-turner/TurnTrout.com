@@ -1,4 +1,7 @@
-:root {
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Critical SCSS Generation generateCritical() should generate critical.scss with correct content 1`] = `
+":root {
   font-family: var(--font-main);
 }
 
@@ -22,9 +25,9 @@ pre {
 }
 
 article[data-use-dropcap="true"] {
-  --dropcap-vertical-offset: 0.15rem;
-  --dropcap-font-size: 3.95rem;
-  --before-color: var(--midground-faint);
+  --dropcap-vertical-offset: #{$dropcap-vertical-offset};
+  --dropcap-font-size: #{$dropcap-font-size};
+  --before-color: var(--random-dropcap-color, var(--midground-faint));
   --font-main: "EBGaramond__subset", "EBGaramond";
   --font-italic: "EBGaramondItalic__subset", "EBGaramondItalic";
   --font-italic-situational: var(--font-italic);
@@ -34,7 +37,7 @@ article[data-use-dropcap="true"] {
 
 article[data-use-dropcap="true"] > p:first-of-type {
   position: relative;
-  min-height: 4.2rem;
+  min-height: #{$dropcap-min-height};
 }
 
 article[data-use-dropcap="true"] > p:first-of-type::before {
@@ -86,8 +89,8 @@ em {
   --background: #eff1f5;
   --foreground: #4c4f69;
   --red: #be415c;
-  --green: #40a02b;
-  --blue: #406ecc;
+  --green: #22820d;
+  --blue: #3e6ccb;
 }
 
 .sidebar {
@@ -154,3 +157,5 @@ em {
     margin-right: 0;
   }
 }
+"
+`;

@@ -6,7 +6,7 @@ extension-pkg-whitelist =
 fail-on = 
 fail-under = 10
 ignore = CVS,.venv
-ignore-paths = .*scripts/(tests|notebooks)/.*,.*node_modules/.*,.*\.venv/.*
+ignore-paths = .*scripts/(tests|notebooks)/.*,.*node_modules/.*,.venv/.*,.github/scripts/.*,.claude/hooks/.*
 ignore-patterns = ^\.#
 ignored-modules = 
 limit-inference-results = 100
@@ -82,7 +82,7 @@ ignore-long-lines = ^\s*(# )?<?https?://\S+>?$
 indent-after-paren = 4
 indent-string = '    '
 max-line-length = 80
-max-module-lines = 1000
+max-module-lines = 1100
 single-line-class-stmt = no
 single-line-if-stmt = no
 

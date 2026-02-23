@@ -33,11 +33,15 @@
 
   // Dropcap background colors
   --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
   --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
   --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
   --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
   --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 
   & img,
@@ -55,13 +59,13 @@
   --red: #be415c;
   --orange: #a45c19;
   --yellow: #7d751c;
-  --green: #40a02b;
-  --teal: #179299;
-  --sky: #008bc3;
+  --green: #22820d;
+  --teal: #037e85;
+  --sky: #007cb4;
   --blue: #3e6ccb;
   --lavender: #4963fd;
   --purple: #6f42c1;
-  --gold: #be8a00;
+  --gold: #9b6700;
 
   // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #{$background-light};
@@ -79,11 +83,15 @@
 
   // Dropcap background colors
   --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
   --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-yellow: color-mix(in srgb, 65% var(--yellow), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
   --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
   --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
   --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy

@@ -4,7 +4,8 @@ permalink:
 no_dropcap: false
 tags:
 description: ""
-authors: Alex Turner
+authors:
+  - Alex Turner
 card_image:
 card_image_alt:
 aliases:

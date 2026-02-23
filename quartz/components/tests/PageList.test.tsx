@@ -14,6 +14,7 @@ import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, resolveRelative } from "../../util/path"
+import { normalizeNbsp } from "../constants"
 import {
   PageList,
   byDateAndAlphabetical,
@@ -216,8 +217,8 @@ describe("PageList", () => {
     const props = createProps(files[0], files)
     const html = render(preactH(PageList, props))
 
-    expect(html).toContain("Page 1")
-    expect(html).toContain("Page 2")
+    expect(normalizeNbsp(html)).toContain("Page 1")
+    expect(normalizeNbsp(html)).toContain("Page 2")
     expect(html).toContain("tag1")
     expect(html).toContain("tag2")
   })

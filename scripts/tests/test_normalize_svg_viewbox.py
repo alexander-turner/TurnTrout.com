@@ -199,7 +199,8 @@ def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
 
 
 def test_is_already_normalized_with_width_height_attributes(tmp_path: Path):
-    """Test is_already_normalized returns False when root svg has width/height attributes."""
+    """Test is_already_normalized returns False when root svg has width/height
+    attributes."""
     svg_content = """<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="10" fill="blue"/>

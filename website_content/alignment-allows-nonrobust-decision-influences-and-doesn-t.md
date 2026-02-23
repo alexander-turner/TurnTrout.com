@@ -43,6 +43,7 @@ skip_import: true
 description: Values steer optimization, they are not optimized against. Values don't
   have to be robustly "correct", because they are not the thing being optimized.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 
@@ -155,7 +156,7 @@ To make evaluation-child work hard, we have to somehow specify a grader which ca
 
 Value-child doesn't suffer this crippling "robustly grade exponentially many plans" alignment requirement. I later wrote [a detailed speculative account](/dont-align-agents-to-evaluations-of-plans#And-people-aren-t-grader-optimizers-either) of how value-child's cognition might work—what it _means_ to say that he "cares about working hard." But, at a higher level, what are the main differences between evaluation- and value-child?
 
-This may sound obvious, but I think that the main difference is that **value-child actually cares about working hard.** Evaluation-child cares about evaluations. (See [here](/dont-align-agents-to-evaluations-of-plans#And-people-aren-t-grader-optimizers-either) if confused on the distinction.) To make evaluation-child work hard in the limit of intelligence, you have to _robustly ensure that max evaluations only come from working hard_. This sure sounds like a slippery and ridiculous kind of thing to try, like wrestling a frictionless pig. It should be no surprise you'll hit issues like [nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/) in that paradigm.
+This may sound obvious, but I think that the main difference is that **value-child actually cares about working hard.** Evaluation-child cares about evaluations. (See [my detailed speculative account](/dont-align-agents-to-evaluations-of-plans#And-people-aren-t-grader-optimizers-either) if confused on the distinction.) To make evaluation-child work hard in the limit of intelligence, you have to _robustly ensure that max evaluations only come from working hard_. This sure sounds like a slippery and ridiculous kind of thing to try, like wrestling a frictionless pig. It should be no surprise you'll hit issues like [nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/) in that paradigm.
 
 An agent which _does_ care about working hard will want to not think thoughts which lead to not working hard. In particular, reflective shard-agents can think about what to think, and thereby are convergently (across values) incentivized to steer clear of adversarial inputs to their own values.
 
@@ -284,7 +285,6 @@ def plan(self):
 
 I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning). I liked the comment in the context of e.g. caring about your family and locally evaluating plans on that basis, but also knowing that your evaluation ability itself is compromised and will mis-rate some plans:
 
-<!-- vale off -->
 > [!quote] Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning)
 >
 > My attempt at a framework where "improving one's own evaluator" and "believing in adversarial examples to one's own evaluator" make sense:
@@ -293,7 +293,6 @@ I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxL
 > - "Improving `Eval`" makes sense because Eval will gladly replace itself with `Eval_2` if it believes that `Eval_2` is a better approximation for $U_{ideal}$ (and hence replacing itself will cause the outcome to score better on $U_{ideal}$)
 >
 > Are there other distinct frameworks which make sense here?
-<!-- vale on -->
 
 (I'm not sure whether Vivek meant to imply "and this is how I think people work, mechanistically." I'm going to respond to a _hypothetical other person_ who did in fact mean that.)
 

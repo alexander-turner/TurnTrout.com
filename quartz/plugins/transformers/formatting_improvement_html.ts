@@ -1,7 +1,7 @@
 import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace, symbolTransform, primeMarks } from "punctilio"
+import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
 import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -122,6 +122,9 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
   })
 }
 
+// Named wrapper for nbsp transform so it can be explicitly filtered when needed
+const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: markerChar })
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance: these transforms accept a `separator` and intentionally
 // use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
@@ -134,6 +137,8 @@ const uncheckedTextTransformers = [
   (text: string) => niceQuotes(text, { separator: markerChar }),
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
+  // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
+  nbspTransformWrapper,
 ]
 
 // Check for invariance: these are simple find-and-replace transforms that never interact
@@ -143,14 +148,22 @@ const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransfo
 /**
  * Applies multiple text transformations
  *
- * Not used in this module, but useful elsewhere
- *
+ * @param text - The text to transform
+ * @param options - Configuration options
+ * @param options.useNbsp - Whether to apply nbsp transformations (default: true)
  * @returns The transformed text
  */
-export function applyTextTransforms(text: string): string {
+export function applyTextTransforms(text: string, options: { useNbsp?: boolean } = {}): string {
+  const { useNbsp = true } = options
+
+  // Filter out nbspTransform if useNbsp is false
+  const textTransformers = useNbsp
+    ? uncheckedTextTransformers
+    : uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+
   for (const transformer of [
     ...checkedTextTransformers,
-    ...uncheckedTextTransformers,
+    ...textTransformers,
     spacesAroundSlashes,
   ]) {
     text = transformer(text)
@@ -474,8 +487,8 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 export function plusToAmpersand(text: string): string {
-  const sourcePattern = "(?<=[a-zA-Z])\\+(?=[a-zA-Z])"
-  const result = text.replace(new RegExp(sourcePattern, "g"), " \u0026 ")
+  const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
+  const result = text.replace(new RegExp(sourcePattern, "gu"), " \u0026 ")
   return result
 }
 
@@ -494,7 +507,6 @@ export function timeTransform(text: string): string {
 // Site-specific transforms (punctilio handles: !=, multiplication, ellipsis, math symbols, etc.)
 // Use marker-aware word boundaries (wb/wbe) to prevent markers from creating false word boundaries
 const massTransforms: [RegExp, string][] = [
-  [/\u00A0/gu, " "], // Replace non-breaking spaces
   [new RegExp(`${wb}(?:i\\.i\\.d\\.|iid)`, "gi"), "IID"],
   [new RegExp(`${wb}(?<letter>[Ff])rappe${wbe}`, "g"), "$<letter>rappé"],
   [new RegExp(`${wb}(?<letter>[Ll])atte${wbe}`, "g"), "$<letter>atté"],
@@ -662,12 +674,12 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       if (node.type === "element") {
         const eltsToTransform = collectTransformableElements(node as Element, toSkip)
         eltsToTransform.forEach((elt) => {
-          for (const transform of uncheckedTextTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, false)
-          }
-
           for (const transform of checkedTextTransformers) {
             transformElement(elt, transform, toSkip, markerChar, true)
+          }
+
+          for (const transform of uncheckedTextTransformers) {
+            transformElement(elt, transform, toSkip, markerChar, false)
           }
 
           // Don't replace slashes in fractions, but give breathing room

@@ -21,7 +21,12 @@ af-num-comments-on-upload: 2
 title: Open problems in activation engineering
 lw-latest-edit: 2023-07-24T21:19:09.733000Z
 lw-is-linkpost: 'true'
-authors: Alex Turner, Alice Rigg, Lisa Thiergart, Monte MacDiarmid, and Ulisse Mini
+authors:
+  - Alex Turner
+  - Alice Rigg
+  - Lisa Thiergart
+  - Monte MacDiarmid
+  - Ulisse Mini
 tags:
   - AI
   - activation-engineering
@@ -36,6 +41,7 @@ skip_import: true
 description: Open questions on controlling language models at runtime via activation
   engineering.
 date_updated: 2025-11-22 00:21:52.667251
+createBibtex: true
 ---
 
 

@@ -10,9 +10,14 @@ on:
     paths:
       - "quartz/**/*.scss"
       - "quartz/**/*.tsx"
+      - "!quartz/**/*.test.tsx"
       - "quartz/**/*.ts"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/tests/**"
       - "quartz/static/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -21,6 +26,7 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     permissions:
       actions: read
       contents: read
@@ -67,6 +73,7 @@ jobs:
 
   lighthouse_desktop:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -94,6 +101,7 @@ jobs:
 
   lighthouse_mobile:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -121,6 +129,7 @@ jobs:
 
   lighthouse_accessibility:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4

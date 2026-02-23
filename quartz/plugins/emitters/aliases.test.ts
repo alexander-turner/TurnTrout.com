@@ -2,6 +2,7 @@ import { jest, describe, it, beforeEach, expect, beforeAll } from "@jest/globals
 import { VFile } from "vfile"
 
 import { type QuartzConfig } from "../../cfg"
+import { normalizeNbsp } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
@@ -165,7 +166,7 @@ describe("AliasRedirects", () => {
   it("files should have correct metadata", async () => {
     await plugin.emit(mockCtx, [mockContent[0][1]], mockStaticResources)
     const htmlContent = getLatestHtmlContent(write)
-    expect(htmlContent).toContain("<title>Test Page</title>")
+    expect(normalizeNbsp(htmlContent)).toContain("<title>Test Page</title>")
     expect(htmlContent).toContain('content="Test description"')
   })
 
@@ -174,64 +175,50 @@ describe("AliasRedirects", () => {
     expect(components).toEqual([])
   })
 
-  it("should handle permalinks in dependency graph", async () => {
+  it.each([
+    [
+      "permalinks",
+      "test-permalink.md",
+      { permalink: "custom-permalink" },
+      ["public/custom-permalink.html"],
+    ],
+    [
+      "trailing slashes",
+      "test-slash.md",
+      { aliases: ["alias-with-slash/"] },
+      ["public/alias-with-slash/index.html"],
+    ],
+  ])("should handle %s in dependency graph", async (_, path, frontmatter, expectedNodes) => {
     const vfile = createTestVFile({
-      path: "/content/test-permalink.md",
-      frontmatter: { title: "Test Permalink", permalink: "custom-permalink" },
+      path: `/content/${path}`,
+      frontmatter: { title: "Test", ...frontmatter },
     })
     const content = createMockContent(vfile)
 
-    const graph = await testDependencyGraph(plugin, mockCtx, content, [
-      "public/custom-permalink.html" as FilePath,
-    ])
-    expect(graph).toBeDefined()
-  })
-
-  it("should handle trailing slashes in dependency graph", async () => {
-    const vfile = createTestVFile({
-      path: "/content/test-slash.md",
-      frontmatter: { title: "Test Slash", aliases: ["alias-with-slash/"] },
-    })
-    const content = createMockContent(vfile)
-
-    const graph = await testDependencyGraph(plugin, mockCtx, content, [
-      "public/alias-with-slash/index.html" as FilePath,
-    ])
+    const graph = await testDependencyGraph(plugin, mockCtx, content, expectedNodes as FilePath[])
     expect(graph).toBeDefined()
   })
 
   it("should handle permalinks in emit function", async () => {
     const vfile = createTestVFile({
       path: "/content/test-permalink.md",
-      frontmatter: {
-        title: "Test Permalink",
-        permalink: "custom-permalink",
-        aliases: ["old-alias"],
-      },
+      frontmatter: { title: "Test", permalink: "custom-permalink", aliases: ["old-alias"] },
     })
     const content = createMockContent(vfile)
 
-    const files = await testEmitFiles(plugin, mockCtx, content, [
-      "old-alias.html",
-      "test-permalink.html",
-    ]) // old alias + permalink redirects
+    await testEmitFiles(plugin, mockCtx, content, ["old-alias.html", "test-permalink.html"])
     expect(vfile.data.slug).toBe("custom-permalink")
-    expect(files).toBeDefined()
   })
 
   it("should handle trailing slashes in emit function", async () => {
     const vfile = createTestVFile({
       path: "/content/test-slash.md",
-      frontmatter: { title: "Test Slash", aliases: ["alias-with-slash/"] },
+      frontmatter: { title: "Test", aliases: ["alias-with-slash/"] },
     })
     const content = createMockContent(vfile)
 
     await testEmitFiles(plugin, mockCtx, content, ["alias-with-slash/index.html"])
-    expect(write).toHaveBeenCalledWith(
-      expect.objectContaining({
-        slug: "alias-with-slash/index",
-      }),
-    )
+    expect(write).toHaveBeenCalledWith(expect.objectContaining({ slug: "alias-with-slash/index" }))
   })
 
   it("should handle missing authors metadata", async () => {
@@ -339,7 +326,7 @@ describe("AliasRedirects", () => {
 
     await testHtmlMetadata(plugin, mockCtx, content, write, (htmlContent) => {
       // When title is missing, it should use the default title from i18n
-      expect(htmlContent).toContain("<title>The Pond</title>")
+      expect(normalizeNbsp(htmlContent)).toContain("<title>The Pond</title>")
     })
   })
 
@@ -352,7 +339,7 @@ describe("AliasRedirects", () => {
     const content = createMockContent(vfile)
 
     await testHtmlMetadata(plugin, mockCtx, content, write, (htmlContent) => {
-      expect(htmlContent).toContain("<title>Test No Slug</title>")
+      expect(normalizeNbsp(htmlContent)).toContain("<title>Test No Slug</title>")
     })
   })
 })

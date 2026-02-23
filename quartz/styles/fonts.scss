@@ -231,7 +231,7 @@ b,
 strong,
 .admonition-title-inner,
 dt {
-  text-shadow: 0.3px 0.3px;
+  text-shadow: $faux-bold-offset $faux-bold-offset;
   font-weight: 400 !important; // Normal font weight -- otherwise would be eg 600
 
   .right & {
@@ -297,7 +297,7 @@ code {
 
   // Inline dropcaps should be slightly higher than the baseline
   p & {
-    vertical-align: -0.15rem;
+    vertical-align: -#{$dropcap-vertical-offset};
   }
 
   --before-color: var(--midground-faint);
@@ -313,15 +313,15 @@ code {
 }
 
 article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
-  --dropcap-vertical-offset: 0.15rem;
-  --dropcap-font-size: 3.95rem;
-  --before-color: var(--midground-faint);
+  --dropcap-vertical-offset: #{$dropcap-vertical-offset};
+  --dropcap-font-size: #{$dropcap-font-size};
+  --before-color: var(--random-dropcap-color, var(--midground-faint));
 
   // Slanted smallcaps EB italic looks same as slanted normal smallcaps EB
   //  so since real italics need a new font, just use that
   font-family: var(--font-main);
   position: relative;
-  min-height: 4.2rem;
+  min-height: #{$dropcap-min-height};
 
   &::before {
     content: attr(data-first-letter);

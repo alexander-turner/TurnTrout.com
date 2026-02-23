@@ -93,7 +93,7 @@ Evan Hubinger recently wrote a [great FAQ on inner alignment terminology](https:
 Corrigibility with respect to a set of goals
 : I find it useful to not think of corrigibility as a binary property, or even as existing on a one-dimensional continuum. I often think about corrigibility _with respect to a set_ $S$  _of payoff functions_. (This isn't always the right abstraction: there are plenty of policies which don't care about payoff functions. I still find it useful.)
 
-: For example, imagine an AI which let you correct it if and only if it knows you aren’t a torture-maximizer. We’d probably still call this AI “corrigible \[to us\]”, even though it isn’t corrigible to some possible designer. We’d still be fine, assuming it has accurate beliefs.
+  For example, imagine an AI which let you correct it if and only if it knows you aren’t a torture-maximizer. We’d probably still call this AI “corrigible \[to us\]”, even though it isn’t corrigible to some possible designer. We’d still be fine, assuming it has accurate beliefs.
 
 Corrigibility != alignment
 : Here's an AI which is neither impact nor intent aligned, but which is corrigible. Each day, the AI randomly hurts one person in the world, and otherwise does nothing. It’s corrigible because it doesn't prevent us from shutting it off or modifying it.
@@ -363,7 +363,7 @@ Maybe there’s a higher-level theory for what kinds of policies induce spikines
   - If you’re a smart AI trying to be non-obstructive to many goals under weak `pol` intelligence assumptions, what kinds of heuristics might you develop? “No lying”?
     - This informs our analysis of (almost) intent-aligned behavior, and whether that behavior leads [to a unique locally stable attractor around intent alignment](https://www.lesswrong.com/posts/WjY9y7r52vaNZ2WmH/three-mental-images-from-thinking-about-agi-debate-and?commentId=mBRtRiTfymLZuw3yw#comments).
 
-- We crucially assumed that the human goal can be represented with a payoff function. As this assumption is relaxed, impact non-obstruction may become incoherent, forcing us to rely on some kind of intent non-obstruction/alignment (see Paul’s comments on a related topic [here](https://www.lesswrong.com/posts/T5ZyNq3fzN59aQG5y/the-limits-of-corrigibility?commentId=WzNLCqfhkaqvXjRHt#comments)).
+- We crucially assumed that the human goal can be represented with a payoff function. As this assumption is relaxed, impact non-obstruction may become incoherent, forcing us to rely on some kind of intent non-obstruction/alignment (see Paul's comments on [a related topic](https://www.lesswrong.com/posts/T5ZyNq3fzN59aQG5y/the-limits-of-corrigibility?commentId=WzNLCqfhkaqvXjRHt#comments)).
 - [Stuart Armstrong observed](https://www.lesswrong.com/posts/T5ZyNq3fzN59aQG5y/the-limits-of-corrigibility) that the strongest form of manipulation corrigibility requires knowledge/learning of human values.
   - This frame explains why: for non-obstruction, each AU has to get steered in a positive direction, which means the AI has to know which kinds of interaction and persuasion are good and don’t exploit human policies $\text{pol}(P)$ with respect to the true hidden $P$.
   - Perhaps it’s still possible to build agent designs which aren’t strongly incentivized to manipulate us / agents whose manipulation has mild consequences. For example, human-empowering agents probably often have this property.

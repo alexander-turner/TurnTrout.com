@@ -3,6 +3,7 @@ import type { Root, Element, Text } from "hast"
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
+import { normalizeNbsp } from "../../../components/constants"
 import { type QuartzPluginData } from "../../vfile"
 import {
   renderSequenceTitle,
@@ -123,7 +124,7 @@ describe("renderPreviousPost", () => {
     expect(thirdChild.tagName).toBe("a")
     expect(thirdChild.properties?.href).toBe("./prev-post")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
-    expect(thirdChild.children).toStrictEqual([{ type: "text", value: "Previous Post" }])
+    expect(normalizeNbsp((thirdChild.children[0] as Text).value)).toBe("Previous Post")
   })
 
   it("should handle missing prev-post-title", () => {
@@ -187,7 +188,7 @@ describe("renderNextPost", () => {
     expect(thirdChild.tagName).toBe("a")
     expect(thirdChild.properties?.href).toBe("./next-post")
     expect(thirdChild.properties?.className).toStrictEqual(["internal", "can-trigger-popover"])
-    expect(thirdChild.children).toStrictEqual([{ type: "text", value: "Next Post" }])
+    expect(normalizeNbsp((thirdChild.children[0] as Text).value)).toBe("Next Post")
   })
 
   it("should handle missing next-post-title", () => {
