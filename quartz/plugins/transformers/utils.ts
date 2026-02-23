@@ -28,6 +28,7 @@ export interface ReplaceFnResult {
   before: string
   replacedMatch: string | Element | Element[]
   after: string
+  originalText?: string
 }
 
 /**
@@ -92,7 +93,7 @@ export const replaceRegex = (
     // istanbul ignore if
     if (!match) continue
 
-    const { before, replacedMatch, after } = replaceFn(match)
+    const { before, replacedMatch, after, originalText } = replaceFn(match)
     if (before) {
       fragment.push({ type: "text", value: before })
     }
@@ -101,7 +102,8 @@ export const replaceRegex = (
         // For each element in the array, ensure it has text content
         fragment.push(...replacedMatch)
       } else if (typeof replacedMatch === "string") {
-        fragment.push(h(newNodeStyle, replacedMatch))
+        const props = originalText ? { dataOriginalText: originalText } : {}
+        fragment.push(h(newNodeStyle, props, replacedMatch))
       } else {
         fragment.push(replacedMatch)
       }
