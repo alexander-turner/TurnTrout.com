@@ -14,7 +14,6 @@ import {
   simpleConstants,
   specialFaviconPaths,
   defaultPath,
-  specialDomainMappings,
   cdnBaseUrl,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
