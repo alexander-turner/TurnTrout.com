@@ -1,6 +1,6 @@
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import patch
@@ -3059,19 +3059,17 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Favicon with word-joiner span (valid)
+        # Favicon inside favicon-span (valid)
         (
-            '<a>text<span class="word-joiner" aria-hidden="true">\u2060</span>'
-            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></a>',
+            '<a>te<span class="favicon-span">xt'
+            '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></span></a>',
             [],
         ),
-        # Favicon without word-joiner span (invalid)
+        # Favicon without favicon-span parent (invalid)
         (
             '<a>text<svg class="favicon" data-domain="example_com"'
             ' style="--mask-url: url(test.svg);"></svg></a>',
-            [
-                "Favicon (example_com) missing word-joiner span as previous sibling"
-            ],
+            ["Favicon (example_com) missing favicon-span as parent"],
         ),
         # Favicon inside .no-favicon-span (should be ignored)
         (
@@ -3079,23 +3077,23 @@ def test_check_tengwar_characters(html, expected):
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
             [],
         ),
-        # img.favicon without word-joiner (invalid)
+        # img.favicon without favicon-span parent (invalid)
         (
             '<a>text<img class="favicon" src="test.ico"></a>',
-            ["Favicon (test.ico) missing word-joiner span as previous sibling"],
+            ["Favicon (test.ico) missing favicon-span as parent"],
         ),
         # No favicons at all (valid)
         ("<div><p>No favicons</p></div>", []),
-        # Mixed: one with, one without word-joiner
+        # Mixed: one with, one without favicon-span parent
         (
             "<div>"
-            '<a>ok<span class="word-joiner">\u2060</span>'
+            '<a>o<span class="favicon-span">k'
             '<svg class="favicon" data-domain="ok_com"'
-            ' style="--mask-url: url(ok.svg);"></svg></a>'
+            ' style="--mask-url: url(ok.svg);"></svg></span></a>'
             '<a>bad<svg class="favicon" data-domain="bad_com"'
             ' style="--mask-url: url(bad.svg);"></svg></a>'
             "</div>",
-            ["Favicon (bad_com) missing word-joiner span as previous sibling"],
+            ["Favicon (bad_com) missing favicon-span as parent"],
         ),
         # Nested .no-favicon-span (should be ignored)
         (
@@ -3105,10 +3103,10 @@ def test_check_tengwar_characters(html, expected):
         ),
     ],
 )
-def test_check_favicon_word_joiner(html, expected):
-    """Test the check_favicon_word_joiner function."""
+def test_check_favicon_span(html, expected):
+    """Test the check_favicon_span function."""
     soup = BeautifulSoup(html, "html.parser")
-    assert built_site_checks.check_favicon_word_joiner(soup) == expected
+    assert built_site_checks.check_favicon_span(soup) == expected
 
 
 @pytest.mark.parametrize(
@@ -5934,20 +5932,28 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             '<article><p>Text with <span class="h2">Header 2</span></p></article>',
             ["Paragraph ends with invalid character '2' Text withHeader 2"],
         ),
-        # Center-dot separated lists should be skipped
+        # Feature-list paragraphs with · separators should be skipped
+        (
+            "<article><p>Feature A · Feature B · Feature C</p></article>",
+            [],
+        ),
+        (
+            "<article><p><strong>Bold feature</strong> · <strong>Another</strong></p></article>",
+            [],
+        ),
+        # Center-dot separated lists should be skipped (any · causes skip)
         (
             "<article><p>Smart quotes\u00b7Em dashes\u00b7Ellipses\u00b7Fractions</p></article>",
             [],
         ),
-        # Exactly 2 center dots (threshold) should also be skipped
-        (
-            "<article><p>A\u00b7B\u00b7C</p></article>",
-            [],
-        ),
-        # Single center dot is NOT enough to skip
         (
             "<article><p>One\u00b7two</p></article>",
-            ["Paragraph ends with invalid character 'o' One\u00b7two"],
+            [],
+        ),
+        # Quote callout content should be skipped
+        (
+            '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
+            [],
         ),
     ],
 )
@@ -5961,6 +5967,14 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         soup
     )
     assert issues == expected_issues
+
+
+def test_should_skip_paragraph_inside_quote_callout():
+    """Paragraphs inside quote callouts should be skipped."""
+    html = '<blockquote data-callout="quote"><p>Content without punct</p></blockquote>'
+    soup = BeautifulSoup(html, "html.parser")
+    p = soup.find("p")
+    assert built_site_checks._should_skip_paragraph(p) is True
 
 
 @pytest.mark.parametrize(
@@ -6163,3 +6177,112 @@ def test_find_duplicate_citations_multiple_duplicates():
     assert len(result) == 2
     assert any("Turner2024A" in issue for issue in result)
     assert any("Smith2023X" in issue and "3 files" in issue for issue in result)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # Subfigures correctly inside <figure> (valid)
+        (
+            '<figure><div class="subfigure"><img src="a.jpg"></div></figure>',
+            [],
+        ),
+        # Multiple subfigures inside <figure> (valid)
+        (
+            "<figure><figcaption>Caption</figcaption>"
+            '<div class="subfigure"><img src="a.jpg"></div>'
+            '<div class="subfigure"><img src="b.jpg"></div></figure>',
+            [],
+        ),
+        # Subfigures inside wrapper div inside <figure> (valid — e.g.
+        # accessibility wrapper <div role="img">)
+        (
+            '<figure><div role="img" aria-label="description">'
+            '<div class="subfigure"><img src="a.jpg"></div>'
+            '<div class="subfigure"><img src="b.jpg"></div>'
+            "</div></figure>",
+            [],
+        ),
+        # Orphaned subfigure outside <figure> (invalid — no figure ancestor)
+        (
+            '<div><div class="subfigure"><img src="a.jpg"></div></div>',
+            ["Orphaned .subfigure (no <figure> ancestor):"],
+        ),
+        # Orphaned subfigure at article top level (invalid)
+        (
+            '<div class="subfigure"><img src="a.jpg"></div>',
+            ["Orphaned .subfigure (no <figure> ancestor):"],
+        ),
+        # No subfigures at all (valid)
+        ("<p>No subfigures here</p>", []),
+    ],
+)
+def test_check_orphaned_subfigures(html: str, expected: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_orphaned_subfigures(soup)
+    assert len(result) == len(expected)
+    for issue, exp in zip(result, expected):
+        assert issue.startswith(exp)
+
+
+@pytest.mark.parametrize(
+    "html_content,expected_keys",
+    [
+        # Redirect pages should be skipped
+        (
+            '<html><head><meta http-equiv="refresh" content="0; url=/other"></head></html>',
+            [],
+        ),
+        # Citation keys should be collected from non-redirect pages
+        (
+            "<html><body><code>@misc{TestKey2024,\n}</code></body></html>",
+            ["TestKey2024"],
+        ),
+    ],
+)
+def test_maybe_collect_citation_keys(
+    tmp_path: Path, html_content: str, expected_keys: list[str]
+):
+    html_file = tmp_path / "page.html"
+    html_file.write_text(html_content, encoding="utf-8")
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        html_file, tmp_path, citation_to_files
+    )
+    assert sorted(citation_to_files.keys()) == sorted(expected_keys)
+    for key in expected_keys:
+        assert citation_to_files[key] == ["page.html"]
+
+
+def test_process_html_files_duplicate_citations(tmp_path: Path):
+    """Duplicate citation keys across files should be reported."""
+    content_dir = tmp_path / "content"
+    content_dir.mkdir()
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+
+    # Create two HTML files with the same citation key
+    for name in ("page1.html", "page2.html"):
+        (public_dir / name).write_text(
+            "<html><head><title>T</title></head><body>"
+            "<article><p>Text.</p></article>"
+            "<code>@misc{DuplicateKey2024,\n}</code>"
+            "</body></html>",
+            encoding="utf-8",
+        )
+
+    # Mock functions that validate paths against git root or produce output.
+    # We're testing the citation collection + duplicate detection path.
+    with (
+        patch.object(
+            built_site_checks, "check_file_for_issues", return_value={}
+        ),
+        patch.object(built_site_checks, "_print_issues"),
+        patch.object(script_utils, "build_html_to_md_map", return_value={}),
+        patch.object(script_utils, "collect_aliases", return_value=set()),
+        patch.object(script_utils, "should_have_md", return_value=False),
+    ):
+        result = built_site_checks._process_html_files(
+            public_dir, content_dir, check_fonts=False
+        )
+    assert result is True

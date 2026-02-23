@@ -2,12 +2,17 @@ import FlexSearch, { type ContextOptions } from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
-import { tabletBreakpoint, mobileBreakpoint } from "../../styles/variables"
+import { tabletBreakpoint } from "../../styles/variables"
 import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
-import { simpleConstants } from "../constants"
+import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+
+// Global function injected by renderPage.tsx to lazy-load content index
+declare global {
+  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+}
 
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
@@ -151,7 +156,7 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
           const sanitizedSearchTok = escapeRegExp(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, '<span class="search-match">$&</span>')
+          return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
       return tok
@@ -177,7 +182,7 @@ export { escapeRegExp } from "../../util/escape"
  */
 export const createMatchSpan = (text: string): HTMLSpanElement => {
   const span = document.createElement("span")
-  span.className = "search-match"
+  span.className = SEARCH_MATCH_CLASS
   span.textContent = text
   return span
 }
@@ -210,17 +215,20 @@ export const matchTextNodes = (node: Node, term: string) => {
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement
     if (element.closest("#toc-content-mobile")) return
-    if (element.classList.contains("search-match")) return
+    if (element.classList.contains(SEARCH_MATCH_CLASS)) return
 
     Array.from(node.childNodes).forEach((child) => matchTextNodes(child, term))
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
+    // Normalize NBSP (U+00A0) to regular space so multi-word search terms
+    // match across non-breaking spaces inserted by punctilio
+    const normalizedText = nodeText.replace(/\u00A0/gu, " ")
     const sanitizedTerm = escapeRegExp(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation
-    const parts = nodeText.split(regex)
+    const parts = normalizedText.split(regex)
     if (parts.length === 1) return // No matches
 
     const fragment = document.createDocumentFragment()
@@ -472,6 +480,8 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
   document.body.classList.remove("no-mix-blend-mode")
   if (searchBar) {
     searchBar.value = ""
+    searchBar.setAttribute("aria-expanded", "false")
+    searchBar.removeAttribute("aria-activedescendant")
   }
   if (results) {
     removeAllChildren(results)
@@ -681,7 +691,13 @@ async function onNav(e: CustomEventMap["nav"]) {
   }
 
   currentSlug = e.detail.url
-  data = await fetchData
+
+  // Verify getContentIndex was injected by renderPage.tsx
+  if (typeof getContentIndex !== "function") {
+    throw new Error("getContentIndex not initialized - check script injection order")
+  }
+
+  data = await getContentIndex()
   if (!data) return
   results = document.createElement("div")
   const container = document.getElementById("search-container")
@@ -691,6 +707,8 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   const enablePreview = searchLayout?.dataset?.preview === "true"
   results.id = "results-container"
+  results.setAttribute("role", "listbox")
+  results.setAttribute("aria-label", "Search results")
   appendLayout(results)
 
   if (enablePreview) {
@@ -735,6 +753,11 @@ async function onNav(e: CustomEventMap["nav"]) {
   )
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
+
+  // Re-render card previews when viewport crosses the tablet breakpoint
+  const debouncedResizeHandler = debounce(handleResizeForCardPreviews, 150, false)
+  window.addEventListener("resize", debouncedResizeHandler)
+  listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
 
   const escapeCleanup = registerEscapeHandler(container, () => hideSearch(previewManager))
   listeners.add(escapeCleanup)
@@ -784,15 +807,22 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
+    card.setAttribute("aria-selected", "false")
   })
 
+  const searchBar = document.getElementById("search-bar")
   if (el) {
     el.classList.add("focus")
+    el.setAttribute("aria-selected", "true")
     currentHover = el
+
+    searchBar?.setAttribute("aria-activedescendant", el.id)
 
     if (keyboardFocus) {
       el.focus()
     }
+  } else {
+    searchBar?.removeAttribute("aria-activedescendant")
   }
 }
 
@@ -852,6 +882,68 @@ const getByField = (
 }
 
 /**
+ * Add an card preview to a result card. Fetches the page content and renders
+ * a small preview slice with search matches highlighted.
+ * @param card - The result card element
+ * @param slug - The slug for the page to preview
+ */
+/* istanbul ignore next */
+function addCardPreview(card: HTMLElement, slug: FullSlug): void {
+  if (card.querySelector(".card-preview")) return // Already has one
+
+  const cardPreview = document.createElement("div")
+  cardPreview.classList.add("card-preview")
+  card.appendChild(cardPreview)
+
+  // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
+  void fetchContent(slug).then(({ content: contentElements }) => {
+    if (!contentElements) return
+    const article = document.createElement("article")
+    article.classList.add("search-preview")
+    contentElements.forEach((el) => {
+      article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
+    })
+    cardPreview.appendChild(article)
+
+    // Wait for layout before scrolling to first match
+    requestAnimationFrame(() => {
+      const firstMatch = cardPreview.querySelector(".search-match")
+      if (firstMatch) {
+        const matchRect = firstMatch.getBoundingClientRect()
+        const containerRect = cardPreview.getBoundingClientRect()
+        const relativeTop = matchRect.top - containerRect.top + cardPreview.scrollTop
+        cardPreview.scrollTop = Math.max(0, relativeTop - cardPreview.clientHeight / 3)
+      }
+    })
+  })
+}
+
+/** Track whether the viewport was at mobile/tablet width on last check */
+let wasMobileWidth = typeof window !== "undefined" && window.innerWidth <= tabletBreakpoint
+
+/**
+ * Resize handler: when the viewport crosses from desktop to mobile/tablet
+ * width, lazily add card previews to result cards that were rendered
+ * without them.
+ */
+/* istanbul ignore next */
+function handleResizeForCardPreviews(): void {
+  const isMobileNow = window.innerWidth <= tabletBreakpoint
+  if (isMobileNow === wasMobileWidth) return
+  wasMobileWidth = isMobileNow
+
+  if (!isMobileNow) return // Only need to add previews when going to mobile
+
+  const enablePreview = searchLayout?.dataset?.preview === "true"
+  if (!enablePreview) return
+
+  // Add card previews to all result cards that don't already have them
+  document.querySelectorAll(".result-card:not(.no-match)").forEach((card) => {
+    addCardPreview(card as HTMLElement, card.id as FullSlug)
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -865,15 +957,25 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
   itemTile.id = slug
+  itemTile.setAttribute("role", "option")
   itemTile.href = resolveSlug(slug, currentSlug).toString()
 
   content = replaceEmojiConvertArrows(content)
 
   let suffixHTML = ""
-  if (!enablePreview || window.innerWidth <= mobileBreakpoint) {
+  if (!enablePreview) {
     suffixHTML = `<p>${content}</p>`
   }
   itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+
+  // On mobile/tablet, embed a small card preview slice in each card.
+  // CSS hides .card-preview above the tablet breakpoint, so we always
+  // attach them when preview is enabled — a resize listener
+  // (handleResizeForCardPreviews) lazily adds them to cards rendered at
+  // desktop width when the viewport narrows.
+  if (enablePreview && window.innerWidth <= tabletBreakpoint) {
+    addCardPreview(itemTile, slug as FullSlug)
+  }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
   async function onMouseEnter(ev: MouseEvent) {
@@ -958,6 +1060,8 @@ async function displayResults(
   if (!results) return
 
   removeAllChildren(results)
+  const searchBar = document.getElementById("search-bar")
+  searchBar?.setAttribute("aria-expanded", finalResults.length > 0 ? "true" : "false")
   if (finalResults.length === 0) {
     results.innerHTML = `<a class="result-card no-match">
         <h3>No results</h3>

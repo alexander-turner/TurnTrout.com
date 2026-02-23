@@ -45,19 +45,6 @@ stash_and_exit() {
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
-if command -v conda >/dev/null 2>&1; then
-  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
-
-  if [ "$ACTIVE_ENV" != "website" ]; then
-    echo "Activating conda environment: website"
-
-    CONDA_BASE=$(conda info --base)
-    # shellcheck source=/dev/null
-    . "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda activate website
-  fi
-fi
-
 if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
 fi
@@ -67,6 +54,3 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
 fi
 
 uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG
-
-# Auto-compile requirements.txt and update publication dates
-sh "$GIT_ROOT/scripts/fast_pre_push.sh"

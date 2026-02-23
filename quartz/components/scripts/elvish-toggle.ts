@@ -61,6 +61,12 @@ export function initializeElvishElements(): void {
 
   // Add hidden help text for screen readers (only if elvish elements exist)
   if (elvishElements.length > 0 && !document.getElementById("elvish-help")) {
-    document.body.appendChild(createHelpText())
+    const main = document.getElementById("center-content")
+    if (main) {
+      main.appendChild(createHelpText())
+    } else {
+      // Fallback to body if main doesn't exist
+      document.body.appendChild(createHelpText())
+    }
   }
 }

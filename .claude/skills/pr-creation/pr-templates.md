@@ -2,6 +2,14 @@
 
 ## PR Creation Command
 
+First, check if a PR already exists for the current branch:
+
+```bash
+EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
+```
+
+If `EXISTING_PR` is non-empty, update the existing PR with `gh pr edit` instead of creating a new one.
+
 ```bash
 gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'
 ## Summary

@@ -122,6 +122,9 @@ export function removeSpaceBeforeFootnotes(tree: Root): void {
   })
 }
 
+// Named wrapper for nbsp transform so it can be explicitly filtered when needed
+const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: markerChar })
+
 // These lists are automatically added to both applyTextTransforms and the main HTML transforms
 // Don't check for invariance: these transforms accept a `separator` and intentionally
 // use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
@@ -135,7 +138,7 @@ const uncheckedTextTransformers = [
   // Ellipsis, multiplication, math, legal symbols (arrows disabled - site uses custom formatArrows)
   (text: string) => symbolTransform(text, { separator: markerChar, includeArrows: false }),
   // Non-breaking spaces: prevents orphans, keeps numbers with units, etc.
-  (text: string) => nbspTransform(text, { separator: markerChar }),
+  nbspTransformWrapper,
 ]
 
 // Check for invariance: these are simple find-and-replace transforms that never interact
@@ -145,14 +148,22 @@ const checkedTextTransformers = [massTransformText, plusToAmpersand, timeTransfo
 /**
  * Applies multiple text transformations
  *
- * Not used in this module, but useful elsewhere
- *
+ * @param text - The text to transform
+ * @param options - Configuration options
+ * @param options.useNbsp - Whether to apply nbsp transformations (default: true)
  * @returns The transformed text
  */
-export function applyTextTransforms(text: string): string {
+export function applyTextTransforms(text: string, options: { useNbsp?: boolean } = {}): string {
+  const { useNbsp = true } = options
+
+  // Filter out nbspTransform if useNbsp is false
+  const textTransformers = useNbsp
+    ? uncheckedTextTransformers
+    : uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+
   for (const transformer of [
     ...checkedTextTransformers,
-    ...uncheckedTextTransformers,
+    ...textTransformers,
     spacesAroundSlashes,
   ]) {
     text = transformer(text)

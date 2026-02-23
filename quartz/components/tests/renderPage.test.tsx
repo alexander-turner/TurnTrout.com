@@ -4,9 +4,6 @@
 import { describe, it, expect } from "@jest/globals"
 import { type Root, type Element } from "hast"
 import { h } from "hastscript"
-
-/** Normalize non-breaking spaces to regular spaces for text content assertions */
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
 // skipcq: JS-W1028
 import React from "react"
 
@@ -14,7 +11,7 @@ import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
-import { locale } from "../constants"
+import { locale, normalizeNbsp } from "../constants"
 import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"

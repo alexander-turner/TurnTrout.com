@@ -40,7 +40,7 @@ Do **NOT** use this skill for:
 ## Prerequisites
 
 - GitHub CLI (`gh`) must be authenticated
-- All changes must be committed to a feature branch (not `main`/`master`)
+- All changes must be committed to a feature branch (not `$CLAUDE_CODE_BASE_REF`/`master`)
 
 ## Updating an Existing PR
 
@@ -56,12 +56,12 @@ Before updating an existing PR (pushing new commits, editing the description, et
 
 ### Step 1: Gather Context
 
-1. Identify the base branch (typically `main` or `master`)
+1. The base branch is in the env variable `$CLAUDE_CODE_BASE_REF`
 2. Run `git diff <base-branch>...HEAD` to see all changes
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
 
-### Step 2: Self-Critique (Required)
+### Step 2: Self-Critique
 
 **Before creating the PR**, you MUST read [critique-prompt.md](critique-prompt.md) and launch a critique sub-agent using the Task tool:
 
@@ -86,32 +86,25 @@ Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templat
 You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatting guidelines before this step.
 
 1. Push the branch: `git push -u origin HEAD`
-2. Create the PR using `gh pr create` with the template from the resource file
-3. **CI label**: If the PR includes code changes that should be validated by Playwright/visual regression tests, add the `ci:full-tests` label: `gh pr edit --add-label "ci:full-tests"`. Without this label, expensive test suites (Playwright, visual testing) are skipped on PRs to save compute. They will still run in the merge queue before merging.
+2. Check if a PR already exists for the current branch:
+
+   ```bash
+   EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
+   ```
+
+   If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
-### Step 6: Wait for CI Checks
+### Step 6: Wait for CI Checks (MANDATORY)
 
 1. Run `gh pr checks <pr-number> --watch` to monitor
 2. If any checks fail, investigate and fix the issues
 3. Push fixes and wait again
 4. Only proceed once all checks are green
 
-### Step 7: Check DeepSource Issues
-
-After CI checks pass, check for DeepSource static analysis issues on the branch:
-
-1. Get the current commit SHA: `git rev-parse HEAD`
-2. Wait briefly for DeepSource analysis to complete (it runs on push via the GitHub App)
-3. Run: `deepsource issues list --commit <SHA>`
-4. If the command fails (e.g., analysis not ready yet), retry after 30 seconds (up to 3 attempts)
-5. Review any issues found:
-   - Fix legitimate issues, commit, and push
-   - After pushing fixes, re-run `deepsource issues list --commit <new-SHA>` to verify
-6. If the `--commit` flag is not available (official CLI without fork), skip this step with a note
-
-### Step 8: Report Result
+### Step 7: Report Result
 
 Provide the PR URL and confirm all CI checks have passed.
 
@@ -123,8 +116,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
-2. Runs `git log main..HEAD --oneline` — sees 2 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 2 commits
 3. Launches critique sub-agent with the diff
 4. Critique returns: "Looks good, minor suggestion to add null check on line 42"
 5. Fixes the null check, commits: `fix: add null check for empty session token`
@@ -136,8 +129,7 @@ Provide the PR URL and confirm all CI checks have passed.
    ```
 
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — no issues found
-10. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
+9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
 
 ### Example 2: Multi-Commit Feature
 
@@ -145,8 +137,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes across 8 files including new components, tests, and API routes
-2. Runs `git log main..HEAD --oneline` — sees 5 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes across 8 files including new components, tests, and API routes
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 5 commits
 3. Launches critique sub-agent with the full diff
 4. Critique returns 4 issues: unused import, missing error boundary, test not covering edge case, over-engineered helper
 5. Fixes all 4 issues across 2 additional commits
@@ -155,8 +147,7 @@ Provide the PR URL and confirm all CI checks have passed.
 8. Pushes and creates PR with detailed body summarizing the feature
 9. Watches CI — one check fails (lint warning on new file)
 10. Fixes lint issue, pushes, watches again — all green
-11. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — finds 1 style issue, fixes it
-12. Reports success with PR URL
+11. Reports success with PR URL
 
 ### Example 3: When Input Is Unclear
 
@@ -170,6 +161,5 @@ Provide the PR URL and confirm all CI checks have passed.
 - **Tests fail**: Fix the tests, don't skip them
 - **`gh` not authenticated**: Tell user to run `gh auth login` or set `GH_TOKEN`
 - **Push fails**: Check branch permissions and remote configuration
+- **PR already exists (HTTP 422)**: Check for existing PRs first with `gh pr list --head "$(git branch --show-current)"`, then use `gh pr edit` to update
 - **No changes to PR**: Confirm with the user that work is committed
-- **DeepSource analysis not ready**: Retry `deepsource issues list --commit <SHA>` after 30 seconds, up to 3 times
-- **DeepSource `--commit` flag unavailable**: Skip the DeepSource check step and note it in the PR report

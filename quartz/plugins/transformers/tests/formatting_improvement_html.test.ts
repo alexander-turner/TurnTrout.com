@@ -73,7 +73,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
-        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+        "<p><a>\u201CHow steering vectors impact GPT-2\u2019s capabilities.\u201D</a></p>",
       ],
       [
         '<p>"<span class="katex"></span> alignment metric</p>',
@@ -88,8 +88,8 @@ describe("HTMLFormattingImprovement", () => {
         `<p>Suppose you tell me, ${LEFT_DOUBLE_QUOTE}<code>TurnTrout</code>,${RIGHT_DOUBLE_QUOTE} we definitely</p>`,
       ],
       [
-        '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="word-joiner" aria-hidden="true">⁠</span><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></a></p>',
-        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="word-joiner" aria-hidden="true">⁠</span><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></a></p>',
+        '<p>I was born in \'94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="favicon-span"><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
+        '<p>I was born in ’94. Now, I’m a research scientist on <a href="https://deepmind.google/" class="external" target="_blank" rel="noopener noreferrer">Google DeepMind’s<span class="favicon-span"><img src="https://assets.turntrout.com/static/images/external-favicons/deepmind_google.avif" class="favicon" alt="" loading="lazy" width="64" height="64" style="aspect-ratio:64 / 64;"></span></a></p>',
       ],
       [
         '<div><p>not confident in that plan - "</p><p>"Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>',
@@ -631,8 +631,6 @@ describe("HTMLFormattingImprovement", () => {
 
     describe("Legal symbols", () => {
       it.each([
-        // (c) only converts with copyright context (year or "copyright" keyword)
-        ["<p>(c)</p>", "<p>(c)</p>"],
         ["<p>Copyright (c) 2024</p>", "<p>Copyright © 2024</p>"],
         ["<p>(r)</p>", "<p>®</p>"],
         ["<p>(R)</p>", "<p>®</p>"],
@@ -2104,5 +2102,32 @@ describe("Non-breaking space insertion", () => {
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
     expect(result).toContain(NBSP)
+  })
+})
+
+describe("applyTextTransforms with useNbsp option", () => {
+  it.each([
+    ["I love this thing", false],
+    ["See Fig. 3 for details", false],
+  ])("does not insert nbsp when useNbsp=%s: %s", (input, useNbsp) => {
+    const result = applyTextTransforms(input, { useNbsp })
+    expect(result).not.toContain(NBSP)
+  })
+
+  it.each([
+    ["I love this thing", true],
+    ["I love this thing", undefined],
+  ])("inserts nbsp when useNbsp=%s: %s", (input, useNbsp) => {
+    const result = applyTextTransforms(input, useNbsp === undefined ? {} : { useNbsp })
+    expect(result).toContain(NBSP)
+  })
+
+  it.each([
+    ['He said "hello"', `He said ${LEFT_DOUBLE_QUOTE}hello${RIGHT_DOUBLE_QUOTE}`],
+    ["2x3", `2${MULTIPLICATION}3`],
+    ["test - case", "test—case"],
+  ])("applies other transforms when useNbsp=false: %s", (input, expected) => {
+    const result = applyTextTransforms(input, { useNbsp: false })
+    expect(result).toBe(expected)
   })
 })

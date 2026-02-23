@@ -10,13 +10,12 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-const normalizeNbsp = (s: string) => s.replace(/\u00A0/g, " ")
-
 import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { FrontmatterData, type QuartzPluginData } from "../../plugins/vfile"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
 import { Backlinks, getBacklinkFileData, elementToJsx } from "../Backlinks"
+import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>

@@ -119,16 +119,11 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 # Color scheme
 
-The color scheme derives from the [Catppuccin](https://catppuccin.com) "latte" (light mode) and "frappe" (dark mode) [palettes](https://github.com/catppuccin/catppuccin/tree/main?tab=readme-ov-file#-palette).
-
-![The four Catppuccin color palettes demonstrated in overlapping code editor windows. The themes include one light mode (Latte) and three dark modes (Frappé, Macchiato, Mocha), set against a soft landscape background with the word "CATPPUCCIN".](https://assets.turntrout.com/static/images/posts/catppuccin.avif)
-Figure: The four Catppuccin palettes.
-
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
     <div class="centered">Light mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
@@ -146,7 +141,7 @@ Figure: The four Catppuccin palettes.
   </span>
   <span id="dark-demo" class="dark-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid; background-color: var(--background, #303446);">
     <div class="centered">Dark mode</div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; place-items: center; margin-top: .5rem; margin-bottom: .25rem; white-space: nowrap;">
       <span style="color: var(--red);">Red</span>
       <span style="color: var(--maroon);">Maroon</span>
       <span style="color: var(--orange);">Orange</span>
@@ -250,8 +245,6 @@ By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve th
 
 Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
 
-<!-- spellchecker-disable -->
-
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
 > In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
@@ -261,8 +254,6 @@ Previously, I followed `gwern`'s suggestion and arranged the video to only play 
 > I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
 >
 > I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
-
-<!-- spellchecker-enable -->
 
 ### Caching improves load times
 
@@ -338,18 +329,18 @@ This website contains many design elements. To maintain a regular, assured style
 Exponential font sizing
 : I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
 
-: After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
+  After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-: <span class="h1">Header 1</span>
-  <span class="h2">Header 2</span>
-  <span class="h3">Header 3</span>
-  <span class="h4">Header 4</span>
-  <span class="h5">Header 5</span>
+  <div class="h1">Header 1</div>
+  <div class="h2">Header 2</div>
+  <div class="h3">Header 3</div>
+  <div class="h4">Header 4</div>
+  <div class="h5">Header 5</div>
 
-: <span>Normal text</span>
-  <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
+  <div>Normal text</div>
+  <div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+  <div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+  <div style="font-size:var(--font-size-minus-3)">Smaller text</div>
 
 All spacing is a simple multiple of a base measurement
 : If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
@@ -368,13 +359,11 @@ Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
 
 My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Artano" renders Elvish glyphs in proper Quenya mode.
 
-<!-- spellchecker-disable -->
-
 > [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
 >
 > Subtitle: Click a line to see the translation
 >
-> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls/></div>
+> <div class="centered"><audio src="https://assets.turntrout.com/static/audio/namarie.mp3" controls></audio></div>
 >
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
 >
@@ -416,8 +405,6 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
 >
-
-<!-- spellchecker-enable -->
 
 <span class="float-right" style="margin-top: 2rem; ">
 <div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
@@ -461,12 +448,14 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 > }
 > ```
 
-A less theme-disciplined man than myself might even flaunt dropcap colorings!
+### Rare dropcap coloring
+
+Every time you navigate to a new page, there's a <span id="populate-dropcap-probability"></span> chance to get a random dropcap color. :)
 
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
 <span class="dropcap" data-first-letter="H" style="--before-color: var(--dropcap-background-orange);">H</span>
-<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-yellow);">E</span>
+<span class="dropcap" data-first-letter="E"  style="--before-color: var(--dropcap-background-gold);">E</span>
 <br/>
 <span class="dropcap" data-first-letter="P"  style="--before-color: var(--dropcap-background-green);">P</span>
 <span class="dropcap" data-first-letter="O"  style="--before-color: var(--dropcap-background-blue);">O</span>
@@ -482,6 +471,17 @@ A less theme-disciplined man than myself might even flaunt dropcap colorings!
 |                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
+
+### Non-breaking spaces
+
+[My `punctilio` library](https://github.com/alexander-turner/punctilio) intelligently inserts non-breaking spaces (NBSPs) throughout site text. Non-breaking spaces prevent awkward line breaks --- text on either side of a non-breaking space will always stay together on the same line. `punctilio` handles several typographic scenarios:
+
+- Preventing short words: "a", "I", and "to" should never be alone on a line.
+- Keeping numbers with their units: "100 km", "5 kg", and "32 °F".
+- Preserving references and abbreviations: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
+- Handling copyright and trademark symbols: "© 2024" and "™ Widget".
+- Keeping initials together: "J. K. Rowling" and "C. S. Lewis".
+- Preventing widow words: The last word of a paragraph stays with at least one preceding word.
 
 ### Automatic conversion of quotation marks
 
@@ -600,6 +600,9 @@ Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="
 No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
+Balanced text wrapping
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s [non-breaking spaces](#non-breaking-spaces) set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
 
@@ -670,7 +673,7 @@ I want the user experience to be consistent, so my build process bakes in the Tw
 
 ## Inline favicons
 
-Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The <span id="populate-turntrout-favicon"></span> favicon appears for links to other pages within this site, while the <span id="populate-anchor-favicon"></span> icon is used for within-page links.
+Favicons are those little website icons you see in your tab bar. Inspired by [`gwern.net`](https://gwern.net) and Wikipedia, I show favicons next to links. Favicons orient the reader and look nice. The <span id="populate-turntrout-favicon"></span> favicon appears for links to other pages within this site, while within-page links use the <span id="populate-anchor-favicon"></span> icon.
 
 I wrote a server-side HTML transformation implementing the following algorithm:
 
@@ -684,10 +687,7 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 There remains a wrinkle: How can I ensure the favicons _look good_? As `gwern` [noted](https://gwern.net/design-graveyard#link-icon-css-regexps), inline favicons sometimes appear on the next line (detached from their link). This looks bad - just like it would look bad if your browser displayed the last letter of a word on the next line, all on its own.
 
-To tackle this, the favicon transformation inserts a [word joiner](https://en.wikipedia.org/wiki/Word_joiner) character immediately before the favicon element. The word joiner basically glues the previous text to the favicon, preventing line breaks at its position.
-
-> [!note] My previous implementation: the "favicon sandwich"
-> I used to create a new `<span>` which packaged both the last few letters of the link text and then the favicon element. However, I realized that word joiners are simpler.
+To tackle this, the favicon transformation splices the last few characters from the link text and wraps them together with the favicon inside a `<span class="favicon-span">` with `white-space: nowrap`. This keeps the last few characters glued to the favicon, preventing line breaks at that position.
 
 ### I only include recognizable favicons
 
@@ -800,12 +800,36 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse accessibility checks](https://developer.chrome.com/docs/lighthouse/overview/) for six of my pages, demanding a perfect score of 100. Here are some highlights from my pipeline.
 
-> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
-> ![[/open-source#automatic-alt-text-generation]]
+Asset accessibility
+: I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+  > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+  > ![[/open-source#automatic-alt-text-generation]]
+
+  I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+
+Color contrast
+: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
+
+ID uniqueness
+: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410).
+
+Skip-to-content link
+: A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
+
+Scrollable content regions
+: Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
+
+Miscellaneous improvements
+: * Every interactive element is keyboard-navigable.
+  - Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
+  - I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
+  - For screen readers, a route announcer announces new pages even though my site is a single-page application.
+  - Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
+  - A `prefers-reduced-motion` media query disables animations site-wide.
+  - I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
 
 ## Auto-generated repository statistics
 
@@ -826,17 +850,26 @@ Popovers
 : Quartz comes with interactive popover previews for internal links. Desktop users can view popovers by hovering over an internal link. Like the [Elvish text](#font-selection), footnote numbers have a dotted border to signal interactivity; clicking them opens a popover with the footnote content, which dismisses on click-outside.
 
 Search
-: My site is searchable, with a content preview on the desktop view. The visited page will highlight the query you looked for and initialize the page on top of the first matching text fragment. To accord with classic keybindings, pressing `/` toggles the search modal.
+: Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
+
+  ![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+  Figure: Mobile previews.
+
+  ![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+  Figure: Desktop previews.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
 
-: <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
+  <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
 
-Spoilers hide text until hovered
+Spoilers hide text until clicked
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
 
-: >! Have you heard? Snape kills Dumbledore.
+  >! Have you heard? Snape kills Dumbledore.
+
+Server-side math rendering via $\KaTeX$
+: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
@@ -846,9 +879,6 @@ Scroll indicators for overflowing content
   $$
   e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
   $$
-
-Server-side math rendering via $\KaTeX$
-: I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
@@ -956,6 +986,8 @@ Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I c
 
 I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
 
+Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quotes come from external sources and shouldn't trigger linting -- any errors within are not my responsibility.
+
 I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
 > [!info]- Markdown and source file checks
@@ -977,6 +1009,7 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 > 4. Footnote references match their definitions: each footnote is referenced exactly once, and there are no orphaned references.
 > 5. Avoid error patterns from incorrectly mixing Markdown into a line with raw HTML.
 > 6. Headings should not contain Markdown links (like `## Title [link](...)`).
+> 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
 >
 > **Typography:**
 > 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
@@ -1061,7 +1094,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Favicon validation:**
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
-> 2. Each favicon is preceded by a [word joiner](#favicons-never-wrap-alone-to-a-new-line);
+> 2. Each favicon is wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
@@ -1117,23 +1150,22 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 
-: [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+  [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
 
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
-: For posts which are being pushed for the first time, my script sets their publication date. For posts which have been updated since the last `push`, it updates their "last updated" date.
+: Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
 
-: The script also updates the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+  The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
-
 : I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.
 
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-: To verify that a commit `ABC012` was indeed committed by a given date, run
+  To verify that a commit `ABC012` was indeed committed by a given date, run
 
   ```shell
   git clone https://github.com/alexander-turner/.timestamps
@@ -1148,7 +1180,7 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-: Sadly, Playwright test isolation isn't good, so parallel testing creates flaky, unreliable results. I need to know _for sure_ whether my site works. Therefore, I don't use parallelism. Instead, I run a GitHub Action with about 40 "shards" (i.e. different machines), with each machine running ≈ 1/40th of the tests. The Action completes in about 10 minutes.
+  I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.

@@ -145,7 +145,9 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+VALID_PARAGRAPH_ENDING_CHARACTERS = (
+    ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
+)
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
 CENTER_DOT = "\u00b7"
@@ -156,12 +158,21 @@ _CENTER_DOT_LIST_THRESHOLD = 2
 
 def _should_skip_paragraph(p: Tag) -> bool:
     """Check if a paragraph should be skipped for punctuation checking."""
+    # Skip paragraphs inside quote callouts (quoted external content)
+    if p.find_parent("blockquote", {"data-callout": "quote"}):
+        return True
+
     classes = script_utils.get_classes(p)
     if (
         "subtitle" in classes
         or "page-listing-title" in classes
         or p.find(class_="transclude")
     ):
+        return True
+
+    # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
+    text = p.get_text()
+    if "·" in text:
         return True
 
     # Skip paragraphs that only contain inline styling elements
@@ -745,6 +756,34 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that all `.subfigure` elements have a `<figure>` ancestor.
+
+    When the markdown parser breaks a `<figure>` structure (e.g. inside
+    a definition list continuation), `.subfigure` divs can end up as
+    orphaned elements outside any `<figure>`, breaking the flex layout.
+
+    Subfigures may be nested inside intermediate wrapper elements (e.g.
+    `<div role="img">` for accessibility), so this checks ancestors
+    rather than requiring a direct parent.
+
+    Returns:
+        list of strings describing orphaned subfigure elements
+    """
+    issues: list[str] = []
+
+    for subfig in _tags_only(soup.find_all(class_="subfigure")):
+        if not subfig.find_parent("figure"):
+            tag_preview = str(subfig)[:120]
+            _append_to_list(
+                issues,
+                f"Orphaned .subfigure (no <figure> ancestor): {tag_preview}",
+            )
+
+    return issues
+
+
 def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
     """
     Check for class names that contain commas or start with dots.
@@ -1205,25 +1244,26 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
     ]
 
 
-def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
+def check_favicon_span(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all favicons are preceded by a word joiner span element.
+    Check that all favicons are inside a favicon-span element.
 
-    The word joiner (U+2060) wrapped in a <span class="word-joiner"> prevents
-    the favicon from orphaning onto a new line. Every favicon should have this
-    span as its immediately preceding sibling, unless it's inside a
+    The <span class="favicon-span"> with white-space: nowrap wraps the last
+    few characters of text together with the favicon to prevent the favicon
+    from orphaning onto a new line.
+    Every favicon should be a child of this span, unless it's inside a
     .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons missing word joiner spans.
+        list of strings describing favicons missing favicon-span parents.
     """
     issues: list[str] = []
 
     for favicon in _get_favicons_to_check(soup):
-        prev_sibling = favicon.previous_sibling
+        parent = favicon.parent
         if isinstance(
-            prev_sibling, Tag
-        ) and "word-joiner" in script_utils.get_classes(prev_sibling):
+            parent, Tag
+        ) and "favicon-span" in script_utils.get_classes(parent):
             continue
 
         # Identify the favicon for the error message
@@ -1234,8 +1274,7 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
 
         _append_to_list(
             issues,
-            f"Favicon ({context}) missing word-joiner span as "
-            f"previous sibling",
+            f"Favicon ({context}) missing favicon-span as parent",
         )
 
     return issues
@@ -1614,7 +1653,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
-        "missing_word_joiner": check_favicon_word_joiner(soup),
+        "missing_favicon_span": check_favicon_span(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),
@@ -1639,6 +1678,7 @@ def check_file_for_issues(
         ),
         "invalid_tengwar_characters": check_tengwar_characters(soup),
         "invalid_class_names": check_invalid_class_names(soup),
+        "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
     if should_check_fonts:

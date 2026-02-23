@@ -11,24 +11,27 @@ import git
 from bs4 import BeautifulSoup, NavigableString, Tag
 from ruamel.yaml import YAML, YAMLError
 
-# Unicode typography constants (mirrors quartz/components/constants.ts)
-NBSP = "\u00a0"
-LEFT_SINGLE_QUOTE = "\u2018"
-RIGHT_SINGLE_QUOTE = "\u2019"
-LEFT_DOUBLE_QUOTE = "\u201c"
-RIGHT_DOUBLE_QUOTE = "\u201d"
-ELLIPSIS = "\u2026"
-ZERO_WIDTH_SPACE = "\u200b"
-ZERO_WIDTH_NBSP = "\ufeff"
-WORD_JOINER = "\u2060"
+# Unicode typography constants (single source of truth: config/constants.json)
+_CONSTANTS_JSON_PATH = (
+    Path(__file__).resolve().parent.parent / "config" / "constants.json"
+)
+with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as _f:
+    _UNICODE_TYPO = json.load(_f)["unicodeTypography"]
+
+NBSP: str = _UNICODE_TYPO["nbsp"]
+LEFT_SINGLE_QUOTE: str = _UNICODE_TYPO["leftSingleQuote"]
+RIGHT_SINGLE_QUOTE: str = _UNICODE_TYPO["rightSingleQuote"]
+LEFT_DOUBLE_QUOTE: str = _UNICODE_TYPO["leftDoubleQuote"]
+RIGHT_DOUBLE_QUOTE: str = _UNICODE_TYPO["rightDoubleQuote"]
+ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
+ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
+ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
+WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
 
 
 def load_shared_constants() -> dict:  # pragma: no cover
     """Load shared constants from config/constants.json."""
-    git_root = get_git_root()
-    constants_path = git_root / "config" / "constants.json"
-
-    with open(constants_path, encoding="utf-8") as f:
+    with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 

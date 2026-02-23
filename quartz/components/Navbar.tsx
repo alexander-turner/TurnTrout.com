@@ -167,7 +167,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
 
   const pageLinks = (
-    <nav className="menu">
+    <nav className="menu" id="nav-menu">
       <ul>
         {links}
         <li>
@@ -203,6 +203,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           className="mobile-only"
           aria-label="Opens menu for key site links."
           aria-expanded="false"
+          aria-controls="nav-menu"
         >
           <span className="bar" />
           <span className="bar" />
