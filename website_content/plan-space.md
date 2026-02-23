@@ -15,8 +15,9 @@ aliases:
   - convergence-psychology
   - success-conditioned-convergence
 date_published: 2026-01-20 10:53:02.330875
-date_updated: 2026-02-23 14:38:00.510236
+date_updated: 2026-02-23 14:39:24.228970
 ---
+
 
 
 
