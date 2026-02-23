@@ -36,11 +36,17 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-copy-btn")).toBeAttached()
   })
 
-  test("input is pre-filled with 'Type here!' and output is non-empty", async ({ page }) => {
-    await expect(page.locator("#punctilio-input")).toHaveValue("Type here!")
+  test("input starts empty with ghost placeholder and output shows ghost text", async ({
+    page,
+  }) => {
+    await expect(page.locator("#punctilio-input")).toHaveValue("")
+    await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", /can't believe/)
 
-    const outputHtml = await page.locator(OUTPUT_CONTENT).innerHTML()
-    expect(outputHtml.length).toBeGreaterThan(0)
+    // Output shows ghost text (transformed placeholder)
+    const output = page.locator(OUTPUT_CONTENT)
+    await expect(output).toHaveClass(/ghost/)
+    const outputText = await output.textContent()
+    expect(outputText!.length).toBeGreaterThan(0)
   })
 })
 
@@ -62,13 +68,13 @@ test.describe("Mode switching", () => {
 
   test("input text persists across mode switches", async ({ page }) => {
     const input = page.locator("#punctilio-input")
-    const originalValue = await input.inputValue()
+    await input.fill("Test text")
 
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
-    await expect(input).toHaveValue(originalValue)
+    await expect(input).toHaveValue("Test text")
 
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
-    await expect(input).toHaveValue(originalValue)
+    await expect(input).toHaveValue("Test text")
   })
 })
 
@@ -200,8 +206,9 @@ test.describe("SPA navigation", () => {
     await page.waitForURL("**/punctilio")
     await expect(page.locator("#punctilio-demo")).toBeVisible()
 
-    // Demo should be reinitialized with default text
-    await expect(page.locator("#punctilio-input")).toHaveValue("Type here!")
+    // Demo should be reinitialized with empty input (ghost placeholder visible)
+    await expect(page.locator("#punctilio-input")).toHaveValue("")
+    await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", /can't believe/)
   })
 })
 
@@ -329,17 +336,36 @@ test.describe("Admonition titles update per mode", () => {
   })
 })
 
-test.describe("Placeholder text per mode", () => {
-  for (const [mode, placeholder] of [
-    ["plaintext", "Input your text here"],
-    ["markdown", "Input your Markdown text here"],
-    ["html", "Input your HTML code here"],
+test.describe("Ghost placeholder text per mode", () => {
+  for (const [mode, pattern] of [
+    ["plaintext", /can't believe it ---/],
+    ["markdown", /can't \*believe\*/],
+    ["html", /<p>"I can't <em>believe<\/em>/],
   ] as const) {
-    test(`placeholder is '${placeholder}' in ${mode} mode`, async ({ page }) => {
+    test(`ghost placeholder matches ${mode} syntax`, async ({ page }) => {
       await page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`).click()
-      await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", placeholder)
+      await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", pattern)
     })
   }
+
+  test("ghost class is removed when user types", async ({ page }) => {
+    const output = page.locator(OUTPUT_CONTENT)
+    await expect(output).toHaveClass(/ghost/)
+
+    await page.locator("#punctilio-input").fill('"Hello"')
+    await expect(output).not.toHaveClass(/ghost/)
+  })
+
+  test("ghost class returns when input is cleared", async ({ page }) => {
+    const input = page.locator("#punctilio-input")
+    const output = page.locator(OUTPUT_CONTENT)
+
+    await input.fill('"Hello"')
+    await expect(output).not.toHaveClass(/ghost/)
+
+    await input.fill("")
+    await expect(output).toHaveClass(/ghost/)
+  })
 })
 
 test.describe("Input styling", () => {
@@ -386,14 +412,14 @@ test.describe("Output monospace styling", () => {
 
 test.describe("Mode button navigation", () => {
   test("clicking the already-active mode does not clear input", async ({ page }) => {
+    const input = page.locator("#punctilio-input")
+    await input.fill("Some text")
+
     const btn = page.locator('.punctilio-mode-btn[data-mode="plaintext"]')
     await expect(btn).toHaveClass(/active/)
 
-    const inputBefore = await page.locator("#punctilio-input").inputValue()
     await btn.click()
-    const inputAfter = page.locator("#punctilio-input")
-
-    await expect(inputAfter).toHaveValue(inputBefore)
+    await expect(input).toHaveValue("Some text")
   })
 
   test("inactive mode buttons do not have active class", async ({ page }) => {

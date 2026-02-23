@@ -96,6 +96,10 @@ $panel-min-height: 200px;
       font-size: var(--font-size-code);
       font-variant-ligatures: none;
     }
+
+    &.ghost {
+      color: var(--midground);
+    }
   }
 }
 
