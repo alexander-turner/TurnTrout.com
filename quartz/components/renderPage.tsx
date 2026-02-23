@@ -16,7 +16,7 @@ import {
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import BodyConstructor from "./Body"
-import { locale } from "./constants"
+import { locale, PREVIEWABLE_CLASS } from "./constants"
 import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
@@ -428,7 +428,7 @@ export function renderPage(
           <HeaderComponent {...componentData} key={HeaderComponent.name} />
         ))}
       </Header>
-      <div className="previewable">
+      <div className={PREVIEWABLE_CLASS}>
         {beforeBody.map((BodyComponent) => (
           <BodyComponent {...componentData} key={BodyComponent.name} />
         ))}

@@ -3,6 +3,7 @@ import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 import { VFile } from "vfile"
 
+import { EXTERNAL_LINK_REL } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { type QuartzPluginData } from "../vfile"
 import { createSequenceLinksComponent } from "./sequenceLinks"
@@ -25,7 +26,7 @@ const pgpLink = h(
   "a",
   {
     href: "https://keys.openpgp.org/search?q=alex%40turntrout.com",
-    rel: "noopener noreferrer",
+    rel: EXTERNAL_LINK_REL,
     target: "_blank",
   },
   [h("abbr", { className: "small-caps" }, "pgp")],

@@ -26,8 +26,8 @@ input.checkbox-toggle {
   margin: 0;
   cursor: pointer;
   transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease;
+    background-color $transition-duration-quick ease,
+    border-color $transition-duration-quick ease;
   border-radius: 4px;
   border: 1.5px solid var(--midground-faint);
   background-color: transparent;

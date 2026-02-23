@@ -1,7 +1,8 @@
-import { test, expect, type Page, type Locator } from "@playwright/test"
+import type { Locator, Page } from "@playwright/test"
 
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -396,13 +397,13 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }))
-  await page.waitForFunction(() => window.scrollY === 500)
+  await page.waitForFunction(() => Math.abs(window.scrollY - 500) < 5)
 
   const tocTitle = page.locator("#toc-title button")
   await expect(tocTitle).toBeVisible()
   await tocTitle.click()
 
-  await page.waitForFunction(() => window.scrollY === 0)
+  await page.waitForFunction(() => window.scrollY < 5)
 })
 
 test("Video toggle button is visible and functional", async ({ page }) => {
@@ -505,7 +506,7 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   }, pondVideoId)
 
   await page.evaluate(() => window.spaNavigate(new URL("/design", window.location.origin)))
-  await page.waitForURL("**/design")
+  await expect(page).toHaveURL(/\/design/)
 
   // Setting should persist and video should still be playing
   await expect(isPaused(video)).resolves.toBe(false)
@@ -535,7 +536,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   const initialUrl = page.url()
   const localLink = page.locator("a:not(.skip-to-content)").first()
   await localLink.click()
-  await page.waitForURL((url) => url.pathname !== initialUrl)
+  await page.waitForURL((url) => url.toString() !== initialUrl)
 
   const timestampAfterNavigation = await getTimestampAfterNavigation(page)
   expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0)

@@ -8,27 +8,9 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { animate, debounce, escapeHtml, svgCheck, svgCopy } from "./component_script_utils"
+import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-const EXAMPLE_PLAINTEXT = `She said, "It's a 'beautiful' thing..."
-
-(c) 2024 Acme Corp. 2x + 3 != 5`
-
-const EXAMPLE_MARKDOWN = `She said, "It's *beautiful*" -- really.
-
-\`\`\`python
-x = "don't transform this"
-\`\`\`
-
-Inline math like $E = mc^2$ is preserved.
-
-(c) 2024 Acme Corp. 2x faster!`
-
-const EXAMPLE_HTML = `<p>She said, "Don't you think it's <em>wonderful</em>?"</p>
-
-<p>(c) 2024 Acme Corp. 2x faster!</p>
-
-<pre><code>x = "don't transform this"</code></pre>`
+const DEFAULT_INPUT = "Type here!"
 
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
@@ -40,6 +22,12 @@ const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
 const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-options-list select"
 
 type TransformMode = "plaintext" | "markdown" | "html"
+
+const INPUT_PLACEHOLDERS: Record<TransformMode, string> = {
+  plaintext: "Input your text here",
+  markdown: "Input your Markdown text here",
+  html: "Input your HTML code here",
+}
 
 function getConfig(): TransformOptions {
   return {
@@ -110,12 +98,6 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
   }
 }
 
-const EXAMPLES: Record<TransformMode, string> = {
-  plaintext: EXAMPLE_PLAINTEXT,
-  markdown: EXAMPLE_MARKDOWN,
-  html: EXAMPLE_HTML,
-}
-
 // ─── Inline diff highlighting ────────────────────────────────────────
 
 /** Render diff changes as HTML spans, showing only additions (green) and unchanged text. */
@@ -147,6 +129,9 @@ document.addEventListener("nav", () => {
   const outputTitleInner = outputContent
     ?.closest(".admonition")
     ?.querySelector(".admonition-title-inner") as HTMLElement | null
+  const inputTitleInner = input
+    ?.closest(".admonition")
+    ?.querySelector(".admonition-title-inner") as HTMLElement | null
 
   if (!input || !outputContent) return
 
@@ -158,7 +143,8 @@ document.addEventListener("nav", () => {
 
   // Restore saved mode and input, or fall back to defaults
   const savedMode = localStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
-  let currentMode: TransformMode = savedMode && savedMode in EXAMPLES ? savedMode : "plaintext"
+  let currentMode: TransformMode =
+    savedMode && savedMode in INPUT_PLACEHOLDERS ? savedMode : "plaintext"
 
   const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
     OPTION_INPUTS_SELECTOR,
@@ -191,28 +177,38 @@ document.addEventListener("nav", () => {
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
     localStorage.setItem(STORAGE_KEY_MODE, currentMode)
 
-    // Update admonition title to reflect the active mode
+    // Update admonition titles to reflect the active mode
     if (outputTitleInner) {
-      // Preserve the icon span, update only the text after it
       const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        outputTitleInner.innerHTML = '<abbr class="small-caps">HTML</abbr> source'
+        outputTitleInner.innerHTML = '<abbr class="small-caps">Html</abbr> source output'
       } else if (currentMode === "markdown") {
-        outputTitleInner.textContent = "Markdown source"
+        outputTitleInner.textContent = "Markdown source output"
       } else {
-        outputTitleInner.textContent = "Output"
+        outputTitleInner.textContent = "Text output"
       }
       if (icon) outputTitleInner.prepend(icon)
     }
+    if (inputTitleInner) {
+      const icon = inputTitleInner.querySelector(".admonition-icon")
+      if (currentMode === "html") {
+        inputTitleInner.innerHTML = 'Input your <abbr class="small-caps">Html</abbr> code'
+      } else {
+        inputTitleInner.textContent = "Input"
+      }
+      if (icon) inputTitleInner.prepend(icon)
+    }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
+
+    input.placeholder = INPUT_PLACEHOLDERS[currentMode]
   }
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Restore saved input or use example text for the current mode
+  // Restore saved input or use default text
   const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
-  input.value = savedInput ?? EXAMPLES[currentMode]
+  input.value = savedInput ?? DEFAULT_INPUT
 
   // Sync mode button active state with restored mode
   for (const b of modeButtons) {
@@ -253,31 +249,8 @@ document.addEventListener("nav", () => {
     )
   }
 
-  // Copy output button — reuses clipboard icon style from code blocks
+  // Copy output button — reuses shared clipboard button setup from code blocks
   if (copyBtn) {
-    copyBtn.innerHTML = svgCopy
-    copyBtn.addEventListener(
-      "click",
-      () => {
-        navigator.clipboard.writeText(lastResult).then(
-          () => {
-            copyBtn.blur()
-            copyBtn.innerHTML = svgCheck
-            animate(
-              2000,
-              () => {
-                // No per-frame updates needed
-              },
-              () => {
-                copyBtn.innerHTML = svgCopy
-                copyBtn.style.borderColor = ""
-              },
-            )
-          },
-          (error) => console.error(error),
-        )
-      },
-      { signal },
-    )
+    setupCopyButton(copyBtn, () => lastResult, { signal })
   }
 })

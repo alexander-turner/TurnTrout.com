@@ -7,6 +7,9 @@ import {
   animate,
   registerEscapeHandler,
   removeAllChildren,
+  setupCopyButton,
+  svgCopy,
+  svgCheck,
 } from "./component_script_utils"
 
 const frameTime = 16
@@ -513,5 +516,66 @@ describe("animate", () => {
 
     // Cleanup should still work
     cleanup()
+  })
+})
+
+describe("setupCopyButton", () => {
+  let button: HTMLButtonElement
+  let mockClipboard: { writeText: jest.Mock }
+
+  beforeEach(() => {
+    button = document.createElement("button")
+    mockClipboard = { writeText: jest.fn(() => Promise.resolve()) }
+    Object.defineProperty(navigator, "clipboard", { value: mockClipboard, writable: true })
+  })
+
+  it("should set initial innerHTML to svgCopy", () => {
+    setupCopyButton(button, () => "text")
+    expect(button.innerHTML).toBe(svgCopy)
+  })
+
+  it("should copy text and swap to check icon on click", async () => {
+    setupCopyButton(button, () => "hello")
+    button.click()
+
+    await Promise.resolve() // flush microtasks for clipboard promise
+    expect(mockClipboard.writeText).toHaveBeenCalledWith("hello")
+    expect(button.innerHTML).toBe(svgCheck)
+  })
+
+  it("should restore copy icon after animation completes", async () => {
+    setupCopyButton(button, () => "text")
+    button.click()
+    await Promise.resolve()
+
+    // Advance past the 2000ms animate duration
+    jest.advanceTimersByTime(2000 + frameTime)
+    expect(button.innerHTML).toBe(svgCopy)
+  })
+
+  it("should pass options to addEventListener", () => {
+    const addEventSpy = jest.spyOn(button, "addEventListener")
+    const controller = new AbortController()
+    setupCopyButton(button, () => "text", { signal: controller.signal })
+
+    expect(addEventSpy).toHaveBeenCalledWith("click", expect.any(Function), {
+      signal: controller.signal,
+    })
+    addEventSpy.mockRestore()
+  })
+
+  it("should log error when clipboard write fails", async () => {
+    const error = new Error("clipboard error")
+    mockClipboard.writeText.mockReturnValue(Promise.reject(error))
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+
+    setupCopyButton(button, () => "text")
+    button.click()
+
+    // Flush the microtask queue for the rejected promise handlers
+    await jest.advanceTimersByTimeAsync(0)
+
+    expect(consoleSpy).toHaveBeenCalledWith(error)
+    consoleSpy.mockRestore()
   })
 })
