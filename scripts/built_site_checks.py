@@ -1331,7 +1331,19 @@ def _build_included_favicon_domains(
         cwd=str(git_root),
         check=True,
     )
-    data = json.loads(result.stdout.strip())
+    # The TS script outputs JSON to stdout, but CI logger noise may precede
+    # it (e.g. Winston console transport warnings). Extract only the JSON line.
+    stdout = result.stdout.strip()
+    json_line = next(
+        (line for line in stdout.splitlines() if line.startswith("{")),
+        None,
+    )
+    if json_line is None:
+        raise RuntimeError(
+            f"compute_favicon_lists.ts produced no JSON output.\n"
+            f"stdout: {stdout!r}\nstderr: {result.stderr!r}"
+        )
+    data = json.loads(json_line)
     return frozenset(data["includedDomains"])
 
 

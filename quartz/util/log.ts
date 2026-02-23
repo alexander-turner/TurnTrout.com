@@ -86,6 +86,7 @@ export const createWinstonLogger = (name: string, level: string = getLogLevel())
     loggerTransports.push(
       new transports.Console({
         level: "warn",
+        stderrLevels: ["warn", "error"],
         format: format.combine(
           format.colorize(),
           format.simple(),
