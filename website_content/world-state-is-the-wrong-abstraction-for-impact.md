@@ -124,7 +124,7 @@ I think what gets you is asking the question "what things are impactful?" instea
 At least, that's what *I* did.
 
 > [!exercise]
-> Someone (me, early last year says that impact is closely related to change in object identities.
+> Someone (me, early last year) says that impact is closely related to change in object identities.
 >
 > ![A vase turns into a red vase.](https://assets.turntrout.com/static/images/posts/pnztldk.avif)
 >
