@@ -515,7 +515,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Numbers and units
 
-This computer has 16GB of RAM and runs at 3.2GHz.
+This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
 
 ## Smart quotes
 
