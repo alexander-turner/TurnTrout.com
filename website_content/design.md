@@ -988,6 +988,8 @@ I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellche
 
 Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quotes come from external sources and shouldn't trigger linting -- any errors within are not my responsibility.
 
+Spellchecking source Markdown isn't enough — my HTML transforms can corrupt text in ways that only show up in the rendered output (e.g. whitespace eaten between adjacent inline elements). So I also extract visible paragraph text from the built HTML and spellcheck _that_. Smallcaps elements carry a `data-original-text` attribute so the spellchecker sees the original casing (e.g. "ReLU", not "relu").
+
 I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
 > [!info]- Markdown and source file checks
@@ -1121,6 +1123,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 3. Consecutive periods (potential typos);
 > 4. Missing spaces before or after links and emphasis elements;
 > 5. Top-level paragraphs lacking end punctuation;
+> 6. Missing whitespace around transform-produced inline elements (smallcaps abbreviations, ordinals, fractions, arrows) — catches bugs like "9combinations" from whitespace-eating transforms;
 >
 > **Math rendering:**
 > 1. $\KaTeX$ rendering errors (indicated by error styling);
