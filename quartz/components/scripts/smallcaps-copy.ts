@@ -35,9 +35,10 @@ export function restoreSmallCapsInHtml(html: string): string {
 
 function uppercaseAllText(element: Element): void {
   const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
-  let textNode: Text | null
-  while ((textNode = walker.nextNode() as Text | null)) {
-    textNode.textContent = textNode.textContent!.toUpperCase()
+  let textNode = walker.nextNode() as Text | null
+  while (textNode) {
+    textNode.textContent = (textNode.textContent as string).toUpperCase()
+    textNode = walker.nextNode() as Text | null
   }
 }
 
@@ -55,8 +56,7 @@ export function restoreSmallCapsInSelection(selection: Selection): string {
     restoreOriginalText(el)
   }
 
-  // Elements always have non-null textContent (may be empty string)
-  return tempDiv.textContent!
+  return tempDiv.textContent as string
 }
 
 /** Handles copy/cut events to fix small caps text */

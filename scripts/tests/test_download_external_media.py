@@ -9,33 +9,31 @@ from scripts import download_external_media
 
 
 @pytest.fixture
-def mock_git_root(tmp_path):
+def mock_git_root(tmp_path, monkeypatch):
     """Create a mock git root directory structure."""
     website_content = tmp_path / "website_content"
     website_content.mkdir()
     asset_staging = website_content / "asset_staging"
     asset_staging.mkdir()
 
-    with mock.patch(
+    monkeypatch.setattr(
         "scripts.download_external_media.script_utils.get_git_root",
-        return_value=tmp_path,
-    ):
-        yield tmp_path
+        lambda *_args, **_kwargs: tmp_path,
+    )
+    return tmp_path
 
 
 def test_find_external_media_urls_excludes_cdn(mock_git_root):
     """Test that CDN URLs are excluded from external media URLs."""
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.write_text(
-        """
+    md_file.write_text("""
 # Test Post
 
 ![External image](https://example.com/image.png)
 ![CDN image](https://assets.turntrout.com/static/images/posts/image.avif)
 <video src="https://example.com/video.mp4"></video>
 <img src="https://assets.turntrout.com/icon.svg" />
-"""
-    )
+""")
 
     urls = download_external_media.find_external_media_urls([md_file])
 
@@ -68,12 +66,10 @@ def test_find_external_media_urls_multiple_files(mock_git_root):
 def test_find_external_media_urls_deduplicates(mock_git_root):
     """Test that duplicate URLs are deduplicated."""
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.write_text(
-        """
+    md_file.write_text("""
 ![Image1](https://example.com/image.png)
 ![Image2](https://example.com/image.png)
-"""
-    )
+""")
 
     urls = download_external_media.find_external_media_urls([md_file])
 
@@ -99,13 +95,11 @@ def test_find_external_media_url_by_extension(mock_git_root, extension):
 def test_find_external_media_urls_case_insensitive(mock_git_root):
     """Test that extension matching is case-insensitive."""
     md_file = mock_git_root / "website_content" / "test.md"
-    md_file.write_text(
-        """
+    md_file.write_text("""
 ![Image1](https://example.com/image.PNG)
 ![Image2](https://example.com/image.JpG)
 ![Image3](https://example.com/video.MP4)
-"""
-    )
+""")
 
     urls = download_external_media.find_external_media_urls([md_file])
 
@@ -181,12 +175,8 @@ def test_replace_url_in_file_outside_content_dir(mock_git_root, tmp_path):
         )
 
 
-def test_main_no_markdown_files(mock_git_root, monkeypatch):
+def test_main_no_markdown_files(mock_git_root):
     """Test main function with no markdown files."""
-    monkeypatch.setattr(
-        "scripts.download_external_media.script_utils.get_git_root",
-        lambda: mock_git_root,
-    )
     with (
         mock.patch("subprocess.run"),
         pytest.raises(ValueError, match="No markdown files found"),
@@ -194,12 +184,8 @@ def test_main_no_markdown_files(mock_git_root, monkeypatch):
         download_external_media.main()
 
 
-def test_main_no_external_urls(mock_git_root, capsys, monkeypatch):
+def test_main_no_external_urls(mock_git_root, capsys):
     """Test main function with no external URLs."""
-    monkeypatch.setattr(
-        "scripts.download_external_media.script_utils.get_git_root",
-        lambda: mock_git_root,
-    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("# Just text, no external media")
 
@@ -214,12 +200,8 @@ def test_main_no_external_urls(mock_git_root, capsys, monkeypatch):
         assert any("pkill" in str(call) for call in calls)
 
 
-def test_main_downloads_and_updates(mock_git_root, capsys, monkeypatch):
+def test_main_downloads_and_updates(mock_git_root, capsys):
     """Test main function downloads files and updates references."""
-    monkeypatch.setattr(
-        "scripts.download_external_media.script_utils.get_git_root",
-        lambda: mock_git_root,
-    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 
@@ -248,12 +230,8 @@ def test_main_downloads_and_updates(mock_git_root, capsys, monkeypatch):
         assert "Successfully downloaded 1/1 files" in captured.out
 
 
-def test_main_handles_download_failures(mock_git_root, capsys, monkeypatch):
+def test_main_handles_download_failures(mock_git_root, capsys):
     """Test main function handles download failures gracefully."""
-    monkeypatch.setattr(
-        "scripts.download_external_media.script_utils.get_git_root",
-        lambda: mock_git_root,
-    )
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 

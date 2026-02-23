@@ -26,3 +26,14 @@ elif command -v npm >/dev/null 2>&1; then
 else
   echo "Warning: Neither pnpm nor npm found. Skipping lint-staged." >&2
 fi
+
+# Run docformatter on staged Python files (can't run inside lint-staged
+# because it requires uv run and doesn't work well with lint-staged's
+# file passing)
+staged_py_files=$(git diff --cached --name-only --diff-filter=ACM -- '*.py' || true)
+if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
+  echo "$staged_py_files" | xargs uv run python -m docformatter \
+    --in-place --config config/python/pyproject.toml 2>/dev/null || true
+  # Re-stage any files that docformatter modified
+  echo "$staged_py_files" | xargs git add
+fi

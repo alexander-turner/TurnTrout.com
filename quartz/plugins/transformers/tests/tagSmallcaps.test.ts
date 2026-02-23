@@ -27,17 +27,23 @@ import {
   PUNCTUATION_BEFORE_MATCH,
 } from "../tagSmallcaps"
 
+/** Process HTML through the smallcaps transform, stripping data-original-text for cleaner assertions. */
+function testTagSmallcapsHTML(inputHTML: string) {
+  return rehype()
+    .data("settings", { fragment: true })
+    .use(rehypeTagSmallcaps)
+    .processSync(inputHTML)
+    .toString()
+    .replace(/ data-original-text="[^"]*"/g, "")
+}
+
+/** Process HTML through the smallcaps transform, preserving all attributes. */
 function testTagSmallcapsHTMLRaw(inputHTML: string) {
   return rehype()
     .data("settings", { fragment: true })
     .use(rehypeTagSmallcaps)
     .processSync(inputHTML)
     .toString()
-}
-
-/** Strips data-original-text attributes for tests that don't check them */
-function testTagSmallcapsHTML(inputHTML: string) {
-  return testTagSmallcapsHTMLRaw(inputHTML).replace(/ data-original-text="[^"]*"/g, "")
 }
 
 describe("rehypeTagSmallcaps", () => {
@@ -1172,21 +1178,39 @@ describe("replaceSCInNode", () => {
 })
 
 describe("data-original-text attribute", () => {
-  it.each([
-    ["acronym", "<p>NASA rocks</p>", "NASA"],
-    ["acronym with suffix", "<p>NASAs are cool</p>", "NASA"],
-    ["abbreviation", "<p>100KM away</p>", "100KM"],
-    ["mixed-case abbreviation", "<p>50mV signal</p>", "50mV"],
-    ["all-caps phrase", "<p>I LOVE CATS</p>", "I LOVE CATS"],
-    ["sentence-start capitalized", "<p>NASA is great.</p>", "NASA"],
-  ])("should set data-original-text for %s", (_, input, expectedOriginal) => {
-    const raw = testTagSmallcapsHTMLRaw(input)
-    const match = raw.match(/data-original-text="(?<text>[^"]*)"/)
-    expect(match).not.toBeNull()
-    expect(match!.groups!.text).toBe(expectedOriginal)
+  const cases: [string, string, string][] = [
+    [
+      "acronym",
+      "<p>NASA launched</p>",
+      '<p><abbr class="small-caps" data-original-text="NASA">Nasa</abbr> launched</p>',
+    ],
+    [
+      "acronym with suffix",
+      "<p>LLMs are</p>",
+      '<p><abbr class="small-caps" data-original-text="LLM">Llm</abbr>s are</p>',
+    ],
+    [
+      "numeric abbreviation",
+      "<p>14B params</p>",
+      '<p><abbr class="small-caps" data-original-text="14B">14b</abbr> params</p>',
+    ],
+    [
+      "mixed-case abbreviation",
+      "<p>50mV signal</p>",
+      '<p><abbr class="small-caps" data-original-text="50mV">50mv</abbr> signal</p>',
+    ],
+    [
+      "all-caps phrase",
+      "<p>I HATE YOU</p>",
+      '<p><abbr class="small-caps" data-original-text="I HATE YOU">I hate you</abbr></p>',
+    ],
+  ]
+
+  it.each(cases)("preserves original text for %s", (_label, input, expected) => {
+    expect(testTagSmallcapsHTMLRaw(input)).toBe(expected)
   })
 
-  it("should set data-original-text on every smallcaps element", () => {
+  it("sets data-original-text on every smallcaps element", () => {
     const raw = testTagSmallcapsHTMLRaw("<p>NASA and FBI met. The 100KM trip was fine.</p>")
     const matches = [...raw.matchAll(/data-original-text="(?<text>[^"]*)"/g)]
     expect(matches).toHaveLength(3)

@@ -103,7 +103,7 @@ So what about:
   3. How might we build agents without these incentives?
 
 - The first part of this sequence focuses on foundational concepts crucial for understanding the deeper nature of impact. We will not yet be discussing what to implement.
-- I strongly encourage completing the exercises. At times you shall be given a time limit; it’s important to learn not only to reason correctly, but [with](https://www.readthesequences.com/The-Failures-Of-Eld-Science)[speed:](https://www.readthesequences.com/Einsteins-Speed)
+- I strongly encourage completing the exercises. At times you shall be given a time limit; it’s important to learn not only to reason correctly, but [with](https://www.readthesequences.com/The-Failures-Of-Eld-Science) [speed:](https://www.readthesequences.com/Einsteins-Speed)
 
 > [!quote] [Thinking Physics](https://www.amazon.com/Thinking-Physics-Understandable-Practical-Reality/dp/0935218084)
 >

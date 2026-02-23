@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Track CI failures on claude/ branch PRs and escalate when exhausted.
+"""
+Track CI failures on claude/ branch PRs and escalate when exhausted.
 
 Notification/labeling system only — does NOT ping @claude. The Stop hook
 (verify_ci.py) is the primary fix mechanism. This script:
@@ -29,7 +30,9 @@ def gh_api(
         cmd.extend(["--input", "-"])
         input_data = json.dumps(body)
 
-    result = subprocess.run(cmd, capture_output=True, text=True, input=input_data)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, input=input_data
+    )
     if result.returncode != 0:
         raise RuntimeError(
             f"gh api {method} {endpoint} failed: {result.stderr.strip()}"
@@ -105,9 +108,7 @@ def main() -> None:
             f"**{workflow_name}** has exhausted its {MAX_ATTEMPTS} attempts."
         )
     else:
-        body = (
-            f"{header}The following workflows have failed on this PR:\n\n{failure_list}"
-        )
+        body = f"{header}The following workflows have failed on this PR:\n\n{failure_list}"
 
     # Create or update the tracker comment
     if tracker:
