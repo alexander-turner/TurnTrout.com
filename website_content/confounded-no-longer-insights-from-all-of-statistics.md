@@ -57,7 +57,6 @@ date_updated: 2026-01-25 23:47:56.984113
 >
 > Using fancy tools like neural nets, boosting and support vector machines without understanding basic statistics is like doing brain surgery before knowing how to use a bandaid.
 
-
 # Foreword
 
 For some reason, statistics always seemed somewhat disjoint from the rest of math, more akin to a bunch of tools than a rigorous, carefully constructed framework. I am here to atone for my foolishness.

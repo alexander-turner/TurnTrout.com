@@ -788,9 +788,7 @@ def main() -> int:
             create_stripped_directory,
         )
 
-        stripped_dir = create_stripped_directory(
-            _GIT_ROOT / "website_content"
-        )
+        stripped_dir = create_stripped_directory(_GIT_ROOT / "website_content")
         os.environ["STRIP_QUOTES_CONTENT_DIR"] = str(stripped_dir)
 
         steps_before_server, steps_after_server = get_check_steps(

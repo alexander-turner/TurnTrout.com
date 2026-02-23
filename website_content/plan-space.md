@@ -150,7 +150,6 @@ Whether you use a uniform distribution or a length-weighted distribution, you're
  >
 >  It isn't that the abstract space of plans was built by evil human-hating minds; it's that the [instrumental convergence](https://nickbostrom.com/superintelligentwill.pdf) thesis holds for the plans themselves.
 
-
 Two key problems with this argument:
 
 1. **Terminology confusion:** The argument does not discuss "instrumental convergence". Instead, it discusses (what I call) "success-conditioned convergence." (This distinction was subtle to me as well.)

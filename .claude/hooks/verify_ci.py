@@ -14,9 +14,11 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 from hashlib import sha256
 from pathlib import Path
 
@@ -28,7 +30,7 @@ def _get_max_retries() -> int:
 def _retry_file(project_dir: str) -> Path:
     """Return a stable path for the retry counter, keyed on project dir."""
     dir_hash = sha256(project_dir.encode()).hexdigest()[:16]
-    return Path(f"/tmp/claude-stop-attempts-{dir_hash}")
+    return Path(tempfile.gettempdir()) / f"claude-stop-attempts-{dir_hash}"
 
 
 def _has_script(pkg: dict, name: str) -> bool:
@@ -39,7 +41,9 @@ def _has_script(pkg: dict, name: str) -> bool:
 
 def _run_check(name: str, cmd: str) -> tuple[bool, str]:
     """Run a check command. Returns (passed, output)."""
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    result = subprocess.run(
+        shlex.split(cmd), capture_output=True, text=True, check=False
+    )
     if result.returncode == 0:
         return True, ""
     output = result.stdout + result.stderr
@@ -48,6 +52,35 @@ def _run_check(name: str, cmd: str) -> tuple[bool, str]:
 
 def _pluralize(n: int, word: str) -> str:
     return f"{n} {word}" if n == 1 else f"{n} {word}s"
+
+
+def _check_nodejs(check_fn) -> None:
+    """Run Node.js checks (test, lint, typecheck)."""
+    pkg_path = Path("package.json")
+    if not pkg_path.exists():
+        return
+    pkg = json.loads(pkg_path.read_text())
+    checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
+    for script, label in checks:
+        if _has_script(pkg, script):
+            check_fn(label, f"pnpm {script}")
+
+
+def _check_python(check_fn) -> None:
+    """Run Python checks (ruff, pytest)."""
+    has_pyproject = Path("pyproject.toml").exists()
+    has_uvlock = Path("uv.lock").exists()
+    if not (has_pyproject or has_uvlock):
+        return
+
+    prefix = "uv run " if has_uvlock and shutil.which("uv") else ""
+    if prefix or shutil.which("ruff"):
+        check_fn("ruff", f"{prefix}ruff check .")
+    elif has_pyproject:
+        print("Warning: ruff not found, skipping lint", file=sys.stderr)
+
+    if Path("tests").is_dir() and (prefix or shutil.which("pytest")):
+        check_fn("pytest", f"{prefix}pytest")
 
 
 def main() -> None:
@@ -60,10 +93,10 @@ def main() -> None:
     attempt = 1
     if retry_file.exists():
         try:
-            attempt = int(retry_file.read_text(encoding="utf-8").strip()) + 1
+            attempt = int(retry_file.read_text().strip()) + 1
         except (ValueError, OSError):
             attempt = 1
-    retry_file.write_text(str(attempt), encoding="utf-8")
+    retry_file.write_text(str(attempt))
 
     # --- Collect checks to run ---
     failures: list[str] = []
@@ -75,26 +108,8 @@ def main() -> None:
             failures.append(name)
             outputs.append(output)
 
-    # Node.js checks
-    pkg_path = Path("package.json")
-    if pkg_path.exists():
-        pkg = json.loads(pkg_path.read_text())
-        checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
-        for script, label in checks:
-            if _has_script(pkg, script):
-                check(label, f"pnpm {script}")
-
-    # Python checks
-    has_pyproject = Path("pyproject.toml").exists()
-    has_uvlock = Path("uv.lock").exists()
-    if has_pyproject or has_uvlock:
-        prefix = "uv run " if has_uvlock and shutil.which("uv") else ""
-        if prefix or shutil.which("ruff"):
-            check("ruff", f"{prefix}ruff check .")
-        elif has_pyproject:
-            print("Warning: ruff not found, skipping lint", file=sys.stderr)
-        if Path("tests").is_dir() and (prefix or shutil.which("pytest")):
-            check("pytest", f"{prefix}pytest")
+    _check_nodejs(check)
+    _check_python(check)
 
     # --- Produce result ---
     if not failures:
