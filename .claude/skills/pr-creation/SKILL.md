@@ -101,8 +101,9 @@ After creating the PR, and after any subsequent fix commits, update the PR descr
 
 1. Run `gh pr checks <pr-number> --watch` to monitor
 2. If any checks fail, investigate and fix the issues
-3. Push fixes and wait again
-4. Only proceed once all checks are green
+3. For DeepSource failures, use the forked `deepsource` CLI: `deepsource issues list --commit <SHA>`. **Never** try to fetch DeepSource URLs via `WebFetch` — the web UI requires authentication and returns no useful content.
+4. Push fixes and wait again
+5. Only proceed once all checks are green
 
 ### Step 7: Report Result
 
