@@ -148,6 +148,10 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
+CENTER_DOT = "\u00b7"
+# Minimum number of center dots for a paragraph to be considered a
+# separator-delimited list (e.g. "Smart quotes\u00B7Em dashes\u00B7Ellipses")
+_CENTER_DOT_LIST_THRESHOLD = 2
 
 
 def _should_skip_paragraph(p: Tag) -> bool:
@@ -209,6 +213,10 @@ def check_top_level_paragraphs_end_with_punctuation(
 
             text = _get_paragraph_text_for_punctuation_check(p)
             if not text:
+                continue
+
+            # Skip separator-delimited lists (e.g. "A·B·C·D")
+            if text.count(CENTER_DOT) >= _CENTER_DOT_LIST_THRESHOLD:
                 continue
 
             if text[-1] not in VALID_PARAGRAPH_ENDING_CHARACTERS:
@@ -1027,6 +1035,19 @@ def meta_tags_early(file_path: Path) -> list[str]:
     return issues
 
 
+def _head_with_retry(
+    url: str, timeout: int = 10, retries: int = 2
+) -> requests.Response:
+    """HEAD request with retry on timeout/connection errors."""
+    last_exc: requests.RequestException | None = None
+    for attempt in range(retries):
+        try:
+            return requests.head(url, timeout=timeout * (attempt + 1))
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            last_exc = exc
+    raise last_exc  # type: ignore[misc]
+
+
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
     """Check that all iframe sources are responding with a successful status
     code."""
@@ -1047,7 +1068,7 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
         alt: str = str(iframe.get("alt", ""))
         description: str = f"{title=} ({alt=})"
         try:
-            response = requests.head(src, timeout=10)
+            response = _head_with_retry(src)
             if not response.ok:
                 problematic_iframes.append(
                     f"Iframe source {src} returned status "
@@ -1080,7 +1101,7 @@ def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
         # Validate external endpoints when possible
         if validators.url(normalized_src):
             try:
-                response = requests.head(normalized_src, timeout=10)
+                response = _head_with_retry(normalized_src)
                 if not response.ok:
                     problematic_embeds.append(
                         f"Iframe embed returned status {response.status_code}"
@@ -1792,7 +1813,7 @@ ALLOWED_ELT_PRECEDING_CHARS = (
     "[({-–—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r−" + NBSP
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
-    "])}.,;!?:-–—~×+"
+    "])}.,;!?:-–—~×(+"
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
     + ELLIPSIS
@@ -1859,14 +1880,20 @@ _INLINE_FORMATTING_SELECTORS = (
 
 
 _DIGITS = "0123456789"
+_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 _ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
-_ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS
+# Arrows can appear adjacent to letters in transformation examples
+# (e.g. "Text→text", "HTML→html")
+_ARROW_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS + _LETTERS
+_ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS + _LETTERS
 _ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
 
 # Per-selector overrides for allowed preceding/following characters
 _SELECTOR_PRECEDING_CHARS: dict[str, str] = {
     "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
     "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+    "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
+    "span.right-arrow": _ARROW_PRECEDING_CHARS,
 }
 _SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
     "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
@@ -1903,6 +1930,11 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
             selector, ALLOWED_ELT_FOLLOWING_CHARS
         )
         for element in _tags_only(soup.select(selector)):
+            # Skip elements inside no-formatting zones (e.g. punctilio
+            # README examples like "hello" → "hello")
+            if should_skip(element):
+                continue
+
             # Skip preceding-space check for abbrs starting with a digit,
             # since they're part of proper nouns (e.g. "3Blue1Brown")
             if selector == "abbr.small-caps" and _abbr_starts_with_digit(

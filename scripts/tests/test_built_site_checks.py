@@ -2290,6 +2290,35 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     assert result == Counter(expected_counts)
 
 
+def test_head_with_retry_succeeds_after_timeout(monkeypatch):
+    """Retry succeeds on second attempt after initial timeout."""
+    calls = []
+
+    def mock_head(url, timeout):
+        calls.append(timeout)
+        if len(calls) == 1:
+            raise requests.Timeout("timed out")
+        return type("MockResponse", (), {"ok": True, "status_code": 200})
+
+    monkeypatch.setattr(requests, "head", mock_head)
+    resp = built_site_checks._head_with_retry("https://example.com")
+    assert resp.ok
+    assert calls == [10, 20]  # timeout doubles on retry
+
+
+def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
+    """All retries fail — re-raises the last exception."""
+    monkeypatch.setattr(
+        requests,
+        "head",
+        lambda url, timeout: (_ for _ in ()).throw(
+            requests.ConnectionError("fail")
+        ),
+    )
+    with pytest.raises(requests.ConnectionError, match="fail"):
+        built_site_checks._head_with_retry("https://example.com")
+
+
 @pytest.mark.parametrize(
     "html,expected,mock_responses",
     [
@@ -2604,6 +2633,11 @@ def test_check_link_spacing(html, expected):
         # Regular abbr/span without formatting classes — not checked
         (
             "<p>9<abbr>combinations</abbr> test</p>",
+            [],
+        ),
+        # Elements inside no-formatting spans should be skipped
+        (
+            '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
             [],
         ),
     ],
@@ -5899,6 +5933,21 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         (
             '<article><p>Text with <span class="h2">Header 2</span></p></article>',
             ["Paragraph ends with invalid character '2' Text withHeader 2"],
+        ),
+        # Center-dot separated lists should be skipped
+        (
+            "<article><p>Smart quotes\u00b7Em dashes\u00b7Ellipses\u00b7Fractions</p></article>",
+            [],
+        ),
+        # Exactly 2 center dots (threshold) should also be skipped
+        (
+            "<article><p>A\u00b7B\u00b7C</p></article>",
+            [],
+        ),
+        # Single center dot is NOT enough to skip
+        (
+            "<article><p>One\u00b7two</p></article>",
+            ["Paragraph ends with invalid character 'o' One\u00b7two"],
         ),
     ],
 )

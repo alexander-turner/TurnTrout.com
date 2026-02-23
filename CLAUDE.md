@@ -26,11 +26,7 @@ pnpm test:visual            # Visual regression tests with Playwright
 pytest <path>               # Python tests (NOT python -m pytest)
 ```
 
-**Python environment**: Always activate conda environment before running Python scripts:
-
-```bash
-conda init && conda activate website
-```
+**Python environment**: Use `uv run` to run Python scripts (e.g. `uv run pytest scripts/tests/`). Do NOT use conda.
 
 ### Running Playwright Tests Locally
 
