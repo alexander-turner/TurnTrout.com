@@ -20,7 +20,6 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-      pull-requests: write
     outputs:
       pushed: ${{ steps.push-result.outputs.pushed }}
     # Only run on push to main when triggered by a user (not by github-actions bot)
@@ -33,8 +32,8 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          # Fetch enough history to access before/after commits from the push event
           fetch-depth: 0
+          token: ${{ secrets.PUSH_TOKEN }}
 
       - name: Setup Base Environment
         uses: ./.github/actions/setup-base-env
@@ -59,31 +58,8 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add website_content/*.md README.md
           git commit -m "chore: updated publication dates"
-
-          if git push; then
-            echo "Push succeeded"
-            echo "pushed=true" >> $GITHUB_OUTPUT
-          else
-            echo "::warning::Could not push date updates directly to main (likely blocked by branch protection). Creating a PR instead."
-            branch="auto/update-dates"
-            git checkout -b "$branch"
-            git push --force-with-lease origin "$branch"
-            # Check if a PR already exists for this branch
-            existing_pr=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number' 2>/dev/null || true)
-            if [ -z "$existing_pr" ]; then
-              gh pr create \
-                --title "chore: update publication dates" \
-                --body "Automated publication date update. Direct push to main was blocked by branch protection." \
-                --base main \
-                --head "$branch" || echo "::error::Failed to create fallback PR for date updates"
-            else
-              echo "Existing date-update PR #$existing_pr updated with new commits"
-            fi
-            echo "pushed=false" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git push
+          echo "pushed=true" >> $GITHUB_OUTPUT
 
       - name: Set output if no push
         if: steps.check-changes.outputs.has_changes != 'true'
