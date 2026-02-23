@@ -21,7 +21,7 @@ function restoreOriginalText(el: Element): void {
 }
 
 /** Restores original text within small-caps elements in an HTML string */
-export function uppercaseSmallCapsInHtml(html: string): string {
+export function restoreSmallCapsInHtml(html: string): string {
   const parser = new DOMParser()
   const doc = parser.parseFromString(html, "text/html")
 
@@ -41,10 +41,7 @@ function uppercaseAllText(element: Element): void {
   }
 }
 
-export function uppercaseSmallCapsInSelection(
-  selection: Selection,
-  isEntirelyInSmallCaps: boolean,
-): string {
+export function restoreSmallCapsInSelection(selection: Selection): string {
   if (selection.rangeCount === 0) return ""
 
   const range = selection.getRangeAt(0)
@@ -53,14 +50,9 @@ export function uppercaseSmallCapsInSelection(
   const tempDiv = document.createElement("div")
   tempDiv.appendChild(fragment)
 
-  if (isEntirelyInSmallCaps) {
-    uppercaseAllText(tempDiv)
-  } else {
-    // Find all small-caps elements and restore their original text
-    const smallCapsElements = tempDiv.querySelectorAll(".small-caps")
-    for (const el of smallCapsElements) {
-      restoreOriginalText(el)
-    }
+  const smallCapsElements = tempDiv.querySelectorAll(".small-caps")
+  for (const el of smallCapsElements) {
+    restoreOriginalText(el)
   }
 
   // Elements always have non-null textContent (may be empty string)
@@ -91,10 +83,15 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
 
   // Handle case where selection is entirely within small-caps (no .small-caps in cloned content)
   if (isEntirelyInSmallCaps && smallCapsAncestor) {
-    // Use data-original-text from the actual DOM element when selecting its full content
     const originalText = smallCapsAncestor.getAttribute("data-original-text")
-    if (originalText && tempDiv.textContent === smallCapsAncestor.textContent) {
-      tempDiv.textContent = originalText
+    if (originalText) {
+      // Map partial selections through the original text using character positions.
+      // Elements always have non-null textContent; indexOf always succeeds since
+      // selectedText was cloned from within the element.
+      const fullText = smallCapsAncestor.textContent!
+      const selectedText = tempDiv.textContent!
+      const startIdx = fullText.indexOf(selectedText)
+      tempDiv.textContent = originalText.slice(startIdx, startIdx + selectedText.length)
     } else {
       uppercaseAllText(tempDiv)
     }
@@ -108,10 +105,10 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
   // Elements always have non-null textContent (may be empty string)
   const fixedHtml = isEntirelyInSmallCaps
     ? tempDiv.innerHTML
-    : uppercaseSmallCapsInHtml(tempDiv.innerHTML)
+    : restoreSmallCapsInHtml(tempDiv.innerHTML)
   const fixedText = isEntirelyInSmallCaps
     ? String(tempDiv.textContent)
-    : uppercaseSmallCapsInSelection(selection, isEntirelyInSmallCaps)
+    : restoreSmallCapsInSelection(selection)
 
   event.clipboardData?.setData("text/plain", fixedText)
   event.clipboardData?.setData("text/html", fixedHtml)

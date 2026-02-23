@@ -5,8 +5,8 @@
 import { describe, it, beforeEach, afterEach, expect, jest } from "@jest/globals"
 
 import {
-  uppercaseSmallCapsInHtml,
-  uppercaseSmallCapsInSelection,
+  restoreSmallCapsInHtml,
+  restoreSmallCapsInSelection,
   handleSmallCapsCopy,
   initSmallCapsCopy,
 } from "./smallcaps-copy"
@@ -62,7 +62,7 @@ describe("smallcaps-copy", () => {
     document.body.innerHTML = ""
   })
 
-  describe("uppercaseSmallCapsInHtml", () => {
+  describe("restoreSmallCapsInHtml", () => {
     it.each([
       [
         "uses data-original-text when available",
@@ -91,41 +91,37 @@ describe("smallcaps-copy", () => {
       ],
       ["no small-caps", "<span>hello world</span>", "<span>hello world</span>"],
     ])("%s", (_, input, expected) => {
-      expect(uppercaseSmallCapsInHtml(input)).toBe(expected)
+      expect(restoreSmallCapsInHtml(input)).toBe(expected)
     })
   })
 
-  describe("uppercaseSmallCapsInSelection", () => {
+  describe("restoreSmallCapsInSelection", () => {
     it("returns empty string for empty selection", () => {
       getSelection().removeAllRanges()
-      expect(uppercaseSmallCapsInSelection(getSelection(), false)).toBe("")
+      expect(restoreSmallCapsInSelection(getSelection())).toBe("")
     })
 
     it.each([
       [
         "restores original text from data-original-text",
         '<p>Hello <abbr class="small-caps" data-original-text="API">api</abbr> world</p>',
-        false,
         "Hello API world",
       ],
       [
         "restores mixed-case from data-original-text",
         '<p>Signal: <abbr class="small-caps" data-original-text="50mV">50mv</abbr> measured</p>',
-        false,
         "Signal: 50mV measured",
       ],
       [
         "falls back to uppercase without data-original-text",
         '<p>Hello <abbr class="small-caps">api</abbr> world</p>',
-        false,
         "Hello API world",
       ],
-      ["preserves non-small-caps text", "<p>Normal text here</p>", false, "Normal text here"],
-      ["uppercases everything when isEntirelyInSmallCaps", "<p>some text</p>", true, "SOME TEXT"],
-    ])("%s", (_, html, isEntirelyInSmallCaps, expected) => {
+      ["preserves non-small-caps text", "<p>Normal text here</p>", "Normal text here"],
+    ])("%s", (_, html, expected) => {
       document.body.innerHTML = html
       selectContents("body")
-      expect(uppercaseSmallCapsInSelection(getSelection(), isEntirelyInSmallCaps)).toBe(expected)
+      expect(restoreSmallCapsInSelection(getSelection())).toBe(expected)
     })
   })
 
@@ -195,7 +191,7 @@ describe("smallcaps-copy", () => {
       expect(event.clipboardData.data["text/plain"]).toBe("50mV")
     })
 
-    it("handles partial selection within small-caps element", () => {
+    it("handles partial selection without data-original-text (falls back to uppercasing)", () => {
       document.body.innerHTML = '<p><abbr class="small-caps">nasa program</abbr></p>'
       const abbr = querySelector("abbr")
       const textNode = abbr.firstChild
@@ -210,6 +206,25 @@ describe("smallcaps-copy", () => {
       handleSmallCapsCopy(event as unknown as ClipboardEvent)
       expect(event.defaultPrevented).toBe(true)
       expect(event.clipboardData.data["text/plain"]).toBe("NASA")
+    })
+
+    it("restores partial selection using data-original-text", () => {
+      document.body.innerHTML =
+        '<p><abbr class="small-caps" data-original-text="50mV">50mv</abbr></p>'
+      const abbr = querySelector("abbr")
+      const textNode = abbr.firstChild
+      if (!textNode) throw new Error("No text node")
+      const range = document.createRange()
+      range.setStart(textNode, 2) // Select "mv" (chars 2-3)
+      range.setEnd(textNode, 4)
+      getSelection().removeAllRanges()
+      getSelection().addRange(range)
+
+      const event = createClipboardEvent()
+      handleSmallCapsCopy(event as unknown as ClipboardEvent)
+      expect(event.defaultPrevented).toBe(true)
+      // Should restore "mV" from original, not blind-uppercase to "MV"
+      expect(event.clipboardData.data["text/plain"]).toBe("mV")
     })
 
     it("does nothing when ancestor has small-caps but selection doesn't include them", () => {
