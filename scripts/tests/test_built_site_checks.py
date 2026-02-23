@@ -6058,37 +6058,7 @@ def test_maybe_collect_citation_keys_collects(tmp_path):
     assert citation_to_files["Turner2024Design"] == ["page.html"]
 
 
-def test_process_html_files_duplicate_citations(
-    mock_environment,
-    valid_css_file,
-    root_files,
-    monkeypatch,
-    disable_md_requirement,
-):
-    """Duplicate citation keys across files should be reported."""
-    public_dir = mock_environment["public_dir"]
-
-    # Create two HTML files with the same citation key
-    citation_html = "<html><body><code>@misc{DupeKey2024,</code></body></html>"
-    for name in ("page1.html", "page2.html"):
-        (public_dir / name).write_text(citation_html)
-
-    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
-
-    # Mock parse_html_file to read from the tmp public_dir
-    def _mock_parse(file_path):
-        with open(file_path, encoding="utf-8") as f:
-            return BeautifulSoup(f.read(), "html.parser")
-
-    monkeypatch.setattr(script_utils, "parse_html_file", _mock_parse)
-
-    result = built_site_checks._process_html_files(
-        public_dir,
-        mock_environment["content_dir"],
-        check_fonts=False,
-        defined_css_vars=set(),
-    )
-
+@pytest.mark.parametrize(
     "html,expected",
     [
         # Subfigures correctly inside <figure> (valid)
