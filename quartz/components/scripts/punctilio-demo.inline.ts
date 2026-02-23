@@ -10,8 +10,6 @@ import { unified } from "unified"
 
 import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-const DEFAULT_INPUT = "Type here!"
-
 // Maximum combined input+output length for character-level diff.
 // Beyond this, show plain output to avoid excessive memory use.
 const MAX_DIFF_LENGTH = 10_000
@@ -23,10 +21,11 @@ const OPTION_INPUTS_SELECTOR = ".punctilio-options-list input, .punctilio-option
 
 type TransformMode = "plaintext" | "markdown" | "html"
 
-const INPUT_PLACEHOLDERS: Record<TransformMode, string> = {
-  plaintext: "Input your text here",
-  markdown: "Input your Markdown text here",
-  html: "Input your HTML code here",
+/** Mode-specific example text shown as ghost placeholders when the input is empty. */
+const GHOST_INPUTS: Record<TransformMode, string> = {
+  plaintext: `She said "I can't believe it --- we've got 3/4 of the work done..."`,
+  markdown: `She said "I can't *believe* it --- we've got 3/4 of the work **done**..."`,
+  html: `<p>She said "I can't <em>believe</em> it --- we've got 3/4 of the work <b>done</b>..."</p>`,
 }
 
 function getConfig(): TransformOptions {
@@ -143,8 +142,7 @@ document.addEventListener("nav", () => {
 
   // Restore saved mode and input, or fall back to defaults
   const savedMode = localStorage.getItem(STORAGE_KEY_MODE) as TransformMode | null
-  let currentMode: TransformMode =
-    savedMode && savedMode in INPUT_PLACEHOLDERS ? savedMode : "plaintext"
+  let currentMode: TransformMode = savedMode && savedMode in GHOST_INPUTS ? savedMode : "plaintext"
 
   const optionInputs = container.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
     OPTION_INPUTS_SELECTOR,
@@ -162,16 +160,22 @@ document.addEventListener("nav", () => {
   function runTransform() {
     if (!input || !outputContent) return
     const config = getConfig()
-    const result = doTransform(input.value, currentMode, config)
-    lastResult = result
+    const isEmpty = input.value === ""
 
-    // Diff highlighting
-    if (input.value.length + result.length > MAX_DIFF_LENGTH) {
+    // When the input is empty, show transformed ghost text in the output
+    const sourceText = isEmpty ? GHOST_INPUTS[currentMode] : input.value
+    const result = doTransform(sourceText, currentMode, config)
+    lastResult = isEmpty ? "" : result
+
+    if (isEmpty) {
+      outputContent.textContent = result
+    } else if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
       outputContent.textContent = result
     } else {
-      const segments = diffChars(input.value, result)
+      const segments = diffChars(sourceText, result)
       outputContent.innerHTML = renderDiffHtml(segments)
     }
+    outputContent.classList.toggle("ghost", isEmpty)
 
     // Persist input text and mode
     sessionStorage.setItem(STORAGE_KEY_INPUT, input.value)
@@ -201,14 +205,14 @@ document.addEventListener("nav", () => {
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
 
-    input.placeholder = INPUT_PLACEHOLDERS[currentMode]
+    input.placeholder = GHOST_INPUTS[currentMode]
   }
 
   const debouncedTransform = debounce(runTransform, 100)
 
-  // Restore saved input or use default text
+  // Restore saved input; leave empty when none so the ghost placeholder shows
   const savedInput = sessionStorage.getItem(STORAGE_KEY_INPUT)
-  input.value = savedInput ?? DEFAULT_INPUT
+  input.value = savedInput ?? ""
 
   // Sync mode button active state with restored mode
   for (const b of modeButtons) {
