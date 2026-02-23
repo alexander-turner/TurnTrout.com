@@ -4,6 +4,7 @@ permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
+date_published: 2026-02-14T00:00:00.000Z
 description: Try punctilio's typography transformations in your browser. Transform plaintext, Markdown, or HTML with smart quotes, em-dashes, symbols, and more.
 tags:
   - website
