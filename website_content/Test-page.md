@@ -725,6 +725,7 @@ Corrupted text
 
 # What are your timelines?
 
+<!--spellchecker-disable-->
 <div class="timeline">
     <div class="timeline-card">
       <div class="timeline-info">
@@ -763,6 +764,7 @@ Corrupted text
     </div>
   </div>
 </div>
+<!--spellchecker-enable-->
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 

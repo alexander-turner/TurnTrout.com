@@ -28,18 +28,9 @@ use-full-width-images: 'false'
 date_published: 2020-07-23 00:00:00
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
-description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite
-  interactions with this intriguing, flawed network."
-date_updated: 2025-11-22 00:21:52.667251
+description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite interactions with this intriguing, flawed network."
+date_updated: 2026-02-23 15:11:07.139539
 ---
-
-
-
-
-
-
-
-
 
 
 GPT-3 is captivating, and not just because of its [potential reasoning abilities](/to-what-extent-is-gpt3-capable-of-reasoning). This post will be a living collection of my favorite experiences with the network.

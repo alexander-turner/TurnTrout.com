@@ -12,4 +12,5 @@ htmlcov/
 .logs/
 .mypy_cache/
 test-results/
+.mypy_cache/
 pnpm-lock.yaml

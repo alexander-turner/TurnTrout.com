@@ -24,7 +24,7 @@
     "test:visual": "pnpm playwright test --config config/playwright/playwright.config.ts --grep '(lostpixel)'",
     "test:a11y": "pnpm pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
     "generate:scss": "tsx quartz/styles/generate-variables.ts",
-    "setup:python": "pip install pyupgrade autoflake isort autopep8 black ruff"
+    "setup:python": "uv sync"
   },
   "lint-staged": {
     "*.{css,scss}": [
