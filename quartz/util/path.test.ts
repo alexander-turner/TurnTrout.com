@@ -3,6 +3,7 @@ import type { Element, Text } from "hast"
 import { describe, it, expect } from "@jest/globals"
 import { h } from "hastscript"
 
+import { WORD_JOINER } from "../components/constants"
 import { type FullSlug, normalizeHastElement } from "./path"
 
 describe("normalizeHastElement", () => {
@@ -15,7 +16,7 @@ describe("normalizeHastElement", () => {
 
     expect(result.children[0]).toMatchObject({
       type: "text",
-      value: "This is a test with quotes “like this” and dashes—here",
+      value: "This is a test with quotes “like this” and dashes" + WORD_JOINER + "—here",
     })
   })
 
@@ -43,7 +44,7 @@ describe("normalizeHastElement", () => {
     const child = result.children[0] as Element
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "Nested text with—dashes",
+      value: "Nested text with" + WORD_JOINER + "—dashes",
     })
   })
 

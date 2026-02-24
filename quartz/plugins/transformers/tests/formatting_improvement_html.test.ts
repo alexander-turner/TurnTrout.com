@@ -22,6 +22,7 @@ import {
   LEFT_SINGLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
   NBSP,
+  WORD_JOINER,
   normalizeNbsp,
 } from "../../../components/constants"
 import {
@@ -41,6 +42,7 @@ import {
 import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
 const MULTIPLICATION = "\u00D7" // ×
+const EM_DASH = `${WORD_JOINER}\u2014` // Word joiner + em dash (prevents wrapping to start of line)
 
 function testHtmlFormattingImprovement(
   inputHTML: string,
@@ -93,7 +95,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<div><p>not confident in that plan - "</p><p>"Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>',
-        "<div><p>not confident in that plan—”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>",
+        `<div><p>not confident in that plan${EM_DASH}”</p><p>“Why not? You were the one who said we should use the AIs in the first place! Now you don’t like this idea?” she asked, anger rising in her voice.</p></div>`,
       ],
       [
         "<div><div></div><div><p><strong>small voice.</strong></p><p><strong>'I will take the Ring', he</strong> <strong>said, 'though I do not know the way.'</strong></p></div></div>",
@@ -670,22 +672,22 @@ describe("HTMLFormattingImprovement", () => {
   describe("Hyphens", () => {
     it.each([
       ["<code>This is a - hyphen.</code>", "<code>This is a - hyphen.</code>"],
-      ["<p>I think that -<em> despite</em></p>", "<p>I think that—<em>despite</em></p>"],
+      [`<p>I think that -<em> despite</em></p>`, `<p>I think that${EM_DASH}<em>despite</em></p>`],
       [
         "<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>-- Orwell, <em>1984</em></p></blockquote>",
-        "<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>— Orwell, <em>1984</em></p></blockquote>",
+        `<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>${EM_DASH} Orwell, <em>1984</em></p></blockquote>`,
       ],
       // There is NBSP after the - in the next one!
       [
         "<blockquote><blockquote><p>not simply <em>accept</em> – but</p></blockquote></blockquote>",
-        "<blockquote><blockquote><p>not simply <em>accept</em>—but</p></blockquote></blockquote>",
+        `<blockquote><blockquote><p>not simply <em>accept</em>${EM_DASH}but</p></blockquote></blockquote>`,
       ],
       // Handle en dash number ranges
       ["<p>1-2</p>", "<p>1–2</p>"],
       ["<p>p1-2</p>", "<p>p1–2</p>"], // Page range
       [
         "<p>Hi you're a test <code>ABC</code> - file</p>",
-        "<p>Hi you’re a test <code>ABC</code>—file</p>",
+        `<p>Hi you’re a test <code>ABC</code>${EM_DASH}file</p>`,
       ],
     ])("handling hyphenation in the DOM", (input: string, expected: string) => {
       const processedHtml = testHtmlFormattingImprovement(input)
@@ -2125,7 +2127,7 @@ describe("applyTextTransforms with useNbsp option", () => {
   it.each([
     ['He said "hello"', `He said ${LEFT_DOUBLE_QUOTE}hello${RIGHT_DOUBLE_QUOTE}`],
     ["2x3", `2${MULTIPLICATION}3`],
-    ["test - case", "test—case"],
+    ["test - case", `test${EM_DASH}case`],
   ])("applies other transforms when useNbsp=false: %s", (input, expected) => {
     const result = applyTextTransforms(input, { useNbsp: false })
     expect(result).toBe(expected)
