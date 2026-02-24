@@ -76,6 +76,13 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository }}/playwright:latest
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -117,8 +124,6 @@ jobs:
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
-        with:
-          install-playwright: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
