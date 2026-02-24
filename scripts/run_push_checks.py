@@ -347,16 +347,25 @@ def run_command(
 
 def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     """
-    Get the pre-push check steps unique to local execution.
+    Get the pre-push check steps to run locally.
 
-    These are steps not covered by CI: auto-fixing formatters that modify
-    source files, asset compression/upload requiring cloud credentials, and
-    alt-text scanning requiring an LLM API.
+    Includes cheap checks for fast feedback (type-checking, linting) and
+    tasks unique to local execution: auto-fixing formatters, asset
+    compression/upload, and alt-text scanning.
 
     Args:
         git_root_path: Path to the git repository root.
     """
     return [
+        CheckStep(
+            name="Linting Python",
+            command=["uv", "run", "ruff", "check", str(git_root_path)],
+        ),
+        CheckStep(
+            name="Typechecking TypeScript",
+            command=["pnpm", "check"],
+            cwd=str(git_root_path),
+        ),
         CheckStep(
             name="Linting TypeScript",
             command=[

@@ -160,15 +160,17 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Pre-push Validation Pipeline
 
-When pushing to main, these unique local tasks run automatically:
+When pushing to main, these checks run automatically:
 
-1. ESLint `--fix` (auto-fixes TypeScript)
-2. docformatter `--in-place` (auto-fixes Python docstrings)
-3. stylelint `--fix` (auto-fixes SCSS)
-4. Asset compression and CDN upload
-5. Alt-text scan (LLM-based, requires API key)
+1. ruff (Python linting, fast)
+2. pnpm check (TypeScript type-checking)
+3. ESLint `--fix` (auto-fixes TypeScript)
+4. docformatter `--in-place` (auto-fixes Python docstrings)
+5. stylelint `--fix` (auto-fixes SCSS)
+6. Asset compression and CDN upload
+7. Alt-text scan (LLM-based, requires API key)
 
-Everything else (type checking, tests, linting, spellcheck, link validation, site checks) runs in CI for reliability and parallelism.
+Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 
 ## GitHub Actions (Post-push)
 

@@ -524,10 +524,11 @@ def test_get_check_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_check_steps(test_root)
 
-    # Verify we have exactly the unique local steps
-    assert len(steps) == 5
+    assert len(steps) == 7
 
     step_names = [s.name for s in steps]
+    assert "Linting Python" in step_names
+    assert "Typechecking TypeScript" in step_names
     assert "Linting TypeScript" in step_names
     assert "Formatting Python docstrings" in step_names
     assert "Cleaning up SCSS" in step_names

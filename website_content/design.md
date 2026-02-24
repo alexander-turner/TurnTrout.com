@@ -948,12 +948,14 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
-## `pre-push`: unique local tasks
+## `pre-push`: local checks and auto-fixes
 
-The `pre-push` hook runs only tasks that can't be done by CI — auto-fixing formatters that commit source-file changes, and operations requiring local credentials. The `push` operation is aborted if any check fails.
+The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters that commit source-file changes, and operations requiring local credentials. The `push` operation is aborted if any check fails.
 
 ```plaintext
 ╰─ git push
+✓ Linting Python (ruff)
+✓ Typechecking TypeScript (pnpm check)
 ✓ Linting TypeScript (ESLint --fix)
 ✓ Formatting Python docstrings (docformatter --in-place)
 ✓ Cleaning up SCSS (stylelint --fix)
@@ -963,11 +965,15 @@ The `pre-push` hook runs only tasks that can't be done by CI — auto-fixing for
 
 Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed step and allows resuming from the last point of failure.
 
+### Cheap checks
+
+Running [`ruff`](https://docs.astral.sh/ruff/) and `pnpm check` locally gives immediate feedback before CI even starts. CI also runs these for reliability, but having them locally means errors are caught and fixed before the push completes.
+
 ### Auto-fixing formatters
 
 I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
 
-These formatters run locally rather than in CI because they _modify files_ and auto-commit the fixes. Check-only equivalents run in CI for redundancy and to catch environmental inconsistencies.
+These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
 
 ### Alt-text scanning
 
