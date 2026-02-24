@@ -369,6 +369,7 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
+  await expect(searchBar).toBeEnabled()
   return searchBar
 }
 

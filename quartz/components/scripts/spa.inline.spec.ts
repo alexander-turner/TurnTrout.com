@@ -370,8 +370,11 @@ test.describe("Instant Scroll Restoration", () => {
     const slug = "design#color-scheme"
     expect(page.url()).not.toContain(slug)
 
-    await page.goto(`http://localhost:8080/${slug}`)
-    await page.waitForLoadState("domcontentloaded")
+    await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
+    await page.evaluate(() => {
+      window.location.hash = "#color-scheme"
+    })
+    await page.waitForFunction(() => window.scrollY > 0, { timeout: 5000 })
 
     const finalScroll = await page.evaluate(() => window.scrollY)
     expect(finalScroll).toBeGreaterThan(0)

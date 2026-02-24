@@ -1010,7 +1010,8 @@ test.describe("Checkboxes", () => {
 
       // Navigate to page and wait only for DOM content (not full load)
       // This gives us the earliest possible moment to check checkbox state
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+      await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
+      await page.waitForLoadState("domcontentloaded")
 
       // Immediately check checkbox state WITHOUT dispatching nav event
       // Before the fix, this would return the HTML default (unchecked)
