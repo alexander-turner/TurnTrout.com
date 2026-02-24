@@ -64,6 +64,11 @@ $panel-min-height: 200px;
     font-size: var(--font-size-code);
     font-variant-ligatures: none;
     background-color: var(--background);
+
+    &::placeholder {
+      color: var(--midground-faint);
+      user-select: none;
+    }
   }
 
   .punctilio-output-wrapper {
@@ -98,7 +103,8 @@ $panel-min-height: 200px;
     }
 
     &.ghost {
-      color: var(--midground);
+      color: var(--midground-faint);
+      user-select: none;
     }
   }
 }
