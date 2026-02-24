@@ -515,7 +515,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Numbers and units
 
-This computer has 16GB of RAM and runs at 3.2GHz.
+This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
 
 ## Smart quotes
 
@@ -725,6 +725,7 @@ Corrupted text
 
 # What are your timelines?
 
+<!--spellchecker-disable-->
 <div class="timeline">
     <div class="timeline-card">
       <div class="timeline-info">
@@ -763,6 +764,7 @@ Corrupted text
     </div>
   </div>
 </div>
+<!--spellchecker-enable-->
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 

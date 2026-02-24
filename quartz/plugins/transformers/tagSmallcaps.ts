@@ -270,6 +270,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: processMatchedText(phrase, shouldCapitalize),
           after: "",
+          originalText: phrase,
         }
       }
 
@@ -280,6 +281,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: processMatchedText(acronym, shouldCapitalize),
           after: suffix || "",
+          originalText: acronym,
         }
       }
 
@@ -290,6 +292,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: number + abbreviation.toLowerCase(),
           after: "",
+          originalText: number + abbreviation,
         }
       }
 

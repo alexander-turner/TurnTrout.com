@@ -15,7 +15,8 @@
     "hideElements": [
       ".ignore-pa11y",
       ".katex",
-      ".mermaid svg"
+      ".mermaid svg",
+      ".spoiler-content"
     ],
     "ignore": [
       "frame-tested"
