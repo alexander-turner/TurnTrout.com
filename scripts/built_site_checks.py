@@ -1955,6 +1955,7 @@ ALLOWED_ELT_FOLLOWING_CHARS = (
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
+    + WORD_JOINER
 )
 
 
