@@ -81,7 +81,7 @@ jobs:
       contents: read
       packages: read
     container:
-      image: ghcr.io/${{ github.repository }}/playwright:latest
+      image: ghcr.io/alexander-turner/turntrout.com/playwright:latest
       options: --ipc=host
     strategy:
       fail-fast: false
