@@ -132,10 +132,11 @@ const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: 
 // Because they behave differently with vs. without markers, the invariance property
 // transform(text_with_markers) == transform(text_without_markers) does not hold.
 
-// Prevent em dashes from wrapping to the start of a new line
-const emDashNoBreakRegex = new RegExp(`(?<!${WORD_JOINER})\u2014`, "g")
+// Prevent em dashes from wrapping to the start of a new line by prepending a word joiner (U+2060).
+// Uses string operations instead of a stateful global regex for idempotent behavior.
+const wordJoinerEmDash = `${WORD_JOINER}\u2014`
 export const preventEmDashLineBreak = (text: string): string =>
-  text.replace(emDashNoBreakRegex, `${WORD_JOINER}\u2014`)
+  text.replaceAll(wordJoinerEmDash, "\u2014").replaceAll("\u2014", wordJoinerEmDash)
 
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
