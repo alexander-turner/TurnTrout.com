@@ -163,12 +163,11 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 When pushing to main, these checks run automatically:
 
 1. ruff (Python linting, fast)
-2. pnpm check (TypeScript type-checking)
-3. ESLint `--fix` (auto-fixes TypeScript)
-4. docformatter `--in-place` (auto-fixes Python docstrings)
-5. stylelint `--fix` (auto-fixes SCSS)
-6. Asset compression and CDN upload
-7. Alt-text scan (LLM-based, requires API key)
+2. ESLint `--fix` (auto-fixes TypeScript)
+3. docformatter `--in-place` (auto-fixes Python docstrings)
+4. stylelint `--fix` (auto-fixes SCSS)
+5. Asset compression and CDN upload
+6. Alt-text scan (LLM-based, requires API key)
 
 Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 

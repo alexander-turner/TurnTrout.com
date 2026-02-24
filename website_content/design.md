@@ -955,7 +955,6 @@ The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters 
 ```plaintext
 ╰─ git push
 ✓ Linting Python (ruff)
-✓ Typechecking TypeScript (pnpm check)
 ✓ Linting TypeScript (ESLint --fix)
 ✓ Formatting Python docstrings (docformatter --in-place)
 ✓ Cleaning up SCSS (stylelint --fix)
@@ -967,7 +966,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Cheap checks
 
-Running [`ruff`](https://docs.astral.sh/ruff/) and `pnpm check` locally gives immediate feedback before CI even starts. CI also runs these for reliability, but having them locally means errors are caught and fixed before the push completes.
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. CI also runs this for reliability, but having it locally means errors are caught and fixed before the push completes.
 
 ### Auto-fixing formatters
 

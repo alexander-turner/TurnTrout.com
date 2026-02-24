@@ -362,11 +362,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             command=["uv", "run", "ruff", "check", str(git_root_path)],
         ),
         CheckStep(
-            name="Typechecking TypeScript",
-            command=["pnpm", "check"],
-            cwd=str(git_root_path),
-        ),
-        CheckStep(
             name="Linting TypeScript",
             command=[
                 "pnpm",
