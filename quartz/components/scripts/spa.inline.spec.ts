@@ -366,10 +366,10 @@ test.describe("Instant Scroll Restoration", () => {
     expect(finalScroll).toBeGreaterThan(0)
   })
 
-  test("scrolls to hash position on initial page load", async ({ page }) => {
-    const slug = "design#color-scheme"
-    expect(page.url()).not.toContain(slug)
-
+  test("scrolls to hash position after client-side hash change", async ({ page }) => {
+    // Tests SPA hash-change scroll behavior (window.location.hash assignment).
+    // Note: page.goto with a hash URL crashes WebKit on Linux CI with an
+    // "internal error", so we navigate to the base page first then set the hash.
     await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
     await page.evaluate(() => {
       window.location.hash = "#color-scheme"
