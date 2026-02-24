@@ -168,12 +168,16 @@ document.addEventListener("nav", () => {
     lastResult = isEmpty ? "" : result
 
     if (isEmpty) {
-      outputContent.textContent = result
-    } else if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
-      outputContent.textContent = result
+      outputContent.textContent = ""
+      outputContent.dataset.placeholder = result
     } else {
-      const segments = diffChars(sourceText, result)
-      outputContent.innerHTML = renderDiffHtml(segments)
+      delete outputContent.dataset.placeholder
+      if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
+        outputContent.textContent = result
+      } else {
+        const segments = diffChars(sourceText, result)
+        outputContent.innerHTML = renderDiffHtml(segments)
+      }
     }
     outputContent.classList.toggle("ghost", isEmpty)
 

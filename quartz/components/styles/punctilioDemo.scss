@@ -66,8 +66,7 @@ $panel-min-height: 200px;
     background-color: var(--background);
 
     &::placeholder {
-      color: var(--midground-faint);
-      user-select: none;
+      color: var(--midground);
     }
   }
 
@@ -102,9 +101,9 @@ $panel-min-height: 200px;
       font-variant-ligatures: none;
     }
 
-    &.ghost {
+    &.ghost::before {
+      content: attr(data-placeholder);
       color: var(--midground-faint);
-      user-select: none;
     }
   }
 }
