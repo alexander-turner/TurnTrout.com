@@ -672,7 +672,7 @@ describe("HTMLFormattingImprovement", () => {
   describe("Hyphens", () => {
     it.each([
       ["<code>This is a - hyphen.</code>", "<code>This is a - hyphen.</code>"],
-      [`<p>I think that -<em> despite</em></p>`, `<p>I think that${EM_DASH}<em>despite</em></p>`],
+      ["<p>I think that -<em> despite</em></p>", `<p>I think that${EM_DASH}<em>despite</em></p>`],
       [
         "<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>-- Orwell, <em>1984</em></p></blockquote>",
         `<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>${EM_DASH} Orwell, <em>1984</em></p></blockquote>`,

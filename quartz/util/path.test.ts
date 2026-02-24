@@ -16,7 +16,7 @@ describe("normalizeHastElement", () => {
 
     expect(result.children[0]).toMatchObject({
       type: "text",
-      value: "This is a test with quotes “like this” and dashes" + WORD_JOINER + "—here",
+      value: `This is\u00a0a\u00a0test with quotes \u201clike this\u201d and dashes${WORD_JOINER}\u2014here`,
     })
   })
 
@@ -44,7 +44,7 @@ describe("normalizeHastElement", () => {
     const child = result.children[0] as Element
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "Nested text with" + WORD_JOINER + "—dashes",
+      value: `Nested text with${WORD_JOINER}\u2014dashes`,
     })
   })
 
