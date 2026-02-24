@@ -426,6 +426,7 @@ async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInpu
   }
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
   searchBar.focus()
 
   await initializeSearch()
@@ -458,6 +459,7 @@ export async function showSearch(
 
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
 
   searchBar.focus()
   searchBar.select() // Needed for firefox
@@ -478,6 +480,7 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
 
   container?.classList.remove("active")
   document.body.classList.remove("no-mix-blend-mode")
+  document.body.style.overflow = ""
   if (searchBar) {
     searchBar.value = ""
     searchBar.setAttribute("aria-expanded", "false")
@@ -689,6 +692,9 @@ async function onNav(e: CustomEventMap["nav"]) {
     previewManager.destroy()
     previewManager = null
   }
+
+  // Ensure body scroll is restored if search was open during navigation
+  document.body.style.overflow = ""
 
   currentSlug = e.detail.url
 
