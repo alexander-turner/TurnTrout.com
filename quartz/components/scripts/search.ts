@@ -376,7 +376,7 @@ export class PreviewManager {
    * Scroll the preview container to properly orient the first match in the viewport.
    */
   /* istanbul ignore next */
-  private scrollToFirstmatch(): void {
+  public scrollToFirstmatch(): void {
     // Get only the first matching search-match without sorting
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
@@ -760,8 +760,16 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
 
-  // Re-render card previews when viewport crosses the tablet breakpoint
-  const debouncedResizeHandler = debounce(handleResizeForCardPreviews, 150, false)
+  // Re-render card previews when viewport crosses the tablet breakpoint,
+  // and re-scroll the preview to the first match (content reflows on width change)
+  const debouncedResizeHandler = debounce(
+    () => {
+      handleResizeForCardPreviews()
+      previewManager?.scrollToFirstmatch()
+    },
+    150,
+    false,
+  )
   window.addEventListener("resize", debouncedResizeHandler)
   listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
 
