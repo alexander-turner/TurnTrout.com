@@ -235,6 +235,7 @@ describe("showSearch", () => {
       </div>
       <div id="navbar"></div>
     `
+    document.body.style.overflow = ""
     container = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
     navbar = document.getElementById("navbar") as HTMLElement
@@ -249,6 +250,12 @@ describe("showSearch", () => {
   it("should set the z-index of the navbar", () => {
     showSearch(container, searchBar)
     expect(navbar.style.zIndex).toBe("1")
+  })
+
+  it("should lock body scroll by setting overflow hidden", () => {
+    expect(document.body.style.overflow).toBe("")
+    showSearch(container, searchBar)
+    expect(document.body.style.overflow).toBe("hidden")
   })
 
   it("should not throw if the container or search bar is not found", () => {
@@ -283,6 +290,12 @@ describe("hideSearch", () => {
     expect(searchBar.getAttribute("aria-expanded")).toBe("false")
     expect(searchBar.hasAttribute("aria-activedescendant")).toBe(false)
     expect(searchResults.children.length).toBe(0)
+  })
+
+  it("should restore body scroll by clearing overflow", () => {
+    document.body.style.overflow = "hidden"
+    hideSearch(null)
+    expect(document.body.style.overflow).toBe("")
   })
 
   it("hideSearch should hide the search container and the preview manager", () => {
