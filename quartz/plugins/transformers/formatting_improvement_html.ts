@@ -13,7 +13,6 @@ import {
   charsToMoveIntoLinkFromRight,
   markerChar,
   hatTipPlaceholder,
-  WORD_JOINER,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -131,13 +130,6 @@ const nbspTransformWrapper = (text: string) => nbspTransform(text, { separator: 
 // use it to respect element boundaries (e.g., niceQuotes won't pair quotes across elements).
 // Because they behave differently with vs. without markers, the invariance property
 // transform(text_with_markers) == transform(text_without_markers) does not hold.
-
-// Prevent em dashes from wrapping to the start of a new line by prepending a word joiner (U+2060).
-// Uses string operations instead of a stateful global regex for idempotent behavior.
-const wordJoinerEmDash = `${WORD_JOINER}\u2014`
-export const preventEmDashLineBreak = (text: string): string =>
-  text.replaceAll(wordJoinerEmDash, "\u2014").replaceAll("\u2014", wordJoinerEmDash)
-
 const uncheckedTextTransformers = [
   (text: string) => hyphenReplace(text, { separator: markerChar }),
   // Prime marks must run before niceQuotes to convert 5'10" → 5′10″ before quote processing
@@ -177,7 +169,7 @@ export function applyTextTransforms(text: string, options: { useNbsp?: boolean }
     text = transformer(text)
   }
 
-  return preventEmDashLineBreak(text)
+  return text
 }
 
 export const l_pRegex = /(?<prefix>\s|^)L(?<number>\d+)\b(?!\.)/g
@@ -714,14 +706,6 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
     removeSpaceBeforeFootnotes(tree)
-
-    // Prevent em dashes from wrapping to start of a new line (must run after all
-    // text transforms to avoid interfering with hyphenReplace's spacing logic)
-    visitParents(tree, "text", (node, ancestors) => {
-      const parent = ancestors[ancestors.length - 1] as Parent
-      if (!parent || hasAncestor(parent as Element, toSkip, ancestors)) return
-      node.value = preventEmDashLineBreak(node.value)
-    })
   }
 }
 
