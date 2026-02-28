@@ -535,25 +535,18 @@ def test_get_check_steps():
     assert "Scanning for images without alt text" in step_names
 
     # Verify ESLint is configured with --fix and correct config path
-    eslint_step = next(
-        (s for s in steps if s.name == "Linting TypeScript"), None
-    )
-    assert eslint_step is not None, "Linting TypeScript step not found"
+    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
+    eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
     assert "--fix" in eslint_step.command
     assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
         eslint_step.command
     )
 
     # Verify asset step uses bash shell
+    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
     asset_step = next(
-        (
-            s
-            for s in steps
-            if s.name == "Compressing and uploading local assets"
-        ),
-        None,
+        s for s in steps if s.name == "Compressing and uploading local assets"
     )
-    assert asset_step is not None, "Asset step not found"
     assert asset_step.shell is True
 
 
