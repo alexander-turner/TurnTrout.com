@@ -185,6 +185,10 @@ if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 			echo "export PATH=\"$PROJECT_DIR/.venv/bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
 		fi
 	fi
+	# Pre-warm dmypy daemon in the background so lint-staged mypy checks are
+	# fast (~1s) on all commits rather than cold-starting (~18s) on the first.
+	uv run dmypy start -- --config-file "$PROJECT_DIR/config/python/mypy.ini" \
+		>/dev/null 2>&1 &
 fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then
