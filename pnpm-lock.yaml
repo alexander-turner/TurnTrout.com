@@ -166,7 +166,7 @@ importers:
         version: 1.15.0
       punctilio:
         specifier: github:alexander-turner/punctilio
-        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -1884,14 +1884,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@isaacs/balanced-match@4.0.1':
-    resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
-    engines: {node: 20 || >=22}
-
-  '@isaacs/brace-expansion@5.0.1':
-    resolution: {integrity: sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==}
-    engines: {node: 20 || >=22}
-
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -3141,8 +3133,8 @@ packages:
     resolution: {integrity: sha512-ipDqC8FrAl/76p2SSWKSI+H9tFwm7vYqXQrItCuiVPt26Km0jS+NzSsBWAaBusvSbQcfJG+JitdMm+wZAgTYqg==}
     hasBin: true
 
-  basic-ftp@5.0.5:
-    resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
+  basic-ftp@5.2.0:
+    resolution: {integrity: sha512-VoMINM2rqJwJgfdHq6RiUudKt2BV+FY5ZFezP/ypmwayk68+NzzAQy4XXLlqsGD4MCzq3DrmNFD/uUmBJuGoXw==}
     engines: {node: '>=10.0.0'}
 
   beepbeep@1.3.0:
@@ -7780,8 +7772,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125}
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca}
     version: 0.0.0-git
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -11397,12 +11389,6 @@ snapshots:
   '@img/sharp-win32-x64@0.34.5':
     optional: true
 
-  '@isaacs/balanced-match@4.0.1': {}
-
-  '@isaacs/brace-expansion@5.0.1':
-    dependencies:
-      '@isaacs/balanced-match': 4.0.1
-
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -12885,7 +12871,7 @@ snapshots:
 
   baseline-browser-mapping@2.9.19: {}
 
-  basic-ftp@5.0.5: {}
+  basic-ftp@5.2.0: {}
 
   beepbeep@1.3.0: {}
 
@@ -15195,7 +15181,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 5.0.5
+      basic-ftp: 5.2.0
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3
     transitivePeerDependencies:
@@ -18855,7 +18841,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
