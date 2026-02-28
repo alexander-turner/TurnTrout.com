@@ -29,7 +29,7 @@ uv_install_if_missing() {
 webi_install_if_missing() {
 	local cmd="$1"
 	if ! command -v "$cmd" &>/dev/null; then
-		curl -sS "https://webi.sh/$cmd" | sh >/dev/null 2>&1 || warn "Failed to install $cmd"
+		curl -sS "https://webi.sh/$cmd" | sh >/dev/null || warn "Failed to install $cmd"
 	fi
 }
 
@@ -133,7 +133,7 @@ fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then
   echo "Configuring DeepSource authentication..."
-  deepsource auth login --with-token "$DEEPSOURCE_PAT" 2>&1 || warn "Failed to authenticate with DeepSource"
+  deepsource auth login --with-token "$DEEPSOURCE_PAT" || warn "Failed to authenticate with DeepSource"
 fi
 
 #######################################
@@ -188,7 +188,7 @@ if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 	# Pre-warm dmypy daemon in the background so lint-staged mypy checks are
 	# fast (~1s) on all commits rather than cold-starting (~18s) on the first.
 	uv run dmypy start -- --config-file "$PROJECT_DIR/config/python/mypy.ini" \
-		>/dev/null 2>&1 &
+		>/dev/null &
 fi
 
 if [ "$SETUP_WARNINGS" -gt 0 ]; then
