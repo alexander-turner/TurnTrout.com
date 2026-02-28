@@ -166,7 +166,7 @@ importers:
         version: 1.15.0
       punctilio:
         specifier: github:alexander-turner/punctilio
-        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        version: https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -285,8 +285,8 @@ importers:
         specifier: 8.18.1
         version: 8.18.1
       xml2js:
-        specifier: 0.5.0
-        version: 0.5.0
+        specifier: 0.6.2
+        version: 0.6.2
       yargs:
         specifier: 17.7.2
         version: 17.7.2
@@ -1884,14 +1884,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@isaacs/balanced-match@4.0.1':
-    resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
-    engines: {node: 20 || >=22}
-
-  '@isaacs/brace-expansion@5.0.1':
-    resolution: {integrity: sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==}
-    engines: {node: 20 || >=22}
-
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -3144,6 +3136,7 @@ packages:
   basic-ftp@5.0.5:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
+    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
 
   beepbeep@1.3.0:
     resolution: {integrity: sha512-11LndKDm4yoWDfAAfamuT4OZSeNyDOE7xDWrvSjK369bEdZHDECAESyrqnXB5qbgODEASJX9GUz1ZdGfIJFpUQ==}
@@ -7780,8 +7773,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125}
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca}
     version: 0.0.0-git
     engines: {node: '>=18.0.0'}
     peerDependencies:
@@ -8441,8 +8434,9 @@ packages:
     engines: {node: '>=14.0.0'}
     hasBin: true
 
-  sax@1.4.3:
-    resolution: {integrity: sha512-yqYn1JhPczigF94DMS+shiDMjDowYO6y9+wB/4WgO0Y19jWYk0lQ4tuG5KI7kj4FTp1wxPj5IFfcrz/s1c3jjQ==}
+  sax@1.4.4:
+    resolution: {integrity: sha512-1n3r/tGXO6b6VXMdFT54SHzT9ytu9yr7TaELowdYpMqY/Ao7EnlQGmAQ1+RatX7Tkkdm6hONI2owqNx2aZj5Sw==}
+    engines: {node: '>=11.0.0'}
 
   saxes@5.0.1:
     resolution: {integrity: sha512-5LBh1Tls8c9xgGjw3QrMwETmTMVk0oFgvrFSvWx62llR2hcEInrKNZ2GZCCuuy2lvWrdl5jhbpeqc5hRYKFOcw==}
@@ -9932,10 +9926,6 @@ packages:
     resolution: {integrity: sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==}
     engines: {node: '>=18'}
 
-  xml2js@0.5.0:
-    resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
-    engines: {node: '>=4.0.0'}
-
   xml2js@0.6.2:
     resolution: {integrity: sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA==}
     engines: {node: '>=4.0.0'}
@@ -11396,12 +11386,6 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.5':
     optional: true
-
-  '@isaacs/balanced-match@4.0.1': {}
-
-  '@isaacs/brace-expansion@5.0.1':
-    dependencies:
-      '@isaacs/balanced-match': 4.0.1
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -18855,7 +18839,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/f2e2955d34f414452aaaf9025f2009d6f5ad3125(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@https://codeload.github.com/alexander-turner/punctilio/tar.gz/a449877ce63d7dd9dc97b82aa7281a839562caca(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
@@ -19735,7 +19719,7 @@ snapshots:
     optionalDependencies:
       '@parcel/watcher': 2.5.1
 
-  sax@1.4.3: {}
+  sax@1.4.4: {}
 
   saxes@5.0.1:
     dependencies:
@@ -21594,14 +21578,9 @@ snapshots:
 
   xml-name-validator@5.0.0: {}
 
-  xml2js@0.5.0:
-    dependencies:
-      sax: 1.4.3
-      xmlbuilder: 11.0.1
-
   xml2js@0.6.2:
     dependencies:
-      sax: 1.4.3
+      sax: 1.4.4
       xmlbuilder: 11.0.1
 
   xmlbuilder@11.0.1: {}

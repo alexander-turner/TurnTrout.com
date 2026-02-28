@@ -164,7 +164,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "winston-transport": "^4.9.0",
     "ws": "8.18.1",
-    "xml2js": "0.5.0",
+    "xml2js": "0.6.2",
     "yargs": "17.7.2"
   },
   "optionalDependencies": {
