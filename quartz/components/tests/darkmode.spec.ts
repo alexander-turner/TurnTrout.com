@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   // Two-step navigation avoids a WebKit/Linux CI crash when goto() uses
   // waitUntil:"load" directly.
   await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
-  await page.waitForLoadState("domcontentloaded")
+  await page.waitForLoadState("load")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -231,7 +231,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
 
       // Navigate to a different internal page. Two-step avoids WebKit/Linux CI crash.
       await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
-      await page.waitForLoadState("domcontentloaded")
+      await page.waitForLoadState("load")
 
       // CSS custom property may not be set synchronously after navigation
       await expect(async () => {
