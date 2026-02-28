@@ -13,11 +13,18 @@ const AUTO_THEME: Theme = "light"
 const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
+
+async function gotoPage(
+  page: Page,
+  url: string,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  await page.goto(url, { waitUntil: "commit" })
+  await page.waitForLoadState(loadState)
+}
+
 test.beforeEach(async ({ page }) => {
-  // Two-step navigation avoids a WebKit/Linux CI crash when goto() uses
-  // waitUntil:"load" directly.
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
-  await page.waitForLoadState("load")
+  await gotoPage(page, "http://localhost:8080/test-page")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -229,9 +236,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Navigate to a different internal page. Two-step avoids WebKit/Linux CI crash.
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
-      await page.waitForLoadState("load")
+      await gotoPage(page, "http://localhost:8080/test-page")
 
       // CSS custom property may not be set synchronously after navigation
       await expect(async () => {
