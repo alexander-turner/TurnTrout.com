@@ -35,9 +35,10 @@ function setupAdmonition() {
     // Assign ID if not already set by MutationObserver in detectInitialState.js
     if (!admonition.dataset.collapsibleId) {
       const title = admonition.querySelector(".admonition-title")?.textContent?.trim() || ""
-      const body = admonition.querySelector(".admonition-content")?.textContent?.trim() || ""
       const slug = document.body?.dataset?.slug || ""
-      admonition.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title + body)
+      // Use title-only (not body) to match ID formula in detectInitialState.js, avoiding
+      // streaming-parse race conditions where .admonition-content may not yet be in DOM.
+      admonition.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title)
       // Restore saved state
       if (states.has(admonition.dataset.collapsibleId))
         admonition.classList.toggle("is-collapsed", states.get(admonition.dataset.collapsibleId))
