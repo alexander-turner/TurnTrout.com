@@ -168,8 +168,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 2.1.0
-        version: 2.1.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        specifier: 3.0.5
+        version: 3.0.5(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -1889,14 +1889,6 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
-
-  '@isaacs/balanced-match@4.0.1':
-    resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
-    engines: {node: 20 || >=22}
-
-  '@isaacs/brace-expansion@5.0.1':
-    resolution: {integrity: sha512-WMz71T1JS624nWj2n2fnYAuPovhv7EUhk69R6i9dsVyzxt5eM3bjwvgk9L+APE1TRscGysAVMANkB0jh0LQZrQ==}
-    engines: {node: 20 || >=22}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -7786,8 +7778,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@2.1.0:
-    resolution: {integrity: sha512-ynLn+819P0pznlMFWcHnHLW0rChSgz/Fes8S5WW155wpy+S92vF87FMNJBfUqkKm9zJvxVir9N7FDDI6bGmytw==}
+  punctilio@3.0.5:
+    resolution: {integrity: sha512-AOyLwRcFdg/rhUc8109NONsMTN6m/moXYXyfdJ257qhXjfGtqi9Qdgk+4bRW91hhT53xK259x5Fio0px8Cvm1A==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       remark-parse: ^11.0.0
@@ -11401,12 +11393,6 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.5':
     optional: true
-
-  '@isaacs/balanced-match@4.0.1': {}
-
-  '@isaacs/brace-expansion@5.0.1':
-    dependencies:
-      '@isaacs/balanced-match': 4.0.1
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -18860,7 +18846,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@2.1.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@3.0.5(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
