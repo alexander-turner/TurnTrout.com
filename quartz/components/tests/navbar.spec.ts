@@ -14,10 +14,6 @@ interface VideoElements {
   pauseIcon: Locator
 }
 
-export async function isSafariBrowser(page: Page): Promise<boolean> {
-  return await page.evaluate(() => navigator.userAgent.includes("Safari"))
-}
-
 function getVideoElements(page: Page): VideoElements {
   return {
     video: page.locator(`video#${pondVideoId}`),
@@ -528,7 +524,6 @@ async function getTimestampAfterNavigation(page: Page): Promise<number | null> {
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  test.skip(await isSafariBrowser(page), "Safari is flaky")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -544,12 +539,12 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  test.skip(await isSafariBrowser(page), "Safari is flaky")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
 
-  await page.reload()
+  // Use goto instead of reload to avoid transient WebKit "internal error" driver crashes
+  await page.goto(page.url())
 
   const timestampAfterRefresh = await getTimestampAfterNavigation(page)
   test.fail(timestampAfterRefresh === null, "Timestamp after refresh is null")
