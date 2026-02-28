@@ -135,6 +135,7 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
+        shell: bash
         run: |
           set -o pipefail
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
