@@ -644,8 +644,8 @@ importers:
         specifier: 1.29.1
         version: 1.29.1
       lightningcss-linux-x64-musl:
-        specifier: 1.29.1
-        version: 1.29.1
+        specifier: 1.31.1
+        version: 1.31.1
       lightningcss-win32-arm64-msvc:
         specifier: 1.29.1
         version: 1.29.1
@@ -6171,6 +6171,12 @@ packages:
 
   lightningcss-linux-x64-musl@1.29.1:
     resolution: {integrity: sha512-L0Tx0DtaNUTzXv0lbGCLB/c/qEADanHbu4QdcNOXLIe1i8i22rZRpbT3gpWYsCh9aSL9zFujY/WmEXIatWvXbw==}
+    engines: {node: '>= 12.0.0'}
+    cpu: [x64]
+    os: [linux]
+
+  lightningcss-linux-x64-musl@1.31.1:
+    resolution: {integrity: sha512-eowF8PrKHw9LpoZii5tdZwnBcYDxRw2rRCyvAXLi34iyeYfqCQNA9rmUM0ce62NlPhCvof1+9ivRaTY6pSKDaA==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
@@ -16736,6 +16742,9 @@ snapshots:
     optional: true
 
   lightningcss-linux-x64-musl@1.29.1:
+    optional: true
+
+  lightningcss-linux-x64-musl@1.31.1:
     optional: true
 
   lightningcss-win32-arm64-msvc@1.29.1:
