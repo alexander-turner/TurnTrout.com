@@ -135,12 +135,16 @@ $panel-min-height: 200px;
 
     select {
       padding: calc(0.25 * $base-margin);
-      border: none;
+      border: 1px solid var(--midground-faint);
       border-radius: 5px;
       background: inherit;
       color: var(--foreground);
       font-family: inherit;
       font-size: inherit;
+
+      &:focus {
+        outline: 1px solid var(--midground);
+      }
     }
   }
 }
