@@ -260,6 +260,10 @@ export function formatArrows(tree: Root): void {
   })
 }
 
+function isHeading(node: Element): boolean {
+  return HEADING_TAGS.has(node.tagName)
+}
+
 // skipcq: JS-0098
 function isKatex(node: Element): boolean {
   return hasClass(node, "katex")
@@ -678,8 +682,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
       if (node.type === "element") {
         // Skip nbsp in headings — it prevents natural line-breaking and looks bad
         const inHeading =
-          HEADING_TAGS.has((node as Element).tagName) ||
-          ancestors.some((a) => a.type === "element" && HEADING_TAGS.has((a as Element).tagName))
+          isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
         const activeUncheckedTransformers = inHeading
           ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
           : uncheckedTextTransformers
