@@ -54,7 +54,7 @@
       "autopep8 --in-place",
       "black",
       "ruff check --fix",
-      "bash -c 'uv run mypy scripts/ --config-file config/python/mypy.ini'"
+      "bash -c 'uv run dmypy run -- --config-file config/python/mypy.ini scripts/'"
     ],
     "!(*.vale-styles)/**/*.md": [
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
