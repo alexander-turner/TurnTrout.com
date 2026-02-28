@@ -57,6 +57,21 @@ describe("normalizeHastElement", () => {
     expect(textChild.value).toBe(originalValue)
   })
 
+  it("should preserve text inside <code> descendants (ancestor context bug)", () => {
+    // Regression: the old code recursively called normalizeHastElement on each
+    // child, which ran improveFormatting() on children stripped from their parent
+    // tree. A <span> inside <code> would lose the <code> ancestor context and
+    // get smart-quoted even though <code> should suppress formatting.
+    const input = h("code", [h("span", 'x = "hello" -- world')])
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const span = result.children[0] as Element
+    expect(span.children[0]).toMatchObject({
+      type: "text",
+      value: 'x = "hello" -- world',
+    })
+  })
+
   it.each([
     ["simple anchor", "#section", "../other/page#section"],
     ["intro anchor", "#intro", "../other/page#intro"],
