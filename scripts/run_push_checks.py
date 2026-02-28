@@ -111,6 +111,8 @@ class CheckStep:
 
 
 class CheckFailedError(Exception):
+    """Raised when a check step fails during pre-push validation."""
+
     def __init__(self, step_name: str, stdout: str = "", stderr: str = ""):
         self.step_name = step_name
         self.stdout = stdout
@@ -195,6 +197,8 @@ def stream_reader(
 
 @dataclass(slots=True, frozen=True)
 class CommandResult:
+    """Result of running a check command."""
+
     success: bool
     stdout: str
     stderr: str
