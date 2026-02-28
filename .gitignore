@@ -68,3 +68,4 @@ scripts/*.json
 .aider*
 .beads
 AGENTS.md
+.gh-resolved
