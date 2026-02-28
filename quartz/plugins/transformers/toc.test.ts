@@ -495,7 +495,7 @@ describe("TableOfContents Plugin", () => {
         data: { frontmatter: {} },
       }
 
-      // "I love this" gets NBSP inserted by applyTextTransforms (orphan prevention)
+      // nbsp is skipped for headings (would cause bad line-breaking)
       const mockTree: Root = createRoot([createHeading(2, [createText("I love this")])])
 
       processor(mockTree, mockFile)

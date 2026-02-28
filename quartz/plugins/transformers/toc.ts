@@ -119,7 +119,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
 
                 if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
                   const heading = node as Heading
-                  const text = applyTextTransforms(customToString(heading))
+                  const text = applyTextTransforms(customToString(heading), { useNbsp: false })
                   const plainText = stripHtmlTagsFromString(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
