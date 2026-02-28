@@ -207,11 +207,6 @@ const _rebaseHastElement = (
  * 1. Cloning the element to avoid modifying original content
  * 2. Rebasing relative links to work in the new context
  *
- * Note: formatting improvements are NOT re-applied here because the source
- * page's htmlAst has already been fully processed by the transformer pipeline
- * (including HTMLFormattingImprovement). Re-applying would double-transform
- * content and ignore skip classes like "no-formatting".
- *
  * @param rawEl - Original HAST element to normalize
  * @param curBase - Current base slug where element originates
  * @param newBase - New base slug where element will be transcluded
