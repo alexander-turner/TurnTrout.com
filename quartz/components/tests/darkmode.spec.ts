@@ -188,8 +188,6 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })
 
-    // Load the minimal page first
-    await page.reload()
     await page.setContent(minimalHtml, { waitUntil: "domcontentloaded" })
 
     // Take first screenshot immediately after script injection
