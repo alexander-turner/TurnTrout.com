@@ -2,7 +2,6 @@ import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 from unittest.mock import call, patch
 
 import pytest
@@ -278,7 +277,7 @@ def test_main_function_integration(
 ) -> None:
     """Test the main function's integration."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
-    files: list[tuple[str, dict[str, Any]]] = [
+    files: list[tuple[str, dict[str, object]]] = [
         ("new.md", {"title": "New Post"}),
         (
             "existing.md",
@@ -622,7 +621,7 @@ def test_main_default_content_dir(mock_datetime, mock_git) -> None:
     """Test that main uses 'website_content' dir by default."""
     glob_calls = []
 
-    def mock_glob(self, pattern) -> list[Any]:
+    def mock_glob(self, pattern) -> list[Path]:
         glob_calls.append((self, pattern))
         return []  # Return empty list to avoid processing files
 
@@ -662,7 +661,7 @@ def test_main_skips_invalid_file(
     # Mock split_yaml to return empty for the invalid file
     original_split = script_utils.split_yaml
 
-    def mock_split_yaml(file_path) -> tuple[dict[str, Any], str]:
+    def mock_split_yaml(file_path) -> tuple[dict[str, object], str]:
         if file_path.name == "invalid.md":
             return ({}, "")
         return original_split(file_path)

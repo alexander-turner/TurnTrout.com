@@ -2,7 +2,6 @@
 
 import subprocess
 import time
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import git
@@ -10,7 +9,7 @@ import pytest
 
 
 @pytest.fixture()
-def timestamps_repo_setup(git_initialized_dir) -> dict[str, Any]:
+def timestamps_repo_setup(git_initialized_dir) -> dict[str, object]:
     main_repo = git_initialized_dir["repo"]
     main_root = git_initialized_dir["root"]
 

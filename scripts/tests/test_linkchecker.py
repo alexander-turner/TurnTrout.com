@@ -4,8 +4,7 @@ import socketserver
 import subprocess
 import threading
 import time
-from collections.abc import Generator
-from typing import Any
+from collections.abc import Iterator
 
 import pytest
 
@@ -33,7 +32,7 @@ def test_html_content() -> str:
 @pytest.fixture
 def test_server_and_files(
     tmp_path, test_html_content
-) -> Generator[dict[str, Any], None, None]:
+) -> Iterator[dict[str, object]]:
     """Set up a local HTTP server and create test HTML files in public
     directory."""
     # Create a temporary directory structure with mock git repo
@@ -154,7 +153,7 @@ def html_linkchecker_result(test_server_and_files) -> object:
     return MockResult()
 
 
-def test_invalid_port_error(html_linkchecker_result) -> None:
+def test_invalid_port_error(html_linkchecker_result):
     assert (
         "Internal linkchecker: 1" in html_linkchecker_result.stderr
     ), "URL error not found in output"
@@ -163,7 +162,7 @@ def test_invalid_port_error(html_linkchecker_result) -> None:
     ), "Linkchecker script should have failed"
 
 
-def test_invalid_asset_error(html_linkchecker_result) -> None:
+def test_invalid_asset_error(html_linkchecker_result):
     assert (
         "External linkchecker: 1" in html_linkchecker_result.stderr
     ), "Invalid asset error not found in output"

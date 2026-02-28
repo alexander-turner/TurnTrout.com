@@ -4,7 +4,6 @@ import subprocess
 import sys
 from io import StringIO
 from pathlib import Path
-from typing import Any
 
 import PIL
 import pytest
@@ -17,7 +16,7 @@ from . import utils
 
 
 @pytest.mark.parametrize("image_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
-def test_avif_creation(temp_dir: Path, image_ext: str) -> None:
+def test_avif_creation(temp_dir: Path, image_ext: str):
     """Assert that AVIF files are created during conversion."""
     input_file = temp_dir / f"test{image_ext}"
     utils.create_test_image(input_file, "100x100")
@@ -28,7 +27,7 @@ def test_avif_creation(temp_dir: Path, image_ext: str) -> None:
 
 
 @pytest.mark.parametrize("image_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
-def test_avif_size_reduction(temp_dir: Path, image_ext: str) -> None:
+def test_avif_size_reduction(temp_dir: Path, image_ext: str):
     """Assert that AVIF files are smaller than the original image files."""
     input_file = temp_dir / f"test{image_ext}"
     # Use a larger image with detail so AVIF compression beats the original.
@@ -45,14 +44,14 @@ def test_avif_size_reduction(temp_dir: Path, image_ext: str) -> None:
     ), f"AVIF ({avif_file}) size ({avif_size}) not less than original {image_ext.upper()} ({original_size} {input_file})"
 
 
-def test_convert_avif_fails_with_non_existent_file(temp_dir: Path) -> None:
+def test_convert_avif_fails_with_non_existent_file(temp_dir: Path):
     input_file = temp_dir / "non_existent_file.jpg"
 
     with pytest.raises(FileNotFoundError):
         compress.image(input_file)
 
 
-def test_convert_avif_fails_with_invalid_extension(temp_dir: Path) -> None:
+def test_convert_avif_fails_with_invalid_extension(temp_dir: Path):
     input_file = temp_dir / "fakefile.fake"
     input_file.touch()
 
@@ -60,7 +59,7 @@ def test_convert_avif_fails_with_invalid_extension(temp_dir: Path) -> None:
         compress.image(input_file)
 
 
-def test_convert_avif_skips_if_avif_already_exists(temp_dir: Path) -> None:
+def test_convert_avif_skips_if_avif_already_exists(temp_dir: Path):
     input_file: Path = temp_dir / "test.jpg"
     avif_file: Path = input_file.with_suffix(".avif")
     utils.create_test_image(input_file, "100x100")
@@ -79,7 +78,7 @@ def test_convert_avif_skips_if_avif_already_exists(temp_dir: Path) -> None:
 
 
 @pytest.mark.parametrize("video_ext", compress.ALLOWED_VIDEO_EXTENSIONS)
-def test_video_conversion_creates_mp4(temp_dir: Path, video_ext: str) -> None:
+def test_video_conversion_creates_mp4(temp_dir: Path, video_ext: str):
     """Assert that MP4 file is created during video conversion."""
     input_file: Path = temp_dir / f"test{video_ext}"
     utils.create_test_video(input_file)
@@ -89,7 +88,7 @@ def test_video_conversion_creates_mp4(temp_dir: Path, video_ext: str) -> None:
 
 
 @pytest.mark.parametrize("video_ext", compress.ALLOWED_VIDEO_EXTENSIONS)
-def test_video_conversion_mp4_size(temp_dir: Path, video_ext: str) -> None:
+def test_video_conversion_mp4_size(temp_dir: Path, video_ext: str):
     """Assert the size of the created MP4 file relative to the original."""
     input_file: Path = temp_dir / f"test{video_ext}"
     utils.create_test_video(input_file)
@@ -101,7 +100,7 @@ def test_video_conversion_mp4_size(temp_dir: Path, video_ext: str) -> None:
 
 
 @pytest.mark.parametrize("video_ext", compress.ALLOWED_VIDEO_EXTENSIONS)
-def test_video_conversion_creates_webm(temp_dir: Path, video_ext: str) -> None:
+def test_video_conversion_creates_webm(temp_dir: Path, video_ext: str):
     """Assert that WebM file is created during video conversion."""
     input_file: Path = temp_dir / f"test{video_ext}"
     utils.create_test_video(input_file)
@@ -114,9 +113,7 @@ def test_video_conversion_creates_webm(temp_dir: Path, video_ext: str) -> None:
     "video_ext",
     [ext for ext in compress.ALLOWED_VIDEO_EXTENSIONS if ext != ".webm"],
 )
-def test_video_conversion_webm_size_reduction(
-    temp_dir: Path, video_ext: str
-) -> None:
+def test_video_conversion_webm_size_reduction(temp_dir: Path, video_ext: str):
     """Assert that WebM file is smaller than the original video."""
     input_file: Path = temp_dir / f"test{video_ext}"
     utils.create_test_video(input_file)
@@ -126,14 +123,14 @@ def test_video_conversion_webm_size_reduction(
     assert webm_file.stat().st_size < original_size
 
 
-def test_to_video_fails_with_non_existent_file(temp_dir: Path) -> None:
+def test_to_video_fails_with_non_existent_file(temp_dir: Path):
     input_file = temp_dir / "non_existent_file.mov"
 
     with pytest.raises(FileNotFoundError):
         compress.video(input_file)
 
 
-def test_to_video_fails_with_invalid_extension(temp_dir: Path) -> None:
+def test_to_video_fails_with_invalid_extension(temp_dir: Path):
     input_file = temp_dir / "fakefile.fake"
     input_file.touch()
 
@@ -141,7 +138,7 @@ def test_to_video_fails_with_invalid_extension(temp_dir: Path) -> None:
         compress.video(input_file)
 
 
-def test_convert_mp4_skips_if_mp4_already_exists(temp_dir: Path) -> None:
+def test_convert_mp4_skips_if_mp4_already_exists(temp_dir: Path):
     input_file: Path = temp_dir / "test.mp4"
     utils.create_test_video(input_file, codec="libx265")
 
@@ -154,7 +151,7 @@ def test_convert_mp4_skips_if_mp4_already_exists(temp_dir: Path) -> None:
     assert "Skipping conversion" in stderr_capture.getvalue()
 
 
-def test_convert_webm_skips_if_webm_already_exists(temp_dir: Path) -> None:
+def test_convert_webm_skips_if_webm_already_exists(temp_dir: Path):
     input_file: Path = temp_dir / "test.mov"
     utils.create_test_video(input_file)
     webm_file: Path = input_file.with_suffix(".webm")
@@ -172,7 +169,7 @@ def test_convert_webm_skips_if_webm_already_exists(temp_dir: Path) -> None:
 
 
 @pytest.mark.parametrize("quality", [-1, 64, 1000])
-def test_convert_webm_invalid_quality(temp_dir: Path, quality: int) -> None:
+def test_convert_webm_invalid_quality(temp_dir: Path, quality: int):
     input_file: Path = temp_dir / "test.mov"
     utils.create_test_video(input_file)
     webm_file: Path = input_file.with_suffix(".webm")
@@ -181,7 +178,7 @@ def test_convert_webm_invalid_quality(temp_dir: Path, quality: int) -> None:
         compress._run_ffmpeg_webm(input_file, webm_file, quality)
 
 
-def test_error_probing_codec(temp_dir: Path) -> None:
+def test_error_probing_codec(temp_dir: Path):
     input_file: Path = temp_dir / "test.mp4"
     input_file.touch()  # Has no codec
 
@@ -189,7 +186,7 @@ def test_error_probing_codec(temp_dir: Path) -> None:
         compress.video(input_file)
 
 
-def test_convert_gif_creates_mp4(temp_dir: Path) -> None:
+def test_convert_gif_creates_mp4(temp_dir: Path):
     """Assert that converting a GIF creates an MP4 file."""
     input_file = temp_dir / "test_gif_to_mp4.gif"
     utils._create_test_gif(input_file)
@@ -198,7 +195,7 @@ def test_convert_gif_creates_mp4(temp_dir: Path) -> None:
     assert output_file.exists(), f"MP4 file {output_file} was not created"
 
 
-def test_convert_gif_mp4_codec_is_hevc(temp_dir: Path) -> None:
+def test_convert_gif_mp4_codec_is_hevc(temp_dir: Path):
     """Assert that the MP4 created from a GIF uses the HEVC codec."""
     input_file = temp_dir / "test_gif_codec.gif"
     utils._create_test_gif(input_file)
@@ -232,7 +229,7 @@ def test_convert_gif_mp4_codec_is_hevc(temp_dir: Path) -> None:
         pytest.fail(f"Error checking MP4 file codec: {e.stderr}")
 
 
-def test_convert_gif_creates_webm(temp_dir: Path) -> None:
+def test_convert_gif_creates_webm(temp_dir: Path):
     """Assert that converting a GIF creates a WebM file."""
     input_file = temp_dir / "test_gif_to_webm.gif"
     utils._create_test_gif(input_file)
@@ -279,7 +276,7 @@ def _has_audio_stream(file_path: Path) -> bool:
     return False
 
 
-def test_convert_gif_output_has_no_audio(temp_dir: Path) -> None:
+def test_convert_gif_output_has_no_audio(temp_dir: Path):
     """Verify that converting a GIF results in video files without audio
     streams."""
     input_file = temp_dir / "test_gif_no_audio.gif"
@@ -294,7 +291,7 @@ def test_convert_gif_output_has_no_audio(temp_dir: Path) -> None:
         ), f"{suffix} output from GIF should not have audio"
 
 
-def test_convert_video_output_has_audio(temp_dir: Path) -> None:
+def test_convert_video_output_has_audio(temp_dir: Path):
     """Verify that converting a standard video preserves the audio stream."""
     input_file = temp_dir / "test_video_with_audio.mov"
     # create_test_video generates a video with a default silent audio track
@@ -336,9 +333,7 @@ def _get_frame_rate(file_path: Path) -> float:
 
 
 @pytest.mark.parametrize("input_file_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
-def test_avif_preserves_color_profile(
-    temp_dir: Path, input_file_ext: str
-) -> None:
+def test_avif_preserves_color_profile(temp_dir: Path, input_file_ext: str):
     """Test that AVIF conversion preserves sRGB color profile."""
     input_file = temp_dir / f"test{input_file_ext}"
     utils.create_test_image(input_file, "100x100", colorspace="sRGB")
@@ -360,7 +355,7 @@ def test_avif_preserves_color_profile(
     ), "AVIF file should have sRGB colorspace"
 
 
-def test_png_input_has_transparency(temp_dir: Path) -> None:
+def test_png_input_has_transparency(temp_dir: Path):
     """Verify that the test utility creates a PNG with transparency."""
     input_file = temp_dir / "test_transparent_input.png"
     utils.create_test_image(
@@ -381,7 +376,7 @@ def test_png_input_has_transparency(temp_dir: Path) -> None:
     ), "Input PNG file should have transparency before conversion"
 
 
-def test_avif_output_preserves_transparency(temp_dir: Path) -> None:
+def test_avif_output_preserves_transparency(temp_dir: Path):
     """Test that AVIF conversion preserves transparency from the input PNG."""
     input_file = temp_dir / "test_transparent_output.png"
     utils.create_test_image(
@@ -408,9 +403,7 @@ def test_avif_output_preserves_transparency(temp_dir: Path) -> None:
 
 
 @pytest.mark.parametrize("input_file_ext", compress.ALLOWED_IMAGE_EXTENSIONS)
-def test_avif_quality_affects_file_size(
-    temp_dir: Path, input_file_ext: str
-) -> None:
+def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
     # Use larger image (500x500) to ensure quality difference is measurable
@@ -432,7 +425,7 @@ def test_avif_quality_affects_file_size(
     ), f"Higher quality ({high_quality_size}B) should be larger than lower quality ({low_quality_size}B)"
 
 
-def test_avif_format_chroma(temp_dir: Path) -> None:
+def test_avif_format_chroma(temp_dir: Path):
     """Test that AVIF conversion sets correct Chroma Format (YUV 4:2:0)."""
     input_file = temp_dir / "test_chroma.png"
     utils.create_test_image(input_file, "100x100", colorspace="sRGB")
@@ -452,7 +445,7 @@ def test_avif_format_chroma(temp_dir: Path) -> None:
     ), "AVIF should use YUV 4:2:0"
 
 
-def test_avif_format_pixel_depth(temp_dir: Path) -> None:
+def test_avif_format_pixel_depth(temp_dir: Path):
     """Test that AVIF conversion sets correct Pixel Depth (8-bit)."""
     input_file = temp_dir / "test_depth.png"
     utils.create_test_image(input_file, "100x100", colorspace="sRGB")
@@ -486,7 +479,7 @@ def test_avif_format_pixel_depth(temp_dir: Path) -> None:
 )
 def test_get_gif_frame_rate_parametrized(
     temp_dir: Path, test_id: str, length_in_seconds: float, expected_fps: int
-) -> None:
+):
     """Test `_get_gif_frame_rate` with various valid GIF `length_in_seconds`."""
     input_file = temp_dir / f"{test_id}.gif"
     utils._create_test_gif(
@@ -498,9 +491,7 @@ def test_get_gif_frame_rate_parametrized(
     assert round(utils._get_gif_frame_rate(input_file)) == expected_fps
 
 
-def test_get_gif_frame_rate_zero_length_in_seconds(
-    temp_dir: Path, monkeypatch
-) -> None:
+def test_get_gif_frame_rate_zero_length_in_seconds(temp_dir: Path, monkeypatch):
     """Test `_get_gif_frame_rate` when Pillow reports zero
     `length_in_seconds`."""
     input_file = temp_dir / "zero_length_in_seconds.gif"
@@ -528,7 +519,7 @@ def test_get_gif_frame_rate_zero_length_in_seconds(
 
 def test_get_gif_frame_rate_missing_length_in_seconds(
     temp_dir: Path, monkeypatch
-) -> None:
+):
     """Test `_get_gif_frame_rate` when `length_in_seconds` info is missing."""
     input_file = temp_dir / "missing_length_in_seconds.gif"
     utils._create_test_gif(input_file)
@@ -573,7 +564,7 @@ def test_check_if_hevc_codec(
     input_file = temp_dir / f"test_{test_id}.mp4"
     input_file.touch()
 
-    def mock_check_output(*args: Any, **kwargs: Any) -> str:
+    def mock_check_output(*args: object, **kwargs: object) -> str:
         return mock_output
 
     monkeypatch.setattr(subprocess, "check_output", mock_check_output)
@@ -585,9 +576,11 @@ def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch) -> None:
     input_file = temp_dir / "test_error.mp4"
     input_file.touch()
 
-    def mock_check_output(*args: Any, **kwargs: Any) -> None:
+    def mock_check_output(*args: object, **kwargs: object) -> None:
         raise subprocess.CalledProcessError(
-            cmd=list(args[0]), returncode=1, stderr="ffprobe error"
+            cmd=list(args[0]),  # type: ignore[call-overload]
+            returncode=1,
+            stderr="ffprobe error",
         )
 
     monkeypatch.setattr(subprocess, "check_output", mock_check_output)
@@ -599,7 +592,7 @@ def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch) -> None:
 @pytest.mark.parametrize("framerate", [15, 30, 60, 45.53])
 def test_video_preserves_framerate(
     temp_dir: Path, input_video_ext: str, framerate: float
-) -> None:
+):
     """Test that WebM from video preserves the original frame rate."""
     input_file = temp_dir / f"test_framerate_{framerate}{input_video_ext}"
 

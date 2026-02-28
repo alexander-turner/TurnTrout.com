@@ -1,8 +1,7 @@
 import subprocess
 import tempfile
-from collections.abc import Generator
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
 from unittest.mock import MagicMock, patch
 
 import git
@@ -12,14 +11,14 @@ from .. import utils as script_utils
 
 
 @pytest.fixture()
-def temp_dir() -> Generator[Path, None, None]:
+def temp_dir() -> Iterator[Path]:
     """Creates a temporary directory and cleans up afterwards."""
     with tempfile.TemporaryDirectory() as dir_path:
         yield Path(dir_path)
 
 
 @pytest.fixture()
-def git_repo_setup(tmp_path: Path) -> dict[str, Any]:
+def git_repo_setup(tmp_path: Path) -> dict[str, object]:
     """
     Initialize a temporary git repository and return its root Path.
 
@@ -128,7 +127,7 @@ def git_initialized_dir(tmp_path: Path) -> dict[str, git.Repo | Path | dict]:
 
 
 @pytest.fixture()
-def mock_r2_upload_module() -> Generator[None, None, None]:
+def mock_r2_upload_module() -> Iterator[None]:
     """
     Mock the r2_upload module for tests that don't need real R2 operations.
 
@@ -140,7 +139,7 @@ def mock_r2_upload_module() -> Generator[None, None, None]:
 
 
 @pytest.fixture()
-def mock_subprocess_run() -> Generator[MagicMock, None, None]:
+def mock_subprocess_run() -> Iterator[MagicMock]:
     """
     Mock subprocess.run for tests that don't need real command execution.
 
@@ -153,7 +152,7 @@ def mock_subprocess_run() -> Generator[MagicMock, None, None]:
 
 
 @pytest.fixture()
-def mock_rclone() -> Generator[MagicMock, None, None]:
+def mock_rclone() -> Iterator[MagicMock]:
     """
     Mock rclone subprocess calls with successful return codes.
 
