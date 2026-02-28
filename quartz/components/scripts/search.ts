@@ -333,9 +333,8 @@ export class PreviewManager {
         navigateWithSearchTerm(targetUrl.toString(), currentSearchTerm)
       }
 
-      // Let images and other resources load naturally
-      // Browser will handle loading these in the background
-      this.scrollToFirstmatch()
+      // Wait for layout before scrolling to first match
+      requestAnimationFrame(() => this.scrollToFirstmatch())
     } catch (error) {
       console.error("Error loading preview:", error)
       if (this.currentSlug === slug) {
