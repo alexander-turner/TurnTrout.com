@@ -3,7 +3,9 @@
 import json
 import subprocess
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 from unittest.mock import ANY, MagicMock, patch
 
 import pytest
@@ -13,7 +15,7 @@ from scripts import run_push_checks
 
 
 @pytest.fixture
-def temp_state_dir():
+def temp_state_dir() -> Generator[str, None, None]:
     """Create a temporary directory for state files."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -33,7 +35,7 @@ def temp_state_dir():
 
 
 @pytest.fixture
-def test_steps():
+def test_steps() -> list[Any]:
     """Fixture providing test check steps."""
     return [
         run_push_checks.CheckStep(
@@ -48,7 +50,7 @@ def test_steps():
     ]
 
 
-def test_run_checks_all_success(test_steps, temp_state_dir):
+def test_run_checks_all_success(test_steps, temp_state_dir) -> None:
     """Test that all checks run successfully when there are no failures."""
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
@@ -64,7 +66,7 @@ def test_run_checks_all_success(test_steps, temp_state_dir):
 @pytest.mark.parametrize("failing_step_index", [0, 1, 2])
 def test_run_checks_exits_on_failure(
     test_steps, failing_step_index, temp_state_dir
-):
+) -> None:
     """Test that run_checks raises CheckFailedError when a check fails."""
     results = [
         run_push_checks.CommandResult(success=True, stdout="", stderr="")
@@ -86,7 +88,7 @@ def test_run_checks_exits_on_failure(
         assert mock_run.call_count == failing_step_index + 1
 
 
-def test_run_checks_shows_error_output(test_steps):
+def test_run_checks_shows_error_output(test_steps) -> None:
     """Test that error output is properly displayed on failure."""
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
@@ -105,7 +107,7 @@ def test_run_checks_shows_error_output(test_steps):
         mock_log.assert_any_call("stderr error", style=Style(color="red"))
 
 
-def test_run_command_success():
+def test_run_command_success() -> None:
     """Test successful command execution."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
@@ -125,7 +127,7 @@ def test_run_command_success():
         assert result.stderr == ""
 
 
-def test_run_command_failure():
+def test_run_command_failure() -> None:
     """Test command execution failure."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
@@ -145,7 +147,7 @@ def test_run_command_failure():
         assert "error message\n" in result.stderr
 
 
-def test_run_command_shell_handling():
+def test_run_command_shell_handling() -> None:
     """Test command execution with shell=True."""
     step = run_push_checks.CheckStep(
         name="Test Command",
@@ -169,7 +171,7 @@ def test_run_command_shell_handling():
         assert called_cmd == expected_full_command
 
 
-def test_progress_bar_updates():
+def test_progress_bar_updates() -> None:
     """Test that progress bar updates correctly with output."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
@@ -218,7 +220,7 @@ def test_progress_bar_updates():
         assert "line6" in last_desc
 
 
-def test_progress_bar_stderr_updates():
+def test_progress_bar_stderr_updates() -> None:
     """Test that progress bar updates correctly with stderr output."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
@@ -245,7 +247,7 @@ def test_progress_bar_stderr_updates():
         assert any("error2" in d for d in descs)
 
 
-def test_progress_bar_mixed_output():
+def test_progress_bar_mixed_output() -> None:
     """Test that progress bar handles mixed stdout/stderr correctly."""
     step = run_push_checks.CheckStep(
         name="Test Command", command=["echo", "test"]
@@ -273,7 +275,7 @@ def test_progress_bar_mixed_output():
         assert any("err2" in desc for desc in descriptions)
 
 
-def test_save_and_get_state(temp_state_dir):
+def test_save_and_get_state(temp_state_dir) -> None:
     """Test saving and retrieving state."""
     run_push_checks.save_state("Test Step 1")
     assert run_push_checks.get_last_step() == "Test Step 1"
@@ -283,7 +285,7 @@ def test_save_and_get_state(temp_state_dir):
     assert run_push_checks.get_last_step() == "Test Step 2"
 
 
-def test_reset_saved_progress(temp_state_dir):
+def test_reset_saved_progress(temp_state_dir) -> None:
     """Test clearing state."""
     run_push_checks.save_state("Test Step")
     assert run_push_checks.get_last_step() == "Test Step"
@@ -292,7 +294,7 @@ def test_reset_saved_progress(temp_state_dir):
     assert run_push_checks.get_last_step() is None
 
 
-def test_run_checks_with_resume(test_steps, temp_state_dir):
+def test_run_checks_with_resume(test_steps, temp_state_dir) -> None:
     """Test resuming from a previous step."""
     with (
         patch("scripts.run_push_checks.run_command") as mock_run,
@@ -317,7 +319,7 @@ def test_run_checks_with_resume(test_steps, temp_state_dir):
             mock_log.assert_any_call("[grey]Skipping step: Test Step 1[/grey]")
 
 
-def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
+def test_run_checks_resume_from_middle(test_steps, temp_state_dir) -> None:
     """Test resuming from a middle step with failure."""
     with patch("scripts.run_push_checks.run_command") as mock_run:
         # Set up to fail on the last step
@@ -339,7 +341,7 @@ def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
 
 
 @pytest.mark.parametrize("resume_flag", [True, False])
-def test_argument_parsing(resume_flag, temp_state_dir):
+def test_argument_parsing(resume_flag, temp_state_dir) -> None:
     """Test command line argument parsing with and without resume flag."""
     with patch("argparse.ArgumentParser.parse_args") as mock_parse:
         mock_parse.return_value = MagicMock(resume=resume_flag)
@@ -372,7 +374,7 @@ def test_argument_parsing(resume_flag, temp_state_dir):
             mock_run.assert_called_once_with(mock_steps, resume_flag)
 
 
-def test_main_clears_state_on_success(temp_state_dir):
+def test_main_clears_state_on_success(temp_state_dir) -> None:
     """Test that main clears state file when all checks pass."""
     with (
         patch(
@@ -403,7 +405,7 @@ def test_main_clears_state_on_success(temp_state_dir):
         assert run_push_checks.get_last_step() is None
 
 
-def test_main_preserves_state_on_failure(temp_state_dir):
+def test_main_preserves_state_on_failure(temp_state_dir) -> None:
     """Test that main preserves state file when a check fails."""
     with (
         patch(
@@ -440,7 +442,7 @@ def test_main_preserves_state_on_failure(temp_state_dir):
         assert run_push_checks.get_last_step() == "test"
 
 
-def test_run_checks_skips_until_last_step(temp_state_dir):
+def test_run_checks_skips_until_last_step(temp_state_dir) -> None:
     """Test that run_push_checks.run_checks skips steps until it reaches the
     last successful step."""
     test_steps = [
@@ -471,7 +473,7 @@ def test_run_checks_skips_until_last_step(temp_state_dir):
         mock_run.assert_called_once_with(test_steps[2], ANY, ANY)
 
 
-def test_get_last_step_invalid_json(temp_state_dir, capsys):
+def test_get_last_step_invalid_json(temp_state_dir, capsys) -> None:
     """Test get_last_step handles invalid JSON content."""
     state_file = Path(temp_state_dir) / "last_successful_step.json"
     with open(state_file, "w", encoding="utf-8") as f:
@@ -491,7 +493,9 @@ def test_get_last_step_invalid_json(temp_state_dir, capsys):
         {},  # Empty JSON object
     ],
 )
-def test_get_last_step_key_error(temp_state_dir, state_content: dict, capsys):
+def test_get_last_step_key_error(
+    temp_state_dir, state_content: dict, capsys
+) -> None:
     """Test get_last_step handles valid JSON with unexpected structure and
     prints error."""
     state_file_path = Path(temp_state_dir) / "last_successful_step.json"
@@ -507,7 +511,7 @@ def test_get_last_step_key_error(temp_state_dir, state_content: dict, capsys):
         assert "No 'last_successful_step' key in" in stderr
 
 
-def test_invalid_step(temp_state_dir):
+def test_invalid_step(temp_state_dir) -> None:
     """Test that get_last_step handles invalid steps correctly."""
     test_steps = ["Step 1", "Step 2", "Step 3"]
     run_push_checks.save_state("Invalid Step")
@@ -519,7 +523,7 @@ def test_invalid_step(temp_state_dir):
     assert run_push_checks.get_last_step() == "Invalid Step"
 
 
-def test_get_check_steps():
+def test_get_check_steps() -> None:
     """Test that check steps are properly configured."""
     test_root = Path("/test/root")
     steps = run_push_checks.get_check_steps(test_root)
@@ -550,7 +554,7 @@ def test_get_check_steps():
     assert asset_step.shell is True
 
 
-def test_main_resume_with_invalid_step(temp_state_dir):
+def test_main_resume_with_invalid_step(temp_state_dir) -> None:
     """Test main() handles invalid resume state correctly."""
     with (
         patch(
@@ -588,7 +592,7 @@ def test_main_resume_with_invalid_step(temp_state_dir):
         assert mock_run.call_count == 1
 
 
-def test_main_preserves_state_on_interrupt(temp_state_dir):
+def test_main_preserves_state_on_interrupt(temp_state_dir) -> None:
     """Test that state is preserved when user interrupts."""
     with (
         patch(
@@ -628,7 +632,7 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
         )
 
 
-def test_main_stashes_and_restores_changes(temp_state_dir):
+def test_main_stashes_and_restores_changes(temp_state_dir) -> None:
     """Test that main stashes uncommitted changes and restores them."""
     with (
         patch(
@@ -680,7 +684,7 @@ def test_main_stashes_and_restores_changes(temp_state_dir):
         mock_log.assert_any_call("[cyan]Restored stashed changes[/cyan]")
 
 
-def test_run_interactive_command():
+def test_run_interactive_command() -> None:
     """Test interactive command execution (like spellchecker)"""
     step = run_push_checks.CheckStep(
         name="Spellcheck",
@@ -752,7 +756,7 @@ def test_run_interactive_command():
         ),
     ],
 )
-def test_run_command_delegates_to_interactive(step):
+def test_run_command_delegates_to_interactive(step) -> None:
     """Test that run_command correctly delegates to interactive runner."""
     with patch(
         "scripts.run_push_checks.run_interactive_command"
@@ -793,7 +797,7 @@ def test_run_command_delegates_to_interactive(step):
 )
 def test_commit_step_changes_with_various_outputs(
     diff_output, expected_files, expected_calls
-):
+) -> None:
     """Test commit_step_changes handles various git diff outputs."""
     with (
         patch("subprocess.run") as mock_run,
@@ -854,7 +858,7 @@ def test_commit_step_changes_with_various_outputs(
             )
 
 
-def test_commit_step_changes_commit_failure():
+def test_commit_step_changes_commit_failure() -> None:
     """Test commit_step_changes handles commit failures gracefully."""
     with (
         patch("subprocess.run") as mock_run,
@@ -875,7 +879,7 @@ def test_commit_step_changes_commit_failure():
             run_push_checks.commit_step_changes(Path("/test"), "Test Step")
 
 
-def test_commit_step_changes_no_staged_changes():
+def test_commit_step_changes_no_staged_changes() -> None:
     """Test commit_step_changes returns early when no staged changes exist."""
     with (
         patch("subprocess.run") as mock_run,
@@ -917,7 +921,7 @@ def test_commit_step_changes_no_staged_changes():
         ("git add", 1),
     ],
 )
-def test_commit_step_changes_failures(failure_step, failure_index):
+def test_commit_step_changes_failures(failure_step, failure_index) -> None:
     """Test commit_step_changes handles git command failures."""
     with (
         patch("subprocess.run") as mock_run,
@@ -951,7 +955,9 @@ def test_commit_step_changes_failures(failure_step, failure_index):
         ("Linting TypeScript", "chore: apply linting typescript fixes"),
     ],
 )
-def test_commit_step_changes_commit_message_format(step_name, expected_message):
+def test_commit_step_changes_commit_message_format(
+    step_name, expected_message
+) -> None:
     """Test commit_step_changes generates correct commit messages."""
     with (
         patch("subprocess.run") as mock_run,
@@ -974,7 +980,7 @@ def test_commit_step_changes_commit_message_format(step_name, expected_message):
         assert commit_call == ["git", "commit", "-m", expected_message]
 
 
-def test_run_checks_always_commits_changes(temp_state_dir):
+def test_run_checks_always_commits_changes(temp_state_dir) -> None:
     """Test that run_checks always commits changes after successful steps."""
     step = run_push_checks.CheckStep(
         name="Test Step",

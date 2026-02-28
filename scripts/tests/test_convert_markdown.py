@@ -18,7 +18,7 @@ actual_max_size = 300
 
 
 @pytest.fixture
-def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
+def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         script_utils,
         "load_shared_constants",
@@ -27,7 +27,7 @@ def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def mock_git_root(quartz_project_structure, monkeypatch):
+def mock_git_root(quartz_project_structure, monkeypatch) -> None:
     """Override conftest mock_git_root to add card_images directory."""
     git_root = quartz_project_structure["public"].parent
     (git_root / "quartz" / "static" / "images" / "card_images").mkdir(
@@ -72,7 +72,7 @@ Content with non-AVIF card_image.
 )
 def test_process_card_image_in_markdown_skips_cases(
     setup_test_env, mock_git_root, markdown_content
-):
+) -> None:
     md_file = mock_git_root / "website_content" / "test.md"
     create_markdown_file(md_file, content=markdown_content)
 
@@ -169,7 +169,7 @@ def test_process_card_image_in_markdown_skips(
     test_id,
     markdown_content,
     md_filename_suffix,
-):
+) -> None:
     """Test skipping conditions for process_card_image_in_markdown."""
     md_file_path = (
         mock_git_root / "website_content" / f"test_{md_filename_suffix}"
@@ -199,7 +199,7 @@ def test_process_card_image_in_markdown_skips(
         assert md_file_path.read_text() == markdown_content
 
 
-def test_parse_markdown_frontmatter():
+def test_parse_markdown_frontmatter() -> None:
     """Test parsing of markdown frontmatter."""
     content = """---
 title: "Test Post"
@@ -216,14 +216,14 @@ Test content"""
     assert body == "Test content"
 
 
-def test_parse_markdown_frontmatter_no_frontmatter():
+def test_parse_markdown_frontmatter_no_frontmatter() -> None:
     """Test parsing markdown with no frontmatter."""
     content = "Just some content"
     result = convert_markdown_yaml._parse_markdown_frontmatter(content)
     assert result is None
 
 
-def test_download_image(tmp_path):
+def test_download_image(tmp_path) -> None:
     """Test image download functionality."""
     output_path = tmp_path / "test.avif"
     url = "http://example.com/image.avif"
@@ -240,7 +240,7 @@ def test_download_image(tmp_path):
         assert output_path.read_bytes() == b"fake image data"
 
 
-def test_download_image_failure(tmp_path):
+def test_download_image_failure(tmp_path) -> None:
     """Test image download failure handling."""
     output_path = tmp_path / "test.avif"
     url = "http://example.com/image.avif"
@@ -256,7 +256,7 @@ def test_download_image_failure(tmp_path):
 
 
 @pytest.fixture
-def jpeg_conversion_setup(tmp_path):
+def jpeg_conversion_setup(tmp_path) -> tuple[Path, Path]:
     """Common setup for JPEG conversion tests."""
     input_path = tmp_path / "test.avif"
     output_path = tmp_path / "test.jpg"
@@ -264,7 +264,9 @@ def jpeg_conversion_setup(tmp_path):
     return input_path, output_path
 
 
-def test_convert_to_jpeg(jpeg_conversion_setup, mock_load_shared_constants):
+def test_convert_to_jpeg(
+    jpeg_conversion_setup, mock_load_shared_constants
+) -> None:
     """Test JPEG conversion with size constraints."""
     input_path, output_path = jpeg_conversion_setup
 
@@ -293,7 +295,7 @@ def test_convert_to_jpeg(jpeg_conversion_setup, mock_load_shared_constants):
 
 def test_convert_to_jpeg_resizes_to_height_1200(
     jpeg_conversion_setup, mock_load_shared_constants
-):
+) -> None:
     """Test that JPEG conversion resizes images to height of 1200 pixels."""
     input_path, output_path = jpeg_conversion_setup
 
@@ -320,7 +322,7 @@ def test_convert_to_jpeg_resizes_to_height_1200(
     ), f"Expected resize parameter 'x1200', got '{args[resize_idx + 1]}'"
 
 
-def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
+def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup) -> None:
     """Test JPEG conversion with iterative quality reduction."""
     input_path, output_path = jpeg_conversion_setup
 
@@ -336,7 +338,7 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
         mock_stat.return_value.st_size = 400 * 1024  # First: 400KB (too large)
 
         # After first call, make it smaller
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs) -> None:
             if mock_run.call_count == 1:
                 mock_stat.return_value.st_size = 400 * 1024
             else:
@@ -366,7 +368,7 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
 
 def test_convert_to_jpeg_warns_when_cannot_compress_below_limit(
     jpeg_conversion_setup, capsys
-):
+) -> None:
     """Test that _convert_to_jpeg warns when file cannot be compressed below
     limit."""
     input_path, output_path = jpeg_conversion_setup
@@ -395,7 +397,7 @@ def test_convert_to_jpeg_warns_when_cannot_compress_below_limit(
     assert f"Final size: {oversized_kb}.0KB at quality 60" in captured.out
 
 
-def test_process_image(tmp_path):
+def test_process_image(tmp_path) -> None:
     """Test the _process_image helper function."""
     url = "http://example.com/image.avif"
 
@@ -418,7 +420,7 @@ def test_process_image(tmp_path):
     assert jpeg_path == tmp_path / "image.jpg"
 
 
-def test_setup_and_store_image(mock_git_root):
+def test_setup_and_store_image(mock_git_root) -> None:
     """Test the _setup_and_store_image helper function."""
     jpeg_path = mock_git_root / "temp" / "image.jpg"
     jpeg_filename = "image.jpg"
@@ -525,7 +527,7 @@ def test_process_card_image_conversion(
     card_image_url,
     body_content,
     extra_frontmatter,
-):
+) -> None:
     """Test card image conversion for various sources."""
     markdown_content = f"""---
 title: "Test Post"
@@ -545,7 +547,7 @@ card_image: {card_image_url}{extra_frontmatter}
 
 def test_process_card_image_in_markdown_process_failure(
     setup_test_env, mock_git_root
-):
+) -> None:
     """Test handling of image processing failures."""
     markdown_content = """---
 title: "Test Post"
@@ -575,7 +577,7 @@ Content with AVIF card_image.
     assert md_file.read_text() == markdown_content
 
 
-def test_main(mock_git_root):
+def test_main(mock_git_root) -> None:
     markdown_content = """---
 title: "Test Post"
 date: "2023-10-10"
@@ -612,7 +614,7 @@ Content with AVIF card_image.
     mock_process.assert_called_once_with(md_file)
 
 
-def test_process_card_image_in_markdown_wrong_directory(mock_git_root):
+def test_process_card_image_in_markdown_wrong_directory(mock_git_root) -> None:
     """Test ValueError for markdown file outside website_content."""
     other_dir = mock_git_root / "other_dir"
     other_dir.mkdir()

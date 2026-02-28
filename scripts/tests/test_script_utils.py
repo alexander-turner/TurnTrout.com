@@ -2,13 +2,15 @@
 
 import shutil
 import subprocess
+from collections.abc import Generator
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 from unittest import mock
 
 import git
 import pytest
 from bs4 import BeautifulSoup
+from bs4.element import AttributeValueList
 
 from .. import utils as script_utils
 from ..utils import get_git_root as _original_get_git_root
@@ -52,8 +54,8 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
     assert script_utils.get_git_root() == Path(expected_output)
 
 
-def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
-    def mock_subprocess_run(*args, **kwargs):
+def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    def mock_subprocess_run(*args, **kwargs) -> None:
         # Since check=True is used, raise CalledProcessError on failure
         raise subprocess.CalledProcessError(
             returncode=1,
@@ -175,7 +177,7 @@ def test_path_relative_to_quartz(
         )
 
 
-def test_get_files_no_dir():
+def test_get_files_no_dir() -> None:
     """Test when no directory is provided."""
     result = script_utils.get_files()
     assert isinstance(result, tuple)
@@ -196,7 +198,7 @@ def test_get_files_no_dir():
         ),
     ],
 )
-def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
+def test_get_files_specific_dir(tmp_path, file_paths, expected_files) -> None:
     """Test file discovery by inferring structure from file paths."""
     # Create test files and directories
     for file_path in file_paths:
@@ -213,11 +215,11 @@ def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
     )
 
     # Normalize file paths and compare
-    result = [str(p.relative_to(tmp_path)) for p in result]
-    assert sorted(result) == sorted(expected_files)
+    result_strs = [str(p.relative_to(tmp_path)) for p in result]
+    assert sorted(result_strs) == sorted(expected_files)
 
 
-def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
+def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Test with a .gitignore file."""
     # Create a git repository in tmp_path
     repo = git.Repo.init(tmp_path)
@@ -240,7 +242,7 @@ def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
     assert result[0] == md_file
 
 
-def test_get_files_ignore_dirs(tmp_path):
+def test_get_files_ignore_dirs(tmp_path) -> None:
     """Test that specified directories are ignored."""
     # Create test directory structure
     templates_dir = tmp_path / "templates"
@@ -736,7 +738,7 @@ def test_md_for_html_error_handling(
         ("<html></html>", True),
     ],
 )
-def test_body_is_empty(html, expected):
+def test_body_is_empty(html, expected) -> None:
     soup = BeautifulSoup(html, "html.parser")
     result = script_utils.body_is_empty(soup)
     assert result == expected
@@ -762,7 +764,7 @@ def sample_html_for_get_non_code_text() -> str:
 
 def test_get_non_code_text_does_not_modify_original_tag(
     sample_html_for_get_non_code_text,
-):
+) -> None:
     """Test that get_non_code_text does not modify the original Tag object
     passed to it, by comparing its string representation."""
     soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
@@ -781,7 +783,7 @@ def test_get_non_code_text_does_not_modify_original_tag(
 
 def test_get_non_code_text_does_not_modify_original_soup_object(
     sample_html_for_get_non_code_text,
-):
+) -> None:
     """Test that get_non_code_text does not modify the original BeautifulSoup
     object passed to it, by comparing its string representation."""
     original_soup = BeautifulSoup(
@@ -800,7 +802,7 @@ def test_get_non_code_text_does_not_modify_original_soup_object(
 
 def test_get_non_code_text_returns_correct_text_for_tag(
     sample_html_for_get_non_code_text,
-):
+) -> None:
     """Test that get_non_code_text returns the correctly stripped text when
     given a Tag object."""
     soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
@@ -814,7 +816,7 @@ def test_get_non_code_text_returns_correct_text_for_tag(
 
 def test_get_non_code_text_returns_correct_text_for_soup_object(
     sample_html_for_get_non_code_text,
-):
+) -> None:
     """Test that get_non_code_text returns the correctly stripped text when
     given a BeautifulSoup object."""
     soup = BeautifulSoup(sample_html_for_get_non_code_text, "html.parser")
@@ -871,7 +873,7 @@ def test_get_non_code_text_returns_correct_text_for_soup_object(
 )
 def test_get_non_code_text_with_placeholder(
     html: str, use_placeholder: bool, expected: dict
-):
+) -> None:
     """Test replace_with_placeholder parameter for position preservation."""
     soup = BeautifulSoup(html, "html.parser")
     paragraph = soup.find("p")
@@ -1030,7 +1032,7 @@ def test_collect_aliases(
         create_markdown_file(tmp_path / file_path_str, content=content)
 
     # Mock get_files to avoid git operations in temp directory
-    def mock_get_files(dir_to_search, **kwargs):
+    def mock_get_files(dir_to_search, **kwargs) -> tuple[Path, ...]:
         files = []
         if dir_to_search:
             files = list(dir_to_search.rglob("*.md"))
@@ -1042,7 +1044,7 @@ def test_collect_aliases(
     assert result == expected_aliases
 
 
-def test_get_classes_string_attribute():
+def test_get_classes_string_attribute() -> None:
     """Test get_classes with a string class attribute."""
     html = '<div class="class1 class2"></div>'
     soup = BeautifulSoup(html, "html.parser")
@@ -1051,7 +1053,7 @@ def test_get_classes_string_attribute():
     assert script_utils.get_classes(tag) == ["class1", "class2"]
 
 
-def test_get_classes_list_attribute():
+def test_get_classes_list_attribute() -> None:
     """Test get_classes with a list class attribute."""
     # BeautifulSoup typically stores multi-valued attributes like class as a list
     html = '<div class="class1 class2"></div>'
@@ -1059,21 +1061,21 @@ def test_get_classes_list_attribute():
     tag = soup.find("div")
     assert tag is not None
     # Simulate how BS might present it if it were a list internally
-    tag["class"] = ["class1", "class2", "class3"]
+    tag["class"] = cast(AttributeValueList, ["class1", "class2", "class3"])
     assert script_utils.get_classes(tag) == ["class1", "class2", "class3"]
 
 
-def test_get_classes_list_attribute_with_non_string():
+def test_get_classes_list_attribute_with_non_string() -> None:
     """Test get_classes with a list class attribute containing non-strings."""
     html = "<div></div>"
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = ["class1", 123, "class3", True]
+    tag["class"] = cast(AttributeValueList, ["class1", 123, "class3", True])
     assert script_utils.get_classes(tag) == ["class1", "123", "class3", "True"]
 
 
-def test_get_classes_missing_attribute():
+def test_get_classes_missing_attribute() -> None:
     """Test get_classes when the class attribute is missing."""
     html = "<div></div>"
     soup = BeautifulSoup(html, "html.parser")
@@ -1082,7 +1084,7 @@ def test_get_classes_missing_attribute():
     assert script_utils.get_classes(tag) == []
 
 
-def test_get_classes_empty_string_attribute():
+def test_get_classes_empty_string_attribute() -> None:
     """Test get_classes with an empty string class attribute."""
     html = '<div class=""></div>'
     soup = BeautifulSoup(html, "html.parser")
@@ -1091,17 +1093,17 @@ def test_get_classes_empty_string_attribute():
     assert script_utils.get_classes(tag) == []
 
 
-def test_get_classes_empty_list_attribute():
+def test_get_classes_empty_list_attribute() -> None:
     """Test get_classes with an empty list class attribute."""
     html = "<div></div>"  # Start with no class
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = []
+    tag["class"] = cast(AttributeValueList, [])
     assert script_utils.get_classes(tag) == []
 
 
-def test_get_classes_attribute_is_none():
+def test_get_classes_attribute_is_none() -> None:
     """Test get_classes when the class attribute is explicitly None."""
     html = "<div></div>"
     soup = BeautifulSoup(html, "html.parser")
@@ -1111,13 +1113,13 @@ def test_get_classes_attribute_is_none():
     assert script_utils.get_classes(tag) == []
 
 
-def test_get_classes_invalid_type_attribute():
+def test_get_classes_invalid_type_attribute() -> None:
     """Test get_classes with an invalid type for the class attribute."""
     html = "<div></div>"
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = 123
+    tag["class"] = cast(AttributeValueList, 123)
     with pytest.raises(ValueError, match="Invalid class attribute value"):
         script_utils.get_classes(tag)
 
@@ -1126,7 +1128,7 @@ def test_get_classes_invalid_type_attribute():
 
 
 @pytest.fixture(autouse=False)
-def clear_imagemagick_cache():
+def clear_imagemagick_cache() -> Generator[None, None, None]:
     script_utils._get_imagemagick_version.cache_clear()
     yield
     script_utils._get_imagemagick_version.cache_clear()
@@ -1134,17 +1136,17 @@ def clear_imagemagick_cache():
 
 def test_get_imagemagick_version_returns_6_when_magick_not_found(
     monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
-):
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: None)
     assert script_utils._get_imagemagick_version() == 6
 
 
 def test_get_imagemagick_version_returns_7_when_im7_detected(
     monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
-):
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
 
-    def mock_run(*args, **kwargs):
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(
             args=args,
             returncode=0,
@@ -1158,10 +1160,10 @@ def test_get_imagemagick_version_returns_7_when_im7_detected(
 
 def test_get_imagemagick_version_returns_6_when_im6_detected(
     monkeypatch: pytest.MonkeyPatch, clear_imagemagick_cache
-):
+) -> None:
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
 
-    def mock_run(*args, **kwargs):
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(
             args=args,
             returncode=0,
@@ -1173,7 +1175,7 @@ def test_get_imagemagick_version_returns_6_when_im6_detected(
     assert script_utils._get_imagemagick_version() == 6
 
 
-def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
+def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 7)
     monkeypatch.setattr(
         script_utils, "find_executable", lambda name: f"/usr/bin/{name}"
@@ -1185,7 +1187,7 @@ def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
 
 def test_get_imagemagick_command_im6_operation_found(
     monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
     monkeypatch.setattr(shutil, "which", lambda name: f"/usr/bin/{name}")
 
@@ -1195,7 +1197,7 @@ def test_get_imagemagick_command_im6_operation_found(
 
 def test_get_imagemagick_command_im6_operation_not_found(
     monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 6)
     monkeypatch.setattr(shutil, "which", lambda name: None)
 

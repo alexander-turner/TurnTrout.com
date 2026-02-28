@@ -509,14 +509,14 @@ def test_get_gif_frame_rate_zero_length_in_seconds(
     class MockImage:
         info: dict[str, int | None] = {"duration": 0}
 
-        def __enter__(self):
+        def __enter__(self) -> "MockImage":
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
             # No resources to clean up
             pass
 
-    def mock_open(*args, **kwargs):
+    def mock_open(*args, **kwargs) -> MockImage:
         return MockImage()
 
     monkeypatch.setattr(PIL.Image, "open", mock_open)
@@ -536,14 +536,14 @@ def test_get_gif_frame_rate_missing_length_in_seconds(
     class MockImage:
         info: dict[str, int | None] = {}  # Missing 'length_in_seconds'
 
-        def __enter__(self):
+        def __enter__(self) -> "MockImage":
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
             # No resources to clean up
             pass
 
-    def mock_open(*args, **kwargs):
+    def mock_open(*args, **kwargs) -> MockImage:
         return MockImage()
 
     monkeypatch.setattr(PIL.Image, "open", mock_open)

@@ -1,7 +1,9 @@
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -15,9 +17,9 @@ pytestmark = pytest.mark.requires_r2
 
 
 @pytest.fixture()
-def r2_cleanup():
+def r2_cleanup() -> Generator[list[str], None, None]:
     """Fixture to clean up uploaded files on R2 after each test."""
-    uploaded_files = []
+    uploaded_files: list[str] = []
     yield uploaded_files
     for file in uploaded_files:
         rclone_executable = script_utils.find_executable("rclone")
@@ -32,7 +34,9 @@ def r2_cleanup():
 
 
 @pytest.fixture
-def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
+def test_media_setup(
+    quartz_project_structure, monkeypatch: pytest.MonkeyPatch
+) -> Generator[tuple[Any, ...], None, None]:
     """
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
@@ -87,13 +91,15 @@ def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
-def mock_home_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def mock_home_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     r2_upload._HOME_DIR = tmp_path
 
 
 def test_verbose_output(
     mock_git_root: Path, capsys: pytest.CaptureFixture[str], tmp_path: Path
-):
+) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test_verbose.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -106,7 +112,7 @@ def test_verbose_output(
     assert "Moving original file:" in captured.out
 
 
-def test_upload_to_r2_success(mock_git_root: Path):
+def test_upload_to_r2_success(mock_git_root: Path) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -142,7 +148,7 @@ def test_upload_to_r2_success(mock_git_root: Path):
         ("no_matching_dir/file.txt", "no_matching_dir/file.txt"),
     ],
 )
-def test_get_r2_key(input_path: str, expected_key: str):
+def test_get_r2_key(input_path: str, expected_key: str) -> None:
     assert r2_upload.get_r2_key(Path(input_path)) == expected_key
 
 
@@ -155,7 +161,7 @@ def test_get_r2_key(input_path: str, expected_key: str):
 )
 def test_upload_and_move_exceptions(
     mock_git_root: Path, exception_class: type[Exception], file_path: str
-):
+) -> None:
     with pytest.raises(exception_class):
         r2_upload.upload_and_move(mock_git_root / file_path)
 
@@ -180,7 +186,7 @@ def test_upload_and_move_failures(
     mock_func: str,
     mock_side_effect: Exception,
     expected_exception: type[Exception],
-):
+) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test_fail.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -218,7 +224,7 @@ def test_upload_and_move_failures(
 )
 def test_main_function(
     mock_git_root: Path, args: list[str], expected_exception: type[Exception]
-):
+) -> None:
     if "quartz/static/test.jpg" in args:
         test_file = mock_git_root / "quartz" / "static" / "test.jpg"
         test_file.parent.mkdir(parents=True, exist_ok=True)
@@ -248,7 +254,7 @@ def test_upload_and_move(
     tmp_path: Path,
     mock_git_root: Path,
     mock_rclone: MagicMock,
-):
+) -> None:
     project_root, test_image, content_dir, md_files = test_media_setup
     move_to_dir = tmp_path / "moved"
     move_to_dir.mkdir()
@@ -298,7 +304,7 @@ def test_main_upload_all_custom_filetypes(
     mock_git_root: Path,
     mock_rclone: MagicMock,
     quartz_dirs: tuple[Path, Path],
-):
+) -> None:
     static_dir, content_dir = quartz_dirs
 
     # Create a mock Repo object
@@ -370,7 +376,7 @@ def test_main_upload_all_custom_filetypes(
         ), f"Expected 2 'copyto' calls, but got {copyto_count}"
 
 
-def test_preserve_path_structure(mock_git_root: Path, tmp_path: Path):
+def test_preserve_path_structure(mock_git_root: Path, tmp_path: Path) -> None:
     move_to_dir = tmp_path / "external_backup"
     move_to_dir.mkdir()
 
@@ -396,7 +402,7 @@ def test_preserve_path_structure(mock_git_root: Path, tmp_path: Path):
 
 def test_preserve_path_structure_with_replacement(
     mock_git_root: Path, tmp_path: Path
-):
+) -> None:
     # Create a mock Repo object
     mock_repo = MagicMock()
     mock_repo.working_tree_dir = str(mock_git_root)
@@ -444,7 +450,7 @@ def test_preserve_path_structure_with_replacement(
         )
 
 
-def test_check_exists_on_r2_file_exists():
+def test_check_exists_on_r2_file_exists() -> None:
     with (
         patch(
             "scripts.r2_upload.script_utils.find_executable",
@@ -463,7 +469,7 @@ def test_check_exists_on_r2_file_exists():
         )
 
 
-def test_check_exists_on_r2_file_not_exists():
+def test_check_exists_on_r2_file_not_exists() -> None:
     with (
         patch(
             "scripts.r2_upload.script_utils.find_executable",
@@ -482,7 +488,7 @@ def test_check_exists_on_r2_file_not_exists():
         )
 
 
-def test_check_exists_on_r2_verbose_output(capsys):
+def test_check_exists_on_r2_verbose_output(capsys) -> None:
     with patch("subprocess.run") as mock_run:
         mock_run.return_value = MagicMock(returncode=0, stdout="file.txt\n")
         r2_upload.check_exists_on_r2("r2:bucket/file.txt", verbose=True)
@@ -499,7 +505,7 @@ def test_check_exists_on_r2_verbose_output(capsys):
         )
 
 
-def test_upload_non_existing_file(mock_git_root: Path, tmp_path: Path):
+def test_upload_non_existing_file(mock_git_root: Path, tmp_path: Path) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test_non_existing.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -533,7 +539,7 @@ def test_upload_non_existing_file(mock_git_root: Path, tmp_path: Path):
 
 def test_upload_and_move_file_exists(
     mock_git_root: Path, capsys: pytest.CaptureFixture[str]
-):
+) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -556,7 +562,7 @@ def test_upload_and_move_file_exists(
 
 def test_upload_to_r2_overwrite_print(
     mock_git_root: Path, capsys: pytest.CaptureFixture[str]
-):
+) -> None:
     """Test red print output when overwriting an existing file."""
     test_file = mock_git_root / "quartz" / "static" / "test_overwrite_out.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
@@ -581,7 +587,9 @@ def test_upload_to_r2_overwrite_print(
     assert "Downloaded backup from R2" in captured.out
 
 
-def test_upload_to_r2_download_backup(mock_git_root: Path, tmp_path: Path):
+def test_upload_to_r2_download_backup(
+    mock_git_root: Path, tmp_path: Path
+) -> None:
     """Test file backup logic when overwriting an existing file."""
     test_file = mock_git_root / "quartz" / "static" / "test_overwrite_move.jpg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
@@ -610,7 +618,7 @@ def test_upload_to_r2_download_backup(mock_git_root: Path, tmp_path: Path):
 
 
 # Ensure we tell rclone to handle the MIME header correctly
-def test_upload_svg_with_metadata(mock_git_root: Path):
+def test_upload_svg_with_metadata(mock_git_root: Path) -> None:
     test_file = mock_git_root / "quartz" / "static" / "test.svg"
     test_file.parent.mkdir(parents=True, exist_ok=True)
     test_file.touch()
@@ -632,7 +640,7 @@ def test_upload_svg_with_metadata(mock_git_root: Path):
         )
 
 
-def test_move_uploaded_file(mock_git_root: Path, tmp_path: Path):
+def test_move_uploaded_file(mock_git_root: Path, tmp_path: Path) -> None:
     """Test that move_uploaded_file preserves directory structure."""
     source_file = mock_git_root / "quartz" / "static" / "deep" / "test.jpg"
     source_file.parent.mkdir(parents=True)
@@ -647,7 +655,9 @@ def test_move_uploaded_file(mock_git_root: Path, tmp_path: Path):
     assert not source_file.exists()
 
 
-def test_move_uploaded_file_error_handling(mock_git_root: Path, tmp_path: Path):
+def test_move_uploaded_file_error_handling(
+    mock_git_root: Path, tmp_path: Path
+) -> None:
     """Test error handling when move operation fails."""
     source_file = mock_git_root / "quartz" / "static" / "test.jpg"
     source_file.parent.mkdir(parents=True)
@@ -669,7 +679,7 @@ def test_move_uploaded_file_error_handling(mock_git_root: Path, tmp_path: Path):
 
 def test_move_uploaded_file_nonexistent_source(
     mock_git_root: Path, tmp_path: Path
-):
+) -> None:
     """Test error handling when source file doesn't exist."""
     source_file = mock_git_root / "quartz" / "static" / "nonexistent.jpg"
     move_to_dir = tmp_path / "backup"
@@ -682,7 +692,7 @@ def test_upload_and_move_nonexistent_move_dir(
     mock_git_root: Path,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
-):
+) -> None:
     """Test handling of nonexistent move directory."""
     test_file = mock_git_root / "quartz" / "static" / "test.jpg"
     test_file.parent.mkdir(parents=True)
@@ -701,7 +711,7 @@ def test_upload_and_move_nonexistent_move_dir(
 
 def test_update_markdown_references_with_links(
     tmp_path: Path, mock_git_root: Path
-):
+) -> None:
     """Test updating both image references and regular links."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
@@ -742,7 +752,7 @@ def test_update_markdown_references_with_links(
     assert updated_content == expected_content
 
 
-def test_update_markdown_references_no_references_dir():
+def test_update_markdown_references_no_references_dir() -> None:
     """Test handling when no references directory is provided."""
     test_file = Path("quartz/static/test.jpg")
     r2_address = "https://assets.turntrout.com/static/test.jpg"
@@ -753,7 +763,7 @@ def test_update_markdown_references_no_references_dir():
 
 def test_update_markdown_references_verbose_output(
     tmp_path: Path, mock_git_root: Path, capsys: pytest.CaptureFixture[str]
-):
+) -> None:
     """Test verbose output during reference updates."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
@@ -776,7 +786,9 @@ def test_update_markdown_references_verbose_output(
     assert r2_address in captured.out
 
 
-def test_files_to_upload_ignores_gitignore(mock_git_root: Path, quartz_dirs):
+def test_files_to_upload_ignores_gitignore(
+    mock_git_root: Path, quartz_dirs
+) -> None:
     """Test that --upload-from-directory finds all files, including those that
     would be ignored by git."""
     static_dir, content_dir = quartz_dirs
@@ -817,7 +829,7 @@ def test_files_to_upload_ignores_gitignore(mock_git_root: Path, quartz_dirs):
     assert uploaded_files == expected_files
 
 
-def test_ignore_files_option(quartz_dirs):
+def test_ignore_files_option(quartz_dirs) -> None:
     """Test that --ignore-files excludes specified files from upload."""
     static_dir, content_dir = quartz_dirs
 

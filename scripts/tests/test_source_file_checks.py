@@ -1678,7 +1678,7 @@ def test_remove_code_with_fenced_blocks() -> None:
     Normal text.
     
     ```python
-    def example():
+    def example() -> None:
         return "This is code"
     ```
     
@@ -1897,7 +1897,7 @@ def test_slug_in_metadata(slug: str, metadata: dict, expected: bool) -> None:
         ('<video alt="type=something"></video>', False),
     ],
 )
-def test_validate_video_tag(video_tag: str, should_raise: bool):
+def test_validate_video_tag(video_tag: str, should_raise: bool) -> None:
     """Tests the validate_video_tags function."""
     with tempfile.NamedTemporaryFile(
         "w", suffix=".md", delete=False
@@ -1928,7 +1928,9 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
         ("file-without-spaces.md", []),
     ],
 )
-def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
+def test_check_spaces_in_path(
+    path_str: str, expected_errors: List[str]
+) -> None:
     """Tests the _check_spaces_in_path function with various paths."""
     path = Path(path_str)
     errors = source_file_checks.check_spaces_in_path(path)
@@ -2019,7 +2021,9 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         ("Test $math$)", []),
     ],
 )
-def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
+def test_check_no_forbidden_patterns(
+    text: str, expected_errors: List[str]
+) -> None:
     """Test the check_no_forbidden_patterns function."""
     errors = source_file_checks.check_no_forbidden_patterns(text)
     assert errors == expected_errors
@@ -2060,7 +2064,7 @@ def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
         ("A double backslash \\\\alpha should be ignored", []),
     ],
 )
-def test_check_stray_katex(text: str, expected_errors: List[str]):
+def test_check_stray_katex(text: str, expected_errors: List[str]) -> None:
     """Test the check_stray_katex function."""
     errors = source_file_checks.check_stray_katex(text)
     assert sorted(errors) == sorted(expected_errors)
@@ -2099,7 +2103,7 @@ def test_check_stray_katex(text: str, expected_errors: List[str]):
         ('<img/>{style="width:50%"}', []),  # Self-closing tags
     ],
 )
-def test_check_html_with_braces(text: str, expected_errors: List[str]):
+def test_check_html_with_braces(text: str, expected_errors: List[str]) -> None:
     """Test the check_html_with_braces function."""
     errors = source_file_checks.check_html_with_braces(text)
     assert errors == expected_errors
