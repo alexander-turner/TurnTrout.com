@@ -383,8 +383,8 @@ test("Right sidebar is visible on desktop on page load", async ({ page }) => {
     })
   })
 
-  // Reload the page to trigger the init script
-  await page.reload()
+  // Use goto instead of reload to avoid transient WebKit "internal error" driver crashes
+  await page.goto(page.url())
 
   const initialDisplayStyle = await page.evaluate(() => {
     // @ts-expect-error - test instrumentation
