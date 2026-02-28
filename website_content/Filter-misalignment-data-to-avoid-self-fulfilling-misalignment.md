@@ -17,9 +17,10 @@ aliases:
   - pretrained-misalignment
   - filter-misalignment-data
 date_published: 2025-03-01 17:42:48.379662
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-02-23 17:58:50.463964
 card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
 ---
+
 
 
 
