@@ -60,9 +60,7 @@ function transformMarkdownText(text: string, config: TransformOptions): string {
   const result = unified()
     .use(remarkParse)
     .use(remarkPunctilio, config)
-    .use(remarkStringify, {
-      unsafe: [{ character: "]", inConstruct: "phrasing" }],
-    })
+    .use(remarkStringify)
     .processSync(text)
   return String(result)
 }
