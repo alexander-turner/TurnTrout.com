@@ -234,7 +234,7 @@ def test_check_card_image_invalid(
 def test_check_card_image_size(
     status_code: int,
     content_length: int | None,
-    expected_error_contains: str | None,
+    expected_error_contains: str,
 ) -> None:
     """Test that card_image size checking works correctly."""
     mock_response = mock.Mock()

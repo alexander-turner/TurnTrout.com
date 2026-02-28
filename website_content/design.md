@@ -578,7 +578,7 @@ How do the following sentences feel to read?
 1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
 2. Signed in the 1990's, NAFTA was a trade deal.
 
-Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. 
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI.
 
 Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct. Further, many smallcaps uses (like "500km") actually render from lowercase text. I track `data-original-text` and ensure the clipboard copies the original text exactly.
 
@@ -949,51 +949,39 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
-## `pre-push`: the quality assurance gauntlet
+## `pre-push`: local checks and auto-fixes
 
-Whenever I find a bug, I attempt to automatically detect it in the future. The result is a long pipeline of checks, designed to surface errors which would take a long time to notice manually. The `push` operation is aborted if any of this section's checks[^gauntlet] fail.
+The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters that commit source-file changes, and operations requiring local credentials. The `push` operation is aborted if any check fails.
 
 ```plaintext
 ╰─ git push
-✓ Typechecking Python with mypy
-✓ ESLinting TypeScript
-✓ Cleaning up SCSS
-✓ Linting Python
-✓ Spellchecking
-✓ Checking source files
-✓ Linting prose using Vale
-✓ Running Javascript unit tests
-⠹ Running Python unit tests...
-   scripts/tests/test_built_site_checks.py
-   .................. [  7%]
-   .................. [ 23%]
-   .................. [ 39%]
-   .................. [ 45%]
+✓ Linting Python (ruff)
+✓ Linting TypeScript (ESLint --fix)
+✓ Formatting Python docstrings (docformatter --in-place)
+✓ Cleaning up SCSS (stylelint --fix)
+✓ Compressing and uploading local assets
+⠹ Scanning for images without alt text...
 ```
 
-Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed tests and allows resuming the `push` from the last point of failure.
+Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed step and allows resuming from the last point of failure.
 
-[^gauntlet]: For clarity, I don't present the `pre-push` hook operations in their true order.
+### Cheap checks
 
-### Static code analysis
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. CI also runs this for reliability, but having it locally means errors are caught and fixed before the push completes.
 
-I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and ensure that [`pylint`](https://www.pylint.org/) rates my code health at 10/10. I lint my _prose_ using [`vale`](https://vale.sh/) - checking, for example, that I don't use clichés, unnecessary superlatives, or adverbs followed by hyphens.
+### Auto-fixing formatters
 
-I use `mypy` to statically type-check my Python code and `tsc` to type-check my TypeScript.
+I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
 
-Lastly, I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource surfaces a huge range of antipatterns. For example, in Python, DeepSource points out variables which are redeclared from an outer scope.
+These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
 
-Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I can't naively access the issues [from the command line](https://github.com/DeepSourceCorp/cli), as the CLI tool only reports stale issues for `main`. I wrote a pre-push script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that creates a temporary PR, waits for DeepSource analysis to complete, reports any failures, closes the PR, and then returns an error code if so.
+### Alt-text scanning
+
+I use [`alt-text-llm`](https://pypi.org/project/alt-text-llm/) to scan for images missing alt text, using an LLM to generate descriptions. This requires an API key and runs locally.
 
 ### Static validation of Markdown and source files
 
-I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
-
-Before running the spellchecker and `vale`, I preprocess Markdown files to strip `[!quote]` callout blocks. Quotes come from external sources and shouldn't trigger linting -- any errors within are not my responsibility.
-
-However, spellchecking the source Markdown isn't enough because my HTML transformations can corrupt text in ways that only show up in the rendered output. For example, a RegEx bug might change "9 combinations" to "9combinations". To catch this, I spellcheck the finished HTML product. 
-
-I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
+I lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
 > [!info]- Markdown and source file checks
 > **Metadata and structure:**
@@ -1192,4 +1180,4 @@ Minimal layout shift
 : I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
 
 Quality gates
-: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the pre-push hook was bypassed.
+: CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
