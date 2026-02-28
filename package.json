@@ -287,7 +287,7 @@
     "tsx": "4.19.3",
     "typescript": "5.7.3",
     "typescript-eslint": "8.23.0",
-    "unist-util-visit": "5.0.0",
+    "unist-util-visit": "5.1.0",
     "unist-util-visit-parents": "6.0.1",
     "whatwg-fetch": "3.6.20",
     "workerpool": "9.2.0"
