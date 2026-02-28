@@ -497,6 +497,16 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
 }
 
 // skipcq: JS-0098
+export async function gotoPage(
+  page: Page,
+  url: string,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  await page.goto(url, { waitUntil: "commit" })
+  await page.waitForLoadState(loadState)
+}
+
+// skipcq: JS-0098
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
   return viewportSize ? viewportSize.width >= minDesktopWidth : false

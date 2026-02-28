@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { setTheme as utilsSetTheme } from "./visual_utils"
+import { gotoPage, setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect
 /* eslint-disable playwright/expect-expect */
@@ -13,15 +13,6 @@ const AUTO_THEME: Theme = "light"
 const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
-
-async function gotoPage(
-  page: Page,
-  url: string,
-  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
-): Promise<void> {
-  await page.goto(url, { waitUntil: "commit" })
-  await page.waitForLoadState(loadState)
-}
 
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, "http://localhost:8080/test-page")

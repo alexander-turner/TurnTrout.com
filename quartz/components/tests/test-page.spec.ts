@@ -10,6 +10,7 @@ import {
   isDesktopViewport,
   getH1Screenshots,
   isElementChecked,
+  gotoPage,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -1008,10 +1009,7 @@ test.describe("Checkboxes", () => {
         { key: checkboxKey },
       )
 
-      // Navigate to page. Two-step approach avoids a WebKit/Linux CI crash
-      // when goto() uses waitUntil:"domcontentloaded" directly.
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "commit" })
-      await page.waitForLoadState("domcontentloaded")
+      await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
       // Immediately check checkbox state WITHOUT dispatching nav event
       // Before the fix, this would return the HTML default (unchecked)
