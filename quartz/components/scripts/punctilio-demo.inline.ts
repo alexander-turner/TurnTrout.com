@@ -23,9 +23,9 @@ type TransformMode = "plaintext" | "markdown" | "html"
 
 /** Mode-specific example text shown as ghost placeholders when the input is empty. */
 const GHOST_INPUTS: Record<TransformMode, string> = {
-  plaintext: `She said "I can't believe it --- we've got 3/4 of the work done..."`,
-  markdown: `She said "I can't *believe* it --- we've got 3/4 of the work **done**..."`,
-  html: `<p>She said "I can't <em>believe</em> it --- we've got 3/4 of the work <b>done</b>..."</p>`,
+  plaintext: `She said "I can't believe it --- we got the work done..."`,
+  markdown: `She said "I can't *believe* it --- we got the work **done**..."`,
+  html: `<p>She said "I can't <em>believe</em> it --- we got the work <b>done</b>..."</p>`,
 }
 
 function getConfig(): TransformOptions {
@@ -168,12 +168,16 @@ document.addEventListener("nav", () => {
     lastResult = isEmpty ? "" : result
 
     if (isEmpty) {
-      outputContent.textContent = result
-    } else if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
-      outputContent.textContent = result
+      outputContent.textContent = ""
+      outputContent.dataset.placeholder = result
     } else {
-      const segments = diffChars(sourceText, result)
-      outputContent.innerHTML = renderDiffHtml(segments)
+      delete outputContent.dataset.placeholder
+      if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
+        outputContent.textContent = result
+      } else {
+        const segments = diffChars(sourceText, result)
+        outputContent.innerHTML = renderDiffHtml(segments)
+      }
     }
     outputContent.classList.toggle("ghost", isEmpty)
 

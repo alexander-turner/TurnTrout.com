@@ -1,18 +1,26 @@
 ---
-title: Punctilio
+title: Prettify your text in-browser
 permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
 date_published: 2026-02-14T00:00:00.000Z
-description: Try punctilio's typography transformations in your browser. Transform plaintext, Markdown, or HTML with smart quotes, em-dashes, symbols, and more.
+description: Meticulously beautify your text using my "punctilio" library. No installation needed—just one click away.
 tags:
   - website
+  - open-source
+aliases:
+  - prettify
+  - text-prettify
+  - punctilio-demo
 ---
+Tired of the incomplete smart quote abilities offered by 2024's JavaScript libraries, I created my own. I christened the library "`punctilio`" - the "precise observance of formalities".  As of publication, [`punctilio`](https://github.com/alexander-turner/punctilio) is the best library for prettifying text.
 
-[Punctilio](https://github.com/alexander-turner/punctilio) transforms plain ASCII text into typographically correct Unicode. It handles smart quotes, em-dashes, ellipses, math symbols, non-breaking spaces, and more.
+> [!quote]- [A full description of `punctilio`](/open-source)
+>
+> ![[/open-source#Punctilio for meticulous typography]]
 
-Type or paste text in the input area below and see the transformed output.
+While `punctilio` is easy to install, here's an online demo for fast access!
 
 <div id="punctilio-demo">
 <div class="punctilio-mode-selector no-formatting">

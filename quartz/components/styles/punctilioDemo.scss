@@ -64,6 +64,10 @@ $panel-min-height: 200px;
     font-size: var(--font-size-code);
     font-variant-ligatures: none;
     background-color: var(--background);
+
+    &::placeholder {
+      color: var(--midground);
+    }
   }
 
   .punctilio-output-wrapper {
@@ -97,8 +101,9 @@ $panel-min-height: 200px;
       font-variant-ligatures: none;
     }
 
-    &.ghost {
-      color: var(--midground);
+    &.ghost::before {
+      content: attr(data-placeholder);
+      color: var(--midground-faint);
     }
   }
 }
@@ -130,12 +135,16 @@ $panel-min-height: 200px;
 
     select {
       padding: calc(0.25 * $base-margin);
-      border: none;
+      border: 1px solid var(--midground-faint);
       border-radius: 5px;
       background: inherit;
       color: var(--foreground);
       font-family: inherit;
       font-size: inherit;
+
+      &:focus {
+        outline: 1px solid var(--midground);
+      }
     }
   }
 }
