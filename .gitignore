@@ -12,6 +12,8 @@ public
 prof
 tsconfig.tsbuildinfo
 .quartz-cache
+.dmypy.json
+.mypy_cache
 .quartz_checks
 .timestamps
 *variables.scss
