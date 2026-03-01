@@ -376,11 +376,10 @@ export class PreviewManager {
    */
   /* istanbul ignore next */
   public scrollToFirstmatch(): void {
-    // Get only the first matching search-match without sorting
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
 
-    this.container.scrollTop = getSearchMatchScrollPosition(firstMatch, this.container, 0.5)
+    scrollContainerToMatch(this.container, firstMatch, 0.5)
   }
 }
 
@@ -920,12 +919,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
 
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
-      const firstMatch = cardPreview.querySelector(".search-match")
+      const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
       if (firstMatch) {
-        const matchRect = firstMatch.getBoundingClientRect()
-        const containerRect = cardPreview.getBoundingClientRect()
-        const relativeTop = matchRect.top - containerRect.top + cardPreview.scrollTop
-        cardPreview.scrollTop = Math.max(0, relativeTop - cardPreview.clientHeight / 3)
+        scrollContainerToMatch(cardPreview, firstMatch, 1 / 3)
       }
     })
   })
@@ -1282,40 +1278,17 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
 }
 
 /**
- * Compute the vertical offset of an element relative to a scrollable container.
- *
- * @param element - The element whose offset to compute
- * @param container - The container element used as the reference
- * @returns The offsetTop in pixels relative to the container
+ * Scroll a container so that a match element is positioned at the given fraction
+ * of the container's visible height. Uses getBoundingClientRect for reliable
+ * positioning with inline elements and intermediate positioned ancestors.
  */
-export function getOffsetTopRelativeToContainer(
-  element: HTMLElement,
+export function scrollContainerToMatch(
   container: HTMLElement,
-): number {
-  let offsetTop = 0
-  let currentElement: HTMLElement | null = element
-
-  // Traverse up the DOM tree until we reach the container
-  while (currentElement && currentElement !== container) {
-    offsetTop += currentElement.offsetTop
-    currentElement = currentElement.offsetParent as HTMLElement | null
-  }
-
-  return offsetTop
-}
-
-/**
- * Calculate scroll position to properly orient an element within its container
- * @param element - The element to position
- * @param container - The container to scroll
- * @param scrollFraction - Fraction (0-1) of container height from top where element should be positioned
- * @returns The scroll position for optimal element visibility
- */
-export function getSearchMatchScrollPosition(
-  element: HTMLElement,
-  container: HTMLElement,
+  match: HTMLElement,
   scrollFraction: number,
-): number {
-  const offsetTop = getOffsetTopRelativeToContainer(element, container)
-  return offsetTop - container.clientHeight * scrollFraction
+): void {
+  const matchRect = match.getBoundingClientRect()
+  const containerRect = container.getBoundingClientRect()
+  const relativeTop = matchRect.top - containerRect.top + container.scrollTop
+  container.scrollTop = Math.max(0, relativeTop - container.clientHeight * scrollFraction)
 }
