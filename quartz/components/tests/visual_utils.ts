@@ -348,14 +348,20 @@ export async function getNextElementMatchingSelector(
 /** Open the search UI by clicking the search icon.
  *  Waits for the search handlers to be fully initialized (onNav completes
  *  its async getContentIndex() call) before clicking, by checking for the
- *  dynamically-created #results-container element. */
+ *  dynamically-created #results-container element.
+ *
+ *  Uses toPass() to retry the click: in onNav(), #results-container is
+ *  appended to the DOM just *before* the searchIcon click listener is
+ *  registered.  On slow/bfcache Safari runs we can click in that narrow
+ *  window, so we retry until the search actually opens. */
 export async function openSearch(page: Page) {
   // #results-container is created by onNav after the async getContentIndex()
-  // resolves and just before the click handlers are registered. Waiting for
-  // it ensures the search icon's click handler is ready.
+  // resolves and just before the click handlers are registered.
   await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
-  await page.locator("#search-icon").click()
-  await expect(page.locator("#search-container")).toHaveClass(/active/)
+  await expect(async () => {
+    await page.locator("#search-icon").click()
+    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
+  }).toPass({ timeout: 10_000 })
   await expect(page.locator("#search-bar")).toBeVisible()
 }
 
