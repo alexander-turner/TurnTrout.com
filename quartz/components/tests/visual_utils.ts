@@ -346,29 +346,19 @@ export async function getNextElementMatchingSelector(
 }
 
 /** Open the search UI by clicking the search icon.
- *  Waits for the search handlers to be fully initialized (onNav completes
- *  its async getContentIndex() call) before clicking, by checking for the
- *  dynamically-created #results-container element.
- *
- *  Uses toPass() to retry the click: in onNav(), #results-container is
- *  appended to the DOM just *before* the searchIcon click listener is
- *  registered.  On slow/bfcache Safari runs we can click in that narrow
- *  window, so we retry until the search actually opens. */
+ *  Uses toPass() to atomically retry the full click → active → visible
+ *  sequence.  After page.goBack(), the SPA navigation machinery
+ *  (handlePopstate → onNav) may still be running asynchronously, so the
+ *  search icon click handler might not be registered yet or the DOM state
+ *  may shift between checks.  Retrying the entire block avoids the race
+ *  between the browser-side "active" class appearing and the Playwright-side
+ *  visibility check. */
 export async function openSearch(page: Page) {
-  // #results-container is created by onNav after the async getContentIndex()
-  // resolves and just before the click handlers are registered.
-  // On bfcache restores (Safari), #results-container may already exist in the
-  // cached DOM while the click handler hasn't been re-registered yet by onNav.
-  // Poll with programmatic clicks until the container actually opens.
-  await page.waitForFunction(() => {
-    const icon = document.getElementById("search-icon") as HTMLElement | null
-    const container = document.getElementById("search-container")
-    if (!icon || !container) return false
-    if (container.classList.contains("active")) return true
-    icon.click()
-    return container.classList.contains("active")
-  })
-  await expect(page.locator("#search-bar")).toBeVisible()
+  await expect(async () => {
+    await page.locator("#search-icon").click({ timeout: 2_000 })
+    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
+    await expect(page.locator("#search-bar")).toBeVisible({ timeout: 2_000 })
+  }).toPass({ timeout: 15_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {
