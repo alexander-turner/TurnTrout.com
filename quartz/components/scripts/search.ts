@@ -764,7 +764,7 @@ async function onNav(e: CustomEventMap["nav"]) {
   const debouncedResizeHandler = debounce(
     () => {
       handleResizeForCardPreviews()
-      previewManager?.scrollToFirstmatch()
+      requestAnimationFrame(() => previewManager?.scrollToFirstmatch())
     },
     150,
     false,
