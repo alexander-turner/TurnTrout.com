@@ -180,19 +180,6 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
-    // Spy on whether the SPA prevents the click's default behaviour.
-    // We listen on window (last in the bubble chain) so we see the final
-    // value of defaultPrevented after the SPA's document-level handler runs.
-    await page.evaluate(() => {
-      ;(window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented = undefined
-      window.addEventListener("click", (e: Event) => {
-        if ((e.target as HTMLElement)?.id === "external-link") {
-          ;(window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented =
-            e.defaultPrevented
-        }
-      })
-    })
-
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "https://www.example.com"
@@ -201,18 +188,28 @@ test.describe("Local Link Navigation", () => {
       document.body.appendChild(link)
     })
 
-    // Abort the navigation so the page context stays alive across all browsers.
-    // WebKit doesn't commit cross-origin navigations through page.route.fulfill,
-    // so checking the URL after the click is unreliable; checking defaultPrevented
-    // is the correct cross-browser assertion.
-    await page.route("https://www.example.com/**", (route) => route.abort())
-
-    await page.click("#external-link")
+    // Capture defaultPrevented synchronously inside a single evaluate so we
+    // read the value before any navigation can destroy the JS context.
+    // Navigations are async; element.click() dispatches the event synchronously
+    // and returns before any navigation fires, keeping the context alive.
+    // We listen on window (last in bubble chain) to see the final value after
+    // the SPA's document-level handler has run.
+    const defaultPrevented = await page.evaluate(() => {
+      let result: boolean | null = null
+      window.addEventListener(
+        "click",
+        (e: Event) => {
+          if ((e.target as HTMLElement)?.id === "external-link") {
+            result = e.defaultPrevented
+          }
+        },
+        { once: true },
+      )
+      ;(document.getElementById("external-link") as HTMLElement).click()
+      return result
+    })
 
     // SPA must NOT call preventDefault on external link clicks
-    const defaultPrevented = await page.evaluate(
-      () => (window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented,
-    )
     expect(defaultPrevented).toBe(false)
   })
 })

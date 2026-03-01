@@ -225,7 +225,12 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      await gotoPage(page, "http://localhost:8080/test-page")
+      // Navigate to a genuinely different page (using the prefix) so that
+      // init scripts re-run in all browsers including Safari/WebKit.
+      // Same-URL goto() in Safari may be treated as a soft refresh and skip
+      // re-running JS init scripts, leaving --theme-label-content unset.
+      const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
+      await gotoPage(page, `http://localhost:8080/${targetPath}`)
 
       // In Safari, the CSS custom property that drives the theme label can
       // lag behind the "load" event.  Wait explicitly before polling.
