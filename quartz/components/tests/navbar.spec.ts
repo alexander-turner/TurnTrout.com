@@ -34,11 +34,14 @@ async function isPaused(video: Locator): Promise<boolean> {
 async function ensureVideoPlaying(videoElements: VideoElements): Promise<void> {
   const { video } = videoElements
 
-  // Ensure video has loaded enough data to play
+  // Wait for enough data to play through to the end (HAVE_ENOUGH_DATA = 4).
+  // readyState >= 3 (canplay) is insufficient for seeking: Safari may only
+  // have a few hundred ms buffered at that point.  canplaythrough guarantees
+  // the browser has enough data to seek to any position without stalling.
   await video.evaluate((videoElement: HTMLVideoElement) => {
-    if (videoElement.readyState < 3) {
+    if (videoElement.readyState < 4) {
       return new Promise<void>((resolve) => {
-        videoElement.addEventListener("canplay", () => resolve(), { once: true })
+        videoElement.addEventListener("canplaythrough", () => resolve(), { once: true })
       })
     }
     return undefined
@@ -80,20 +83,22 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
   // Set currentTime and wait for seeked event (which fires when seeking completes)
   await video.evaluate((videoElement: HTMLVideoElement, timestamp: number) => {
     return new Promise<void>((resolve, reject) => {
-      const onSeeked = () => {
-        const timeout = setTimeout(() => {
-          videoElement.removeEventListener("seeked", onSeeked)
-          reject(new Error(`Seek to ${timestamp} timed out`))
-        }, 5000)
+      const timeout = setTimeout(() => {
+        reject(new Error(`Seek to ${timestamp} timed out`))
+      }, 5000)
 
-        clearTimeout(timeout)
-        videoElement.pause()
-        // Trigger timeupdate to ensure sessionStorage is saved
-        videoElement.dispatchEvent(new Event("timeupdate"))
-        resolve()
-      }
+      videoElement.addEventListener(
+        "seeked",
+        () => {
+          clearTimeout(timeout)
+          videoElement.pause()
+          // Trigger timeupdate to ensure sessionStorage is saved
+          videoElement.dispatchEvent(new Event("timeupdate"))
+          resolve()
+        },
+        { once: true },
+      )
 
-      videoElement.addEventListener("seeked", onSeeked, { once: true })
       videoElement.currentTime = timestamp
     })
   }, fixedTimestamp)

@@ -180,10 +180,18 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
-    // Mock the external URL to avoid real network requests in CI
-    await page.route("https://www.example.com/**", (route) =>
-      route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
-    )
+    // Spy on whether the SPA prevents the click's default behaviour.
+    // We listen on window (last in the bubble chain) so we see the final
+    // value of defaultPrevented after the SPA's document-level handler runs.
+    await page.evaluate(() => {
+      ;(window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented = undefined
+      window.addEventListener("click", (e: Event) => {
+        if ((e.target as HTMLElement)?.id === "external-link") {
+          ;(window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented =
+            e.defaultPrevented
+        }
+      })
+    })
 
     await page.evaluate(() => {
       const link = document.createElement("a")
@@ -193,9 +201,19 @@ test.describe("Local Link Navigation", () => {
       document.body.appendChild(link)
     })
 
-    // Check that SPA logic does not intercept external links
+    // Abort the navigation so the page context stays alive across all browsers.
+    // WebKit doesn't commit cross-origin navigations through page.route.fulfill,
+    // so checking the URL after the click is unreliable; checking defaultPrevented
+    // is the correct cross-browser assertion.
+    await page.route("https://www.example.com/**", (route) => route.abort())
+
     await page.click("#external-link")
-    await expect(page).toHaveURL("https://www.example.com")
+
+    // SPA must NOT call preventDefault on external link clicks
+    const defaultPrevented = await page.evaluate(
+      () => (window as unknown as Record<string, unknown>).__externalLinkDefaultPrevented,
+    )
+    expect(defaultPrevented).toBe(false)
   })
 })
 
@@ -497,9 +515,12 @@ test.describe("Same-page navigation", () => {
       await waitForHistoryState(page, historyScroll)
       scrollPositions.push(historyScroll)
 
-      // Sanity check that scroll is stable
+      // Sanity check that scroll is stable.
+      // Use a 100px tolerance: iOS Safari's URL bar appearing/disappearing can
+      // shift window.scrollY by ~56px between two reads, so toBeCloseTo()
+      // (which requires < 0.005 difference) is far too strict here.
       const updatedScroll = await page.evaluate(() => window.scrollY)
-      expect(updatedScroll).toBeCloseTo(historyScroll)
+      expect(Math.abs(updatedScroll - historyScroll)).toBeLessThan(100)
     }
 
     for (let i = 0; i < scrollPositions.length - 1; i++) {

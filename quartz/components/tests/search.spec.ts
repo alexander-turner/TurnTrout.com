@@ -417,6 +417,10 @@ test("Search matching title text stays at top even with body matches", async ({ 
   await testPageResult.click()
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
+  // waitForURL resolves as soon as pushState fires; the SPA may still be
+  // rendering content and applying search highlights.  Wait for the article
+  // title element to be present before checking for search-match spans.
+  await page.waitForSelector("#article-title", { timeout: 10_000 })
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")

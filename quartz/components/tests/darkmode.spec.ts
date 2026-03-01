@@ -227,6 +227,15 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
 
       await gotoPage(page, "http://localhost:8080/test-page")
 
+      // In Safari, the CSS custom property that drives the theme label can
+      // lag behind the "load" event.  Wait explicitly before polling.
+      await page.waitForFunction(
+        () =>
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--theme-label-content")
+            .trim().length > 0,
+        { timeout: 10_000 },
+      )
       // CSS custom property may not be set synchronously after navigation
       await expect(async () => {
         await helper.verifyThemeLabel(theme)
