@@ -346,6 +346,7 @@ export async function getNextElementMatchingSelector(
 }
 
 /** Open the search UI by clicking the search icon.
+ *
  *  Uses toPass() to atomically retry the full click → active → visible
  *  sequence.  After page.goBack(), the SPA navigation machinery
  *  (handlePopstate → onNav) may still be running asynchronously, so the
