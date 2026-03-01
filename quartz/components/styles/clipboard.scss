@@ -3,14 +3,15 @@
 pre {
   position: relative;
 
-  &:hover > .clipboard-button {
-    opacity: 1;
-    transition: opacity $transition-duration-quick;
-  }
-
   & > code {
     overflow: auto;
   }
+}
+
+pre:hover > .clipboard-button,
+.punctilio-output-wrapper:hover > .clipboard-button {
+  opacity: 1;
+  transition: opacity $transition-duration-quick;
 }
 
 .clipboard-button {

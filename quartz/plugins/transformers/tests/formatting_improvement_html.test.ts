@@ -2099,6 +2099,15 @@ describe("Non-breaking space insertion", () => {
     expect(processedHtml).not.toContain(NBSP)
   })
 
+  it.each([
+    "<h1>I love this</h1>",
+    "<h2>Hello world</h2>",
+    "<h3>A cat sat on a mat</h3>",
+    "<h2><em>I love this</em></h2>",
+  ])("does not insert nbsp in headings: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
+  })
+
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
     expect(result).toContain(NBSP)
