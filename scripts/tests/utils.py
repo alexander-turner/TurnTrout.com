@@ -395,7 +395,7 @@ def setup_git_repo_with_files(
         create_markdown_file(
             full_path,
             frontmatter=cast(
-                "Mapping[str, object] | None", file_config.get("frontmatter")
+                Mapping[str, object] | None, file_config.get("frontmatter")
             ),
             content=cast(str, file_config.get("content", "# Test")),
         )

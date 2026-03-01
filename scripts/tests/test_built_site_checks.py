@@ -2196,9 +2196,7 @@ def test_check_invalid_internal_links(html, expected_count):
     result = built_site_checks.check_invalid_internal_links(soup)
     assert len(result) == expected_count
     for link in result:
-        assert "internal" in cast(
-            list[str], link.get("class", cast(AttributeValueList, []))
-        )
+        assert "internal" in cast(list[str], link.get("class") or [])
         # Verify the link is actually invalid
         assert not link.has_attr("href") or cast(str, link["href"]).startswith(
             "https://"
