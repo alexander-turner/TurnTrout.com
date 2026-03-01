@@ -3,6 +3,7 @@
 import json
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, patch
 
@@ -13,7 +14,7 @@ from scripts import run_push_checks
 
 
 @pytest.fixture
-def temp_state_dir():
+def temp_state_dir() -> Iterator[str]:
     """Create a temporary directory for state files."""
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
@@ -33,7 +34,7 @@ def temp_state_dir():
 
 
 @pytest.fixture
-def test_steps():
+def test_steps() -> list[run_push_checks.CheckStep]:
     """Fixture providing test check steps."""
     return [
         run_push_checks.CheckStep(
@@ -535,6 +536,7 @@ def test_get_check_steps():
     assert "Scanning for images without alt text" in step_names
 
     # Verify ESLint is configured with --fix and correct config path
+    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
     eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
     assert "--fix" in eslint_step.command
     assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
@@ -542,6 +544,7 @@ def test_get_check_steps():
     )
 
     # Verify asset step uses bash shell
+    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
     asset_step = next(
         s for s in steps if s.name == "Compressing and uploading local assets"
     )

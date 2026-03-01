@@ -113,7 +113,9 @@ class CheckStep:
 class CheckFailedError(Exception):
     """Raised when a check step fails during pre-push validation."""
 
-    def __init__(self, step_name: str, stdout: str = "", stderr: str = ""):
+    def __init__(
+        self, step_name: str, stdout: str = "", stderr: str = ""
+    ) -> None:
         self.step_name = step_name
         self.stdout = stdout
         self.stderr = stderr

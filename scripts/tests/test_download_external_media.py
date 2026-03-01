@@ -9,7 +9,7 @@ from scripts import download_external_media
 
 
 @pytest.fixture
-def mock_git_root(tmp_path, monkeypatch):
+def mock_git_root(tmp_path, monkeypatch) -> None:
     """Create a mock git root directory structure."""
     website_content = tmp_path / "website_content"
     website_content.mkdir()
