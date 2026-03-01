@@ -75,7 +75,7 @@ def svg_empty_children(tmp_path: Path) -> Path:
     return svg_file
 
 
-def test_check_inkscape_found(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_check_inkscape_found(monkeypatch: pytest.MonkeyPatch):
     """Test check_inkscape when Inkscape is found."""
     monkeypatch.setattr(
         "shutil.which",
@@ -84,13 +84,13 @@ def test_check_inkscape_found(monkeypatch: pytest.MonkeyPatch) -> None:
     assert normalize_svg_viewbox.check_inkscape() is True
 
 
-def test_check_inkscape_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_check_inkscape_not_found(monkeypatch: pytest.MonkeyPatch):
     """Test check_inkscape when Inkscape is not found."""
     monkeypatch.setattr("shutil.which", lambda cmd: None)
     assert normalize_svg_viewbox.check_inkscape() is False
 
 
-def test_fix_svg_viewbox_rectangular(sample_svg: Path) -> None:
+def test_fix_svg_viewbox_rectangular(sample_svg: Path):
     """Test fix_svg_viewbox with a rectangular SVG."""
     normalize_svg_viewbox.fix_svg_viewbox(sample_svg, 24)
 
@@ -113,7 +113,7 @@ def test_fix_svg_viewbox_rectangular(sample_svg: Path) -> None:
     assert "scale(" in content
 
 
-def test_fix_svg_viewbox_square(square_svg: Path) -> None:
+def test_fix_svg_viewbox_square(square_svg: Path):
     """Test fix_svg_viewbox with an already square SVG."""
     normalize_svg_viewbox.fix_svg_viewbox(square_svg, 24)
 
@@ -123,7 +123,7 @@ def test_fix_svg_viewbox_square(square_svg: Path) -> None:
     assert "height=" not in content
 
 
-def test_fix_svg_viewbox_no_viewbox(svg_without_viewbox: Path) -> None:
+def test_fix_svg_viewbox_no_viewbox(svg_without_viewbox: Path):
     """Test fix_svg_viewbox with an SVG without a viewBox."""
     normalize_svg_viewbox.fix_svg_viewbox(svg_without_viewbox, 24)
 
@@ -131,7 +131,7 @@ def test_fix_svg_viewbox_no_viewbox(svg_without_viewbox: Path) -> None:
     assert 'viewBox="0 0 24 24"' in content
 
 
-def test_fix_svg_viewbox_with_children(svg_with_children: Path) -> None:
+def test_fix_svg_viewbox_with_children(svg_with_children: Path):
     """Test fix_svg_viewbox with SVG containing multiple children."""
     normalize_svg_viewbox.fix_svg_viewbox(svg_with_children, 24)
 
@@ -144,7 +144,7 @@ def test_fix_svg_viewbox_with_children(svg_with_children: Path) -> None:
     assert "<circle" in content
 
 
-def test_fix_svg_viewbox_empty_children(svg_empty_children: Path) -> None:
+def test_fix_svg_viewbox_empty_children(svg_empty_children: Path):
     """Test fix_svg_viewbox with SVG that has no children."""
     normalize_svg_viewbox.fix_svg_viewbox(svg_empty_children, 24)
 
@@ -154,7 +154,7 @@ def test_fix_svg_viewbox_empty_children(svg_empty_children: Path) -> None:
     assert "<g transform=" not in content
 
 
-def test_fix_svg_viewbox_custom_size(sample_svg: Path) -> None:
+def test_fix_svg_viewbox_custom_size(sample_svg: Path):
     """Test fix_svg_viewbox with a custom target size."""
     normalize_svg_viewbox.fix_svg_viewbox(sample_svg, 48)
 
@@ -162,9 +162,7 @@ def test_fix_svg_viewbox_custom_size(sample_svg: Path) -> None:
     assert 'viewBox="0 0 48 48"' in content
 
 
-def test_normalize_svg_viewbox_success(
-    sample_svg: Path, mock_subprocess_run
-) -> None:
+def test_normalize_svg_viewbox_success(sample_svg: Path, mock_subprocess_run):
     """Test normalize_svg_viewbox when Inkscape is available."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
@@ -191,7 +189,7 @@ def test_normalize_svg_viewbox_success(
     assert "Normalized" in mock_print.call_args[0][0]
 
 
-def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path) -> None:
+def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
     """Test normalize_svg_viewbox when Inkscape is not available."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=False),
@@ -202,7 +200,7 @@ def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path) -> None:
 
 def test_is_already_normalized_with_width_height_attributes(
     tmp_path: Path,
-) -> None:
+):
     """Test is_already_normalized returns False when root svg has width/height
     attributes."""
     svg_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -218,7 +216,7 @@ def test_is_already_normalized_with_width_height_attributes(
 
 def test_normalize_svg_viewbox_default_size(
     sample_svg: Path, mock_subprocess_run
-) -> None:
+):
     """Test normalize_svg_viewbox with default size."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),
@@ -232,7 +230,7 @@ def test_normalize_svg_viewbox_default_size(
 
 def test_main_success(
     sample_svg: Path, mock_subprocess_run, monkeypatch: pytest.MonkeyPatch
-) -> None:
+):
     """Test main() with successful normalization."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
@@ -249,7 +247,7 @@ def test_main_inkscape_not_found(
     sample_svg: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() when Inkscape is not found."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
@@ -266,7 +264,7 @@ def test_main_file_not_found(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() when file does not exist."""
     nonexistent_file = tmp_path / "nonexistent.svg"
     monkeypatch.setattr(
@@ -284,7 +282,7 @@ def test_main_non_svg_file(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() with a non-SVG file."""
     txt_file = tmp_path / "test.txt"
     txt_file.write_text("not an svg")
@@ -301,7 +299,7 @@ def test_main_dry_run(
     sample_svg: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() with --dry-run flag."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", "--dry-run", str(sample_svg)]
@@ -319,7 +317,7 @@ def test_main_dry_run(
 
 def test_main_custom_size(
     sample_svg: Path, mock_subprocess_run, monkeypatch: pytest.MonkeyPatch
-) -> None:
+):
     """Test main() with custom --size argument."""
     monkeypatch.setattr(
         "sys.argv",
@@ -340,7 +338,7 @@ def test_main_multiple_files(
     square_svg: Path,
     mock_subprocess_run,
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     """Test main() with multiple SVG files."""
     monkeypatch.setattr(
         "sys.argv",
@@ -359,7 +357,7 @@ def test_main_runtime_error(
     sample_svg: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() when normalize_svg_viewbox raises RuntimeError."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", str(sample_svg)]
@@ -374,7 +372,7 @@ def test_main_runtime_error(
         assert "Error processing" in captured.err
 
 
-def test_is_already_normalized_oserror(tmp_path: Path) -> None:
+def test_is_already_normalized_oserror(tmp_path: Path):
     """Test is_already_normalized when file read raises OSError."""
     svg_path = tmp_path / "test.svg"
     svg_path.write_text("test", encoding="utf-8")
@@ -387,7 +385,7 @@ def test_is_already_normalized_oserror(tmp_path: Path) -> None:
         svg_path.chmod(0o644)
 
 
-def test_is_already_normalized_unicode_decode_error(tmp_path: Path) -> None:
+def test_is_already_normalized_unicode_decode_error(tmp_path: Path):
     """Test is_already_normalized when file read raises UnicodeDecodeError."""
     svg_path = tmp_path / "test.svg"
     # Write binary data that can't be decoded as UTF-8
@@ -400,7 +398,7 @@ def test_main_already_normalized(
     square_svg: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     """Test main() when SVG is already normalized."""
     monkeypatch.setattr(
         "sys.argv", ["normalize_svg_viewbox.py", str(square_svg)]
@@ -415,7 +413,7 @@ def test_main_already_normalized(
 
 def test_normalize_svg_viewbox_inkscape_path_not_found(
     sample_svg: Path,
-) -> None:
+):
     """Test normalize_svg_viewbox when check_inkscape passes but which fails."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),

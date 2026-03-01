@@ -2,7 +2,7 @@
 
 import shutil
 import subprocess
-from collections.abc import Generator
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Optional, cast
 from unittest import mock
@@ -53,7 +53,7 @@ def test_find_git_root(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
-    def mock_subprocess_run(*args, **kwargs) -> None:
+    def mock_subprocess_run(*args, **kwargs):
         # Since check=True is used, raise CalledProcessError on failure
         raise subprocess.CalledProcessError(
             returncode=1,
@@ -1120,7 +1120,7 @@ def test_get_classes_invalid_type_attribute():
 
 
 @pytest.fixture(autouse=False)
-def clear_imagemagick_cache() -> Generator[None, None, None]:
+def clear_imagemagick_cache() -> Iterator[None]:
     script_utils._get_imagemagick_version.cache_clear()
     yield
     script_utils._get_imagemagick_version.cache_clear()

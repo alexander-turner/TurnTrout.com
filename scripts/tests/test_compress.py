@@ -559,7 +559,7 @@ def test_check_if_hevc_codec(
     test_id: str,
     mock_output: str,
     expected_result: bool,
-) -> None:
+):
     """Test `_check_if_hevc_codec` with various `ffprobe` outputs."""
     input_file = temp_dir / f"test_{test_id}.mp4"
     input_file.touch()

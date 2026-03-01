@@ -3,7 +3,7 @@ import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 from unittest import mock
 from unittest.mock import patch
 
@@ -31,7 +31,9 @@ else:
 
 
 @pytest.fixture
-def mock_environment(quartz_project_structure, monkeypatch) -> dict[str, Any]:
+def mock_environment(
+    quartz_project_structure, monkeypatch
+) -> dict[str, object]:
     """Set up common mocks and environment variables."""
     public_dir = quartz_project_structure["public"]
     content_dir = quartz_project_structure["content"]
@@ -153,7 +155,7 @@ def disable_md_requirement(monkeypatch) -> None:
         ("path.to/file.txt", "path.to/file.txt"),
     ],
 )
-def test_strip_path(input_path: str, expected: str) -> None:
+def test_strip_path(input_path: str, expected: str):
     """Test the _strip_path function with various input paths."""
     assert built_site_checks._strip_path(input_path) == expected
 
@@ -231,7 +233,7 @@ def sample_soup_with_assets(sample_html_with_assets: str) -> BeautifulSoup:
     "preview_chars",
     [0, -1],
 )
-def test_add_to_list_exceptions(preview_chars: int) -> None:
+def test_add_to_list_exceptions(preview_chars: int):
     """Test that _add_to_list raises ValueError for non-positive
     preview_chars."""
     lst: list[str] = []
@@ -254,7 +256,7 @@ def test_add_to_list_exceptions(preview_chars: int) -> None:
 )
 def test_add_to_list_no_truncation(
     input_text: str, prefix: str, expected_output: list[str]
-) -> None:
+):
     """Test _add_to_list when text length <= preview_chars."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -274,9 +276,7 @@ PREVIEW_CHARS = 10
         ("Prefix: ", ["Prefix: This is a "]),
     ],
 )
-def test_add_to_list_truncate_start(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_add_to_list_truncate_start(prefix: str, expected_output: list[str]):
     """Test _add_to_list truncation with show_end=False."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -296,9 +296,7 @@ def test_add_to_list_truncate_start(
         ("Prefix: ", ["Prefix: truncated...."]),
     ],
 )
-def test_append_to_list_truncate_end(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_append_to_list_truncate_end(prefix: str, expected_output: list[str]):
     """Test _append_to_list truncation with show_end=True."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -311,12 +309,12 @@ def test_append_to_list_truncate_end(
     assert lst == expected_output
 
 
-def test_check_localhost_links(sample_soup) -> None:
+def test_check_localhost_links(sample_soup):
     result = built_site_checks.check_localhost_links(sample_soup)
     assert result == ["http://localhost:8000"]
 
 
-def test_check_invalid_anchors(sample_soup, temp_site_root) -> None:
+def test_check_invalid_anchors(sample_soup, temp_site_root):
     result = built_site_checks.check_invalid_anchors(
         sample_soup, temp_site_root
     )
@@ -415,7 +413,7 @@ def test_check_invalid_anchors_external_page(
     target_html_content: str,
     other_files_content: dict[str, str],
     expected_invalid_anchors: list[str],
-) -> None:
+):
     """Test check_invalid_anchors for links pointing to anchors on other pages
     within the site."""
     # Create index.html
@@ -441,7 +439,7 @@ def test_check_invalid_anchors_external_page(
     assert sorted(result) == sorted(expected_invalid_anchors)
 
 
-def test_check_problematic_paragraphs(sample_soup) -> None:
+def test_check_problematic_paragraphs(sample_soup):
     result = built_site_checks.paragraphs_contain_canary_phrases(sample_soup)
     assert len(result) == 3
     assert "Problematic paragraph: Table: This is a table description" in result
@@ -539,7 +537,7 @@ def test_check_problematic_paragraphs(sample_soup) -> None:
 )
 def test_check_problematic_paragraphs_with_exclusions(
     html, expected_in, expected_not_in
-) -> None:
+):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.paragraphs_contain_canary_phrases(soup)
     for expected in expected_in:
@@ -548,7 +546,7 @@ def test_check_problematic_paragraphs_with_exclusions(
         assert not_expected not in result
 
 
-def test_check_katex_elements_for_errors(sample_html_with_katex_errors) -> None:
+def test_check_katex_elements_for_errors(sample_html_with_katex_errors):
     html = BeautifulSoup(sample_html_with_katex_errors, "html.parser")
     result = built_site_checks.check_katex_elements_for_errors(html)
     assert result == ["KaTeX error: \\rewavcxx"]
@@ -571,13 +569,13 @@ def test_check_katex_elements_for_errors(sample_html_with_katex_errors) -> None:
         ("/file.jpg", "file.jpg"),
     ],
 )
-def test_resolve_media_path(input_path, expected_path, temp_site_root) -> None:
+def test_resolve_media_path(input_path, expected_path, temp_site_root):
     """Test the resolve_media_path helper function."""
     result = built_site_checks.resolve_media_path(input_path, temp_site_root)
     assert result == (temp_site_root / expected_path).resolve()
 
 
-def test_check_local_media_files(sample_soup, temp_site_root) -> None:
+def test_check_local_media_files(sample_soup, temp_site_root):
     # Create an existing image file
     (temp_site_root / "existing-image.jpg").touch()
     (temp_site_root / "existing-video.mp4").touch()
@@ -611,7 +609,7 @@ def test_check_local_media_files(sample_soup, temp_site_root) -> None:
 )
 def test_check_local_media_files_parametrized(
     html, expected, existing_files, temp_site_root
-) -> None:
+):
     # Create any existing files
     for file in existing_files:
         (temp_site_root / file).touch()
@@ -630,7 +628,7 @@ def test_check_local_media_files_parametrized(
     assert result == expected
 
 
-def test_check_file_for_issues(tmp_path) -> None:
+def test_check_file_for_issues(tmp_path):
     """Test check_file_for_issues function."""
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -683,7 +681,7 @@ complicated_blockquote = """
 """
 
 
-def test_complicated_blockquote(tmp_path) -> None:
+def test_complicated_blockquote(tmp_path):
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     file_path.write_text(complicated_blockquote)
@@ -703,7 +701,7 @@ def test_complicated_blockquote(tmp_path) -> None:
     ]
 
 
-def test_check_file_for_issues_with_redirect(tmp_path) -> None:
+def test_check_file_for_issues_with_redirect(tmp_path):
     file_path = tmp_path / "public" / "test.html"
     file_path.parent.mkdir(parents=True, exist_ok=True)
     html_content = '<html><head><meta http-equiv="refresh" content="0;url=/new-page"></head></html>'
@@ -752,13 +750,13 @@ def test_check_file_for_issues_with_redirect(tmp_path) -> None:
         ),
     ],
 )
-def test_check_favicons_missing(html, expected) -> None:
+def test_check_favicons_missing(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_favicons_missing(soup)
     assert result == expected
 
 
-def test_check_unrendered_subtitles() -> None:
+def test_check_unrendered_subtitles():
     html = """
     <html>
     <body>
@@ -777,7 +775,7 @@ def test_check_unrendered_subtitles() -> None:
     ]
 
 
-def test_check_valid_rss_file_with_xmllint(temp_site_root) -> None:
+def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS
     file."""
     script_utils.get_git_root()
@@ -808,7 +806,7 @@ def test_check_valid_rss_file_with_xmllint(temp_site_root) -> None:
         pytest.fail("check_rss_file_for_issues failed with valid RSS content")
 
 
-def test_check_invalid_rss_file_with_xmllint(temp_site_root) -> None:
+def test_check_invalid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues fails on an invalid RSS file."""
     script_utils.get_git_root()
     rss_path = temp_site_root / "public" / "rss.xml"
@@ -835,7 +833,7 @@ def test_check_invalid_rss_file_with_xmllint(temp_site_root) -> None:
         )
 
 
-def test_check_unrendered_footnotes() -> None:
+def test_check_unrendered_footnotes():
     html = """
     <html>
     <body>
@@ -862,7 +860,7 @@ def test_check_unrendered_footnotes() -> None:
         ("<p>Regular [text] in brackets</p>", []),
     ],
 )
-def test_check_unrendered_footnotes_parametrized(html, expected) -> None:
+def test_check_unrendered_footnotes_parametrized(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_footnotes(soup)
     assert result == expected
@@ -930,7 +928,7 @@ def test_check_unrendered_footnotes_parametrized(html, expected) -> None:
         ),
     ],
 )
-def test_check_duplicate_ids(html, expected) -> None:
+def test_check_duplicate_ids(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_duplicate_ids(soup)
     assert sorted(result) == sorted(expected)
@@ -970,7 +968,7 @@ def test_check_duplicate_ids(html, expected) -> None:
         ),
     ],
 )
-def test_check_duplicate_ids_with_footnotes(html, expected) -> None:
+def test_check_duplicate_ids_with_footnotes(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_duplicate_ids(soup)
     assert sorted(result) == sorted(expected)
@@ -1018,14 +1016,14 @@ def test_check_duplicate_ids_with_footnotes(html, expected) -> None:
         ),
     ],
 )
-def test_check_problematic_paragraphs_with_dt(html, expected) -> None:
+def test_check_problematic_paragraphs_with_dt(html, expected):
     """Check that unrendered description list entries are flagged."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.paragraphs_contain_canary_phrases(soup)
     assert sorted(result) == sorted(expected)
 
 
-def test_check_unrendered_spoilers() -> None:
+def test_check_unrendered_spoilers():
     html = """
     <html>
     <body>
@@ -1098,7 +1096,7 @@ def test_check_unrendered_spoilers() -> None:
         ),
     ],
 )
-def test_check_unrendered_spoilers_parametrized(html, expected) -> None:
+def test_check_unrendered_spoilers_parametrized(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_spoilers(soup)
     assert result == expected
@@ -1141,7 +1139,7 @@ def test_check_unrendered_spoilers_parametrized(html, expected) -> None:
         ),
     ],
 )
-def test_check_problematic_paragraphs_with_headings(html, expected) -> None:
+def test_check_problematic_paragraphs_with_headings(html, expected):
     """Check that unrendered headings (paragraphs starting with #) are
     flagged."""
     soup = BeautifulSoup(html, "html.parser")
@@ -1355,7 +1353,7 @@ def test_check_problematic_paragraphs_with_headings(html, expected) -> None:
         ),
     ],
 )
-def test_check_problematic_paragraphs_comprehensive(html, expected) -> None:
+def test_check_problematic_paragraphs_comprehensive(html, expected):
     """Comprehensive test suite for check_problematic_paragraphs function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.paragraphs_contain_canary_phrases(soup)
@@ -1497,7 +1495,7 @@ def test_check_problematic_paragraphs_comprehensive(html, expected) -> None:
         ),
     ],
 )
-def test_check_unrendered_emphasis(html, expected) -> None:
+def test_check_unrendered_emphasis(html, expected):
     """Test the check_unrendered_emphasis function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_emphasis(soup)
@@ -1536,7 +1534,7 @@ def test_check_unrendered_emphasis(html, expected) -> None:
         ),
     ],
 )
-def test_katex_element_surrounded_by_blockquote(html, expected) -> None:
+def test_katex_element_surrounded_by_blockquote(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.katex_element_surrounded_by_blockquote(soup)
     assert result == expected
@@ -1578,7 +1576,7 @@ def test_katex_element_surrounded_by_blockquote(html, expected) -> None:
         ),
     ],
 )
-def test_check_unprocessed_quotes(html, expected) -> None:
+def test_check_unprocessed_quotes(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unprocessed_quotes(soup)
     assert sorted(result) == sorted(expected)
@@ -1627,7 +1625,7 @@ def test_check_unprocessed_quotes(html, expected) -> None:
         ),
     ],
 )
-def test_check_unprocessed_dashes(html, expected) -> None:
+def test_check_unprocessed_dashes(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unprocessed_dashes(soup)
     assert sorted(result) == sorted(expected)
@@ -1695,7 +1693,7 @@ def test_check_unprocessed_dashes(html, expected) -> None:
         ),
     ],
 )
-def test_check_unrendered_html(html, expected) -> None:
+def test_check_unrendered_html(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_html(soup)
     assert sorted(result) == sorted(expected)
@@ -1808,7 +1806,7 @@ def test_check_markdown_assets_in_html(
     md_content: str,
     html_content: str,
     expected: list[str],
-) -> None:
+):
     """Test that markdown assets are properly checked against HTML output for
     all supported tags."""
     # Setup test files
@@ -1832,7 +1830,7 @@ def test_check_markdown_assets_in_html(
     assert sorted(result) == sorted(expected)
 
 
-def test_check_markdown_assets_in_html_with_invalid_md_path() -> None:
+def test_check_markdown_assets_in_html_with_invalid_md_path():
     """Test that check_markdown_assets_in_html returns an empty list when
     md_path is None."""
     soup = BeautifulSoup("<html><body></body></html>", "html.parser")
@@ -1901,14 +1899,14 @@ def test_check_markdown_assets_in_html_with_invalid_md_path() -> None:
         ),
     ],
 )
-def test_check_emphasis_spacing_whitelist(html, expected) -> None:
+def test_check_emphasis_spacing_whitelist(html, expected):
     """Test the check_emphasis_spacing function's whitelist functionality."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_emphasis_spacing(soup)
     assert sorted(result) == sorted(expected)
 
 
-def test_check_spacing_after_branch() -> None:
+def test_check_spacing_after_branch():
     html = "<p><a href='#'>link</a>missing_space</p>"
     soup = BeautifulSoup(html, "html.parser")
 
@@ -1991,7 +1989,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
         ),
     ],
 )
-def test_check_description_length(html: str, expected: list[str]) -> None:
+def test_check_description_length(html: str, expected: list[str]):
     """Test the check_description_length function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_description_length(soup)
@@ -2049,7 +2047,7 @@ def test_check_description_length(html: str, expected: list[str]) -> None:
 )
 def test_check_css_issues(
     tmp_path: Path, css_content: str, expected: list[str]
-) -> None:
+):
     """Test the check_css_issues function with various CSS contents."""
     # Create a temporary CSS file
     css_file = tmp_path / "test.css"
@@ -2059,7 +2057,7 @@ def test_check_css_issues(
     assert result == expected
 
 
-def test_check_css_issues_missing_file(tmp_path: Path) -> None:
+def test_check_css_issues_missing_file(tmp_path: Path):
     """Test check_css_issues with a non-existent file."""
     css_file = tmp_path / "nonexistent.css"
     result = built_site_checks.check_css_issues(css_file)
@@ -2090,7 +2088,7 @@ def test_check_css_issues_missing_file(tmp_path: Path) -> None:
         ),
     ],
 )
-def test_check_critical_css(html, expected) -> None:
+def test_check_critical_css(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_critical_css(soup)
     assert result == expected
@@ -2140,7 +2138,7 @@ _MAX_META_HEAD_SIZE = built_site_checks.MAX_META_HEAD_SIZE
         ),
     ],
 )
-def test_meta_tags_first_10kb(tmp_path, html, expected) -> None:
+def test_meta_tags_first_10kb(tmp_path, html, expected):
     """Test checking for meta and title tags after first 9KB of file."""
     test_file = tmp_path / "test.html"
     test_file.write_text(html)
@@ -2191,7 +2189,7 @@ def test_meta_tags_first_10kb(tmp_path, html, expected) -> None:
         ),
     ],
 )
-def test_check_invalid_internal_links(html, expected_count) -> None:
+def test_check_invalid_internal_links(html, expected_count):
     """Test the check_invalid_internal_links function with various test
     cases."""
     soup = BeautifulSoup(html, "html.parser")
@@ -2294,7 +2292,7 @@ def test_check_invalid_internal_links(html, expected_count) -> None:
         ("<h1>Title</h1>\n* List item", {}),
     ],
 )
-def test_get_md_asset_counts(tmp_path, md_content, expected_counts) -> None:
+def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     """Test get_md_asset_counts with various markdown content including ignored
     blocks."""
     md_file = tmp_path / "test.md"
@@ -2303,7 +2301,7 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts) -> None:
     assert result == Counter(expected_counts)
 
 
-def test_head_with_retry_succeeds_after_timeout(monkeypatch) -> None:
+def test_head_with_retry_succeeds_after_timeout(monkeypatch):
     """Retry succeeds on second attempt after initial timeout."""
     calls = []
 
@@ -2319,7 +2317,7 @@ def test_head_with_retry_succeeds_after_timeout(monkeypatch) -> None:
     assert calls == [10, 20]  # timeout doubles on retry
 
 
-def test_head_with_retry_raises_after_exhausting_retries(monkeypatch) -> None:
+def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
     """All retries fail — re-raises the last exception."""
     monkeypatch.setattr(
         requests,
@@ -2400,7 +2398,7 @@ def test_head_with_retry_raises_after_exhausting_retries(monkeypatch) -> None:
 )
 def test_check_iframe_sources(
     monkeypatch, html: str, expected: list[str], mock_responses: list
-) -> None:
+):
     """Test the check_iframe_sources function with various scenarios."""
     soup = BeautifulSoup(html, "html.parser")
 
@@ -2480,7 +2478,7 @@ def test_check_iframe_embeds(
     mock_responses: list,
     expected_issues: list[str],
     expected_urls: list[str],
-) -> None:
+):
     soup = BeautifulSoup(html, "html.parser")
     requested_urls: list[str] = []
     responses = list(mock_responses)
@@ -2562,7 +2560,7 @@ def test_check_iframe_embeds(
         ),
     ],
 )
-def test_check_link_spacing(html, expected) -> None:
+def test_check_link_spacing(html, expected):
     """Test the check_link_spacing function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_link_spacing(soup)
@@ -2655,14 +2653,14 @@ def test_check_link_spacing(html, expected) -> None:
         ),
     ],
 )
-def test_check_inline_formatting_spacing(html, expected) -> None:
+def test_check_inline_formatting_spacing(html, expected):
     """Test spacing checks around transform-produced inline elements."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_inline_formatting_spacing(soup)
     assert sorted(result) == sorted(expected)
 
 
-def test_extract_flat_paragraph_texts() -> None:
+def test_extract_flat_paragraph_texts():
     """Test flattened paragraph text extraction with data-original-text."""
     html = """<article>
     <p>9<abbr class="small-caps" data-original-text="9Combinations">9combinations</abbr> of strategies.</p>
@@ -2679,7 +2677,7 @@ def test_extract_flat_paragraph_texts() -> None:
     assert "skip_this" not in result[1]
 
 
-def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr() -> None:
+def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr():
     """Abbreviations with data-original-text are replaced with original text."""
     html = """<article>
     <p><abbr class="small-caps" data-original-text="RELU">Relu</abbr> is an activation function.</p>
@@ -2689,7 +2687,7 @@ def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr() -> None:
     assert "RELU is an activation function ." in result[0]
 
 
-def test_extract_flat_paragraph_texts_partial_word_abbr() -> None:
+def test_extract_flat_paragraph_texts_partial_word_abbr():
     """Embedded abbreviations with data-original-text restore the original."""
     html = """<article>
     <p>3Blue<abbr class="small-caps" data-original-text="1Brown">1brown</abbr>'s videos</p>
@@ -2699,7 +2697,7 @@ def test_extract_flat_paragraph_texts_partial_word_abbr() -> None:
     assert "3Blue1Brown's" in result[0]
 
 
-def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling() -> None:
+def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling():
     """Embedded abbreviation with data-original-text restores original
     casing."""
     html = """<article>
@@ -2710,7 +2708,7 @@ def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling() -> None:
     assert "Qwen-14B-Chat" in result[0]
 
 
-def test_extract_flat_paragraph_texts_fallback_without_data_attr() -> None:
+def test_extract_flat_paragraph_texts_fallback_without_data_attr():
     """Without data-original-text, falls back to uppercasing."""
     html = """<article>
     <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
@@ -2720,7 +2718,7 @@ def test_extract_flat_paragraph_texts_fallback_without_data_attr() -> None:
     assert "RELU is an activation function ." in result[0]
 
 
-def test_extract_flat_paragraph_texts_skips_non_article() -> None:
+def test_extract_flat_paragraph_texts_skips_non_article():
     """Paragraphs outside <article> are skipped entirely."""
     html = """
     <p>Outside article.</p>
@@ -2732,7 +2730,7 @@ def test_extract_flat_paragraph_texts_skips_non_article() -> None:
     assert "Inside article ." in result[0]
 
 
-def test_extract_flat_paragraph_texts_skips_nav_footer() -> None:
+def test_extract_flat_paragraph_texts_skips_nav_footer():
     """Paragraphs inside nav/footer/header/sequence-links/page-listing and other
     metadata containers are skipped."""
     html = """<article>
@@ -2757,7 +2755,7 @@ def test_extract_flat_paragraph_texts_skips_nav_footer() -> None:
     assert "Normal paragraph ." in result[0]
 
 
-def test_extract_flat_paragraph_texts_spaces_sub_br() -> None:
+def test_extract_flat_paragraph_texts_spaces_sub_br():
     """Subscript gets space, <br> gets space, <sup> is unwrapped."""
     html = """<article>
     <p>bounds<sub>reasonable</sub> and state<br>while and 2<sup>nd</sup></p>
@@ -2771,7 +2769,7 @@ def test_extract_flat_paragraph_texts_spaces_sub_br() -> None:
     assert "2nd" in result[0]
 
 
-def test_extract_flat_paragraph_texts_strips_footnote_refs() -> None:
+def test_extract_flat_paragraph_texts_strips_footnote_refs():
     """Footnote reference links are removed to avoid 'word1' concatenation."""
     html = """<article>
     <p>A couple<sup><a id="user-content-fnref-1" href="#fn1">1</a></sup> of things.</p>
@@ -2783,7 +2781,7 @@ def test_extract_flat_paragraph_texts_strips_footnote_refs() -> None:
     assert "1" not in result[0]
 
 
-def test_extract_flat_paragraph_texts_footnote_ref_without_sup() -> None:
+def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
     """Footnote ref link without <sup> parent is also removed."""
     html = """<article>
     <p>A word<a id="user-content-fnref-2" href="#fn2">2</a> here.</p>
@@ -2795,7 +2793,7 @@ def test_extract_flat_paragraph_texts_footnote_ref_without_sup() -> None:
     assert "word" in result[0]
 
 
-def test_extract_flat_paragraph_texts_normalizes_smart_quotes() -> None:
+def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
     """Smart quotes are replaced with ASCII apostrophes so contractions like
     "I\u2019ve" are kept as single words for the spellchecker."""
     html = """<article>
@@ -2813,7 +2811,7 @@ def test_extract_flat_paragraph_texts_normalizes_smart_quotes() -> None:
     assert "\u2019" not in result[1]
 
 
-def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions() -> None:
+def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     """
     Dropcap-split contractions (I 've → I've) are rejoined.
 
@@ -2861,7 +2859,7 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions() -> None:
         ),
     ],
 )
-def test_parse_spellcheck_output(stdout, line_to_source, expected) -> None:
+def test_parse_spellcheck_output(stdout, line_to_source, expected):
     """Test parsing of spellchecker-cli output."""
     assert (
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
@@ -2869,12 +2867,12 @@ def test_parse_spellcheck_output(stdout, line_to_source, expected) -> None:
     )
 
 
-def test_spellcheck_flattened_paragraphs_empty() -> None:
+def test_spellcheck_flattened_paragraphs_empty():
     """Empty input returns empty output."""
     assert built_site_checks._spellcheck_flattened_paragraphs({}) == []
 
 
-def test_spellcheck_flattened_paragraphs_no_pnpm() -> None:
+def test_spellcheck_flattened_paragraphs_no_pnpm():
     """Returns a skip message when pnpm is not found."""
     with patch("shutil.which", return_value=None):
         result = built_site_checks._spellcheck_flattened_paragraphs(
@@ -2884,7 +2882,7 @@ def test_spellcheck_flattened_paragraphs_no_pnpm() -> None:
     assert "pnpm not found" in result[0]
 
 
-def test_spellcheck_flattened_paragraphs_clean(tmp_path, monkeypatch) -> None:
+def test_spellcheck_flattened_paragraphs_clean(tmp_path, monkeypatch):
     """No issues returned when spellchecker exits cleanly."""
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
     wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
@@ -2904,9 +2902,7 @@ def test_spellcheck_flattened_paragraphs_clean(tmp_path, monkeypatch) -> None:
     assert result == []
 
 
-def test_spellcheck_flattened_paragraphs_with_errors(
-    tmp_path, monkeypatch
-) -> None:
+def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
     """Misspelled words produce issues with source file annotations."""
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
     wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
@@ -2933,9 +2929,7 @@ def test_spellcheck_flattened_paragraphs_with_errors(
     assert "wrold" in result[0]
 
 
-def test_spellcheck_flattened_paragraphs_no_line_match(
-    tmp_path, monkeypatch
-) -> None:
+def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
     """Warning lines without line numbers are still captured."""
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
 
@@ -3022,7 +3016,7 @@ def test_spellcheck_flattened_paragraphs_no_line_match(
         ),
     ],
 )
-def test_check_consecutive_periods(html, expected) -> None:
+def test_check_consecutive_periods(html, expected):
     """Test the check_consecutive_periods function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_consecutive_periods(soup)
@@ -3066,7 +3060,7 @@ def test_check_consecutive_periods(html, expected) -> None:
         ),
     ],
 )
-def test_check_tengwar_characters(html, expected) -> None:
+def test_check_tengwar_characters(html, expected):
     """Test the check_tengwar_characters function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_tengwar_characters(soup)
@@ -3120,7 +3114,7 @@ def test_check_tengwar_characters(html, expected) -> None:
         ),
     ],
 )
-def test_check_favicon_span(html, expected) -> None:
+def test_check_favicon_span(html, expected):
     """Test the check_favicon_span function."""
     soup = BeautifulSoup(html, "html.parser")
     assert built_site_checks.check_favicon_span(soup) == expected
@@ -3270,7 +3264,7 @@ def test_check_favicon_span(html, expected) -> None:
         ),
     ],
 )
-def test_check_favicons_are_svgs(html, expected) -> None:
+def test_check_favicons_are_svgs(html, expected):
     """Test the check_favicons_are_svgs function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_favicons_are_svgs(soup)
@@ -3331,7 +3325,7 @@ def test_check_favicons_are_svgs(html, expected) -> None:
 )
 def test_check_root_files_location(
     tmp_path: Path, file_structure: list[str], expected: list[str]
-) -> None:
+):
     """Test the check_root_files_location function with various file structures
     for robots.txt, favicon.svg, and favicon.ico."""
     # Create the test files
@@ -3421,13 +3415,13 @@ def test_check_root_files_location(
         ),
     ],
 )
-def test_check_preloaded_fonts(html, expected) -> None:
+def test_check_preloaded_fonts(html, expected):
     """Test the check_preloaded_fonts function with various HTML structures."""
     soup = BeautifulSoup(html, "html.parser")
     assert built_site_checks.check_preloaded_fonts(soup) == expected
 
 
-def test_check_file_for_issues_with_fonts(tmp_path) -> None:
+def test_check_file_for_issues_with_fonts(tmp_path):
     """Test that the font check is included when should_check_fonts is True."""
     # Create a test HTML file with no preloaded font
     html_content = """
@@ -3551,7 +3545,7 @@ def test_check_file_for_issues_with_fonts(tmp_path) -> None:
         ),
     ],
 )
-def test_check_media_asset_sources(html, expected) -> None:
+def test_check_media_asset_sources(html, expected):
     """Test the check_media_asset_sources function with various HTML
     structures."""
     soup = BeautifulSoup(html, "html.parser")
@@ -3639,7 +3633,7 @@ def test_check_asset_references(
     html_content: str,
     existing_files: list[str],
     expected_missing: list[str],
-) -> None:
+):
     """Test the check_asset_references function."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
@@ -3673,7 +3667,7 @@ def test_check_asset_references(
 
 def test_check_file_for_issues_markdown_check_called_with_valid_md(
     tmp_path,
-) -> None:
+):
     """Test that check_markdown_assets_in_html is called when md_path is
     valid."""
     base_dir = tmp_path / "public"
@@ -3720,7 +3714,7 @@ description: Test Description
 
 def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
     tmp_path,
-) -> None:
+):
     """Test that check_markdown_assets_in_html is NOT called when md_path is
     invalid."""
     base_dir = tmp_path / "public"
@@ -3782,7 +3776,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
 )
 def test_check_file_for_issues_favicon_check_called(
     tmp_path, filename, should_check_favicon
-) -> None:
+):
     """Test that check_favicons_missing is called only for about.html."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
@@ -3814,7 +3808,7 @@ def test_check_file_for_issues_favicon_check_called(
 )
 def test_parser_args_check_fonts(
     test_args: list[str], expected_check_fonts: bool
-) -> None:
+):
     with patch.object(sys, "argv", ["built_site_checks.py"] + test_args):
         args = built_site_checks.parser.parse_args()
         assert args.check_fonts == expected_check_fonts
@@ -3827,7 +3821,7 @@ def test_main_no_issues(
     html_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Test main() when no issues are found."""
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
@@ -3848,7 +3842,7 @@ def test_main_css_issues(
     html_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     monkeypatch.setattr(
         built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
     )
@@ -3878,7 +3872,7 @@ def test_main_root_files_issues(
     html_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Test main() when root files (robots.txt, favicon.svg, and favicon.ico)
     are missing."""
     monkeypatch.setattr(
@@ -3912,7 +3906,7 @@ def test_main_html_issues(
     html_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Test main() when HTML files have issues."""
     html_issues = {"localhost_links": ["http://localhost:8000"]}
 
@@ -3942,7 +3936,7 @@ def test_main_handles_markdown_mapping(
     md_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Test that main() correctly handles markdown path mapping."""
     md_map = {"test": md_file}
 
@@ -3975,11 +3969,11 @@ def test_main_markdown_not_found_error(
     root_files,
     html_file,
     monkeypatch,
-) -> None:
+):
     """Test that main() raises ValueError when a required markdown file is
     missing."""
     # Set up empty md map (missing the mapping)
-    md_map: dict[str, Any] = {}
+    md_map: dict[str, object] = {}
 
     # Mock mapping functions
     monkeypatch.setattr(
@@ -4004,7 +3998,7 @@ def test_main_command_line_args(
     html_file,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Test that main() correctly handles command line arguments."""
     monkeypatch.setattr(sys, "argv", ["built_site_checks.py", "--check-fonts"])
 
@@ -4036,7 +4030,7 @@ def test_main_skips_drafts(
     root_files,
     html_file_in_drafts,  # Use the new fixture
     monkeypatch,
-) -> None:
+):
     with (
         patch.object(built_site_checks, "_print_issues") as mock_print,
         patch.object(sys, "exit") as mock_exit,
@@ -4052,7 +4046,7 @@ def test_main_skips_alias_files(
     root_files,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """
     Ensure alias pages are not checked.
 
@@ -4079,7 +4073,7 @@ def test_main_skips_non_html_files(
     root_files,
     monkeypatch,
     disable_md_requirement,
-) -> None:
+):
     """Ensure non-HTML files in `public/` are ignored."""
     non_html = mock_environment["public_dir"] / "notes.txt"
     non_html.write_text("not html")
@@ -4096,7 +4090,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
     valid_css_file,
     root_files,
     monkeypatch,
-) -> None:
+):
     """Regression test: only root-level HTML should require markdown mapping.
 
     In [`built_site_checks._process_html_files()`](scripts/built_site_checks.py:1818), `md_path` lookup happens only
@@ -4316,7 +4310,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
 )
 def test_check_video_source_order_and_match(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Test the check_video_source_order_and_match function."""
     soup = BeautifulSoup(html, "html.parser")
     # Ensure the function being tested is correctly referenced
@@ -4490,9 +4484,7 @@ def test_check_video_source_order_and_match(
         ),
     ],
 )
-def test_check_malformed_hrefs(
-    html_content: str, expected_issues: list[str]
-) -> None:
+def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
     """Test the check_malformed_hrefs function correctly filters for external
     links."""
     soup = BeautifulSoup(html_content, "html.parser")
@@ -4609,7 +4601,7 @@ def test_check_malformed_hrefs(
 )
 def test_get_defined_css_variables(
     tmp_path: Path, css_content: str, expected_vars: set[str]
-) -> None:
+):
     """Test the _get_defined_css_variables function."""
     css_file_path = tmp_path / "test.css"
     css_file_path.write_text(css_content, encoding="utf-8")
@@ -4650,7 +4642,7 @@ def test_get_defined_css_variables(
 )
 def test_check_inline_style_variables(
     html: str, expected_issues: list[str], valid_css_file: Path
-) -> None:
+):
     """Test the check_inline_style_variables function."""
     soup = BeautifulSoup(html, "html.parser")
     defined_vars = built_site_checks._get_defined_css_variables(valid_css_file)
@@ -4771,7 +4763,7 @@ def test_check_inline_style_variables(
 )
 def test_check_katex_span_only_paragraph_child(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Test the check_katex_span_only_paragraph_child function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_katex_span_only_paragraph_child(soup)
@@ -4781,7 +4773,7 @@ def test_check_katex_span_only_paragraph_child(
 @pytest.fixture
 def soup_check_setup(
     mock_environment, monkeypatch
-) -> tuple[dict[str, Any], Path]:
+) -> tuple[dict[str, object], Path]:
     public_dir = mock_environment["public_dir"]
     html_file_path = public_dir / "test_soup_interaction.html"
     html_content = "<html><body><p>Original content</p></body></html>"
@@ -4802,7 +4794,7 @@ def soup_check_setup(
 
 def test_check_file_for_issues_raises_error_on_soup_modification(
     soup_check_setup, monkeypatch
-) -> None:
+):
     """Test that check_file_for_issues raises a RuntimeError if the soup object
     is modified by one of the check functions."""
     common_check_args, _ = soup_check_setup
@@ -4827,7 +4819,7 @@ def test_check_file_for_issues_raises_error_on_soup_modification(
 
 def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
     soup_check_setup, monkeypatch
-) -> None:
+):
     """Test that check_file_for_issues does NOT raise the specific RuntimeError
     about soup modification if the soup object is not modified by checks."""
     common_check_args, html_file_path = soup_check_setup
@@ -4887,7 +4879,7 @@ def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
         ("<p>No links here</p>", []),
     ],
 )
-def test_check_unrendered_transclusions(html, expected) -> None:
+def test_check_unrendered_transclusions(html, expected):
     """Test the check_unrendered_transclusions function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_transclusions(soup)
@@ -4928,7 +4920,7 @@ def test_check_unrendered_transclusions(html, expected) -> None:
         ("<p>:) Hello</p>", ["Unrendered emoticon [':)']: :) Hello"]),
     ],
 )
-def test_check_unrendered_emoticons(html, expected) -> None:
+def test_check_unrendered_emoticons(html, expected):
     """Test the check_unrendered_emoticons function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_unrendered_emoticons(soup)
@@ -4984,7 +4976,7 @@ def test_check_unrendered_emoticons(html, expected) -> None:
         ),
     ],
 )
-def test_untransform_text(input_text, expected) -> None:
+def test_untransform_text(input_text, expected):
     """Test the _untransform_text helper function."""
     result = built_site_checks._untransform_text(input_text)
     assert result == expected
@@ -5221,9 +5213,7 @@ description: Test description
         ),
     ],
 )
-def test_check_metadata_matches(
-    tmp_path, html_content, md_content, expected
-) -> None:
+def test_check_metadata_matches(tmp_path, html_content, md_content, expected):
     """Test the check_metadata_matches function with various metadata
     scenarios."""
     # Create markdown file
@@ -5240,7 +5230,7 @@ def test_check_metadata_matches(
     assert sorted(result) == sorted(expected)
 
 
-def test_check_metadata_matches_missing_md_keys(tmp_path) -> None:
+def test_check_metadata_matches_missing_md_keys(tmp_path):
     """Test that missing markdown keys raise KeyError."""
     html_content = """
     <html>
@@ -5269,7 +5259,7 @@ tags: [test]
         built_site_checks.check_metadata_matches(soup, md_file)
 
 
-def test_check_metadata_matches_with_nonexistent_md_file(tmp_path) -> None:
+def test_check_metadata_matches_with_nonexistent_md_file(tmp_path):
     """Test that check_metadata_matches handles non-existent markdown files
     gracefully."""
     html_content = """
@@ -5291,7 +5281,7 @@ def test_check_metadata_matches_with_nonexistent_md_file(tmp_path) -> None:
         built_site_checks.check_metadata_matches(soup, non_existent_md)
 
 
-def test_check_metadata_matches_malformed_yaml(tmp_path) -> None:
+def test_check_metadata_matches_malformed_yaml(tmp_path):
     """Test that malformed YAML in markdown file is handled appropriately."""
     html_content = """
     <html>
@@ -5322,7 +5312,7 @@ tags: [test
         built_site_checks.check_metadata_matches(soup, md_file)
 
 
-def test_check_metadata_matches_partial_og_tags(tmp_path) -> None:
+def test_check_metadata_matches_partial_og_tags(tmp_path):
     """Test behavior when only some Open Graph tags are present."""
     html_content = """
     <html>
@@ -5544,14 +5534,14 @@ description: Test description
         ),
     ],
 )
-def test_check_populate_elements_nonempty(html, expected) -> None:
+def test_check_populate_elements_nonempty(html, expected):
     """Test the check_populate_elements_nonempty function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_populate_elements_nonempty(soup)
     assert sorted(result) == sorted(expected)
 
 
-def test_check_populate_elements_nonempty_non_string_id() -> None:
+def test_check_populate_elements_nonempty_non_string_id():
     """Test check_populate_elements_nonempty with element id that is not a
     string."""
     html = '<div id="populate-test"></div>'
@@ -5602,7 +5592,7 @@ def test_check_populate_elements_nonempty_non_string_id() -> None:
         ("<div><picture><source><img></picture></div>", True),
     ],
 )
-def test_has_content(html: str, expected: bool) -> None:
+def test_has_content(html: str, expected: bool):
     """Test the _has_content helper function."""
     soup = BeautifulSoup(html, "html.parser")
     element = soup.find()
@@ -5665,7 +5655,7 @@ def test_has_content(html: str, expected: bool) -> None:
         ),
     ],
 )
-def test_check_html_tags_in_text(html, expected) -> None:
+def test_check_html_tags_in_text(html, expected):
     """
     Test the check_html_tags_in_text function.
 
@@ -5687,7 +5677,7 @@ def test_check_html_tags_in_text(html, expected) -> None:
         ), f"Expected '{expected_msg}' not found in results: {result}"
 
 
-def test_check_html_tags_in_text_real_world_katex() -> None:
+def test_check_html_tags_in_text_real_world_katex():
     """Test with a real-world KaTeX example that should pass."""
     html = """
     <p>Consider the function
@@ -5730,7 +5720,7 @@ def test_check_html_tags_in_text_real_world_katex() -> None:
         ),
     ],
 )
-def test_check_article_dropcap_first_letter(html: str, ok: bool) -> None:
+def test_check_article_dropcap_first_letter(html: str, ok: bool):
     soup = BeautifulSoup(html, "html.parser")
     issues = built_site_checks.check_article_dropcap_first_letter(soup)
     assert (issues == []) is ok
@@ -5776,7 +5766,7 @@ def test_check_article_dropcap_first_letter(html: str, ok: bool) -> None:
 )
 def test_check_article_dropcap_first_letter_comprehensive(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Comprehensive tests for [`check_article_dropcap_first_letter()`](scripts/
     built_site_checks.py:109)."""
     soup = BeautifulSoup(html, "html.parser")
@@ -5790,7 +5780,7 @@ def test_check_article_dropcap_first_letter_comprehensive(
 )
 def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(
     char: str,
-) -> None:
+):
     """Test that all valid ending characters are accepted."""
     html = f"<article><p>Test text{char}</p></article>"
     soup = BeautifulSoup(html, "html.parser")
@@ -5806,7 +5796,7 @@ def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(
     "char",
     list(built_site_checks.TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH),
 )
-def test_check_top_level_paragraphs_trim_chars(char: str) -> None:
+def test_check_top_level_paragraphs_trim_chars(char: str):
     """Test that trim characters are properly stripped before validation."""
     # Text ending with valid punctuation followed by trim character should pass
     html = f"<article><p>Test text.{char}</p></article>"
@@ -6002,7 +5992,7 @@ def test_check_top_level_paragraphs_trim_chars(char: str) -> None:
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Comprehensive tests for [`check_top_level_paragraphs_end_with_punctuation
     ()`](scripts/built_site_checks.py:135)."""
     soup = BeautifulSoup(html, "html.parser")
@@ -6012,7 +6002,7 @@ def test_check_top_level_paragraphs_end_with_punctuation(
     assert issues == expected_issues
 
 
-def test_should_skip_paragraph_inside_quote_callout() -> None:
+def test_should_skip_paragraph_inside_quote_callout():
     """Paragraphs inside quote callouts should be skipped."""
     html = '<blockquote data-callout="quote"><p>Content without punct</p></blockquote>'
     soup = BeautifulSoup(html, "html.parser")
@@ -6093,9 +6083,7 @@ def test_should_skip_paragraph_inside_quote_callout() -> None:
         ),
     ],
 )
-def test_check_images_have_dimensions(
-    html: str, expected_issues: list[str]
-) -> None:
+def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     """Test the check_images_have_dimensions function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_images_have_dimensions(soup)
@@ -6138,16 +6126,14 @@ def test_check_images_have_dimensions(
         ),
     ],
 )
-def test_extract_citation_keys_from_html(
-    html: str, expected_keys: list[str]
-) -> None:
+def test_extract_citation_keys_from_html(html: str, expected_keys: list[str]):
     """Test extracting citation keys from HTML."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.extract_citation_keys_from_html(soup)
     assert sorted(result) == sorted(expected_keys)
 
 
-def test_find_duplicate_citations_no_duplicates() -> None:
+def test_find_duplicate_citations_no_duplicates():
     """Test that unique citations don't report issues."""
     citation_to_files = {
         "Turner2024Design": ["page1.html"],
@@ -6195,7 +6181,7 @@ def test_find_duplicate_citations_no_duplicates() -> None:
         ),
     ],
 )
-def test_check_invalid_class_names(html: str, expected: list[str]) -> None:
+def test_check_invalid_class_names(html: str, expected: list[str]):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_invalid_class_names(soup)
     assert len(result) == len(expected)
@@ -6203,7 +6189,7 @@ def test_check_invalid_class_names(html: str, expected: list[str]) -> None:
         assert issue.startswith(exp)
 
 
-def test_find_duplicate_citations_with_duplicates() -> None:
+def test_find_duplicate_citations_with_duplicates():
     """Test that duplicate citations are detected."""
     citation_to_files = {
         "Turner2024The": ["page1.html", "page2.html"],
@@ -6214,7 +6200,7 @@ def test_find_duplicate_citations_with_duplicates() -> None:
     assert "2 files" in result[0]
 
 
-def test_find_duplicate_citations_multiple_duplicates() -> None:
+def test_find_duplicate_citations_multiple_duplicates():
     """Test detection of multiple different duplicate keys."""
     citation_to_files = {
         "Turner2024A": ["page1.html", "page2.html"],
@@ -6244,7 +6230,7 @@ def test_find_duplicate_citations_multiple_duplicates() -> None:
         ("https://example.com/path/to/resource", False),
     ],
 )
-def test_is_asset_href(href, expected) -> None:
+def test_is_asset_href(href, expected):
     assert built_site_checks._is_asset_href(href) == expected
 
 
@@ -6365,7 +6351,7 @@ def test_is_asset_href(href, expected) -> None:
         ),
     ],
 )
-def test_check_external_links_have_favicons(html, domains, expected) -> None:
+def test_check_external_links_have_favicons(html, domains, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_external_links_have_favicons(
         soup, frozenset(domains)
@@ -6373,7 +6359,7 @@ def test_check_external_links_have_favicons(html, domains, expected) -> None:
     assert result == expected
 
 
-def test_boundary_aware_domain_matching() -> None:
+def test_boundary_aware_domain_matching():
     """Boundary-aware matching prevents 'x_com' from matching 'vox_com'."""
     html = (
         '<article><a class="external" href="https://www.vox.com/article">'
@@ -6387,7 +6373,7 @@ def test_boundary_aware_domain_matching() -> None:
     assert result == []
 
 
-def test_domain_matches_helper() -> None:
+def test_domain_matches_helper():
     """Unit tests for the _domain_matches helper."""
     assert built_site_checks._domain_matches("apple_com", "apple_com")
     assert built_site_checks._domain_matches("blog_apple_com", "apple_com")
@@ -6399,7 +6385,7 @@ def test_domain_matches_helper() -> None:
 
 
 @mock.patch("built_site_checks.subprocess.run")
-def test_build_included_favicon_domains(mock_run) -> None:
+def test_build_included_favicon_domains(mock_run):
     """Test _build_included_favicon_domains calls TS script and parses
     output."""
     mock_run.return_value = subprocess.CompletedProcess(
@@ -6414,7 +6400,7 @@ def test_build_included_favicon_domains(mock_run) -> None:
     mock_run.assert_called_once()
 
 
-def test_check_file_for_issues_with_included_domains(tmp_path) -> None:
+def test_check_file_for_issues_with_included_domains(tmp_path):
     """Test that check_file_for_issues passes favicon_included_domains
     through."""
     base_dir = tmp_path / "public"
@@ -6446,7 +6432,7 @@ def test_check_file_for_issues_with_included_domains(tmp_path) -> None:
     )
 
 
-def test_check_file_for_issues_without_included_domains(tmp_path) -> None:
+def test_check_file_for_issues_without_included_domains(tmp_path):
     """Test that check_file_for_issues skips favicon check when
     favicon_included_domains is None."""
     base_dir = tmp_path / "public"
@@ -6470,7 +6456,7 @@ def test_check_file_for_issues_without_included_domains(tmp_path) -> None:
     assert "missing_favicons" not in issues
 
 
-def test_maybe_collect_citation_keys_redirect(tmp_path) -> None:
+def test_maybe_collect_citation_keys_redirect(tmp_path):
     """Redirect pages should be skipped during citation key collection."""
     public_dir = tmp_path / "public"
     public_dir.mkdir()
@@ -6488,7 +6474,7 @@ def test_maybe_collect_citation_keys_redirect(tmp_path) -> None:
     assert len(citation_to_files) == 0
 
 
-def test_maybe_collect_citation_keys_collects(tmp_path) -> None:
+def test_maybe_collect_citation_keys_collects(tmp_path):
     """Non-redirect pages should have their citation keys collected."""
     public_dir = tmp_path / "public"
     public_dir.mkdir()
@@ -6542,7 +6528,7 @@ def test_maybe_collect_citation_keys_collects(tmp_path) -> None:
         ("<p>No subfigures here</p>", []),
     ],
 )
-def test_check_orphaned_subfigures(html: str, expected: list[str]) -> None:
+def test_check_orphaned_subfigures(html: str, expected: list[str]):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_orphaned_subfigures(soup)
     assert len(result) == len(expected)
@@ -6567,7 +6553,7 @@ def test_check_orphaned_subfigures(html: str, expected: list[str]) -> None:
 )
 def test_maybe_collect_citation_keys(
     tmp_path: Path, html_content: str, expected_keys: list[str]
-) -> None:
+):
     html_file = tmp_path / "page.html"
     html_file.write_text(html_content, encoding="utf-8")
     citation_to_files: dict[str, list[str]] = defaultdict(list)
@@ -6579,7 +6565,7 @@ def test_maybe_collect_citation_keys(
         assert citation_to_files[key] == ["page.html"]
 
 
-def test_process_html_files_duplicate_citations(tmp_path: Path) -> None:
+def test_process_html_files_duplicate_citations(tmp_path: Path):
     """Duplicate citation keys across files should be reported."""
     content_dir = tmp_path / "content"
     content_dir.mkdir()

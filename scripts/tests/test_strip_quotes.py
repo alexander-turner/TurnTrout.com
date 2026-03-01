@@ -30,7 +30,7 @@ else:
         pytest.param(">> text", 2, id="consecutive-gt"),
     ],
 )
-def test_get_quote_level(line: str, expected: int) -> None:
+def test_get_quote_level(line: str, expected: int):
     assert strip_quotes.get_quote_level(line) == expected
 
 
@@ -52,7 +52,7 @@ def test_get_quote_level(line: str, expected: int) -> None:
         pytest.param("> [!quotation]", False, id="quotation-not-quote"),
     ],
 )
-def test_is_quote_callout_start(line: str, expected: bool) -> None:
+def test_is_quote_callout_start(line: str, expected: bool):
     assert strip_quotes.is_quote_callout_start(line) == expected
 
 
@@ -150,7 +150,7 @@ def test_is_quote_callout_start(line: str, expected: bool) -> None:
         ),
     ],
 )
-def test_strip_quote_blocks(text: str, expected: str) -> None:
+def test_strip_quote_blocks(text: str, expected: str):
     result = strip_quotes.strip_quote_blocks(text)
     assert result == expected
     assert result.count("\n") == text.count(
@@ -159,9 +159,7 @@ def test_strip_quote_blocks(text: str, expected: str) -> None:
 
 
 class TestCreateStrippedDirectory:
-    def test_strips_quotes_and_preserves_structure(
-        self, tmp_path: Path
-    ) -> None:
+    def test_strips_quotes_and_preserves_structure(self, tmp_path: Path):
         source = tmp_path / "source"
         subdir = source / "subdir"
         subdir.mkdir(parents=True)
@@ -179,7 +177,7 @@ class TestCreateStrippedDirectory:
         assert (output / "subdir" / "nested.md").read_text() == "content"
         assert not (output / "ignored.txt").exists()
 
-    def test_creates_temp_dir_when_no_output(self, tmp_path: Path) -> None:
+    def test_creates_temp_dir_when_no_output(self, tmp_path: Path):
         source = tmp_path / "source"
         source.mkdir()
         (source / "test.md").write_text("content", encoding="utf-8")
@@ -194,7 +192,7 @@ class TestCreateStrippedDirectory:
 class TestMain:
     def test_with_explicit_args(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys
-    ) -> None:
+    ):
         source = tmp_path / "source"
         source.mkdir()
         (source / "test.md").write_text(
@@ -224,7 +222,7 @@ class TestMain:
         mock_git_root: Path,
         monkeypatch: pytest.MonkeyPatch,
         capsys,
-    ) -> None:
+    ):
         content_dir = mock_git_root / "website_content"
         content_dir.mkdir()
         (content_dir / "test.md").write_text("content", encoding="utf-8")

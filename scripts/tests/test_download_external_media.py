@@ -23,7 +23,7 @@ def mock_git_root(tmp_path, monkeypatch) -> None:
     return tmp_path
 
 
-def test_find_external_media_urls_excludes_cdn(mock_git_root) -> None:
+def test_find_external_media_urls_excludes_cdn(mock_git_root):
     """Test that CDN URLs are excluded from external media URLs."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("""
@@ -46,7 +46,7 @@ def test_find_external_media_urls_excludes_cdn(mock_git_root) -> None:
     assert "https://assets.turntrout.com/icon.svg" not in urls
 
 
-def test_find_external_media_urls_multiple_files(mock_git_root) -> None:
+def test_find_external_media_urls_multiple_files(mock_git_root):
     """Test finding URLs across multiple markdown files."""
     md_file1 = mock_git_root / "website_content" / "test1.md"
     md_file1.write_text("![Image](https://example.com/image1.png)")
@@ -63,7 +63,7 @@ def test_find_external_media_urls_multiple_files(mock_git_root) -> None:
     assert "https://example.com/image2.jpg" in urls
 
 
-def test_find_external_media_urls_deduplicates(mock_git_root) -> None:
+def test_find_external_media_urls_deduplicates(mock_git_root):
     """Test that duplicate URLs are deduplicated."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("""
@@ -78,7 +78,7 @@ def test_find_external_media_urls_deduplicates(mock_git_root) -> None:
 
 
 @pytest.mark.parametrize("extension", download_external_media.MEDIA_EXTENSIONS)
-def test_find_external_media_url_by_extension(mock_git_root, extension) -> None:
+def test_find_external_media_url_by_extension(mock_git_root, extension):
     """Test that each supported media extension is detected individually."""
     md_file = mock_git_root / "website_content" / "test.md"
 
@@ -92,7 +92,7 @@ def test_find_external_media_url_by_extension(mock_git_root, extension) -> None:
     assert len(urls) == 1
 
 
-def test_find_external_media_urls_case_insensitive(mock_git_root) -> None:
+def test_find_external_media_urls_case_insensitive(mock_git_root):
     """Test that extension matching is case-insensitive."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("""
@@ -109,7 +109,7 @@ def test_find_external_media_urls_case_insensitive(mock_git_root) -> None:
     assert "https://example.com/video.MP4" in urls
 
 
-def test_download_media_success(mock_git_root, tmp_path) -> None:
+def test_download_media_success(mock_git_root, tmp_path):
     """Test successful media download."""
     target_dir = tmp_path / "downloads"
     target_dir.mkdir()
@@ -128,7 +128,7 @@ def test_download_media_success(mock_git_root, tmp_path) -> None:
         assert "https://example.com/image.png" in call_args
 
 
-def test_download_media_failure(mock_git_root, tmp_path) -> None:
+def test_download_media_failure(mock_git_root, tmp_path):
     """Test failed media download."""
     target_dir = tmp_path / "downloads"
     target_dir.mkdir()
@@ -145,7 +145,7 @@ def test_download_media_failure(mock_git_root, tmp_path) -> None:
         assert result is False
 
 
-def test_replace_url_in_file(mock_git_root) -> None:
+def test_replace_url_in_file(mock_git_root):
     """Test URL replacement in markdown file."""
     md_file = mock_git_root / "website_content" / "test.md"
     original_content = "![Image](https://example.com/image.png)"
@@ -160,9 +160,7 @@ def test_replace_url_in_file(mock_git_root) -> None:
     assert "https://example.com/image.png" not in updated_content
 
 
-def test_replace_url_in_file_outside_content_dir(
-    mock_git_root, tmp_path
-) -> None:
+def test_replace_url_in_file_outside_content_dir(mock_git_root, tmp_path):
     """Test that replacing URL in file outside content dir raises error."""
     outside_file = tmp_path / "outside.md"
     outside_file.write_text("![Image](https://example.com/image.png)")
@@ -177,7 +175,7 @@ def test_replace_url_in_file_outside_content_dir(
         )
 
 
-def test_main_no_markdown_files(mock_git_root) -> None:
+def test_main_no_markdown_files(mock_git_root):
     """Test main function with no markdown files."""
     with (
         mock.patch("subprocess.run"),
@@ -186,7 +184,7 @@ def test_main_no_markdown_files(mock_git_root) -> None:
         download_external_media.main()
 
 
-def test_main_no_external_urls(mock_git_root, capsys) -> None:
+def test_main_no_external_urls(mock_git_root, capsys):
     """Test main function with no external URLs."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("# Just text, no external media")
@@ -202,7 +200,7 @@ def test_main_no_external_urls(mock_git_root, capsys) -> None:
         assert any("pkill" in str(call) for call in calls)
 
 
-def test_main_downloads_and_updates(mock_git_root, capsys) -> None:
+def test_main_downloads_and_updates(mock_git_root, capsys):
     """Test main function downloads files and updates references."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
@@ -232,7 +230,7 @@ def test_main_downloads_and_updates(mock_git_root, capsys) -> None:
         assert "Successfully downloaded 1/1 files" in captured.out
 
 
-def test_main_handles_download_failures(mock_git_root, capsys) -> None:
+def test_main_handles_download_failures(mock_git_root, capsys):
     """Test main function handles download failures gracefully."""
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")

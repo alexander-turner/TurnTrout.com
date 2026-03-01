@@ -60,7 +60,7 @@ def mock_git(temp_content_dir) -> object:
     return _mock_git
 
 
-def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git) -> None:
+def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git):
     """Test that date is added when missing."""
     test_file = create_markdown_file(
         temp_content_dir / "test1.md",
@@ -80,7 +80,7 @@ def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git) -> None:
     assert metadata["date_updated"] == expected_date
 
 
-def test_preserves_existing_date(temp_content_dir, mock_git) -> None:
+def test_preserves_existing_date(temp_content_dir, mock_git):
     """Test that existing dates are not modified."""
     existing_date = "12/25/2023"
     test_file = create_markdown_file(
@@ -99,7 +99,7 @@ def test_preserves_existing_date(temp_content_dir, mock_git) -> None:
     assert metadata["date_published"] == existing_date
 
 
-def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git) -> None:
+def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
     """Test that empty dates are updated."""
     test_file = create_markdown_file(
         temp_content_dir / "test3.md",
@@ -120,9 +120,7 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git) -> None:
     assert metadata["date_updated"] == expected_date
 
 
-def test_updates_date_when_modified(
-    temp_content_dir, mock_datetime, mock_git
-) -> None:
+def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
     """Test that date_updated is modified when git shows changes."""
     # Create initial dates as strings instead of TimeStamp objects
     test_file = create_markdown_file(
@@ -152,7 +150,7 @@ def test_updates_date_when_modified(
     assert metadata["date_updated"] == "2024-02-01"
 
 
-def test_preserves_dates_when_not_modified(temp_content_dir, mock_git) -> None:
+def test_preserves_dates_when_not_modified(temp_content_dir, mock_git):
     """Test that dates aren't modified when git shows no changes."""
     test_file = create_markdown_file(
         temp_content_dir / "test3.md",
@@ -178,7 +176,7 @@ def test_preserves_dates_when_not_modified(temp_content_dir, mock_git) -> None:
     assert metadata["date_updated"] == "01/01/2023"
 
 
-def test_split_yaml_invalid_format(temp_content_dir) -> None:
+def test_split_yaml_invalid_format(temp_content_dir):
     """Test handling of invalid YAML format."""
     file_path = temp_content_dir / "invalid.md"
     create_markdown_file(
@@ -190,7 +188,7 @@ def test_split_yaml_invalid_format(temp_content_dir) -> None:
     assert content == ""
 
 
-def test_split_yaml_empty_frontmatter(temp_content_dir) -> None:
+def test_split_yaml_empty_frontmatter(temp_content_dir):
     """Test handling of empty frontmatter."""
     file_path = temp_content_dir / "empty.md"
     create_markdown_file(file_path, frontmatter={}, content="Content")
@@ -200,7 +198,7 @@ def test_split_yaml_empty_frontmatter(temp_content_dir) -> None:
     assert content == "\nContent"
 
 
-def test_split_yaml_malformed_yaml(temp_content_dir) -> None:
+def test_split_yaml_malformed_yaml(temp_content_dir):
     """Test handling of malformed YAML."""
     file_path = temp_content_dir / "malformed.md"
     file_path.write_text(
@@ -213,7 +211,7 @@ def test_split_yaml_malformed_yaml(temp_content_dir) -> None:
     assert content == ""
 
 
-def test_write_to_yaml_preserves_order(temp_content_dir) -> None:
+def test_write_to_yaml_preserves_order(temp_content_dir):
     """Test that YAML writing preserves field order."""
     original_metadata = {
         "title": "Test Post",
@@ -240,7 +238,7 @@ def test_write_to_yaml_preserves_order(temp_content_dir) -> None:
     assert list(field_positions.keys()) == list(original_metadata.keys())
 
 
-def test_long_urls_not_wrapped(temp_content_dir, mock_git) -> None:
+def test_long_urls_not_wrapped(temp_content_dir, mock_git):
     """Test that long URLs in lists are not wrapped across multiple lines."""
     long_url = "https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9"
     test_file = create_markdown_file(
@@ -272,9 +270,7 @@ def test_long_urls_not_wrapped(temp_content_dir, mock_git) -> None:
     assert metadata_check["other_urls"] == [long_url]
 
 
-def test_main_function_integration(
-    temp_content_dir, mock_datetime, mock_git
-) -> None:
+def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     """Test the main function's integration."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
     files: list[tuple[str, dict[str, object]]] = [
@@ -345,7 +341,7 @@ def mock_git_commands(mock_git_root) -> object:
     return create_mock
 
 
-def test_is_file_modified_with_changes(test_file, mock_git_commands) -> None:
+def test_is_file_modified_with_changes(test_file, mock_git_commands):
     """Test when file has unpushed changes."""
     with patch(
         "subprocess.check_output",
@@ -354,7 +350,7 @@ def test_is_file_modified_with_changes(test_file, mock_git_commands) -> None:
         assert update_lib.is_file_modified(test_file) is True
 
 
-def test_is_file_modified_no_changes(test_file, mock_git_commands) -> None:
+def test_is_file_modified_no_changes(test_file, mock_git_commands):
     """Test when file has no unpushed changes."""
     with patch(
         "subprocess.check_output",
@@ -363,7 +359,7 @@ def test_is_file_modified_no_changes(test_file, mock_git_commands) -> None:
         assert update_lib.is_file_modified(test_file) is False
 
 
-def test_is_file_modified_git_error(test_file, mock_git_commands) -> None:
+def test_is_file_modified_git_error(test_file, mock_git_commands):
     """Test handling of git command errors."""
     with patch(
         "subprocess.check_output",
@@ -372,7 +368,7 @@ def test_is_file_modified_git_error(test_file, mock_git_commands) -> None:
         assert update_lib.is_file_modified(test_file) is False
 
 
-def test_is_file_modified_invalid_path(mock_git_commands) -> None:
+def test_is_file_modified_invalid_path(mock_git_commands):
     """Test with file outside git root."""
     test_file = Path("/different/path/test.md")
     with (
@@ -385,7 +381,7 @@ def test_is_file_modified_invalid_path(mock_git_commands) -> None:
         update_lib.is_file_modified(test_file)
 
 
-def test_yaml_formatting_preservation() -> None:
+def test_yaml_formatting_preservation():
     """Test that YAML formatting, quotes, and comments are preserved."""
     # Create a test file with specific formatting
     test_content = """---
@@ -423,7 +419,7 @@ Test content here
         assert "  - " in result  # List indentation preserved
 
 
-def test_date_updates_preserve_formatting() -> None:
+def test_date_updates_preserve_formatting():
     """Test that date updates don't affect existing formatting."""
     test_content = """---
 date_published: "05/20/2024"  # Original publish date
@@ -471,9 +467,7 @@ Content
         ),
     ],
 )
-def test_initialize_missing_dates(
-    temp_content_dir, mock_datetime, test_case
-) -> None:
+def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
     """Test that both dates are set when missing."""
     test_file = create_markdown_file(
         temp_content_dir / "test.md", frontmatter={}, content="Test content"
@@ -489,7 +483,7 @@ def test_initialize_missing_dates(
     assert metadata["date_updated"] == expected_date
 
 
-def test_preserve_existing_publish_date(temp_content_dir) -> None:
+def test_preserve_existing_publish_date(temp_content_dir):
     """Test that existing publish date is preserved but updated date is set."""
     test_file = create_markdown_file(
         temp_content_dir / "test.md", frontmatter={}, content="Test content"
@@ -510,7 +504,7 @@ Content
     assert "date_updated" in metadata
 
 
-def test_preserve_both_dates(temp_content_dir) -> None:
+def test_preserve_both_dates(temp_content_dir):
     """Test that both dates are preserved when they exist."""
     test_file = create_markdown_file(
         temp_content_dir / "test.md", frontmatter={}, content="Test content"
@@ -532,7 +526,7 @@ Content
     assert metadata["date_updated"] == "01/02/2023"
 
 
-def test_formatting_preservation(temp_content_dir) -> None:
+def test_formatting_preservation(temp_content_dir):
     """Test that YAML formatting is preserved during updates."""
     test_file = create_markdown_file(
         temp_content_dir / "test.md", frontmatter={}, content="Test content"
@@ -567,7 +561,7 @@ Content
     assert "# Mixed quotes" in result
 
 
-def test_git_modified_date_update(temp_content_dir, mock_git) -> None:
+def test_git_modified_date_update(temp_content_dir, mock_git):
     """Test that date_updated is set when file is modified in git."""
     test_file = create_markdown_file(
         temp_content_dir / "test2.md",
@@ -593,7 +587,7 @@ def test_git_modified_date_update(temp_content_dir, mock_git) -> None:
     assert metadata["date_updated"] == "02/01/2024"
 
 
-def test_maybe_convert_to_timestamp_datetime_input() -> None:
+def test_maybe_convert_to_timestamp_datetime_input():
     """Test maybe_convert_to_timestamp with a datetime object input."""
     input_dt = datetime(2023, 10, 26, 12, 30, 0)
     expected_ts = TimeStamp(2023, 10, 26, 12, 30, 0)
@@ -602,7 +596,7 @@ def test_maybe_convert_to_timestamp_datetime_input() -> None:
     assert isinstance(result_ts, TimeStamp)
 
 
-def test_maybe_convert_to_timestamp_iso_string_input() -> None:
+def test_maybe_convert_to_timestamp_iso_string_input():
     """Test maybe_convert_to_timestamp with an ISO format string input."""
     input_iso_str = "2023-10-26T12:30:00"
     expected_ts = TimeStamp(2023, 10, 26, 12, 30, 0)
@@ -611,13 +605,13 @@ def test_maybe_convert_to_timestamp_iso_string_input() -> None:
     assert isinstance(result_ts, TimeStamp)
 
 
-def test_maybe_convert_to_timestamp_invalid_type() -> None:
+def test_maybe_convert_to_timestamp_invalid_type():
     """Test maybe_convert_to_timestamp with an unsupported input type."""
     with pytest.raises(ValueError, match="Unknown date type <class 'int'>"):
         update_lib.maybe_convert_to_timestamp(12345)  # type: ignore[arg-type]
 
 
-def test_main_default_content_dir(mock_datetime, mock_git) -> None:
+def test_main_default_content_dir(mock_datetime, mock_git):
     """Test that main uses 'website_content' dir by default."""
     glob_calls = []
 
@@ -644,9 +638,7 @@ def test_main_default_content_dir(mock_datetime, mock_git) -> None:
     assert pattern == "*.md", f"Expected pattern '*.md', got '{pattern}'"
 
 
-def test_main_skips_invalid_file(
-    temp_content_dir, mock_datetime, mock_git
-) -> None:
+def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
     """Test that main skips files with invalid/empty frontmatter."""
     create_markdown_file(
         temp_content_dir / "valid.md",
@@ -717,7 +709,7 @@ def test_update_readme_copyright_year_updates_needed(
     initial_content,
     current_year,
     expected_content,
-) -> None:
+):
     """Test updating the copyright year when it's outdated."""
     mock_readme_path.write_text(initial_content, encoding="utf-8")
     mock_current_datetime = datetime(
@@ -745,7 +737,7 @@ def test_update_readme_copyright_year_updates_needed(
 )
 def test_update_readme_copyright_year_no_update_needed(
     mock_readme_path, initial_content, current_year
-) -> None:
+):
     """Test that the file is not modified when the copyright year is current."""
     mock_readme_path.write_text(initial_content, encoding="utf-8")
     mock_current_datetime = datetime(current_year, 5, 15)
@@ -756,9 +748,7 @@ def test_update_readme_copyright_year_no_update_needed(
     assert final_content == initial_content  # Content should be unchanged
 
 
-def test_update_readme_copyright_year_readme_not_found(
-    tmp_path, monkeypatch
-) -> None:
+def test_update_readme_copyright_year_readme_not_found(tmp_path, monkeypatch):
     """Test FileNotFoundError when README.md does not exist."""
     non_existent_path = tmp_path / "non_existent_README.md"
     monkeypatch.setattr(update_lib, "_README_PATH", non_existent_path)
@@ -770,7 +760,7 @@ def test_update_readme_copyright_year_readme_not_found(
 
 def test_update_readme_copyright_year_pattern_not_found(
     mock_readme_path,
-) -> None:
+):
     """Test ValueError when the copyright pattern is not found in README.md."""
     invalid_content = "This file does not contain the expected copyright line."
     mock_readme_path.write_text(invalid_content, encoding="utf-8")
@@ -780,7 +770,7 @@ def test_update_readme_copyright_year_pattern_not_found(
         update_lib.update_readme_copyright_year(mock_current_datetime)
 
 
-def test_commit_changes() -> None:
+def test_commit_changes():
     with (
         patch(
             "scripts.update_date_on_publish.script_utils.find_executable",
@@ -799,7 +789,7 @@ def test_commit_changes() -> None:
 
 def test_main_no_changes_no_modifications(
     temp_content_dir, mock_datetime, mock_git
-) -> None:
+):
     """Test that main doesn't modify files when no changes are needed."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
     files = [
