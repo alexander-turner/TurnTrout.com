@@ -89,7 +89,7 @@ const config: QuartzConfig = {
       FixFootnotes(),
       WrapNakedElements(),
       HTMLFormattingImprovement(),
-      Latex({ renderEngine: "katex" }),
+      Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
       rehypeCustomSpoiler(),
       rehypeCustomSubtitle(),
