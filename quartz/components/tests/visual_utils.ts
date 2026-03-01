@@ -357,11 +357,17 @@ export async function getNextElementMatchingSelector(
 export async function openSearch(page: Page) {
   // #results-container is created by onNav after the async getContentIndex()
   // resolves and just before the click handlers are registered.
-  await expect(page.locator("#results-container")).toBeAttached()
-  await expect(async () => {
-    await page.locator("#search-icon").click()
-    await expect(page.locator("#search-container")).toHaveClass(/active/)
-  }).toPass()
+  // On bfcache restores (Safari), #results-container may already exist in the
+  // cached DOM while the click handler hasn't been re-registered yet by onNav.
+  // Poll with programmatic clicks until the container actually opens.
+  await page.waitForFunction(() => {
+    const icon = document.getElementById("search-icon") as HTMLElement | null
+    const container = document.getElementById("search-container")
+    if (!icon || !container) return false
+    if (container.classList.contains("active")) return true
+    icon.click()
+    return container.classList.contains("active")
+  })
   await expect(page.locator("#search-bar")).toBeVisible()
 }
 

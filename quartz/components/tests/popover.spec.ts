@@ -9,7 +9,6 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
-  gotoPage,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -35,13 +34,19 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   page,
   dummyLink,
 }, testInfo) => {
+  // DOM isolation (hiding all other elements) crashes Desktop Safari WebKit;
+  // visual coverage is provided by the Chrome and Firefox configurations.
+  test.skip(
+    page.context().browser()?.browserType().name() === "webkit",
+    "DOM isolation crashes Desktop Safari WebKit",
+  )
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
