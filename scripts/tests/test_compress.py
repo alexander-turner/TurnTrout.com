@@ -571,7 +571,7 @@ def test_check_if_hevc_codec(
     assert compress._check_if_hevc_codec(input_file) is expected_result
 
 
-def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch) -> None:
+def test_check_if_hevc_codec_ffprobe_error(temp_dir: Path, monkeypatch):
     """Test `_check_if_hevc_codec` raises error on `ffprobe` failure."""
     input_file = temp_dir / "test_error.mp4"
     input_file.touch()
