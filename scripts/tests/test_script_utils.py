@@ -2,22 +2,22 @@
 
 import shutil
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Optional
+from typing import Optional, cast
 from unittest import mock
 
 import git
 import pytest
 from bs4 import BeautifulSoup
+from bs4.element import AttributeValueList
 
 from .. import utils as script_utils
 from ..utils import get_git_root as _original_get_git_root
 from .utils import create_markdown_file
 
 
-def test_git_root_is_ancestor(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_git_root_is_ancestor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Test that the found git root is an ancestor of the current file."""
     monkeypatch.setattr(script_utils, "get_git_root", lambda: tmp_path)
     current_file_path = tmp_path / "tests" / "test_utils.py"
@@ -29,7 +29,7 @@ def test_git_root_is_ancestor(
     assert current_file_path.is_relative_to(git_root)
 
 
-def test_find_git_root(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_find_git_root(monkeypatch: pytest.MonkeyPatch):
     expected_output = "/path/to/git/root"
 
     def mock_subprocess_run(*args, **kwargs) -> subprocess.CompletedProcess:
@@ -74,7 +74,7 @@ def test_get_git_root_raises_error(monkeypatch: pytest.MonkeyPatch):
         script_utils.get_git_root()
 
 
-def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch):
     """Test that find_executable raises FileNotFoundError for an executable that
     does not exist."""
     monkeypatch.setattr(script_utils, "_executable_cache", {})
@@ -85,7 +85,7 @@ def test_find_executable_not_found(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_find_executable_success_and_cache(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     """Test that find_executable finds an executable and caches the result."""
     monkeypatch.setattr(script_utils, "_executable_cache", {})
     mock_which = mock.Mock(return_value="/fake/path/to/git")
@@ -156,7 +156,7 @@ def test_find_executable_success_and_cache(
 )
 def test_path_relative_to_quartz(
     input_path: str, expected_output: Optional[Path], should_raise: bool
-) -> None:
+):
     """
     Test path_relative_to_quartz_parent with various input paths.
 
@@ -213,8 +213,8 @@ def test_get_files_specific_dir(tmp_path, file_paths, expected_files):
     )
 
     # Normalize file paths and compare
-    result = [str(p.relative_to(tmp_path)) for p in result]
-    assert sorted(result) == sorted(expected_files)
+    result_strs = [str(p.relative_to(tmp_path)) for p in result]
+    assert sorted(result_strs) == sorted(expected_files)
 
 
 def test_get_files_gitignore(tmp_path, monkeypatch: pytest.MonkeyPatch):
@@ -393,7 +393,7 @@ title: Test Page
 )
 def test_build_permalink_map(
     tmp_path: Path, md_contents: dict[str, str], expected_map: dict[str, str]
-) -> None:
+):
     """
     Test building the permalink to markdown file mapping.
 
@@ -418,7 +418,7 @@ def test_build_permalink_map(
     assert result_relative == expected_map
 
 
-def test_build_permalink_map_nested_directories(tmp_path: Path) -> None:
+def test_build_permalink_map_nested_directories(tmp_path: Path):
     """Test the build_permalink_map function with markdown files in drafts
     directory."""
     # Create directories
@@ -461,9 +461,7 @@ title: "Draft 1"
     assert result == expected_result
 
 
-def test_build_permalink_map_handles_errors_gracefully(
-    tmp_path: Path, capsys
-) -> None:
+def test_build_permalink_map_handles_errors_gracefully(tmp_path: Path, capsys):
     """Test that the build_permalink_map function handles errors gracefully and
     continues processing other files."""
     # Create markdown files with one valid and one invalid file
@@ -506,7 +504,7 @@ malformed_yaml: [unclosed list
     assert "Unexpected error" not in captured.out
 
 
-def test_build_permalink_map_with_extra_delimiters(tmp_path: Path) -> None:
+def test_build_permalink_map_with_extra_delimiters(tmp_path: Path):
     """Test that the build_permalink_map function correctly parses files with
     extra delimiters in the front matter."""
     md_content = """---
@@ -545,7 +543,7 @@ def mock_public_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return public_dir
 
 
-def test_parse_html_file(mock_public_dir: Path) -> None:
+def test_parse_html_file(mock_public_dir: Path):
     """Test parsing an HTML file into a BeautifulSoup object."""
     # Create a test HTML file
     html_content = "<html><body><h1>Test</h1></body></html>"
@@ -559,7 +557,7 @@ def test_parse_html_file(mock_public_dir: Path) -> None:
     assert soup.find("h1") is not None
 
 
-def test_parse_html_file_outside_public(mock_public_dir: Path) -> None:
+def test_parse_html_file_outside_public(mock_public_dir: Path):
     """Test that `parse_html_file` raises an error for files outside the public
     directory."""
     # `mock_public_dir` is `tmp_path / "public"`. git_root is mocked to `tmp_path`.
@@ -573,7 +571,7 @@ def test_parse_html_file_outside_public(mock_public_dir: Path) -> None:
         script_utils.parse_html_file(outside_file)
 
 
-def test_is_redirect() -> None:
+def test_is_redirect():
     """Test detection of redirect pages."""
     # Test a redirect page
     redirect_html = """
@@ -614,9 +612,7 @@ def test_is_redirect() -> None:
         (Path("public/index.html"), True),  # Main index needs markdown
     ],
 )
-def test_should_have_md(
-    tmp_path: Path, file_path: Path, expected_result: bool
-) -> None:
+def test_should_have_md(tmp_path: Path, file_path: Path, expected_result: bool):
     """Test determination of whether an HTML file should have a corresponding
     markdown file."""
     # Create the test HTML file
@@ -637,7 +633,7 @@ def test_should_have_md(
         assert script_utils.should_have_md(file_path) == expected_result
 
 
-def test_md_for_html_with_redirect(mock_public_dir: Path) -> None:
+def test_md_for_html_with_redirect(mock_public_dir: Path):
     """Test that redirect pages are correctly identified as not needing markdown
     files."""
     test_file = mock_public_dir / "test.html"
@@ -654,7 +650,7 @@ def test_md_for_html_with_redirect(mock_public_dir: Path) -> None:
     assert script_utils.should_have_md(test_file) is False
 
 
-def test_parse_html_file_errors(mock_public_dir: Path) -> None:
+def test_parse_html_file_errors(mock_public_dir: Path):
     """Test error handling in parse_html_file."""
     # Test non-existent file
     non_existent = mock_public_dir / "nonexistent.html"
@@ -697,9 +693,7 @@ def test_parse_html_file_errors(mock_public_dir: Path) -> None:
         ("""<meta name="description"><meta name="keywords">""", False),
     ],
 )
-def test_is_redirect_variations(
-    html_content: str, expected_result: bool
-) -> None:
+def test_is_redirect_variations(html_content: str, expected_result: bool):
     """Test various forms of meta refresh tags for redirect detection."""
     html = f"<html><head>{html_content}</head><body>Content</body></html>"
     soup = BeautifulSoup(html, "html.parser")
@@ -716,7 +710,7 @@ def test_is_redirect_variations(
 )
 def test_md_for_html_error_handling(
     mock_public_dir: Path, html_content: str, description: str
-) -> None:
+):
     """Test error handling in md_for_html function with various problematic
     inputs."""
     test_file = mock_public_dir / "test.html"
@@ -1023,14 +1017,14 @@ aliases: [/nested-alias1, /nested-alias2]
 )
 def test_collect_aliases(
     tmp_path: Path, md_contents: dict[str, str], expected_aliases: set[str]
-) -> None:
+):
     """Test collect_aliases with various file contents and structures."""
     # Create test files and directories
     for file_path_str, content in md_contents.items():
         create_markdown_file(tmp_path / file_path_str, content=content)
 
     # Mock get_files to avoid git operations in temp directory
-    def mock_get_files(dir_to_search, **kwargs):
+    def mock_get_files(dir_to_search, **kwargs) -> tuple[Path, ...]:
         files = []
         if dir_to_search:
             files = list(dir_to_search.rglob("*.md"))
@@ -1059,7 +1053,7 @@ def test_get_classes_list_attribute():
     tag = soup.find("div")
     assert tag is not None
     # Simulate how BS might present it if it were a list internally
-    tag["class"] = ["class1", "class2", "class3"]
+    tag["class"] = cast(AttributeValueList, ["class1", "class2", "class3"])
     assert script_utils.get_classes(tag) == ["class1", "class2", "class3"]
 
 
@@ -1069,7 +1063,7 @@ def test_get_classes_list_attribute_with_non_string():
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = ["class1", 123, "class3", True]
+    tag["class"] = cast(AttributeValueList, ["class1", 123, "class3", True])
     assert script_utils.get_classes(tag) == ["class1", "123", "class3", "True"]
 
 
@@ -1097,7 +1091,7 @@ def test_get_classes_empty_list_attribute():
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = []
+    tag["class"] = cast(AttributeValueList, [])
     assert script_utils.get_classes(tag) == []
 
 
@@ -1117,7 +1111,7 @@ def test_get_classes_invalid_type_attribute():
     soup = BeautifulSoup(html, "html.parser")
     tag = soup.find("div")
     assert tag is not None
-    tag["class"] = 123
+    tag["class"] = cast(AttributeValueList, 123)
     with pytest.raises(ValueError, match="Invalid class attribute value"):
         script_utils.get_classes(tag)
 
@@ -1126,7 +1120,7 @@ def test_get_classes_invalid_type_attribute():
 
 
 @pytest.fixture(autouse=False)
-def clear_imagemagick_cache():
+def clear_imagemagick_cache() -> Iterator[None]:
     script_utils._get_imagemagick_version.cache_clear()
     yield
     script_utils._get_imagemagick_version.cache_clear()
@@ -1144,7 +1138,7 @@ def test_get_imagemagick_version_returns_7_when_im7_detected(
 ):
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
 
-    def mock_run(*args, **kwargs):
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(
             args=args,
             returncode=0,
@@ -1161,7 +1155,7 @@ def test_get_imagemagick_version_returns_6_when_im6_detected(
 ):
     monkeypatch.setattr(shutil, "which", lambda name: "/usr/bin/magick")
 
-    def mock_run(*args, **kwargs):
+    def mock_run(*args, **kwargs) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(
             args=args,
             returncode=0,

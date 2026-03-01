@@ -1,8 +1,9 @@
 import shutil
 import subprocess
+from collections.abc import Iterator, Mapping
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Generator
+from typing import cast
 from unittest.mock import Mock
 
 import git
@@ -199,7 +200,7 @@ def _create_test_gif(
 
 def create_markdown_file(
     path: Path,
-    frontmatter: dict[str, Any] | None = None,
+    frontmatter: Mapping[str, object] | None = None,
     content: str = "# Test",
 ) -> Path:
     """
@@ -243,7 +244,7 @@ def mock_http_response(
 
 
 @pytest.fixture
-def setup_test_env(tmp_path: Path) -> Generator[Path, None, None]:
+def setup_test_env(tmp_path: Path) -> Iterator[Path]:
     """Sets up a temporary Git repository and populates it with test assets."""
 
     # Create the required directories for testing
@@ -362,7 +363,7 @@ def create_timestamp(dt: datetime) -> TimeStamp:
 
 def setup_git_repo_with_files(
     tmp_path: Path,
-    files: dict[str, dict[str, Any]],
+    files: dict[str, dict[str, object]],
     *,
     configure_user: bool = True,
     initial_commit: bool = True,
@@ -393,8 +394,10 @@ def setup_git_repo_with_files(
         full_path = tmp_path / file_path
         create_markdown_file(
             full_path,
-            frontmatter=file_config.get("frontmatter"),
-            content=file_config.get("content", "# Test"),
+            frontmatter=cast(
+                Mapping[str, object] | None, file_config.get("frontmatter")
+            ),
+            content=cast(str, file_config.get("content", "# Test")),
         )
         if initial_commit:
             repo.index.add([str(full_path)])

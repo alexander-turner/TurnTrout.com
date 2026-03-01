@@ -273,9 +273,7 @@ def convert_asset(
             for suffix in [".mp4", ".webm"]:
                 _strip_metadata(input_file.with_suffix(suffix))
     else:
-        raise ValueError(
-            f"Error: Unsupported file type '{input_file.suffix}'."
-        )
+        raise ValueError(f"Error: Unsupported file type '{input_file.suffix}'.")
 
     for md_file in script_utils.get_files(
         dir_to_search=md_references_dir, filetypes_to_match=(".md",)
@@ -294,7 +292,7 @@ def convert_asset(
         input_file.unlink()
 
 
-def main():
+def main() -> None:
     """Convert assets to optimized formats."""
     parser = argparse.ArgumentParser(
         description="Convert assets to optimized formats."

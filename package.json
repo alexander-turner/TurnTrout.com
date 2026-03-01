@@ -36,7 +36,8 @@
     ],
     "*.{js,jsx,ts,tsx}": [
       "pnpm eslint --fix --config config/javascript/eslint.config.js",
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+      "bash -c 'pnpm exec tsc --noEmit'"
     ],
     ".hooks/prepare-commit-msg": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
@@ -52,7 +53,8 @@
       "isort",
       "autopep8 --in-place",
       "black",
-      "ruff check --fix"
+      "ruff check --fix",
+      "bash -c 'uv run dmypy run -- --config-file config/python/mypy.ini scripts/'"
     ],
     "!(*.vale-styles)/**/*.md": [
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
@@ -162,7 +164,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "winston-transport": "^4.9.0",
     "ws": "8.18.1",
-    "xml2js": "0.5.0",
+    "xml2js": "0.6.2",
     "yargs": "17.7.2"
   },
   "optionalDependencies": {
@@ -200,7 +202,7 @@
     "lightningcss-linux-arm64-gnu": "1.29.1",
     "lightningcss-linux-arm64-musl": "1.29.1",
     "lightningcss-linux-x64-gnu": "1.29.1",
-    "lightningcss-linux-x64-musl": "1.29.1",
+    "lightningcss-linux-x64-musl": "1.31.1",
     "lightningcss-win32-arm64-msvc": "1.29.1",
     "lightningcss-win32-x64-msvc": "1.29.1",
     "sass-embedded": "1.88.0"
@@ -269,7 +271,7 @@
     "playwright": "1.55.1",
     "preact": "10.26.0",
     "prettier": "3.5.3",
-    "puppeteer": "24.15.0",
+    "puppeteer": "24.37.5",
     "rehype-parse": "9.0.1",
     "rehype-stringify": "10.0.1",
     "remark-definition-list": "2.0.0",
@@ -285,7 +287,7 @@
     "tsx": "4.19.3",
     "typescript": "5.7.3",
     "typescript-eslint": "8.23.0",
-    "unist-util-visit": "5.0.0",
+    "unist-util-visit": "5.1.0",
     "unist-util-visit-parents": "6.0.1",
     "whatwg-fetch": "3.6.20",
     "workerpool": "9.2.0"

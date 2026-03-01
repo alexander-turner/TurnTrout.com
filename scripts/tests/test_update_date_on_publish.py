@@ -15,13 +15,13 @@ from .utils import create_markdown_file, create_timestamp
 
 
 @pytest.fixture
-def temp_content_dir(quartz_project_structure):
+def temp_content_dir(quartz_project_structure) -> Path:
     """Create a temporary content directory with test files."""
     return quartz_project_structure["content"]
 
 
 @pytest.fixture
-def mock_datetime(monkeypatch):
+def mock_datetime(monkeypatch) -> datetime:
     """Mock datetime to return a fixed date."""
     fixed_date = datetime(2024, 2, 1)
     fixed_timestamp = create_timestamp(fixed_date)
@@ -30,7 +30,7 @@ def mock_datetime(monkeypatch):
 
 
 @pytest.fixture
-def mock_git(temp_content_dir):
+def mock_git(temp_content_dir) -> object:
     """
     Create a mock git command that uses temp_content_dir as root.
 
@@ -38,8 +38,8 @@ def mock_git(temp_content_dir):
     changes.
     """
 
-    def _mock_git(modified_files=None):
-        def _git_command(*args, **kwargs):
+    def _mock_git(modified_files=None) -> object:
+        def _git_command(*args, **kwargs) -> str:
             if "rev-parse" in args[0]:
                 return str(temp_content_dir.parent) + "\n"
             if "diff" in args[0]:
@@ -273,7 +273,7 @@ def test_long_urls_not_wrapped(temp_content_dir, mock_git):
 def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     """Test the main function's integration."""
     initial_date = create_timestamp(datetime(2024, 1, 1))
-    files = [
+    files: list[tuple[str, dict[str, object]]] = [
         ("new.md", {"title": "New Post"}),
         (
             "existing.md",
@@ -311,22 +311,22 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
 
 # Test the git check
 @pytest.fixture
-def mock_git_root():
+def mock_git_root() -> str:
     return "/path/to/git/root"
 
 
 @pytest.fixture
-def test_file():
+def test_file() -> Path:
     return Path("/path/to/git/root/website_content/test.md")
 
 
 @pytest.fixture
-def mock_git_commands(mock_git_root):
+def mock_git_commands(mock_git_root) -> object:
     """Factory fixture for creating git command mocks with different
     behaviors."""
 
-    def create_mock(*, has_changes=False, raise_error=False):
-        def _mock_git(*args, **kwargs):
+    def create_mock(*, has_changes=False, raise_error=False) -> object:
+        def _mock_git(*args, **kwargs) -> str:
             if raise_error:
                 raise subprocess.CalledProcessError(1, "git")
 
@@ -608,14 +608,14 @@ def test_maybe_convert_to_timestamp_iso_string_input():
 def test_maybe_convert_to_timestamp_invalid_type():
     """Test maybe_convert_to_timestamp with an unsupported input type."""
     with pytest.raises(ValueError, match="Unknown date type <class 'int'>"):
-        update_lib.maybe_convert_to_timestamp(12345)
+        update_lib.maybe_convert_to_timestamp(12345)  # type: ignore[arg-type]
 
 
 def test_main_default_content_dir(mock_datetime, mock_git):
     """Test that main uses 'website_content' dir by default."""
     glob_calls = []
 
-    def mock_glob(self, pattern):
+    def mock_glob(self, pattern) -> list[Path]:
         glob_calls.append((self, pattern))
         return []  # Return empty list to avoid processing files
 
@@ -653,7 +653,7 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
     # Mock split_yaml to return empty for the invalid file
     original_split = script_utils.split_yaml
 
-    def mock_split_yaml(file_path):
+    def mock_split_yaml(file_path) -> tuple[dict[str, object], str]:
         if file_path.name == "invalid.md":
             return ({}, "")
         return original_split(file_path)
@@ -676,7 +676,7 @@ def test_main_skips_invalid_file(temp_content_dir, mock_datetime, mock_git):
 
 
 @pytest.fixture
-def mock_readme_path(tmp_path, monkeypatch):
+def mock_readme_path(tmp_path, monkeypatch) -> None:
     """Fixture to mock the _README_PATH constant to point to a temporary
     file."""
     readme_file = tmp_path / "README.md"
@@ -758,7 +758,9 @@ def test_update_readme_copyright_year_readme_not_found(tmp_path, monkeypatch):
         update_lib.update_readme_copyright_year(mock_current_datetime)
 
 
-def test_update_readme_copyright_year_pattern_not_found(mock_readme_path):
+def test_update_readme_copyright_year_pattern_not_found(
+    mock_readme_path,
+):
     """Test ValueError when the copyright pattern is not found in README.md."""
     invalid_content = "This file does not contain the expected copyright line."
     mock_readme_path.write_text(invalid_content, encoding="utf-8")

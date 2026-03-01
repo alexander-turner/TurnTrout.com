@@ -106,8 +106,8 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 **Pre-push** (main branch only):
 
 - Stashes uncommitted changes
-- Runs comprehensive validation (tests, linting, spellcheck, link validation)
-- Compresses/uploads assets to CDN
+- Runs only unique local tasks (auto-fix formatters, asset upload, alt-text scan)
+- Most quality checks (linting, tests, spellcheck, link validation) run in CI
 - Can resume from last failure: `RESUME=true git push`
 
 ## Content Structure
@@ -162,16 +162,14 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 When pushing to main, these checks run automatically:
 
-1. TypeScript: ESLint, type checking, 100% branch coverage tests
-2. Python: mypy, pylint (10/10), ruff, 100% line coverage
-3. Spellcheck with whitelisting
-4. Vale prose linting (no clichés, unnecessary adverbs)
-5. Markdown link validation
-6. Frontmatter validation
-7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, etc.)
-9. Internal link validation with `linkchecker`
-10. Asset compression and CDN upload
+1. ruff (Python linting, fast)
+2. ESLint `--fix` (auto-fixes TypeScript)
+3. docformatter `--in-place` (auto-fixes Python docstrings)
+4. stylelint `--fix` (auto-fixes SCSS)
+5. Asset compression and CDN upload
+6. Alt-text scan (LLM-based, requires API key)
+
+Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 
 ## GitHub Actions (Post-push)
 
