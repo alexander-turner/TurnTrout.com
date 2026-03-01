@@ -139,7 +139,7 @@ test.describe("Unique content around the site", () => {
   DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(url)
+      await gotoPage(page, url)
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
@@ -227,7 +227,10 @@ test.describe("Unique content around the site", () => {
   })
 
   test("LW Question admonition (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/question-about-defining-alignment-in-simple-setting")
+    await gotoPage(
+      page,
+      "http://localhost:8080/question-about-defining-alignment-in-simple-setting",
+    )
     await page.locator("body").waitFor({ state: "visible" })
 
     const questionAdmonition = page.locator(".admonition.question").first()

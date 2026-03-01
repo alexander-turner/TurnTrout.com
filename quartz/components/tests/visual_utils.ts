@@ -357,11 +357,11 @@ export async function getNextElementMatchingSelector(
 export async function openSearch(page: Page) {
   // #results-container is created by onNav after the async getContentIndex()
   // resolves and just before the click handlers are registered.
-  await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
+  await expect(page.locator("#results-container")).toBeAttached()
   await expect(async () => {
     await page.locator("#search-icon").click()
-    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
-  }).toPass({ timeout: 10_000 })
+    await expect(page.locator("#search-container")).toHaveClass(/active/)
+  }).toPass()
   await expect(page.locator("#search-bar")).toBeVisible()
 }
 

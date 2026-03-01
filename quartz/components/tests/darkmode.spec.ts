@@ -239,12 +239,11 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
           getComputedStyle(document.documentElement)
             .getPropertyValue("--theme-label-content")
             .trim().length > 0,
-        { timeout: 10_000 },
       )
       // CSS custom property may not be set synchronously after navigation
       await expect(async () => {
         await helper.verifyThemeLabel(theme)
-      }).toPass({ timeout: 5_000 })
+      }).toPass()
       await helper.verifyTheme(theme)
     })
   })

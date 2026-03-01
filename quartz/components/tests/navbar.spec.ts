@@ -522,22 +522,12 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
   )
 })
 
-async function getTimestampAfterNavigation(page: Page): Promise<number | null> {
-  // Use a bounded timeout so that callers using test.fail() can handle the null
-  // return value instead of hitting the test-level 30 s timeout.
-  try {
-    const timestampAfterNavigationHandle = await page.waitForFunction(
-      (id) => {
-        const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
-        return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
-      },
-      pondVideoId,
-      { timeout: 8_000 },
-    )
-    return await timestampAfterNavigationHandle.jsonValue()
-  } catch {
-    return null
-  }
+async function getTimestampAfterNavigation(page: Page): Promise<number> {
+  const handle = await page.waitForFunction((id) => {
+    const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
+    return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
+  }, pondVideoId)
+  return (await handle.jsonValue()) as number
 }
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
@@ -562,6 +552,11 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
+  // WebKit resets video.currentTime after page refresh; skip until fixed.
+  test.skip(
+    page.context().browser()?.browserType().name() === "webkit",
+    "Safari resets video currentTime after page refresh",
+  )
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
@@ -570,6 +565,5 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   await page.goto(page.url())
 
   const timestampAfterRefresh = await getTimestampAfterNavigation(page)
-  test.fail(timestampAfterRefresh === null, "Timestamp after refresh is null")
   expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0)
 })

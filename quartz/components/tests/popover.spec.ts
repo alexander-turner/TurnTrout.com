@@ -9,6 +9,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -34,7 +35,7 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
