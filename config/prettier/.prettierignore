@@ -14,4 +14,4 @@ htmlcov/
 .dmypy.json
 test-results/
 pnpm-lock.yaml
-scripts/asset_queue.json
+**/asset_queue.json
