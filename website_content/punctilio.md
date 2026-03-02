@@ -4,7 +4,7 @@ permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
-date_published: 2026-02-14T00:00:00.000Z
+date_published: 2026-02-14T00:00:00Z
 description: Meticulously beautify your text using my "punctilio" library. No installation needed—just one click away.
 tags:
   - website
@@ -13,7 +13,9 @@ aliases:
   - prettify
   - text-prettify
   - punctilio-demo
+date_updated: 2026-03-01 12:17:52.007453
 ---
+
 Tired of the incomplete smart quote abilities offered by 2024's JavaScript libraries, I created my own. I christened the library "`punctilio`" - the "precise observance of formalities".  As of publication, [`punctilio`](https://github.com/alexander-turner/punctilio) is the best library for prettifying text.
 
 > [!quote]- [A full description of `punctilio`](/open-source)
