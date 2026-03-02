@@ -50,6 +50,7 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
+uv_install_if_missing alt-text-llm
 if is_root; then
 	apt_pkgs=()
 	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
