@@ -22,6 +22,7 @@ type TestFixtures = {
 }
 
 const test = base.extend<TestFixtures>({
+  // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
     await expect(dummyLink).toBeVisible()

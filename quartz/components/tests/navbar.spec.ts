@@ -23,11 +23,11 @@ function getVideoElements(page: Page): VideoElements {
   }
 }
 
-async function getCurrentTime(video: Locator): Promise<number> {
+function getCurrentTime(video: Locator): Promise<number> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.currentTime)
 }
 
-async function isPaused(video: Locator): Promise<boolean> {
+function isPaused(video: Locator): Promise<boolean> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.paused)
 }
 

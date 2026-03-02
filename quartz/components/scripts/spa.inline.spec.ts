@@ -33,10 +33,7 @@ async function waitForHistoryState(page: Page, targetPos: number): Promise<void>
   )
 }
 
-async function waitForHistoryScrollNotEquals(
-  page: Page,
-  initialScroll: number | undefined,
-): Promise<void> {
+async function waitForHistoryScrollNotEquals(page: Page, initialScroll?: number): Promise<void> {
   await page.waitForFunction((initial) => {
     return window.history.state?.scroll !== initial
   }, initialScroll)
@@ -220,7 +217,7 @@ test.describe("Scroll Behavior", () => {
     await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
       waitUntil: "domcontentloaded",
     })
-    await waitForHistoryScrollNotEquals(page, undefined)
+    await waitForHistoryScrollNotEquals(page)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
     expect(Math.abs(scrollPosition)).toBeGreaterThan(0)
@@ -235,7 +232,7 @@ test.describe("Scroll Behavior", () => {
       waitUntil: "domcontentloaded",
     })
     await page.waitForURL(`**/${testingPageSlug}#${finalAnchor}`)
-    await waitForHistoryScrollNotEquals(page, undefined)
+    await waitForHistoryScrollNotEquals(page)
 
     const tocTitle = page.locator("#toc-title button")
     await expect(tocTitle).toBeVisible()
@@ -252,7 +249,7 @@ test.describe("Scroll Behavior", () => {
 
     await page.evaluate(() => window.scrollTo(0, 500))
     // Wait for scroll to enter the history state
-    await waitForHistoryScrollNotEquals(page, undefined)
+    await waitForHistoryScrollNotEquals(page)
 
     const tocTitle = page.locator("#toc-title button")
     await expect(tocTitle).toBeVisible()
@@ -733,7 +730,7 @@ test.describe("Document Head & Body Updates", () => {
   }
 
   // Helper to wait for SPA navigation to complete (including DOM updates)
-  async function waitForNavigation(page: Page): Promise<() => Promise<void>> {
+  function waitForNavigation(page: Page): () => Promise<void> {
     const navPromise = page.evaluate(() => {
       return new Promise<void>((resolve) => {
         document.addEventListener("nav", () => resolve(), { once: true })
@@ -743,7 +740,7 @@ test.describe("Document Head & Body Updates", () => {
   }
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {
-    const awaitNav = await waitForNavigation(page)
+    const awaitNav = waitForNavigation(page)
     await page.click(`a[href$="${url}"]`)
     await page.waitForURL(`**${url}`)
     await awaitNav()
@@ -773,7 +770,7 @@ test.describe("Document Head & Body Updates", () => {
     const aboutTitle = await page.title()
 
     // Go back
-    const awaitNav = await waitForNavigation(page)
+    const awaitNav = waitForNavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
@@ -922,13 +919,13 @@ test.describe("Document Head & Body Updates", () => {
     })
 
     // Navigate back to home
-    let awaitNav = await waitForNavigation(page)
+    let awaitNav = waitForNavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
 
     // Navigate forward to about again
-    awaitNav = await waitForNavigation(page)
+    awaitNav = waitForNavigation(page)
     await page.goForward()
     await page.waitForURL("**/about")
     await awaitNav()
