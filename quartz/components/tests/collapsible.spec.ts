@@ -79,11 +79,13 @@ test.describe("Collapsible admonition state persistence", () => {
     // Reload page
     await page.reload({ waitUntil: "load" })
 
-    // Verify state persisted
-    const stateAfterReload = await getCollapsibles(page)
-      .first()
-      .evaluate((el) => el.classList.contains("is-collapsed"))
-    expect(stateAfterReload).toBe(toggledState)
+    // Verify state persisted (use auto-retrying assertion for Safari bfcache timing)
+    const reloadedFirst = getCollapsibles(page).first()
+    if (toggledState) {
+      await expect(reloadedFirst).toHaveClass(/is-collapsed/)
+    } else {
+      await expect(reloadedFirst).not.toHaveClass(/is-collapsed/)
+    }
   })
 
   test("state persists across SPA navigation", async ({ page }) => {

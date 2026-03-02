@@ -353,25 +353,31 @@ export async function getNextElementMatchingSelector(
  *  search icon click handler might not be registered yet or the DOM state
  *  may shift between checks.  Retrying the entire block avoids the race
  *  between the browser-side "active" class appearing and the Playwright-side
- *  visibility check. */
+ *  visibility check.
+ *
+ *  Checks whether search is already active before clicking to avoid the
+ *  case where a retry click is intercepted by the active search overlay. */
 export async function openSearch(page: Page) {
+  const container = page.locator("#search-container")
+  const searchBar = page.locator("#search-bar")
+
   await expect(async () => {
-    await page.locator("#search-icon").click({ timeout: 2_000 })
-    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
-    await expect(page.locator("#search-bar")).toBeVisible({ timeout: 2_000 })
+    const isActive = await container
+      .evaluate((el) => el.classList.contains("active"))
+      .catch(() => false)
+    if (!isActive) {
+      await page.locator("#search-icon").click({ timeout: 2_000 })
+    }
+    await expect(container).toHaveClass(/active/, { timeout: 2_000 })
+    await expect(searchBar).toBeVisible({ timeout: 2_000 })
   }).toPass({ timeout: 15_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {
-  // Wait for search container to be in the DOM and interactive
-  const searchContainer = page.locator("#search-container")
-  // Ensure search is opened
-  await expect(searchContainer).toBeAttached()
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(searchContainer).toBeVisible()
+  // Ensure search is open (re-opens if DOM was reset by SPA navigation)
+  await openSearch(page)
 
   const searchBar = page.locator("#search-bar")
-  await expect(searchBar).toBeVisible()
   await expect(searchBar).toBeEnabled()
   return searchBar
 }
