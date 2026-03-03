@@ -379,7 +379,15 @@ export class PreviewManager {
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
 
-    scrollContainerToMatch(this.container, firstMatch, 0.5)
+    // Use offsetTop/offsetParent chain — more reliable than getBoundingClientRect
+    // for elements inside scrollable containers with position: relative
+    let offsetTop = 0
+    let el: HTMLElement | null = firstMatch
+    while (el && el !== this.container) {
+      offsetTop += el.offsetTop
+      el = el.offsetParent as HTMLElement | null
+    }
+    this.container.scrollTop = offsetTop - this.container.clientHeight * 0.5
   }
 }
 
@@ -763,7 +771,9 @@ async function onNav(e: CustomEventMap["nav"]) {
   const debouncedResizeHandler = debounce(
     () => {
       handleResizeForCardPreviews()
-      requestAnimationFrame(() => previewManager?.scrollToFirstmatch())
+      // No rAF needed — debounce already fires from within a rAF callback,
+      // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
+      previewManager?.scrollToFirstmatch()
     },
     150,
     false,
