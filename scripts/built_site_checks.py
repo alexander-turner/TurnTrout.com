@@ -2473,6 +2473,11 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
                 )
                 or element.find_parent(id="content-meta")
                 or "page-listing-title" in script_utils.get_classes(element)
+                # Skip <p> elements that contain transcluded content:
+                # transclusion wraps block-level content (tables, headings)
+                # in <span class="transclude"> inside a <p>, so get_text()
+                # concatenates table cells without spaces.
+                or element.find(class_="transclude")
             ):
                 continue
 

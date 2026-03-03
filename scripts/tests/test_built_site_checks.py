@@ -2826,6 +2826,23 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert "I 've" not in result[0]
 
 
+def test_extract_flat_paragraph_texts_skips_p_containing_transclude():
+    """A <p> wrapping a <span class="transclude"> with block-level content (like
+    tables) is skipped — get_text() would concatenate table cells without
+    spaces, producing garbage tokens like 'FeatureExampleSmart'."""
+    html = """<article>
+    <p><span class="transclude" data-url="other-page">
+    <table><tr><th>Feature</th><th>Example</th></tr></table>
+    <p>Nested paragraph inside transclude.</p>
+    </span></p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Normal paragraph ." in result[0]
+
+
 @pytest.mark.parametrize(
     "stdout,line_to_source,expected",
     [
