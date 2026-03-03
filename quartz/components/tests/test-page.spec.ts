@@ -104,7 +104,7 @@ test.describe("Unique content around the site", () => {
       "Flaky in Safari on desktop",
     )
 
-    await gotoPage(page, "http://localhost:8080")
+    await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
     // Wait for the SPA router to finish initializing so a late navigation
     // doesn't destroy the execution context during evaluate.
@@ -716,7 +716,7 @@ test.describe("Elvish toggle", () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
 
-    await gotoPage(page, "http://localhost:8080/test-page")
+    await gotoPage(page, "http://localhost:8080/test-page", "load")
 
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
@@ -1112,7 +1112,7 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await gotoPage(page, `http://localhost:8080/${pageSlug}`)
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality
