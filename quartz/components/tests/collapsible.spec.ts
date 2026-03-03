@@ -1,9 +1,25 @@
 import type { Page } from "@playwright/test"
 
 import { test, expect } from "./fixtures"
+import { gotoPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
+
+/** Wait for all collapsible admonitions to have their content-based IDs assigned.
+ *  The IDs are set by admonition.inline.js (on the "nav" event), which hashes the
+ *  title text. Waiting ensures title text is loaded so hashes are injective. */
+async function waitForCollapsibleIds(page: Page): Promise<void> {
+  await expect(async () => {
+    const ids = await getCollapsibles(page).evaluateAll((els) =>
+      els.map((el) => (el as HTMLElement).dataset.collapsibleId),
+    )
+    expect(ids.length).toBeGreaterThan(0)
+    for (const id of ids) {
+      expect(id).toBeDefined()
+    }
+  }).toPass({ timeout: 10_000 })
+}
 
 async function spaNavigateToAbout(page: Page): Promise<void> {
   await page.evaluate(() => window.spaNavigate(new URL("/about", window.location.origin)))
@@ -18,7 +34,8 @@ async function goBackToTestPage(page: Page): Promise<void> {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page")
+  await waitForCollapsibleIds(page)
 })
 
 test.describe("Collapsible admonition state persistence", () => {
@@ -65,37 +82,52 @@ test.describe("Collapsible admonition state persistence", () => {
     expect(stored).toBe(newState ? "true" : "false")
   })
 
-  test("state persists across page reload", async ({ page }) => {
-    const collapsibles = getCollapsibles(page)
-    const first = collapsibles.first()
+  test("collapsing an open admonition persists across reload", async ({ page }) => {
+    // Target the initially-open admonition
+    const openAdmonition = page
+      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+      .filter({ hasText: "starts off open" })
+    await expect(openAdmonition).toBeVisible()
 
-    // Get initial state
-    const initiallyCollapsed = await first.evaluate((el) => el.classList.contains("is-collapsed"))
+    // Collapse it
+    await openAdmonition.locator(".admonition-title").click()
+    await expect(openAdmonition).toHaveClass(/is-collapsed/)
 
-    // Toggle state
-    await first.locator(".admonition-title").click()
-    const toggledState = !initiallyCollapsed
-
-    // Reload page
+    // Reload page and verify it stayed collapsed
     await page.reload({ waitUntil: "load" })
+    const reloaded = page
+      .locator(".admonition.is-collapsible")
+      .filter({ hasText: "starts off open" })
+    await expect(reloaded).toHaveClass(/is-collapsed/)
+  })
 
-    // Verify state persisted (use auto-retrying assertion for Safari bfcache timing)
-    const reloadedFirst = getCollapsibles(page).first()
-    if (toggledState) {
-      await expect(reloadedFirst).toHaveClass(/is-collapsed/)
-    } else {
-      await expect(reloadedFirst).not.toHaveClass(/is-collapsed/)
-    }
+  test("opening a collapsed admonition persists across reload", async ({ page }) => {
+    // Target the initially-collapsed admonition
+    const collapsedAdmonition = page
+      .locator(".admonition.is-collapsible.is-collapsed")
+      .filter({ hasText: "starts off collapsed" })
+    await expect(collapsedAdmonition).toBeVisible()
+
+    // Open it
+    await collapsedAdmonition.locator(".admonition-title").click()
+    await expect(collapsedAdmonition).not.toHaveClass(/is-collapsed/)
+
+    // Reload page and verify it stayed open
+    await page.reload({ waitUntil: "load" })
+    const reloaded = page
+      .locator(".admonition.is-collapsible")
+      .filter({ hasText: "starts off collapsed" })
+    await expect(reloaded).not.toHaveClass(/is-collapsed/)
   })
 
   test("state persists across SPA navigation", async ({ page }) => {
-    const collapsibles = getCollapsibles(page)
-    const first = collapsibles.first()
-
-    // Get initial state and toggle
-    const initiallyCollapsed = await first.evaluate((el) => el.classList.contains("is-collapsed"))
-    await first.locator(".admonition-title").click()
-    const toggledState = !initiallyCollapsed
+    // Target the initially-open admonition and collapse it
+    const openAdmonition = page
+      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+      .filter({ hasText: "starts off open" })
+    await expect(openAdmonition).toBeVisible()
+    await openAdmonition.locator(".admonition-title").click()
+    await expect(openAdmonition).toHaveClass(/is-collapsed/)
 
     // Navigate away using SPA navigation
     await spaNavigateToAbout(page)
@@ -104,10 +136,10 @@ test.describe("Collapsible admonition state persistence", () => {
     await goBackToTestPage(page)
 
     // Verify state persisted
-    const stateAfterNav = await getCollapsibles(page)
-      .first()
-      .evaluate((el) => el.classList.contains("is-collapsed"))
-    expect(stateAfterNav).toBe(toggledState)
+    const afterNav = page
+      .locator(".admonition.is-collapsible")
+      .filter({ hasText: "starts off open" })
+    await expect(afterNav).toHaveClass(/is-collapsed/)
   })
 
   test("clicking content does not close open collapsible", async ({ page }) => {
@@ -151,7 +183,8 @@ test.describe("Collapsible admonition state persistence", () => {
     const page = await context.newPage()
 
     // First, visit the page to get collapsible IDs
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/test-page")
+    await waitForCollapsibleIds(page)
 
     const collapsibleData = await getCollapsibles(page).evaluateAll((els) =>
       els.map((el) => ({

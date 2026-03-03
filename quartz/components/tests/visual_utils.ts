@@ -353,23 +353,13 @@ export async function getNextElementMatchingSelector(
  *  search icon click handler might not be registered yet or the DOM state
  *  may shift between checks.  Retrying the entire block avoids the race
  *  between the browser-side "active" class appearing and the Playwright-side
- *  visibility check.
- *
- *  Checks whether search is already active before clicking to avoid the
- *  case where a retry click is intercepted by the active search overlay. */
+ *  visibility check. */
 export async function openSearch(page: Page) {
-  const container = page.locator("#search-container")
-  const searchBar = page.locator("#search-bar")
-
   await expect(async () => {
-    const isActive = await container
-      .evaluate((el) => el.classList.contains("active"))
-      .catch(() => false)
-    if (!isActive) {
-      await page.locator("#search-icon").click({ timeout: 2_000 })
-    }
-    await expect(container).toHaveClass(/active/, { timeout: 2_000 })
-    await expect(searchBar).toBeVisible({ timeout: 2_000 })
+    await expect(page.locator("#results-container")).toBeAttached({ timeout: 2_000 })
+    await page.locator("#search-icon").click({ timeout: 2_000 })
+    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
+    await expect(page.locator("#search-bar")).toBeVisible({ timeout: 2_000 })
   }).toPass({ timeout: 15_000 })
 }
 

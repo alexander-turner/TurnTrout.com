@@ -14,6 +14,10 @@ interface VideoElements {
   pauseIcon: Locator
 }
 
+function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
+}
+
 function getVideoElements(page: Page): VideoElements {
   return {
     video: page.locator(`video#${pondVideoId}`),
@@ -533,10 +537,7 @@ async function getTimestampAfterNavigation(page: Page): Promise<number> {
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
   // WebKit (Safari) resets video.currentTime after SPA navigation; skip until fixed.
-  test.skip(
-    page.context().browser()?.browserType().name() === "webkit",
-    "Safari resets video currentTime after SPA navigation",
-  )
+  test.skip(isSafariBrowser(page), "Safari resets video currentTime after SPA navigation")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -553,10 +554,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
   // WebKit resets video.currentTime after page refresh; skip until fixed.
-  test.skip(
-    page.context().browser()?.browserType().name() === "webkit",
-    "Safari resets video currentTime after page refresh",
-  )
+  test.skip(isSafariBrowser(page), "Safari resets video currentTime after page refresh")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

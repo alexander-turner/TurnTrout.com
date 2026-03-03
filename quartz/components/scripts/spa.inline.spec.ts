@@ -11,7 +11,7 @@ import type { Page } from "@playwright/test"
 
 import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
 import { test, expect } from "../tests/fixtures"
-import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
+import { isDesktopViewport, getAllWithWait, gotoPage } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -117,7 +117,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
   // Navigate to a page that uses the SPA inline logic
-  await page.goto(`http://localhost:8080/${testingPageSlug}`, { waitUntil: "domcontentloaded" })
+  await gotoPage(page, `http://localhost:8080/${testingPageSlug}`, "domcontentloaded")
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
   await page.evaluate(() => {
@@ -177,6 +177,11 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
+    // Mock the external URL to avoid real network requests in CI
+    await page.route("https://www.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
+    )
+
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "https://www.example.com"
@@ -185,38 +190,16 @@ test.describe("Local Link Navigation", () => {
       document.body.appendChild(link)
     })
 
-    // Capture defaultPrevented synchronously inside a single evaluate so we
-    // read the value before any navigation can destroy the JS context.
-    // Navigations are async; element.click() dispatches the event synchronously
-    // and returns before any navigation fires, keeping the context alive.
-    // We listen on window (last in bubble chain) to see the final value after
-    // the SPA's document-level handler has run.
-    const defaultPrevented = await page.evaluate(() => {
-      let result: boolean | null = null
-      window.addEventListener(
-        "click",
-        (e: Event) => {
-          if ((e.target as HTMLElement)?.id === "external-link") {
-            result = e.defaultPrevented
-          }
-        },
-        { once: true },
-      )
-      ;(document.getElementById("external-link") as HTMLElement).click()
-      return result
-    })
-
-    // SPA must NOT call preventDefault on external link clicks
-    expect(defaultPrevented).toBe(false)
+    // Check that SPA logic does not intercept external links
+    await page.click("#external-link")
+    await expect(page).toHaveURL("https://www.example.com")
   })
 })
 
 test.describe("Scroll Behavior", () => {
   test("handles hash navigation by scrolling to element", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${anchorId}`, "domcontentloaded")
     await waitForHistoryScrollNotEquals(page)
 
     const scrollPosition = await page.evaluate(() => window.scrollY)
@@ -228,9 +211,11 @@ test.describe("Scroll Behavior", () => {
 
     // Scroll down the page
     const finalAnchor = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/${testingPageSlug}#${finalAnchor}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(
+      page,
+      `http://localhost:8080/${testingPageSlug}#${finalAnchor}`,
+      "domcontentloaded",
+    )
     await page.waitForURL(`**/${testingPageSlug}#${finalAnchor}`)
     await waitForHistoryScrollNotEquals(page)
 
@@ -278,9 +263,11 @@ test.describe("Scroll Behavior", () => {
       )
 
       const anchorId = await createFinalAnchor(page)
-      await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
-        waitUntil: "domcontentloaded",
-      })
+      await gotoPage(
+        page,
+        `http://localhost:8080/${testingPageSlug}#${anchorId}`,
+        "domcontentloaded",
+      )
 
       // Wait for hash scroll to complete and be saved to history
       await waitForHashScrollComplete(page)
@@ -309,9 +296,7 @@ test.describe("Scroll Behavior", () => {
   // NOTE on Safari, sometimes px is ~300 and sometimes it's 517 (like the other browsers); seems to be ~300 when run alone?
   test("restores scroll position when refreshing on hash", async ({ page }) => {
     const anchorId = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${anchorId}`, "domcontentloaded")
     await page.waitForFunction(() => window.history.state?.scroll)
     const currentScroll = await page.evaluate(() => window.scrollY)
     expect(currentScroll).toBeGreaterThan(0)
@@ -322,9 +307,11 @@ test.describe("Scroll Behavior", () => {
 
   test("handles text fragment navigation for terms that don't exist on page", async ({ page }) => {
     const nonExistentTerm = "xyznonexistentterm123"
-    await page.goto(`http://localhost:8080/${testingPageSlug}#:~:text=${nonExistentTerm}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(
+      page,
+      `http://localhost:8080/${testingPageSlug}#:~:text=${nonExistentTerm}`,
+      "domcontentloaded",
+    )
 
     // Even if no matches are found on the page, navigation should succeed
     // and the page should remain at the top (scroll position 0)
@@ -360,9 +347,7 @@ test.describe("Instant Scroll Restoration", () => {
     const anchorId = "lists"
 
     // Navigate to hash and record position
-    await page.goto(`http://localhost:8080/${testingPageSlug}#${anchorId}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${anchorId}`, "domcontentloaded")
     await page.waitForLoadState("load")
     const expectedScrollY = await page.evaluate(() => window.scrollY)
     expect(expectedScrollY).toBeGreaterThan(0)
@@ -382,7 +367,7 @@ test.describe("Instant Scroll Restoration", () => {
     // Tests SPA hash-change scroll behavior (window.location.hash assignment).
     // Note: page.goto with a hash URL crashes WebKit on Linux CI with an
     // "internal error", so we navigate to the base page first then set the hash.
-    await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     await page.evaluate(() => {
       window.location.hash = "#color-scheme"
     })
@@ -449,7 +434,7 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
   test("browser back and forward updates content appropriately", async ({ page }) => {
     const initialUrl = page.url()
 
-    await page.goto("http://localhost:8080/design", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     await page.waitForURL((url) => url.toString() !== initialUrl)
 
     await page.goBack()
@@ -489,9 +474,11 @@ test.describe("Same-page navigation", () => {
       // Don't click the heading, just navigate to it
       const headingId = await heading.getAttribute("href")
       expect(headingId?.startsWith("#")).toBe(true)
-      await page.goto(`http://localhost:8080/${testingPageSlug}${headingId}`, {
-        waitUntil: "domcontentloaded",
-      })
+      await gotoPage(
+        page,
+        `http://localhost:8080/${testingPageSlug}${headingId}`,
+        "domcontentloaded",
+      )
 
       // Wait for scroll to complete and stabilize
       const previousScroll =
@@ -646,9 +633,7 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
 
     const hash = await createFinalAnchor(page)
-    await page.goto(`http://localhost:8080/${testingPageSlug}#${hash}`, {
-      waitUntil: "domcontentloaded",
-    })
+    await gotoPage(page, `http://localhost:8080/${testingPageSlug}#${hash}`, "domcontentloaded")
     await page.waitForURL(`**/${testingPageSlug}#${hash}`)
 
     await expect(cssLocator).toHaveCount(0)
