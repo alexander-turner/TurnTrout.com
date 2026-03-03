@@ -10,6 +10,10 @@ set -uo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$PROJECT_DIR" || exit 1
 
+# Use Python's tempfile to match verify_ci.py (respects $TMPDIR)
+TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
+MARKER_FILE="${TMPDIR_ACTUAL}/claude-last-push-commit"
+
 # Build --repo flag array (needed in web sessions where origin is a proxy URL)
 repo_flag=()
 if [ -n "${GH_REPO:-}" ]; then
@@ -23,6 +27,11 @@ if [ -z "$branch" ] || [ "$branch" = "HEAD" ] || [ -z "$commit" ]; then
 	echo "post-push-ci-watch: could not determine branch/commit — skipping"
 	exit 0
 fi
+
+# Record push immediately (so the Stop hook knows to check remote CI even
+# if this hook times out or no workflow runs appear yet).
+# Format: line 1 = commit SHA, line 2 = branch name
+printf '%s\n%s\n' "$commit" "$branch" >"$MARKER_FILE"
 
 short_commit=${commit:0:7}
 echo "Watching CI for branch '$branch' (commit $short_commit)..."
@@ -47,9 +56,6 @@ if [ "$count" = "0" ]; then
 	exit 0
 fi
 
-# --- Record that we pushed (so the Stop hook knows to check remote CI) ---
-echo "$commit" >/tmp/claude-last-push-commit
-
 # --- Poll until all runs complete ---
 max_poll=600
 polled=0
@@ -69,6 +75,7 @@ while [ "$polled" -lt "$max_poll" ]; do
 
 	# Count runs still in progress
 	in_progress=$(echo "$run_data" | jq '[.[] | select(.status != "completed")] | length' 2>/dev/null || echo "0")
+	total=$(echo "$run_data" | jq 'length' 2>/dev/null || echo "0")
 
 	if [ "$in_progress" = "0" ]; then
 		# All runs finished — check for failures
@@ -93,13 +100,17 @@ while [ "$polled" -lt "$max_poll" ]; do
 		fi
 
 		echo ""
-		echo "CI passed — all $count workflow(s) succeeded"
+		echo "CI passed — all $total workflow(s) succeeded"
 		exit 0
 	fi
 
-	total=$(echo "$run_data" | jq 'length' 2>/dev/null || echo "?")
-	completed=$((total - in_progress))
-	echo "CI in progress... ($completed/$total complete) [${polled}s elapsed]"
+	# Safe arithmetic: if total isn't numeric, just show in_progress count
+	if [[ "$total" =~ ^[0-9]+$ ]]; then
+		completed=$((total - in_progress))
+		echo "CI in progress... ($completed/$total complete) [${polled}s elapsed]"
+	else
+		echo "CI in progress... ($in_progress runs remaining) [${polled}s elapsed]"
+	fi
 done
 
 # Timed out — show final status

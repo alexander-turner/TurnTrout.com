@@ -91,19 +91,28 @@ def _check_python(check_fn) -> None:
         check_fn("pytest", f"{prefix}pytest")
 
 
-def _check_remote_ci(check_fn) -> None:
+def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
     """
     Check GitHub Actions status for the last pushed commit.
 
-    The PostToolUse hook (post-push-ci-watch.sh) writes the pushed commit SHA to
-    /tmp/claude-last-push-commit. If that file exists, we check whether all
-    workflow runs for that commit have passed.
+    The PostToolUse hook (post-push-ci-watch.sh) writes the pushed commit SHA
+    and branch to /tmp/claude-last-push-commit. If that file exists, we check
+    whether all workflow runs for that commit have passed.
+
+    NOTE: This appends directly to failures/outputs instead of using check_fn,
+    because _run_check uses subprocess without shell=True — shell operators
+    like && don't work, so "echo ... && exit 1" would always succeed.
     """
     push_file = Path(tempfile.gettempdir()) / "claude-last-push-commit"
     if not push_file.exists():
         return
 
-    commit = push_file.read_text().strip()
+    lines = push_file.read_text().strip().splitlines()
+    if not lines:
+        return
+    commit = lines[0]
+    branch = lines[1] if len(lines) > 1 else ""
+
     if not commit:
         return
 
@@ -115,19 +124,20 @@ def _check_remote_ci(check_fn) -> None:
         return
 
     # Build repo flag from GH_REPO env var (set by session-setup.sh)
-    repo_args = []
+    repo_args: list[str] = []
     gh_repo = os.environ.get("GH_REPO", "")
     if gh_repo:
         repo_args = ["--repo", gh_repo]
 
-    # Get the branch for the push
-    branch_result = subprocess.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    branch = branch_result.stdout.strip()
+    # Fall back to current branch if not stored in marker file
+    if not branch:
+        branch_result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        branch = branch_result.stdout.strip()
     if not branch or branch == "HEAD":
         return
 
@@ -165,9 +175,10 @@ def _check_remote_ci(check_fn) -> None:
     in_progress = [r for r in runs if r.get("status") != "completed"]
     if in_progress:
         names = ", ".join(r["name"] for r in in_progress)
-        check_fn(
-            "remote-ci",
-            f"echo 'GitHub Actions still running: {names}' && exit 1",
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n"
+            f"GitHub Actions still running: {names}\n"
         )
         return
 
@@ -177,9 +188,9 @@ def _check_remote_ci(check_fn) -> None:
     ]
     if failed:
         names = ", ".join(r["name"] for r in failed)
-        check_fn(
-            "remote-ci",
-            f"echo 'GitHub Actions failed: {names}' && exit 1",
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n" f"GitHub Actions failed: {names}\n"
         )
 
 
@@ -210,7 +221,7 @@ def main() -> None:
 
     _check_nodejs(check)
     _check_python(check)
-    _check_remote_ci(check)
+    _check_remote_ci(failures, outputs)
 
     # --- Produce result ---
     if not failures:
