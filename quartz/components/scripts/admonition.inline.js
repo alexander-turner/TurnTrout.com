@@ -44,8 +44,11 @@ function setupAdmonition() {
     // Restore saved state
     if (states.has(admonition.dataset.collapsibleId))
       admonition.classList.toggle("is-collapsed", states.get(admonition.dataset.collapsibleId))
+    admonition.removeEventListener("click", openAdmonition)
     admonition.addEventListener("click", openAdmonition)
-    admonition.querySelector(".admonition-title")?.addEventListener("click", closeAdmonition)
+    const title_el = admonition.querySelector(".admonition-title")
+    title_el?.removeEventListener("click", closeAdmonition)
+    title_el?.addEventListener("click", closeAdmonition)
   }
 }
 
