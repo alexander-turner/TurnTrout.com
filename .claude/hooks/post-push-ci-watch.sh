@@ -10,9 +10,8 @@ set -uo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$PROJECT_DIR" || exit 1
 
-# Use Python's tempfile to match verify_ci.py (respects $TMPDIR)
-TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
-MARKER_FILE="${TMPDIR_ACTUAL}/claude-last-push-commit"
+# Match verify_ci.py's tempfile.gettempdir() — on Linux both resolve $TMPDIR then /tmp
+MARKER_FILE="${TMPDIR:-/tmp}/claude-last-push-commit"
 
 # Build --repo flag array (needed in web sessions where origin is a proxy URL)
 repo_flag=()
