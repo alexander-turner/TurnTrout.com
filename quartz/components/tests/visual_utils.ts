@@ -140,6 +140,8 @@ async function performDOMIsolation(
  * @returns A promise that resolves once the DOM restoration is complete.
  */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
+  // WebKit may crash during screenshots; if the page is already closed there's nothing to restore
+  if (page.isClosed()) return
   await page.evaluate(() => {
     const hiddenElements = window.__elementsToRestoreData
     if (hiddenElements) {

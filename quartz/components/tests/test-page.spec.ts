@@ -1016,15 +1016,15 @@ test.describe("Checkboxes", () => {
 
       await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-      // Immediately check checkbox state WITHOUT dispatching nav event
-      // Before the fix, this would return the HTML default (unchecked)
-      // After the fix, the MutationObserver restores state before we can check
-      const checkboxStateBeforeNav = await page.evaluate(() => {
-        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
-        return checkbox?.checked
-      })
-
-      expect(checkboxStateBeforeNav).toBe(true)
+      // Check checkbox state — MutationObserver restores before first paint, but
+      // Safari may deliver the callback slightly after domcontentloaded.
+      await expect(async () => {
+        const checkboxStateBeforeNav = await page.evaluate(() => {
+          const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+          return checkbox?.checked
+        })
+        expect(checkboxStateBeforeNav).toBe(true)
+      }).toPass({ timeout: 5_000 })
     })
 
     const checkboxTestCases = [
@@ -1049,17 +1049,19 @@ test.describe("Checkboxes", () => {
 
         await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-        // Check checkbox state immediately without dispatching nav event
-        const checkboxState = await page.evaluate(
-          ({ idx }) => {
-            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-            const checkbox = checkboxes[idx] as HTMLInputElement
-            return checkbox?.checked
-          },
-          { idx: index },
-        )
-
-        expect(checkboxState).toBe(savedState)
+        // Check checkbox state — MutationObserver restores before first paint, but
+        // Safari may deliver the callback slightly after domcontentloaded.
+        await expect(async () => {
+          const checkboxState = await page.evaluate(
+            ({ idx }) => {
+              const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+              const checkbox = checkboxes[idx] as HTMLInputElement
+              return checkbox?.checked
+            },
+            { idx: index },
+          )
+          expect(checkboxState).toBe(savedState)
+        }).toPass({ timeout: 5_000 })
       })
     }
   })
