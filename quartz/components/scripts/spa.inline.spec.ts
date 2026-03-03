@@ -11,7 +11,7 @@ import type { Page } from "@playwright/test"
 
 import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
 import { test, expect } from "../tests/fixtures"
-import { isDesktopViewport, getAllWithWait, gotoPage } from "../tests/visual_utils"
+import { isDesktopViewport, getAllWithWait, gotoPage, reloadPage } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -335,7 +335,7 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    await page.reload({ waitUntil: "domcontentloaded" })
+    await reloadPage(page, "domcontentloaded")
 
     // Check final scroll position
     const finalScroll = await page.evaluate(() => window.scrollY)
@@ -353,7 +353,7 @@ test.describe("Instant Scroll Restoration", () => {
     expect(expectedScrollY).toBeGreaterThan(0)
 
     // Reload and wait for completion
-    await page.reload({ waitUntil: "domcontentloaded" })
+    await reloadPage(page, "domcontentloaded")
 
     // Wait until the page has scrolled somewhere below the top
     await page.waitForFunction(() => window.scrollY > 0)
@@ -416,7 +416,7 @@ test.describe("Instant Scroll Restoration", () => {
       requestAnimationFrame(tryDispatch)
     })
 
-    await page.reload({ waitUntil: "domcontentloaded" })
+    await reloadPage(page, "domcontentloaded")
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
     // We poll on the Node.js side because the `consoleMessages` array lives here,

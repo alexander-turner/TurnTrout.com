@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test"
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
+import { takeRegressionScreenshot, isDesktopViewport, setTheme, reloadPage } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -465,7 +465,7 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
 
-  await page.reload({ waitUntil: "load" })
+  await reloadPage(page)
 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()

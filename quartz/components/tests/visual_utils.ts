@@ -510,6 +510,16 @@ export async function gotoPage(
   await page.waitForLoadState(loadState)
 }
 
+/** Reload the current page by navigating to its own URL.
+ *  Avoids page.reload() which can trigger "WebKit encountered an internal
+ *  error" crashes in the Safari driver. */
+export async function reloadPage(
+  page: Page,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  await gotoPage(page, page.url(), loadState)
+}
+
 // skipcq: JS-0098
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()

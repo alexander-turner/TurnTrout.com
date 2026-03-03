@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test"
 
 import { test, expect } from "./fixtures"
-import { gotoPage } from "./visual_utils"
+import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
@@ -95,7 +95,7 @@ test.describe("Collapsible admonition state persistence", () => {
     await expect(admonition).toHaveClass(/is-collapsed/)
 
     // Reload page and verify it stayed collapsed
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
@@ -113,7 +113,7 @@ test.describe("Collapsible admonition state persistence", () => {
     await expect(admonition).not.toHaveClass(/is-collapsed/)
 
     // Reload page and verify it stayed open
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off collapsed" })
@@ -221,7 +221,7 @@ test.describe("Collapsible admonition state persistence", () => {
     })
 
     // Reload the page - localStorage should persist, and state should be applied before paint
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
 
     // Verify the state was correctly applied (opposite of default)
     const actualState = await page

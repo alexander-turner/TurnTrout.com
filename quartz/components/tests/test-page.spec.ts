@@ -11,6 +11,7 @@ import {
   getH1Screenshots,
   isElementChecked,
   gotoPage,
+  reloadPage,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -932,7 +933,7 @@ test.describe("Checkboxes", () => {
     await expect(firstCheckbox).toBeChecked({ checked: !initialState })
 
     // Reload the page
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     // Check if state persisted
