@@ -83,15 +83,16 @@ test.describe("Collapsible admonition state persistence", () => {
   })
 
   test("collapsing an open admonition persists across reload", async ({ page }) => {
-    // Target the initially-open admonition
-    const openAdmonition = page
-      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+    // Use state-independent locator (no :not(.is-collapsed)) so it still
+    // matches after the class changes
+    const admonition = page
+      .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
-    await expect(openAdmonition).toBeVisible()
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
 
     // Collapse it
-    await openAdmonition.locator(".admonition-title").click()
-    await expect(openAdmonition).toHaveClass(/is-collapsed/)
+    await admonition.locator(".admonition-title").click()
+    await expect(admonition).toHaveClass(/is-collapsed/)
 
     // Reload page and verify it stayed collapsed
     await page.reload({ waitUntil: "load" })
@@ -102,15 +103,14 @@ test.describe("Collapsible admonition state persistence", () => {
   })
 
   test("opening a collapsed admonition persists across reload", async ({ page }) => {
-    // Target the initially-collapsed admonition
-    const collapsedAdmonition = page
-      .locator(".admonition.is-collapsible.is-collapsed")
+    const admonition = page
+      .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off collapsed" })
-    await expect(collapsedAdmonition).toBeVisible()
+    await expect(admonition).toHaveClass(/is-collapsed/)
 
     // Open it
-    await collapsedAdmonition.locator(".admonition-title").click()
-    await expect(collapsedAdmonition).not.toHaveClass(/is-collapsed/)
+    await admonition.locator(".admonition-title").click()
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
 
     // Reload page and verify it stayed open
     await page.reload({ waitUntil: "load" })
@@ -121,13 +121,13 @@ test.describe("Collapsible admonition state persistence", () => {
   })
 
   test("state persists across SPA navigation", async ({ page }) => {
-    // Target the initially-open admonition and collapse it
-    const openAdmonition = page
-      .locator(".admonition.is-collapsible:not(.is-collapsed)")
+    // Collapse the initially-open admonition
+    const admonition = page
+      .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
-    await expect(openAdmonition).toBeVisible()
-    await openAdmonition.locator(".admonition-title").click()
-    await expect(openAdmonition).toHaveClass(/is-collapsed/)
+    await expect(admonition).not.toHaveClass(/is-collapsed/)
+    await admonition.locator(".admonition-title").click()
+    await expect(admonition).toHaveClass(/is-collapsed/)
 
     // Navigate away using SPA navigation
     await spaNavigateToAbout(page)
