@@ -2740,7 +2740,6 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
     <div class="authors"><p>AlexJanuary 2025</p></div>
     <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
     <div class="backlinks"><p>BacklinkTitle</p></div>
-    <span class="transclude"><p>Transcluded listing</p></span>
     <div class="tag-container"><p>Tag text</p></div>
     <div class="all-tags"><p>All tags</p></div>
     <div id="content-meta"><p>Metadata</p></div>
@@ -2826,10 +2825,14 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert "I 've" not in result[0]
 
 
-def test_extract_flat_paragraph_texts_skips_p_containing_transclude():
-    """A <p> wrapping a <span class="transclude"> with block-level content (like
-    tables) is skipped — get_text() would concatenate table cells without
-    spaces, producing garbage tokens like 'FeatureExampleSmart'."""
+def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
+    """
+    A <p> containing block-level elements (e.g. from transclusion wrapping
+    tables inside <span> inside <p>) is skipped because get_text() would
+    concatenate child text without spaces.
+
+    Inner <p> elements are still extracted.
+    """
     html = """<article>
     <p><span class="transclude" data-url="other-page">
     <table><tr><th>Feature</th><th>Example</th></tr></table>
@@ -2839,8 +2842,9 @@ def test_extract_flat_paragraph_texts_skips_p_containing_transclude():
     </article>"""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks._extract_flat_paragraph_texts(soup)
-    assert len(result) == 1
-    assert "Normal paragraph ." in result[0]
+    assert len(result) == 2
+    assert any("Nested paragraph inside transclude ." in r for r in result)
+    assert any("Normal paragraph ." in r for r in result)
 
 
 @pytest.mark.parametrize(
