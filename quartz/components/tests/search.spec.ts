@@ -876,7 +876,8 @@ test.describe("Search preview scroll behavior", () => {
     // Verify the match ends up in the middle portion of the visible area.
     await expect(async () => {
       const { matchCenterFraction, scrollTop } = await previewContainer.evaluate((container) => {
-        const match = container.querySelector(".search-match")!
+        const match = container.querySelector(".search-match")
+        if (!match) throw new Error("No .search-match element found")
         const matchRect = match.getBoundingClientRect()
         const containerRect = container.getBoundingClientRect()
         const matchCenter = matchRect.top + matchRect.height / 2 - containerRect.top
@@ -902,7 +903,8 @@ test.describe("Search preview scroll behavior", () => {
   test("re-scrolls to first match after viewport resize", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
 
-    const currentSize = page.viewportSize()!
+    const currentSize = page.viewportSize()
+    if (!currentSize) throw new Error("No viewport size")
     test.skip(
       currentSize.width - 200 <= tabletBreakpoint,
       "Viewport too narrow to resize while remaining above tablet breakpoint",
