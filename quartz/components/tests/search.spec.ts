@@ -444,8 +444,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
-  // Search again — use openSearch to wait for component initialization after goBack
-  await page.goBack({ waitUntil: "load" })
+  // Search again — use openSearch to wait for component initialization after goBack.
+  // Use waitUntil: "commit" to avoid WebKit hangs with "load" on SPA back-navigation.
+  await page.goBack({ waitUntil: "commit" })
+  await page.waitForLoadState("domcontentloaded")
   await openSearch(page)
   await search(page, "Shrek")
 
