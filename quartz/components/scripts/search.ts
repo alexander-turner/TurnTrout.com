@@ -333,9 +333,8 @@ export class PreviewManager {
         navigateWithSearchTerm(targetUrl.toString(), currentSearchTerm)
       }
 
-      // Let images and other resources load naturally
-      // Browser will handle loading these in the background
-      this.scrollToFirstmatch()
+      // Wait for layout before scrolling to first match
+      requestAnimationFrame(() => this.scrollToFirstmatch())
     } catch (error) {
       console.error("Error loading preview:", error)
       if (this.currentSlug === slug) {
@@ -376,12 +375,19 @@ export class PreviewManager {
    * Scroll the preview container to properly orient the first match in the viewport.
    */
   /* istanbul ignore next */
-  private scrollToFirstmatch(): void {
-    // Get only the first matching search-match without sorting
+  public scrollToFirstmatch(): void {
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
 
-    this.container.scrollTop = getSearchMatchScrollPosition(firstMatch, this.container, 0.5)
+    // Use offsetTop/offsetParent chain — more reliable than getBoundingClientRect
+    // for elements inside scrollable containers with position: relative
+    let offsetTop = 0
+    let el: HTMLElement | null = firstMatch
+    while (el && el !== this.container) {
+      offsetTop += el.offsetTop
+      el = el.offsetParent as HTMLElement | null
+    }
+    this.container.scrollTop = offsetTop - this.container.clientHeight * 0.5
   }
 }
 
@@ -426,6 +432,7 @@ async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInpu
   }
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
   searchBar.focus()
 
   await initializeSearch()
@@ -458,6 +465,7 @@ export async function showSearch(
 
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
 
   searchBar.focus()
   searchBar.select() // Needed for firefox
@@ -478,6 +486,7 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
 
   container?.classList.remove("active")
   document.body.classList.remove("no-mix-blend-mode")
+  document.body.style.overflow = ""
   if (searchBar) {
     searchBar.value = ""
     searchBar.setAttribute("aria-expanded", "false")
@@ -690,6 +699,9 @@ async function onNav(e: CustomEventMap["nav"]) {
     previewManager = null
   }
 
+  // Ensure body scroll is restored if search was open during navigation
+  document.body.style.overflow = ""
+
   currentSlug = e.detail.url
 
   // Verify getContentIndex was injected by renderPage.tsx
@@ -754,8 +766,18 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
 
-  // Re-render card previews when viewport crosses the tablet breakpoint
-  const debouncedResizeHandler = debounce(handleResizeForCardPreviews, 150, false)
+  // Re-render card previews when viewport crosses the tablet breakpoint,
+  // and re-scroll the preview to the first match (content reflows on width change)
+  const debouncedResizeHandler = debounce(
+    () => {
+      handleResizeForCardPreviews()
+      // No rAF needed — debounce already fires from within a rAF callback,
+      // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
+      previewManager?.scrollToFirstmatch()
+    },
+    150,
+    false,
+  )
   window.addEventListener("resize", debouncedResizeHandler)
   listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
 
@@ -907,12 +929,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
 
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
-      const firstMatch = cardPreview.querySelector(".search-match")
+      const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
       if (firstMatch) {
-        const matchRect = firstMatch.getBoundingClientRect()
-        const containerRect = cardPreview.getBoundingClientRect()
-        const relativeTop = matchRect.top - containerRect.top + cardPreview.scrollTop
-        cardPreview.scrollTop = Math.max(0, relativeTop - cardPreview.clientHeight / 3)
+        scrollContainerToMatch(cardPreview, firstMatch, 1 / 3)
       }
     })
   })
@@ -1269,40 +1288,17 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
 }
 
 /**
- * Compute the vertical offset of an element relative to a scrollable container.
- *
- * @param element - The element whose offset to compute
- * @param container - The container element used as the reference
- * @returns The offsetTop in pixels relative to the container
+ * Scroll a container so that a match element is positioned at the given fraction
+ * of the container's visible height. Uses getBoundingClientRect for reliable
+ * positioning with inline elements and intermediate positioned ancestors.
  */
-export function getOffsetTopRelativeToContainer(
-  element: HTMLElement,
+export function scrollContainerToMatch(
   container: HTMLElement,
-): number {
-  let offsetTop = 0
-  let currentElement: HTMLElement | null = element
-
-  // Traverse up the DOM tree until we reach the container
-  while (currentElement && currentElement !== container) {
-    offsetTop += currentElement.offsetTop
-    currentElement = currentElement.offsetParent as HTMLElement | null
-  }
-
-  return offsetTop
-}
-
-/**
- * Calculate scroll position to properly orient an element within its container
- * @param element - The element to position
- * @param container - The container to scroll
- * @param scrollFraction - Fraction (0-1) of container height from top where element should be positioned
- * @returns The scroll position for optimal element visibility
- */
-export function getSearchMatchScrollPosition(
-  element: HTMLElement,
-  container: HTMLElement,
+  match: HTMLElement,
   scrollFraction: number,
-): number {
-  const offsetTop = getOffsetTopRelativeToContainer(element, container)
-  return offsetTop - container.clientHeight * scrollFraction
+): void {
+  const matchRect = match.getBoundingClientRect()
+  const containerRect = container.getBoundingClientRect()
+  const relativeTop = matchRect.top - containerRect.top + container.scrollTop
+  container.scrollTop = Math.max(0, relativeTop - container.clientHeight * scrollFraction)
 }
