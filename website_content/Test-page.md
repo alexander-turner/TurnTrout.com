@@ -162,8 +162,6 @@ Admonition in a description list
 
 # Select boxes
 
-<div id="select-box-demos">
-
 <label for="select-basic">Basic select:</label>
 <select id="select-basic">
   <option value="">Choose an option</option>
@@ -171,35 +169,6 @@ Admonition in a description list
   <option value="2">Option 2</option>
   <option value="3">Option 3</option>
 </select>
-
-<label for="select-grouped">Grouped select:</label>
-<select id="select-grouped">
-  <optgroup label="Fruits">
-    <option value="apple">Apple</option>
-    <option value="banana">Banana</option>
-    <option value="cherry">Cherry</option>
-  </optgroup>
-  <optgroup label="Vegetables">
-    <option value="carrot">Carrot</option>
-    <option value="pea">Pea</option>
-    <option value="spinach">Spinach</option>
-  </optgroup>
-</select>
-
-<label for="select-disabled">Disabled select:</label>
-<select id="select-disabled" disabled>
-  <option value="1">Cannot interact</option>
-</select>
-
-<label for="select-multiple">Multiple select (hold Ctrl/Cmd):</label>
-<select id="select-multiple" multiple size="4">
-  <option value="red">Red</option>
-  <option value="green">Green</option>
-  <option value="blue">Blue</option>
-  <option value="yellow">Yellow</option>
-</select>
-
-</div>
 
 # Transclusion
 

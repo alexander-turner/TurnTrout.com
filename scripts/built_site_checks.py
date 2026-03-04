@@ -173,6 +173,10 @@ def _should_skip_paragraph(p: Tag) -> bool:
     ):
         return True
 
+    # Skip paragraphs containing form elements like <select>
+    if p.find("select"):
+        return True
+
     # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
     text = p.get_text()
     if "·" in text:
