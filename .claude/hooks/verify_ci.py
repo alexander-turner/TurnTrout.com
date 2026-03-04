@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Stop hook: verifies CI checks pass before allowing Claude to complete.
+"""Stop hook: verifies local and remote CI checks pass before completing.
 
 Outputs JSON to stdout:
   {"decision": "approve"}               — all checks passed (or retries exhausted)
   {"decision": "block", "reason": "…"}  — checks failed, Claude should keep fixing
+
+Checks:
+  1. Local: pnpm test/lint/check, ruff, pytest
+  2. Remote: GitHub Actions status for the last pushed commit (if any)
 
 Tracks retry attempts via a temp file keyed on the project directory hash.
 Gives up after MAX_STOP_RETRIES (default 3) to prevent infinite token burn.
@@ -40,7 +44,11 @@ def _has_script(pkg: dict, name: str) -> bool:
 
 
 def _run_check(name: str, cmd: str) -> tuple[bool, str]:
-    """Run a check command. Returns (passed, output)."""
+    """
+    Run a check command.
+
+    Returns (passed, output).
+    """
     result = subprocess.run(
         shlex.split(cmd), capture_output=True, text=True, check=False
     )
@@ -83,6 +91,109 @@ def _check_python(check_fn) -> None:
         check_fn("pytest", f"{prefix}pytest")
 
 
+def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
+    """
+    Check GitHub Actions status for the last pushed commit.
+
+    The PostToolUse hook (post-push-ci-watch.sh) writes the pushed commit SHA
+    and branch to /tmp/claude-last-push-commit. If that file exists, we check
+    whether all workflow runs for that commit have passed.
+
+    NOTE: This appends directly to failures/outputs instead of using check_fn,
+    because _run_check uses subprocess without shell=True — shell operators
+    like && don't work, so "echo ... && exit 1" would always succeed.
+    """
+    push_file = Path(tempfile.gettempdir()) / "claude-last-push-commit"
+    if not push_file.exists():
+        return
+
+    lines = push_file.read_text().strip().splitlines()
+    if not lines:
+        return
+    commit = lines[0]
+    branch = lines[1] if len(lines) > 1 else ""
+
+    if not commit:
+        return
+
+    if not shutil.which("gh"):
+        print(
+            "Warning: gh CLI not found, skipping remote CI check",
+            file=sys.stderr,
+        )
+        return
+
+    # Build repo flag from GH_REPO env var (set by session-setup.sh)
+    repo_args: list[str] = []
+    gh_repo = os.environ.get("GH_REPO", "")
+    if gh_repo:
+        repo_args = ["--repo", gh_repo]
+
+    # Fall back to current branch if not stored in marker file
+    if not branch:
+        branch_result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        branch = branch_result.stdout.strip()
+    if not branch or branch == "HEAD":
+        return
+
+    # Query workflow run status
+    result = subprocess.run(
+        [
+            "gh",
+            "run",
+            "list",
+            *repo_args,
+            "--branch",
+            branch,
+            "--commit",
+            commit,
+            "--json",
+            "name,status,conclusion",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        print(f"Warning: gh run list failed: {result.stderr}", file=sys.stderr)
+        return
+
+    try:
+        runs = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return
+
+    if not runs:
+        return
+
+    # Check if any are still in progress
+    in_progress = [r for r in runs if r.get("status") != "completed"]
+    if in_progress:
+        names = ", ".join(r["name"] for r in in_progress)
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n"
+            f"GitHub Actions still running: {names}\n"
+        )
+        return
+
+    # Check for failures
+    failed = [
+        r for r in runs if r.get("conclusion") not in ("success", "skipped")
+    ]
+    if failed:
+        names = ", ".join(r["name"] for r in failed)
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n" f"GitHub Actions failed: {names}\n"
+        )
+
+
 def main() -> None:
     max_retries = _get_max_retries()
     project_dir = os.environ.get("CLAUDE_PROJECT_DIR", os.getcwd())
@@ -110,6 +221,7 @@ def main() -> None:
 
     _check_nodejs(check)
     _check_python(check)
+    _check_remote_ci(failures, outputs)
 
     # --- Produce result ---
     if not failures:
