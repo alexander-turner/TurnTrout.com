@@ -178,6 +178,16 @@ When pushing to main, these checks run automatically:
 
 Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 
+## CI Monitoring
+
+After pushing code or creating a PR, **always monitor CI status until all checks pass or fail**. The PostToolUse hook (`post-push-ci-watch.sh`) automatically polls GitHub Actions after `git push` / `gh pr create`. If CI fails, fix the issues and push again. The Stop hook also blocks completion if remote CI has failures for the last pushed commit.
+
+To manually check CI status:
+```bash
+gh run list --branch <branch> --commit <sha> --json name,status,conclusion
+gh run view <run-id> --log-failed   # Show logs from a failed run
+```
+
 ## GitHub Actions (Post-push)
 
 After pushing to main:

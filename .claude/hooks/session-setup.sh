@@ -70,6 +70,8 @@ fi
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
 TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
 rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
+# Remove stale push-commit marker (used by verify_ci.py to check remote CI)
+rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
 #######################################
 # Git setup
