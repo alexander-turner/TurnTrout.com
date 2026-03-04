@@ -774,6 +774,7 @@ async function onNav(e: CustomEventMap["nav"]) {
       // No rAF needed — debounce already fires from within a rAF callback,
       // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
       previewManager?.scrollToFirstmatch()
+      rescrollCardPreviews()
     },
     150,
     false,
@@ -959,6 +960,20 @@ function handleResizeForCardPreviews(): void {
   // Add card previews to all result cards that don't already have them
   document.querySelectorAll(".result-card:not(.no-match)").forEach((card) => {
     addCardPreview(card as HTMLElement, card.id as FullSlug)
+  })
+}
+
+/**
+ * Re-scroll all visible card previews to center on the first search match.
+ * Called on resize since content reflows can shift match positions.
+ */
+/* istanbul ignore next */
+function rescrollCardPreviews(): void {
+  document.querySelectorAll(".card-preview").forEach((cardPreview) => {
+    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
+    if (firstMatch) {
+      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    }
   })
 }
 
