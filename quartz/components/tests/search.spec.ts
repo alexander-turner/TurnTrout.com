@@ -417,6 +417,10 @@ test("Search matching title text stays at top even with body matches", async ({ 
   await testPageResult.click()
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
+  // waitForURL resolves as soon as pushState fires; the SPA may still be
+  // rendering content and applying search highlights.  Wait for the article
+  // title element to be present before checking for search-match spans.
+  await expect(page.locator("#article-title")).toBeAttached()
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
@@ -872,7 +876,8 @@ test.describe("Search preview scroll behavior", () => {
     // Verify the match ends up in the middle portion of the visible area.
     await expect(async () => {
       const { matchCenterFraction, scrollTop } = await previewContainer.evaluate((container) => {
-        const match = container.querySelector(".search-match")!
+        const match = container.querySelector(".search-match")
+        if (!match) throw new Error("No .search-match element found")
         const matchRect = match.getBoundingClientRect()
         const containerRect = container.getBoundingClientRect()
         const matchCenter = matchRect.top + matchRect.height / 2 - containerRect.top
@@ -898,7 +903,8 @@ test.describe("Search preview scroll behavior", () => {
   test("re-scrolls to first match after viewport resize", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
 
-    const currentSize = page.viewportSize()!
+    const currentSize = page.viewportSize()
+    if (!currentSize) throw new Error("No viewport size")
     test.skip(
       currentSize.width - 200 <= tabletBreakpoint,
       "Viewport too narrow to resize while remaining above tablet breakpoint",

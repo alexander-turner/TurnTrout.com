@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH
+export PATH="$HOME/.local/bin:$PATH"
+
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
   echo "Resuming from last failed step."

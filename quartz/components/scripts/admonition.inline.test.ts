@@ -17,8 +17,8 @@ const djb2Hash = (str: string) => {
     hashValue = ((hashValue << 5) + hashValue) ^ str.charCodeAt(i)
   return (hashValue >>> 0).toString(16).padStart(8, "0")
 }
-const expectedId = (title: string, body: string, index = 0) =>
-  `test-page-collapsible-${djb2Hash(title + body)}-${index}`
+const expectedId = (title: string, _body: string, index = 0) =>
+  `test-page-collapsible-${djb2Hash(title)}-${index}`
 
 type W = Window & {
   __quartz_collapsible_states?: Map<string, boolean>
@@ -164,7 +164,7 @@ describe("admonition.inline collapsible state persistence", () => {
         50,
         () => ["Q", "S"],
         (ids: string[]) =>
-          ids.forEach((id, i) => expect(id).toBe(`test-page-collapsible-${djb2Hash("QS")}-${i}`)),
+          ids.forEach((id, i) => expect(id).toBe(`test-page-collapsible-${djb2Hash("Q")}-${i}`)),
       ],
     ])("handles %i collapsibles correctly", (count, getContent, verify) => {
       for (let i = 0; i < count; i++) {

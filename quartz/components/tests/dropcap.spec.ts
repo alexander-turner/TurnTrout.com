@@ -35,7 +35,7 @@ test.describe("Random dropcap color", () => {
     })
   }
 
-  test("colored dropcap looks different from default", async ({ page }) => {
+  test("colored dropcap looks different from default", async ({ page, context }) => {
     await page.addInitScript(mockRandom, [0.5])
     await page.goto(DROPCAP_URL, { waitUntil: "load" })
 
@@ -45,12 +45,17 @@ test.describe("Random dropcap color", () => {
     await dropcap.scrollIntoViewIfNeeded()
     const defaultShot = await dropcap.screenshot()
 
-    // Reload with red forced
-    await page.addInitScript(mockRandom, [0.01, 0.0])
-    await page.goto(DROPCAP_URL, { waitUntil: "load" })
-    await dropcap.scrollIntoViewIfNeeded()
+    // Use a fresh page to avoid WebKit crashing on a second navigation to the same URL
+    const page2 = await context.newPage()
+    await page2.addInitScript(mockRandom, [0.01, 0.0])
+    await page2.goto(DROPCAP_URL, { waitUntil: "load" })
+    const dropcap2 = page2
+      .locator('article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type')
+      .first()
+    await dropcap2.scrollIntoViewIfNeeded()
 
-    expect(await dropcap.screenshot()).not.toEqual(defaultShot)
+    expect(await dropcap2.screenshot()).not.toEqual(defaultShot)
+    await page2.close()
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {

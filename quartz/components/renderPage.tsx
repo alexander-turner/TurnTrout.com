@@ -241,7 +241,7 @@ export function pageResources(
 let fetchData = null;
 function getContentIndex() {
   if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json());
+    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
   }
   return fetchData;
 }`
