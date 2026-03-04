@@ -11,6 +11,7 @@ import {
   getH1Screenshots,
   isElementChecked,
   gotoPage,
+  reloadPage,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -41,7 +42,7 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -104,7 +105,7 @@ test.describe("Unique content around the site", () => {
       "Flaky in Safari on desktop",
     )
 
-    await page.goto("http://localhost:8080", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
     // Wait for the SPA router to finish initializing so a late navigation
     // doesn't destroy the execution context during evaluate.
@@ -128,7 +129,7 @@ test.describe("Unique content around the site", () => {
 
   MOCK_PAGE_SLUGS.forEach((pageSlug) => {
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`)
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
@@ -175,7 +176,7 @@ test.describe("Unique content around the site", () => {
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
-    await page.goto(url)
+    await gotoPage(page, url)
     await page.locator("body").waitFor({ state: "visible" })
 
     await page.evaluate(() => {
@@ -200,7 +201,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/design")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
     await expect(bigFaviconDemo).toBeVisible()
@@ -211,7 +212,8 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto(
+    await gotoPage(
+      page,
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
     )
 
@@ -242,7 +244,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Goose code block (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/open-source")
+    await gotoPage(page, "http://localhost:8080/open-source")
     await page.locator("body").waitFor({ state: "visible" })
 
     const gooseCodeBlock = page.locator("#goose-terminal").first()
@@ -715,7 +717,7 @@ test.describe("Elvish toggle", () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
 
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/test-page", "load")
 
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
@@ -833,7 +835,7 @@ test("First paragraph is the same before and after clicking on a heading", async
   const screenshotBefore = await firstParagraph.screenshot()
 
   // Navigate to a heading anchor (triggers SPA navigation).
-  await page.goto(`${page.url()}#header-3`)
+  await gotoPage(page, `${page.url()}#header-3`)
   await firstParagraph.scrollIntoViewIfNeeded()
 
   // The paragraph should look identical after the navigation.
@@ -931,7 +933,7 @@ test.describe("Checkboxes", () => {
     await expect(firstCheckbox).toBeChecked({ checked: !initialState })
 
     // Reload the page
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     // Check if state persisted
@@ -1014,15 +1016,15 @@ test.describe("Checkboxes", () => {
 
       await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-      // Immediately check checkbox state WITHOUT dispatching nav event
-      // Before the fix, this would return the HTML default (unchecked)
-      // After the fix, the MutationObserver restores state before we can check
-      const checkboxStateBeforeNav = await page.evaluate(() => {
-        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
-        return checkbox?.checked
-      })
-
-      expect(checkboxStateBeforeNav).toBe(true)
+      // Check checkbox state — MutationObserver restores before first paint, but
+      // Safari may deliver the callback slightly after domcontentloaded.
+      await expect(async () => {
+        const checkboxStateBeforeNav = await page.evaluate(() => {
+          const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+          return checkbox?.checked
+        })
+        expect(checkboxStateBeforeNav).toBe(true)
+      }).toPass({ timeout: 5_000 })
     })
 
     const checkboxTestCases = [
@@ -1045,19 +1047,21 @@ test.describe("Checkboxes", () => {
           { key: checkboxKey, state: savedState },
         )
 
-        await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+        await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-        // Check checkbox state immediately without dispatching nav event
-        const checkboxState = await page.evaluate(
-          ({ idx }) => {
-            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-            const checkbox = checkboxes[idx] as HTMLInputElement
-            return checkbox?.checked
-          },
-          { idx: index },
-        )
-
-        expect(checkboxState).toBe(savedState)
+        // Check checkbox state — MutationObserver restores before first paint, but
+        // Safari may deliver the callback slightly after domcontentloaded.
+        await expect(async () => {
+          const checkboxState = await page.evaluate(
+            ({ idx }) => {
+              const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+              const checkbox = checkboxes[idx] as HTMLInputElement
+              return checkbox?.checked
+            },
+            { idx: index },
+          )
+          expect(checkboxState).toBe(savedState)
+        }).toPass({ timeout: 5_000 })
       })
     }
   })
@@ -1111,7 +1115,7 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "load" })
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality

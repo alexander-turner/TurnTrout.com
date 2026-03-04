@@ -860,3 +860,69 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   await expect(article).toBeAttached({ timeout: 10_000 })
   await expect(article).not.toBeEmpty()
 })
+
+test.describe("Search preview scroll behavior", () => {
+  test("scrolls container so first match is approximately centered", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const previewContainer = page.locator("#preview-container")
+    const firstMatch = previewContainer.locator(".search-match").first()
+    await expect(firstMatch).toBeAttached()
+
+    // The scroll code positions the first match at ~50% of the container height.
+    // Verify the match ends up in the middle portion of the visible area.
+    await expect(async () => {
+      const { matchCenterFraction, scrollTop } = await previewContainer.evaluate((container) => {
+        const match = container.querySelector(".search-match")
+        if (!match) throw new Error("No .search-match element found")
+        const matchRect = match.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+        const matchCenter = matchRect.top + matchRect.height / 2 - containerRect.top
+        return {
+          matchCenterFraction: matchCenter / container.clientHeight,
+          scrollTop: container.scrollTop,
+        }
+      })
+
+      // When the container scrolled, the match should be near center (middle 60%)
+      if (scrollTop > 0) {
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeGreaterThan(0.2)
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeLessThan(0.8)
+      }
+      // Match must always be within the visible container area
+      expect(matchCenterFraction).toBeGreaterThanOrEqual(0)
+      expect(matchCenterFraction).toBeLessThanOrEqual(1)
+    }).toPass()
+  })
+
+  test("re-scrolls to first match after viewport resize", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    const currentSize = page.viewportSize()
+    if (!currentSize) throw new Error("No viewport size")
+    test.skip(
+      currentSize.width - 200 <= tabletBreakpoint,
+      "Viewport too narrow to resize while remaining above tablet breakpoint",
+    )
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const firstMatch = page.locator("#preview-container .search-match").first()
+    await expect(firstMatch).toBeInViewport()
+
+    // Resize viewport (changes container height and triggers content reflow)
+    await page.setViewportSize({
+      width: currentSize.width - 200,
+      height: currentSize.height - 100,
+    })
+
+    // The debounced resize handler (150ms) re-scrolls to the match
+    await expect(firstMatch).toBeInViewport()
+  })
+})

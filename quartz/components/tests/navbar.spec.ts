@@ -3,7 +3,7 @@ import type { Locator, Page } from "@playwright/test"
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { takeRegressionScreenshot, isDesktopViewport, setTheme } from "./visual_utils"
+import { takeRegressionScreenshot, isDesktopViewport, setTheme, reloadPage } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -12,6 +12,10 @@ interface VideoElements {
   autoplayToggle: Locator
   playIcon: Locator
   pauseIcon: Locator
+}
+
+function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
 }
 
 function getVideoElements(page: Page): VideoElements {
@@ -23,11 +27,11 @@ function getVideoElements(page: Page): VideoElements {
   }
 }
 
-async function getCurrentTime(video: Locator): Promise<number> {
+function getCurrentTime(video: Locator): Promise<number> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.currentTime)
 }
 
-async function isPaused(video: Locator): Promise<boolean> {
+function isPaused(video: Locator): Promise<boolean> {
   return video.evaluate((videoElement: HTMLVideoElement) => videoElement.paused)
 }
 
@@ -461,7 +465,7 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
 
-  await page.reload({ waitUntil: "load" })
+  await reloadPage(page)
 
   await expect(pauseIcon).toBeVisible()
   await expect(playIcon).toBeHidden()
@@ -533,10 +537,7 @@ async function getTimestampAfterNavigation(page: Page): Promise<number> {
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
   // WebKit (Safari) resets video.currentTime after SPA navigation; skip until fixed.
-  test.skip(
-    page.context().browser()?.browserType().name() === "webkit",
-    "Safari resets video currentTime after SPA navigation",
-  )
+  test.skip(isSafariBrowser(page), "Safari resets video currentTime after SPA navigation")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -553,10 +554,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
   // WebKit resets video.currentTime after page refresh; skip until fixed.
-  test.skip(
-    page.context().browser()?.browserType().name() === "webkit",
-    "Safari resets video currentTime after page refresh",
-  )
+  test.skip(isSafariBrowser(page), "Safari resets video currentTime after page refresh")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

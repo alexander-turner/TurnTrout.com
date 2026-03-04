@@ -3,6 +3,7 @@ public
 **.min.*
 node_modules
 .quartz-cache
+.quartz_checks
 **/.github/workflows/*.yaml
 .github/
 coverage/
@@ -14,3 +15,4 @@ htmlcov/
 .dmypy.json
 test-results/
 pnpm-lock.yaml
+**/asset_queue.json

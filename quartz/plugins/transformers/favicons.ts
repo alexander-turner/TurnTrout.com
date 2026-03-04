@@ -733,6 +733,11 @@ export function isAssetLink(href: string): boolean {
     return false
   }
 
+  // .ts/.mts are TypeScript, not MPEG transport stream (video/mp2t)
+  if (extension === "ts" || extension === "mts") {
+    return false
+  }
+
   const mimeType = mime.lookup(extension)
   if (!mimeType) {
     return false

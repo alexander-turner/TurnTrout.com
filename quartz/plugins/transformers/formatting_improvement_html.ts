@@ -22,6 +22,7 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  * Content inside these elements won't have formatting improvements applied.
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+export const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 
 /**
  * Tags that should be skipped during fraction replacement.
@@ -257,6 +258,10 @@ export function formatArrows(tree: Root): void {
       "span.right-arrow",
     )
   })
+}
+
+function isHeading(node: Element): boolean {
+  return HEADING_TAGS.has(node.tagName)
 }
 
 // skipcq: JS-0098
@@ -675,13 +680,20 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
       if (node.type === "element") {
+        // Skip nbsp in headings — it prevents natural line-breaking and looks bad
+        const inHeading =
+          isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
+        const activeUncheckedTransformers = inHeading
+          ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+          : uncheckedTextTransformers
+
         const eltsToTransform = collectTransformableElements(node as Element, toSkip)
         eltsToTransform.forEach((elt) => {
           for (const transform of checkedTextTransformers) {
             transformElement(elt, transform, toSkip, markerChar, true)
           }
 
-          for (const transform of uncheckedTextTransformers) {
+          for (const transform of activeUncheckedTransformers) {
             transformElement(elt, transform, toSkip, markerChar, false)
           }
 

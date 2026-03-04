@@ -50,8 +50,15 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
-if ! command -v shellcheck &>/dev/null && is_root; then
-	{ apt-get update -qq && apt-get install -y -qq shellcheck; } || warn "Failed to install shellcheck"
+uv_install_if_missing alt-text-llm
+if is_root; then
+	apt_pkgs=()
+	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
+	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	if [ ${#apt_pkgs[@]} -gt 0 ]; then
+		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
+			warn "Failed to install ${apt_pkgs[*]}"
+	fi
 fi
 
 #######################################
@@ -63,6 +70,8 @@ fi
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
 TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
 rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
+# Remove stale push-commit marker (used by verify_ci.py to check remote CI)
+rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
 #######################################
 # Git setup
@@ -89,6 +98,12 @@ fi
 #   http://local_proxy@127.0.0.1:18393/git/owner/repo
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
+#
+# Lessons learned: `gh repo set-default` still needs at least one remote
+# that points to a recognized GitHub host — exporting GH_REPO alone is
+# not enough. We therefore add a "github" remote with the real URL so
+# that both `gh repo set-default` and `gh pr create --head` resolve
+# correctly without manual workarounds.
 
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
@@ -98,6 +113,12 @@ if [ -z "${GH_REPO:-}" ]; then
 		export GH_REPO
 		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
 			echo "export GH_REPO=\"$GH_REPO\"" >>"$CLAUDE_ENV_FILE"
+		fi
+
+		# Add a real GitHub remote so gh CLI can resolve the host
+		if ! git -C "$PROJECT_DIR" remote get-url github &>/dev/null; then
+			git -C "$PROJECT_DIR" remote add github "https://github.com/${GH_REPO}.git" ||
+				warn "Failed to add github remote"
 		fi
 	fi
 fi
@@ -113,26 +134,14 @@ if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
 fi
 
 #######################################
-# DeepSource CLI (fork with --commit support)
-# Source: https://github.com/DeepSourceCorp/cli/pull/267
+# DeepSource CLI
+# Official CLI now supports --commit, --pr, --default-branch flags
 #######################################
 
 if ! command -v deepsource &>/dev/null; then
-  echo "Installing DeepSource CLI (fork with --commit flag)..."
-  if command -v go &>/dev/null; then
-    _ds_tmp=$(mktemp -d)
-    if git clone --quiet --branch feat/issues-list-by-commit --depth 1 \
-      "$(github_url "alexander-turner/cli")" "$_ds_tmp/cli" 2>/dev/null; then
-      (cd "$_ds_tmp/cli" && go build -o "$HOME/.local/bin/deepsource" ./cmd/deepsource) 2>/dev/null \
-        || warn "Failed to build DeepSource CLI fork"
-    else
-      warn "Failed to clone DeepSource CLI fork"
-    fi
-    rm -rf "$_ds_tmp"
-  else
-    # Fallback to official CLI (without --commit support)
-    curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || warn "Failed to install DeepSource CLI"
-  fi
+  echo "Installing DeepSource CLI..."
+  curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh 2>/dev/null \
+    || warn "Failed to install DeepSource CLI"
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then

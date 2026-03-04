@@ -232,18 +232,12 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
       await gotoPage(page, `http://localhost:8080/${targetPath}`)
 
-      // In Safari, the CSS custom property that drives the theme label can
-      // lag behind the "load" event.  Wait explicitly before polling.
-      await page.waitForFunction(
-        () =>
-          getComputedStyle(document.documentElement)
-            .getPropertyValue("--theme-label-content")
-            .trim().length > 0,
-      )
-      // CSS custom property may not be set synchronously after navigation
+      // CSS custom property may not be set synchronously after navigation,
+      // especially on Safari where detectInitialState.js can lag behind the
+      // load event. Retry until the init script runs and sets the label.
       await expect(async () => {
         await helper.verifyThemeLabel(theme)
-      }).toPass()
+      }).toPass({ timeout: 15_000 })
       await helper.verifyTheme(theme)
     })
   })

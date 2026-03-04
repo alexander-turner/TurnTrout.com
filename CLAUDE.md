@@ -12,9 +12,16 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build
+pnpm build        # Production build (requires network access)
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
+```
+
+**Offline builds**: In environments without network access (e.g. CI, sandboxed sessions), use the `--offline` flag to skip remote asset fetching and link counting:
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
 ### Testing
@@ -171,6 +178,16 @@ When pushing to main, these checks run automatically:
 
 Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 
+## CI Monitoring
+
+After pushing code or creating a PR, **always monitor CI status until all checks pass or fail**. The PostToolUse hook (`post-push-ci-watch.sh`) automatically polls GitHub Actions after `git push` / `gh pr create`. If CI fails, fix the issues and push again. The Stop hook also blocks completion if remote CI has failures for the last pushed commit.
+
+To manually check CI status:
+```bash
+gh run list --branch <branch> --commit <sha> --json name,status,conclusion
+gh run view <run-id> --log-failed   # Show logs from a failed run
+```
+
 ## GitHub Actions (Post-push)
 
 After pushing to main:
@@ -180,7 +197,7 @@ After pushing to main:
 - Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
-- DeepSource static analysis (use the forked `deepsource` CLI to check issues — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
+- DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 
 ### CI Cost Optimization
 

@@ -30,7 +30,7 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-push-ci-watch.sh",
-            "timeout": 360
+            "timeout": 720
           }
         ]
       }
