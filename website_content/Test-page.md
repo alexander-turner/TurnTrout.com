@@ -11,9 +11,10 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-01-01 20:00:17.441157
+date_updated: 2026-02-23 17:58:50.463964
 createBibtex: true
 ---
+
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
@@ -709,8 +710,8 @@ This is a plain code block without a language specified.
 <!-- spellchecker-disable -->
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-  <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
-  <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 
 <!-- spellchecker-enable -->
 

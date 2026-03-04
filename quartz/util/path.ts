@@ -1,10 +1,7 @@
 import type { Element as HastElement } from "hast"
-import type { VFile } from "vfile"
 
 import { slug as slugAnchor } from "github-slugger"
 import rfdc from "rfdc"
-
-import { improveFormatting } from "../plugins/transformers/formatting_improvement_html"
 
 export const clone = rfdc()
 
@@ -206,41 +203,33 @@ const _rebaseHastElement = (
 }
 
 /**
+ * Rebases all links in a HAST element tree (mutates in place).
+ */
+function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug): void {
+  _rebaseHastElement(el, "src", curBase, newBase)
+  _rebaseHastElement(el, "href", curBase, newBase)
+  if (el.children) {
+    for (const child of el.children) {
+      if ((child as HastElement).type === "element") {
+        _rebaseTree(child as HastElement, curBase, newBase)
+      }
+    }
+  }
+}
+
+/**
  * Normalizes a HAST element for transclusion by:
- * 1. Cloning the element to avoid modifying original content
- * 2. Applying formatting improvements through the HTML transformer
- * 3. Rebasing relative links to work in the new context
+ * 1. Deep-cloning the element to avoid modifying original content
+ * 2. Rebasing relative links to work in the new context
  *
  * @param rawEl - Original HAST element to normalize
  * @param curBase - Current base slug where element originates
  * @param newBase - New base slug where element will be transcluded
- * @returns Normalized HAST element with proper formatting and rebased links
+ * @returns Normalized HAST element with rebased links
  */
 export function normalizeHastElement(rawEl: HastElement, curBase: FullSlug, newBase: FullSlug) {
   const el = clone(rawEl) // clone so we dont modify the original page
-
-  // Apply formatting improvements to the cloned element
-  const transformer = improveFormatting()
-  transformer(
-    {
-      type: "root",
-      children: [el],
-    },
-    { data: {} } as VFile,
-    () => {
-      // empty because improveFormatting doesn't need a function passed
-    },
-  )
-
-  // Continue with existing link rebasing
-  _rebaseHastElement(el, "src", curBase, newBase)
-  _rebaseHastElement(el, "href", curBase, newBase)
-  if (el.children) {
-    el.children = el.children.map((child) =>
-      normalizeHastElement(child as HastElement, curBase, newBase),
-    )
-  }
-
+  _rebaseTree(el, curBase, newBase)
   return el
 }
 

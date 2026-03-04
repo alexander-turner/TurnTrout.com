@@ -18,7 +18,7 @@ actual_max_size = 300
 
 
 @pytest.fixture
-def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
+def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         script_utils,
         "load_shared_constants",
@@ -27,7 +27,7 @@ def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def mock_git_root(quartz_project_structure, monkeypatch):
+def mock_git_root(quartz_project_structure, monkeypatch) -> None:
     """Override conftest mock_git_root to add card_images directory."""
     git_root = quartz_project_structure["public"].parent
     (git_root / "quartz" / "static" / "images" / "card_images").mkdir(
@@ -256,7 +256,7 @@ def test_download_image_failure(tmp_path):
 
 
 @pytest.fixture
-def jpeg_conversion_setup(tmp_path):
+def jpeg_conversion_setup(tmp_path) -> tuple[Path, Path]:
     """Common setup for JPEG conversion tests."""
     input_path = tmp_path / "test.avif"
     output_path = tmp_path / "test.jpg"
@@ -336,7 +336,7 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
         mock_stat.return_value.st_size = 400 * 1024  # First: 400KB (too large)
 
         # After first call, make it smaller
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs) -> None:
             if mock_run.call_count == 1:
                 mock_stat.return_value.st_size = 400 * 1024
             else:

@@ -16,13 +16,19 @@ runs:
         cache-puppeteer: "true"
         install-python: "false"
 
-    - name: Install Playwright browsers and system dependencies
+    - name: Install Playwright system dependencies
       if: inputs.install-playwright == 'true'
-      run: pnpm exec playwright install --with-deps chromium webkit firefox
+      run: pnpm exec playwright install-deps chromium webkit firefox
       shell: bash
 
     - name: Install ffmpeg from system packages
       run: |
+        # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
+        if command -v ffprobe &>/dev/null; then
+          echo "ffprobe already available, skipping install"
+          ffprobe -version
+          exit 0
+        fi
         # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
         sudo apt-get update
         sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5

@@ -10,9 +10,6 @@ fi
 PUSHED_CHANGES=0
 trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
 
-# Main script logic first
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
 # Handle cleanup function separately
 # shellcheck disable=SC2317
 handle_cleanup() {
@@ -47,10 +44,6 @@ cd "$GIT_ROOT"
 
 if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
-fi
-
-if [ "$CURRENT_BRANCH" != "main" ]; then
-  exit 0
 fi
 
 uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG

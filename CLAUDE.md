@@ -12,9 +12,16 @@ Personal blog/website (turntrout.com) built on Quartz, a static site generator. 
 
 ```bash
 pnpm dev          # Development server with hot reload
-pnpm build        # Production build
+pnpm build        # Production build (requires network access)
 pnpm start        # Build and serve locally on port 8080
 pnpm preview      # Build and serve
+```
+
+**Offline builds**: In environments without network access (e.g. CI, sandboxed sessions), use the `--offline` flag to skip remote asset fetching and link counting:
+
+```bash
+PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+  npx tsx quartz/bootstrap-cli.ts build --offline
 ```
 
 ### Testing
@@ -106,8 +113,8 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 **Pre-push** (main branch only):
 
 - Stashes uncommitted changes
-- Runs comprehensive validation (tests, linting, spellcheck, link validation)
-- Compresses/uploads assets to CDN
+- Runs only unique local tasks (auto-fix formatters, asset upload, alt-text scan)
+- Most quality checks (linting, tests, spellcheck, link validation) run in CI
 - Can resume from last failure: `RESUME=true git push`
 
 ## Content Structure
@@ -162,16 +169,24 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 When pushing to main, these checks run automatically:
 
-1. TypeScript: ESLint, type checking, 100% branch coverage tests
-2. Python: mypy, pylint (10/10), ruff, 100% line coverage
-3. Spellcheck with whitelisting
-4. Vale prose linting (no clichés, unnecessary adverbs)
-5. Markdown link validation
-6. Frontmatter validation
-7. CSS variable validation
-8. Built site checks (no localhost links, all favicons wrapped, etc.)
-9. Internal link validation with `linkchecker`
-10. Asset compression and CDN upload
+1. ruff (Python linting, fast)
+2. ESLint `--fix` (auto-fixes TypeScript)
+3. docformatter `--in-place` (auto-fixes Python docstrings)
+4. stylelint `--fix` (auto-fixes SCSS)
+5. Asset compression and CDN upload
+6. Alt-text scan (LLM-based, requires API key)
+
+Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
+
+## CI Monitoring
+
+After pushing code or creating a PR, **always monitor CI status until all checks pass or fail**. The PostToolUse hook (`post-push-ci-watch.sh`) automatically polls GitHub Actions after `git push` / `gh pr create`. If CI fails, fix the issues and push again. The Stop hook also blocks completion if remote CI has failures for the last pushed commit.
+
+To manually check CI status:
+```bash
+gh run list --branch <branch> --commit <sha> --json name,status,conclusion
+gh run view <run-id> --log-failed   # Show logs from a failed run
+```
 
 ## GitHub Actions (Post-push)
 
@@ -182,7 +197,7 @@ After pushing to main:
 - Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
-- DeepSource static analysis (use the forked `deepsource` CLI to check issues — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
+- DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 
 ### CI Cost Optimization
 

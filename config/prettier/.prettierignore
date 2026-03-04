@@ -11,6 +11,7 @@ htmlcov/
 .vale-styles
 .logs/
 .mypy_cache/
+.dmypy.json
 test-results/
-.mypy_cache/
 pnpm-lock.yaml
+**/asset_queue.json

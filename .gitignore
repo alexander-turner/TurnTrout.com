@@ -12,6 +12,8 @@ public
 prof
 tsconfig.tsbuildinfo
 .quartz-cache
+.dmypy.json
+.mypy_cache
 .quartz_checks
 .timestamps
 *variables.scss
@@ -48,6 +50,7 @@ quartz/static/images/posts
 *.avif_original
 *.mp4_original
 website_content/asset_staging
+scripts/asset_queue.json
 
 # Content
 website_content/drafts
@@ -66,3 +69,4 @@ scripts/*.json
 .aider*
 .beads
 AGENTS.md
+.gh-resolved

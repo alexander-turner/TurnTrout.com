@@ -2426,9 +2426,16 @@ _SKIP_PARENT_CLASSES = (
     "authors",
     "admonition-metadata",
     "backlinks",
-    "transclude",
     "tag-container",
     "all-tags",
+)
+
+# Block-level elements that should never appear inside <p>. When they
+# do (e.g. transclusion wrapping tables in <span> inside <p>),
+# get_text() concatenates child text without spaces, producing garbage.
+_BLOCK_LEVEL_TAGS = frozenset(
+    ["table", "div", "blockquote", "figure", "pre", "ul", "ol"]
+    + [f"h{n}" for n in range(1, 7)]
 )
 
 
@@ -2464,15 +2471,17 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
     for article in _tags_only(soup.find_all("article")):
         for element in _tags_only(article.find_all("p")):
+            in_skip_container = any(
+                element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
+            ) or element.find_parent(id="content-meta")
             if (
                 should_skip(element)
                 or element.find_parent(["nav", "footer", "header"])
-                or any(
-                    element.find_parent(class_=cls)
-                    for cls in _SKIP_PARENT_CLASSES
-                )
-                or element.find_parent(id="content-meta")
+                or in_skip_container
                 or "page-listing-title" in script_utils.get_classes(element)
+                # Skip <p> with block-level children (invalid HTML from
+                # e.g. transclusion): get_text() concatenates without spaces.
+                or element.find(_BLOCK_LEVEL_TAGS)
             ):
                 continue
 

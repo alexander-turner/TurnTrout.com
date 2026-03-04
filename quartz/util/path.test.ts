@@ -9,17 +9,18 @@ describe("normalizeHastElement", () => {
   const baseSlug = "test/page" as FullSlug
   const newSlug = "other/page" as FullSlug
 
-  it("should apply formatting improvements to text content", () => {
-    const input = h("p", 'This is a test with quotes "like this" and dashes--here')
+  it("should not re-apply formatting to already-formatted content", () => {
+    const input = h("p", 'Text with "quotes" and dashes--here')
     const result = normalizeHastElement(input, baseSlug, newSlug)
 
+    // Content should be preserved as-is since htmlAst is already formatted
     expect(result.children[0]).toMatchObject({
       type: "text",
-      value: "This is a test with quotes “like this” and dashes—here",
+      value: 'Text with "quotes" and dashes--here',
     })
   })
 
-  it("should preserve and rebase links while applying formatting", () => {
+  it("should rebase links without modifying text content", () => {
     const input = h("p", [h("a", { href: "../some/link" }, 'A link with "quotes"')])
 
     const result = normalizeHastElement(input, baseSlug, newSlug)
@@ -28,14 +29,14 @@ describe("normalizeHastElement", () => {
     const child = result.children[0] as Element
     expect(child.properties?.href).toBe("../other/page/../../some/link")
 
-    // Check that text formatting is applied within the link
+    // Check that text content is preserved as-is
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "A link with “quotes”",
+      value: 'A link with "quotes"',
     })
   })
 
-  it("should handle nested elements", () => {
+  it("should handle nested elements without reformatting", () => {
     const input = h("div", [h("p", "Nested text with -- dashes")])
 
     const result = normalizeHastElement(input, baseSlug, newSlug)
@@ -43,7 +44,7 @@ describe("normalizeHastElement", () => {
     const child = result.children[0] as Element
     expect(child.children[0]).toMatchObject({
       type: "text",
-      value: "Nested text with—dashes",
+      value: "Nested text with -- dashes",
     })
   })
 
@@ -54,6 +55,21 @@ describe("normalizeHastElement", () => {
 
     normalizeHastElement(input, baseSlug, newSlug)
     expect(textChild.value).toBe(originalValue)
+  })
+
+  it("should preserve text inside <code> descendants (ancestor context bug)", () => {
+    // Regression: the old code recursively called normalizeHastElement on each
+    // child, which ran improveFormatting() on children stripped from their parent
+    // tree. A <span> inside <code> would lose the <code> ancestor context and
+    // get smart-quoted even though <code> should suppress formatting.
+    const input = h("code", [h("span", 'x = "hello" -- world')])
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+
+    const span = result.children[0] as Element
+    expect(span.children[0]).toMatchObject({
+      type: "text",
+      value: 'x = "hello" -- world',
+    })
   })
 
   it.each([
