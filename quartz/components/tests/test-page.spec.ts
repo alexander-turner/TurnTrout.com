@@ -1051,6 +1051,36 @@ test.describe("Checkboxes", () => {
     await parentCheckbox.click()
   })
 
+  test("Re-checking parent re-cascades to previously unchecked children", async ({ page }) => {
+    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+    await checkboxesSection.scrollIntoViewIfNeeded()
+
+    const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
+    const nestedChild = page.locator("input.checkbox-toggle").nth(3)
+
+    // Start from clean state
+    if (await isElementChecked(parentCheckbox)) {
+      await parentCheckbox.click()
+    }
+    if (await isElementChecked(nestedChild)) {
+      await nestedChild.click()
+    }
+
+    // Check parent (cascades), uncheck child, uncheck parent, re-check parent
+    await parentCheckbox.click()
+    await nestedChild.click()
+    await expect(nestedChild).toBeChecked({ checked: false })
+
+    await parentCheckbox.click() // uncheck parent
+    await parentCheckbox.click() // re-check parent — should re-cascade
+
+    await expect(nestedChild).toBeChecked({ checked: true })
+
+    // Clean up
+    await parentCheckbox.click()
+    await nestedChild.click()
+  })
+
   test.describe("state restoration before first paint", () => {
     const clearCheckboxKeys = () => {
       const keysToRemove = Object.keys(localStorage).filter((key) =>

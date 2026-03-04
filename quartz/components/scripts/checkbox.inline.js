@@ -7,6 +7,10 @@ document.addEventListener("nav", () => {
   const checkboxes = document.querySelectorAll("input.checkbox-toggle")
   const states = window.__quartz_checkbox_states || new Map()
 
+  // Pre-build element→index map for O(1) lookups during cascade
+  const indexMap = new Map()
+  checkboxes.forEach((el, index) => indexMap.set(el, index))
+
   checkboxes.forEach((el, index) => {
     const elId = checkboxId(index)
 
@@ -25,9 +29,8 @@ document.addEventListener("nav", () => {
           )
           descendants.forEach((descendant) => {
             descendant.checked = true
-            // Find descendant's index and persist its state
-            const descIndex = Array.from(checkboxes).indexOf(descendant)
-            if (descIndex !== -1) {
+            const descIndex = indexMap.get(descendant)
+            if (descIndex !== undefined) {
               const descId = checkboxId(descIndex)
               localStorage.setItem(descId, "true")
               states.set(descId, true)

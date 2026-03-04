@@ -118,6 +118,7 @@ input.checkbox-toggle {
 
 // Reset strikethrough for nested checkbox items whose own checkbox is unchecked,
 // so they don't inherit strikethrough from a checked parent.
+// Must appear AFTER the checked strikethrough rule above (same specificity, last wins).
 :is(
     li:has(> input.checkbox-toggle:not(:checked)),
     li:has(> * > input.checkbox-toggle:not(:checked)),
