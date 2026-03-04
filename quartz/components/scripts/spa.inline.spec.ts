@@ -405,7 +405,7 @@ test.describe("Instant Scroll Restoration", () => {
           // is false when we fire the scroll event.
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
+              window.dispatchEvent(new PointerEvent("pointerdown"))
               window.scrollBy(0, 100)
             })
           })
