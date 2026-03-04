@@ -124,7 +124,8 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
+          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
+            pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"

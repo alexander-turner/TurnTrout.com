@@ -84,7 +84,7 @@ while [ "$polled" -lt "$max_poll" ]; do
 			echo ""
 			echo "=== CI FAILED ==="
 			echo "Failed workflows:"
-			echo "$failed_names" | sed 's/^/  - /'
+			while IFS= read -r name; do echo "  - $name"; done <<< "$failed_names"
 			echo ""
 
 			# Show logs from first failed run

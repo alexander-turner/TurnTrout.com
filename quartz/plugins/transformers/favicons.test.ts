@@ -115,7 +115,7 @@ describe("Favicon Utilities", () => {
         .mockResolvedValueOnce(AVIFResponse)
         .mockResolvedValueOnce(googleResponse)
 
-      jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
+      jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
       // Mock fs.promises.stat: local SVG, then local PNG
       jest
@@ -257,7 +257,7 @@ describe("Favicon Utilities", () => {
           }),
         )
 
-      jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
+      jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
       favicons.urlCache.clear()
 

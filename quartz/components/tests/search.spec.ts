@@ -750,13 +750,17 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
+  // Move mouse away from results so that when the mouseover lock expires,
+  // no accidental hover event steals focus from the first result.
+  await page.mouse.move(0, 0)
+
   // The search input is debounced (400ms), so `search()` may return before
   // the new results render. Wait for the first result card to reflect the
   // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
 
-  // The first result should gain focus once the mouseover lock expires
+  // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
 
   await page.keyboard.press("Enter")

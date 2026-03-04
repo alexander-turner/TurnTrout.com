@@ -131,7 +131,7 @@ def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
 
     # Fall back to current branch if not stored in marker file
     if not branch:
-        branch_result = subprocess.run(
+        branch_result = subprocess.run(  # skipcq: BAN-B603
             ["git", "rev-parse", "--abbrev-ref", "HEAD"],
             capture_output=True,
             text=True,
@@ -142,7 +142,7 @@ def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
         return
 
     # Query workflow run status
-    result = subprocess.run(
+    result = subprocess.run(  # skipcq: BAN-B603
         [
             "gh",
             "run",

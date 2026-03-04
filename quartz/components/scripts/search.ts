@@ -577,13 +577,13 @@ async function handleResultNavigation(
    *
    * @param target - The result card to focus and preview
    */
-  const focusAndPreview = async (target: HTMLElement | null) => {
+  const focusAndPreview = (target: HTMLElement | null) => {
     if (!target) return
 
     // Lock mouse events during keyboard navigation
     mouseEventsLocked = true
 
-    await displayPreview(target)
+    displayPreview(target)
 
     // Unlock mouse events after a short delay
     setTimeout(() => {
@@ -622,7 +622,7 @@ async function handleResultNavigation(
 
       const first = document.getElementsByClassName("result-card")[0] as HTMLElement | null
       if (first && !first.classList.contains("no-match")) {
-        await focusAndPreview(first)
+        focusAndPreview(first)
         first.click()
       }
       break
@@ -633,7 +633,7 @@ async function handleResultNavigation(
       if (canNavigate && currentHover) {
         const toShow = prevSibling(currentHover)
         if (toShow) {
-          await focusAndPreview(toShow)
+          focusAndPreview(toShow)
         }
       }
       break
@@ -644,7 +644,7 @@ async function handleResultNavigation(
       if (canNavigate) {
         const toShow = getNavigationTarget(nextSibling)
         if (toShow) {
-          await focusAndPreview(toShow)
+          focusAndPreview(toShow)
         }
       }
       break
@@ -655,7 +655,7 @@ async function handleResultNavigation(
       if (!canNavigate) break
       const toShow = getNavigationTarget(e.shiftKey ? prevSibling : nextSibling)
       if (toShow) {
-        await focusAndPreview(toShow)
+        focusAndPreview(toShow)
       }
       break
     }
@@ -826,7 +826,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
  * @param keyboardFocus - Whether to call focus() on the element
  */
 /* istanbul ignore next */
-async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
+function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
     card.setAttribute("aria-selected", "false")
@@ -854,7 +854,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
  * @param keyboardFocus - Whether to focus the element using the keyboard
  */
 /* istanbul ignore next */
-async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
+function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!searchLayout || !enablePreview || !preview) return
 
@@ -863,7 +863,7 @@ async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
     previewManager = new PreviewManager(preview)
   }
 
-  await focusCard(el, keyboardFocus)
+  focusCard(el, keyboardFocus)
 
   // Update preview content
   previewManager?.update(el, currentSearchTerm, currentSlug)
@@ -1001,7 +1001,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
     const target = ev.currentTarget as HTMLElement
-    await displayPreview(target, false)
+    displayPreview(target, false)
   }
 
   // Add mouse leave handler to maintain focus state
@@ -1101,7 +1101,7 @@ async function displayResults(
     firstChild.classList.add("focus")
     currentHover = firstChild as HTMLInputElement
 
-    await displayPreview(firstChild, false)
+    displayPreview(firstChild, false)
   }
 }
 
