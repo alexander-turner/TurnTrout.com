@@ -197,7 +197,7 @@ After pushing to main:
 - Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
-- DeepSource static analysis (use the forked `deepsource` CLI to check issues — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
+- DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 
 ### CI Cost Optimization
 
