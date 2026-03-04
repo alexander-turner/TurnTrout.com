@@ -826,7 +826,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
  * @param keyboardFocus - Whether to call focus() on the element
  */
 /* istanbul ignore next */
-async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
+function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
     card.setAttribute("aria-selected", "false")
@@ -863,7 +863,7 @@ async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
     previewManager = new PreviewManager(preview)
   }
 
-  await focusCard(el, keyboardFocus)
+  focusCard(el, keyboardFocus)
 
   // Update preview content
   previewManager?.update(el, currentSearchTerm, currentSlug)
