@@ -340,12 +340,12 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
 
   // Wait for navigation to the new page. The href of dummyLink is /design.
   await page.waitForURL(`**/${linkSlug}`)
+  await page.waitForLoadState("domcontentloaded")
 
   // The 'nav' event should have cleared the pending popover timer.
-  // Wait a bit to ensure the popover doesn't appear.
-  // The popover timeout is 300ms, let's wait a little longer.
+  // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(1000)
 
   const popover = page.locator(".popover")
   await expect(popover).toBeHidden()
