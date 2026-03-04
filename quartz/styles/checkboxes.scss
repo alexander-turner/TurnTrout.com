@@ -57,11 +57,7 @@ input.checkbox-toggle {
     outline-offset: 1.5px;
   }
 
-  // Checked boxes and their box children will be styled the same
-  &:checked,
-  li:has(> input.checkbox-toggle:checked) &,
-  li:has(> * > input.checkbox-toggle:checked) &,
-  li:has(> label > input.checkbox-toggle:checked) & {
+  &:checked {
     --checkbox-color: light-dark(
       color-mix(in srgb, var(--green), var(--light) 20%),
       color-mix(in srgb, var(--green), var(--dark) 45%)
@@ -117,5 +113,18 @@ input.checkbox-toggle {
   & p {
     text-decoration: line-through;
     text-decoration-color: var(--midground-faint);
+  }
+}
+
+// Reset strikethrough for nested checkbox items whose own checkbox is unchecked,
+// so they don't inherit strikethrough from a checked parent.
+:is(
+    li:has(> input.checkbox-toggle:not(:checked)),
+    li:has(> * > input.checkbox-toggle:not(:checked)),
+    li:has(> label > input.checkbox-toggle:not(:checked))
+  ):not(#punctilio-demo *) {
+  &,
+  & p {
+    text-decoration: none;
   }
 }
