@@ -126,10 +126,10 @@ $panel-min-height: 200px;
       display: flex;
       align-items: center;
       gap: $base-margin;
-      flex: 1;
+      cursor: pointer;
 
-      &:not(:has(select)) {
-        cursor: text;
+      &:has(select) {
+        flex: 1;
       }
     }
 
