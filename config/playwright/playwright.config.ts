@@ -67,7 +67,8 @@ export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
 
-  retries: 0,
+  // Retry once in CI to handle transient WebKit/Safari hangs (goto/waitForLoadState timeouts).
+  retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
