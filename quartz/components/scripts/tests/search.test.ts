@@ -197,7 +197,7 @@ describe("updatePlaceholder", () => {
   const searchBar = document.createElement("input")
   searchBar.id = "search-bar"
   document.body.appendChild(searchBar)
-  it("should set the placeholder to desktop version on wide screens", async () => {
+  it("should set the placeholder to desktop version on wide screens", () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
