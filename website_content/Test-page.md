@@ -162,6 +162,8 @@ Admonition in a description list
 
 # Select boxes
 
+<div id="select-box-demos">
+
 <label for="select-basic">Basic select:</label>
 <select id="select-basic">
   <option value="">Choose an option</option>
@@ -196,6 +198,8 @@ Admonition in a description list
   <option value="blue">Blue</option>
   <option value="yellow">Yellow</option>
 </select>
+
+</div>
 
 # Transclusion
 
