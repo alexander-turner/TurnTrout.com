@@ -45,4 +45,13 @@ document.addEventListener("nav", () => {
       el.checked = states.get(elId)
     }
   })
+
+  // Prevent label clicks from toggling checkboxes — only direct checkbox clicks should toggle
+  document.querySelectorAll("label:has(> input.checkbox-toggle)").forEach((label) => {
+    label.addEventListener("click", (e) => {
+      if (e.target !== label.querySelector("input.checkbox-toggle")) {
+        e.preventDefault()
+      }
+    })
+  })
 })
