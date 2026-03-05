@@ -15,28 +15,32 @@ import {
   getFaviconUrl,
 } from "../quartz/plugins/transformers/favicons"
 
-const faviconCounts = readFaviconCounts()
+async function main() {
+  const faviconCounts = await readFaviconCounts()
 
-// Compute the set of underscore-separated domain names that pass shouldIncludeFavicon
-const includedDomains: string[] = []
-for (const [pathWithoutExt] of faviconCounts) {
-  // Build path with extension (special paths like URLs and .svg/.ico are preserved)
-  const pathWithExt =
-    pathWithoutExt.startsWith("http") || /\.(?:svg|ico)$/.test(pathWithoutExt)
-      ? pathWithoutExt
-      : `${pathWithoutExt}.png`
+  // Compute the set of underscore-separated domain names that pass shouldIncludeFavicon
+  const includedDomains: string[] = []
+  for (const [pathWithoutExt] of faviconCounts) {
+    // Build path with extension (special paths like URLs and .svg/.ico are preserved)
+    const pathWithExt =
+      pathWithoutExt.startsWith("http") || /\.(?:svg|ico)$/.test(pathWithoutExt)
+        ? pathWithoutExt
+        : `${pathWithoutExt}.png`
 
-  const transformedPath = transformUrl(pathWithExt)
-  if (transformedPath === defaultPath) continue
+    const transformedPath = transformUrl(pathWithExt)
+    if (transformedPath === defaultPath) continue
 
-  const url = getFaviconUrl(transformedPath)
-  if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) continue
+    const url = getFaviconUrl(transformedPath)
+    if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) continue
 
-  // Extract domain part: /static/images/external-favicons/example_com -> example_com
-  const match = pathWithoutExt.match(/external-favicons\/(?<domain>.+)$/)
-  if (match?.groups?.domain) {
-    includedDomains.push(match.groups.domain)
+    // Extract domain part: /static/images/external-favicons/example_com -> example_com
+    const match = pathWithoutExt.match(/external-favicons\/(?<domain>.+)$/)
+    if (match?.groups?.domain) {
+      includedDomains.push(match.groups.domain)
+    }
   }
+
+  console.log(JSON.stringify({ includedDomains }))
 }
 
-console.log(JSON.stringify({ includedDomains }))
+main()
