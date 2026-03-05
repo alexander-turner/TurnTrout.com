@@ -112,9 +112,11 @@ test.describe("Theme persistence and UI states", () => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Use goto instead of reload to avoid transient WebKit "internal error"
-      // driver crashes. Equivalent for localStorage-based persistence.
-      await page.goto(page.url())
+      // Navigate to a genuinely different page so that init scripts re-run
+      // in all browsers including Safari/WebKit.  Same-URL goto() in Safari
+      // may be treated as a soft refresh and skip re-running JS init scripts,
+      // leaving data-theme unset.
+      await gotoPage(page, "http://localhost:8080/about")
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
