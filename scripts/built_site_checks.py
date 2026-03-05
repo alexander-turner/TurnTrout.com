@@ -2457,6 +2457,68 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
             abbr.string = abbr.get_text().upper()
 
 
+def _should_skip_spellcheck_paragraph(element: Tag) -> bool:
+    """Check whether a ``<p>`` element should be excluded from spell-
+    checking."""
+    in_skip_container = bool(
+        any(element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES)
+        or element.find_parent(id="content-meta")
+    )
+    return bool(
+        should_skip(element)
+        or element.find_parent(["nav", "footer", "header"])
+        or in_skip_container
+        or "page-listing-title" in script_utils.get_classes(element)
+        # Skip <p> with block-level children (invalid HTML from
+        # e.g. transclusion): get_text() concatenates without spaces.
+        or element.find(_BLOCK_LEVEL_TAGS)
+    )
+
+
+def _normalize_paragraph_text(element: Tag) -> str:
+    """Normalize a ``<p>`` element into spellchecker-friendly plain text."""
+    el_copy = copy.copy(element)
+
+    _normalize_smallcaps(el_copy)
+
+    # Fix inline element word boundaries:
+    # - <br> → space (prevents "state<br>while" → "statewhile")
+    # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
+    # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
+    for br in el_copy.find_all("br"):
+        br.replace_with(" ")
+    for sub in el_copy.find_all("sub"):
+        sub.insert_before(" ")
+    for sup in el_copy.find_all("sup"):
+        sup.unwrap()
+
+    # Remove footnote ref links to avoid "word1" concatenation
+    for link in el_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            parent = link.parent
+            if isinstance(parent, Tag) and parent.name == "sup":
+                parent.decompose()
+            else:
+                link.decompose()
+
+    text = script_utils.get_non_code_text(el_copy).strip()
+    # Normalize smart quotes to ASCII so spellchecker treats
+    # contractions like "I've" as single words instead of "I"+"ve"
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    # Rejoin dropcap-split contractions: the dropcap transformer
+    # inserts a space before apostrophes ("I've" → "I 've") for
+    # CSS rendering, which makes the spellchecker see "ve" as a
+    # standalone word. Rejoin them here.
+    text = re.sub(r"\b(\w) '", r"\1'", text)
+    # Pad sentence-ending punctuation with a trailing space so
+    # the spellchecker doesn't glue it to the preceding word
+    # (e.g. "submodules." → "submodules .")
+    return re.sub(r"(\w)([.!?])$", r"\1 \2", text)
+
+
 def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
@@ -2471,61 +2533,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
     for article in _tags_only(soup.find_all("article")):
         for element in _tags_only(article.find_all("p")):
-            in_skip_container = any(
-                element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
-            ) or element.find_parent(id="content-meta")
-            if (
-                should_skip(element)
-                or element.find_parent(["nav", "footer", "header"])
-                or in_skip_container
-                or "page-listing-title" in script_utils.get_classes(element)
-                # Skip <p> with block-level children (invalid HTML from
-                # e.g. transclusion): get_text() concatenates without spaces.
-                or element.find(_BLOCK_LEVEL_TAGS)
-            ):
+            if _should_skip_spellcheck_paragraph(element):
                 continue
-
-            # Work on a copy to avoid mutating the original soup
-            el_copy = copy.copy(element)
-
-            _normalize_smallcaps(el_copy)
-
-            # Fix inline element word boundaries:
-            # - <br> → space (prevents "state<br>while" → "statewhile")
-            # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
-            # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
-            for br in el_copy.find_all("br"):
-                br.replace_with(" ")
-            for sub in el_copy.find_all("sub"):
-                sub.insert_before(" ")
-            for sup in el_copy.find_all("sup"):
-                sup.unwrap()
-
-            # Remove footnote ref links to avoid "word1" concatenation
-            for link in el_copy.find_all("a", id=True):
-                link_id = link.get("id", "")
-                if isinstance(link_id, str) and link_id.startswith(
-                    "user-content-fnref-"
-                ):
-                    parent = link.parent
-                    if isinstance(parent, Tag) and parent.name == "sup":
-                        parent.decompose()
-                    else:
-                        link.decompose()
-
-            text = script_utils.get_non_code_text(el_copy).strip()
-            # Normalize smart quotes to ASCII so spellchecker treats
-            # contractions like "I've" as single words instead of "I"+"ve"
-            text = text.replace("\u2019", "'").replace("\u2018", "'")
-            # Rejoin dropcap-split contractions: the dropcap transformer
-            # inserts a space before apostrophes ("I've" → "I 've") for
-            # CSS rendering, which makes the spellchecker see "ve" as a
-            # standalone word. Rejoin them here.
-            text = re.sub(r"\b(\w) '", r"\1'", text)
-            # Pad sentence-ending punctuation with a trailing space so
-            # the spellchecker doesn't glue it to the preceding word
-            # (e.g. "submodules." → "submodules .")
-            text = re.sub(r"(\w)([.!?])$", r"\1 \2", text)
+            text = _normalize_paragraph_text(element)
             if text:
                 paragraphs.append(text)
     return paragraphs

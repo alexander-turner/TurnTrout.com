@@ -91,60 +91,47 @@ def _check_python(check_fn) -> None:
         check_fn("pytest", f"{prefix}pytest")
 
 
-def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
+def _read_push_marker() -> tuple[str, str] | None:
     """
-    Check GitHub Actions status for the last pushed commit.
+    Read commit SHA and branch from the push marker file.
 
-    The PostToolUse hook (post-push-ci-watch.sh) writes the pushed commit SHA
-    and branch to /tmp/claude-last-push-commit. If that file exists, we check
-    whether all workflow runs for that commit have passed.
-
-    NOTE: This appends directly to failures/outputs instead of using check_fn,
-    because _run_check uses subprocess without shell=True — shell operators
-    like && don't work, so "echo ... && exit 1" would always succeed.
+    Returns (commit, branch) or None if the marker is missing/empty.
     """
     push_file = Path(tempfile.gettempdir()) / "claude-last-push-commit"
     if not push_file.exists():
-        return
+        return None
 
     lines = push_file.read_text().strip().splitlines()
-    if not lines:
-        return
-    commit = lines[0]
-    branch = lines[1] if len(lines) > 1 else ""
+    if not lines or not lines[0]:
+        return None
+    return lines[0], lines[1] if len(lines) > 1 else ""
 
-    if not commit:
-        return
 
-    if not shutil.which("gh"):
-        print(
-            "Warning: gh CLI not found, skipping remote CI check",
-            file=sys.stderr,
-        )
-        return
+def _resolve_branch(branch: str) -> str:
+    """Resolve the current git branch if not already known."""
+    if branch:
+        return branch
+    git_path = shutil.which("git") or "git"
+    result = subprocess.run(
+        [git_path, "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.stdout.strip()
 
-    # Build repo flag from GH_REPO env var (set by session-setup.sh)
-    repo_args: list[str] = []
-    gh_repo = os.environ.get("GH_REPO", "")
-    if gh_repo:
-        repo_args = ["--repo", gh_repo]
 
-    # Fall back to current branch if not stored in marker file
-    if not branch:
-        branch_result = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        branch = branch_result.stdout.strip()
-    if not branch or branch == "HEAD":
-        return
+def _fetch_workflow_runs(
+    gh_path: str, repo_args: list[str], branch: str, commit: str
+) -> list[dict] | None:
+    """
+    Fetch GitHub Actions workflow runs for a commit.
 
-    # Query workflow run status
+    Returns None on error.
+    """
     result = subprocess.run(
         [
-            "gh",
+            gh_path,
             "run",
             "list",
             *repo_args,
@@ -161,13 +148,49 @@ def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
     )
     if result.returncode != 0:
         print(f"Warning: gh run list failed: {result.stderr}", file=sys.stderr)
-        return
-
+        return None
     try:
-        runs = json.loads(result.stdout)
+        return json.loads(result.stdout) or None
     except json.JSONDecodeError:
+        return None
+
+
+def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
+    """
+    Check GitHub Actions status for the last pushed commit.
+
+    The PostToolUse hook (post-push-ci-watch.sh) writes the pushed commit SHA
+    and branch to /tmp/claude-last-push-commit. If that file exists, we check
+    whether all workflow runs for that commit have passed.
+
+    NOTE: This appends directly to failures/outputs instead of using check_fn,
+    because _run_check uses subprocess without shell=True — shell operators
+    like && don't work, so "echo ... && exit 1" would always succeed.
+    """
+    marker = _read_push_marker()
+    if not marker:
+        return
+    commit, branch = marker
+
+    if not shutil.which("gh"):
+        print(
+            "Warning: gh CLI not found, skipping remote CI check",
+            file=sys.stderr,
+        )
         return
 
+    branch = _resolve_branch(branch)
+    if not branch or branch == "HEAD":
+        return
+
+    # Build repo flag from GH_REPO env var (set by session-setup.sh)
+    repo_args: list[str] = []
+    gh_repo = os.environ.get("GH_REPO", "")
+    if gh_repo:
+        repo_args = ["--repo", gh_repo]
+
+    gh_path = shutil.which("gh") or "gh"
+    runs = _fetch_workflow_runs(gh_path, repo_args, branch, commit)
     if not runs:
         return
 
