@@ -92,25 +92,10 @@ input.checkbox-toggle {
   flex-shrink: 0;
 }
 
-// Make lighter in a way that includes eg favicons
-
-:is(
-    li:has(> input.checkbox-toggle:checked),
-    li:has(> * > input.checkbox-toggle:checked),
-    li:has(> label > input.checkbox-toggle:checked)
-  ):not(
-    li:has(> input.checkbox-toggle:checked) *,
-    li:has(> * > input.checkbox-toggle:checked) *,
-    li:has(> label > input.checkbox-toggle:checked) *,
-    #punctilio-demo *
-  ) {
-  opacity: 0.75;
-}
-
-// Checked state: apply strikethrough to the label only, not the li.
-// text-decoration on an ancestor renders through all descendants and cannot
-// be removed by children, so we must scope it to the label (which excludes
-// nested lists that live as siblings of the label).
+// Checked state: scope opacity and strikethrough to direct content children
+// (> label, > p) so nested lists don't inherit them. Both opacity and
+// text-decoration on ancestors compound/render through all descendants
+// and cannot be overridden by children.
 :is(
     li:has(> input.checkbox-toggle:checked),
     li:has(> * > input.checkbox-toggle:checked),
@@ -118,6 +103,7 @@ input.checkbox-toggle {
   ):not(#punctilio-demo *) {
   > label,
   > p {
+    opacity: 0.75;
     text-decoration: line-through;
     text-decoration-color: var(--midground-faint);
   }
