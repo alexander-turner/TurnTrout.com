@@ -120,26 +120,17 @@ def _resolve_branch(branch: str) -> str:
     )
     return result.stdout.strip()
 
-    # Build repo flag from GH_REPO env var (set by session-setup.sh)
-    repo_args: list[str] = []
-    gh_repo = os.environ.get("GH_REPO", "")
-    if gh_repo:
-        repo_args = ["--repo", gh_repo]
 
-    # Fall back to current branch if not stored in marker file
-    if not branch:
-        branch_result = subprocess.run(  # skipcq: BAN-B603
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        branch = branch_result.stdout.strip()
-    if not branch or branch == "HEAD":
-        return
+def _fetch_workflow_runs(
+    commit: str, branch: str, repo_args: list[str]
+) -> list[dict] | None:
+    """
+    Query GitHub Actions workflow runs.
 
-    # Query workflow run status
-    result = subprocess.run(  # skipcq: BAN-B603
+    Returns None on error.
+    """
+    gh_path = shutil.which("gh") or "gh"
+    result = subprocess.run(
         [
             gh_path,
             "run",
