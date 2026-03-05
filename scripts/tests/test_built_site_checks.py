@@ -2649,6 +2649,21 @@ def test_check_link_spacing(html, expected):
             '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
             [],
         ),
+        # Right guillemet after abbreviation (French closing quote)
+        (
+            '<p>\u00ab<abbr class="small-caps">bonjour</abbr>\u00a0\u00bb monde</p>',
+            [],
+        ),
+        # Left guillemet before abbreviation (French opening quote)
+        (
+            '<p>\u00ab\u00a0<abbr class="small-caps">bonjour</abbr>\u00bb</p>',
+            [],
+        ),
+        # German open quote before abbreviation
+        (
+            '<p>\u201e<abbr class="small-caps">hallo</abbr>\u201c welt</p>',
+            [],
+        ),
     ],
 )
 def test_check_inline_formatting_spacing(html, expected):
