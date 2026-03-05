@@ -122,15 +122,16 @@ $panel-min-height: 200px;
     max-width: 100%;
     overflow-wrap: normal;
 
-    label {
+    label,
+    > span {
       display: flex;
       align-items: center;
       gap: $base-margin;
       cursor: text;
+    }
 
-      &:has(select) {
-        flex: 1;
-      }
+    label:has(select) {
+      flex: 1;
     }
 
     select {

@@ -9,6 +9,10 @@ li:has(> label > input.checkbox-toggle) {
   &::marker {
     content: none;
   }
+
+  > label {
+    cursor: text;
+  }
 }
 
 input.checkbox-toggle {
