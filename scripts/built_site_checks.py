@@ -173,10 +173,6 @@ def _should_skip_paragraph(p: Tag) -> bool:
     ):
         return True
 
-    # Skip paragraphs containing form elements like <select>
-    if p.find("select"):
-        return True
-
     # Skip feature-list paragraphs (e.g. "Feature A · Feature B · Feature C")
     text = p.get_text()
     if "·" in text:
@@ -199,6 +195,8 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     characters.
     """
     p_copy = copy.copy(p)
+    for select in p_copy.find_all("select"):
+        select.decompose()
     for link in p_copy.find_all("a", id=True):
         link_id = link.get("id", "")
         if isinstance(link_id, str) and link_id.startswith(
