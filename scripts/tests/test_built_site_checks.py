@@ -6007,6 +6007,16 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
             [],
         ),
+        # Select elements should be stripped from text before checking punctuation
+        (
+            '<article><p>Basic select<select id="s"><option value="">Choose</option><option value="1">Option 1</option></select></p></article>',
+            ["Paragraph ends with invalid character 't' Basic select"],
+        ),
+        # Paragraph with select that ends with valid punctuation should pass
+        (
+            "<article><p>Pick one.<select><option>A</option></select></p></article>",
+            [],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(

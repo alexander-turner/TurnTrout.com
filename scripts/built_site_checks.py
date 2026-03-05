@@ -195,6 +195,8 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     characters.
     """
     p_copy = copy.copy(p)
+    for select in p_copy.find_all("select"):
+        select.decompose()
     for link in p_copy.find_all("a", id=True):
         link_id = link.get("id", "")
         if isinstance(link_id, str) and link_id.startswith(
