@@ -22,7 +22,7 @@ Use this skill when:
 
 Before creating the PR, gather information about the changes:
 
-1. Identify the base branch (typically `main` or `master`)
+1. Identify the base branch: check if a `dev` branch exists (`git branch -a | grep -q 'dev'`). If it does, use `dev` as the base branch. Otherwise, fall back to `main`. If the user specifies a different base branch, use that instead. Pass `--base <branch>` to `gh pr create` in Step 5
 2. Run `git diff <base-branch>...HEAD` to see all changes that will be in the PR
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
@@ -109,7 +109,7 @@ Customize these commands based on your project's tooling.
 3. Create the PR with `gh pr create`:
 
 ```bash
-gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'
+gh pr create --base <base-branch> --title "<type>: <description>" --body "$(cat <<'EOF'
 ## Summary
 <1-3 bullet points describing what changed and why>
 
