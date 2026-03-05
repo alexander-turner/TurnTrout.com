@@ -108,7 +108,7 @@ def _read_push_marker() -> tuple[str, str] | None:
 
 
 def _resolve_branch(branch: str) -> str:
-    """Resolve the branch name, falling back to the current git branch."""
+    """Resolve the current git branch if not already known."""
     if branch:
         return branch
     git_path = shutil.which("git") or "git"
@@ -122,14 +122,13 @@ def _resolve_branch(branch: str) -> str:
 
 
 def _fetch_workflow_runs(
-    commit: str, branch: str, repo_args: list[str]
+    gh_path: str, repo_args: list[str], branch: str, commit: str
 ) -> list[dict] | None:
     """
-    Query GitHub Actions workflow runs.
+    Fetch GitHub Actions workflow runs for a commit.
 
     Returns None on error.
     """
-    gh_path = shutil.which("gh") or "gh"
     result = subprocess.run(
         [
             gh_path,
@@ -150,11 +149,43 @@ def _fetch_workflow_runs(
     if result.returncode != 0:
         print(f"Warning: gh run list failed: {result.stderr}", file=sys.stderr)
         return None
-
     try:
-        return json.loads(result.stdout)
+        return json.loads(result.stdout) or None
     except json.JSONDecodeError:
         return None
+
+
+def _build_repo_args() -> list[str]:
+    """Build ``--repo`` flag from ``GH_REPO`` env var (set by session-
+    setup.sh)."""
+    gh_repo = os.environ.get("GH_REPO", "")
+    return ["--repo", gh_repo] if gh_repo else []
+
+
+def _evaluate_runs(
+    runs: list[dict], failures: list[str], outputs: list[str]
+) -> None:
+    """Evaluate workflow runs and append failures if any are incomplete or
+    failed."""
+    in_progress = [r for r in runs if r.get("status") != "completed"]
+    if in_progress:
+        names = ", ".join(r["name"] for r in in_progress)
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n"
+            f"GitHub Actions still running: {names}\n"
+        )
+        return
+
+    failed = [
+        r for r in runs if r.get("conclusion") not in ("success", "skipped")
+    ]
+    if failed:
+        names = ", ".join(r["name"] for r in failed)
+        failures.append("remote-ci")
+        outputs.append(
+            f"=== remote-ci FAILED ===\n" f"GitHub Actions failed: {names}\n"
+        )
 
 
 def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
@@ -181,39 +212,16 @@ def _check_remote_ci(failures: list[str], outputs: list[str]) -> None:
         )
         return
 
-    # Build repo flag from GH_REPO env var (set by session-setup.sh)
-    gh_repo = os.environ.get("GH_REPO", "")
-    repo_args = ["--repo", gh_repo] if gh_repo else []
-
     branch = _resolve_branch(branch)
     if not branch or branch == "HEAD":
         return
 
-    runs = _fetch_workflow_runs(commit, branch, repo_args)
+    gh_path = shutil.which("gh") or "gh"
+    runs = _fetch_workflow_runs(gh_path, _build_repo_args(), branch, commit)
     if not runs:
         return
 
-    # Check if any are still in progress
-    in_progress = [r for r in runs if r.get("status") != "completed"]
-    if in_progress:
-        names = ", ".join(r["name"] for r in in_progress)
-        failures.append("remote-ci")
-        outputs.append(
-            f"=== remote-ci FAILED ===\n"
-            f"GitHub Actions still running: {names}\n"
-        )
-        return
-
-    # Check for failures
-    failed = [
-        r for r in runs if r.get("conclusion") not in ("success", "skipped")
-    ]
-    if failed:
-        names = ", ".join(r["name"] for r in failed)
-        failures.append("remote-ci")
-        outputs.append(
-            f"=== remote-ci FAILED ===\n" f"GitHub Actions failed: {names}\n"
-        )
+    _evaluate_runs(runs, failures, outputs)
 
 
 def main() -> None:

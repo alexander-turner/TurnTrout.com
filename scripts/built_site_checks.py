@@ -2472,11 +2472,13 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
             abbr.string = abbr.get_text().upper()
 
 
-def _should_skip_paragraph_for_spellcheck(element: Tag) -> bool:
-    """Check whether a ``<p>`` element should be excluded from spellcheck."""
-    in_skip_container = any(
-        element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES
-    ) or element.find_parent(id="content-meta")
+def _should_skip_spellcheck_paragraph(element: Tag) -> bool:
+    """Check whether a ``<p>`` element should be excluded from spell-
+    checking."""
+    in_skip_container = bool(
+        any(element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES)
+        or element.find_parent(id="content-meta")
+    )
     return bool(
         should_skip(element)
         or element.find_parent(["nav", "footer", "header"])
@@ -2488,9 +2490,8 @@ def _should_skip_paragraph_for_spellcheck(element: Tag) -> bool:
     )
 
 
-def _flatten_paragraph_text(element: Tag) -> str:
-    """Extract cleaned text from a single ``<p>`` element for spellchecking."""
-    # Work on a copy to avoid mutating the original soup
+def _normalize_paragraph_text(element: Tag) -> str:
+    """Normalize a ``<p>`` element into spellchecker-friendly plain text."""
     el_copy = copy.copy(element)
 
     _normalize_smallcaps(el_copy)
@@ -2547,9 +2548,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
     for article in _tags_only(soup.find_all("article")):
         for element in _tags_only(article.find_all("p")):
-            if _should_skip_paragraph_for_spellcheck(element):
+            if _should_skip_spellcheck_paragraph(element):
                 continue
-            text = _flatten_paragraph_text(element)
+            text = _normalize_paragraph_text(element)
             if text:
                 paragraphs.append(text)
     return paragraphs
@@ -2671,12 +2672,12 @@ def _spellcheck_flattened_paragraphs(
 
 def _resolve_md_path(
     file: str,
-    file_path: Path,
     root_path: Path,
     public_dir: Path,
-    permalink_to_md_path_map: dict[str, Path],
+    file_path: Path,
+    permalink_to_md_path_map: dict,
 ) -> Path | None:
-    """Resolve the Markdown source path for an HTML file in the public root."""
+    """Resolve the Markdown source path for an HTML file at the public root."""
     if root_path != public_dir:
         return None
     stem = Path(file).stem
@@ -2694,19 +2695,20 @@ def _collect_paragraphs_for_spellcheck(
     public_dir: Path,
     paragraph_map: dict[str, list[str]],
 ) -> None:
-    """Collect flattened paragraph text from an HTML file for spellchecking."""
+    """Collect flattened paragraph text for spellcheck, skipping test pages."""
     if Path(file).stem == "test-page":
         return
     # skipcq: PTC-W6004
     with open(file_path, encoding="utf-8") as f:
-        soup = BeautifulSoup(f.read(), "html.parser")
-    if script_utils.is_redirect(soup) or soup.find(
+        soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+    if script_utils.is_redirect(soup_for_paras) or soup_for_paras.find(
         "div", class_="page-listing"
     ):
         return
-    paras = _extract_flat_paragraph_texts(soup)
+    paras = _extract_flat_paragraph_texts(soup_for_paras)
     if paras:
-        paragraph_map[str(file_path.relative_to(public_dir))] = paras
+        rel = str(file_path.relative_to(public_dir))
+        paragraph_map[rel] = paras
 
 
 def _process_html_files(  # pylint: disable=too-many-locals
@@ -2739,11 +2741,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
 
             file_path = root_path / file
             md_path = _resolve_md_path(
-                file,
-                file_path,
-                root_path,
-                public_dir,
-                permalink_to_md_path_map,
+                file, root_path, public_dir, file_path, permalink_to_md_path_map
             )
 
             issues = check_file_for_issues(

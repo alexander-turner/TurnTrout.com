@@ -306,7 +306,9 @@ export async function getH1Screenshots(
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
   for (const h1Span of h1Spans) {
-    await h1Span.scrollIntoViewIfNeeded()
+    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
+    // which can time out in WebKit when the element never becomes "stable".
+    await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
     const h1Id = await h1Header.getAttribute("id")
