@@ -99,7 +99,14 @@ interface GitCountOptions {
 }
 
 // skipcq: JS-D1001
+export function isShallowClone(): boolean {
+  return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
+}
+
+// skipcq: JS-D1001
 export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+  if (isShallowClone()) return 0
+
   let cmd = "git rev-list --all --count"
   if (options.author) cmd += ` --author="${options.author}"`
   if (options.grep) cmd += ` --grep="${options.grep}"`

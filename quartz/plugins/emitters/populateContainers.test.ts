@@ -74,6 +74,7 @@ describe("PopulateContainers", () => {
 
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
+      if (command.includes("git rev-parse --is-shallow-repository")) return "false\n"
       if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
       if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
         return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
@@ -779,9 +780,32 @@ describe("PopulateContainers", () => {
       mockGlobbyFn.mockClear()
     })
 
+    describe("isShallowClone", () => {
+      it("should return true for shallow repositories", () => {
+        mockExecSync.mockReturnValue("true\n")
+        expect(populateModule.isShallowClone()).toBe(true)
+      })
+
+      it("should return false for full clones", () => {
+        mockExecSync.mockReturnValue("false\n")
+        expect(populateModule.isShallowClone()).toBe(false)
+      })
+    })
+
     describe("countGitCommits", () => {
+      it("should return 0 for shallow clones", async () => {
+        mockExecSync.mockReturnValueOnce("true\n") // isShallowClone
+
+        const count = await populateModule.countGitCommits({ author: "Alex Turner" })
+
+        expect(count).toBe(0)
+        expect(mockExecSync).toHaveBeenCalledTimes(1)
+      })
+
       it("should count commits for a specific author", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.commitCount}\n`)
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
 
         const count = await populateModule.countGitCommits({ author: "Alex Turner" })
 
@@ -793,7 +817,9 @@ describe("PopulateContainers", () => {
       })
 
       it("should count commits matching a grep pattern", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.aiCommitCount}\n`)
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
 
         const count = await populateModule.countGitCommits({ grep: "claude.ai/code/session" })
 
@@ -805,7 +831,9 @@ describe("PopulateContainers", () => {
       })
 
       it("should handle whitespace in output", async () => {
-        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
 
         const count = await populateModule.countGitCommits({ author: "Test Author" })
 
@@ -813,7 +841,9 @@ describe("PopulateContainers", () => {
       })
 
       it("should count all commits when no options provided", async () => {
-        mockExecSync.mockReturnValue("1000\n")
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("1000\n")
 
         const count = await populateModule.countGitCommits()
 
@@ -931,7 +961,9 @@ describe("PopulateContainers", () => {
     describe("computeRepoStats", () => {
       it("should compute all statistics in parallel", async () => {
         mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone for commitCount
           .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+          .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
           .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
           .mockReturnValueOnce(
             `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
