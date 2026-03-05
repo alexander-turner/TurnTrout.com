@@ -9,6 +9,10 @@ li:has(> label > input.checkbox-toggle) {
   &::marker {
     content: none;
   }
+
+  > label {
+    cursor: text;
+  }
 }
 
 input.checkbox-toggle {
@@ -20,7 +24,7 @@ input.checkbox-toggle {
 
   appearance: none;
   position: absolute;
-  top: calc(0.75 * $base-margin);
+  top: 0.35em;
   width: var(--checkbox-size);
   height: var(--checkbox-size);
   margin: 0;
