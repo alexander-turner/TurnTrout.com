@@ -655,18 +655,14 @@ function isCheckboxInListItemWithContent(
 }
 
 /** Creates checkbox properties with appropriate accessibility attributes. */
-function createCheckboxProperties(
-  isChecked: boolean,
-  checkboxId: string,
-  willBeWrappedInLabel: boolean,
-): Properties {
+function createCheckboxProperties(isChecked: boolean, checkboxId: string): Properties {
   return {
     type: "checkbox",
     disabled: false,
     checked: isChecked,
     class: "checkbox-toggle",
     id: checkboxId,
-    ...(willBeWrappedInLabel ? {} : { ariaLabel: "checkbox" }),
+    ariaLabel: "checkbox",
   }
 }
 
@@ -674,17 +670,13 @@ interface CheckboxInfo {
   node: Element
   index: number
   parent: Parent
-  checkboxId: string
-  willBeWrappedInLabel: boolean
+  hasTextContent: boolean
 }
 
-/** Wraps a checkbox and its immediate text content in a label element. */
-function wrapCheckboxInLabel(
-  node: Element,
-  parent: Parent,
-  index: number,
-  checkboxId: string,
-): void {
+/** Wraps a checkbox's sibling text content in a span element.
+ * The checkbox remains a direct child of the li, and text is placed in a sibling span.
+ * This prevents clicking text from toggling the checkbox. */
+function wrapCheckboxTextInSpan(parent: Parent, index: number): void {
   const siblingsAfterCheckbox = parent.children.slice(index + 1)
 
   // Find where text content ends (before any nested lists)
@@ -693,18 +685,18 @@ function wrapCheckboxInLabel(
   )
   const endIndex = textContentEndIndex === -1 ? siblingsAfterCheckbox.length : textContentEndIndex
 
-  const label: Element = {
+  const span: Element = {
     type: "element",
-    tagName: "label",
-    properties: { htmlFor: checkboxId },
-    children: [node, ...siblingsAfterCheckbox.slice(0, endIndex)] as ElementContent[],
+    tagName: "span",
+    properties: {},
+    children: [...siblingsAfterCheckbox.slice(0, endIndex)] as ElementContent[],
   }
 
-  // Replace checkbox and text content with label; nested lists remain as siblings
-  parent.children.splice(index, endIndex + 1, label)
+  // Replace text content with span; checkbox and nested lists remain as siblings
+  parent.children.splice(index + 1, endIndex, span)
 }
 
-/** Processes checkbox input elements and wraps them with their text in label elements. */
+/** Processes checkbox input elements and wraps their adjacent text in span elements. */
 function processCheckboxElements(tree: HtmlRoot): void {
   const checkboxes: CheckboxInfo[] = []
   let checkboxCounter = 0
@@ -726,18 +718,18 @@ function processCheckboxElements(tree: HtmlRoot): void {
 
     const isChecked = Boolean(node.properties?.checked ?? false)
     const checkboxId = `checkbox-${checkboxCounter++}`
-    const willBeWrappedInLabel = isCheckboxInListItemWithContent(parent, index)
+    const hasTextContent = isCheckboxInListItemWithContent(parent, index)
 
-    node.properties = createCheckboxProperties(isChecked, checkboxId, willBeWrappedInLabel)
-    checkboxes.push({ node, index, parent, checkboxId, willBeWrappedInLabel })
+    node.properties = createCheckboxProperties(isChecked, checkboxId)
+    checkboxes.push({ node, index, parent, hasTextContent })
     return undefined
   })
 
   // Process in reverse order to avoid index shifting during tree modification
   for (let i = checkboxes.length - 1; i >= 0; i--) {
-    const { node, index, parent, checkboxId, willBeWrappedInLabel } = checkboxes[i]
-    if (willBeWrappedInLabel) {
-      wrapCheckboxInLabel(node, parent, index, checkboxId)
+    const { index, parent, hasTextContent } = checkboxes[i]
+    if (hasTextContent) {
+      wrapCheckboxTextInSpan(parent, index)
     }
   }
 }

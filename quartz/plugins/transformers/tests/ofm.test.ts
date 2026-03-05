@@ -995,136 +995,109 @@ describe("Branch coverage tests", () => {
     expect(result).not.toContain('checked="true"')
   })
 
-  describe("Checkbox label wrapping", () => {
-    interface CheckboxLabelTestCase {
+  describe("Checkbox text wrapping in span", () => {
+    interface CheckboxSpanTestCase {
       name: string
       input: string
-      shouldHaveLabel: boolean
-      shouldHaveAriaLabel: boolean
+      shouldHaveSpan: boolean
       expectedContent?: string[]
     }
 
-    const checkboxLabelCases: CheckboxLabelTestCase[] = [
+    const checkboxSpanCases: CheckboxSpanTestCase[] = [
       {
-        name: "should wrap checkbox with text in label inside list item",
+        name: "should wrap checkbox text in span inside list item",
         input: '<li><input type="checkbox"> Task text</li>',
-        shouldHaveLabel: true,
-        shouldHaveAriaLabel: false,
-        expectedContent: ["<label", "</label>", "Task text"],
+        shouldHaveSpan: true,
+        expectedContent: ["<span>", "Task text", 'aria-label="checkbox"'],
       },
       {
-        name: "should wrap checked checkbox with text in label",
+        name: "should wrap checked checkbox text in span",
         input: '<li><input type="checkbox" checked> Completed task</li>',
-        shouldHaveLabel: true,
-        shouldHaveAriaLabel: false,
-        expectedContent: ["<label", "Completed task"],
+        shouldHaveSpan: true,
+        expectedContent: ["<span>", "Completed task", 'aria-label="checkbox"'],
       },
       {
-        name: "should wrap checkbox with multiple text nodes",
+        name: "should wrap checkbox with multiple text nodes in span",
         input: '<li><input type="checkbox"> Task with <strong>bold</strong> text</li>',
-        shouldHaveLabel: true,
-        shouldHaveAriaLabel: false,
-        expectedContent: ["<label", "<strong>bold</strong>"],
+        shouldHaveSpan: true,
+        expectedContent: ["<span>", "<strong>bold</strong>", 'aria-label="checkbox"'],
       },
       {
-        name: "should not wrap checkbox without following text but add aria-label",
+        name: "should not wrap checkbox without following text",
         input: '<li><input type="checkbox"></li>',
-        shouldHaveLabel: false,
-        shouldHaveAriaLabel: true,
+        shouldHaveSpan: false,
         expectedContent: ["checkbox-toggle", 'aria-label="checkbox"'],
       },
       {
-        name: "should not wrap checkbox outside list item but add aria-label",
+        name: "should not wrap checkbox outside list item",
         input: '<p><input type="checkbox"> Not in list</p>',
-        shouldHaveLabel: false,
-        shouldHaveAriaLabel: true,
+        shouldHaveSpan: false,
         expectedContent: ["checkbox-toggle", 'aria-label="checkbox"'],
       },
       {
-        name: "should handle nested list items with checkboxes - label wraps only checkbox and immediate text",
+        name: "should handle nested list items - span wraps only immediate text",
         input:
           '<li><input type="checkbox"> Parent<ul><li><input type="checkbox"> Child</li></ul></li>',
-        shouldHaveLabel: true,
-        shouldHaveAriaLabel: false,
-        expectedContent: ["<label", "Parent", "</label>", "<ul>"],
+        shouldHaveSpan: true,
+        expectedContent: ["<span>", "Parent", "</span>", "<ul>"],
       },
     ]
 
-    it.each(checkboxLabelCases)(
-      "$name",
-      ({ input, shouldHaveLabel, shouldHaveAriaLabel, expectedContent = [] }) => {
-        const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
+    it.each(checkboxSpanCases)("$name", ({ input, shouldHaveSpan, expectedContent = [] }) => {
+      const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
 
-        // Build expected and not expected content arrays based on flags
-        const expectedToContain: string[] = [...expectedContent]
-        const expectedNotToContain: string[] = []
+      const expectedToContain: string[] = [...expectedContent]
+      const expectedNotToContain: string[] = []
 
-        if (shouldHaveLabel) {
-          expectedToContain.push("<label")
-          expectedNotToContain.push("aria-label")
-        } else {
-          expectedNotToContain.push("<label")
-        }
+      if (shouldHaveSpan) {
+        expectedToContain.push("<span>")
+        expectedNotToContain.push("<label")
+      } else {
+        expectedNotToContain.push("<span>")
+        expectedNotToContain.push("<label")
+      }
 
-        if (shouldHaveAriaLabel) {
-          expectedToContain.push('aria-label="checkbox"')
-        } else {
-          expectedNotToContain.push("aria-label")
-        }
+      // All checkboxes should have aria-label
+      expectedToContain.push('aria-label="checkbox"')
 
-        // Assert all expectations
-        expectedToContain.forEach((content) => {
-          expect(result).toContain(content)
-        })
-        expectedNotToContain.forEach((content) => {
-          expect(result).not.toContain(content)
-        })
-      },
-    )
+      expectedToContain.forEach((content) => {
+        expect(result).toContain(content)
+      })
+      expectedNotToContain.forEach((content) => {
+        expect(result).not.toContain(content)
+      })
+    })
 
-    it("should wrap checkbox and immediate text content in label (not nested lists)", () => {
+    it("should wrap text content in span as sibling to checkbox (not nested lists)", () => {
       const input = '<li><input type="checkbox"> Text <em>emphasis</em> more text</li>'
       const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
 
-      expect(result).toContain("<label")
+      expect(result).toContain("<span>")
       expect(result).toContain("Text")
       expect(result).toContain("<em>emphasis</em>")
       expect(result).toContain("more text")
+      expect(result).not.toContain("<label")
 
-      // Label should wrap the checkbox (label comes before checkbox)
-      const labelIndex = result.indexOf("<label")
+      // Checkbox should come before span
       const checkboxIndex = result.indexOf('type="checkbox"')
-      expect(labelIndex).toBeLessThan(checkboxIndex)
+      const spanIndex = result.indexOf("<span>")
+      expect(checkboxIndex).toBeLessThan(spanIndex)
     })
 
-    it("should not wrap nested lists inside label", () => {
+    it("should not wrap nested lists inside span", () => {
       const input = '<li><input type="checkbox"> Parent text<ul><li>Nested item</li></ul></li>'
       const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
 
-      // Should have a label
-      expect(result).toContain("<label")
+      expect(result).toContain("<span>")
       expect(result).toContain("Parent text")
-      expect(result).toContain("</label>")
+      expect(result).toContain("</span>")
 
-      // The nested <ul> should come AFTER the closing </label> tag
-      const labelCloseIndex = result.indexOf("</label>")
+      // The nested <ul> should come AFTER the closing </span> tag
+      const spanCloseIndex = result.indexOf("</span>")
       const nestedUlIndex = result.indexOf("<ul>")
-      expect(labelCloseIndex).toBeLessThan(nestedUlIndex)
-      expect(labelCloseIndex).toBeGreaterThan(0)
+      expect(spanCloseIndex).toBeLessThan(nestedUlIndex)
+      expect(spanCloseIndex).toBeGreaterThan(0)
       expect(nestedUlIndex).toBeGreaterThan(0)
-    })
-
-    it("should add unique id and for attributes to checkboxes and labels", () => {
-      const input = '<li><input type="checkbox"> Task text</li>'
-      const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
-
-      expect(result).toContain('id="checkbox-0"')
-      expect(result).toContain('for="checkbox-0"')
-
-      // Verify the label's for attribute comes before the checkbox's id in the HTML
-      const forIndex = result.indexOf('for="checkbox-0"')
-      const idIndex = result.indexOf('id="checkbox-0"')
-      expect(forIndex).toBeLessThan(idIndex)
     })
 
     it("should generate sequential IDs for multiple checkboxes", () => {
@@ -1133,23 +1106,15 @@ describe("Branch coverage tests", () => {
 
       expect(result).toContain('id="checkbox-0"')
       expect(result).toContain('id="checkbox-1"')
-      expect(result).toContain('for="checkbox-0"')
-      expect(result).toContain('for="checkbox-1"')
     })
 
-    it("should handle mixed checkboxes with and without labels", () => {
-      const input = '<li><input type="checkbox"> With label</li><li><input type="checkbox"></li>'
+    it("should give all checkboxes aria-label", () => {
+      const input = '<li><input type="checkbox"> With text</li><li><input type="checkbox"></li>'
       const { result } = testWithHtmlPlugins(input, { enableCheckbox: true })
 
-      // First checkbox (with label) should not have aria-label
-      const firstCheckboxMatch = result.match(/id="checkbox-0"[^>]*>/)
-      expect(firstCheckboxMatch).toBeTruthy()
-      expect(firstCheckboxMatch?.[0]).not.toContain("aria-label")
-
-      // Second checkbox (without label) should have aria-label
-      const secondCheckboxMatch = result.match(/id="checkbox-1"[^>]*>/)
-      expect(secondCheckboxMatch).toBeTruthy()
-      expect(secondCheckboxMatch?.[0]).toContain('aria-label="checkbox"')
+      // Both checkboxes should have aria-label
+      const ariaLabelCount = (result.match(/aria-label="checkbox"/g) || []).length
+      expect(ariaLabelCount).toBe(2)
     })
 
     it("skip checkboxes already inside a label", () => {
