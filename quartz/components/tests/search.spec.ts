@@ -867,54 +867,36 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   await expect(article).not.toBeEmpty()
 })
 
-test.describe("Mobile card preview with admonition", () => {
-  test("admonition background is transparent in card preview (lostpixel)", async ({
-    page,
-  }, testInfo) => {
-    test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+test("admonition background is transparent in focused mobile card preview (lostpixel)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
 
-    // "Admonitions" matches the test page which has a section with various admonition types
-    await search(page, "Admonitions")
+  // "Admonitions" matches the test page which has a section with various admonition types
+  await search(page, "Admonitions")
 
-    const testPageResult = page.locator('.result-card[id="test-page"]')
-    await expect(testPageResult).toBeVisible()
-    // Focus the test page result to trigger card preview loading
-    await testPageResult.focus()
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.focus()
 
-    const cardPreview = testPageResult.locator(".card-preview")
-    const article = cardPreview.locator("article.search-preview")
-    await expect(article).toBeAttached({ timeout: 10_000 })
+  const cardPreview = testPageResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
 
-    // Verify admonition elements inside card preview have transparent backgrounds
-    const admonition = cardPreview.locator(".admonition").first()
-    await expect(admonition).toBeAttached()
-    await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
-
-    await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
-      elementToScreenshot: testPageResult,
-    })
+  // The focused card has a non-transparent background (the hover/focus effect),
+  // while the admonition inside is transparent — so the highlight shows through.
+  await expect(testPageResult).toHaveClass(/focus/)
+  const cardBg = await testPageResult.evaluate((el) => {
+    return window.getComputedStyle(el).backgroundColor
   })
+  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
 
-  test("highlight effect shows through admonition in card preview", async ({ page }) => {
-    test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+  const admonition = cardPreview.locator(".admonition").first()
+  await expect(admonition).toBeAttached()
+  await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
 
-    await search(page, "Admonitions")
-
-    const testPageResult = page.locator('.result-card[id="test-page"]')
-    await expect(testPageResult).toBeVisible()
-    await testPageResult.focus()
-
-    const cardPreview = testPageResult.locator(".card-preview")
-    const article = cardPreview.locator("article.search-preview")
-    await expect(article).toBeAttached({ timeout: 10_000 })
-
-    // The focused card should have a non-transparent background (the hover/focus effect)
-    await expect(testPageResult).toHaveClass(/focus/)
-    const cardBg = await testPageResult.evaluate((el) => {
-      return window.getComputedStyle(el).backgroundColor
-    })
-    // The card background should not be fully transparent when focused
-    expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
+    elementToScreenshot: testPageResult,
   })
 })
 
