@@ -160,6 +160,16 @@ Admonition in a description list
   - [ ] Nested
   - [x] Not even more transparent
 
+# Select boxes
+
+<label for="select-basic">Basic select:</label>
+<select id="select-basic">
+  <option value="">Choose an option</option>
+  <option value="1">Option 1</option>
+  <option value="2">Option 2</option>
+  <option value="3">Option 3</option>
+</select>
+
 # Transclusion
 
 > ![[about#^first-para]]
