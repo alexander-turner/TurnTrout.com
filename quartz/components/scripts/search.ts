@@ -86,7 +86,7 @@ function createSearchIndex(): InstanceType<typeof documentType> {
 
 interface FetchResult {
   content: Element[]
-  frontmatter: Element
+  frontmatter: Record<string, unknown>
 }
 
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
@@ -806,7 +806,14 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
       // Extract frontmatter
       const frontmatterScript = html.querySelector('script[type="application/json"]')
-      const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
+      let frontmatter: Record<string, unknown> = {}
+      if (frontmatterScript) {
+        try {
+          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+        } catch {
+          console.error(`Failed to parse frontmatter JSON for ${slug}`)
+        }
+      }
 
       // Extract previewable elements and restore checkbox states in one operation
       const contentElements = processPreviewables(html, targetUrl)
@@ -981,11 +988,14 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   content = replaceEmojiConvertArrows(content)
 
-  let suffixHTML = ""
+  const titleSpan = Object.assign(document.createElement("span"), {
+    className: "h4",
+    textContent: title,
+  })
+  itemTile.append(titleSpan, document.createElement("br"))
   if (!enablePreview) {
-    suffixHTML = `<p>${content}</p>`
+    itemTile.appendChild(Object.assign(document.createElement("p"), { textContent: content }))
   }
-  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
 
   // On mobile/tablet, embed a small card preview slice in each card.
   // CSS hides .card-preview above the tablet breakpoint, so we always
