@@ -806,7 +806,7 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
       // Extract frontmatter
       const frontmatterScript = html.querySelector('script[type="application/json"]')
-      let frontmatter = {}
+      let frontmatter: Record<string, unknown> = {}
       if (frontmatterScript) {
         try {
           frontmatter = JSON.parse(frontmatterScript.textContent || "{}")

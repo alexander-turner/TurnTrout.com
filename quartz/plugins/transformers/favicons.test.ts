@@ -462,6 +462,27 @@ describe("Favicon Utilities", () => {
       expect(fs.accessSync).toHaveBeenCalledWith(localSvgPath, fs.constants.F_OK)
     })
 
+    it("should cache SVG path after local SVG lookup to avoid repeated accessSync", () => {
+      const pngPath = "/static/images/external-favicons/cached_com.png"
+      const svgPath = "/static/images/external-favicons/cached_com.svg"
+
+      favicons.urlCache.clear()
+      const accessSpy = jest.spyOn(fs, "accessSync").mockImplementation(() => {
+        // File exists
+      })
+
+      // First call: hits filesystem, caches result
+      favicons.getFaviconUrl(pngPath)
+      expect(accessSpy).toHaveBeenCalledTimes(1)
+      expect(favicons.urlCache.get(pngPath)).toBe(svgPath)
+
+      // Second call: uses cache, no additional filesystem access
+      accessSpy.mockClear()
+      const result = favicons.getFaviconUrl(pngPath)
+      expect(result).toBe(`https://assets.turntrout.com${svgPath}`)
+      expect(accessSpy).not.toHaveBeenCalled()
+    })
+
     it("should handle non-PNG non-SVG paths", () => {
       const otherPath = "/static/images/external-favicons/example_com.jpg"
       const result = favicons.getFaviconUrl(otherPath)
