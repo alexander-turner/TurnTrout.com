@@ -2656,6 +2656,46 @@ def _spellcheck_flattened_paragraphs(
     return _parse_spellcheck_output(result.stdout, line_to_source)
 
 
+def _resolve_md_path(
+    file: str,
+    file_path: Path,
+    root_path: Path,
+    public_dir: Path,
+    permalink_to_md_path_map: dict[str, Path],
+) -> Path | None:
+    """Resolve the Markdown source path for an HTML file in the public root."""
+    if root_path != public_dir:
+        return None
+    stem = Path(file).stem
+    md_path = permalink_to_md_path_map.get(
+        stem
+    ) or permalink_to_md_path_map.get(stem.lower())
+    if not md_path and script_utils.should_have_md(file_path):
+        raise FileNotFoundError(f"Markdown file for {stem} not found")
+    return md_path
+
+
+def _collect_paragraphs_for_spellcheck(
+    file: str,
+    file_path: Path,
+    public_dir: Path,
+    paragraph_map: dict[str, list[str]],
+) -> None:
+    """Collect flattened paragraph text from an HTML file for spellchecking."""
+    if Path(file).stem == "test-page":
+        return
+    # skipcq: PTC-W6004
+    with open(file_path, encoding="utf-8") as f:
+        soup = BeautifulSoup(f.read(), "html.parser")
+    if script_utils.is_redirect(soup) or soup.find(
+        "div", class_="page-listing"
+    ):
+        return
+    paras = _extract_flat_paragraph_texts(soup)
+    if paras:
+        paragraph_map[str(file_path.relative_to(public_dir))] = paras
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2681,27 +2721,21 @@ def _process_html_files(  # pylint: disable=too-many-locals
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            is_valid_file = (
-                file.endswith(".html") and Path(file).stem not in files_to_skip
-            )
-            if not is_valid_file:
+            if not file.endswith(".html") or Path(file).stem in files_to_skip:
                 continue
 
             file_path = root_path / file
-            md_path = None
-            if root_path == public_dir:
-                md_path = permalink_to_md_path_map.get(
-                    Path(file).stem
-                ) or permalink_to_md_path_map.get(Path(file).stem.lower())
-                if not md_path and script_utils.should_have_md(file_path):
-                    raise FileNotFoundError(
-                        f"Markdown file for {Path(file).stem} not found"
-                    )
+            md_path = _resolve_md_path(
+                file,
+                file_path,
+                root_path,
+                public_dir,
+                permalink_to_md_path_map,
+            )
 
             issues = check_file_for_issues(
                 file_path, public_dir, md_path, check_opts
             )
-
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
@@ -2709,20 +2743,9 @@ def _process_html_files(  # pylint: disable=too-many-locals
             _maybe_collect_citation_keys(
                 file_path, public_dir, citation_to_files
             )
-
-            # Collect flattened paragraph text for spellcheck
-            # Skip test page (contains Lorem ipsum and other test strings)
-            if Path(file).stem != "test-page":
-                # skipcq: PTC-W6004
-                with open(file_path, encoding="utf-8") as f:
-                    soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-                if not script_utils.is_redirect(
-                    soup_for_paras
-                ) and not soup_for_paras.find("div", class_="page-listing"):
-                    paras = _extract_flat_paragraph_texts(soup_for_paras)
-                    if paras:
-                        rel = str(file_path.relative_to(public_dir))
-                        paragraph_map[rel] = paras
+            _collect_paragraphs_for_spellcheck(
+                file, file_path, public_dir, paragraph_map
+            )
 
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
