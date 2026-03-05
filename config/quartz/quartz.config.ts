@@ -64,13 +64,7 @@ const config: QuartzConfig = {
           punctilio: {
             owner: "alexander-turner",
             repo: "punctilio",
-            transform: (content) => {
-              // Replace literal \u00A0 escape sequences with actual NBSP to
-              // prevent the smallcaps transformer from mismatching "0Bonjour"
-              // (the trailing "0" of the escape + the next word).
-              const cleaned = content.replace(/\\u00A0/g, "\u00A0")
-              return stripBadges(cleaned)
-            },
+            transform: stripBadges,
           },
         },
       }),
