@@ -397,17 +397,18 @@ test.describe("Instant Scroll Restoration", () => {
     // extra frames so the programmaticScroll flag (set during
     // scrollToProgrammatic and cleared on the next rAF) has been reset.
     await page.addInitScript(() => {
+      const waitFrames = (n: number, cb: () => void) => {
+        if (n <= 0) cb()
+        else requestAnimationFrame(() => waitFrames(n - 1, cb))
+      }
       const tryDispatch = () => {
         if (window.scrollY > 0) {
-          // Skip two frames: the programmaticScroll flag is cleared in the
-          // first rAF after scrollToProgrammatic, and our addInitScript rAF
-          // was registered before it. Waiting two frames guarantees the flag
-          // is false when we fire the scroll event.
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.dispatchEvent(new PointerEvent("pointerdown"))
-              window.scrollBy(0, 100)
-            })
+          // Skip several frames so the scroll-restoration script has time to
+          // call waitForLayoutStability and register its pointerdown listener.
+          // Safari needs more frames than Chromium/Firefox.
+          waitFrames(5, () => {
+            window.dispatchEvent(new PointerEvent("pointerdown"))
+            window.scrollBy(0, 100)
           })
         } else {
           requestAnimationFrame(tryDispatch)
