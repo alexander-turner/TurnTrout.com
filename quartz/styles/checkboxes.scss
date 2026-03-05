@@ -107,29 +107,18 @@ input.checkbox-toggle {
   opacity: 0.75;
 }
 
-// Checked state
+// Checked state: apply strikethrough to the label only, not the li.
+// text-decoration on an ancestor renders through all descendants and cannot
+// be removed by children, so we must scope it to the label (which excludes
+// nested lists that live as siblings of the label).
 :is(
     li:has(> input.checkbox-toggle:checked),
     li:has(> * > input.checkbox-toggle:checked),
     li:has(> label > input.checkbox-toggle:checked)
   ):not(#punctilio-demo *) {
-  &,
-  & p {
+  > label,
+  > p {
     text-decoration: line-through;
     text-decoration-color: var(--midground-faint);
-  }
-}
-
-// Reset strikethrough for nested checkbox items whose own checkbox is unchecked,
-// so they don't inherit strikethrough from a checked parent.
-// Must appear AFTER the checked strikethrough rule above (same specificity, last wins).
-:is(
-    li:has(> input.checkbox-toggle:not(:checked)),
-    li:has(> * > input.checkbox-toggle:not(:checked)),
-    li:has(> label > input.checkbox-toggle:not(:checked))
-  ):not(#punctilio-demo *) {
-  &,
-  & p {
-    text-decoration: none;
   }
 }
