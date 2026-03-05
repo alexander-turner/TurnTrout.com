@@ -508,7 +508,17 @@ export async function gotoPage(
   url: string,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
-  await page.goto(url, { waitUntil: "commit" })
+  try {
+    await page.goto(url, { waitUntil: "commit" })
+  } catch (error: unknown) {
+    // WebKit on Linux occasionally crashes with "internal error" on page.goto.
+    // Retry once — the second attempt typically succeeds.
+    if (error instanceof Error && error.message.includes("internal error")) {
+      await page.goto(url, { waitUntil: "commit" })
+    } else {
+      throw error
+    }
+  }
   await page.waitForLoadState(loadState)
 }
 
