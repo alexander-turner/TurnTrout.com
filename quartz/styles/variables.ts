@@ -36,6 +36,7 @@ export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 export const dropcapVerticalOffset = "0.15rem"
 export const dropcapFontSize = "3.95rem"
 export const dropcapMinHeight = "4.2rem"
+export const dropcapPaddingRight = "0.1em"
 
 // Design tokens — shared across SCSS files
 export const borderRadius = 5
@@ -93,6 +94,7 @@ export const variables = {
   dropcapVerticalOffset,
   dropcapFontSize,
   dropcapMinHeight,
+  dropcapPaddingRight,
   borderRadius,
   transitionDurationQuick,
   transitionDurationMedium,
