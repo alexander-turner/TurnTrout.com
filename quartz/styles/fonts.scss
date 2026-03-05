@@ -324,21 +324,25 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   position: relative;
   min-height: #{$dropcap-min-height};
 
+  // Float spacer: controls text wrapping with fixed width, preventing CLS
+  // when dropcap fonts load (::first-letter doesn't support width)
   &::before {
     content: attr(data-first-letter);
     text-transform: uppercase;
-    position: absolute;
-    top: var(--dropcap-vertical-offset);
-    left: 0;
+    float: left;
+    width: var(--dropcap-font-size);
     font-size: var(--dropcap-font-size);
     line-height: 1;
     padding-right: 0.1em;
+    padding-top: var(--dropcap-vertical-offset);
     font-family: var(--font-dropcap-background);
     color: var(--before-color);
     cursor: text;
   }
 
   &::first-letter {
+    // Pull back to overlap ::before; text wrapping is controlled by ::before's fixed width
+    margin-left: calc(-1 * var(--dropcap-font-size) - 0.1em);
     padding-top: var(--dropcap-vertical-offset);
     text-transform: uppercase;
     font-style: normal !important;
@@ -347,7 +351,6 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
     cursor: text;
     color: var(--foreground);
     font-size: var(--dropcap-font-size);
-    width: var(--dropcap-font-size);
     line-height: 1;
     padding-right: 0.1em;
     font-family: var(--font-dropcap-foreground);
