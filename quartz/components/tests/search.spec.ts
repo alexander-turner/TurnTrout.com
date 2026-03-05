@@ -867,6 +867,39 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   await expect(article).not.toBeEmpty()
 })
 
+test("admonition background is transparent in focused mobile card preview (lostpixel)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+
+  // "Admonitions" matches the test page which has a section with various admonition types
+  await search(page, "Admonitions")
+
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.focus()
+
+  const cardPreview = testPageResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+
+  // The focused card has a non-transparent background (the hover/focus effect),
+  // while the admonition inside is transparent — so the highlight shows through.
+  await expect(testPageResult).toHaveClass(/focus/)
+  const cardBg = await testPageResult.evaluate((el) => {
+    return window.getComputedStyle(el).backgroundColor
+  })
+  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
+
+  const admonition = cardPreview.locator(".admonition").first()
+  await expect(admonition).toBeAttached()
+  await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
+    elementToScreenshot: testPageResult,
+  })
+})
+
 test.describe("Search preview scroll behavior", () => {
   test("scrolls container so first match is approximately centered", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
