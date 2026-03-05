@@ -47,12 +47,12 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 > <option value="none">None</option>
 > </select>
 > </label></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked /><span>Symbols</span></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-fractions" /><span>Fractions</span></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-degrees" /><span>Degrees</span></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-superscript" /><span>Superscript</span></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" /><span>Ligatures</span></li>
-> <li class="punctilio-option"><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked /><span>Non-breaking spaces</span></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-symbols" checked />Symbols</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-fractions" />Fractions</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-degrees" />Degrees</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-superscript" />Superscript</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />Ligatures</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
 > </ul>
 
 > [!info] Input

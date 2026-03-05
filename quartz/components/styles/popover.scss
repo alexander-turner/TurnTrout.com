@@ -81,7 +81,8 @@
 
       // Hide list markers for checkbox items
       & li:has(> input.checkbox-toggle)::marker,
-      & li:has(> p > input.checkbox-toggle)::marker {
+      & li:has(> p > input.checkbox-toggle)::marker,
+      & li:has(> label > input.checkbox-toggle)::marker {
         content: none;
       }
 
