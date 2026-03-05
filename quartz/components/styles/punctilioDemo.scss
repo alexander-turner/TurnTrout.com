@@ -134,7 +134,8 @@ $panel-min-height: 200px;
     }
 
     select {
-      padding: calc(0.25 * $base-margin);
+      padding: calc(0.25 * $base-margin) calc(0.75 * $base-margin) calc(0.25 * $base-margin)
+        calc(0.25 * $base-margin);
       border: 1px solid var(--midground-faint);
       border-radius: 5px;
       background: inherit;

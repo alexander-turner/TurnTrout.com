@@ -99,6 +99,7 @@ test.describe("Collapsible admonition state persistence", () => {
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
+    await expect(reloaded).toBeAttached()
     await expect(reloaded).toHaveClass(/is-collapsed/)
   })
 
@@ -117,6 +118,7 @@ test.describe("Collapsible admonition state persistence", () => {
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off collapsed" })
+    await expect(reloaded).toBeAttached()
     await expect(reloaded).not.toHaveClass(/is-collapsed/)
   })
 
@@ -139,6 +141,7 @@ test.describe("Collapsible admonition state persistence", () => {
     const afterNav = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
+    await expect(afterNav).toBeAttached()
     await expect(afterNav).toHaveClass(/is-collapsed/)
   })
 

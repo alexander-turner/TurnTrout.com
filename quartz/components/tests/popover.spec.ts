@@ -9,6 +9,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -581,7 +582,7 @@ test.describe("Footnote popovers", () => {
 base.describe("Footnote popover on mobile", () => {
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
   })
 
   base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
