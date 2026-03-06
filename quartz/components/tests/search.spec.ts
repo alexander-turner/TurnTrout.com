@@ -632,8 +632,11 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 
   const previewContainer = await waitForPreviewArticle(page)
 
-  // Check that multiple matches are highlighted
+  // Wait for matches to render — content is fetched asynchronously after the
+  // preview article element is attached, so matches may not exist immediately.
   const matches = previewContainer.locator(".search-match")
+  await expect(matches.first()).toBeAttached({ timeout: 10_000 })
+
   const matchCount = await matches.count()
   expect(matchCount).toBeGreaterThan(1)
 })
