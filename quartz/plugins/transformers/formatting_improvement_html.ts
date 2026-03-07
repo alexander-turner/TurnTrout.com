@@ -23,8 +23,6 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
 export const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
-// Narrow letters in EB Garamond Initials need a smaller float spacer width
-const NARROW_DROPCAP_LETTERS = new Set("IJ1")
 
 /**
  * Tags that should be skipped during fraction replacement.
@@ -588,19 +586,22 @@ export function setFirstLetterAttribute(tree: Root): void {
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
-  if (NARROW_DROPCAP_LETTERS.has(firstLetter.toUpperCase())) {
-    firstParagraph.properties["data-narrow-dropcap"] = ""
-  }
-
-  // If the second letter is an apostrophe, add a space before it
-  const secondLetter = paragraphText.charAt(1)
-  if (["'", "’", "‘"].includes(secondLetter)) {
-    const firstTextNode = firstParagraph.children.find(
-      (child): child is Text => child.type === "text",
-    )
+  // If the second character is an apostrophe, add a space before it so
+  // ::first-letter only grabs the opening quote, not the next letter.
+  // If the second character is a space/nbsp (single-letter first word like "I"),
+  // strip it so the dropcap’s padding-right provides the only gap —
+  // otherwise the whitespace renders as extra space on the first line.
+  const secondChar = paragraphText.charAt(1)
+  const firstTextNode = firstParagraph.children.find(
+    (child): child is Text => child.type === "text",
+  )
+  if (["’", "\u2018", "\u2019"].includes(secondChar)) {
     if (firstTextNode) {
       firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
     }
+  } else if (firstTextNode && (secondChar === " " || secondChar === "\u00A0")) {
+    // Remove leading space/nbsp after the dropcap letter
+    firstTextNode.value = firstLetter + firstTextNode.value.slice(2)
   }
 }
 

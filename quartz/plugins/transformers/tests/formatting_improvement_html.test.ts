@@ -1247,17 +1247,20 @@ describe("setFirstLetterAttribute", () => {
     expect(normalizeNbsp(processedHtml)).toBe(input)
   })
 
-  it.each(["I", "J", "1"])("sets data-narrow-dropcap for narrow letter '%s'", (letter) => {
-    const input = `<p>${letter} am text.</p>`
+  it("strips space after single-letter first word to avoid double gap with dropcap padding", () => {
+    const input = `<p>I use this page.</p>`
     const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toContain(`data-narrow-dropcap=""`)
-    expect(processedHtml).toContain(`data-first-letter="${letter}"`)
+    // The space between "I" and "use" should be stripped; dropcap padding provides the gap
+    expect(processedHtml).toContain(`data-first-letter="I"`)
+    // After stripping, text starts with "Iuse" (no space/nbsp between I and use)
+    expect(normalizeNbsp(processedHtml)).toContain(">Iuse this page.</p>")
   })
 
-  it("does not set data-narrow-dropcap for wide letters", () => {
-    const input = `<p>First paragraph.</p>`
+  it("strips nbsp after single-letter first word", () => {
+    const input = `<p>I\u00A0use this page.</p>`
     const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).not.toContain("data-narrow-dropcap")
+    expect(processedHtml).toContain(`data-first-letter="I"`)
+    expect(normalizeNbsp(processedHtml)).toContain(">Iuse this page.</p>")
   })
 })
 
