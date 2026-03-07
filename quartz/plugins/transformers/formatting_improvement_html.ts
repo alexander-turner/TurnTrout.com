@@ -586,6 +586,12 @@ export function setFirstLetterAttribute(tree: Root): void {
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
+  // Narrow letters in EB Garamond Initials need a smaller float spacer width
+  const NARROW_DROPCAP_LETTERS = new Set("IJ1")
+  if (NARROW_DROPCAP_LETTERS.has(firstLetter.toUpperCase())) {
+    firstParagraph.properties["data-narrow-dropcap"] = ""
+  }
+
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
   if (["'", "’", "‘"].includes(secondLetter)) {

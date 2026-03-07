@@ -37,6 +37,7 @@ export const dropcapVerticalOffset = "0.15rem"
 export const dropcapFontSize = "3.95rem"
 export const dropcapMinHeight = "4.2rem"
 export const dropcapPaddingRight = "0.1em"
+export const narrowDropcapFontSize = "2.1rem"
 
 // Design tokens — shared across SCSS files
 export const borderRadius = 5
@@ -95,6 +96,7 @@ export const variables = {
   dropcapFontSize,
   dropcapMinHeight,
   dropcapPaddingRight,
+  narrowDropcapFontSize,
   borderRadius,
   transitionDurationQuick,
   transitionDurationMedium,
