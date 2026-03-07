@@ -122,15 +122,6 @@ $fonts-dir: "/static/styles/fonts";
   font-display: swap;
 }
 
-@font-face {
-  font-family: "EBGaramond12ItalicOld";
-  src: url("#{$fonts-dir}/EBGaramond/EBGaramond12-Italic.woff2") format("woff2");
-  font-weight: normal;
-  font-style: italic;
-  font-optical-sizing: auto;
-  font-display: swap;
-}
-
 // Less commonly used
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
