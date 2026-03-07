@@ -209,6 +209,21 @@ test("matched search terms appear in results", async ({ page }) => {
   await expect(matches.first()).toContainText("test", { ignoreCase: true })
 })
 
+test("result card title does not show raw HTML tags", async ({ page }) => {
+  await search(page, "test")
+
+  const firstCard = page.locator(".result-card").first()
+  await expect(firstCard).toBeVisible()
+
+  // The title should use DOM-based highlighting, not raw HTML strings
+  const titleText = await firstCard.locator(".h4").textContent()
+  expect(titleText).not.toContain("<span")
+  expect(titleText).not.toContain("</span>")
+
+  // The search-match span should exist as a proper DOM element
+  await expect(firstCard.locator(".h4 .search-match")).toBeAttached()
+})
+
 test("search matches in headers have correct color styling", async ({ page }) => {
   await search(page, "Steering")
 

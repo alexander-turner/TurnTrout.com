@@ -996,11 +996,22 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   content = replaceEmojiConvertArrows(content)
 
-  let suffixHTML = ""
-  if (!enablePreview) {
-    suffixHTML = `<p>${content}</p>`
+  // Build the title using DOM methods + matchTextNodes to avoid innerHTML
+  // with raw HTML strings (which can render as visible tags in some cases)
+  const titleSpan = document.createElement("span")
+  titleSpan.className = "h4"
+  titleSpan.textContent = title
+  for (const term of tokenizeTerm(currentSearchTerm)) {
+    matchTextNodes(titleSpan, term)
   }
-  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+  itemTile.appendChild(titleSpan)
+  itemTile.appendChild(document.createElement("br"))
+
+  if (!enablePreview) {
+    const p = document.createElement("p")
+    p.innerHTML = content
+    itemTile.appendChild(p)
+  }
 
   // On mobile/tablet, embed a small card preview slice in each card.
   // CSS hides .card-preview above the tablet breakpoint, so we always
@@ -1073,7 +1084,7 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: match(term, data[slug].title ?? ""),
+    title: data[slug].title ?? "",
     content: match(term, data[slug].content ?? "", true),
     authors: data[slug].authors?.join(", "),
   }
