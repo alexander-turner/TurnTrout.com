@@ -3,7 +3,13 @@ import type { Locator, Page } from "@playwright/test"
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { takeRegressionScreenshot, isDesktopViewport, setTheme, reloadPage } from "./visual_utils"
+import {
+  takeRegressionScreenshot,
+  isDesktopViewport,
+  setTheme,
+  reloadPage,
+  gotoPage,
+} from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -120,7 +126,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
