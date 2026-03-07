@@ -88,6 +88,10 @@ export default defineConfig({
     // Stabilize device scale across runners to reduce text subpixel jitter.
     // Individual projects can override, but default to 1x CSS pixels.
     deviceScaleFactor: 1,
+    // Prevent Chromium crashes on CI runners with limited /dev/shm
+    launchOptions: {
+      args: process.env.CI ? ["--disable-dev-shm-usage"] : [],
+    },
   },
   projects: deviceList.flatMap((device) =>
     browsers.map((browser) => ({
