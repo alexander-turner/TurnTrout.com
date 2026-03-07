@@ -634,7 +634,7 @@ EB Garamond's italic face slants enclosing punctuation (`( ) [ ] { } " " ' '`) a
 
 Mixing upright punctuation into italic text breaks the native spacing, so over 3,000 GPOS kerning pairs were added per font. Each italic letter gets per-glyph kern compensation computed from its measured bounding-box overshoot against opening and closing punctuation, with special handling for f-ligatures (`fi`, `fl`, `ffi`, `ffl`), descender glyphs next to quotes, and digits against dashes. The square brackets were shifted up and extended downward to align with the text, and the braces were repositioned to match cap height.
 
-A GSUB contextual alternates (`calt`) rule makes U+2019 render as an italic apostrophe between letters (_don't_, _it's_) but as an upright closing quote at word boundaries, preserving Ctrl+F searchability since both share the same codepoint.
+A `GSUB` contextual alternates (`calt`) rule makes U+2019 render as an italic apostrophe between letters (_don't_, _it's_) but as an upright closing quote at word boundaries, preserving `Ctrl`+F search since both share the same code point.
 
 <figure>
 
