@@ -1248,18 +1248,18 @@ describe("setFirstLetterAttribute", () => {
   })
 
   it("strips space after single-letter first word to avoid double gap with dropcap padding", () => {
-    const input = `<p>I use this page.</p>`
+    const input = "<p>I use this page.</p>"
     const processedHtml = testHtmlFormattingImprovement(input, false)
     // The space between "I" and "use" should be stripped; dropcap padding provides the gap
-    expect(processedHtml).toContain(`data-first-letter="I"`)
+    expect(processedHtml).toContain('data-first-letter="I"')
     // After stripping, text starts with "Iuse" (no space/nbsp between I and use)
     expect(normalizeNbsp(processedHtml)).toContain(">Iuse this page.</p>")
   })
 
   it("strips nbsp after single-letter first word", () => {
-    const input = `<p>I\u00A0use this page.</p>`
+    const input = "<p>I\u00A0use this page.</p>"
     const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toContain(`data-first-letter="I"`)
+    expect(processedHtml).toContain('data-first-letter="I"')
     expect(normalizeNbsp(processedHtml)).toContain(">Iuse this page.</p>")
   })
 })
