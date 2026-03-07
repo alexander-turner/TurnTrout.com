@@ -95,6 +95,9 @@ export default defineConfig({
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
+        // Force the new headless mode (full browser) instead of
+        // chromium_headless_shell, which crashes under mobile emulation.
+        ...(browser.engine === "chromium" ? { launchOptions: { args: ["--headless=new"] } } : {}),
       },
     })),
   ),
