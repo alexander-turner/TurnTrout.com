@@ -740,10 +740,10 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 | Parentheses | <span style="font-family: EBGaramondItalicOld; font-style: italic;">(quickly)</span> | _(quickly)_ |
 | Brackets | <span style="font-family: EBGaramondItalicOld; font-style: italic;">[briefly]</span> | _[briefly]_ |
 | Braces | <span style="font-family: EBGaramondItalicOld; font-style: italic;">\{gently\}</span> | _\{gently\}_ |
-| Double quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">\u201Csoftly\u201D</span> | _\u201Csoftly\u201D_ |
-| Single quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">\u2018lightly\u2019</span> | _\u2018lightly\u2019_ |
-| Apostrophe | <span style="font-family: EBGaramondItalicOld; font-style: italic;">don't</span> | _don't_ |
-| Mixed | <span style="font-family: EBGaramondItalicOld; font-style: italic;">(it's \u201Cfine,\u201D he said)</span> | _(it's \u201Cfine,\u201D he said)_ |
+| Double quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">“softly”</span> | _“softly”_ |
+| Single quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">‘lightly’</span> | _‘lightly’_ |
+| Apostrophe | <span style="font-family: EBGaramondItalicOld; font-style: italic;">don’t</span> | _don’t_ |
+| Mixed | <span style="font-family: EBGaramondItalicOld; font-style: italic;">(it’s “fine,” he said)</span> | _(it’s “fine,” he said)_ |
 | f-ligatures | <span style="font-family: EBGaramondItalicOld; font-style: italic;">(fiftyfficials)</span> | _(fiftyfficials)_ |
 
 Corrupted text
