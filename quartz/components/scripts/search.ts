@@ -86,7 +86,7 @@ function createSearchIndex(): InstanceType<typeof documentType> {
 
 interface FetchResult {
   content: Element[]
-  frontmatter: Element
+  frontmatter: Record<string, unknown>
 }
 
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
@@ -807,7 +807,14 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
       // Extract frontmatter
       const frontmatterScript = html.querySelector('script[type="application/json"]')
-      const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
+      let frontmatter: Record<string, unknown> = {}
+      if (frontmatterScript) {
+        try {
+          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+        } catch {
+          console.error(`Failed to parse frontmatter JSON for ${slug}`)
+        }
+      }
 
       // Extract previewable elements and restore checkbox states in one operation
       const contentElements = processPreviewables(html, targetUrl)

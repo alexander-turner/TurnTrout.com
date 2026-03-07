@@ -23,6 +23,8 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
 export const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+// Narrow letters in EB Garamond Initials need a smaller float spacer width
+const NARROW_DROPCAP_LETTERS = new Set("IJ1")
 
 /**
  * Tags that should be skipped during fraction replacement.
@@ -585,6 +587,10 @@ export function setFirstLetterAttribute(tree: Root): void {
 
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
+
+  if (NARROW_DROPCAP_LETTERS.has(firstLetter.toUpperCase())) {
+    firstParagraph.properties["data-narrow-dropcap"] = ""
+  }
 
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
