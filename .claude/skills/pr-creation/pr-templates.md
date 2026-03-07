@@ -11,7 +11,7 @@ EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --j
 If `EXISTING_PR` is non-empty, update the existing PR with `gh pr edit` instead of creating a new one.
 
 ```bash
-gh pr create --title "<type>: <description>" --body "$(cat <<'EOF'
+gh pr create --base "$CLAUDE_CODE_BASE_REF" --title "<type>: <description>" --body "$(cat <<'EOF'
 ## Summary
 <1-3 bullet points describing what changed and why>
 

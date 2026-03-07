@@ -9,6 +9,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -25,7 +26,7 @@ const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
     await expect(dummyLink).toBeVisible()
-    await use(dummyLink)
+    await use(dummyLink) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
   },
 })
 
@@ -41,6 +42,12 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   page,
   dummyLink,
 }, testInfo) => {
+  // DOM isolation (hiding all other elements) crashes Desktop Safari WebKit;
+  // visual coverage is provided by the Chrome and Firefox configurations.
+  test.skip(
+    page.context().browser()?.browserType().name() === "webkit",
+    "DOM isolation crashes Desktop Safari WebKit",
+  )
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
@@ -334,12 +341,12 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
 
   // Wait for navigation to the new page. The href of dummyLink is /design.
   await page.waitForURL(`**/${linkSlug}`)
+  await page.waitForLoadState("domcontentloaded")
 
   // The 'nav' event should have cleared the pending popover timer.
-  // Wait a bit to ensure the popover doesn't appear.
-  // The popover timeout is 300ms, let's wait a little longer.
+  // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
   // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
+  await page.waitForTimeout(1000)
 
   const popover = page.locator(".popover")
   await expect(popover).toBeHidden()
@@ -575,7 +582,7 @@ test.describe("Footnote popovers", () => {
 base.describe("Footnote popover on mobile", () => {
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
   })
 
   base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {

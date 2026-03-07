@@ -417,6 +417,10 @@ test("Search matching title text stays at top even with body matches", async ({ 
   await testPageResult.click()
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
+  // waitForURL resolves as soon as pushState fires; the SPA may still be
+  // rendering content and applying search highlights.  Wait for the article
+  // title element to be present before checking for search-match spans.
+  await expect(page.locator("#article-title")).toBeAttached()
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
@@ -440,8 +444,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
-  // Search again — use openSearch to wait for component initialization after goBack
-  await page.goBack({ waitUntil: "load" })
+  // Search again — use openSearch to wait for component initialization after goBack.
+  // Use waitUntil: "commit" to avoid WebKit hangs with "load" on SPA back-navigation.
+  await page.goBack({ waitUntil: "commit" })
+  await page.waitForLoadState("domcontentloaded")
   await openSearch(page)
   await search(page, "Shrek")
 
@@ -744,13 +750,17 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
+  // Move mouse away from results so that when the mouseover lock expires,
+  // no accidental hover event steals focus from the first result.
+  await page.mouse.move(0, 0)
+
   // The search input is debounced (400ms), so `search()` may return before
   // the new results render. Wait for the first result card to reflect the
   // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
 
-  // The first result should gain focus once the mouseover lock expires
+  // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
 
   await page.keyboard.press("Enter")
@@ -855,4 +865,70 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
   await expect(article).not.toBeEmpty()
+})
+
+test.describe("Search preview scroll behavior", () => {
+  test("scrolls container so first match is approximately centered", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const previewContainer = page.locator("#preview-container")
+    const firstMatch = previewContainer.locator(".search-match").first()
+    await expect(firstMatch).toBeAttached()
+
+    // The scroll code positions the first match at ~50% of the container height.
+    // Verify the match ends up in the middle portion of the visible area.
+    await expect(async () => {
+      const { matchCenterFraction, scrollTop } = await previewContainer.evaluate((container) => {
+        const match = container.querySelector(".search-match")
+        if (!match) throw new Error("No .search-match element found")
+        const matchRect = match.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+        const matchCenter = matchRect.top + matchRect.height / 2 - containerRect.top
+        return {
+          matchCenterFraction: matchCenter / container.clientHeight,
+          scrollTop: container.scrollTop,
+        }
+      })
+
+      // When the container scrolled, the match should be near center (middle 60%)
+      if (scrollTop > 0) {
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeGreaterThan(0.2)
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeLessThan(0.8)
+      }
+      // Match must always be within the visible container area
+      expect(matchCenterFraction).toBeGreaterThanOrEqual(0)
+      expect(matchCenterFraction).toBeLessThanOrEqual(1)
+    }).toPass()
+  })
+
+  test("re-scrolls to first match after viewport resize", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    const currentSize = page.viewportSize()
+    if (!currentSize) throw new Error("No viewport size")
+    test.skip(
+      currentSize.width - 200 <= tabletBreakpoint,
+      "Viewport too narrow to resize while remaining above tablet breakpoint",
+    )
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const firstMatch = page.locator("#preview-container .search-match").first()
+    await expect(firstMatch).toBeInViewport()
+
+    // Resize viewport (changes container height and triggers content reflow)
+    await page.setViewportSize({
+      width: currentSize.width - 200,
+      height: currentSize.height - 100,
+    })
+
+    // The debounced resize handler (150ms) re-scrolls to the match
+    await expect(firstMatch).toBeInViewport()
+  })
 })

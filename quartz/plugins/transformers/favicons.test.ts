@@ -115,7 +115,7 @@ describe("Favicon Utilities", () => {
         .mockResolvedValueOnce(AVIFResponse)
         .mockResolvedValueOnce(googleResponse)
 
-      jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
+      jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
       // Mock fs.promises.stat: local SVG, then local PNG
       jest
@@ -257,7 +257,7 @@ describe("Favicon Utilities", () => {
           }),
         )
 
-      jest.spyOn(fs.promises, "writeFile").mockResolvedValue(undefined)
+      jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
       favicons.urlCache.clear()
 
@@ -460,6 +460,27 @@ describe("Favicon Utilities", () => {
       const result = favicons.getFaviconUrl(pngPath)
       expect(result).toBe(`https://assets.turntrout.com${svgPath}`)
       expect(fs.accessSync).toHaveBeenCalledWith(localSvgPath, fs.constants.F_OK)
+    })
+
+    it("should cache SVG path after local SVG lookup to avoid repeated accessSync", () => {
+      const pngPath = "/static/images/external-favicons/cached_com.png"
+      const svgPath = "/static/images/external-favicons/cached_com.svg"
+
+      favicons.urlCache.clear()
+      const accessSpy = jest.spyOn(fs, "accessSync").mockImplementation(() => {
+        // File exists
+      })
+
+      // First call: hits filesystem, caches result
+      favicons.getFaviconUrl(pngPath)
+      expect(accessSpy).toHaveBeenCalledTimes(1)
+      expect(favicons.urlCache.get(pngPath)).toBe(svgPath)
+
+      // Second call: uses cache, no additional filesystem access
+      accessSpy.mockClear()
+      const result = favicons.getFaviconUrl(pngPath)
+      expect(result).toBe(`https://assets.turntrout.com${svgPath}`)
+      expect(accessSpy).not.toHaveBeenCalled()
     })
 
     it("should handle non-PNG non-SVG paths", () => {
@@ -1417,10 +1438,10 @@ describe("favicons.readFaviconCounts", () => {
     jest.resetAllMocks()
   })
 
-  it("should return empty Map when file doesn't exist", () => {
-    jest.spyOn(fs, "existsSync").mockReturnValue(false)
+  it("should return empty Map when file doesn't exist", async () => {
+    jest.spyOn(fs.promises, "access").mockRejectedValue(new Error("ENOENT"))
 
-    const result = favicons.readFaviconCounts()
+    const result = await favicons.readFaviconCounts()
 
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)
@@ -1462,11 +1483,11 @@ describe("favicons.readFaviconCounts", () => {
       ]),
       "JSON with invalid entries (should skip them)",
     ],
-  ])("should handle %s", (fileContent, expectedMap) => {
-    jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "readFileSync").mockReturnValue(fileContent)
+  ])("should handle %s", async (fileContent, expectedMap) => {
+    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "readFile").mockResolvedValue(fileContent)
 
-    const result = favicons.readFaviconCounts()
+    const result = await favicons.readFaviconCounts()
 
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(expectedMap.size)
@@ -1475,29 +1496,27 @@ describe("favicons.readFaviconCounts", () => {
     })
   })
 
-  it("should return empty Map when JSON parsing fails", () => {
-    jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "readFileSync").mockReturnValue("invalid json {")
+  it("should return empty Map when JSON parsing fails", async () => {
+    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "readFile").mockResolvedValue("invalid json {")
 
-    const result = favicons.readFaviconCounts()
-
-    expect(result).toBeInstanceOf(Map)
-    expect(result.size).toBe(0)
-  })
-
-  it("should return empty Map when file read fails", () => {
-    jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
-      throw new Error("File read error")
-    })
-
-    const result = favicons.readFaviconCounts()
+    const result = await favicons.readFaviconCounts()
 
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)
   })
 
-  it("should correctly read data written by countFavicons.ts writeCountsToFile format", () => {
+  it("should return empty Map when file read fails", async () => {
+    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("File read error"))
+
+    const result = await favicons.readFaviconCounts()
+
+    expect(result).toBeInstanceOf(Map)
+    expect(result.size).toBe(0)
+  })
+
+  it("should correctly read data written by countFavicons.ts writeCountsToFile format", async () => {
     // Simulate the exact format that countFavicons.ts writes:
     // JSON.stringify(Array.from(faviconCounter.entries()), null, 2)
     const mockData = new Map([
@@ -1507,10 +1526,10 @@ describe("favicons.readFaviconCounts", () => {
     ])
     const jsonContent = JSON.stringify(Array.from(mockData.entries()), null, 2)
 
-    jest.spyOn(fs, "existsSync").mockReturnValue(true)
-    jest.spyOn(fs, "readFileSync").mockReturnValue(jsonContent)
+    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "readFile").mockResolvedValue(jsonContent)
 
-    const result = favicons.readFaviconCounts()
+    const result = await favicons.readFaviconCounts()
 
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(3)
@@ -1560,6 +1579,9 @@ describe("isAssetLink", () => {
     ["https://example.com/page.html", false],
     ["https://example.com/data.json", false],
     ["https://example.com/style.css", false],
+    ["https://github.com/repo/blob/main/file.ts", false],
+    ["https://github.com/repo/blob/main/file.mts", false],
+    ["https://github.com/repo/blob/main/file.tsx", false],
     ["https://example.com/image.png", true],
     ["https://example.com/image.jpg", true],
     ["https://example.com/image.jpeg", true],

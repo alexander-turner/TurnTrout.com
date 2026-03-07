@@ -141,7 +141,7 @@ Admonition in a description list
 - [ ] First-level not checked off
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
-    - [ ] Nested checked off should still be crossed out and same (diminished) opacity
+    - [ ] Nested unchecked item under checked parent
       - [ ] Third nested with a <a id="checkboxes-link" href="#checkboxes">test link</a>.
   - [ ] Not checked off
 - Normal bullet
@@ -159,6 +159,16 @@ Admonition in a description list
 - [x] Install [the mobile app](https://www.privacy.com/mobile-app).
   - [ ] Nested
   - [x] Not even more transparent
+
+# Select boxes
+
+<label for="select-basic">Basic select:</label>
+<select id="select-basic">
+  <option value="">Choose an option</option>
+  <option value="1">Option 1</option>
+  <option value="2">Option 2</option>
+  <option value="3">Option 3</option>
+</select>
 
 # Transclusion
 
@@ -710,8 +720,8 @@ This is a plain code block without a language specified.
 <!-- spellchecker-disable -->
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-  <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
-  <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 
 <!-- spellchecker-enable -->
 

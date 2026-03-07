@@ -140,6 +140,8 @@ async function performDOMIsolation(
  * @returns A promise that resolves once the DOM restoration is complete.
  */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
+  // WebKit may crash during screenshots; if the page is already closed there's nothing to restore
+  if (page.isClosed()) return
   await page.evaluate(() => {
     const hiddenElements = window.__elementsToRestoreData
     if (hiddenElements) {
@@ -304,7 +306,9 @@ export async function getH1Screenshots(
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
   for (const h1Span of h1Spans) {
-    await h1Span.scrollIntoViewIfNeeded()
+    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
+    // which can time out in WebKit when the element never becomes "stable".
+    await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
     const h1Id = await h1Header.getAttribute("id")
@@ -346,29 +350,34 @@ export async function getNextElementMatchingSelector(
 }
 
 /** Open the search UI by clicking the search icon.
- *  Waits for the search handlers to be fully initialized (onNav completes
- *  its async getContentIndex() call) before clicking, by checking for the
- *  dynamically-created #results-container element. */
+ *
+ *  Uses toPass() to atomically retry the full click → active → visible
+ *  sequence.  After page.goBack(), the SPA navigation machinery
+ *  (handlePopstate → onNav) may still be running asynchronously, so the
+ *  search icon click handler might not be registered yet or the DOM state
+ *  may shift between checks.  Retrying the entire block avoids the race
+ *  between the browser-side "active" class appearing and the Playwright-side
+ *  visibility check.
+ *
+ *  Checks whether search bar is already visible before clicking to avoid
+ *  the case where a retry click toggles search closed. */
 export async function openSearch(page: Page) {
-  // #results-container is created by onNav after the async getContentIndex()
-  // resolves and just before the click handlers are registered. Waiting for
-  // it ensures the search icon's click handler is ready.
-  await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
-  await page.locator("#search-icon").click()
-  await expect(page.locator("#search-container")).toHaveClass(/active/)
-  await expect(page.locator("#search-bar")).toBeVisible()
+  await expect(async () => {
+    // Only click if search is not already visible (clicking toggles)
+    if (!(await page.locator("#search-bar").isVisible())) {
+      await page.locator("#search-icon").click({ timeout: 2_000 })
+    }
+    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
+    await expect(page.locator("#search-bar")).toBeVisible({ timeout: 2_000 })
+  }).toPass({ timeout: 15_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {
-  // Wait for search container to be in the DOM and interactive
-  const searchContainer = page.locator("#search-container")
-  // Ensure search is opened
-  await expect(searchContainer).toBeAttached()
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(searchContainer).toBeVisible()
+  // Ensure search is open (re-opens if DOM was reset by SPA navigation)
+  await openSearch(page)
 
   const searchBar = page.locator("#search-bar")
-  await expect(searchBar).toBeVisible()
+  await expect(searchBar).toBeEnabled()
   return searchBar
 }
 
@@ -493,6 +502,36 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
       }, 5000)
     })
   })
+}
+
+// skipcq: JS-0098
+export async function gotoPage(
+  page: Page,
+  url: string,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  try {
+    await page.goto(url, { waitUntil: "commit" })
+  } catch (error: unknown) {
+    // WebKit on Linux occasionally crashes with "internal error" on page.goto.
+    // Retry once — the second attempt typically succeeds.
+    if (error instanceof Error && error.message.includes("internal error")) {
+      await page.goto(url, { waitUntil: "commit" })
+    } else {
+      throw error
+    }
+  }
+  await page.waitForLoadState(loadState)
+}
+
+/** Reload the current page by navigating to its own URL.
+ *  Avoids page.reload() which can trigger "WebKit encountered an internal
+ *  error" crashes in the Safari driver. */
+export async function reloadPage(
+  page: Page,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  await gotoPage(page, page.url(), loadState)
 }
 
 // skipcq: JS-0098

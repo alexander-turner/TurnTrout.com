@@ -17,11 +17,10 @@ import {
   showSearch,
   hideSearch,
   PreviewManager,
-  getOffsetTopRelativeToContainer,
-  getSearchMatchScrollPosition,
   syncSearchLayoutState,
   setSearchLayoutForTesting,
   navigateWithSearchTerm,
+  scrollContainerToMatch,
   matchHTML,
 } from "../search"
 
@@ -198,7 +197,7 @@ describe("updatePlaceholder", () => {
   const searchBar = document.createElement("input")
   searchBar.id = "search-bar"
   document.body.appendChild(searchBar)
-  it("should set the placeholder to desktop version on wide screens", async () => {
+  it("should set the placeholder to desktop version on wide screens", () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -235,6 +234,7 @@ describe("showSearch", () => {
       </div>
       <div id="navbar"></div>
     `
+    document.body.style.overflow = ""
     container = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
     navbar = document.getElementById("navbar") as HTMLElement
@@ -249,6 +249,12 @@ describe("showSearch", () => {
   it("should set the z-index of the navbar", () => {
     showSearch(container, searchBar)
     expect(navbar.style.zIndex).toBe("1")
+  })
+
+  it("should lock body scroll by setting overflow hidden", () => {
+    expect(document.body.style.overflow).toBe("")
+    showSearch(container, searchBar)
+    expect(document.body.style.overflow).toBe("hidden")
   })
 
   it("should not throw if the container or search bar is not found", () => {
@@ -283,6 +289,12 @@ describe("hideSearch", () => {
     expect(searchBar.getAttribute("aria-expanded")).toBe("false")
     expect(searchBar.hasAttribute("aria-activedescendant")).toBe(false)
     expect(searchResults.children.length).toBe(0)
+  })
+
+  it("should restore body scroll by clearing overflow", () => {
+    document.body.style.overflow = "hidden"
+    hideSearch(null)
+    expect(document.body.style.overflow).toBe("")
   })
 
   it("hideSearch should hide the search container and the preview manager", () => {
@@ -325,36 +337,6 @@ describe("PreviewManager", () => {
     const article = container.querySelector("article.search-preview")
     expect(article).not.toBeNull()
     expect(article?.innerHTML).toBe("")
-  })
-})
-
-describe("getOffsetTopRelativeToContainer", () => {
-  it("should calculate the correct offsetTop", () => {
-    document.body.innerHTML = `
-      <div id="container">
-        <div id="outer">
-          <div id="inner"></div>
-        </div>
-      </div>
-    `
-
-    const container = document.getElementById("container") as HTMLElement
-    const outer = document.getElementById("outer") as HTMLElement
-    const inner = document.getElementById("inner") as HTMLElement
-
-    // Mock offsetTop
-    Object.defineProperty(inner, "offsetTop", { value: 30, configurable: true })
-    Object.defineProperty(outer, "offsetTop", { value: 20, configurable: true })
-    const trueOffsetTop = 50
-    Object.defineProperty(container, "offsetTop", { value: trueOffsetTop, configurable: true })
-
-    // Mock offsetParent
-    Object.defineProperty(inner, "offsetParent", { value: outer, configurable: true })
-    Object.defineProperty(outer, "offsetParent", { value: container, configurable: true })
-
-    const offsetTop = getOffsetTopRelativeToContainer(inner, container)
-
-    expect(offsetTop).toBe(trueOffsetTop)
   })
 })
 
@@ -562,48 +544,51 @@ describe("matchHTML", () => {
   })
 })
 
-describe("getSearchMatchScrollPosition", () => {
-  it("should calculate scroll position based on element offset and scroll fraction", () => {
-    const container = document.createElement("div")
-    Object.defineProperty(container, "clientHeight", {
-      value: 1000,
-      writable: true,
-    })
+describe("scrollContainerToMatch", () => {
+  it.each([
+    {
+      scrollFraction: 0.5,
+      matchTop: 500,
+      containerTop: 100,
+      scrollTop: 50,
+      clientHeight: 400,
+      expected: 250,
+    },
+    {
+      scrollFraction: 1 / 3,
+      matchTop: 300,
+      containerTop: 0,
+      scrollTop: 0,
+      clientHeight: 600,
+      expected: 100,
+    },
+    {
+      scrollFraction: 0.5,
+      matchTop: 50,
+      containerTop: 100,
+      scrollTop: 0,
+      clientHeight: 800,
+      expected: 0,
+    },
+  ])(
+    "scrolls to fraction=$scrollFraction with matchTop=$matchTop",
+    ({ scrollFraction, matchTop, containerTop, scrollTop, clientHeight, expected }) => {
+      const container = document.createElement("div")
+      const match = document.createElement("span")
+      container.appendChild(match)
+      document.body.appendChild(container)
 
-    const element = document.createElement("div")
-    container.appendChild(element)
-    document.body.appendChild(container)
+      Object.defineProperty(container, "scrollTop", { value: scrollTop, writable: true })
+      Object.defineProperty(container, "clientHeight", { value: clientHeight })
+      match.getBoundingClientRect = () => ({ top: matchTop }) as DOMRect
+      container.getBoundingClientRect = () => ({ top: containerTop }) as DOMRect
 
-    const scrollFraction = 0.3
-    const result = getSearchMatchScrollPosition(element, container, scrollFraction)
+      scrollContainerToMatch(container, match, scrollFraction)
 
-    // The result should be offsetTop - (clientHeight * scrollFraction)
-    // Since element is at top of container, offsetTop should be 0
-    // Expected: 0 - (1000 * 0.3) = -300
-    expect(result).toBe(-300)
-
-    document.body.removeChild(container)
-  })
-
-  it("should handle different scroll fractions", () => {
-    const container = document.createElement("div")
-    Object.defineProperty(container, "clientHeight", {
-      value: 800,
-      writable: true,
-    })
-
-    const element = document.createElement("div")
-    container.appendChild(element)
-    document.body.appendChild(container)
-
-    // Test with 0.5 scroll fraction
-    const result = getSearchMatchScrollPosition(element, container, 0.5)
-
-    // Expected: 0 - (800 * 0.5) = -400
-    expect(result).toBe(-400)
-
-    document.body.removeChild(container)
-  })
+      expect(container.scrollTop).toBe(expected)
+      document.body.removeChild(container)
+    },
+  )
 })
 
 describe("syncSearchLayoutState", () => {

@@ -42,11 +42,11 @@ test.describe("Punctilio demo page loads correctly", () => {
     await expect(page.locator("#punctilio-input")).toHaveValue("")
     await expect(page.locator("#punctilio-input")).toHaveAttribute("placeholder", /can't believe/)
 
-    // Output shows ghost text (transformed placeholder)
+    // Output shows ghost text via CSS ::before using data-placeholder attribute
     const output = page.locator(OUTPUT_CONTENT)
     await expect(output).toHaveClass(/ghost/)
-    const outputText = await output.textContent()
-    expect(outputText?.length ?? 0).toBeGreaterThan(0)
+    const placeholder = await output.getAttribute("data-placeholder")
+    expect(placeholder?.length ?? 0).toBeGreaterThan(0)
   })
 })
 
@@ -183,15 +183,17 @@ test.describe("Markdown protection", () => {
     await expect(page.locator(OUTPUT_CONTENT)).toContainText('"don\'t change"')
   })
 
-  test("mismatched fence delimiters are not treated as a code block", async ({ page }) => {
+  test("mismatched fence delimiters protect content (CommonMark: unterminated fence)", async ({
+    page,
+  }) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
 
     const input = page.locator("#punctilio-input")
-    // ``` opening with ~~~ "closing" — these don't match, so the quotes inside
-    // should be transformed (not protected as a code block)
+    // Per CommonMark, ``` opens a fence only closable by ```, not ~~~.
+    // The fence is unterminated, so "hello" is code content and quotes stay straight.
     await input.fill('```\n"hello"\n~~~')
 
-    await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote
+    await expect(page.locator(OUTPUT_CONTENT)).not.toContainText("\u201c")
   })
 })
 
@@ -276,7 +278,7 @@ test.describe("Admonition titles update per mode", () => {
     // Plaintext is the default mode
     const outputAdmonition = page
       .locator(OUTPUT_CONTENT)
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText("Text output")
   })
 
@@ -284,19 +286,19 @@ test.describe("Admonition titles update per mode", () => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
     const outputAdmonition = page
       .locator(OUTPUT_CONTENT)
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
       "Markdown source output",
     )
   })
 
-  test("output title says 'Html source output' in HTML mode", async ({ page }) => {
+  test("output title says 'html source output' in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
     const outputAdmonition = page
       .locator(OUTPUT_CONTENT)
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
-      "Html source output",
+      "html source output",
     )
     await expect(outputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
   })
@@ -304,15 +306,15 @@ test.describe("Admonition titles update per mode", () => {
   test("input title says 'Input' in plaintext mode", async ({ page }) => {
     const inputAdmonition = page
       .locator("#punctilio-input")
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
   })
 
-  test("input title changes to 'Input your Html code' in HTML mode", async ({ page }) => {
+  test("input title changes to 'Input your html code' in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
     const inputAdmonition = page
       .locator("#punctilio-input")
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(inputAdmonition.locator(".admonition-title-inner")).toContainText("Input your")
     await expect(inputAdmonition.locator(".admonition-title-inner")).toContainText("code")
     await expect(inputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
@@ -322,7 +324,7 @@ test.describe("Admonition titles update per mode", () => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
     const inputAdmonition = page
       .locator("#punctilio-input")
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
   })
 
@@ -331,7 +333,7 @@ test.describe("Admonition titles update per mode", () => {
     await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
     const inputAdmonition = page
       .locator("#punctilio-input")
-      .locator("xpath=ancestor::div[contains(@class,'admonition')]")
+      .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
   })
 })
@@ -340,7 +342,7 @@ test.describe("Ghost placeholder text per mode", () => {
   for (const [mode, pattern] of [
     ["plaintext", /can't believe it ---/],
     ["markdown", /can't \*believe\*/],
-    ["html", /<p>"I can't <em>believe<\/em>/],
+    ["html", /She said "I can't <em>believe<\/em>/],
   ] as const) {
     test(`ghost placeholder matches ${mode} syntax`, async ({ page }) => {
       await page.locator(`.punctilio-mode-btn[data-mode="${mode}"]`).click()

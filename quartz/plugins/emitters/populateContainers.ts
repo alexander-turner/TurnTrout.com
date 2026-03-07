@@ -256,7 +256,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
  */
 export const generateFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    const faviconCounts = getFaviconCounts()
+    const faviconCounts = await getFaviconCounts()
     logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
 
     // Find PNG paths that need SVG CDN checking
