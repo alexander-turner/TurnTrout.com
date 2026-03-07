@@ -921,31 +921,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 
 [`lint-staged`](https://www.npmjs.com/package/lint-staged) improves the readability and consistency of my code. While I format some filetypes on save, there are a lot of files and a lot of types. Therefore, my `package.json` specifies what linting & formatting tools to run on what filetypes:
 
-```json
-  "lint-staged": {
-    "*.{css,scss,json}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": [
-      "npx eslint --fix",
-      "prettier --write"
-    ],
-    "*.fish": "fish_indent",
-    "*.sh": [
-      "shfmt -i 2 -w",
-      "shellcheck"
-    ],
-    "*.py": [
-      "ruff check --fix",
-      "pyupgrade",
-      "autoflake --in-place",
-      "isort",
-      "autopep8 --in-place",
-      "black"
-    ],
-    "!(*.vale-styles)/**/*.md": [
-      "prettier --write",
-      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
-    ]
-```
+<span class="populate-markdown-lint-staged"></span>
 
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
