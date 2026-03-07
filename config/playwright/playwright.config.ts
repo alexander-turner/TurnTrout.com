@@ -96,15 +96,6 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Chromium's renderer crashes under mobile device emulation on CI
-        // (bare ubuntu-24.04 without Docker --ipc=host). Disabling GPU
-        // compositing prevents the renderer from allocating large GPU buffers
-        // that trigger crashes in the headless software renderer.
-        ...(browser.engine === "chromium" && {
-          launchOptions: {
-            args: ["--disable-gpu", "--disable-software-rasterizer"],
-          },
-        }),
       },
     })),
   ),

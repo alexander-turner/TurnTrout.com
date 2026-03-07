@@ -78,6 +78,13 @@ jobs:
     # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/alexander-turner/turntrout.com/playwright:latest
+      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -99,8 +106,6 @@ jobs:
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
-        with:
-          install-playwright: "true"
 
       - name: Make folder for screenshots
         run: mkdir -p ./lost-pixel
@@ -133,12 +138,13 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
+        shell: bash
         run: |
           set -o pipefail
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
-            pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
+          HOME: /root
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       - name: Log system info after tests
