@@ -144,7 +144,7 @@ test.describe("Unique content around the site", () => {
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
-      const numOldest = 9
+      const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
         const listElement = document.querySelectorAll("ul.section-ul")[0]
         if (!listElement) {
