@@ -44,13 +44,6 @@ const browsers: Browser[] = [
   { name: "Safari", engine: "webkit" },
 ]
 
-// Chromium's renderer crashes under mobile device emulation in headless
-// containerized CI environments (100% CPU, 800MB+ RAM per renderer,
-// then page crash). Not an OOM issue — happens with 13GB free RAM.
-// Desktop Chromium and all Firefox/WebKit configs work fine.
-// Skip Chromium for mobile since WebKit covers iOS and Firefox covers Android.
-const SKIP_CHROMIUM_MOBILE = process.env.CI === "true"
-
 /**
  * Remove or adjust device options that are not supported by a given browser engine.
  */
@@ -97,18 +90,13 @@ export default defineConfig({
     deviceScaleFactor: 1,
   },
   projects: deviceList.flatMap((device) =>
-    browsers
-      .filter(
-        (browser) =>
-          !(SKIP_CHROMIUM_MOBILE && browser.engine === "chromium" && device.name !== "Desktop"),
-      )
-      .map((browser) => ({
-        name: `${device.name} ${browser.name}`,
-        use: {
-          ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
-          browserName: browser.engine,
-          deviceScaleFactor: 1,
-        },
-      })),
+    browsers.map((browser) => ({
+      name: `${device.name} ${browser.name}`,
+      use: {
+        ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
+        browserName: browser.engine,
+        deviceScaleFactor: 1,
+      },
+    })),
   ),
 })
