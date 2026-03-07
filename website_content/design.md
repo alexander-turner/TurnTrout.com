@@ -642,7 +642,7 @@ A GSUB contextual alternates (`calt`) rule makes U+2019 render as an italic apos
 | :-- | :-- | :-- |
 | Parentheses | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_(Hello world)_</span> | _(Hello world)_ |
 | Brackets | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_[Hello world]_</span> | _[Hello world]_ |
-| Braces | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_{Hello world}_</span> | _{Hello world}_ |
+| Braces | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_\{Hello world\}_</span> | _\{Hello world\}_ |
 | Double quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_\u201CHello world\u201D_</span> | _\u201CHello world\u201D_ |
 | Single quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_\u2018Hello world\u2019_</span> | _\u2018Hello world\u2019_ |
 | Apostrophe | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_don't_</span> | _don't_ |
