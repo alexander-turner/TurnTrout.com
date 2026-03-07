@@ -95,13 +95,10 @@ export default defineConfig({
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
-        // Use the full Chromium binary (not chromium_headless_shell) in headless
-        // mode. The shell binary crashes under mobile device emulation.
-        // Setting headless:false selects the full binary; --headless=new re-enables
-        // headless mode via Chrome's built-in flag.
-        ...(browser.engine === "chromium"
-          ? { launchOptions: { headless: false, args: ["--headless=new"] } }
-          : {}),
+        // Force DPR 1 after spreading device config, which may set higher values
+        // (e.g. iPhone 12 sets deviceScaleFactor: 3). Chromium's software renderer
+        // in headless mode crashes at high DPR due to memory/CPU pressure.
+        deviceScaleFactor: 1,
       },
     })),
   ),
