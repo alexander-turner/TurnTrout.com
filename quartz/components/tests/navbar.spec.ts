@@ -3,7 +3,13 @@ import type { Locator, Page } from "@playwright/test"
 import { simpleConstants } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { takeRegressionScreenshot, isDesktopViewport, setTheme, reloadPage } from "./visual_utils"
+import {
+  takeRegressionScreenshot,
+  isDesktopViewport,
+  setTheme,
+  reloadPage,
+  gotoPage,
+} from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -120,7 +126,7 @@ async function setupVideoForTimestampTest(videoElements: VideoElements): Promise
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   await page.evaluate(() => window.scrollTo(0, 0))
 })
@@ -391,8 +397,7 @@ test("Right sidebar is visible on desktop on page load", async ({ page }) => {
     })
   })
 
-  // Use goto instead of reload to avoid transient WebKit "internal error" driver crashes
-  await page.goto(page.url())
+  await reloadPage(page)
 
   const initialDisplayStyle = await page.evaluate(() => {
     // @ts-expect-error - test instrumentation
@@ -559,8 +564,7 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
 
-  // Use goto instead of reload to avoid transient WebKit "internal error" driver crashes
-  await page.goto(page.url())
+  await reloadPage(page)
 
   const timestampAfterRefresh = await getTimestampAfterNavigation(page)
   expect(timestampAfterRefresh).toBeCloseTo(timestampBeforeRefresh, 0)

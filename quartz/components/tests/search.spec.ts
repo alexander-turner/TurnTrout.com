@@ -12,6 +12,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +20,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => console.error(err))
 
   // Navigate and wait for full initialization (including scripts)
-  await page.goto("http://localhost:8080/welcome", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/welcome")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
@@ -471,7 +472,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()
@@ -632,8 +633,11 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 
   const previewContainer = await waitForPreviewArticle(page)
 
-  // Check that multiple matches are highlighted
+  // Wait for matches to render — content is fetched asynchronously after the
+  // preview article element is attached, so matches may not exist immediately.
   const matches = previewContainer.locator(".search-match")
+  await expect(matches.first()).toBeAttached({ timeout: 10_000 })
+
   const matchCount = await matches.count()
   expect(matchCount).toBeGreaterThan(1)
 })
@@ -832,7 +836,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchContainer).not.toHaveClass(/active/)
 
   // Navigate to a fresh page to reset search initialization state
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   // Intercept contentIndex.json to add a delay, simulating slow index loading
   await page.route("**/contentIndex.json", async (route) => {

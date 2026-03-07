@@ -35,7 +35,7 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -665,7 +665,7 @@ test.describe("Popover checkbox state preservation", () => {
   })
 
   test("Popover preserves checkbox state", async ({ page }) => {
-    await page.goto("http://localhost:8080/design", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/design")
 
     const linkToTestPage = page.locator('a[href*="test-page"]').last()
     await linkToTestPage.scrollIntoViewIfNeeded()

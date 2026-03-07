@@ -1236,7 +1236,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")

@@ -136,6 +136,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Navigate back
     await goBackToTestPage(page)
+    await waitForCollapsibleIds(page)
 
     // Verify state persisted
     const afterNav = page
@@ -170,6 +171,7 @@ test.describe("Collapsible admonition state persistence", () => {
     // Navigate away and back
     await spaNavigateToAbout(page)
     await goBackToTestPage(page)
+    await waitForCollapsibleIds(page)
 
     // Get IDs after navigation
     const idsAfterNav = await getCollapsibles(page).evaluateAll((els) =>
