@@ -628,6 +628,28 @@ While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Ga
 
 Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
 
+### Upright punctuation in italic text
+
+EB Garamond's italic face slants enclosing punctuation (`( ) [ ] { } " " ' '`) along with the letter forms, creating visual dissonance next to upright body text. I modified the italic fonts to transplant upright (roman) punctuation glyphs from the corresponding Regular files, so enclosing punctuation stays vertical while letter forms remain italic.
+
+Mixing upright punctuation into italic text breaks the native spacing, so over 3,000 GPOS kerning pairs were added per font. Each italic letter gets per-glyph kern compensation computed from its measured bounding-box overshoot against opening and closing punctuation, with special handling for f-ligatures (`fi`, `fl`, `ffi`, `ffl`), descender glyphs next to quotes, and digits against dashes. The square brackets were shifted up and extended downward to align with the text, and the braces were repositioned to match cap height.
+
+A GSUB contextual alternates (`calt`) rule makes U+2019 render as an italic apostrophe between letters (_don't_, _it's_) but as an upright closing quote at word boundaries, preserving Ctrl+F searchability since both share the same codepoint.
+
+<figure>
+
+|  | Before | After |
+| :-- | :-- | :-- |
+| Parentheses | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_(Hello world)_</span> | _(Hello world)_ |
+| Brackets | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_[Hello world]_</span> | _[Hello world]_ |
+| Braces | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_{Hello world}_</span> | _{Hello world}_ |
+| Double quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_\u201CHello world\u201D_</span> | _\u201CHello world\u201D_ |
+| Single quotes | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_\u2018Hello world\u2019_</span> | _\u2018Hello world\u2019_ |
+| Apostrophe | <span style="font-family: EBGaramondItalicOld; font-style: italic;">_don't_</span> | _don't_ |
+
+<figcaption>The "before" column uses the original EB Garamond italic with slanted punctuation. The "after" column uses the modified font with upright enclosing punctuation and per-glyph kerning compensation.</figcaption>
+</figure>
+
 # Website features
 
 Subtitle: This list is not exhaustive.
