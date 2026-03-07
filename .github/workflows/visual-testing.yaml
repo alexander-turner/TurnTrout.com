@@ -117,16 +117,41 @@ jobs:
           name: visual-testing-public-dir
           path: public/
 
+      - name: Log system info before tests
+        run: |
+          echo "=== Memory ==="
+          free -m
+          echo "=== /dev/shm ==="
+          df -h /dev/shm
+          echo "=== CPU ==="
+          nproc
+          echo "=== Disk ==="
+          df -h /
+          echo "=== Chrome version ==="
+          pnpm exec playwright --version || true
+
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
           xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
-            pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
+            pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Log system info after tests
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "=== Post-test Memory ==="
+          free -m
+          echo "=== /dev/shm usage ==="
+          df -h /dev/shm
+          echo "=== dmesg (last 50 lines, may show OOM kills) ==="
+          dmesg --time-format iso 2>/dev/null | tail -50 || sudo dmesg | tail -50 || echo "Cannot read dmesg"
+          echo "=== Chrome crash dumps ==="
+          find /tmp -name "*.dmp" -o -name "chrome_debug*" 2>/dev/null | head -20 || echo "No crash dumps found"
 
       - name: Create sanitized shard
         if: always()

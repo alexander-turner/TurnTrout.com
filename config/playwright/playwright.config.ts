@@ -95,11 +95,6 @@ export default defineConfig({
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
-        // Prevent Chromium crashes on CI runners with limited /dev/shm
-        // (this flag is Chromium-only; WebKit rejects it)
-        ...(process.env.CI && browser.engine === "chromium"
-          ? { launchOptions: { args: ["--disable-dev-shm-usage"] } }
-          : {}),
       },
     })),
   ),
