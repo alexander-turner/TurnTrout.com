@@ -63,7 +63,7 @@ Before updating an existing PR (pushing new commits, editing the description, et
 
 ### Step 2: Self-Critique
 
-**Before creating the PR**, you MUST read [critique-prompt.md](critique-prompt.md) and launch a critique sub-agent using the Task tool:
+**Before creating the PR**, you MUST read the critique prompt at `.claude/skills/pr-creation/critique-prompt.md` and launch a critique sub-agent using the Task tool:
 
 - `subagent_type`: "general-purpose"
 - `description`: "Critique code changes"
@@ -87,11 +87,9 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
 
 1. Push the branch: `git push -u origin HEAD`
 2. Check if a PR already exists for the current branch:
-
    ```bash
    EXISTING_PR=$(gh pr list --head "$(git branch --show-current)" --json number --jq '.[0].number' 2>/dev/null)
    ```
-
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
@@ -124,13 +122,11 @@ Provide the PR URL and confirm all CI checks have passed.
 5. Fixes the null check, commits: `fix: add null check for empty session token`
 6. Runs `pnpm check && pnpm test && pnpm lint` — all pass
 7. Pushes and creates PR:
-
-   ```bash
+   ```
    gh pr create --title "fix: handle null session token in login flow" --body "..."
    ```
-
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
+9. Reports: "PR #47 created and all CI checks pass: https://github.com/org/repo/pull/47"
 
 ### Example 2: Multi-Commit Feature
 
@@ -154,7 +150,7 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **User says:** "Push this up"
 
-**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `main`, or just push the branch without creating a PR?"
+**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `$CLAUDE_CODE_BASE_REF`, or just push the branch without creating a PR?"
 
 ## Error Handling
 

@@ -26,10 +26,18 @@ uv_install_if_missing() {
 }
 
 # Install a command via webi if missing
+# Downloads the installer to a temp file first (avoid piping curl to sh directly)
 webi_install_if_missing() {
 	local cmd="$1"
 	if ! command -v "$cmd" &>/dev/null; then
-		curl -sS "https://webi.sh/$cmd" | sh >/dev/null || warn "Failed to install $cmd"
+		local installer
+		installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
+		if curl -fsSL "https://webi.sh/$cmd" -o "$installer" 2>/dev/null; then
+			sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+		else
+			warn "Failed to download installer for $cmd"
+		fi
+		rm -f "$installer"
 	fi
 }
 
@@ -50,14 +58,8 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
-if is_root; then
-	apt_pkgs=()
-	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
-	command -v fish &>/dev/null || apt_pkgs+=(fish)
-	if [ ${#apt_pkgs[@]} -gt 0 ]; then
-		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
-			warn "Failed to install ${apt_pkgs[*]}"
-	fi
+if ! command -v shellcheck &>/dev/null && is_root; then
+	{ apt-get update -qq && apt-get install -y -qq shellcheck; } || warn "Failed to install shellcheck"
 fi
 
 #######################################
@@ -67,8 +69,8 @@ fi
 # Remove stop-hook retry counter for THIS project so a new session starts fresh
 # (keyed on project dir hash, matching verify_ci.py's _retry_file)
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
-TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
-rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
+RETRY_DIR="/tmp/claude-stop-$(id -u)"
+rm -f "${RETRY_DIR}/attempts-${PROJ_HASH}"
 
 #######################################
 # Git setup
@@ -95,12 +97,6 @@ fi
 #   http://local_proxy@127.0.0.1:18393/git/owner/repo
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
-#
-# Lessons learned: `gh repo set-default` still needs at least one remote
-# that points to a recognized GitHub host — exporting GH_REPO alone is
-# not enough. We therefore add a "github" remote with the real URL so
-# that both `gh repo set-default` and `gh pr create --head` resolve
-# correctly without manual workarounds.
 
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)
