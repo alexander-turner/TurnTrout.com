@@ -55,19 +55,20 @@ export default [
     },
   },
 
-  // Disable react-hooks for test/spec files (Playwright's `use()` triggers false positives)
-  {
-    files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js", "**/tests/fixtures.ts"],
-    rules: {
-      "react-hooks/rules-of-hooks": "off",
-    },
-  },
-
-  // Disable require-await for test files (mock methods often need async signatures)
+  // Disable rules for test/spec files:
+  // - react-hooks: Playwright's `use()` triggers false positives
+  // - require-await: mock methods often need async signatures
   {
     files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js"],
     rules: {
+      "react-hooks/rules-of-hooks": "off",
       "require-await": "off",
+    },
+  },
+  {
+    files: ["**/tests/fixtures.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
     },
   },
 
