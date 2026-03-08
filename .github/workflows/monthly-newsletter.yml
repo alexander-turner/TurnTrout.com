@@ -6,8 +6,8 @@ on:
     - cron: "0 9 28 * *"
   workflow_dispatch:
     inputs:
-      since_date:
-        description: "Override start date (YYYY-MM-DD). Leave empty to use last run date."
+      since_commit:
+        description: "Override start commit hash. Leave empty to use last reviewed commit."
         required: false
         type: string
 
@@ -23,63 +23,63 @@ jobs:
         with:
           fetch-depth: 0 # Full history for git log
 
-      - name: Restore last newsletter date
-        id: cache-date
+      - name: Restore last reviewed commit
+        id: cache-commit
         uses: actions/cache/restore@v4
         with:
-          path: .last-newsletter-date
-          key: newsletter-last-date-
+          path: .last-newsletter-commit
+          key: newsletter-last-commit-
           restore-keys: |
-            newsletter-last-date-
+            newsletter-last-commit-
 
-      - name: Determine date range
-        id: dates
+      - name: Determine commit range
+        id: range
         run: |
-          # Default start date for first run: January 28, 2026
-          DEFAULT_START="2026-01-28"
+          # Conservative default: last commit before the Feb 28 2026 newsletter run
+          DEFAULT_COMMIT="5dde2d629f732c56b3e317e2fdce389af4b1e9b6"
 
           # Check for manual override
-          if [ -n "${{ github.event.inputs.since_date }}" ]; then
-            START_DATE="${{ github.event.inputs.since_date }}"
+          if [ -n "${{ github.event.inputs.since_commit }}" ]; then
+            START_COMMIT="${{ github.event.inputs.since_commit }}"
           else
-            # Try to get last successful run date from cache
-            if [ -f .last-newsletter-date ]; then
-              START_DATE=$(cat .last-newsletter-date)
+            if [ -f .last-newsletter-commit ]; then
+              START_COMMIT=$(cat .last-newsletter-commit)
             else
-              START_DATE="$DEFAULT_START"
+              START_COMMIT="$DEFAULT_COMMIT"
             fi
           fi
 
-          END_DATE=$(date +%Y-%m-%d)
+          END_COMMIT=$(git rev-parse HEAD)
 
-          echo "start_date=$START_DATE" >> $GITHUB_OUTPUT
-          echo "end_date=$END_DATE" >> $GITHUB_OUTPUT
-          echo "Generating newsletter for commits from $START_DATE to $END_DATE"
+          echo "start_commit=$START_COMMIT" >> $GITHUB_OUTPUT
+          echo "end_commit=$END_COMMIT" >> $GITHUB_OUTPUT
+          echo "Generating newsletter for commits ${START_COMMIT}..${END_COMMIT}"
 
       - name: Gather commit information
         id: commits
         run: |
-          START_DATE="${{ steps.dates.outputs.start_date }}"
-          END_DATE="${{ steps.dates.outputs.end_date }}"
+          START_COMMIT="${{ steps.range.outputs.start_commit }}"
+          END_COMMIT="${{ steps.range.outputs.end_commit }}"
+          RANGE="${START_COMMIT}..${END_COMMIT}"
 
           # Get commit count
-          COMMIT_COUNT=$(git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" --oneline | wc -l)
+          COMMIT_COUNT=$(git log "$RANGE" --author="Alex Turner" --oneline | wc -l)
           echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
 
           # Get detailed commit log
-          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+          git log "$RANGE" --author="Alex Turner" \
             --format="%h %ad %s" --date=short > /tmp/commits.txt
 
           # Get new/modified content files
-          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+          git log "$RANGE" --author="Alex Turner" \
             --name-only --pretty=format: -- "website_content/*.md" | sort -u | grep -v '^$' > /tmp/content_files.txt || true
 
           # Get feature commits
-          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+          git log "$RANGE" --author="Alex Turner" \
             --oneline | grep -iE "^[a-f0-9]+ (feat|feature|add)" > /tmp/features.txt || true
 
           # Get fix commits
-          git log --since="$START_DATE" --until="$END_DATE" --author="Alex Turner" \
+          git log "$RANGE" --author="Alex Turner" \
             --oneline | grep -iE "^[a-f0-9]+ fix" > /tmp/fixes.txt || true
 
           echo "Gathered $COMMIT_COUNT commits"
@@ -113,8 +113,8 @@ jobs:
           FIXES=$(cat /tmp/fixes.txt 2>/dev/null || echo "None found")
           ARTICLES=$(cat /tmp/articles.md)
           COMMIT_COUNT="${{ steps.commits.outputs.commit_count }}"
-          START_DATE="${{ steps.dates.outputs.start_date }}"
-          END_DATE="${{ steps.dates.outputs.end_date }}"
+          START_COMMIT="${{ steps.range.outputs.start_commit }}"
+          END_COMMIT="${{ steps.range.outputs.end_commit }}"
 
           # Read the prompt template
           PROMPT_TEMPLATE=$(cat .github/prompts/newsletter-prompt.md)
@@ -125,7 +125,7 @@ jobs:
 
           ## Data for this newsletter
 
-          **Date range:** ${START_DATE} to ${END_DATE}
+          **Commit range:** ${START_COMMIT}..${END_COMMIT}
           **Total commits:** ${COMMIT_COUNT}
 
           ### Recent commits (sample):
@@ -193,7 +193,7 @@ jobs:
           jq -n \
             --arg from "Newsletter Bot <newsletter@turntrout.com>" \
             --arg to "alex@turntrout.com" \
-            --arg subject "Newsletter Draft: ${{ steps.dates.outputs.start_date }} to ${{ steps.dates.outputs.end_date }}" \
+            --arg subject "Newsletter Draft: ${{ steps.range.outputs.start_commit }} to ${{ steps.range.outputs.end_commit }}" \
             --arg text "$DRAFT" \
             '{from: $from, to: [$to], subject: $subject, text: $text}' > /tmp/email.json
 
@@ -204,13 +204,13 @@ jobs:
 
           echo "Email sent: $RESPONSE"
 
-      - name: Update last run date
+      - name: Update last reviewed commit
         run: |
-          echo "${{ steps.dates.outputs.end_date }}" > .last-newsletter-date
-          echo "Updated last newsletter date to ${{ steps.dates.outputs.end_date }}"
+          echo "${{ steps.range.outputs.end_commit }}" > .last-newsletter-commit
+          echo "Updated last reviewed commit to ${{ steps.range.outputs.end_commit }}"
 
-      - name: Save last newsletter date to cache
+      - name: Save last reviewed commit to cache
         uses: actions/cache/save@v4
         with:
-          path: .last-newsletter-date
-          key: newsletter-last-date-${{ steps.dates.outputs.end_date }}
+          path: .last-newsletter-commit
+          key: newsletter-last-commit-${{ steps.range.outputs.end_commit }}
