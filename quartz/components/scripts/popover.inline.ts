@@ -50,6 +50,9 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
+// Timestamp of last SPA navigation. Used to suppress spurious mouseenter
+// events that Safari fires immediately after DOM morphing.
+let lastNavTimestamp = 0
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
@@ -201,6 +204,10 @@ document.addEventListener("nav", () => {
     pendingPopoverTimer = null
   }
 
+  // Record nav timestamp so we can suppress spurious mouseenter events
+  // that Safari fires immediately after DOM morphing
+  lastNavTimestamp = Date.now()
+
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {
     linkListenerController.abort()
@@ -246,6 +253,11 @@ document.addEventListener("nav", () => {
     // Footnote links are click-only: no hover listeners
     if (!isFootnoteLink) {
       const handleMouseEnter = () => {
+        // Safari fires spurious mouseenter events immediately after SPA
+        // navigation morphs the DOM. Suppress these to prevent a popover
+        // from appearing on whatever link happens to be under the cursor.
+        if (Date.now() - lastNavTimestamp < 500) return
+
         // Clear any pending timer to show a popover for another link
         if (pendingPopoverTimer) {
           clearTimeout(pendingPopoverTimer)

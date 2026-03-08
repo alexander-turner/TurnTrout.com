@@ -857,7 +857,13 @@ function focusCard(el: HTMLElement | null, keyboardFocus = true) {
     searchBar?.setAttribute("aria-activedescendant", el.id)
 
     if (keyboardFocus) {
-      el.focus()
+      // Keep focus on the search bar (combobox pattern) instead of moving
+      // it to the result card. Mobile Safari's .focus() on <a> elements
+      // can fire spurious mouseleave events that clear currentHover and
+      // break subsequent keyboard navigation. The aria-activedescendant
+      // attribute above handles accessibility.
+      searchBar?.focus()
+      el.scrollIntoView({ block: "nearest" })
     }
   } else {
     searchBar?.removeAttribute("aria-activedescendant")

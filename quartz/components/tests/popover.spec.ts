@@ -337,15 +337,7 @@ for (const id of ["navbar", "toc-content"]) {
   })
 }
 
-test("Popover does not appear on next page after navigation", async ({
-  page,
-  dummyLink,
-}, testInfo) => {
-  test.slow(
-    testInfo.project.name.includes("Safari"),
-    "WebKit is slow to clear popovers after SPA navigation",
-  )
-
+test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
   const linkHref = await dummyLink.getAttribute("href")
   const linkSlug = linkHref?.split("/").pop()

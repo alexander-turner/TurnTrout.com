@@ -285,10 +285,11 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   const navbar = page.locator("#navbar")
   await expect(navbar).toHaveCSS("opacity", "1")
 
-  // Scroll down enough to trigger the hide-above-screen class (threshold is 50px).
-  // Use mouse wheel which fires native scroll events more reliably than
-  // window.scrollBy in WebKit with touch emulation.
-  await page.mouse.wheel(0, 200)
+  // Scroll down past the 50px threshold. scrollTo dispatches a scroll event
+  // which the scroll handler picks up via requestAnimationFrame. Using
+  // "instant" behavior to avoid smooth-scroll timing issues across browsers.
+  // Note: mouse.wheel() is not supported in mobile WebKit.
+  await page.evaluate(() => window.scrollTo({ top: 200, behavior: "instant" }))
 
   // The hide-above-screen class triggers a CSS opacity transition (0.45s).
   // Wait for the class to be applied and the transition to complete.
