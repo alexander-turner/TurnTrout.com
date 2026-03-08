@@ -66,6 +66,12 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
+  // Serialize tests within each shard. Parallel Chromium workers each spawn a
+  // SwiftShader GPU process that consumes ~1.6 GB RAM and 96 % CPU; running
+  // multiple workers causes renderer crashes on CI's software-rendered runners.
+  // With 30 shards the per-shard test count is small, so the throughput impact
+  // is negligible.
+  workers: 1,
 
   retries: 0,
   testDir: "../../quartz/",
@@ -96,11 +102,8 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Use full Chromium (not headless_shell) to avoid renderer crashes
-        // with isMobile: true device emulation. The headless_shell binary's
-        // SwiftShader software renderer hits 100% CPU and crashes under
-        // mobile viewport emulation. channel: "chromium" uses the new
-        // headless mode with the full browser binary.
+        // Use full Chromium binary (new headless mode) instead of
+        // headless_shell for better mobile emulation compatibility.
         ...(browser.engine === "chromium" && { channel: "chromium" }),
       },
     })),
