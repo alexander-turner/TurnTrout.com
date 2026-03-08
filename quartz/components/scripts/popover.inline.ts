@@ -253,11 +253,6 @@ document.addEventListener("nav", () => {
     // Footnote links are click-only: no hover listeners
     if (!isFootnoteLink) {
       const handleMouseEnter = () => {
-        // Safari fires spurious mouseenter events immediately after SPA
-        // navigation morphs the DOM. Suppress these to prevent a popover
-        // from appearing on whatever link happens to be under the cursor.
-        if (Date.now() - lastNavTimestamp < 500) return
-
         // Clear any pending timer to show a popover for another link
         if (pendingPopoverTimer) {
           clearTimeout(pendingPopoverTimer)
@@ -270,7 +265,19 @@ document.addEventListener("nav", () => {
           return
         }
 
+        // Capture the mouseenter timestamp. If this hover originated from a
+        // spurious mouseenter fired by Safari after SPA DOM morphing (within
+        // ~50ms of navigation), the timer callback below will discard it.
+        const hoverTimestamp = Date.now()
+
         pendingPopoverTimer = window.setTimeout(() => {
+          // Suppress popovers triggered by spurious mouseenter events that
+          // Safari fires immediately after SPA navigation morphs the DOM.
+          if (hoverTimestamp - lastNavTimestamp < 50) {
+            pendingPopoverTimer = null
+            return
+          }
+
           // Don't let hover replace a pinned (click-triggered) popover
           const currentPopover = document.querySelector(".popover") as HTMLElement | null
           if (currentPopover?.dataset.pinned) {
