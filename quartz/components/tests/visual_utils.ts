@@ -1,5 +1,4 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
-import { execSync } from "child_process"
 import { promises as fsPromises } from "fs"
 import path from "path"
 import { type Page } from "playwright"
@@ -505,42 +504,6 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
   })
 }
 
-/** Log system diagnostics to help debug CI page crashes. */
-function logSystemDiagnostics(context: string): void {
-  console.error(`\n=== SYSTEM DIAGNOSTICS (${context}) ===`)
-  try {
-    const memInfo = execSync("free -m", { encoding: "utf-8" })
-    console.error(`Memory:\n${memInfo}`)
-  } catch {
-    console.error("Could not read memory info")
-  }
-  try {
-    const shmInfo = execSync("df -h /dev/shm", { encoding: "utf-8" })
-    console.error(`/dev/shm:\n${shmInfo}`)
-  } catch {
-    console.error("Could not read /dev/shm info")
-  }
-  try {
-    const procs = execSync("ps aux --sort=-%mem | head -10", { encoding: "utf-8" })
-    console.error(`Top processes by memory:\n${procs}`)
-  } catch {
-    console.error("Could not list processes")
-  }
-  console.error("=== END DIAGNOSTICS ===\n")
-}
-
-/**
- * Attach a one-time crash listener that logs diagnostics when a page crashes.
- * Call this once per page (e.g., in beforeEach). Multiple calls are safe —
- * Playwright deduplicates identical listeners.
- */
-export function attachCrashDiagnostics(page: Page): void {
-  page.on("crash", () => {
-    console.error(`PAGE CRASHED for URL: ${page.url()}`)
-    logSystemDiagnostics("page crash")
-  })
-}
-
 // skipcq: JS-0098
 export async function gotoPage(
   page: Page,
@@ -558,14 +521,7 @@ export async function gotoPage(
       throw error
     }
   }
-  try {
-    await page.waitForLoadState(loadState)
-  } catch (error: unknown) {
-    if (error instanceof Error && error.message.includes("crashed")) {
-      logSystemDiagnostics(`page crash during waitForLoadState for ${url}`)
-    }
-    throw error
-  }
+  await page.waitForLoadState(loadState)
 }
 
 /** Reload the current page by navigating away and back to the original URL.
