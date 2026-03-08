@@ -51,14 +51,6 @@ function sanitizeConfigForBrowser(
   config: Record<string, unknown>,
   engine: Browser["engine"],
 ): Record<string, unknown> {
-  if (engine === "chromium") {
-    // Chromium's headless SwiftShader renderer crashes with mobile device
-    // emulation (isMobile, hasTouch, mobile userAgent) on CI runners without
-    // a real GPU. Keep only the viewport so CSS media-query responsive
-    // layouts are still tested at the correct dimensions.
-    const { viewport } = config as { viewport?: { width: number; height: number } }
-    return viewport ? { viewport } : {}
-  }
   if (engine === "firefox") {
     // Firefox does not support isMobile
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -96,14 +88,24 @@ export default defineConfig({
     // Individual projects can override, but default to 1x CSS pixels.
     deviceScaleFactor: 1,
   },
-  projects: deviceList.flatMap((device) =>
-    browsers.map((browser) => ({
-      name: `${device.name} ${browser.name}`,
+  projects: deviceList
+    .flatMap((device) =>
+      browsers.map((browser) => ({
+        name: `${device.name} ${browser.name}`,
+        device,
+        browser,
+      })),
+    )
+    // Chromium's headless SwiftShader renderer crashes at mobile viewport
+    // sizes on CI runners without a real GPU. Mobile viewports are still
+    // covered by Firefox and WebKit.
+    .filter(({ device, browser }) => browser.engine !== "chromium" || device.name === "Desktop")
+    .map(({ name, device, browser }) => ({
+      name,
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
       },
     })),
-  ),
 })

@@ -299,7 +299,11 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   expect(metaX).not.toEqual(dummyX)
 })
 
-test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
+test("Popover is hidden on mobile", async ({ page, dummyLink }, testInfo) => {
+  test.skip(
+    testInfo.project.use.browserName === "chromium",
+    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
+  )
   await page.setViewportSize({ width: 320, height: 600 })
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
@@ -580,6 +584,10 @@ test.describe("Footnote popovers", () => {
 // Use base (not test) so mobile tests don't inherit the desktop-only skip from the
 // file-level test.beforeEach. These tests explicitly set a mobile viewport.
 base.describe("Footnote popover on mobile", () => {
+  base.skip(
+    ({ browserName }) => browserName === "chromium",
+    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
+  )
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
