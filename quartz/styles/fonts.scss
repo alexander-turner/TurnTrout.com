@@ -383,10 +383,6 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   &:has(.search-match)::first-letter {
     color: inherit;
   }
-
-  &[data-narrow-dropcap] {
-    --dropcap-font-size: #{$narrow-dropcap-font-size};
-  }
 }
 
 // EG 1st, 2nd, 3rd
