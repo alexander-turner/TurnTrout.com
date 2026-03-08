@@ -43,11 +43,15 @@ function getPreviewLocator(page: Page): Locator {
   return page.locator("#preview-container")
 }
 
-/** Wait for the preview article content to be loaded */
+/** Wait for the preview article content to be loaded and non-empty.
+ *  Preview content is fetched asynchronously after the article element is
+ *  attached, so we also wait for it to have visible children to avoid
+ *  racing on content assertions like toContainText. */
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty({ timeout: 10_000 })
   return preview
 }
 
