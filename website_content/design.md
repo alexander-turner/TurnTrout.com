@@ -628,6 +628,23 @@ While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Ga
 
 Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
 
+### Upright punctuation in italic text
+
+> [!quote] [Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html)
+>
+> Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
+
+I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
+
+|  | Original | With upright punctuation |
+| --: | :--: | :--: |
+| Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
+| Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
+| Braces | <span class="italic-old">_\{Hello world\}_</span> | _\{Hello world\}_ |
+| Double quotes | <span class="italic-old">_“Hello world”_</span> | _“Hello world”_ |
+| Single quotes | <span class="italic-old">_‘Hello world’_</span> | _‘Hello world’_ |
+| Apostrophe | <span class="italic-old">_don’t_</span> | _don’t_ |
+
 # Website features
 
 Subtitle: This list is not exhaustive.

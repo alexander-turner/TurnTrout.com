@@ -125,12 +125,11 @@ fi
 
 # Set gh's default repo so commands like `gh pr create` work even when
 # the git remote is a local proxy URL that gh can't resolve.
+# Always write .gh-resolved in proxy environments — `gh repo set-default`
+# may exit 0 via the `github` remote but `gh pr create` still fails
+# trying to resolve `origin`.
 if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
-	if ! gh repo set-default "$GH_REPO" 2>/dev/null; then
-		# gh repo set-default fails when remotes point to a local proxy.
-		# Write .gh-resolved directly — this is the file gh uses internally.
-		printf 'base\n%s\n' "$GH_REPO" >"$PROJECT_DIR/.gh-resolved"
-	fi
+	printf 'base\n%s\n' "$GH_REPO" >"$PROJECT_DIR/.gh-resolved"
 fi
 
 #######################################
