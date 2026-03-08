@@ -68,13 +68,14 @@ describe("PopulateContainers", () => {
     mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
       const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
       if (patternStr.includes(".html")) {
-        return ["test-page.html", "design.html"]
+        return Promise.resolve(["test-page.html", "design.html"])
       }
-      return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+      return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
     })
 
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
+      if (command.includes("git rev-parse --is-shallow-repository")) return "false\n"
       if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
       if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
         return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
@@ -439,9 +440,9 @@ describe("PopulateContainers", () => {
       mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
         const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
         if (patternStr.includes(".html")) {
-          return ["test-page.html", "nonexistent.html", "design.html"]
+          return Promise.resolve(["test-page.html", "nonexistent.html", "design.html"])
         }
-        return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+        return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
       })
 
       const emitter = PopulateContainersEmitter()
@@ -781,11 +782,34 @@ describe("PopulateContainers", () => {
       mockGlobbyFn.mockClear()
     })
 
-    describe("countGitCommits", () => {
-      it("should count commits for a specific author", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.commitCount}\n`)
+    describe("isShallowClone", () => {
+      it("should return true for shallow repositories", () => {
+        mockExecSync.mockReturnValue("true\n")
+        expect(populateModule.isShallowClone()).toBe(true)
+      })
 
-        const count = await populateModule.countGitCommits({ author: "Alex Turner" })
+      it("should return false for full clones", () => {
+        mockExecSync.mockReturnValue("false\n")
+        expect(populateModule.isShallowClone()).toBe(false)
+      })
+    })
+
+    describe("countGitCommits", () => {
+      it("should return 0 for shallow clones", () => {
+        mockExecSync.mockReturnValueOnce("true\n") // isShallowClone
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
+
+        expect(count).toBe(0)
+        expect(mockExecSync).toHaveBeenCalledTimes(1)
+      })
+
+      it("should count commits for a specific author", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -794,10 +818,12 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should count commits matching a grep pattern", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.aiCommitCount}\n`)
+      it("should count commits matching a grep pattern", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
 
-        const count = await populateModule.countGitCommits({ grep: "claude.ai/code/session" })
+        const count = populateModule.countGitCommits({ grep: "claude.ai/code/session" })
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -806,18 +832,22 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle whitespace in output", async () => {
-        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
+      it("should handle whitespace in output", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
 
-        const count = await populateModule.countGitCommits({ author: "Test Author" })
+        const count = populateModule.countGitCommits({ author: "Test Author" })
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
       })
 
-      it("should count all commits when no options provided", async () => {
-        mockExecSync.mockReturnValue("1000\n")
+      it("should count all commits when no options provided", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("1000\n")
 
-        const count = await populateModule.countGitCommits()
+        const count = populateModule.countGitCommits()
 
         expect(count).toBe(1000)
         expect(mockExecSync).toHaveBeenCalledWith("git rev-list --all --count", {
@@ -827,12 +857,12 @@ describe("PopulateContainers", () => {
     })
 
     describe("countJsTestFiles", () => {
-      it("should count JS/TS tests from pnpm test output", async () => {
+      it("should count JS/TS tests from pnpm test output", () => {
         mockExecSync.mockReturnValue(
           `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
         )
 
-        const count = await populateModule.countJsTests()
+        const count = populateModule.countJsTests()
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -849,20 +879,20 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle different test output formats", async () => {
+      it("should handle different test output formats", () => {
         mockExecSync.mockReturnValue("Tests:       42 passed, 50 total\n")
 
-        const count = await populateModule.countJsTests()
+        const count = populateModule.countJsTests()
 
         expect(count).toBe(42)
       })
     })
 
     describe("countPlaywrightTests", () => {
-      it("should count Playwright test cases", async () => {
+      it("should count Playwright test cases", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.playwrightTestCount}\n`)
 
-        const count = await populateModule.countPlaywrightTests()
+        const count = populateModule.countPlaywrightTests()
 
         expect(count).toBe(MOCK_STATS.playwrightTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -871,20 +901,20 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle zero test cases", async () => {
+      it("should handle zero test cases", () => {
         mockExecSync.mockReturnValue("0\n")
 
-        const count = await populateModule.countPlaywrightTests()
+        const count = populateModule.countPlaywrightTests()
 
         expect(count).toBe(0)
       })
     })
 
     describe("countPytestTests", () => {
-      it("should count pytest tests via pytest --collect-only", async () => {
+      it("should count pytest tests via pytest --collect-only", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
 
-        const count = await populateModule.countPythonTests()
+        const count = populateModule.countPythonTests()
 
         expect(count).toBe(MOCK_STATS.pytestCount)
         expect(mockExecSync).toHaveBeenCalledWith(populateModule.PYTEST_COUNT_CMD, {
@@ -900,20 +930,20 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle large numbers", async () => {
+      it("should handle large numbers", () => {
         mockExecSync.mockReturnValue("10000 tests collected in 0.50s\n")
 
-        const count = await populateModule.countPythonTests()
+        const count = populateModule.countPythonTests()
 
         expect(count).toBe(10000)
       })
     })
 
     describe("countLinesOfCode", () => {
-      it("should count total lines of code", async () => {
+      it("should count total lines of code", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.linesOfCode}\n`)
 
-        const count = await populateModule.countLinesOfCode()
+        const count = populateModule.countLinesOfCode()
 
         expect(count).toBe(MOCK_STATS.linesOfCode)
         expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining("find . -type f"), {
@@ -921,10 +951,10 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should handle very large codebases", async () => {
+      it("should handle very large codebases", () => {
         mockExecSync.mockReturnValue("1000000\n")
 
-        const count = await populateModule.countLinesOfCode()
+        const count = populateModule.countLinesOfCode()
 
         expect(count).toBe(1000000)
       })
@@ -933,7 +963,9 @@ describe("PopulateContainers", () => {
     describe("computeRepoStats", () => {
       it("should compute all statistics in parallel", async () => {
         mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone for commitCount
           .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+          .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
           .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
           .mockReturnValueOnce(
             `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,

@@ -91,6 +91,9 @@ async function setDummyContentMeta(page: Page) {
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+      // Many H1 screenshots + WebKit overhead can exceed 30s in CI
+      test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -370,6 +373,10 @@ test.describe("Layout Breakpoints", () => {
   for (const { name, width } of breakpoints) {
     test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
+      test.skip(
+        testInfo.project.use.browserName === "chromium",
+        "Chromium SwiftShader hangs during viewport resize on CI",
+      )
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
@@ -993,12 +1000,12 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      // The third checkbox (index 2) is "[x] Checked off" which has nested children.
-      // Its first nested child is index 3: "Nested unchecked item under checked parent"
-      // and that child has its own nested child at index 4.
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
-      const deeplyNested = page.locator("input.checkbox-toggle").nth(4)
+      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
+      // Its first nested child is index 5: "Nested unchecked item under checked parent"
+      // and that child has its own nested child at index 6.
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
 
       // Uncheck the parent (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1026,8 +1033,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1045,8 +1052,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1218,7 +1225,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")

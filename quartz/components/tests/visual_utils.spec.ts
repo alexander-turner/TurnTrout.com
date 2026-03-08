@@ -16,6 +16,7 @@ import {
   getScreenshotName,
   wrapH1SectionsInSpans,
   getAllWithWait,
+  gotoPage,
 } from "./visual_utils"
 
 test.describe("wrapH1SectionsInSpans", () => {
@@ -163,7 +164,7 @@ test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
     await page.emulateMedia({ colorScheme: preferredTheme })
   })
 
@@ -765,14 +766,14 @@ test.describe("getAllWithWait", () => {
       </html>
     `)
 
-    // Show elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule showing elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         document.querySelectorAll(".delayed").forEach((el) => {
           ;(el as HTMLElement).style.display = "block"
         })
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".delayed"))
     expect(items).toHaveLength(2)
@@ -784,9 +785,9 @@ test.describe("getAllWithWait", () => {
   test("handles dynamically added elements", async ({ page }) => {
     await page.setContent("<html><body></body></html>")
 
-    // Add elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule adding elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         const body = document.body
         for (let i = 1; i <= 3; i++) {
           const div = document.createElement("div")
@@ -794,8 +795,8 @@ test.describe("getAllWithWait", () => {
           div.textContent = `Dynamic ${i}`
           body.appendChild(div)
         }
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".dynamic"))
     expect(items).toHaveLength(3)

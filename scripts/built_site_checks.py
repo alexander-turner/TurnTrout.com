@@ -34,10 +34,13 @@ from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
+    GERMAN_OPEN_QUOTE,
     LEFT_DOUBLE_QUOTE,
+    LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_DOUBLE_QUOTE,
+    RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -1948,12 +1951,22 @@ def check_spacing(
 
 
 ALLOWED_ELT_PRECEDING_CHARS = (
-    "[({-–—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r−" + NBSP
+    "[({-–—~×"
+    + LEFT_DOUBLE_QUOTE
+    + LEFT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
+    + GERMAN_OPEN_QUOTE
+    + "=+' \n\t\r−"
+    + NBSP
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-–—~×(+"
+    + LEFT_DOUBLE_QUOTE
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
@@ -2734,7 +2747,6 @@ def _process_html_files(  # pylint: disable=too-many-locals
             issues = check_file_for_issues(
                 file_path, public_dir, md_path, check_opts
             )
-
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True

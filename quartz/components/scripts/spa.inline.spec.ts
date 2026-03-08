@@ -377,7 +377,8 @@ test.describe("Instant Scroll Restoration", () => {
     expect(finalScroll).toBeGreaterThan(0)
   })
 
-  test("layout stability monitoring cancels when user scrolls", async ({ page }) => {
+  test("layout stability monitoring cancels when user scrolls", async ({ page }, testInfo) => {
+    test.slow(testInfo.project.name.includes("Safari"), "WebKit frame timing is slower in CI")
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -405,8 +406,8 @@ test.describe("Instant Scroll Restoration", () => {
         if (window.scrollY > 0) {
           // Skip several frames so the scroll-restoration script has time to
           // call waitForLayoutStability and register its pointerdown listener.
-          // Safari needs more frames than Chromium/Firefox.
-          waitFrames(5, () => {
+          // Safari needs more frames than Chromium/Firefox (especially on mobile).
+          waitFrames(10, () => {
             window.dispatchEvent(new PointerEvent("pointerdown"))
             window.scrollBy(0, 100)
           })

@@ -1,9 +1,10 @@
 import { test, expect } from "./fixtures"
+import { gotoPage } from "./visual_utils"
 
 test.describe("Smallcaps copy behavior", () => {
   test.beforeEach(async ({ page }) => {
     page.on("pageerror", (err) => console.error(err))
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
   })
 
   test("transform-generated smallcaps elements have data-original-text", async ({ page }) => {
