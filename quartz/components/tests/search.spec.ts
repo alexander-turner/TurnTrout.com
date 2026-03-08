@@ -43,11 +43,15 @@ function getPreviewLocator(page: Page): Locator {
   return page.locator("#preview-container")
 }
 
-/** Wait for the preview article content to be loaded */
+/** Wait for the preview article content to be loaded and non-empty.
+ *  Preview content is fetched asynchronously after the article element is
+ *  attached, so we also wait for it to have visible children to avoid
+ *  racing on content assertions like toContainText. */
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty({ timeout: 10_000 })
   return preview
 }
 
@@ -103,6 +107,9 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
+  // Search + preview fetch + screenshot can exceed 30s on Safari in CI
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
 
@@ -419,7 +426,10 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text stays at top even with body matches", async ({ page }) => {
+test("Search matching title text stays at top even with body matches", async ({
+  page,
+}, testInfo) => {
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit search rendering is slower in CI")
   const initialUrl = page.url()
   // "Testing site" matches the test page title ("Testing Site Features") and
   // the sub-token "Testing" also appears in the body ("visual regression testing").
@@ -565,7 +575,10 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   })
 })
 
-test("Search preview shows after bad entry", async ({ page }) => {
+test("Search preview shows after bad entry", async ({ page }, testInfo) => {
+  // Four sequential searches can exceed 30s on Safari/WebKit in CI
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
   await search(page, "zzzzzz")
   await search(page, "Testing site")
   await search(page, "zzzzzz")
@@ -961,8 +974,8 @@ test.describe("Search preview scroll behavior", () => {
   test("re-scrolls to first match after viewport resize", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
 
-    const currentSize = page.viewportSize()
-    if (!currentSize) throw new Error("No viewport size")
+    // viewportSize() is guaranteed non-null here (non-mobile viewport confirmed above)
+    const currentSize = page.viewportSize() as { width: number; height: number }
     test.skip(
       currentSize.width - 200 <= tabletBreakpoint,
       "Viewport too narrow to resize while remaining above tablet breakpoint",

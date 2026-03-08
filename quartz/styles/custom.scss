@@ -205,14 +205,12 @@ ol {
       vertical-align: top;
     }
 
-    // On mobile, prevent content from overflowing footnotes
+    // Constrain footnote content on mobile so tables/admonitions don't overflow
     @media all and (max-width: $max-mobile-width) {
-      overflow-x: hidden;
-
-      // Revert to block so max-width: 100% + overflow-x: auto enable scrolling
       & .table-container,
       & .scroll-indicator {
         display: block;
+        max-width: 100%;
       }
     }
   }

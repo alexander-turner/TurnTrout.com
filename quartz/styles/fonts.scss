@@ -91,18 +91,27 @@ $fonts-dir: "/static/styles/fonts";
   -subfont-text: "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 }
 
-@font-face {
-  font-family: EBGaramondItalic;
-  src: url("#{$fonts-dir}/EBGaramond/EBGaramond08-Italic.woff2") format("woff2");
-  font-weight: normal;
-  font-style: italic;
-  font-optical-sizing: auto;
-  font-display: swap;
+$italic-fonts: (
+  "EBGaramondItalic": "EBGaramond08-Italic-parens",
+  "EBGaramond12Italic": "EBGaramond12-Italic-parens",
+  // Original italic fonts (before upright-punctuation modifications), used for comparison
+  "EBGaramondItalicOld": "EBGaramond08-Italic",
+  "EBGaramond12ItalicOld": "EBGaramond12-Italic",
+);
+
+@each $family, $file in $italic-fonts {
+  @font-face {
+    font-family: $family;
+    src: url("#{$fonts-dir}/EBGaramond/#{$file}.woff2") format("woff2");
+    font-weight: normal;
+    font-style: italic;
+    font-optical-sizing: auto;
+    font-display: swap;
+  }
 }
 
 @include font-face("EBGaramondOriginal", "EBGaramond/EBGaramond08-Regular-original", ".woff2");
 @include font-face("EBGaramond12", "EBGaramond/EBGaramond12-Regular", ".woff2");
-@include font-face("EBGaramond12Italic", "EBGaramond/EBGaramond12-Regular", ".woff2");
 
 // Less commonly used
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
@@ -240,6 +249,26 @@ dt {
   }
 }
 
+// Italic comparison classes (for test/design page tables)
+.italic-old {
+  font-family: EBGaramondItalicOld, serif;
+  font-style: italic;
+
+  --font-italic-situational: ebgaramonditalicold, serif;
+}
+
+.italic-12 {
+  font-family: "EBGaramond12Italic", serif;
+  font-style: italic;
+}
+
+.italic-12-old {
+  font-family: "EBGaramond12ItalicOld", serif;
+  font-style: italic;
+
+  --font-italic-situational: "EBGaramond12ItalicOld", serif;
+}
+
 .bad-handwriting {
   font-family: BadHandwriting, serif;
   text-align: center;
@@ -364,10 +393,6 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
 
   &:has(.search-match)::first-letter {
     color: inherit;
-  }
-
-  &[data-narrow-dropcap] {
-    --dropcap-font-size: #{$narrow-dropcap-font-size};
   }
 }
 

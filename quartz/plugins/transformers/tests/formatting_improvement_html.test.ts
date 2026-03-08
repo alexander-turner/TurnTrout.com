@@ -1246,19 +1246,6 @@ describe("setFirstLetterAttribute", () => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(normalizeNbsp(processedHtml)).toBe(input)
   })
-
-  it.each(["I", "J", "1"])("sets data-narrow-dropcap for narrow letter '%s'", (letter) => {
-    const input = `<p>${letter} am text.</p>`
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).toContain(`data-narrow-dropcap=""`)
-    expect(processedHtml).toContain(`data-first-letter="${letter}"`)
-  })
-
-  it("does not set data-narrow-dropcap for wide letters", () => {
-    const input = `<p>First paragraph.</p>`
-    const processedHtml = testHtmlFormattingImprovement(input, false)
-    expect(processedHtml).not.toContain("data-narrow-dropcap")
-  })
 })
 
 describe("removeSpaceBeforeSup", () => {

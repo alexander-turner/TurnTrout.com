@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
@@ -29,6 +28,8 @@ permissions:
 
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present.
+  # The pull_request trigger intentionally omits a branches filter so that
+  # ci:full-tests works on PRs targeting any branch (not just main/dev).
   # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: visual-should-run
@@ -122,8 +123,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
-            pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"

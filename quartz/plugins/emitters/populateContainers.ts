@@ -216,7 +216,9 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  return (): Promise<Element[]> => {
+  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
+  // eslint-disable-next-line require-await
+  return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
     return Promise.resolve([createNowrapSpan("", faviconElement)])
   }
@@ -227,7 +229,9 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  return (): Promise<Element[]> => {
+  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
+  // eslint-disable-next-line require-await
+  return async (): Promise<Element[]> => {
     const dummyProps = {
       cfg: {},
       fileData: {
