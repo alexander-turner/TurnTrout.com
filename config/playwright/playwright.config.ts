@@ -102,9 +102,16 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Use full Chromium binary (new headless mode) instead of
-        // headless_shell for better mobile emulation compatibility.
-        ...(browser.engine === "chromium" && { channel: "chromium" }),
+        // Chromium's headless SwiftShader renderer crashes under mobile
+        // viewport emulation on CI (no real GPU). Disable GPU compositing
+        // to force software compositing that bypasses the ANGLE/SwiftShader
+        // pipeline entirely.
+        ...(browser.engine === "chromium" && {
+          channel: "chromium",
+          launchOptions: {
+            args: ["--disable-gpu-compositing"],
+          },
+        }),
       },
     })),
   ),
