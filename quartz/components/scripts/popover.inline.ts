@@ -50,6 +50,10 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
+// Suppresses hover-triggered popovers briefly after SPA navigation, because
+// browsers (especially Safari) fire spurious mouseenter events on whatever
+// element ends up under the cursor after the DOM is morphed.
+let suppressHoverPopovers = false
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
@@ -201,6 +205,14 @@ document.addEventListener("nav", () => {
     pendingPopoverTimer = null
   }
 
+  // Suppress hover popovers briefly after navigation to prevent spurious
+  // mouseenter events (fired by Safari after DOM morphing) from showing
+  // popovers on the new page.
+  suppressHoverPopovers = true
+  setTimeout(() => {
+    suppressHoverPopovers = false
+  }, popoverRemovalDelayMs + 100)
+
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {
     linkListenerController.abort()
@@ -246,6 +258,9 @@ document.addEventListener("nav", () => {
     // Footnote links are click-only: no hover listeners
     if (!isFootnoteLink) {
       const handleMouseEnter = () => {
+        // Ignore spurious mouseenter events that fire right after SPA navigation
+        if (suppressHoverPopovers) return
+
         // Clear any pending timer to show a popover for another link
         if (pendingPopoverTimer) {
           clearTimeout(pendingPopoverTimer)

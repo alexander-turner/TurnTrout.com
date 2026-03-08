@@ -583,15 +583,12 @@ function handleResultNavigation(
   const focusAndPreview = (target: HTMLElement | null) => {
     if (!target) return
 
-    // Lock mouse events during keyboard navigation
+    // Lock mouse events during keyboard navigation. Unlocked on next
+    // mousemove rather than a timer, since el.focus() in mobile Safari can
+    // trigger spurious mouseleave events that clear currentHover.
     mouseEventsLocked = true
 
     displayPreview(target)
-
-    // Unlock mouse events after a short delay
-    setTimeout(() => {
-      mouseEventsLocked = false
-    }, mouseFocusDelay)
   }
 
   /**
@@ -773,6 +770,17 @@ async function onNav(e: CustomEventMap["nav"]) {
   )
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
+
+  // Unlock mouse events on genuine mouse movement so that keyboard
+  // navigation lock (set in focusAndPreview) doesn't persist forever.
+  addListener(
+    searchLayout,
+    "mousemove",
+    () => {
+      mouseEventsLocked = false
+    },
+    listeners,
+  )
 
   // Re-render card previews when viewport crosses the tablet breakpoint,
   // and re-scroll the preview to the first match (content reflows on width change)
