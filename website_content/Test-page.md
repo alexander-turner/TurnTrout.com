@@ -763,6 +763,12 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 | Apostrophe | <span class="italic-12-old">don’t</span> | <span class="italic-12">don’t</span> |
 | Mixed | <span class="italic-12-old">(it’s “fine," he said)</span> | <span class="italic-12">(it’s “fine," he said)</span> |
 | f-ligatures | <span class="italic-12-old">(fifty officials)</span> | <span class="italic-12">(fifty officials)</span> |
+  
+- _The Elements of Typographic Style (Hartley & Marks, 2004)_ is a good book.
+- _Parentheses (like these), brackets [like these], and braces \{like these\} should all be upright._
+- _**Bold italic (parentheses) and [brackets]**_
+- _**We need a <span>deep (nesting)</span> test.**_
+- _Here's `code(not_wrapped)` but (these are wrapped)._
 
 # What are your timelines?
 
