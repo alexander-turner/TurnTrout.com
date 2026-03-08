@@ -634,18 +634,18 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 >
 > Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
 
-I modified the italic fonts to replace sloped punctuation glyphs (`( ) [ ] { } “ “ ‘ ‘`) with their upright counterparts from the Regular files. Over 3,000 `GPOS` kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A `calt` rule keeps apostrophes italic in contractions (_don’t_) but upright as closing quotes.
+I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs.
 
-Figure: The “before” column uses the original EB Garamond italic. The “after” column uses the modified font with upright punctuation and per-glyph kerning.
+Figure: The “before” column uses the original EB Garamond italic font. The “after” column uses the modified font with upright punctuation and per-glyph kerning. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
 
 |  | Before | After |
-| :-- | :-- | :-- |
-| Parentheses | <span class=”italic-old”>_(Hello world)_</span> | _(Hello world)_ |
-| Brackets | <span class=”italic-old”>_[Hello world]_</span> | _[Hello world]_ |
-| Braces | <span class=”italic-old”>_\{Hello world\}_</span> | _\{Hello world\}_ |
-| Double quotes | <span class=”italic-old”>_”Hello world”_</span> | _”Hello world”_ |
-| Single quotes | <span class=”italic-old”>_’Hello world’_</span> | _’Hello world’_ |
-| Apostrophe | <span class=”italic-old”>_don’t_</span> | _don’t_ |
+| --: | :--: | :--: |
+| Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
+| Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
+| Braces | <span class="italic-old">_\{Hello world\}_</span> | _\{Hello world\}_ |
+| Double quotes | <span class="italic-old">_“Hello world”_</span> | _“Hello world”_ |
+| Single quotes | <span class="italic-old">_‘Hello world’_</span> | _‘Hello world’_ |
+| Apostrophe | <span class="italic-old">_don’t_</span> | _don’t_ |
 
 # Website features
 
