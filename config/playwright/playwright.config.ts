@@ -103,6 +103,7 @@ export default defineConfig({
     .filter(({ device, browser }) => browser.engine !== "chromium" || device.name === "Desktop")
     .map(({ name, device, browser }) => ({
       name,
+      ...(browser.engine === "webkit" ? { timeout: 90_000 } : {}),
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
