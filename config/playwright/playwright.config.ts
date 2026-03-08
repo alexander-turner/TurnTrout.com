@@ -51,8 +51,12 @@ function sanitizeConfigForBrowser(
   config: Record<string, unknown>,
   engine: Browser["engine"],
 ): Record<string, unknown> {
-  if (engine === "firefox") {
-    // Firefox does not support isMobile
+  if (engine === "firefox" || engine === "chromium") {
+    // Firefox does not support isMobile at all.
+    // Chromium's headless SwiftShader renderer crashes when isMobile is true
+    // on CI runners without a real GPU (the renderer process hits 100 % CPU
+    // and is killed). Stripping isMobile still preserves the mobile viewport
+    // dimensions, so CSS media-query-based responsive layouts are tested.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isMobile: _unused, ...rest } = config as {
       isMobile?: unknown
@@ -66,12 +70,6 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
-  // Serialize tests within each shard. Parallel Chromium workers each spawn a
-  // SwiftShader GPU process that consumes ~1.6 GB RAM and 96 % CPU; running
-  // multiple workers causes renderer crashes on CI's software-rendered runners.
-  // With 30 shards the per-shard test count is small, so the throughput impact
-  // is negligible.
-  workers: 1,
 
   retries: 0,
   testDir: "../../quartz/",
@@ -102,16 +100,6 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Chromium's headless SwiftShader renderer crashes under mobile
-        // viewport emulation on CI (no real GPU). Disable GPU compositing
-        // to force software compositing that bypasses the ANGLE/SwiftShader
-        // pipeline entirely.
-        ...(browser.engine === "chromium" && {
-          channel: "chromium",
-          launchOptions: {
-            args: ["--disable-gpu-compositing"],
-          },
-        }),
       },
     })),
   ),
