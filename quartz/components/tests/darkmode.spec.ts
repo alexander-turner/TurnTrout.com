@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { setTheme as utilsSetTheme } from "./visual_utils"
+import { gotoPage, setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect
 /* eslint-disable playwright/expect-expect */
@@ -13,8 +13,9 @@ const AUTO_THEME: Theme = "light"
 const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
+
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -106,14 +107,18 @@ test("System preference changes are reflected in auto mode", async ({ page }) =>
 
 test.describe("Theme persistence and UI states", () => {
   ALL_THEMES.forEach((theme) => {
-    test(`persists ${theme} theme across reloads`, async ({ page }) => {
+    test(`persists ${theme} theme across reloads`, async ({ page }, testInfo) => {
+      test.slow(testInfo.project.name.includes("Safari"), "WebKit page loads are slow in CI")
+
       const helper = new DarkModeHelper(page)
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Use goto instead of reload to avoid transient WebKit "internal error"
-      // driver crashes. Equivalent for localStorage-based persistence.
-      await page.goto(page.url())
+      // Navigate to a genuinely different page so that init scripts re-run
+      // in all browsers including Safari/WebKit.  Same-URL goto() in Safari
+      // may be treated as a soft refresh and skip re-running JS init scripts,
+      // leaving data-theme unset.
+      await gotoPage(page, "http://localhost:8080/about")
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
@@ -187,8 +192,6 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })
 
-    // Load the minimal page first
-    await page.reload()
     await page.setContent(minimalHtml, { waitUntil: "domcontentloaded" })
 
     // Take first screenshot immediately after script injection
@@ -226,13 +229,19 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Navigate to a different internal page
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+      // Navigate to a genuinely different page (using the prefix) so that
+      // init scripts re-run in all browsers including Safari/WebKit.
+      // Same-URL goto() in Safari may be treated as a soft refresh and skip
+      // re-running JS init scripts, leaving --theme-label-content unset.
+      const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
+      await gotoPage(page, `http://localhost:8080/${targetPath}`)
 
-      // CSS custom property may not be set synchronously after navigation
+      // CSS custom property may not be set synchronously after navigation,
+      // especially on Safari where detectInitialState.js can lag behind the
+      // load event. Retry until the init script runs and sets the label.
       await expect(async () => {
         await helper.verifyThemeLabel(theme)
-      }).toPass({ timeout: 5_000 })
+      }).toPass({ timeout: 15_000 })
       await helper.verifyTheme(theme)
     })
   })

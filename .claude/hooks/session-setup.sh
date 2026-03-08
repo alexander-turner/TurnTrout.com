@@ -50,6 +50,7 @@ fi
 webi_install_if_missing shfmt
 webi_install_if_missing gh
 webi_install_if_missing jq
+uv_install_if_missing alt-text-llm
 if is_root; then
 	apt_pkgs=()
 	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
@@ -69,6 +70,8 @@ fi
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
 TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
 rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
+# Remove stale push-commit marker (used by verify_ci.py to check remote CI)
+rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
 #######################################
 # Git setup
@@ -122,35 +125,22 @@ fi
 
 # Set gh's default repo so commands like `gh pr create` work even when
 # the git remote is a local proxy URL that gh can't resolve.
+# Always write .gh-resolved in proxy environments — `gh repo set-default`
+# may exit 0 via the `github` remote but `gh pr create` still fails
+# trying to resolve `origin`.
 if [ -n "${GH_REPO:-}" ] && command -v gh &>/dev/null; then
-	if ! gh repo set-default "$GH_REPO" 2>/dev/null; then
-		# gh repo set-default fails when remotes point to a local proxy.
-		# Write .gh-resolved directly — this is the file gh uses internally.
-		printf 'base\n%s\n' "$GH_REPO" >"$PROJECT_DIR/.gh-resolved"
-	fi
+	printf 'base\n%s\n' "$GH_REPO" >"$PROJECT_DIR/.gh-resolved"
 fi
 
 #######################################
-# DeepSource CLI (fork with --commit support)
-# Source: https://github.com/DeepSourceCorp/cli/pull/267
+# DeepSource CLI
+# Official CLI now supports --commit, --pr, --default-branch flags
 #######################################
 
 if ! command -v deepsource &>/dev/null; then
-  echo "Installing DeepSource CLI (fork with --commit flag)..."
-  if command -v go &>/dev/null; then
-    _ds_tmp=$(mktemp -d)
-    if git clone --quiet --branch feat/issues-list-by-commit --depth 1 \
-      "$(github_url "alexander-turner/cli")" "$_ds_tmp/cli" 2>/dev/null; then
-      (cd "$_ds_tmp/cli" && go build -o "$HOME/.local/bin/deepsource" ./cmd/deepsource) 2>/dev/null \
-        || warn "Failed to build DeepSource CLI fork"
-    else
-      warn "Failed to clone DeepSource CLI fork"
-    fi
-    rm -rf "$_ds_tmp"
-  else
-    # Fallback to official CLI (without --commit support)
-    curl -sSL https://deepsource.io/cli | BINDIR="$HOME/.local/bin" sh 2>/dev/null || warn "Failed to install DeepSource CLI"
-  fi
+  echo "Installing DeepSource CLI..."
+  curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh 2>/dev/null \
+    || warn "Failed to install DeepSource CLI"
 fi
 
 if [ -n "${DEEPSOURCE_PAT:-}" ] && command -v deepsource &>/dev/null; then

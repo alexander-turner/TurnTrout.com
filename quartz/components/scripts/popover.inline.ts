@@ -9,6 +9,10 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
+// Maximum age (ms) of a mouseenter event relative to the last SPA navigation
+// that we still treat as a spurious Safari DOM-morph artifact and suppress.
+const SAFARI_DOM_MORPH_BUFFER_MS = 200
+
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
 
@@ -50,6 +54,9 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
+// Timestamp of last SPA navigation. Used to suppress spurious mouseenter
+// events that Safari fires immediately after DOM morphing.
+let lastNavTimestamp = 0
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
@@ -201,6 +208,10 @@ document.addEventListener("nav", () => {
     pendingPopoverTimer = null
   }
 
+  // Record nav timestamp so we can suppress spurious mouseenter events
+  // that Safari fires immediately after DOM morphing
+  lastNavTimestamp = Date.now()
+
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {
     linkListenerController.abort()
@@ -258,7 +269,19 @@ document.addEventListener("nav", () => {
           return
         }
 
+        // Capture the mouseenter timestamp. If this hover originated from a
+        // spurious mouseenter fired by Safari after SPA DOM morphing (within
+        // ~200ms of navigation), the timer callback below will discard it.
+        const hoverTimestamp = Date.now()
+
         pendingPopoverTimer = window.setTimeout(() => {
+          // Suppress popovers triggered by spurious mouseenter events that
+          // Safari fires immediately after SPA navigation morphs the DOM.
+          if (hoverTimestamp - lastNavTimestamp < SAFARI_DOM_MORPH_BUFFER_MS) {
+            pendingPopoverTimer = null
+            return
+          }
+
           // Don't let hover replace a pinned (click-triggered) popover
           const currentPopover = document.querySelector(".popover") as HTMLElement | null
           if (currentPopover?.dataset.pinned) {

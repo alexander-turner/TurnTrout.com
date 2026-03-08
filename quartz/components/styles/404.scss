@@ -3,6 +3,7 @@
 #not-found-div,
 #not-found-div-popover {
   display: flex;
+  text-align: right;
 
   @media (max-width: $max-mobile-width) {
     justify-content: center;
@@ -16,7 +17,6 @@
 
   & p {
     max-width: max-content;
-    text-align-last: justify;
   }
 }
 

@@ -47,6 +47,9 @@ Don't wait for a set amount of time
 Test approximate equality for scalars
 : If you're testing the `y` position of an element, use `expect(...).toBeCloseTo` instead of `expect(...).toBe`.
 
+Avoid `page.reload()` — use `page.goto(page.url())` instead
+: WebKit's driver occasionally crashes with "WebKit encountered an internal error" on `page.reload()`. Navigating to the current URL achieves the same result without triggering the bug.
+
 Don't run tests in parallel mode
 : [Parallelism](https://playwright.dev/docs/test-parallel) is supposed to work but it never did for me. Instead, I use dozens of shards on CI, each of which runs a few tests in sequence.
 

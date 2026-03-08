@@ -44,4 +44,6 @@ Stay a while! The water's great.
 
 And browse [all of my posts](/posts).
 
-<video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/pond-calming.mp4" class="no-vsc" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/pond-calming.webm" class="no-vsc" type="video/webm"></video>
+<div style="overflow: hidden; aspect-ratio: 476 / 240; border-radius: 5px;">
+<video autoplay loop muted playsinline style="margin: 0; transform: translateY(-43%);"><source src="https://assets.turntrout.com/static/pond-calming.mp4" class="no-vsc" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/pond-calming.webm" class="no-vsc" type="video/webm"></video>
+</div>

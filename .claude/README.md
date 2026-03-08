@@ -8,10 +8,10 @@ This directory contains configuration and skills for Claude Code.
 .claude/
 ├── settings.json              # Claude Code hooks configuration
 ├── hooks/
-│   ├── session-setup.sh      # Runs on session start (installs tools, configures git)
-│   ├── pre-push-check.sh    # Runs before git push / gh pr (build, lint, typecheck)
-│   ├── verify_ci.py          # Runs on session stop (blocks if checks fail, max 3 retries)
-│   └── lib-checks.sh        # Shared bash helpers (exists, has_script)
+│   ├── session-setup.sh        # Runs on session start (installs tools, configures git)
+│   ├── pre-push-check.sh      # Runs before git push / gh pr (build, lint, typecheck)
+│   ├── post-push-ci-watch.sh  # Runs after git push / gh pr (polls GitHub Actions)
+│   └── verify_ci.py            # Runs on session stop (blocks if local or remote CI fails)
 └── skills/
     └── pr-creation/       # PR creation workflow with self-critique
         ├── SKILL.md       # Main skill entrypoint
@@ -42,11 +42,21 @@ Before `git push` or `gh pr` commands, `pre-push-check.sh` runs any configured c
 
 Only runs scripts that are actually configured in `package.json` — skips placeholder scripts.
 
+### Post-Push CI Watch Hook
+
+After `git push` or `gh pr create`, `post-push-ci-watch.sh` polls GitHub Actions:
+
+- Waits for workflow runs to appear (up to 90s)
+- Polls run status every 15s until all complete (up to 600s)
+- Reports failed workflows with log excerpts on failure
+- Writes a marker file so the Stop hook knows to verify remote CI
+
 ### Stop Hook
 
 When Claude finishes a session, `verify_ci.py` blocks completion if any checks fail:
 
 - Runs test, lint, and typecheck (superset of pre-push checks — adds tests)
+- Checks remote GitHub Actions status for the last pushed commit (if any)
 - Returns `decision: "block"` with failure details so Claude continues fixing issues
 - Returns `decision: "approve"` if all checks pass
 - **Retry limit**: After 3 failed attempts (configurable via `MAX_STOP_RETRIES`), approves anyway with a warning to prevent infinite token burn

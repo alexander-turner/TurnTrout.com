@@ -178,6 +178,16 @@ When pushing to main, these checks run automatically:
 
 Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI for reliability and parallelism.
 
+## CI Monitoring
+
+After pushing code or creating a PR, **always monitor CI status until all checks pass or fail**. The PostToolUse hook (`post-push-ci-watch.sh`) automatically polls GitHub Actions after `git push` / `gh pr create`. If CI fails, fix the issues and push again. The Stop hook also blocks completion if remote CI has failures for the last pushed commit.
+
+To manually check CI status:
+```bash
+gh run list --branch <branch> --commit <sha> --json name,status,conclusion
+gh run view <run-id> --log-failed   # Show logs from a failed run
+```
+
 ## GitHub Actions (Post-push)
 
 After pushing to main:
@@ -187,12 +197,12 @@ After pushing to main:
 - Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
-- DeepSource static analysis (use the forked `deepsource` CLI to check issues — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
+- DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 
 ### CI Cost Optimization
 
 - **Playwright/visual tests always run on main**: Pushes to main always trigger Playwright and visual tests (no path filters). Both workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
-- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, always add the `ci:full-tests` label** (e.g., `gh pr edit <number> --add-label "ci:full-tests"`).
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
 - **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.

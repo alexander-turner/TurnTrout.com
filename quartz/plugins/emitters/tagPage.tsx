@@ -41,7 +41,7 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
-    async getDependencyGraph(ctx, content) {
+    getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       // Build dependency graph for tag pages

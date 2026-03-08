@@ -15,10 +15,10 @@ export const CNAME: QuartzEmitterPlugin = () => ({
   getQuartzComponents() {
     return []
   },
-  async getDependencyGraph() {
+  getDependencyGraph() {
     return new DepGraph<FilePath>()
   },
-  async emit({ argv, cfg }): Promise<FilePath[]> {
+  emit({ argv, cfg }): FilePath[] {
     if (!cfg.configuration.baseUrl) {
       console.warn(chalk.yellow("CNAME emitter requires `baseUrl` to be set in your configuration"))
       return []
