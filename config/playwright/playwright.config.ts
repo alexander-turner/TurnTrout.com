@@ -66,10 +66,7 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
-  // Chromium's SwiftShader renderer intermittently crashes on CI runners
-  // without a real GPU, especially during viewport resizes in mobile tests.
-  // Retries let Playwright relaunch a fresh browser process for the retry.
-  retries: process.env.CI ? 2 : 0,
+  retries: 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
@@ -98,14 +95,6 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // On CI (no real GPU), Chromium defaults to SwiftShader which
-        // intermittently crashes during viewport resizes. Disable GPU
-        // compositing to avoid the SwiftShader rendering pipeline.
-        ...(browser.engine === "chromium" && {
-          launchOptions: {
-            args: ["--disable-gpu", "--disable-software-rasterizer", "--in-process-gpu"],
-          },
-        }),
       },
     })),
   ),

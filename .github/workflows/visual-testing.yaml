@@ -141,7 +141,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          xvfb-run --auto-servernum -- pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           HOME: /root

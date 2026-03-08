@@ -143,7 +143,7 @@ jobs:
           HOME: /root
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+          xvfb-run --auto-servernum -- pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
