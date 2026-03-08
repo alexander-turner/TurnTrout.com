@@ -69,14 +69,14 @@ export const findElementsByClass = (root: Root, className: string): Element[] =>
 /**
  * Type for content generators that produce HAST elements to populate containers.
  */
-export type ContentGenerator = () => Promise<Element[]>
+export type ContentGenerator = () => Promise<Element[]> | Element[]
 
 /**
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  return (): Promise<Element[]> => {
-    return Promise.resolve([h("span", String(value))])
+  return (): Element[] => {
+    return [h("span", String(value))]
   }
 }
 
@@ -216,11 +216,9 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
-  // eslint-disable-next-line require-await
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return Promise.resolve([createNowrapSpan("", faviconElement)])
+    return [createNowrapSpan("", faviconElement)]
   }
 }
 
@@ -229,9 +227,7 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
-  // eslint-disable-next-line require-await
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const dummyProps = {
       cfg: {},
       fileData: {
@@ -246,7 +242,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
 
     const jsx = renderPostStatistics(dummyProps)
     // istanbul ignore next
-    if (!jsx) return Promise.resolve([])
+    if (!jsx) return []
 
     const html = render(jsx)
     const root = fromHtml(html, { fragment: true })
@@ -258,7 +254,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
       }
     })
 
-    return Promise.resolve(root.children.filter((c): c is Element => c.type === "element"))
+    return root.children.filter((c): c is Element => c.type === "element")
   }
 }
 

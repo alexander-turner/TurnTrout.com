@@ -9,6 +9,11 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
+// Extra delay after SPA navigation before re-enabling hover popovers.
+// Safari fires spurious mouseenter events after DOM morphing; this buffer
+// (added to popoverRemovalDelayMs) ensures those events are suppressed.
+const SAFARI_DOM_MORPH_BUFFER_MS = 100
+
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
 
@@ -211,7 +216,7 @@ document.addEventListener("nav", () => {
   suppressHoverPopovers = true
   setTimeout(() => {
     suppressHoverPopovers = false
-  }, popoverRemovalDelayMs + 100)
+  }, popoverRemovalDelayMs + SAFARI_DOM_MORPH_BUFFER_MS)
 
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {

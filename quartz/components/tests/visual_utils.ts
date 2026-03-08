@@ -521,6 +521,7 @@ export async function gotoPage(
     // WebKit on Linux occasionally crashes with "internal error" on page.goto.
     // Retry once — the second attempt typically succeeds.
     if (error instanceof Error && error.message.includes("internal error")) {
+      console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
       await page.goto(url, { waitUntil: "commit" })
     } else {
       throw error
