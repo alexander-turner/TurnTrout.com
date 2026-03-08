@@ -292,13 +292,13 @@ test.describe("Admonition titles update per mode", () => {
     )
   })
 
-  test("output title says 'Html source output' in HTML mode", async ({ page }) => {
+  test("output title says 'html source output' in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
     const outputAdmonition = page
       .locator(OUTPUT_CONTENT)
       .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
-      "Html source output",
+      "html source output",
     )
     await expect(outputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
   })
@@ -310,7 +310,7 @@ test.describe("Admonition titles update per mode", () => {
     await expect(inputAdmonition.locator(".admonition-title-inner")).toHaveText(/^Input$/)
   })
 
-  test("input title changes to 'Input your Html code' in HTML mode", async ({ page }) => {
+  test("input title changes to 'Input your html code' in HTML mode", async ({ page }) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
     const inputAdmonition = page
       .locator("#punctilio-input")

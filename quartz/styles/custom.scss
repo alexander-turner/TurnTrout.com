@@ -204,6 +204,15 @@ ol {
       display: inline-block;
       vertical-align: top;
     }
+
+    // Constrain footnote content on mobile so tables/admonitions don't overflow
+    @media all and (max-width: $max-mobile-width) {
+      & .table-container,
+      & .scroll-indicator {
+        display: block;
+        max-width: 100%;
+      }
+    }
   }
 }
 

@@ -46,6 +46,7 @@
 }
 
 // Preserve footnote inline-block table alignment
+// On mobile, overridden to display: block in custom.scss to prevent overflow
 li[id^="user-content-fn-"] .scroll-indicator {
   display: inline-block;
   vertical-align: top;

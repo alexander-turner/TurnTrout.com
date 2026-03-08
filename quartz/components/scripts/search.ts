@@ -86,7 +86,7 @@ function createSearchIndex(): InstanceType<typeof documentType> {
 
 interface FetchResult {
   content: Element[]
-  frontmatter: Element
+  frontmatter: Record<string, unknown>
 }
 
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
@@ -774,6 +774,7 @@ async function onNav(e: CustomEventMap["nav"]) {
       // No rAF needed — debounce already fires from within a rAF callback,
       // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
       previewManager?.scrollToFirstmatch()
+      rescrollCardPreviews()
     },
     150,
     false,
@@ -806,7 +807,14 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
       // Extract frontmatter
       const frontmatterScript = html.querySelector('script[type="application/json"]')
-      const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
+      let frontmatter: Record<string, unknown> = {}
+      if (frontmatterScript) {
+        try {
+          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+        } catch {
+          console.error(`Failed to parse frontmatter JSON for ${slug}`)
+        }
+      }
 
       // Extract previewable elements and restore checkbox states in one operation
       const contentElements = processPreviewables(html, targetUrl)
@@ -963,6 +971,20 @@ function handleResizeForCardPreviews(): void {
 }
 
 /**
+ * Re-scroll all visible card previews to center on the first search match.
+ * Called on resize since content reflows can shift match positions.
+ */
+/* istanbul ignore next */
+function rescrollCardPreviews(): void {
+  document.querySelectorAll(".card-preview").forEach((cardPreview) => {
+    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
+    if (firstMatch) {
+      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    }
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -981,11 +1003,22 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   content = replaceEmojiConvertArrows(content)
 
-  let suffixHTML = ""
-  if (!enablePreview) {
-    suffixHTML = `<p>${content}</p>`
+  // Build the title using DOM methods + matchTextNodes to avoid innerHTML
+  // with raw HTML strings (which can render as visible tags in some cases)
+  const titleSpan = document.createElement("span")
+  titleSpan.className = "h4"
+  titleSpan.textContent = title
+  for (const term of tokenizeTerm(currentSearchTerm)) {
+    matchTextNodes(titleSpan, term)
   }
-  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+  itemTile.appendChild(titleSpan)
+  itemTile.appendChild(document.createElement("br"))
+
+  if (!enablePreview) {
+    const p = document.createElement("p")
+    p.innerHTML = content
+    itemTile.appendChild(p)
+  }
 
   // On mobile/tablet, embed a small card preview slice in each card.
   // CSS hides .card-preview above the tablet breakpoint, so we always
@@ -1058,7 +1091,7 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: match(term, data[slug].title ?? ""),
+    title: data[slug].title ?? "",
     content: match(term, data[slug].content ?? "", true),
     authors: data[slug].authors?.join(", "),
   }

@@ -27,6 +27,9 @@ ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
 ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
 WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
+LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]
+RIGHT_GUILLEMET: str = _UNICODE_TYPO["rightGuillemet"]
+GERMAN_OPEN_QUOTE: str = _UNICODE_TYPO["germanOpenQuote"]
 
 
 def load_shared_constants() -> dict:  # pragma: no cover

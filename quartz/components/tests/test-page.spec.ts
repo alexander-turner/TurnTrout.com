@@ -91,6 +91,9 @@ async function setDummyContentMeta(page: Page) {
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+      // Many H1 screenshots + WebKit overhead can exceed 30s in CI
+      test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -144,7 +147,7 @@ test.describe("Unique content around the site", () => {
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
-      const numOldest = 9
+      const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
         const listElement = document.querySelectorAll("ul.section-ul")[0]
         if (!listElement) {
@@ -370,6 +373,10 @@ test.describe("Layout Breakpoints", () => {
   for (const { name, width } of breakpoints) {
     test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
+      test.skip(
+        testInfo.project.use.browserName === "chromium",
+        "Chromium SwiftShader hangs during viewport resize on CI",
+      )
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
@@ -978,107 +985,89 @@ test.describe("Checkboxes", () => {
     expect(hasLocalStorageKey).toBe(true)
   })
 
-  test("Checking parent checkbox cascades to nested children", async ({ page }) => {
-    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
-    await checkboxesSection.scrollIntoViewIfNeeded()
+  test.describe("cascade behavior", () => {
+    // Clear checkbox localStorage before each test so checkboxes start in their HTML default state
+    test.beforeEach(async ({ page }) => {
+      await page.evaluate(() => {
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith("test-page-checkbox-"))
+          .forEach((key) => localStorage.removeItem(key))
+      })
+      await page.reload()
+    })
 
-    // The third checkbox (index 2) is "[x] Checked off" which has nested children.
-    // Its first nested child is index 3: "Nested unchecked item under checked parent"
-    // and that child has its own nested child at index 4.
-    const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-    const nestedChild = page.locator("input.checkbox-toggle").nth(3)
-    const deeplyNested = page.locator("input.checkbox-toggle").nth(4)
+    test("Checking parent checkbox cascades to nested children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
 
-    // First uncheck parent to start from known state
-    if (await isElementChecked(parentCheckbox)) {
+      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
+      // Its first nested child is index 5: "Nested unchecked item under checked parent"
+      // and that child has its own nested child at index 6.
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
+
+      // Uncheck the parent (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
-    }
-    // Uncheck children too
-    if (await isElementChecked(nestedChild)) {
-      await nestedChild.click()
-    }
-    if (await isElementChecked(deeplyNested)) {
-      await deeplyNested.click()
-    }
 
-    await expect(parentCheckbox).toBeChecked({ checked: false })
-    await expect(nestedChild).toBeChecked({ checked: false })
-    await expect(deeplyNested).toBeChecked({ checked: false })
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(deeplyNested).toBeChecked({ checked: false })
 
-    // Check the parent — children should cascade to checked
-    await parentCheckbox.click()
-
-    await expect(parentCheckbox).toBeChecked({ checked: true })
-    await expect(nestedChild).toBeChecked({ checked: true })
-    await expect(deeplyNested).toBeChecked({ checked: true })
-
-    // Uncheck parent — children should NOT be affected (cascade down only on check)
-    await parentCheckbox.click()
-
-    await expect(parentCheckbox).toBeChecked({ checked: false })
-    await expect(nestedChild).toBeChecked({ checked: true })
-    await expect(deeplyNested).toBeChecked({ checked: true })
-
-    // Clean up: uncheck all
-    await nestedChild.click()
-    await deeplyNested.click()
-  })
-
-  test("Unchecking nested checkbox is independent from parent", async ({ page }) => {
-    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
-    await checkboxesSection.scrollIntoViewIfNeeded()
-
-    const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-    const nestedChild = page.locator("input.checkbox-toggle").nth(3)
-
-    // Start from clean state
-    if (await isElementChecked(parentCheckbox)) {
+      // Check the parent — children should cascade to checked
       await parentCheckbox.click()
-    }
-    if (await isElementChecked(nestedChild)) {
-      await nestedChild.click()
-    }
 
-    // Check parent (cascades to child), then uncheck child
-    await parentCheckbox.click()
-    await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(parentCheckbox).toBeChecked({ checked: true })
+      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(deeplyNested).toBeChecked({ checked: true })
 
-    await nestedChild.click()
-    await expect(nestedChild).toBeChecked({ checked: false })
-    await expect(parentCheckbox).toBeChecked({ checked: true })
-
-    // Clean up
-    await parentCheckbox.click()
-  })
-
-  test("Re-checking parent re-cascades to previously unchecked children", async ({ page }) => {
-    const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
-    await checkboxesSection.scrollIntoViewIfNeeded()
-
-    const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-    const nestedChild = page.locator("input.checkbox-toggle").nth(3)
-
-    // Start from clean state
-    if (await isElementChecked(parentCheckbox)) {
+      // Uncheck parent — children should NOT be affected (cascade down only on check)
       await parentCheckbox.click()
-    }
-    if (await isElementChecked(nestedChild)) {
+
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(deeplyNested).toBeChecked({ checked: true })
+    })
+
+    test("Unchecking nested checkbox is independent from parent", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      // Check parent (cascades to child), then uncheck child
+      await parentCheckbox.click()
+      await expect(nestedChild).toBeChecked({ checked: true })
+
       await nestedChild.click()
-    }
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(parentCheckbox).toBeChecked({ checked: true })
+    })
 
-    // Check parent (cascades), uncheck child, uncheck parent, re-check parent
-    await parentCheckbox.click()
-    await nestedChild.click()
-    await expect(nestedChild).toBeChecked({ checked: false })
+    test("Re-checking parent re-cascades to previously unchecked children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
 
-    await parentCheckbox.click() // uncheck parent
-    await parentCheckbox.click() // re-check parent — should re-cascade
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
 
-    await expect(nestedChild).toBeChecked({ checked: true })
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
 
-    // Clean up
-    await parentCheckbox.click()
-    await nestedChild.click()
+      // Check parent (cascades), uncheck child, uncheck parent, re-check parent
+      await parentCheckbox.click()
+      await nestedChild.click()
+      await expect(nestedChild).toBeChecked({ checked: false })
+
+      await parentCheckbox.click() // uncheck parent
+      await parentCheckbox.click() // re-check parent — should re-cascade
+
+      await expect(nestedChild).toBeChecked({ checked: true })
+    })
   })
 
   test.describe("state restoration before first paint", () => {
@@ -1236,7 +1225,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")

@@ -96,6 +96,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Reload page and verify it stayed collapsed
     await reloadPage(page)
+    await waitForCollapsibleIds(page)
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off open" })
@@ -115,6 +116,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Reload page and verify it stayed open
     await reloadPage(page)
+    await waitForCollapsibleIds(page)
     const reloaded = page
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off collapsed" })
@@ -136,6 +138,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Navigate back
     await goBackToTestPage(page)
+    await waitForCollapsibleIds(page)
 
     // Verify state persisted
     const afterNav = page
@@ -170,6 +173,7 @@ test.describe("Collapsible admonition state persistence", () => {
     // Navigate away and back
     await spaNavigateToAbout(page)
     await goBackToTestPage(page)
+    await waitForCollapsibleIds(page)
 
     // Get IDs after navigation
     const idsAfterNav = await getCollapsibles(page).evaluateAll((els) =>
@@ -225,6 +229,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Reload the page - localStorage should persist, and state should be applied before paint
     await reloadPage(page)
+    await waitForCollapsibleIds(page)
 
     // Verify the state was correctly applied (opposite of default)
     const actualState = await page

@@ -305,6 +305,10 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
+  // Pause all media once upfront so individual screenshots can skip it.
+  // This avoids paying the per-element fallback timeout N times in the loop.
+  await pauseMediaElements(page)
+
   for (const h1Span of h1Spans) {
     // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
     // which can time out in WebKit when the element never becomes "stable".
@@ -317,6 +321,7 @@ export async function getH1Screenshots(
 
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
+      skipMediaPause: true,
     })
   }
 }
@@ -441,7 +446,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+          new Promise<void>((resolve) => setTimeout(resolve, 500)),
         ])
       }, seekTo),
     )
@@ -524,14 +529,18 @@ export async function gotoPage(
   await page.waitForLoadState(loadState)
 }
 
-/** Reload the current page by navigating to its own URL.
+/** Reload the current page by navigating away and back to the original URL.
  *  Avoids page.reload() which can trigger "WebKit encountered an internal
- *  error" crashes in the Safari driver. */
+ *  error" crashes in the Safari driver.  A same-URL goto() in Safari/WebKit
+ *  may be treated as a soft refresh that skips re-running init scripts, so we
+ *  navigate to about:blank first to force a full page load. */
 export async function reloadPage(
   page: Page,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
-  await gotoPage(page, page.url(), loadState)
+  const url = page.url()
+  await page.goto("about:blank")
+  await gotoPage(page, url, loadState)
 }
 
 // skipcq: JS-0098

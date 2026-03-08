@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
@@ -27,6 +26,8 @@ permissions:
 
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present.
+  # The pull_request trigger intentionally omits a branches filter so that
+  # ci:full-tests works on PRs targeting any branch (not just main/dev).
   # Tests always run in the merge queue to enforce passing before merge.
   # Skip entirely for bot actors (dependabot, renovate, etc.).
   should-run:
@@ -56,8 +57,6 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
@@ -137,8 +136,7 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' \
-            pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV

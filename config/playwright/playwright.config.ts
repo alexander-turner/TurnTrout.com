@@ -1,3 +1,4 @@
+// Playwright configuration for cross-browser testing
 import { defineConfig, devices } from "@playwright/test"
 
 interface DeviceConfig {
@@ -27,7 +28,7 @@ const deviceList: DeviceConfig[] = [
   {
     name: "iPad Pro",
     config: {
-      ...devices["iPad Pro"],
+      ...devices["iPad Pro 11"],
     },
   },
   {
@@ -66,7 +67,6 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
-
   retries: 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
@@ -80,7 +80,7 @@ export default defineConfig({
   },
   use: {
     baseURL: "http://localhost:8080",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: {
       mode: "only-on-failure",
       fullPage: true,
@@ -89,13 +89,35 @@ export default defineConfig({
     // Individual projects can override, but default to 1x CSS pixels.
     deviceScaleFactor: 1,
   },
-  projects: deviceList.flatMap((device) =>
-    browsers.map((browser) => ({
-      name: `${device.name} ${browser.name}`,
+  projects: deviceList
+    .flatMap((device) =>
+      browsers.map((browser) => ({
+        name: `${device.name} ${browser.name}`,
+        device,
+        browser,
+      })),
+    )
+    // Chromium's headless SwiftShader renderer crashes at mobile viewport
+    // sizes on CI runners without a real GPU. Mobile viewports are still
+    // covered by Firefox and WebKit.
+    .filter(({ device, browser }) => browser.engine !== "chromium" || device.name === "Desktop")
+    .map(({ name, device, browser }) => ({
+      name,
       use: {
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
+        deviceScaleFactor: 1,
+        // Chromium's headless SwiftShader renderer on CI runners without a GPU
+        // is prone to "Target crashed" / "Page crashed" errors.  These flags
+        // reduce memory pressure and disable the GPU-backed compositor that
+        // SwiftShader struggles with.
+        ...(browser.engine === "chromium"
+          ? {
+              launchOptions: {
+                args: ["--disable-gpu", "--disable-software-rasterizer", "--disable-dev-shm-usage"],
+              },
+            }
+          : {}),
       },
     })),
-  ),
 })
