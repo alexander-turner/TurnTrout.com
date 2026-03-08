@@ -66,7 +66,7 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  retries: 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
@@ -79,7 +79,7 @@ export default defineConfig({
   },
   use: {
     baseURL: "http://localhost:8080",
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: {
       mode: "only-on-failure",
       fullPage: true,
@@ -106,6 +106,17 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
+        // Chromium's headless SwiftShader renderer on CI runners without a GPU
+        // is prone to "Target crashed" / "Page crashed" errors.  These flags
+        // reduce memory pressure and disable the GPU-backed compositor that
+        // SwiftShader struggles with.
+        ...(browser.engine === "chromium"
+          ? {
+              launchOptions: {
+                args: ["--disable-gpu", "--disable-software-rasterizer", "--disable-dev-shm-usage"],
+              },
+            }
+          : {}),
       },
     })),
 })
