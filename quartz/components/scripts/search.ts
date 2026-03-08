@@ -774,6 +774,7 @@ async function onNav(e: CustomEventMap["nav"]) {
       // No rAF needed — debounce already fires from within a rAF callback,
       // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
       previewManager?.scrollToFirstmatch()
+      rescrollCardPreviews()
     },
     150,
     false,
@@ -970,6 +971,20 @@ function handleResizeForCardPreviews(): void {
 }
 
 /**
+ * Re-scroll all visible card previews to center on the first search match.
+ * Called on resize since content reflows can shift match positions.
+ */
+/* istanbul ignore next */
+function rescrollCardPreviews(): void {
+  document.querySelectorAll(".card-preview").forEach((cardPreview) => {
+    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
+    if (firstMatch) {
+      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    }
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -988,13 +1003,21 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   content = replaceEmojiConvertArrows(content)
 
-  const titleSpan = Object.assign(document.createElement("span"), {
-    className: "h4",
-    textContent: title,
-  })
-  itemTile.append(titleSpan, document.createElement("br"))
+  // Build the title using DOM methods + matchTextNodes to avoid innerHTML
+  // with raw HTML strings (which can render as visible tags in some cases)
+  const titleSpan = document.createElement("span")
+  titleSpan.className = "h4"
+  titleSpan.textContent = title
+  for (const term of tokenizeTerm(currentSearchTerm)) {
+    matchTextNodes(titleSpan, term)
+  }
+  itemTile.appendChild(titleSpan)
+  itemTile.appendChild(document.createElement("br"))
+
   if (!enablePreview) {
-    itemTile.appendChild(Object.assign(document.createElement("p"), { textContent: content }))
+    const p = document.createElement("p")
+    p.innerHTML = content
+    itemTile.appendChild(p)
   }
 
   // On mobile/tablet, embed a small card preview slice in each card.
@@ -1068,7 +1091,7 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: match(term, data[slug].title ?? ""),
+    title: data[slug].title ?? "",
     content: match(term, data[slug].content ?? "", true),
     authors: data[slug].authors?.join(", "),
   }

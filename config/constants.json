@@ -152,6 +152,9 @@
     "ellipsis": "\u2026",
     "zeroWidthSpace": "\u200B",
     "zeroWidthNbsp": "\uFEFF",
-    "wordJoiner": "\u2060"
+    "wordJoiner": "\u2060",
+    "leftGuillemet": "\u00AB",
+    "rightGuillemet": "\u00BB",
+    "germanOpenQuote": "\u201E"
   }
 }

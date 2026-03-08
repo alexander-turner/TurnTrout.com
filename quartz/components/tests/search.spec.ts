@@ -12,6 +12,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +20,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => console.error(err))
 
   // Navigate and wait for full initialization (including scripts)
-  await page.goto("http://localhost:8080/welcome", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/welcome")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
@@ -42,11 +43,15 @@ function getPreviewLocator(page: Page): Locator {
   return page.locator("#preview-container")
 }
 
-/** Wait for the preview article content to be loaded */
+/** Wait for the preview article content to be loaded and non-empty.
+ *  Preview content is fetched asynchronously after the article element is
+ *  attached, so we also wait for it to have visible children to avoid
+ *  racing on content assertions like toContainText. */
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty({ timeout: 10_000 })
   return preview
 }
 
@@ -206,6 +211,21 @@ test("matched search terms appear in results", async ({ page }) => {
 
   const matches = page.locator(".search-match")
   await expect(matches.first()).toContainText("test", { ignoreCase: true })
+})
+
+test("result card title does not show raw HTML tags", async ({ page }) => {
+  await search(page, "test")
+
+  const firstCard = page.locator(".result-card").first()
+  await expect(firstCard).toBeVisible()
+
+  // The title should use DOM-based highlighting, not raw HTML strings
+  const titleText = await firstCard.locator(".h4").textContent()
+  expect(titleText).not.toContain("<span")
+  expect(titleText).not.toContain("</span>")
+
+  // The search-match span should exist as a proper DOM element
+  await expect(firstCard.locator(".h4 .search-match")).toBeAttached()
 })
 
 test("search matches in headers have correct color styling", async ({ page }) => {
@@ -471,7 +491,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()
@@ -632,8 +652,11 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 
   const previewContainer = await waitForPreviewArticle(page)
 
-  // Check that multiple matches are highlighted
+  // Wait for matches to render — content is fetched asynchronously after the
+  // preview article element is attached, so matches may not exist immediately.
   const matches = previewContainer.locator(".search-match")
+  await expect(matches.first()).toBeAttached({ timeout: 10_000 })
+
   const matchCount = await matches.count()
   expect(matchCount).toBeGreaterThan(1)
 })
@@ -832,7 +855,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchContainer).not.toHaveClass(/active/)
 
   // Navigate to a fresh page to reset search initialization state
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   // Intercept contentIndex.json to add a delay, simulating slow index loading
   await page.route("**/contentIndex.json", async (route) => {
@@ -865,6 +888,39 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
   await expect(article).not.toBeEmpty()
+})
+
+test("admonition background is transparent in focused mobile card preview (lostpixel)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+
+  // "Admonitions" matches the test page which has a section with various admonition types
+  await search(page, "Admonitions")
+
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.focus()
+
+  const cardPreview = testPageResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+
+  // The focused card has a non-transparent background (the hover/focus effect),
+  // while the admonition inside is transparent — so the highlight shows through.
+  await expect(testPageResult).toHaveClass(/focus/)
+  const cardBg = await testPageResult.evaluate((el) => {
+    return window.getComputedStyle(el).backgroundColor
+  })
+  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
+
+  const admonition = cardPreview.locator(".admonition").first()
+  await expect(admonition).toBeAttached()
+  await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
+    elementToScreenshot: testPageResult,
+  })
 })
 
 test.describe("Search preview scroll behavior", () => {

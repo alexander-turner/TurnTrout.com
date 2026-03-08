@@ -75,10 +75,8 @@ export type ContentGenerator = () => Promise<Element[]>
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
-  // eslint-disable-next-line require-await
   return async (): Promise<Element[]> => {
-    return [h("span", String(value))]
+    return Promise.resolve([h("span", String(value))])
   }
 }
 
@@ -101,7 +99,14 @@ interface GitCountOptions {
 }
 
 // skipcq: JS-D1001
+export function isShallowClone(): boolean {
+  return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
+}
+
+// skipcq: JS-D1001
 export function countGitCommits(options: GitCountOptions = {}): number {
+  if (isShallowClone()) return 0
+
   let cmd = "git rev-list --all --count"
   if (options.author) cmd += ` --author="${options.author}"`
   if (options.grep) cmd += ` --grep="${options.grep}"`
@@ -215,7 +220,7 @@ export const generateSpecialFaviconContent = (
   // eslint-disable-next-line require-await
   return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return [createNowrapSpan("", faviconElement)]
+    return Promise.resolve([createNowrapSpan("", faviconElement)])
   }
 }
 
@@ -241,7 +246,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
 
     const jsx = renderPostStatistics(dummyProps)
     // istanbul ignore next
-    if (!jsx) return []
+    if (!jsx) return Promise.resolve([])
 
     const html = render(jsx)
     const root = fromHtml(html, { fragment: true })
@@ -253,7 +258,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
       }
     })
 
-    return root.children.filter((c): c is Element => c.type === "element")
+    return Promise.resolve(root.children.filter((c): c is Element => c.type === "element"))
   }
 }
 

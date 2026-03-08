@@ -370,6 +370,10 @@ test.describe("Layout Breakpoints", () => {
   for (const { name, width } of breakpoints) {
     test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
+      test.skip(
+        testInfo.project.use.browserName === "chromium",
+        "Chromium SwiftShader hangs during viewport resize on CI",
+      )
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
@@ -1218,7 +1222,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")

@@ -274,6 +274,12 @@
               display: none;
             }
 
+            // Flatten child backgrounds so the card's focus/hover effect
+            // shows through admonitions, blockquotes, code blocks, etc.
+            & :not(img, video, svg, canvas) {
+              background-color: transparent !important;
+            }
+
             & .search-preview {
               margin: 0 auto;
               width: 100%;

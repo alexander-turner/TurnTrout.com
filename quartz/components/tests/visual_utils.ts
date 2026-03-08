@@ -524,14 +524,18 @@ export async function gotoPage(
   await page.waitForLoadState(loadState)
 }
 
-/** Reload the current page by navigating to its own URL.
+/** Reload the current page by navigating away and back to the original URL.
  *  Avoids page.reload() which can trigger "WebKit encountered an internal
- *  error" crashes in the Safari driver. */
+ *  error" crashes in the Safari driver.  A same-URL goto() in Safari/WebKit
+ *  may be treated as a soft refresh that skips re-running init scripts, so we
+ *  navigate to about:blank first to force a full page load. */
 export async function reloadPage(
   page: Page,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
-  await gotoPage(page, page.url(), loadState)
+  const url = page.url()
+  await page.goto("about:blank")
+  await gotoPage(page, url, loadState)
 }
 
 // skipcq: JS-0098

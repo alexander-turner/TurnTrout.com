@@ -35,7 +35,7 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -265,8 +265,13 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
+  // Wait for the preview article content to fully load before interacting
+  const previewArticle = previewContainer.locator("article.search-preview")
+  await expect(previewArticle).toBeAttached({ timeout: 10_000 })
+
   // Find an internal link in the preview and hover over it
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
+  await expect(searchDummyLink).toBeVisible({ timeout: 10_000 })
   await searchDummyLink.hover()
 
   // Verify no popover appears
@@ -299,7 +304,11 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   expect(metaX).not.toEqual(dummyX)
 })
 
-test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
+test("Popover is hidden on mobile", async ({ page, dummyLink }, testInfo) => {
+  test.skip(
+    testInfo.project.use.browserName === "chromium",
+    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
+  )
   await page.setViewportSize({ width: 320, height: 600 })
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
@@ -580,6 +589,10 @@ test.describe("Footnote popovers", () => {
 // Use base (not test) so mobile tests don't inherit the desktop-only skip from the
 // file-level test.beforeEach. These tests explicitly set a mobile viewport.
 base.describe("Footnote popover on mobile", () => {
+  base.skip(
+    ({ browserName }) => browserName === "chromium",
+    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
+  )
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
@@ -665,7 +678,7 @@ test.describe("Popover checkbox state preservation", () => {
   })
 
   test("Popover preserves checkbox state", async ({ page }) => {
-    await page.goto("http://localhost:8080/design", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/design")
 
     const linkToTestPage = page.locator('a[href*="test-page"]').last()
     await linkToTestPage.scrollIntoViewIfNeeded()
