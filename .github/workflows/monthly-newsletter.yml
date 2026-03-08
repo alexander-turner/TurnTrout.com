@@ -70,9 +70,10 @@ jobs:
           END_COMMIT: ${{ steps.range.outputs.end_commit }}
         run: |
           RANGE="${START_COMMIT}..${END_COMMIT}"
+          GIT_LOG="git log $RANGE --author=Alex Turner"
 
           # Get commit count
-          COMMIT_COUNT=$(git log "$RANGE" --author="Alex Turner" --oneline | wc -l)
+          COMMIT_COUNT=$($GIT_LOG --oneline | wc -l)
           echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
 
           if [ "$COMMIT_COUNT" -eq 0 ]; then
@@ -82,20 +83,15 @@ jobs:
           fi
 
           # Get detailed commit log
-          git log "$RANGE" --author="Alex Turner" \
-            --format="%h %ad %s" --date=short > /tmp/commits.txt
+          $GIT_LOG --format="%h %ad %s" --date=short > /tmp/commits.txt
 
           # Get new/modified content files
-          git log "$RANGE" --author="Alex Turner" \
-            --name-only --pretty=format: -- "website_content/*.md" | sort -u | grep -v '^$' > /tmp/content_files.txt || true
+          $GIT_LOG --name-only --pretty=format: -- "website_content/*.md" | sort -u | grep -v '^$' > /tmp/content_files.txt || true
 
-          # Get feature commits
-          git log "$RANGE" --author="Alex Turner" \
-            --oneline | grep -iE "^[a-f0-9]+ (feat|feature|add)" > /tmp/features.txt || true
-
-          # Get fix commits
-          git log "$RANGE" --author="Alex Turner" \
-            --oneline | grep -iE "^[a-f0-9]+ fix" > /tmp/fixes.txt || true
+          # Get feature/fix commits
+          ONELINE=$($GIT_LOG --oneline)
+          echo "$ONELINE" | grep -iE "^[a-f0-9]+ (feat|feature|add)" > /tmp/features.txt || true
+          echo "$ONELINE" | grep -iE "^[a-f0-9]+ fix" > /tmp/fixes.txt || true
 
           echo "Gathered $COMMIT_COUNT commits"
 
