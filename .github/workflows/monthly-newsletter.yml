@@ -37,8 +37,8 @@ jobs:
         env:
           INPUT_COMMIT: ${{ github.event.inputs.since_commit }}
         run: |
-          # Conservative default: last commit before the Feb 28 2026 newsletter run
-          DEFAULT_COMMIT="5dde2d629f732c56b3e317e2fdce389af4b1e9b6"
+          # Default: last commit before Claude Code usage began (Jan 25 2026)
+          DEFAULT_COMMIT="71f1b32"
 
           # Check for manual override
           if [ -n "$INPUT_COMMIT" ]; then
