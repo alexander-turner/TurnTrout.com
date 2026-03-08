@@ -9,6 +9,10 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
+// Maximum age (ms) of a mouseenter event relative to the last SPA navigation
+// that we still treat as a spurious Safari DOM-morph artifact and suppress.
+const SAFARI_DOM_MORPH_BUFFER_MS = 200
+
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
 
@@ -273,7 +277,7 @@ document.addEventListener("nav", () => {
         pendingPopoverTimer = window.setTimeout(() => {
           // Suppress popovers triggered by spurious mouseenter events that
           // Safari fires immediately after SPA navigation morphs the DOM.
-          if (hoverTimestamp - lastNavTimestamp < 200) {
+          if (hoverTimestamp - lastNavTimestamp < SAFARI_DOM_MORPH_BUFFER_MS) {
             pendingPopoverTimer = null
             return
           }

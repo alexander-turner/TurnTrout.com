@@ -398,9 +398,11 @@ export async function search(page: Page, term: string) {
   await expect(searchLayout).toBeVisible({ timeout: 10_000 })
   await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
 
-  // Wait for results to appear
+  // Wait for results to appear — the display-results class is set before
+  // searchAsync completes, so also wait for actual result cards to render.
   const resultsContainer = page.locator("#results-container")
   await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
+  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 10_000 })
 }
 
 // skipcq: JS-0098
@@ -521,6 +523,7 @@ export async function gotoPage(
     // WebKit on Linux occasionally crashes with "internal error" on page.goto.
     // Retry once — the second attempt typically succeeds.
     if (error instanceof Error && error.message.includes("internal error")) {
+      console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
       await page.goto(url, { waitUntil: "commit" })
     } else {
       throw error

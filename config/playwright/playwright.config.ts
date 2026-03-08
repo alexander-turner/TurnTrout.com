@@ -97,10 +97,6 @@ export default defineConfig({
         browser,
       })),
     )
-    // Chromium's headless SwiftShader renderer crashes at mobile viewport
-    // sizes on CI runners without a real GPU. Mobile viewports are still
-    // covered by Firefox and WebKit.
-    .filter(({ device, browser }) => browser.engine !== "chromium" || device.name === "Desktop")
     .map(({ name, device, browser }) => ({
       name,
       ...(browser.engine === "webkit" ? { timeout: 90_000 } : {}),
@@ -108,14 +104,18 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Chromium's headless SwiftShader renderer on CI runners without a GPU
-        // is prone to "Target crashed" / "Page crashed" errors.  These flags
-        // reduce memory pressure and disable the GPU-backed compositor that
-        // SwiftShader struggles with.
+        // CI runners lack a real GPU, so Chromium falls back to SwiftShader
+        // (software GL).  These flags disable GPU compositing entirely,
+        // avoiding SwiftShader crashes — especially at mobile viewport sizes.
         ...(browser.engine === "chromium"
           ? {
               launchOptions: {
-                args: ["--disable-gpu", "--disable-software-rasterizer", "--disable-dev-shm-usage"],
+                args: [
+                  "--disable-gpu",
+                  "--disable-gpu-compositing",
+                  "--disable-software-rasterizer",
+                  "--disable-dev-shm-usage",
+                ],
               },
             }
           : {}),
