@@ -360,6 +360,11 @@ test("Popover does not appear on next page after navigation", async ({
   await page.waitForURL(`**/${linkSlug}`)
   await page.waitForLoadState("domcontentloaded")
 
+  // Move cursor to a neutral area so it doesn't accidentally hover over a
+  // link on the new page (which could trigger a *new* popover, especially in
+  // Safari where the cursor position persists after SPA navigation).
+  await page.mouse.move(0, 0)
+
   // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
   // eslint-disable-next-line playwright/no-wait-for-timeout
