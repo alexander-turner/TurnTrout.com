@@ -200,7 +200,7 @@
     "lightningcss-darwin-x64": "1.29.1",
     "lightningcss-freebsd-x64": "1.29.1",
     "lightningcss-linux-arm-gnueabihf": "1.29.1",
-    "lightningcss-linux-arm64-gnu": "1.29.1",
+    "lightningcss-linux-arm64-gnu": "1.31.1",
     "lightningcss-linux-arm64-musl": "1.29.1",
     "lightningcss-linux-x64-gnu": "1.29.1",
     "lightningcss-linux-x64-musl": "1.31.1",
