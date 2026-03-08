@@ -742,27 +742,27 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 |  | Old (slanted) | New (upright) |
 | :-- | :-- | :-- |
-| Parentheses | <span class=”italic-old”>(quickly)</span> | _(quickly)_ |
-| Brackets | <span class=”italic-old”>[briefly]</span> | _[briefly]_ |
-| Braces | <span class=”italic-old”>\{gently\}</span> | _\{gently\}_ |
-| Double quotes | <span class=”italic-old”>”softly”</span> | _”softly”_ |
-| Single quotes | <span class=”italic-old”>’lightly’</span> | _’lightly’_ |
-| Apostrophe | <span class=”italic-old”>don’t</span> | _don’t_ |
-| Mixed | <span class=”italic-old”>(it’s “fine,” he said)</span> | _(it’s “fine,” he said)_ |
-| f-ligatures | <span class=”italic-old”>(fifty officials)</span> | _(fifty officials)_ |
+| Parentheses | <span class="italic-old">(quickly)</span> | _(quickly)_ |
+| Brackets | <span class="italic-old">[briefly]</span> | _[briefly]_ |
+| Braces | <span class="italic-old">\{gently\}</span> | _\{gently\}_ |
+| Double quotes | <span class="italic-old">”softly”</span> | _”softly”_ |
+| Single quotes | <span class="italic-old">‘lightly’</span> | _‘lightly’_ |
+| Apostrophe | <span class="italic-old">don’t</span> | _don’t_ |
+| Mixed | <span class="italic-old">(it’s “fine," he said)</span> | _(it’s “fine," he said)_ |
+| f-ligatures | <span class="italic-old">(fifty officials)</span> | _(fifty officials)_ |
 
 ### 12pt italic
 
 |  | Old (slanted) | New (upright) |
 | :-- | :-- | :-- |
-| Parentheses | <span class=”italic-12-old”>(quickly)</span> | <span class=”italic-12”>(quickly)</span> |
-| Brackets | <span class=”italic-12-old”>[briefly]</span> | <span class=”italic-12”>[briefly]</span> |
-| Braces | <span class=”italic-12-old”>\{gently\}</span> | <span class=”italic-12”>\{gently\}</span> |
-| Double quotes | <span class=”italic-12-old”>”softly”</span> | <span class=”italic-12”>”softly”</span> |
-| Single quotes | <span class=”italic-12-old”>’lightly’</span> | <span class=”italic-12”>’lightly’</span> |
-| Apostrophe | <span class=”italic-12-old”>don’t</span> | <span class=”italic-12”>don’t</span> |
-| Mixed | <span class=”italic-12-old”>(it’s “fine,” he said)</span> | <span class=”italic-12”>(it’s “fine,” he said)</span> |
-| f-ligatures | <span class=”italic-12-old”>(fifty officials)</span> | <span class=”italic-12”>(fifty officials)</span> |
+| Parentheses | <span class="italic-12-old">(quickly)</span> | <span class="italic-12">(quickly)</span> |
+| Brackets | <span class="italic-12-old">[briefly]</span> | <span class="italic-12">[briefly]</span> |
+| Braces | <span class="italic-12-old">\{gently\}</span> | <span class="italic-12">\{gently\}</span> |
+| Double quotes | <span class="italic-12-old">"softly"</span> | <span class="italic-12">"softly"</span> |
+| Single quotes | <span class="italic-12-old">‘lightly’</span> | <span class="italic-12">‘lightly’</span> |
+| Apostrophe | <span class="italic-12-old">don’t</span> | <span class="italic-12">don’t</span> |
+| Mixed | <span class="italic-12-old">(it’s “fine," he said)</span> | <span class="italic-12">(it’s “fine," he said)</span> |
+| f-ligatures | <span class="italic-12-old">(fifty officials)</span> | <span class="italic-12">(fifty officials)</span> |
 
 # What are your timelines?
 
