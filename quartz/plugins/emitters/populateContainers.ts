@@ -75,7 +75,7 @@ export type ContentGenerator = () => Promise<Element[]>
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Promise<Element[]> => {
     return Promise.resolve([h("span", String(value))])
   }
 }

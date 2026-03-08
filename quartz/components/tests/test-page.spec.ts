@@ -92,7 +92,7 @@ test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
       // Many H1 screenshots + WebKit overhead can exceed 30s in CI
-      if (testInfo.project.name.includes("Safari")) test.setTimeout(60_000)
+      test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
       await setTheme(page, theme as "light" | "dark")
 

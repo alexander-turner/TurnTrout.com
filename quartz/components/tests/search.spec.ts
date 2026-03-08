@@ -108,7 +108,7 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
   // Search + preview fetch + screenshot can exceed 30s on Safari in CI
-  if (testInfo.project.name.includes("Safari")) test.setTimeout(60_000)
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
@@ -574,7 +574,7 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
 
 test("Search preview shows after bad entry", async ({ page }, testInfo) => {
   // Four sequential searches can exceed 30s on Safari/WebKit in CI
-  if (testInfo.project.name.includes("Safari")) test.setTimeout(60_000)
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
   await search(page, "zzzzzz")
   await search(page, "Testing site")
