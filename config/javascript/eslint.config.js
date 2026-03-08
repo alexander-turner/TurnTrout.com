@@ -6,7 +6,7 @@ import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
 import reactHooks from "eslint-plugin-react-hooks"
-import * as regexpPlugin from "eslint-plugin-regexp"
+import regexpPlugin from "eslint-plugin-regexp"
 import globals from "globals"
 import { configs as tseslintConfigs } from "typescript-eslint"
 
