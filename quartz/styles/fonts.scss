@@ -267,7 +267,12 @@ dt {
   }
 }
 
-// Italic 12pt comparison classes (for test/design page tables)
+// Italic comparison classes (for test/design page tables)
+.italic-old {
+  font-family: EBGaramondItalicOld, serif;
+  font-style: italic;
+}
+
 .italic-12 {
   font-family: "EBGaramond12Italic", serif;
   font-style: italic;

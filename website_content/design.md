@@ -636,12 +636,12 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 
 |  | Before | After |
 | :-- | :-- | :-- |
-| Parentheses | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_(Hello world)_</span> | _(Hello world)_ |
-| Brackets | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_[Hello world]_</span> | _[Hello world]_ |
-| Braces | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_\{Hello world\}_</span> | _\{Hello world\}_ |
-| Double quotes | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_”Hello world”_</span> | _”Hello world”_ |
-| Single quotes | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_’Hello world’_</span> | _’Hello world’_ |
-| Apostrophe | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>_don’t_</span> | _don’t_ |
+| Parentheses | <span class=”italic-old”>_(Hello world)_</span> | _(Hello world)_ |
+| Brackets | <span class=”italic-old”>_[Hello world]_</span> | _[Hello world]_ |
+| Braces | <span class=”italic-old”>_\{Hello world\}_</span> | _\{Hello world\}_ |
+| Double quotes | <span class=”italic-old”>_”Hello world”_</span> | _”Hello world”_ |
+| Single quotes | <span class=”italic-old”>_’Hello world’_</span> | _’Hello world’_ |
+| Apostrophe | <span class=”italic-old”>_don’t_</span> | _don’t_ |
 
 <figcaption>The “before” column uses the original EB Garamond italic. The “after” column uses the modified font with upright punctuation and per-glyph kerning.</figcaption>
 </figure>

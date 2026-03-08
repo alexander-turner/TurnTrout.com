@@ -742,14 +742,14 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 |  | Old (slanted) | New (upright) |
 | :-- | :-- | :-- |
-| Parentheses | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>(quickly)</span> | _(quickly)_ |
-| Brackets | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>[briefly]</span> | _[briefly]_ |
-| Braces | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>\{gently\}</span> | _\{gently\}_ |
-| Double quotes | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>”softly”</span> | _”softly”_ |
-| Single quotes | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>’lightly’</span> | _’lightly’_ |
-| Apostrophe | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>don’t</span> | _don’t_ |
-| Mixed | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>(it’s “fine,” he said)</span> | _(it’s “fine,” he said)_ |
-| f-ligatures | <span style=”font-family: EBGaramondItalicOld; font-style: italic;”>(fifty officials)</span> | _(fifty officials)_ |
+| Parentheses | <span class=”italic-old”>(quickly)</span> | _(quickly)_ |
+| Brackets | <span class=”italic-old”>[briefly]</span> | _[briefly]_ |
+| Braces | <span class=”italic-old”>\{gently\}</span> | _\{gently\}_ |
+| Double quotes | <span class=”italic-old”>”softly”</span> | _”softly”_ |
+| Single quotes | <span class=”italic-old”>’lightly’</span> | _’lightly’_ |
+| Apostrophe | <span class=”italic-old”>don’t</span> | _don’t_ |
+| Mixed | <span class=”italic-old”>(it’s “fine,” he said)</span> | _(it’s “fine,” he said)_ |
+| f-ligatures | <span class=”italic-old”>(fifty officials)</span> | _(fifty officials)_ |
 
 ### 12pt italic
 
