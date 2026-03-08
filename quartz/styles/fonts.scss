@@ -122,6 +122,15 @@ $fonts-dir: "/static/styles/fonts";
   font-display: swap;
 }
 
+@font-face {
+  font-family: "EBGaramond12ItalicOld";
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond12-Italic.woff2") format("woff2");
+  font-weight: normal;
+  font-style: italic;
+  font-optical-sizing: auto;
+  font-display: swap;
+}
+
 // Less commonly used
 @include font-face("DejaVuSerifCondensed-Bold", "DejaVuSerifCondensed-Bold-subset", ".woff2");
 @include font-face("BadHandwriting", "badhandwriting-webfont", ".woff2");
@@ -256,6 +265,17 @@ dt {
   .right & {
     text-shadow: 0 0; // No bolding needed on right sidebar; spacing works
   }
+}
+
+// Italic 12pt comparison classes (for test/design page tables)
+.italic-12 {
+  font-family: "EBGaramond12Italic", serif;
+  font-style: italic;
+}
+
+.italic-12-old {
+  font-family: "EBGaramond12ItalicOld", serif;
+  font-style: italic;
 }
 
 .bad-handwriting {
