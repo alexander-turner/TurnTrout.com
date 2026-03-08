@@ -253,6 +253,8 @@ dt {
 .italic-old {
   font-family: EBGaramondItalicOld, serif;
   font-style: italic;
+
+  --font-italic-situational: ebgaramonditalicold, serif;
 }
 
 .italic-12 {
@@ -263,6 +265,8 @@ dt {
 .italic-12-old {
   font-family: "EBGaramond12ItalicOld", serif;
   font-style: italic;
+
+  --font-italic-situational: "EBGaramond12ItalicOld", serif;
 }
 
 .bad-handwriting {
