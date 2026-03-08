@@ -30,6 +30,10 @@ test.beforeEach(async ({ page }) => {
   await expect(searchContainer).not.toHaveClass(/active/)
 
   await openSearch(page)
+
+  // Park the mouse in a safe corner so Firefox doesn't fire spurious
+  // mouseenter events when result cards render under the cursor.
+  await page.mouse.move(0, 0)
 })
 
 function isMobileViewport(page: Page): boolean {
