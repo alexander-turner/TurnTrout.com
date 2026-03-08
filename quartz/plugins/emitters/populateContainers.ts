@@ -77,6 +77,7 @@ export type ContentGenerator = () => Promise<Element[]>
 export const generateConstantContent = (value: string | number): ContentGenerator => {
   // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
   return async (): Promise<Element[]> => {
+    // skipcq: JS-0116
     return [h("span", String(value))]
   }
 }
@@ -212,6 +213,7 @@ export const generateSpecialFaviconContent = (
 ): ContentGenerator => {
   // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
   return async (): Promise<Element[]> => {
+    // skipcq: JS-0116
     const faviconElement = createFaviconElement(faviconPath, altText)
     return [createNowrapSpan("", faviconElement)]
   }
@@ -224,6 +226,7 @@ export const generateSpecialFaviconContent = (
 export const generateMetadataAdmonition = (): ContentGenerator => {
   // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
   return async (): Promise<Element[]> => {
+    // skipcq: JS-0116
     const dummyProps = {
       cfg: {},
       fileData: {

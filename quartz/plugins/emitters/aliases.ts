@@ -40,6 +40,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
    */
   // eslint-disable-next-line require-await -- interface requires Promise return
   async getDependencyGraph(ctx, content) {
+    // skipcq: JS-0116
     const graph = new DepGraph<FilePath>()
 
     const { argv } = ctx

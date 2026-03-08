@@ -154,6 +154,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
     name: "ContentIndex",
     // eslint-disable-next-line require-await -- interface requires Promise return
     async getDependencyGraph(ctx, content) {
+      // skipcq: JS-0116
       const graph = new DepGraph<FilePath>()
 
       for (const [, file] of content) {

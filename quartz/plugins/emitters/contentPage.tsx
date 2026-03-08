@@ -93,6 +93,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
 
     // eslint-disable-next-line require-await -- interface requires Promise return
     async getDependencyGraph(ctx, content) {
+      // skipcq: JS-0116
       const graph = new DepGraph<FilePath>()
 
       for (const [tree, file] of content) {

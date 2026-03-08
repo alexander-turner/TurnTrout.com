@@ -28,6 +28,7 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
     },
     // eslint-disable-next-line require-await -- interface requires Promise return
     async getDependencyGraph() {
+      // skipcq: JS-0116
       return new DepGraph<FilePath>()
     },
     async emit(ctx, _content, resources): Promise<FilePath[]> {
