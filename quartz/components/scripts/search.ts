@@ -515,6 +515,10 @@ let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
 let mouseEventsLocked = false
+// Tracks whether currentHover was set by keyboard navigation. When true,
+// onMouseLeave should not clear currentHover (mobile Safari's .focus() on
+// <a> elements can fire spurious mouseleave events).
+let hoverSetByKeyboard = false
 
 /* istanbul ignore next */
 const appendLayout = (el: HTMLElement) => {
@@ -585,6 +589,7 @@ function handleResultNavigation(
 
     // Lock mouse events during keyboard navigation
     mouseEventsLocked = true
+    hoverSetByKeyboard = true
 
     displayPreview(target)
 
@@ -857,13 +862,7 @@ function focusCard(el: HTMLElement | null, keyboardFocus = true) {
     searchBar?.setAttribute("aria-activedescendant", el.id)
 
     if (keyboardFocus) {
-      // Keep focus on the search bar (combobox pattern) instead of moving
-      // it to the result card. Mobile Safari's .focus() on <a> elements
-      // can fire spurious mouseleave events that clear currentHover and
-      // break subsequent keyboard navigation. The aria-activedescendant
-      // attribute above handles accessibility.
-      searchBar?.focus()
-      el.scrollIntoView({ block: "nearest" })
+      el.focus()
     }
   } else {
     searchBar?.removeAttribute("aria-activedescendant")
@@ -1047,6 +1046,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   function onMouseEnter(ev: MouseEvent) {
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
+    hoverSetByKeyboard = false
     const target = ev.currentTarget as HTMLElement
     displayPreview(target, false)
   }
@@ -1054,6 +1054,10 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   // Add mouse leave handler to maintain focus state
   function onMouseLeave() {
     if (mouseEventsLocked) return
+    // Don't clear currentHover if it was set by keyboard navigation.
+    // Mobile browsers (especially Safari) fire spurious mouseleave events
+    // when .focus() is called on an <a> element during keyboard navigation.
+    if (hoverSetByKeyboard) return
     if (currentHover === itemTile) {
       currentHover = null
     }
