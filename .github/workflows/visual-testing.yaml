@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
