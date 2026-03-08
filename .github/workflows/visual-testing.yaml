@@ -28,6 +28,8 @@ permissions:
 
 jobs:
   # Gate: only run on PRs if the ci:full-tests label is present.
+  # The pull_request trigger intentionally omits a branches filter so that
+  # ci:full-tests works on PRs targeting any branch (not just main/dev).
   # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: visual-should-run
