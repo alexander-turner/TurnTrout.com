@@ -78,10 +78,6 @@ article[data-use-dropcap="true"] > p:first-of-type::first-letter {
   font-weight: 500 !important;
 }
 
-article[data-use-dropcap="true"] > p:first-of-type[data-narrow-dropcap] {
-  --dropcap-font-size: #{$narrow-dropcap-font-size};
-}
-
 article[data-use-dropcap="true"] > p:first-of-type::first-line {
   --font-italic-situational: var(--font-main) !important;
 }

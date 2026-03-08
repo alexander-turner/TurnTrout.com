@@ -66,6 +66,11 @@ const config: QuartzConfig = {
             repo: "punctilio",
             transform: stripBadges,
           },
+          "lint-staged": {
+            filePath: "package.json",
+            jsonPath: "lint-staged",
+            transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
+          },
         },
       }),
       CreatedModifiedDate(),

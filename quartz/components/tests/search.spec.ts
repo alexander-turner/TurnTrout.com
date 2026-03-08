@@ -965,8 +965,8 @@ test.describe("Search preview scroll behavior", () => {
   test("re-scrolls to first match after viewport resize", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
 
-    const currentSize = page.viewportSize()
-    if (!currentSize) throw new Error("No viewport size")
+    // viewportSize() is guaranteed non-null here (non-mobile viewport confirmed above)
+    const currentSize = page.viewportSize() as { width: number; height: number }
     test.skip(
       currentSize.width - 200 <= tabletBreakpoint,
       "Viewport too narrow to resize while remaining above tablet breakpoint",
