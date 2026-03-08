@@ -80,13 +80,6 @@ rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 cd "$PROJECT_DIR" || exit 1
 git config core.hooksPath .hooks
 
-# Pre-fetch the base branch so diffs against $CLAUDE_CODE_BASE_REF work
-# immediately (e.g. when creating PRs). Failure is non-fatal.
-if [ -n "${CLAUDE_CODE_BASE_REF:-}" ]; then
-	git fetch origin "$CLAUDE_CODE_BASE_REF" --quiet 2>/dev/null ||
-		warn "Failed to fetch base branch $CLAUDE_CODE_BASE_REF"
-fi
-
 #######################################
 # GitHub CLI auth
 #######################################
