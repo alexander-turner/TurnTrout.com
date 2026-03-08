@@ -426,7 +426,10 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text stays at top even with body matches", async ({ page }) => {
+test("Search matching title text stays at top even with body matches", async ({
+  page,
+}, testInfo) => {
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit search rendering is slower in CI")
   const initialUrl = page.url()
   // "Testing site" matches the test page title ("Testing Site Features") and
   // the sub-token "Testing" also appears in the body ("visual regression testing").
