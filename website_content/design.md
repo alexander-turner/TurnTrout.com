@@ -630,9 +630,13 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 
 ### Upright punctuation in italic text
 
-[Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html): “Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.” I modified the italic fonts to replace sloped punctuation glyphs (`( ) [ ] { } “ “ ‘ ‘`) with their upright counterparts from the Regular files. Over 3,000 `GPOS` kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A `calt` rule keeps apostrophes italic in contractions (_don’t_) but upright as closing quotes.
+> [!quote] [Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html)
+>
+> Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
 
-<figure>
+I modified the italic fonts to replace sloped punctuation glyphs (`( ) [ ] { } “ “ ‘ ‘`) with their upright counterparts from the Regular files. Over 3,000 `GPOS` kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A `calt` rule keeps apostrophes italic in contractions (_don’t_) but upright as closing quotes.
+
+Figure: The “before” column uses the original EB Garamond italic. The “after” column uses the modified font with upright punctuation and per-glyph kerning.
 
 |  | Before | After |
 | :-- | :-- | :-- |
@@ -642,9 +646,6 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 | Double quotes | <span class=”italic-old”>_”Hello world”_</span> | _”Hello world”_ |
 | Single quotes | <span class=”italic-old”>_’Hello world’_</span> | _’Hello world’_ |
 | Apostrophe | <span class=”italic-old”>_don’t_</span> | _don’t_ |
-
-<figcaption>The “before” column uses the original EB Garamond italic. The “after” column uses the modified font with upright punctuation and per-glyph kerning.</figcaption>
-</figure>
 
 # Website features
 
