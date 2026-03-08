@@ -569,7 +569,10 @@ function handleResultNavigation(
   const nextSibling = (el: HTMLElement): HTMLElement | null =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : null
 
-  const canNavigate = document.activeElement === searchBar || currentHover !== null
+  const canNavigate =
+    document.activeElement === searchBar ||
+    document.activeElement?.classList.contains("result-card") ||
+    currentHover !== null
 
   /**
    * Focus a target result element and update the preview, if present.
@@ -601,7 +604,12 @@ function handleResultNavigation(
     if (currentHover) {
       return getTarget(currentHover)
     }
-    // If no current hover, start from the first result
+    // If focus is on a result card (e.g., after keyboard navigation moved focus
+    // away from the search bar), use that as the navigation anchor
+    if (document.activeElement?.classList.contains("result-card")) {
+      return getTarget(document.activeElement as HTMLElement)
+    }
+    // If no current hover or focused card, start from the first result
     return document.getElementsByClassName("result-card")[0] as HTMLElement | null
   }
 

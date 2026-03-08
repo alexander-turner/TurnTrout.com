@@ -146,19 +146,11 @@ test("ArrowDown navigation does not get stuck below the second result", async ({
 
   await expect(resultCards.nth(0)).toHaveClass(/focus/)
 
-  // Press ArrowDown and verify focus moves to each subsequent card.
-  // WebKit on mobile occasionally drops keyboard events, so retry the
-  // keypress if focus doesn't move within a short window.
-  for (let i = 1; i <= 2; i++) {
-    await page.keyboard.press("ArrowDown")
-    try {
-      await expect(resultCards.nth(i)).toHaveClass(/focus/, { timeout: 2000 })
-    } catch {
-      // Retry the keypress once — WebKit may have dropped it
-      await page.keyboard.press("ArrowDown")
-      await expect(resultCards.nth(i)).toHaveClass(/focus/)
-    }
-  }
+  await page.keyboard.press("ArrowDown")
+  await expect(resultCards.nth(1)).toHaveClass(/focus/)
+
+  await page.keyboard.press("ArrowDown")
+  await expect(resultCards.nth(2)).toHaveClass(/focus/)
 })
 
 test("Search layout restores height when tab becomes visible again", async ({ page }) => {
