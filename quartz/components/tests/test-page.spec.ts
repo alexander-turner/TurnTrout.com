@@ -993,7 +993,7 @@ test.describe("Checkboxes", () => {
           .filter((key) => key.startsWith("test-page-checkbox-"))
           .forEach((key) => localStorage.removeItem(key))
       })
-      await page.reload()
+      await reloadPage(page)
     })
 
     test("Checking parent checkbox cascades to nested children", async ({ page }) => {
