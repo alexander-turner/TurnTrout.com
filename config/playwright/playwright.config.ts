@@ -96,6 +96,12 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
+        // Use full Chromium (not headless_shell) to avoid renderer crashes
+        // with isMobile: true device emulation. The headless_shell binary's
+        // SwiftShader software renderer hits 100% CPU and crashes under
+        // mobile viewport emulation. channel: "chromium" uses the new
+        // headless mode with the full browser binary.
+        ...(browser.engine === "chromium" && { channel: "chromium" }),
       },
     })),
   ),
