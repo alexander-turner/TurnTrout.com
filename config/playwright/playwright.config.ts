@@ -51,14 +51,6 @@ function sanitizeConfigForBrowser(
   config: Record<string, unknown>,
   engine: Browser["engine"],
 ): Record<string, unknown> {
-  if (engine === "chromium") {
-    // Chromium's headless SwiftShader renderer crashes with mobile device
-    // emulation on CI runners without a real GPU. Strip all mobile-specific
-    // fields (isMobile, hasTouch, userAgent, screen) and keep only the
-    // viewport so CSS media-query responsive layouts are still tested.
-    const { viewport } = config as { viewport?: { width: number; height: number } }
-    return viewport ? { viewport } : {}
-  }
   if (engine === "firefox") {
     // Firefox does not support isMobile
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,8 +66,10 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
-
-  retries: 0,
+  // Chromium's SwiftShader renderer intermittently crashes on CI runners
+  // without a real GPU, especially during viewport resizes in mobile tests.
+  // Retries let Playwright relaunch a fresh browser process for the retry.
+  retries: process.env.CI ? 2 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
   snapshotPathTemplate: "../../lost-pixel/{arg}.png",
@@ -104,6 +98,14 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
+        // On CI (no real GPU), Chromium defaults to SwiftShader which
+        // intermittently crashes during viewport resizes. Disable GPU
+        // compositing to avoid the SwiftShader rendering pipeline.
+        ...(browser.engine === "chromium" && {
+          launchOptions: {
+            args: ["--disable-gpu", "--disable-software-rasterizer", "--in-process-gpu"],
+          },
+        }),
       },
     })),
   ),
