@@ -51,12 +51,16 @@ function sanitizeConfigForBrowser(
   config: Record<string, unknown>,
   engine: Browser["engine"],
 ): Record<string, unknown> {
-  if (engine === "firefox" || engine === "chromium") {
-    // Firefox does not support isMobile at all.
-    // Chromium's headless SwiftShader renderer crashes when isMobile is true
-    // on CI runners without a real GPU (the renderer process hits 100 % CPU
-    // and is killed). Stripping isMobile still preserves the mobile viewport
-    // dimensions, so CSS media-query-based responsive layouts are tested.
+  if (engine === "chromium") {
+    // Chromium's headless SwiftShader renderer crashes with mobile device
+    // emulation on CI runners without a real GPU. Strip all mobile-specific
+    // fields (isMobile, hasTouch, userAgent, screen) and keep only the
+    // viewport so CSS media-query responsive layouts are still tested.
+    const { viewport } = config as { viewport?: { width: number; height: number } }
+    return viewport ? { viewport } : {}
+  }
+  if (engine === "firefox") {
+    // Firefox does not support isMobile
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isMobile: _unused, ...rest } = config as {
       isMobile?: unknown
