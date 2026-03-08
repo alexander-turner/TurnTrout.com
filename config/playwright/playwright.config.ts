@@ -95,13 +95,6 @@ export default defineConfig({
         ...sanitizeConfigForBrowser(device.config as Record<string, unknown>, browser.engine),
         browserName: browser.engine,
         deviceScaleFactor: 1,
-        // Run Chromium in headed mode under xvfb (set in CI workflow) so it
-        // uses Mesa's llvmpipe instead of SwiftShader, which crashes during
-        // mobile viewport emulation on CI runners without a real GPU.
-        ...(browser.engine === "chromium" &&
-          process.env.CI && {
-            launchOptions: { headless: false },
-          }),
       },
     })),
   ),

@@ -74,13 +74,6 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    permissions:
-      actions: read
-      contents: read
-      packages: read
-    container:
-      image: ghcr.io/alexander-turner/turntrout.com/playwright:latest
-      options: --ipc=host
     strategy:
       fail-fast: false
       matrix:
@@ -122,6 +115,8 @@ jobs:
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
@@ -138,12 +133,9 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
-        shell: bash
-        env:
-          HOME: /root
         run: |
           set -o pipefail
-          xvfb-run --auto-servernum -- pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
