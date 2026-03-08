@@ -267,13 +267,13 @@ document.addEventListener("nav", () => {
 
         // Capture the mouseenter timestamp. If this hover originated from a
         // spurious mouseenter fired by Safari after SPA DOM morphing (within
-        // ~50ms of navigation), the timer callback below will discard it.
+        // ~200ms of navigation), the timer callback below will discard it.
         const hoverTimestamp = Date.now()
 
         pendingPopoverTimer = window.setTimeout(() => {
           // Suppress popovers triggered by spurious mouseenter events that
           // Safari fires immediately after SPA navigation morphs the DOM.
-          if (hoverTimestamp - lastNavTimestamp < 50) {
+          if (hoverTimestamp - lastNavTimestamp < 200) {
             pendingPopoverTimer = null
             return
           }
