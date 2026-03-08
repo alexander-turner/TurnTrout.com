@@ -398,9 +398,11 @@ export async function search(page: Page, term: string) {
   await expect(searchLayout).toBeVisible({ timeout: 10_000 })
   await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
 
-  // Wait for results to appear
+  // Wait for results to appear — the display-results class is set before
+  // searchAsync completes, so also wait for actual result cards to render.
   const resultsContainer = page.locator("#results-container")
   await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
+  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 10_000 })
 }
 
 // skipcq: JS-0098

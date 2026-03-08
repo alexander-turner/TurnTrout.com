@@ -308,7 +308,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 test.describe("Search accuracy", () => {
   const searchTerms = [
     { term: "Josh Turner" },
-    { term: "The Pond" },
+    { term: "Pond" },
     { term: "United States government" },
     { term: "gwern" },
   ]
