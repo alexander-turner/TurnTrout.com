@@ -34,13 +34,15 @@ jobs:
 
       - name: Determine commit range
         id: range
+        env:
+          INPUT_COMMIT: ${{ github.event.inputs.since_commit }}
         run: |
           # Conservative default: last commit before the Feb 28 2026 newsletter run
           DEFAULT_COMMIT="5dde2d629f732c56b3e317e2fdce389af4b1e9b6"
 
           # Check for manual override
-          if [ -n "${{ github.event.inputs.since_commit }}" ]; then
-            START_COMMIT="${{ github.event.inputs.since_commit }}"
+          if [ -n "$INPUT_COMMIT" ]; then
+            START_COMMIT="$INPUT_COMMIT"
           else
             if [ -f .last-newsletter-commit ]; then
               START_COMMIT=$(cat .last-newsletter-commit)
@@ -49,22 +51,35 @@ jobs:
             fi
           fi
 
+          # Validate that start commit exists in the repo
+          if ! git cat-file -t "$START_COMMIT" &>/dev/null; then
+            echo "::error::START_COMMIT '$START_COMMIT' is not a valid git object"
+            exit 1
+          fi
+
           END_COMMIT=$(git rev-parse HEAD)
 
           echo "start_commit=$START_COMMIT" >> $GITHUB_OUTPUT
           echo "end_commit=$END_COMMIT" >> $GITHUB_OUTPUT
-          echo "Generating newsletter for commits ${START_COMMIT}..${END_COMMIT}"
+          echo "Generating newsletter for commits ${START_COMMIT:0:7}..${END_COMMIT:0:7}"
 
       - name: Gather commit information
         id: commits
+        env:
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
         run: |
-          START_COMMIT="${{ steps.range.outputs.start_commit }}"
-          END_COMMIT="${{ steps.range.outputs.end_commit }}"
           RANGE="${START_COMMIT}..${END_COMMIT}"
 
           # Get commit count
           COMMIT_COUNT=$(git log "$RANGE" --author="Alex Turner" --oneline | wc -l)
           echo "commit_count=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$COMMIT_COUNT" -eq 0 ]; then
+            echo "No new commits since last newsletter. Skipping."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
           # Get detailed commit log
           git log "$RANGE" --author="Alex Turner" \
@@ -85,6 +100,7 @@ jobs:
           echo "Gathered $COMMIT_COUNT commits"
 
       - name: Extract article metadata
+        if: steps.commits.outputs.skip != 'true'
         run: |
           # For each modified content file, extract frontmatter
           echo "# Modified Articles" > /tmp/articles.md
@@ -99,8 +115,12 @@ jobs:
 
       - name: Generate newsletter draft with Claude
         id: newsletter
+        if: steps.commits.outputs.skip != 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          COMMIT_COUNT: ${{ steps.commits.outputs.commit_count }}
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "::error::ANTHROPIC_API_KEY secret is not set"
@@ -112,9 +132,6 @@ jobs:
           FEATURES=$(cat /tmp/features.txt 2>/dev/null || echo "None found")
           FIXES=$(cat /tmp/fixes.txt 2>/dev/null || echo "None found")
           ARTICLES=$(cat /tmp/articles.md)
-          COMMIT_COUNT="${{ steps.commits.outputs.commit_count }}"
-          START_COMMIT="${{ steps.range.outputs.start_commit }}"
-          END_COMMIT="${{ steps.range.outputs.end_commit }}"
 
           # Read the prompt template
           PROMPT_TEMPLATE=$(cat .github/prompts/newsletter-prompt.md)
@@ -179,8 +196,11 @@ jobs:
           echo "Newsletter draft generated"
 
       - name: Send newsletter draft via email
+        if: steps.commits.outputs.skip != 'true'
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          START_COMMIT: ${{ steps.range.outputs.start_commit }}
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
         run: |
           if [ -z "$RESEND_API_KEY" ]; then
             echo "::error::RESEND_API_KEY secret is not set"
@@ -193,7 +213,7 @@ jobs:
           jq -n \
             --arg from "Newsletter Bot <newsletter@turntrout.com>" \
             --arg to "alex@turntrout.com" \
-            --arg subject "Newsletter Draft: ${{ steps.range.outputs.start_commit }} to ${{ steps.range.outputs.end_commit }}" \
+            --arg subject "Newsletter Draft: ${START_COMMIT:0:7}..${END_COMMIT:0:7}" \
             --arg text "$DRAFT" \
             '{from: $from, to: [$to], subject: $subject, text: $text}' > /tmp/email.json
 
@@ -205,11 +225,15 @@ jobs:
           echo "Email sent: $RESPONSE"
 
       - name: Update last reviewed commit
+        if: steps.commits.outputs.skip != 'true'
+        env:
+          END_COMMIT: ${{ steps.range.outputs.end_commit }}
         run: |
-          echo "${{ steps.range.outputs.end_commit }}" > .last-newsletter-commit
-          echo "Updated last reviewed commit to ${{ steps.range.outputs.end_commit }}"
+          echo "$END_COMMIT" > .last-newsletter-commit
+          echo "Updated last reviewed commit to ${END_COMMIT:0:7}"
 
       - name: Save last reviewed commit to cache
+        if: steps.commits.outputs.skip != 'true'
         uses: actions/cache/save@v4
         with:
           path: .last-newsletter-commit
