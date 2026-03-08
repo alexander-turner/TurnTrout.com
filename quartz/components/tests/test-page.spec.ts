@@ -1000,12 +1000,12 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      // The third checkbox (index 2) is "[x] Checked off" which has nested children.
-      // Its first nested child is index 3: "Nested unchecked item under checked parent"
-      // and that child has its own nested child at index 4.
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
-      const deeplyNested = page.locator("input.checkbox-toggle").nth(4)
+      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
+      // Its first nested child is index 5: "Nested unchecked item under checked parent"
+      // and that child has its own nested child at index 6.
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
 
       // Uncheck the parent (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1033,8 +1033,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1052,8 +1052,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(2)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(3)
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
