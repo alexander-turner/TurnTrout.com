@@ -130,7 +130,7 @@ class AssetProcessor {
    * @param assetSrc - The source path or URL of the asset
    * @returns Promise resolving to asset dimensions
    */
-  public async getAssetDimensionsFfprobe(assetSrc: string): Promise<AssetDimensions> {
+  public getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
     const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(
       "ffprobe",
       [

@@ -5,6 +5,7 @@ import jsxA11y from "eslint-plugin-jsx-a11y"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
+import reactHooks from "eslint-plugin-react-hooks"
 import * as regexpPlugin from "eslint-plugin-regexp"
 import globals from "globals"
 import { configs as tseslintConfigs } from "typescript-eslint"
@@ -35,6 +36,40 @@ export default [
   ...tseslintConfigs.recommended,
   pluginReact.configs.flat.recommended,
   jsxA11y.flatConfigs.recommended,
+
+  // React Hooks rules
+  {
+    plugins: {
+      "react-hooks": reactHooks,
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+
+  // Async/await correctness
+  {
+    rules: {
+      "require-await": "error",
+    },
+  },
+
+  // Disable react-hooks for test/spec files (Playwright's `use()` triggers false positives)
+  {
+    files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js", "**/tests/fixtures.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
+
+  // Disable require-await for test files (mock methods often need async signatures)
+  {
+    files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js"],
+    rules: {
+      "require-await": "off",
+    },
+  },
 
   // Playwright specific config for test files
   {

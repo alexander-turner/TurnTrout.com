@@ -839,10 +839,10 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should throw when no tests found", async () => {
+      it("should throw when no tests found", () => {
         mockExecSync.mockReturnValue("")
 
-        await expect(populateModule.countJsTests()).rejects.toThrow(
+        expect(() => populateModule.countJsTests()).toThrow(
           "Failed to parse test count from output",
         )
       })
@@ -890,10 +890,10 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should throw when pytest output doesn't match", async () => {
+      it("should throw when pytest output doesn't match", () => {
         mockExecSync.mockReturnValue("some weird output\n")
 
-        await expect(populateModule.countPythonTests()).rejects.toThrow(
+        expect(() => populateModule.countPythonTests()).toThrow(
           "Failed to parse pytest test count from output",
         )
       })
