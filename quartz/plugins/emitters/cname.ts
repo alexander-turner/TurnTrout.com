@@ -15,14 +15,14 @@ export const CNAME: QuartzEmitterPlugin = () => ({
   getQuartzComponents() {
     return []
   },
-  // eslint-disable-next-line require-await -- interface requires Promise return
+  // skipcq: JS-0116 -- interface requires Promise return
+  // eslint-disable-next-line require-await
   async getDependencyGraph() {
-    // skipcq: JS-0116
     return new DepGraph<FilePath>()
   },
-  // eslint-disable-next-line require-await -- interface requires Promise return
+  // skipcq: JS-0116 -- interface requires Promise return
+  // eslint-disable-next-line require-await
   async emit({ argv, cfg }): Promise<FilePath[]> {
-    // skipcq: JS-0116
     if (!cfg.configuration.baseUrl) {
       console.warn(chalk.yellow("CNAME emitter requires `baseUrl` to be set in your configuration"))
       return []

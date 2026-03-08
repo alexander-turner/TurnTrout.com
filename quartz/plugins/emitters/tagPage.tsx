@@ -41,9 +41,9 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
-    // eslint-disable-next-line require-await -- interface requires Promise return
+    // skipcq: JS-0116 -- interface requires Promise return
+    // eslint-disable-next-line require-await
     async getDependencyGraph(ctx, content) {
-      // skipcq: JS-0116
       const graph = new DepGraph<FilePath>()
 
       // Build dependency graph for tag pages

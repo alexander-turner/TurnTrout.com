@@ -75,9 +75,9 @@ export type ContentGenerator = () => Promise<Element[]>
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
+  // eslint-disable-next-line require-await
   return async (): Promise<Element[]> => {
-    // skipcq: JS-0116
     return [h("span", String(value))]
   }
 }
@@ -211,9 +211,9 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
+  // eslint-disable-next-line require-await
   return async (): Promise<Element[]> => {
-    // skipcq: JS-0116
     const faviconElement = createFaviconElement(faviconPath, altText)
     return [createNowrapSpan("", faviconElement)]
   }
@@ -224,9 +224,9 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  // skipcq: JS-0116 -- ContentGenerator type requires Promise return
+  // eslint-disable-next-line require-await
   return async (): Promise<Element[]> => {
-    // skipcq: JS-0116
     const dummyProps = {
       cfg: {},
       fileData: {

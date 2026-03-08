@@ -115,9 +115,9 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    // eslint-disable-next-line require-await -- interface requires Promise return
+    // skipcq: JS-0116 -- interface requires Promise return
+    // eslint-disable-next-line require-await
     async getDependencyGraph() {
-      // skipcq: JS-0116
       return new DepGraph<FilePath>()
     },
     async emit(ctx): Promise<FilePath[]> {

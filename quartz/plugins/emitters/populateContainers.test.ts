@@ -64,8 +64,8 @@ describe("PopulateContainers", () => {
 
   beforeEach(() => {
     faviconCounter.clear()
+    // skipcq: JS-0116 -- mock must match async interface
     mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
-      // skipcq: JS-0116
       const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
       if (patternStr.includes(".html")) {
         return ["test-page.html", "design.html"]
@@ -435,8 +435,8 @@ describe("PopulateContainers", () => {
         return !pathStr.includes("nonexistent.html")
       })
 
+      // skipcq: JS-0116 -- mock must match async interface
       mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
-        // skipcq: JS-0116
         const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
         if (patternStr.includes(".html")) {
           return ["test-page.html", "nonexistent.html", "design.html"]
