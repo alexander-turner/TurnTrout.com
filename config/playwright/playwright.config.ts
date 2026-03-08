@@ -1,3 +1,4 @@
+// Playwright configuration for cross-browser testing
 import { defineConfig, devices } from "@playwright/test"
 
 interface DeviceConfig {
