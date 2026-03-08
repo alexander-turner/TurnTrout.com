@@ -64,6 +64,7 @@ describe("PopulateContainers", () => {
 
   beforeEach(() => {
     faviconCounter.clear()
+    // skipcq: JS-0116 -- mock must match async interface
     mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
       const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
       if (patternStr.includes(".html")) {
@@ -434,6 +435,7 @@ describe("PopulateContainers", () => {
         return !pathStr.includes("nonexistent.html")
       })
 
+      // skipcq: JS-0116 -- mock must match async interface
       mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
         const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
         if (patternStr.includes(".html")) {
@@ -839,10 +841,10 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should throw when no tests found", async () => {
+      it("should throw when no tests found", () => {
         mockExecSync.mockReturnValue("")
 
-        await expect(populateModule.countJsTests()).rejects.toThrow(
+        expect(() => populateModule.countJsTests()).toThrow(
           "Failed to parse test count from output",
         )
       })
@@ -890,10 +892,10 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should throw when pytest output doesn't match", async () => {
+      it("should throw when pytest output doesn't match", () => {
         mockExecSync.mockReturnValue("some weird output\n")
 
-        await expect(populateModule.countPythonTests()).rejects.toThrow(
+        expect(() => populateModule.countPythonTests()).toThrow(
           "Failed to parse pytest test count from output",
         )
       })
