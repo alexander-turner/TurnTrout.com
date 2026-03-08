@@ -305,6 +305,10 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
+  // Pause all media once upfront so individual screenshots can skip it.
+  // This avoids paying the per-element fallback timeout N times in the loop.
+  await pauseMediaElements(page)
+
   for (const h1Span of h1Spans) {
     // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
     // which can time out in WebKit when the element never becomes "stable".
@@ -317,6 +321,7 @@ export async function getH1Screenshots(
 
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
+      skipMediaPause: true,
     })
   }
 }
@@ -441,7 +446,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+          new Promise<void>((resolve) => setTimeout(resolve, 500)),
         ])
       }, seekTo),
     )
