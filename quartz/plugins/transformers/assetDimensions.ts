@@ -128,7 +128,7 @@ class AssetProcessor {
   /**
    * Uses ffprobe to get dimensions of video or image assets.
    * @param assetSrc - The source path or URL of the asset
-   * @returns Promise resolving to asset dimensions
+   * @returns Asset dimensions
    */
   public getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
     const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(

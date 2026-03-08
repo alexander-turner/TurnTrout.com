@@ -152,7 +152,8 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {
     name: "ContentIndex",
-    getDependencyGraph(ctx, content) {
+    // eslint-disable-next-line require-await -- interface requires Promise return
+    async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       for (const [, file] of content) {
@@ -170,7 +171,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
         }
       }
 
-      return Promise.resolve(graph)
+      return graph
     },
     async emit(ctx, content) {
       const cfg = ctx.cfg.configuration

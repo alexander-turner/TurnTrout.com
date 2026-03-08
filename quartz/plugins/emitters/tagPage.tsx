@@ -41,7 +41,8 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
     getQuartzComponents() {
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
-    getDependencyGraph(ctx, content) {
+    // eslint-disable-next-line require-await -- interface requires Promise return
+    async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       // Build dependency graph for tag pages
@@ -61,7 +62,7 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
         }
       }
 
-      return Promise.resolve(graph)
+      return graph
     },
     async emit(ctx, content, resources): Promise<FilePath[]> {
       const fps: FilePath[] = []

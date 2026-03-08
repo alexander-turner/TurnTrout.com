@@ -82,8 +82,9 @@ export function createListPageEmitter(config: ListPageEmitterConfig): QuartzEmit
       getQuartzComponents() {
         return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
       },
-      getDependencyGraph() {
-        return Promise.resolve(new DepGraph<FilePath>())
+      // eslint-disable-next-line require-await -- interface requires Promise return
+      async getDependencyGraph() {
+        return new DepGraph<FilePath>()
       },
       async emit(
         ctx,

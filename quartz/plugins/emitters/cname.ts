@@ -15,20 +15,22 @@ export const CNAME: QuartzEmitterPlugin = () => ({
   getQuartzComponents() {
     return []
   },
-  getDependencyGraph() {
-    return Promise.resolve(new DepGraph<FilePath>())
+  // eslint-disable-next-line require-await -- interface requires Promise return
+  async getDependencyGraph() {
+    return new DepGraph<FilePath>()
   },
-  emit({ argv, cfg }): Promise<FilePath[]> {
+  // eslint-disable-next-line require-await -- interface requires Promise return
+  async emit({ argv, cfg }): Promise<FilePath[]> {
     if (!cfg.configuration.baseUrl) {
       console.warn(chalk.yellow("CNAME emitter requires `baseUrl` to be set in your configuration"))
-      return Promise.resolve([])
+      return []
     }
     const path = joinSegments(argv.output, "CNAME")
     const content = extractDomainFromBaseUrl(cfg.configuration.baseUrl)
     if (!content) {
-      return Promise.resolve([])
+      return []
     }
     fs.writeFileSync(path, content)
-    return Promise.resolve([path] as FilePath[])
+    return [path] as FilePath[]
   },
 })

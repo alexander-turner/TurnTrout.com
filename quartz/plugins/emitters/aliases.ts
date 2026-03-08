@@ -38,7 +38,8 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
    * Builds dependency graph showing which output files depend on which source files.
    * Each alias and permalink creates a dependency edge from source file to output HTML.
    */
-  getDependencyGraph(ctx, content) {
+  // eslint-disable-next-line require-await -- interface requires Promise return
+  async getDependencyGraph(ctx, content) {
     const graph = new DepGraph<FilePath>()
 
     const { argv } = ctx
@@ -66,7 +67,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
       }
     }
 
-    return Promise.resolve(graph)
+    return graph
   },
 
   /**

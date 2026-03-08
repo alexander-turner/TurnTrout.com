@@ -91,7 +91,8 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
       return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
     },
 
-    getDependencyGraph(ctx, content) {
+    // eslint-disable-next-line require-await -- interface requires Promise return
+    async getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()
 
       for (const [tree, file] of content) {
@@ -106,7 +107,7 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
         })
       }
 
-      return Promise.resolve(graph)
+      return graph
     },
 
     async emit(ctx, content, resources): Promise<FilePath[]> {

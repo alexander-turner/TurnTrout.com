@@ -75,8 +75,9 @@ export type ContentGenerator = () => Promise<Element[]>
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  return (): Promise<Element[]> => {
-    return Promise.resolve([h("span", String(value))])
+  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  return async (): Promise<Element[]> => {
+    return [h("span", String(value))]
   }
 }
 
@@ -209,9 +210,10 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  return (): Promise<Element[]> => {
+  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  return async (): Promise<Element[]> => {
     const faviconElement = createFaviconElement(faviconPath, altText)
-    return Promise.resolve([createNowrapSpan("", faviconElement)])
+    return [createNowrapSpan("", faviconElement)]
   }
 }
 
@@ -220,7 +222,8 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  return (): Promise<Element[]> => {
+  // eslint-disable-next-line require-await -- ContentGenerator type requires Promise return
+  return async (): Promise<Element[]> => {
     const dummyProps = {
       cfg: {},
       fileData: {
@@ -235,7 +238,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
 
     const jsx = renderPostStatistics(dummyProps)
     // istanbul ignore next
-    if (!jsx) return Promise.resolve([])
+    if (!jsx) return []
 
     const html = render(jsx)
     const root = fromHtml(html, { fragment: true })
@@ -247,7 +250,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
       }
     })
 
-    return Promise.resolve(root.children.filter((c): c is Element => c.type === "element"))
+    return root.children.filter((c): c is Element => c.type === "element")
   }
 }
 
