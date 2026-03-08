@@ -170,7 +170,7 @@ jobs:
           ESCAPED_PROMPT=$(cat /tmp/full-prompt.md | jq -Rs .)
 
           # Call Claude API
-          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+          HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
@@ -182,6 +182,12 @@ jobs:
                 \"content\": ${ESCAPED_PROMPT}
               }]
             }")
+
+          RESPONSE=$(cat /tmp/claude-response.json)
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Claude API returned HTTP $HTTP_CODE: $RESPONSE"
+            exit 1
+          fi
 
           # Extract the text content
           NEWSLETTER=$(echo "$RESPONSE" | jq -r '.content[0].text')
@@ -217,12 +223,18 @@ jobs:
             --arg text "$DRAFT" \
             '{from: $from, to: [$to], subject: $subject, text: $text}' > /tmp/email.json
 
-          RESPONSE=$(curl -sf -X POST https://api.resend.com/emails \
+          HTTP_CODE=$(curl -s -o /tmp/resend-response.json -w "%{http_code}" -X POST https://api.resend.com/emails \
             -H "Authorization: Bearer $RESEND_API_KEY" \
             -H "Content-Type: application/json" \
             -d @/tmp/email.json)
 
-          echo "Email sent: $RESPONSE"
+          RESPONSE=$(cat /tmp/resend-response.json)
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "::error::Resend API returned HTTP $HTTP_CODE: $RESPONSE"
+            exit 1
+          fi
+
+          echo "Email sent (HTTP $HTTP_CODE): $RESPONSE"
 
       - name: Update last reviewed commit
         if: steps.commits.outputs.skip != 'true'
