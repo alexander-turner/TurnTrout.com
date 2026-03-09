@@ -54,26 +54,26 @@ article[data-use-dropcap="true"] > p:first-of-type {
 article[data-use-dropcap="true"] > p:first-of-type::before {
   content: attr(data-first-letter);
   text-transform: uppercase;
-  position: absolute;
-  top: var(--dropcap-vertical-offset);
-  left: 0;
+  float: left;
+  width: var(--dropcap-font-size);
   font-size: var(--dropcap-font-size);
   line-height: 1;
-  padding-right: 0.1em;
+  padding-right: #{$dropcap-padding-right};
+  padding-top: var(--dropcap-vertical-offset);
   font-family: var(--font-dropcap-background);
   color: var(--before-color);
 }
 
 article[data-use-dropcap="true"] > p:first-of-type::first-letter {
+  margin-left: calc(-1 * var(--dropcap-font-size) - #{$dropcap-padding-right});
   padding-top: var(--dropcap-vertical-offset);
   text-transform: uppercase;
   font-style: normal !important;
   float: left;
   color: var(--foreground);
   font-size: var(--dropcap-font-size);
-  width: var(--dropcap-font-size);
   line-height: 1;
-  padding-right: 0.1em;
+  padding-right: #{$dropcap-padding-right};
   font-family: var(--font-dropcap-foreground);
   font-weight: 500 !important;
 }

@@ -189,8 +189,10 @@ export function writeCacheToFile(): void {
  *
  * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
-export function readFaviconCounts(): Map<string, number> {
-  if (!fs.existsSync(faviconCountsFile)) {
+export async function readFaviconCounts(): Promise<Map<string, number>> {
+  try {
+    await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
+  } catch {
     logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
     return new Map<string, number>()
   }
@@ -198,7 +200,7 @@ export function readFaviconCounts(): Map<string, number> {
   const countMap = new Map<string, number>()
 
   try {
-    const data = fs.readFileSync(faviconCountsFile, "utf8")
+    const data = await fs.promises.readFile(faviconCountsFile, "utf8")
     // Parse JSON array of [path, count] pairs
     const countsArray = JSON.parse(data) as Array<[string, number]>
     for (const [faviconPath, count] of countsArray) {
@@ -276,7 +278,8 @@ export function getFaviconUrl(faviconPath: string): string {
   const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
-    // SVG exists locally, return SVG CDN URL
+    // SVG exists locally, cache and return SVG CDN URL
+    urlCache.set(pngPath, svgPath)
     return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
@@ -733,6 +736,11 @@ export function isAssetLink(href: string): boolean {
     return false
   }
 
+  // .ts/.mts are TypeScript, not MPEG transport stream (video/mp2t)
+  if (extension === "ts" || extension === "mts") {
+    return false
+  }
+
   const mimeType = mime.lookup(extension)
   if (!mimeType) {
     return false
@@ -968,7 +976,7 @@ export const AddFavicons = () => {
         () => {
           return async (tree: Root) => {
             logger.debug("Starting favicon processing")
-            const faviconCounts = readFaviconCounts()
+            const faviconCounts = await readFaviconCounts()
             logger.debug(`Loaded ${faviconCounts.size} favicon counts`)
 
             const nodesToProcess: [Element, Parent][] = []

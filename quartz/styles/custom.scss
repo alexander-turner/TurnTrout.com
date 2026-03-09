@@ -204,6 +204,15 @@ ol {
       display: inline-block;
       vertical-align: top;
     }
+
+    // Constrain footnote content on mobile so tables/admonitions don't overflow
+    @media all and (max-width: $max-mobile-width) {
+      & .table-container,
+      & .scroll-indicator {
+        display: block;
+        max-width: 100%;
+      }
+    }
   }
 }
 
@@ -797,6 +806,21 @@ img.emoji {
   &:has(.edgeLabel:empty) {
     display: none !important;
     background-color: transparent !important;
+  }
+}
+
+// Ensure all mermaid diagram text has sufficient contrast
+svg[id*="mermaid"] {
+  font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
+
+  & span,
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
+    color: var(--foreground) !important;
+    fill: var(--foreground) !important;
   }
 }
 

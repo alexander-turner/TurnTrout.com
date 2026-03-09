@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test"
 
 import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
+import { gotoPage } from "./visual_utils"
 
 const DROPCAP_URL = "http://localhost:8080/test-page"
 
@@ -14,7 +15,7 @@ const mockRandom = (vals: number[]) => {
 test.describe("Random dropcap color", () => {
   test(`no color applied when Math.random >= ${colorDropcapProbability}`, async ({ page }) => {
     await page.addInitScript(mockRandom, [0.5])
-    await page.goto(DROPCAP_URL, { waitUntil: "load" })
+    await gotoPage(page, DROPCAP_URL)
 
     const color = await page.evaluate(() =>
       document.documentElement.style.getPropertyValue("--random-dropcap-color"),
@@ -26,7 +27,7 @@ test.describe("Random dropcap color", () => {
     test(`applies --dropcap-background-${color}`, async ({ page }) => {
       const colorFraction = (i + 0.5) / DROPCAP_COLORS.length
       await page.addInitScript(mockRandom, [0.01, colorFraction])
-      await page.goto(DROPCAP_URL, { waitUntil: "load" })
+      await gotoPage(page, DROPCAP_URL)
 
       const value = await page.evaluate(() =>
         document.documentElement.style.getPropertyValue("--random-dropcap-color"),
@@ -35,9 +36,9 @@ test.describe("Random dropcap color", () => {
     })
   }
 
-  test("colored dropcap looks different from default", async ({ page }) => {
+  test("colored dropcap looks different from default", async ({ page, context }) => {
     await page.addInitScript(mockRandom, [0.5])
-    await page.goto(DROPCAP_URL, { waitUntil: "load" })
+    await gotoPage(page, DROPCAP_URL)
 
     const dropcap = page
       .locator('article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type')
@@ -45,18 +46,23 @@ test.describe("Random dropcap color", () => {
     await dropcap.scrollIntoViewIfNeeded()
     const defaultShot = await dropcap.screenshot()
 
-    // Reload with red forced
-    await page.addInitScript(mockRandom, [0.01, 0.0])
-    await page.goto(DROPCAP_URL, { waitUntil: "load" })
-    await dropcap.scrollIntoViewIfNeeded()
+    // Use a fresh page to avoid WebKit crashing on a second navigation to the same URL
+    const page2 = await context.newPage()
+    await page2.addInitScript(mockRandom, [0.01, 0.0])
+    await gotoPage(page2, DROPCAP_URL)
+    const dropcap2 = page2
+      .locator('article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type')
+      .first()
+    await dropcap2.scrollIntoViewIfNeeded()
 
-    expect(await dropcap.screenshot()).not.toEqual(defaultShot)
+    expect(await dropcap2.screenshot()).not.toEqual(defaultShot)
+    await page2.close()
   })
 
   test("color re-rolls on SPA navigation", async ({ page }) => {
     // IIFE roll: colored (0.01 < probability → pick red), SPA nav roll: no color (0.5 >= probability)
     await page.addInitScript(mockRandom, [0.01, 0.0, 0.5])
-    await page.goto(DROPCAP_URL, { waitUntil: "load" })
+    await gotoPage(page, DROPCAP_URL)
 
     const getColor = () =>
       page.evaluate(() => document.documentElement.style.getPropertyValue("--random-dropcap-color"))

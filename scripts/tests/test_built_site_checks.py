@@ -2649,6 +2649,21 @@ def test_check_link_spacing(html, expected):
             '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
             [],
         ),
+        # Right guillemet after abbreviation (French closing quote)
+        (
+            '<p>\u00ab<abbr class="small-caps">bonjour</abbr>\u00a0\u00bb monde</p>',
+            [],
+        ),
+        # Left guillemet before abbreviation (French opening quote)
+        (
+            '<p>\u00ab\u00a0<abbr class="small-caps">bonjour</abbr>\u00bb</p>',
+            [],
+        ),
+        # German open quote before abbreviation
+        (
+            '<p>\u201e<abbr class="small-caps">hallo</abbr>\u201c welt</p>',
+            [],
+        ),
     ],
 )
 def test_check_inline_formatting_spacing(html, expected):
@@ -2740,7 +2755,6 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
     <div class="authors"><p>AlexJanuary 2025</p></div>
     <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
     <div class="backlinks"><p>BacklinkTitle</p></div>
-    <span class="transclude"><p>Transcluded listing</p></span>
     <div class="tag-container"><p>Tag text</p></div>
     <div class="all-tags"><p>All tags</p></div>
     <div id="content-meta"><p>Metadata</p></div>
@@ -2824,6 +2838,28 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert len(result) == 1
     assert "I've" in result[0]
     assert "I 've" not in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
+    """
+    A <p> containing block-level elements (e.g. from transclusion wrapping
+    tables inside <span> inside <p>) is skipped because get_text() would
+    concatenate child text without spaces.
+
+    Inner <p> elements are still extracted.
+    """
+    html = """<article>
+    <p><span class="transclude" data-url="other-page">
+    <table><tr><th>Feature</th><th>Example</th></tr></table>
+    <p>Nested paragraph inside transclude.</p>
+    </span></p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert any("Nested paragraph inside transclude ." in r for r in result)
+    assert any("Normal paragraph ." in r for r in result)
 
 
 @pytest.mark.parametrize(
@@ -5984,6 +6020,16 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
         # Quote callout content should be skipped
         (
             '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
+            [],
+        ),
+        # Select elements should be stripped from text before checking punctuation
+        (
+            '<article><p>Basic select<select id="s"><option value="">Choose</option><option value="1">Option 1</option></select></p></article>',
+            ["Paragraph ends with invalid character 't' Basic select"],
+        ),
+        # Paragraph with select that ends with valid punctuation should pass
+        (
+            "<article><p>Pick one.<select><option>A</option></select></p></article>",
             [],
         ),
     ],

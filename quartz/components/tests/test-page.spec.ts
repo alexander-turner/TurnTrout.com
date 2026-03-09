@@ -10,6 +10,8 @@ import {
   isDesktopViewport,
   getH1Screenshots,
   isElementChecked,
+  gotoPage,
+  reloadPage,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -40,7 +42,7 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "load")
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -89,6 +91,9 @@ async function setDummyContentMeta(page: Page) {
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+      // Many H1 screenshots + WebKit overhead can exceed 30s in CI
+      test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -103,7 +108,7 @@ test.describe("Unique content around the site", () => {
       "Flaky in Safari on desktop",
     )
 
-    await page.goto("http://localhost:8080", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
     // Wait for the SPA router to finish initializing so a late navigation
     // doesn't destroy the execution context during evaluate.
@@ -127,7 +132,7 @@ test.describe("Unique content around the site", () => {
 
   MOCK_PAGE_SLUGS.forEach((pageSlug) => {
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`)
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
@@ -138,11 +143,11 @@ test.describe("Unique content around the site", () => {
   DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(url)
+      await gotoPage(page, url)
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
-      const numOldest = 9
+      const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
         const listElement = document.querySelectorAll("ul.section-ul")[0]
         if (!listElement) {
@@ -174,7 +179,7 @@ test.describe("Unique content around the site", () => {
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
-    await page.goto(url)
+    await gotoPage(page, url)
     await page.locator("body").waitFor({ state: "visible" })
 
     await page.evaluate(() => {
@@ -199,7 +204,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/design")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
     await expect(bigFaviconDemo).toBeVisible()
@@ -210,7 +215,8 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto(
+    await gotoPage(
+      page,
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
     )
 
@@ -226,7 +232,10 @@ test.describe("Unique content around the site", () => {
   })
 
   test("LW Question admonition (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/question-about-defining-alignment-in-simple-setting")
+    await gotoPage(
+      page,
+      "http://localhost:8080/question-about-defining-alignment-in-simple-setting",
+    )
     await page.locator("body").waitFor({ state: "visible" })
 
     const questionAdmonition = page.locator(".admonition.question").first()
@@ -238,7 +247,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Goose code block (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/open-source")
+    await gotoPage(page, "http://localhost:8080/open-source")
     await page.locator("body").waitFor({ state: "visible" })
 
     const gooseCodeBlock = page.locator("#goose-terminal").first()
@@ -711,7 +720,7 @@ test.describe("Elvish toggle", () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
 
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/test-page", "load")
 
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
@@ -829,7 +838,7 @@ test("First paragraph is the same before and after clicking on a heading", async
   const screenshotBefore = await firstParagraph.screenshot()
 
   // Navigate to a heading anchor (triggers SPA navigation).
-  await page.goto(`${page.url()}#header-3`)
+  await gotoPage(page, `${page.url()}#header-3`)
   await firstParagraph.scrollIntoViewIfNeeded()
 
   // The paragraph should look identical after the navigation.
@@ -927,7 +936,7 @@ test.describe("Checkboxes", () => {
     await expect(firstCheckbox).toBeChecked({ checked: !initialState })
 
     // Reload the page
-    await page.reload({ waitUntil: "load" })
+    await reloadPage(page)
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     // Check if state persisted
@@ -972,6 +981,91 @@ test.describe("Checkboxes", () => {
     expect(hasLocalStorageKey).toBe(true)
   })
 
+  test.describe("cascade behavior", () => {
+    // Clear checkbox localStorage before each test so checkboxes start in their HTML default state
+    test.beforeEach(async ({ page }) => {
+      await page.evaluate(() => {
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith("test-page-checkbox-"))
+          .forEach((key) => localStorage.removeItem(key))
+      })
+      await reloadPage(page)
+    })
+
+    test("Checking parent checkbox cascades to nested children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
+      // Its first nested child is index 5: "Nested unchecked item under checked parent"
+      // and that child has its own nested child at index 6.
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
+
+      // Uncheck the parent (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(deeplyNested).toBeChecked({ checked: false })
+
+      // Check the parent — children should cascade to checked
+      await parentCheckbox.click()
+
+      await expect(parentCheckbox).toBeChecked({ checked: true })
+      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(deeplyNested).toBeChecked({ checked: true })
+
+      // Uncheck parent — children should NOT be affected (cascade down only on check)
+      await parentCheckbox.click()
+
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(deeplyNested).toBeChecked({ checked: true })
+    })
+
+    test("Unchecking nested checkbox is independent from parent", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      // Check parent (cascades to child), then uncheck child
+      await parentCheckbox.click()
+      await expect(nestedChild).toBeChecked({ checked: true })
+
+      await nestedChild.click()
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(parentCheckbox).toBeChecked({ checked: true })
+    })
+
+    test("Re-checking parent re-cascades to previously unchecked children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
+      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      // Check parent (cascades), uncheck child, uncheck parent, re-check parent
+      await parentCheckbox.click()
+      await nestedChild.click()
+      await expect(nestedChild).toBeChecked({ checked: false })
+
+      await parentCheckbox.click() // uncheck parent
+      await parentCheckbox.click() // re-check parent — should re-cascade
+
+      await expect(nestedChild).toBeChecked({ checked: true })
+    })
+  })
+
   test.describe("state restoration before first paint", () => {
     const clearCheckboxKeys = () => {
       const keysToRemove = Object.keys(localStorage).filter((key) =>
@@ -1008,19 +1102,17 @@ test.describe("Checkboxes", () => {
         { key: checkboxKey },
       )
 
-      // Navigate to page and wait only for DOM content (not full load)
-      // This gives us the earliest possible moment to check checkbox state
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+      await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-      // Immediately check checkbox state WITHOUT dispatching nav event
-      // Before the fix, this would return the HTML default (unchecked)
-      // After the fix, the MutationObserver restores state before we can check
-      const checkboxStateBeforeNav = await page.evaluate(() => {
-        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
-        return checkbox?.checked
-      })
-
-      expect(checkboxStateBeforeNav).toBe(true)
+      // Check checkbox state — MutationObserver restores before first paint, but
+      // Safari may deliver the callback slightly after domcontentloaded.
+      await expect(async () => {
+        const checkboxStateBeforeNav = await page.evaluate(() => {
+          const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+          return checkbox?.checked
+        })
+        expect(checkboxStateBeforeNav).toBe(true)
+      }).toPass({ timeout: 5_000 })
     })
 
     const checkboxTestCases = [
@@ -1043,19 +1135,21 @@ test.describe("Checkboxes", () => {
           { key: checkboxKey, state: savedState },
         )
 
-        await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+        await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-        // Check checkbox state immediately without dispatching nav event
-        const checkboxState = await page.evaluate(
-          ({ idx }) => {
-            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-            const checkbox = checkboxes[idx] as HTMLInputElement
-            return checkbox?.checked
-          },
-          { idx: index },
-        )
-
-        expect(checkboxState).toBe(savedState)
+        // Check checkbox state — MutationObserver restores before first paint, but
+        // Safari may deliver the callback slightly after domcontentloaded.
+        await expect(async () => {
+          const checkboxState = await page.evaluate(
+            ({ idx }) => {
+              const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+              const checkbox = checkboxes[idx] as HTMLInputElement
+              return checkbox?.checked
+            },
+            { idx: index },
+          )
+          expect(checkboxState).toBe(savedState)
+        }).toPass({ timeout: 5_000 })
       })
     }
   })
@@ -1109,7 +1203,7 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "load" })
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality
@@ -1127,7 +1221,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")

@@ -17,12 +17,17 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2026-03-08 23:44:38.062842
 ---
+
 
 # Punctilio for meticulous typography
 
-<span class="populate-punctilio-readme"></span>
+<div class="no-smallcaps">
+  
+<span class="populate-markdown-punctilio"></span>
+
+</div>
 
 # This website
 
@@ -130,6 +135,12 @@ The way this works is that:
 3. The `lolcat` command splays the text 'cross the rainbow.
 
 # Minor contributions
+
+## Mermaid diagrams now generate unique element IDs
+
+My site [uses Mermaid diagrams](/design#mermaid-diagrams) for compact, searchable, and dynamically styled graphics. However,  [the `a11y` accessibility checker](/design#accessibility) revealed a "bigly" problem. When a page contains multiple diagrams, some element IDs collide (like those for arrowhead markers and node containers). Thus, calling `url(#arrowhead)` in the third diagram might bind to a marker defined in the first. Arrowheads vanish, click handlers fire on the wrong diagram, and CSS styles corrupt.
+
+The issue had been reported repeatedly since 2020 ([#1318](https://github.com/mermaid-js/mermaid/issues/1318), [#3267](https://github.com/mermaid-js/mermaid/issues/3267), [#3433](https://github.com/mermaid-js/mermaid/issues/3433), [#4346](https://github.com/mermaid-js/mermaid/issues/4346)) with no comprehensive fix in sight. In February 2026, I aimed Claude Code at this problem. With our [PR #7410](https://github.com/mermaid-js/mermaid/pull/7410), we prefixed every element ID with its diagram's unique SVG container ID, making collisions impossible. We also ensured that all future diagram types generate unique IDs across diagrams.
 
 ## SCSS linting rule
 

@@ -168,7 +168,6 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   node.properties.loading = "lazy"
                 }
 
-                // TODO leaving this be, but might need to be updated along with isExternal
                 if (!isAbsoluteUrl(node.properties.src)) {
                   let dest = node.properties.src as RelativeURL
                   dest = node.properties.src = transformLink(

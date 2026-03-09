@@ -11,7 +11,8 @@ export function filterContent(ctx: BuildCtx, content: ProcessedContent[]): Proce
     const updatedContent = content.filter((item) => plugin.shouldPublish(ctx, item))
 
     if (argv.verbose) {
-      const diff = content.filter((x) => !updatedContent.includes(x))
+      const updatedSet = new Set(updatedContent)
+      const diff = content.filter((x) => !updatedSet.has(x))
       for (const file of diff) {
         console.log(`[filter:${plugin.name}] ${file[1].data.slug}`)
       }
