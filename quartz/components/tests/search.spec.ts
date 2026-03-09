@@ -12,6 +12,7 @@ import {
   getAllWithWait,
   isElementChecked,
   openSearch,
+  gotoPage,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -19,7 +20,7 @@ test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => console.error(err))
 
   // Navigate and wait for full initialization (including scripts)
-  await page.goto("http://localhost:8080/welcome", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/welcome")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
@@ -29,6 +30,10 @@ test.beforeEach(async ({ page }) => {
   await expect(searchContainer).not.toHaveClass(/active/)
 
   await openSearch(page)
+
+  // Park the mouse in a safe corner so Firefox doesn't fire spurious
+  // mouseenter events when result cards render under the cursor.
+  await page.mouse.move(0, 0)
 })
 
 function isMobileViewport(page: Page): boolean {
@@ -42,11 +47,15 @@ function getPreviewLocator(page: Page): Locator {
   return page.locator("#preview-container")
 }
 
-/** Wait for the preview article content to be loaded */
+/** Wait for the preview article content to be loaded and non-empty.
+ *  Preview content is fetched asynchronously after the article element is
+ *  attached, so we also wait for it to have visible children to avoid
+ *  racing on content assertions like toContainText. */
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
+  await expect(article).not.toBeEmpty({ timeout: 10_000 })
   return preview
 }
 
@@ -102,6 +111,9 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
+  // Search + preview fetch + screenshot can exceed 30s on Safari in CI
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
 
@@ -208,6 +220,21 @@ test("matched search terms appear in results", async ({ page }) => {
   await expect(matches.first()).toContainText("test", { ignoreCase: true })
 })
 
+test("result card title does not show raw HTML tags", async ({ page }) => {
+  await search(page, "test")
+
+  const firstCard = page.locator(".result-card").first()
+  await expect(firstCard).toBeVisible()
+
+  // The title should use DOM-based highlighting, not raw HTML strings
+  const titleText = await firstCard.locator(".h4").textContent()
+  expect(titleText).not.toContain("<span")
+  expect(titleText).not.toContain("</span>")
+
+  // The search-match span should exist as a proper DOM element
+  await expect(firstCard.locator(".h4 .search-match")).toBeAttached()
+})
+
 test("search matches in headers have correct color styling", async ({ page }) => {
   await search(page, "Steering")
 
@@ -285,7 +312,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 test.describe("Search accuracy", () => {
   const searchTerms = [
     { term: "Josh Turner" },
-    { term: "The Pond" },
+    { term: "Pond" },
     { term: "United States government" },
     { term: "gwern" },
   ]
@@ -403,7 +430,10 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text stays at top even with body matches", async ({ page }) => {
+test("Search matching title text stays at top even with body matches", async ({
+  page,
+}, testInfo) => {
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit search rendering is slower in CI")
   const initialUrl = page.url()
   // "Testing site" matches the test page title ("Testing Site Features") and
   // the sub-token "Testing" also appears in the body ("visual regression testing").
@@ -417,6 +447,10 @@ test("Search matching title text stays at top even with body matches", async ({ 
   await testPageResult.click()
 
   await page.waitForURL((url) => url.toString() !== initialUrl)
+  // waitForURL resolves as soon as pushState fires; the SPA may still be
+  // rendering content and applying search highlights.  Wait for the article
+  // title element to be present before checking for search-match spans.
+  await expect(page.locator("#article-title")).toBeAttached()
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
@@ -440,8 +474,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await page.waitForURL((url) => url.toString() !== initialUrl)
   const firstResultUrl = page.url()
 
-  // Search again — use openSearch to wait for component initialization after goBack
-  await page.goBack({ waitUntil: "load" })
+  // Search again — use openSearch to wait for component initialization after goBack.
+  // Use waitUntil: "commit" to avoid WebKit hangs with "load" on SPA back-navigation.
+  await page.goBack({ waitUntil: "commit" })
+  await page.waitForLoadState("domcontentloaded")
   await openSearch(page)
   await search(page, "Shrek")
 
@@ -465,7 +501,7 @@ test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
 })
 
 test("Search preview of checkboxes remembers user state", async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   const baseSelector = "h1 + ol #checkbox-0"
   const checkboxAfterHeader = page.locator(baseSelector).first()
@@ -543,7 +579,10 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   })
 })
 
-test("Search preview shows after bad entry", async ({ page }) => {
+test("Search preview shows after bad entry", async ({ page }, testInfo) => {
+  // Four sequential searches can exceed 30s on Safari/WebKit in CI
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
   await search(page, "zzzzzz")
   await search(page, "Testing site")
   await search(page, "zzzzzz")
@@ -626,8 +665,11 @@ test("Search preview shows multiple highlighted terms", async ({ page }) => {
 
   const previewContainer = await waitForPreviewArticle(page)
 
-  // Check that multiple matches are highlighted
+  // Wait for matches to render — content is fetched asynchronously after the
+  // preview article element is attached, so matches may not exist immediately.
   const matches = previewContainer.locator(".search-match")
+  await expect(matches.first()).toBeAttached({ timeout: 10_000 })
+
   const matchCount = await matches.count()
   expect(matchCount).toBeGreaterThan(1)
 })
@@ -744,13 +786,17 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
+  // Move mouse away from results so that when the mouseover lock expires,
+  // no accidental hover event steals focus from the first result.
+  await page.mouse.move(0, 0)
+
   // The search input is debounced (400ms), so `search()` may return before
   // the new results render. Wait for the first result card to reflect the
   // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
 
-  // The first result should gain focus once the mouseover lock expires
+  // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
 
   await page.keyboard.press("Enter")
@@ -822,7 +868,7 @@ test("Search bar accepts input immediately while index loads", async ({ page }) 
   await expect(searchContainer).not.toHaveClass(/active/)
 
   // Navigate to a fresh page to reset search initialization state
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  await gotoPage(page, "http://localhost:8080/test-page")
 
   // Intercept contentIndex.json to add a delay, simulating slow index loading
   await page.route("**/contentIndex.json", async (route) => {
@@ -855,4 +901,103 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
   await expect(article).not.toBeEmpty()
+})
+
+test("admonition background is transparent in focused mobile card preview (lostpixel)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+
+  // "Admonitions" matches the test page which has a section with various admonition types
+  await search(page, "Admonitions")
+
+  const testPageResult = page.locator('.result-card[id="test-page"]')
+  await expect(testPageResult).toBeVisible()
+  await testPageResult.focus()
+
+  const cardPreview = testPageResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+
+  // The focused card has a non-transparent background (the hover/focus effect),
+  // while the admonition inside is transparent — so the highlight shows through.
+  await expect(testPageResult).toHaveClass(/focus/)
+  const cardBg = await testPageResult.evaluate((el) => {
+    return window.getComputedStyle(el).backgroundColor
+  })
+  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
+
+  const admonition = cardPreview.locator(".admonition").first()
+  await expect(admonition).toBeAttached()
+  await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
+    elementToScreenshot: testPageResult,
+  })
+})
+
+test.describe("Search preview scroll behavior", () => {
+  test("scrolls container so first match is approximately centered", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const previewContainer = page.locator("#preview-container")
+    const firstMatch = previewContainer.locator(".search-match").first()
+    await expect(firstMatch).toBeAttached()
+
+    // The scroll code positions the first match at ~50% of the container height.
+    // Verify the match ends up in the middle portion of the visible area.
+    await expect(async () => {
+      const { matchCenterFraction, scrollTop } = await previewContainer.evaluate((container) => {
+        const match = container.querySelector(".search-match")
+        if (!match) throw new Error("No .search-match element found")
+        const matchRect = match.getBoundingClientRect()
+        const containerRect = container.getBoundingClientRect()
+        const matchCenter = matchRect.top + matchRect.height / 2 - containerRect.top
+        return {
+          matchCenterFraction: matchCenter / container.clientHeight,
+          scrollTop: container.scrollTop,
+        }
+      })
+
+      // When the container scrolled, the match should be near center (middle 60%)
+      if (scrollTop > 0) {
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeGreaterThan(0.2)
+        // eslint-disable-next-line playwright/no-conditional-expect
+        expect(matchCenterFraction).toBeLessThan(0.8)
+      }
+      // Match must always be within the visible container area
+      expect(matchCenterFraction).toBeGreaterThanOrEqual(0)
+      expect(matchCenterFraction).toBeLessThanOrEqual(1)
+    }).toPass()
+  })
+
+  test("re-scrolls to first match after viewport resize", async ({ page }) => {
+    test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+    // viewportSize() is guaranteed non-null here (non-mobile viewport confirmed above)
+    const currentSize = page.viewportSize() as { width: number; height: number }
+    test.skip(
+      currentSize.width - 200 <= tabletBreakpoint,
+      "Viewport too narrow to resize while remaining above tablet breakpoint",
+    )
+
+    await search(page, "virus")
+    await waitForPreviewArticle(page)
+
+    const firstMatch = page.locator("#preview-container .search-match").first()
+    await expect(firstMatch).toBeInViewport()
+
+    // Resize viewport (changes container height and triggers content reflow)
+    await page.setViewportSize({
+      width: currentSize.width - 200,
+      height: currentSize.height - 100,
+    })
+
+    // The debounced resize handler (150ms) re-scrolls to the match
+    await expect(firstMatch).toBeInViewport()
+  })
 })

@@ -91,8 +91,9 @@
     const slug = document.body?.dataset?.slug
     if (!slug) return
     const title = element.querySelector(".admonition-title")?.textContent?.trim() || ""
-    const body = element.querySelector(".admonition-content")?.textContent?.trim() || ""
-    element.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title + body)
+    // Use title-only (not body) to avoid streaming-parse race conditions where
+    // .admonition-content children haven't been added to the DOM yet.
+    element.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title)
     if (window.__quartz_collapsible_states.has(element.dataset.collapsibleId))
       element.classList.toggle(
         "is-collapsed",

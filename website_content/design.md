@@ -13,10 +13,11 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-02-28 22:22:26.669560
+date_updated: 2026-03-08 23:44:38.062842
 no_dropcap: false
 createBibtex: true
 ---
+
 
 
 
@@ -628,6 +629,23 @@ While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Ga
 
 Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
 
+### Upright punctuation in italic text
+
+> [!quote] [Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html)
+>
+> Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
+
+I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
+
+|  | Original | With upright punctuation |
+| --: | :--: | :--: |
+| Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
+| Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
+| Braces | <span class="italic-old">_\{Hello world\}_</span> | _\{Hello world\}_ |
+| Double quotes | <span class="italic-old">_“Hello world”_</span> | _“Hello world”_ |
+| Single quotes | <span class="italic-old">_‘Hello world’_</span> | _‘Hello world’_ |
+| Apostrophe | <span class="italic-old">_don’t_</span> | _don’t_ |
+
 # Website features
 
 Subtitle: This list is not exhaustive.
@@ -921,31 +939,7 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 
 [`lint-staged`](https://www.npmjs.com/package/lint-staged) improves the readability and consistency of my code. While I format some filetypes on save, there are a lot of files and a lot of types. Therefore, my `package.json` specifies what linting & formatting tools to run on what filetypes:
 
-```json
-  "lint-staged": {
-    "*.{css,scss,json}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": [
-      "npx eslint --fix",
-      "prettier --write"
-    ],
-    "*.fish": "fish_indent",
-    "*.sh": [
-      "shfmt -i 2 -w",
-      "shellcheck"
-    ],
-    "*.py": [
-      "ruff check --fix",
-      "pyupgrade",
-      "autoflake --in-place",
-      "isort",
-      "autopep8 --in-place",
-      "black"
-    ],
-    "!(*.vale-styles)/**/*.md": [
-      "prettier --write",
-      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
-    ]
-```
+<span class="populate-markdown-lint-staged"></span>
 
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.

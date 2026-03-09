@@ -69,13 +69,13 @@ export const findElementsByClass = (root: Root, className: string): Element[] =>
 /**
  * Type for content generators that produce HAST elements to populate containers.
  */
-export type ContentGenerator = () => Promise<Element[]>
+export type ContentGenerator = () => Promise<Element[]> | Element[]
 
 /**
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     return [h("span", String(value))]
   }
 }
@@ -99,7 +99,14 @@ interface GitCountOptions {
 }
 
 // skipcq: JS-D1001
-export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+export function isShallowClone(): boolean {
+  return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
+}
+
+// skipcq: JS-D1001
+export function countGitCommits(options: GitCountOptions = {}): number {
+  if (isShallowClone()) return 0
+
   let cmd = "git rev-list --all --count"
   if (options.author) cmd += ` --author="${options.author}"`
   if (options.grep) cmd += ` --grep="${options.grep}"`
@@ -108,7 +115,7 @@ export async function countGitCommits(options: GitCountOptions = {}): Promise<nu
 }
 
 // skipcq: JS-D1001
-export async function countJsTests(): Promise<number> {
+export function countJsTests(): number {
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
   })
@@ -118,7 +125,7 @@ export async function countJsTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export async function countPlaywrightTests(): Promise<number> {
+export function countPlaywrightTests(): number {
   const output = execSync('grep -r "test(" quartz/components/tests/*.spec.ts | wc -l', {
     encoding: "utf-8",
   })
@@ -131,7 +138,7 @@ export const PYTEST_COUNT_CMD =
   "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
 
 // skipcq: JS-D1001
-export async function countPythonTests(): Promise<number> {
+export function countPythonTests(): number {
   const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
 
   const match = output.match(/(?<count>\d+)\s+tests?\s+collected/)
@@ -143,7 +150,7 @@ export async function countPythonTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export async function countLinesOfCode(): Promise<number> {
+export function countLinesOfCode(): number {
   const output = execSync(
     'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/lost-pixel/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
     { encoding: "utf-8" },
@@ -209,7 +216,7 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const faviconElement = createFaviconElement(faviconPath, altText)
     return [createNowrapSpan("", faviconElement)]
   }
@@ -220,7 +227,7 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const dummyProps = {
       cfg: {},
       fileData: {
@@ -256,7 +263,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
  */
 export const generateFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    const faviconCounts = getFaviconCounts()
+    const faviconCounts = await getFaviconCounts()
     logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
 
     // Find PNG paths that need SVG CDN checking

@@ -412,7 +412,7 @@ describe("allCapsContinuation Regex Tests", () => {
   const allCapsContinuationRegex = new RegExp(allCapsContinuation)
 
   describe("Should Match", () => {
-    const dashPhrases = ["-HI", " HI", "- - - -HI"]
+    const dashPhrases = ["-HI", " HI", "- - - -HI", " 2.1 HI"]
 
     it.each(dashPhrases)("should match continuation: '%s'", (input) => {
       expect(allCapsContinuationRegex.test(input)).toBe(true)
@@ -473,6 +473,10 @@ describe("REGEX_ALL_CAPS_PHRASE Regex Tests", () => {
     [
       "<p>THE FBI AGENT watched.</p>",
       '<p><abbr class="small-caps">The fbi agent</abbr> watched.</p>',
+    ],
+    [
+      "<p>WCAG 2.1 AA compliance</p>",
+      '<p><abbr class="small-caps">Wcag 2.1 aa</abbr> compliance</p>',
     ],
   ]
 

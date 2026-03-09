@@ -115,8 +115,7 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return []
     },
-    // skipcq: JS-0116 for type signature
-    async getDependencyGraph() {
+    getDependencyGraph() {
       return new DepGraph<FilePath>()
     },
     async emit(ctx): Promise<FilePath[]> {

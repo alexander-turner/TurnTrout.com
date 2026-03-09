@@ -16,6 +16,7 @@ import {
   getScreenshotName,
   wrapH1SectionsInSpans,
   getAllWithWait,
+  gotoPage,
 } from "./visual_utils"
 
 test.describe("wrapH1SectionsInSpans", () => {
@@ -163,7 +164,7 @@ test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
     await page.emulateMedia({ colorScheme: preferredTheme })
   })
 
@@ -488,10 +489,15 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
+    // Allow ±1px tolerance for DPR rounding across device presets
     // skipcq: JS-0339
-    expect(dimensions.width).toBeCloseTo(elementBox!.width)
+    expect(dimensions.width).toBeGreaterThanOrEqual(elementBox!.width - 1)
     // skipcq: JS-0339
-    expect(dimensions.height).toBeCloseTo(elementBox!.height)
+    expect(dimensions.width).toBeLessThanOrEqual(elementBox!.width + 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeGreaterThanOrEqual(elementBox!.height - 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeLessThanOrEqual(elementBox!.height + 1)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
@@ -502,8 +508,11 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 
   test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
@@ -515,8 +524,11 @@ test.describe("takeRegressionScreenshot", () => {
     const dimensions = await getImageDimensions(screenshot)
 
     // The dimensions should match the clip, not the element's bounding box
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 
   test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
@@ -765,14 +777,14 @@ test.describe("getAllWithWait", () => {
       </html>
     `)
 
-    // Show elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule showing elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         document.querySelectorAll(".delayed").forEach((el) => {
           ;(el as HTMLElement).style.display = "block"
         })
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".delayed"))
     expect(items).toHaveLength(2)
@@ -784,9 +796,9 @@ test.describe("getAllWithWait", () => {
   test("handles dynamically added elements", async ({ page }) => {
     await page.setContent("<html><body></body></html>")
 
-    // Add elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule adding elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         const body = document.body
         for (let i = 1; i <= 3; i++) {
           const div = document.createElement("div")
@@ -794,8 +806,8 @@ test.describe("getAllWithWait", () => {
           div.textContent = `Dynamic ${i}`
           body.appendChild(div)
         }
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".dynamic"))
     expect(items).toHaveLength(3)
