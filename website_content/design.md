@@ -982,6 +982,24 @@ These formatters run locally because they _modify files_ and auto-commit the fix
 
 I use [`alt-text-llm`](https://pypi.org/project/alt-text-llm/) to scan for images missing alt text, using an LLM to generate descriptions. This requires an API key and runs locally.
 
+### Compressing and uploading assets
+
+I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
+
+I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
+
+1. Move any assets from `asset_staging/` to a slightly more permanent `static/` asset directory, updating any filepath references in the Markdown articles;
+2. [Compress](#asset-compression) all relevant assets within `static/`, updating filepath references appropriately;
+3. Run [`exiftool`](https://stackoverflow.com/questions/66192531/exiftool-how-to-remove-all-metadata-from-all-files-possible-inside-a-folder-an) to strip [Exif](https://en.wikipedia.org/wiki/Exif) metadata from images, preventing unintended information leakage;
+4. Upload the assets to `assets.turntrout.com`, again updating references in the Markdown files;[^upload]
+5. Copy the assets to my local mirror of my R2 asset bucket (in case something happens to Cloudflare).
+
+While this pipeline took several weeks of part-time coding to iron out, I'm glad I took the time.
+
+[^upload]: When I upload assets to Cloudflare R2, I have to be careful. By default, the upload will overwrite existing assets. If I have a namespace collision and accidentally overwrite an older asset which happened to have the same name, there's no way for me to know without simply realizing that an older page no longer shows the older asset. For example, links to the older asset would still validate [under `linkchecker`](#validating-links). Therefore, I disable overwrites by default and instead print a warning that an overwrite was attempted.
+
+## Testing and validation
+
 ### Static validation of Markdown and source files
 
 I lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
@@ -1040,22 +1058,6 @@ However, it's not practical to test every single page. So I have a [test page](/
 > As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
 >
 > After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
-
-### Compressing and uploading assets
-
-I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
-
-I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
-
-1. Move any assets from `asset_staging/` to a slightly more permanent `static/` asset directory, updating any filepath references in the Markdown articles;
-2. [Compress](#asset-compression) all relevant assets within `static/`, updating filepath references appropriately;
-3. Run [`exiftool`](https://stackoverflow.com/questions/66192531/exiftool-how-to-remove-all-metadata-from-all-files-possible-inside-a-folder-an) to strip [Exif](https://en.wikipedia.org/wiki/Exif) metadata from images, preventing unintended information leakage;
-4. Upload the assets to `assets.turntrout.com`, again updating references in the Markdown files;[^upload]
-5. Copy the assets to my local mirror of my R2 asset bucket (in case something happens to Cloudflare).
-
-While this pipeline took several weeks of part-time coding to iron out, I'm glad I took the time.
-
-[^upload]: When I upload assets to Cloudflare R2, I have to be careful. By default, the upload will overwrite existing assets. If I have a namespace collision and accidentally overwrite an older asset which happened to have the same name, there's no way for me to know without simply realizing that an older page no longer shows the older asset. For example, links to the older asset would still validate [under `linkchecker`](#validating-links). Therefore, I disable overwrites by default and instead print a warning that an overwrite was attempted.
 
 ### Validating links
 
@@ -1142,7 +1144,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > **RSS validation:**
 > 1. RSS file generation failure or schema validation errors.
 
-### Finishing touches
+## Build pipeline extras
 
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
