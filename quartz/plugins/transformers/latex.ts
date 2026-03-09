@@ -1,5 +1,7 @@
+import { type Element, type Root } from "hast"
 import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
+import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -35,6 +37,22 @@ const macros = {
   "꙳": "$\\star$",
 }
 
+/** Adds `tabindex="0"` and `role="math"` to `.katex` spans for keyboard scrollability. */
+export function makeKatexDisplayAccessible() {
+  return (tree: Root) => {
+    visit(tree, "element", (node: Element) => {
+      if (
+        node.tagName === "span" &&
+        Array.isArray(node.properties?.className) &&
+        (node.properties.className as string[]).includes("katex")
+      ) {
+        node.properties.tabIndex = 0
+        node.properties.role = "math"
+      }
+    })
+  }
+}
+
 export const Latex: QuartzTransformerPlugin = () => {
   return {
     name: "Latex",
@@ -47,6 +65,7 @@ export const Latex: QuartzTransformerPlugin = () => {
           rehypeKatex,
           { output: "htmlAndMathml", strict: false, trust: true, macros, colorIsTextColor: true },
         ],
+        makeKatexDisplayAccessible,
       ]
     },
     externalResources() {

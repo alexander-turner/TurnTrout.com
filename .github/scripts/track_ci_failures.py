@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-Track CI failures on claude/ branch PRs and escalate when exhausted.
+"""Track CI failures on claude/ branch PRs and escalate when exhausted.
 
 Notification/labeling system only — does NOT ping @claude. The Stop hook
 (verify_ci.py) is the primary fix mechanism. This script:
@@ -30,9 +29,7 @@ def gh_api(
         cmd.extend(["--input", "-"])
         input_data = json.dumps(body)
 
-    result = subprocess.run(
-        cmd, capture_output=True, text=True, input=input_data
-    )
+    result = subprocess.run(cmd, capture_output=True, text=True, input=input_data)
     if result.returncode != 0:
         raise RuntimeError(
             f"gh api {method} {endpoint} failed: {result.stderr.strip()}"
@@ -60,10 +57,7 @@ def main() -> None:
             tracker = comment
             m = re.search(r"<!-- failures:(\{.*?\}) -->", tracker["body"])
             if m:
-                try:
-                    failures = json.loads(m.group(1))
-                except json.JSONDecodeError:
-                    print("Corrupt failure state, starting fresh")
+                failures = json.loads(m.group(1))
             break
 
     # Dedup: skip if we already tracked this run or workflow is exhausted
@@ -108,7 +102,9 @@ def main() -> None:
             f"**{workflow_name}** has exhausted its {MAX_ATTEMPTS} attempts."
         )
     else:
-        body = f"{header}The following workflows have failed on this PR:\n\n{failure_list}"
+        body = (
+            f"{header}The following workflows have failed on this PR:\n\n{failure_list}"
+        )
 
     # Create or update the tracker comment
     if tracker:
@@ -126,7 +122,7 @@ def main() -> None:
         )
         print(f"Created tracker comment for {workflow_name} failure")
 
-    # Label when all attempts are exhausted
+    # Label when all attempts are exhausted (label may not exist in repo)
     if all_exhausted:
         try:
             gh_api(
