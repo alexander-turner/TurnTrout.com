@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "numberOfRuns": 1,
+      "numberOfRuns": 3,
       "settings": {
         "throttling": {
           "cpuSlowdownMultiplier": 1,
