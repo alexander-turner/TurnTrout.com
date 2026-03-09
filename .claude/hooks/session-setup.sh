@@ -26,10 +26,18 @@ uv_install_if_missing() {
 }
 
 # Install a command via webi if missing
+# Downloads the installer to a temp file first (avoid piping curl to sh directly)
 webi_install_if_missing() {
 	local cmd="$1"
 	if ! command -v "$cmd" &>/dev/null; then
-		curl -sS "https://webi.sh/$cmd" | sh >/dev/null || warn "Failed to install $cmd"
+		local installer
+		installer=$(mktemp "${TMPDIR:-/tmp}/webi-${cmd}-XXXXXX.sh")
+		if curl -fsSL "https://webi.sh/$cmd" -o "$installer" 2>/dev/null; then
+			sh "$installer" >/dev/null 2>&1 || warn "Failed to install $cmd"
+		else
+			warn "Failed to download installer for $cmd"
+		fi
+		rm -f "$installer"
 	fi
 }
 
@@ -98,12 +106,6 @@ fi
 #   http://local_proxy@127.0.0.1:18393/git/owner/repo
 # The gh CLI can't detect the GitHub repo from this, so we extract
 # owner/repo and export GH_REPO to make all gh commands work.
-#
-# Lessons learned: `gh repo set-default` still needs at least one remote
-# that points to a recognized GitHub host — exporting GH_REPO alone is
-# not enough. We therefore add a "github" remote with the real URL so
-# that both `gh repo set-default` and `gh pr create --head` resolve
-# correctly without manual workarounds.
 
 if [ -z "${GH_REPO:-}" ]; then
 	remote_url=$(git -C "$PROJECT_DIR" remote get-url origin 2>/dev/null || true)

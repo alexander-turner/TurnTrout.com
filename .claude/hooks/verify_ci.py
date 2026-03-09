@@ -28,13 +28,21 @@ from pathlib import Path
 
 
 def _get_max_retries() -> int:
-    return int(os.environ.get("MAX_STOP_RETRIES", "3"))
+    raw = int(os.environ.get("MAX_STOP_RETRIES", "3"))
+    return max(1, min(raw, 10))
 
 
 def _retry_file(project_dir: str) -> Path:
-    """Return a stable path for the retry counter, keyed on project dir."""
+    """
+    Return a stable path for the retry counter, keyed on project dir.
+
+    Uses a user-specific subdirectory with restrictive permissions to prevent
+    other users from tampering with the retry counter.
+    """
+    retry_dir = Path(tempfile.gettempdir()) / f"claude-stop-{os.getuid()}"
+    retry_dir.mkdir(mode=0o700, exist_ok=True)
     dir_hash = sha256(project_dir.encode()).hexdigest()[:16]
-    return Path(tempfile.gettempdir()) / f"claude-stop-attempts-{dir_hash}"
+    return retry_dir / f"attempts-{dir_hash}"
 
 
 def _has_script(pkg: dict, name: str) -> bool:
@@ -242,8 +250,10 @@ def main() -> None:
     # --- Collect checks to run ---
     failures: list[str] = []
     outputs: list[str] = []
+    checks_run: list[str] = []
 
     def check(name: str, cmd: str) -> None:
+        checks_run.append(name)
         passed, output = _run_check(name, cmd)
         if not passed:
             failures.append(name)
@@ -254,6 +264,13 @@ def main() -> None:
     _check_remote_ci(failures, outputs)
 
     # --- Produce result ---
+    if not checks_run:
+        print(
+            "WARNING: No checks configured — stop hook provides no protection. "
+            "Configure test/lint/check scripts in package.json or add pyproject.toml.",
+            file=sys.stderr,
+        )
+
     if not failures:
         retry_file.unlink(missing_ok=True)
         print(json.dumps({"decision": "approve"}))
