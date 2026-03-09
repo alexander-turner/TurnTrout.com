@@ -328,7 +328,11 @@
       "immutable": "5.1.5",
       "underscore": "1.13.8",
       "serialize-javascript": "7.0.3",
-      "minimatch": "10.2.3",
+      "serve-handler>minimatch": "3.1.4",
+      "postcss-url>minimatch": "3.1.4",
+      "filelist>minimatch": "5.1.8",
+      "markdownlint-cli>minimatch": "10.2.3",
+      "glob>minimatch": "10.2.3",
       "@tootallnate/once": "3.0.1",
       "express-rate-limit": "8.2.2",
       "serve>ajv": "8.18.0"
