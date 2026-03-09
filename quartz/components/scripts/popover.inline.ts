@@ -277,16 +277,13 @@ document.addEventListener("nav", () => {
           return
         }
 
-        // Record whether the mouse had moved at the time of this mouseenter.
-        // If it hasn't moved since the last navigation, this is a spurious
-        // Safari DOM-morph event and should be suppressed.
-        const hadMouseMovedAtHover = mouseMovedSinceNav
-
         pendingPopoverTimer = window.setTimeout(() => {
           // Suppress popovers triggered by spurious mouseenter events that
           // Safari fires after SPA navigation morphs the DOM under a
-          // stationary cursor.
-          if (!hadMouseMovedAtHover) {
+          // stationary cursor. We check at timer-fire time (not at mouseenter
+          // time) because mousemove may fire slightly after mouseenter when
+          // the pointer teleports to an element.
+          if (!mouseMovedSinceNav) {
             pendingPopoverTimer = null
             return
           }
