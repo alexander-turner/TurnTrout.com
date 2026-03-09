@@ -821,7 +821,7 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding perfect scores in accessibility, best practices, and SEO, plus 90+ in performance Here are some highlights from my accessibility pipeline.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding perfect scores in accessibility, best practices, and SEO, plus 90+ in performance. Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
