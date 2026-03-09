@@ -12,25 +12,25 @@ function applyPlugin(tree: Root): Root {
 }
 
 describe("Latex plugin", () => {
-  it("includes makeKatexDisplayAccessible in htmlPlugins", () => {
-    const plugin = Latex()
-    const mockCtx = {} as never
-    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
-    expect(htmlPlugins).toContain(makeKatexDisplayAccessible)
-  })
+  const plugin = Latex()
+  const mockCtx = {} as never
 
-  it("includes remarkMath in markdownPlugins", () => {
-    const plugin = Latex()
-    const mockCtx = {} as never
-    const mdPlugins = plugin.markdownPlugins?.(mockCtx) ?? []
-    expect(mdPlugins).toHaveLength(1)
-  })
-
-  it("provides katex CSS as external resource", () => {
-    const plugin = Latex()
-    const mockCtx = {} as never
-    const resources = plugin.externalResources?.(mockCtx)
-    expect(resources?.css).toContain("/static/styles/katex.min.css")
+  it.each([
+    [
+      "htmlPlugins includes makeKatexDisplayAccessible",
+      () => expect(plugin.htmlPlugins?.(mockCtx) ?? []).toContain(makeKatexDisplayAccessible),
+    ],
+    [
+      "markdownPlugins has one entry",
+      () => expect(plugin.markdownPlugins?.(mockCtx) ?? []).toHaveLength(1),
+    ],
+    [
+      "externalResources includes katex CSS",
+      () =>
+        expect(plugin.externalResources?.(mockCtx)?.css).toContain("/static/styles/katex.min.css"),
+    ],
+  ])("%s", (_name, assertFn) => {
+    assertFn()
   })
 })
 
