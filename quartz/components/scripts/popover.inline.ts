@@ -9,10 +9,10 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
-// Maximum age (ms) of a mouseenter event relative to the last SPA navigation
-// that we still treat as a spurious Safari DOM-morph artifact and suppress.
-// Must be generous enough to cover slow DOM morphs in CI environments.
-const SAFARI_DOM_MORPH_BUFFER_MS = 500
+// After SPA navigation, Safari fires spurious mouseenter events because the
+// DOM morphs under a stationary cursor. We suppress these by tracking whether
+// the mouse has actually moved since the last navigation.
+let mouseMovedSinceNav = true
 
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
@@ -57,7 +57,6 @@ let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
 // Timestamp of last SPA navigation. Used to suppress spurious mouseenter
 // events that Safari fires immediately after DOM morphing.
-let lastNavTimestamp = 0
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
@@ -209,9 +208,17 @@ document.addEventListener("nav", () => {
     pendingPopoverTimer = null
   }
 
-  // Record nav timestamp so we can suppress spurious mouseenter events
-  // that Safari fires immediately after DOM morphing
-  lastNavTimestamp = Date.now()
+  // Mark that the mouse hasn't moved yet since this navigation.
+  // Safari fires spurious mouseenter events after DOM morphing under a
+  // stationary cursor; we suppress those until a real mousemove occurs.
+  mouseMovedSinceNav = false
+  document.addEventListener(
+    "mousemove",
+    () => {
+      mouseMovedSinceNav = true
+    },
+    { once: true },
+  )
 
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {
@@ -270,15 +277,16 @@ document.addEventListener("nav", () => {
           return
         }
 
-        // Capture the mouseenter timestamp. If this hover originated from a
-        // spurious mouseenter fired by Safari after SPA DOM morphing (within
-        // ~200ms of navigation), the timer callback below will discard it.
-        const hoverTimestamp = Date.now()
+        // Record whether the mouse had moved at the time of this mouseenter.
+        // If it hasn't moved since the last navigation, this is a spurious
+        // Safari DOM-morph event and should be suppressed.
+        const hadMouseMovedAtHover = mouseMovedSinceNav
 
         pendingPopoverTimer = window.setTimeout(() => {
           // Suppress popovers triggered by spurious mouseenter events that
-          // Safari fires immediately after SPA navigation morphs the DOM.
-          if (hoverTimestamp - lastNavTimestamp < SAFARI_DOM_MORPH_BUFFER_MS) {
+          // Safari fires after SPA navigation morphs the DOM under a
+          // stationary cursor.
+          if (!hadMouseMovedAtHover) {
             pendingPopoverTimer = null
             return
           }
