@@ -23,7 +23,7 @@ jobs:
       - name: Extract and submit improvements
         env:
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ env.GH_TOKEN }}
           script: |
