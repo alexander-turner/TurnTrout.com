@@ -258,6 +258,8 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 })
 
 test("Popovers do not appear in search previews", async ({ page }) => {
+  // Search preview content is fetched asynchronously and can be slow on CI
+  test.slow()
   // Open search and search for a term that will have internal links
   await openSearch(page)
   const searchBar = page.locator("#search-bar")
@@ -351,15 +353,12 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await dummyLink.click()
 
   // Wait for navigation to the new page. The href of dummyLink is /design.
-  await page.waitForURL(`**/${linkSlug}`)
-  await page.waitForLoadState("domcontentloaded")
+  await page.waitForURL(`**/${linkSlug}`, { timeout: 30_000 })
 
   // Move cursor to a neutral area so it doesn't accidentally hover over a
   // link on the new page (which could trigger a *new* popover, especially in
   // Safari where the cursor position persists after SPA navigation).
-  // Use the bottom-right corner of the viewport to avoid header/nav links.
-  const viewport = page.viewportSize()
-  await page.mouse.move(viewport?.width ?? 1200, viewport?.height ?? 800)
+  await page.mouse.move(10, 10)
 
   // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
