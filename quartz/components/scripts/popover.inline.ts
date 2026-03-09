@@ -11,7 +11,8 @@ import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Maximum age (ms) of a mouseenter event relative to the last SPA navigation
 // that we still treat as a spurious Safari DOM-morph artifact and suppress.
-const SAFARI_DOM_MORPH_BUFFER_MS = 200
+// Must be generous enough to cover slow DOM morphs in CI environments.
+const SAFARI_DOM_MORPH_BUFFER_MS = 500
 
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
