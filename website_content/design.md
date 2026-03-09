@@ -636,7 +636,7 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 
 I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
 
-|  | Original | With upright punctuation |
+| Character | Original | With upright punctuation |
 | --: | :--: | :--: |
 | Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
 | Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
