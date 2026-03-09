@@ -125,6 +125,10 @@ export default (() => {
     })
 
     const fontPreloadNames = [
+      // Main body font — preloading it prevents a font-swap LCP delay
+      // (text first renders with a fallback font, then repaints with the
+      // web font, and that repaint IS the LCP event on text-heavy pages)
+      "EBGaramond/EBGaramond08-Regular",
       "EBGaramond/EBGaramond-InitialsF1",
       "EBGaramond/EBGaramond-InitialsF2",
     ]

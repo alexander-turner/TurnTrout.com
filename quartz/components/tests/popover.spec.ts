@@ -338,6 +338,8 @@ for (const id of ["navbar", "toc-content"]) {
 }
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
+  // SPA navigation + DOM content load can be slow on CI runners
+  test.slow()
   await expect(dummyLink).toBeVisible()
   const linkHref = await dummyLink.getAttribute("href")
   const linkSlug = linkHref?.split("/").pop()
