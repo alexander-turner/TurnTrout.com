@@ -6134,6 +6134,54 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
+# LCP image optimization tests
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Correctly optimized: eager loading + preload
+        (
+            '<html><head><link rel="preload" as="image" href="img.avif"></head>'
+            '<body><article><img src="img.avif" loading="eager" fetchpriority="high">'
+            '<img src="img2.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+        # Missing eager loading
+        (
+            "<html><head></head><body><article>"
+            '<img src="img.avif" loading="lazy"></article></body></html>',
+            [
+                "First content image should have loading='eager', got 'lazy': img.avif",
+                "First content image should have fetchpriority='high', got '': img.avif",
+                "Missing <link rel='preload' as='image'> in <head> for first content image: img.avif",
+            ],
+        ),
+        # Favicon is skipped, second image is first content image
+        (
+            '<html><head><link rel="preload" as="image" href="hero.avif"></head>'
+            '<body><article><img class="favicon" src="fav.avif" loading="lazy">'
+            '<img src="hero.avif" loading="eager" fetchpriority="high"></article></body></html>',
+            [],
+        ),
+        # No article — no issues
+        (
+            "<html><head></head><body><div>No article</div></body></html>",
+            [],
+        ),
+        # No content images (only favicons) — no issues
+        (
+            "<html><head></head><body><article>"
+            '<img class="favicon" src="fav.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+    ],
+)
+def test_check_lcp_image_optimized(html: str, expected_issues: list[str]):
+    """Test the check_lcp_image_optimized function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_lcp_image_optimized(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
 # Citation uniqueness tests
 @pytest.mark.parametrize(
     "html,expected_keys",
