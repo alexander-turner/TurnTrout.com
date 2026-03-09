@@ -1185,3 +1185,25 @@ Lighthouse audits
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+
+## Automated workflows
+
+Beyond push-triggered CI, several workflows run on schedules or in response to external events — keeping dependencies fresh, surfacing security issues, and drafting newsletters without manual intervention.
+
+Monthly newsletter generation
+: On the 28th of each month, a workflow collects my commits since the last newsletter, extracts modified article metadata, and sends the commit history to the Claude API with a prompt template (`.github/prompts/newsletter-prompt.md`). Claude drafts a newsletter summarizing notable changes, which is emailed to me via the [Resend](https://resend.com/) API. A cached `.last-newsletter-commit` file tracks the commit range so each newsletter covers only new activity.
+
+Weekly security vulnerability scan
+: Every Monday, a workflow fetches open Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. It feeds the combined security report to Claude Code (via [`claude-code-action`](https://github.com/anthropics/claude-code-action)), which triages the findings, applies fixes where possible, and opens or updates a PR labeled `security-scan`. This catches vulnerabilities that Dependabot alone can't fix (e.g., transitive dependency issues or code-level problems).
+
+Template synchronization
+: The repository's automation infrastructure (hooks, workflow files, Claude configuration) descends from a shared [template repository](https://github.com/alexander-turner/claude-automation-template). A daily workflow compares local files against the template, copies new files, detects conflicts with local customizations, and opens a PR. When conflicts or deletions are found, it requests `@claude` review for resolution. A `.template-version` file tracks which template commit the repo is synced to.
+
+Dependency auto-merge
+: Dependabot proposes weekly updates for npm (pnpm), Python (uv), and GitHub Actions dependencies. A `pull_request_target` workflow auto-approves and squash-merges non-major version bumps — major bumps are left for manual review. A similar workflow auto-merges DeepSource style-fix PRs.
+
+CI failure notifications for Claude branches
+: When any CI workflow fails on a `claude/*` branch, a workflow comments on the associated PR mentioning `@claude` with a summary of which workflows failed. It tracks failures per workflow (capped at 2 pings per workflow) to avoid notification spam while still ensuring failures get addressed.
+
+Phone-home improvements
+: When a PR is merged whose body contains a "Lessons Learned" section, a workflow extracts those lessons and opens a corresponding issue on the template repository. This feeds improvements discovered in downstream projects back upstream so all projects benefit.
