@@ -169,7 +169,7 @@
     "yargs": "17.7.2"
   },
   "optionalDependencies": {
-    "@napi-rs/simple-git-android-arm-eabi": "0.1.19",
+    "@napi-rs/simple-git-android-arm-eabi": "0.1.22",
     "@napi-rs/simple-git-android-arm64": "0.1.19",
     "@napi-rs/simple-git-darwin-arm64": "0.1.19",
     "@napi-rs/simple-git-darwin-x64": "0.1.19",
