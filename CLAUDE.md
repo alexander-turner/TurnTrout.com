@@ -253,6 +253,7 @@ Per `.cursorrules` and `design.md`:
 - Parametrize tests using `it.each()` for maximum compactness while achieving high coverage
 - Write focused, non-duplicative tests
 - **NEVER update test expectations without asking the user first.**
+- **NEVER lower CI thresholds or weaken assertions to make tests pass.** Fix the underlying issue instead — improve site performance, fix flaky test logic, etc. Cheap shortcuts like lowering Lighthouse score thresholds or loosening test criteria are not acceptable.
 
 ### Dependencies
 
