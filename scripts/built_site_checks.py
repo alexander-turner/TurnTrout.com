@@ -781,7 +781,11 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
 
     first_img = None
     for img in _tags_only(article.find_all("img")):
-        if "favicon" not in (img.get("class") or []):
+        raw_classes = img.get("class")
+        classes = raw_classes if isinstance(raw_classes, list) else []
+        # Skip favicons and images not processed by the links transformer
+        # (TSX-rendered images won't have a loading attribute)
+        if "favicon" not in classes and img.has_attr("loading"):
             first_img = img
             break
 

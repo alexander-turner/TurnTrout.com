@@ -6173,6 +6173,12 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
             '<img class="favicon" src="fav.avif" loading="lazy"></article></body></html>',
             [],
         ),
+        # Image without loading attr (TSX component, not from transformer) — skip
+        (
+            "<html><head></head><body><article>"
+            '<img src="logo.avif"></article></body></html>',
+            [],
+        ),
     ],
 )
 def test_check_lcp_image_optimized(html: str, expected_issues: list[str]):
