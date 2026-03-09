@@ -476,6 +476,21 @@ video {
   border-radius: $border-radius;
 }
 
+select {
+  padding: calc(0.25 * $base-margin) calc(0.75 * $base-margin) calc(0.25 * $base-margin)
+    calc(0.25 * $base-margin);
+  border: 1px solid var(--midground-faint);
+  border-radius: 5px;
+  background: inherit;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: inherit;
+
+  &:focus {
+    outline: 1px solid var(--midground);
+  }
+}
+
 .spacer {
   flex: 1 1 auto;
 }
