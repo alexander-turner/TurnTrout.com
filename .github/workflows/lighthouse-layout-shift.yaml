@@ -5,6 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main", "dev", "no-layout-shift"]
     paths:
@@ -22,9 +23,51 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
       - ".github/lighthouse-*.json"
+  pull_request:
+    types: [labeled, synchronize, opened, reopened]
+    paths:
+      - "quartz/**/*.scss"
+      - "quartz/**/*.tsx"
+      - "!quartz/**/*.test.tsx"
+      - "quartz/**/*.ts"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/tests/**"
+      - "quartz/static/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
+      - ".github/lighthouse-*.json"
+  merge_group:
 
 jobs:
+  # Gate: only run on PRs if the ci:full-tests label is present.
+  # The pull_request trigger intentionally omits a branches filter so that
+  # ci:full-tests works on PRs targeting any branch (not just main/dev).
+  # Tests always run in the merge queue to enforce passing before merge.
+  should-run:
+    name: lighthouse-should-run
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build_and_deploy:
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
