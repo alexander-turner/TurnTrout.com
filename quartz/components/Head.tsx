@@ -171,9 +171,7 @@ export default (() => {
         {/* Preload the first content image (likely LCP element) so the browser
             starts downloading it immediately instead of waiting to discover the
             <img> tag deep in the HTML body. */}
-        {fileData.firstImageUrl && (
-          <link rel="preload" href={fileData.firstImageUrl} as="image" crossOrigin="anonymous" />
-        )}
+        {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <link rel="stylesheet" href="/index.css" spa-preserve />
         {headJsx}

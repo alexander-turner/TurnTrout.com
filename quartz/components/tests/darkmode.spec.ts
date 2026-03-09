@@ -117,7 +117,10 @@ test("System preference changes are reflected in auto mode", async ({ page }) =>
 test.describe("Theme persistence and UI states", () => {
   ALL_THEMES.forEach((theme) => {
     test(`persists ${theme} theme across reloads`, async ({ page }, testInfo) => {
-      test.slow(testInfo.project.name.includes("Safari"), "WebKit page loads are slow in CI")
+      test.slow(
+        testInfo.project.name.includes("Safari") || testInfo.project.name.includes("Firefox"),
+        "Page loads can be slow in CI",
+      )
 
       const helper = new DarkModeHelper(page)
       await helper.setTheme(theme)
