@@ -856,7 +856,7 @@ Miscellaneous improvements
 
 ## Lighthouse
 
-I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, and SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, at least 90 in SEO, at least 80 in best practices, and at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
 
 [^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
 
