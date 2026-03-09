@@ -46,6 +46,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
           return (tree: Root, file) => {
             const curSlug = simplifySlug(file.data.slug as FullSlug)
             const outgoing: Set<SimpleSlug> = new Set()
+            let seenFirstContentImage = false
 
             const transformOptions: TransformOptions = {
               strategy: opts.markdownLinkResolution,
@@ -165,7 +166,14 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                 typeof node.properties.src === "string"
               ) {
                 if (opts.lazyLoad) {
-                  node.properties.loading = "lazy"
+                  if (node.tagName === "img" && !seenFirstContentImage) {
+                    // First content image is likely the LCP element — load eagerly
+                    seenFirstContentImage = true
+                    node.properties.loading = "eager"
+                    node.properties.fetchpriority = "high"
+                  } else {
+                    node.properties.loading = "lazy"
+                  }
                 }
 
                 if (!isAbsoluteUrl(node.properties.src)) {
