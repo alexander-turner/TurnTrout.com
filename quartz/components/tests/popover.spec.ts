@@ -36,6 +36,11 @@ test.beforeEach(async ({ page }) => {
   }
 
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+
+  // After page load, the nav event sets mouseMovedSinceNav=false to suppress
+  // spurious Safari mouseenter events.  Move the mouse once to clear this flag
+  // so hover-triggered popovers work reliably in tests.
+  await page.mouse.move(1, 1)
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({

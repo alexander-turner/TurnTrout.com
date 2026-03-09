@@ -238,7 +238,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       // Same-URL goto() in Safari may be treated as a soft refresh and skip
       // re-running JS init scripts, leaving --theme-label-content unset.
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
-      await gotoPage(page, `http://localhost:8080/${targetPath}`)
+      await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
       // Verify localStorage survived navigation, then wait for the init
       // script to apply the label (CSS custom property may lag on Safari).
