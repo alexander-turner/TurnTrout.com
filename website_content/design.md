@@ -821,7 +821,7 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse accessibility checks](https://developer.chrome.com/docs/lighthouse/overview/) for six of my pages, demanding a perfect score of 100. Here are some highlights from my pipeline.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, [demanding perfect scores in accessibility, best practices, and SEO, plus 90+ in performance.](#lighthouse-audits) Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
@@ -1170,8 +1170,10 @@ Site functionality
 
   I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
-Minimal layout shift
-: I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
+Lighthouse audits
+: I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) across all four scoring categories, demanding a perfect 100 in accessibility, best practices, and SEO, plus at least 90 in performance — across six representative pages. [Getting a perfect 100 in even one category puts a site in rare company](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): the median performance score across the web is 31, the median best practices score is 71, and only the top 1% of sites reach 99+ in performance. Lighthouse uses a log-normal scoring curve, so the effort to go from 90 to 100 rivals that of going from 50 to 90. I also run dedicated CLS-only Lighthouse checks (desktop and mobile) across several content-heavy pages, requiring cumulative layout shift below 0.05.
+
+  The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5--10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
