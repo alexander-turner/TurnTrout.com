@@ -3332,3 +3332,4 @@ kern
 repositioned
 Garamond's
 Bringhurst's
+jitter
