@@ -14,5 +14,6 @@ htmlcov/
 .mypy_cache/
 .dmypy.json
 test-results/
+.lighthouseci/
 pnpm-lock.yaml
 **/asset_queue.json

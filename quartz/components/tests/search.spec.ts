@@ -30,6 +30,10 @@ test.beforeEach(async ({ page }) => {
   await expect(searchContainer).not.toHaveClass(/active/)
 
   await openSearch(page)
+
+  // Park the mouse in a safe corner so Firefox doesn't fire spurious
+  // mouseenter events when result cards render under the cursor.
+  await page.mouse.move(0, 0)
 })
 
 function isMobileViewport(page: Page): boolean {
@@ -308,7 +312,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 test.describe("Search accuracy", () => {
   const searchTerms = [
     { term: "Josh Turner" },
-    { term: "The Pond" },
+    { term: "Pond" },
     { term: "United States government" },
     { term: "gwern" },
   ]

@@ -177,22 +177,33 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
-    // Mock the external URL to avoid real network requests in CI
-    await page.route("https://www.example.com/**", (route) =>
-      route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
-    )
+    // Create an external link and verify SPA doesn't preventDefault on it
+    const wasDefaultPrevented = await page.evaluate(() => {
+      return new Promise<boolean>((resolve) => {
+        const link = document.createElement("a")
+        link.href = "https://www.example.com"
+        link.id = "external-link"
+        link.textContent = "External Site"
+        document.body.appendChild(link)
 
-    await page.evaluate(() => {
-      const link = document.createElement("a")
-      link.href = "https://www.example.com"
-      link.id = "external-link"
-      link.textContent = "External Site"
-      document.body.appendChild(link)
+        // Listen for the click to check if SPA called preventDefault
+        link.addEventListener(
+          "click",
+          (e) => {
+            // Prevent actual navigation so the test stays on the page
+            const prevented = e.defaultPrevented
+            e.preventDefault()
+            resolve(prevented)
+          },
+          { capture: false },
+        )
+
+        link.click()
+      })
     })
 
-    // Check that SPA logic does not intercept external links
-    await page.click("#external-link")
-    await expect(page).toHaveURL("https://www.example.com")
+    // SPA should NOT have called preventDefault on the external link
+    expect(wasDefaultPrevented).toBe(false)
   })
 })
 

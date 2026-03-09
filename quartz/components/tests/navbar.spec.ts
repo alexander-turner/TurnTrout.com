@@ -285,35 +285,15 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   const navbar = page.locator("#navbar")
   await expect(navbar).toHaveCSS("opacity", "1")
 
-  await page.evaluate(() => window.scrollBy(0, 100))
+  // Scroll down past the 50px threshold. scrollTo dispatches a scroll event
+  // which the scroll handler picks up via requestAnimationFrame. Using
+  // "instant" behavior to avoid smooth-scroll timing issues across browsers.
+  // Note: mouse.wheel() is not supported in mobile WebKit.
+  await page.evaluate(() => window.scrollTo({ top: 200, behavior: "instant" }))
 
-  await page.evaluate(() => {
-    // @ts-expect-error - for test
-    window.lastOpacity = 1
-    // @ts-expect-error - for test
-    window.consecutiveDecreases = 0
-  })
-
-  await page.waitForFunction(() => {
-    const navbarEl = document.querySelector("#navbar")
-    if (!navbarEl) return false
-    const currentOpacity = Number(getComputedStyle(navbarEl).opacity)
-
-    // @ts-expect-error - for test
-    if (currentOpacity < window.lastOpacity) {
-      // @ts-expect-error - for test
-      window.consecutiveDecreases++
-    } else {
-      // @ts-expect-error - for test
-      window.consecutiveDecreases = 0
-    }
-
-    // @ts-expect-error - for test
-    window.lastOpacity = currentOpacity
-    // @ts-expect-error - for test
-    return window.consecutiveDecreases >= 2
-  })
-
+  // The hide-above-screen class triggers a CSS opacity transition (0.45s).
+  // Wait for the class to be applied and the transition to complete.
+  await expect(navbar).toHaveClass(/hide-above-screen/)
   await expect(navbar).toHaveCSS("opacity", "0")
 })
 

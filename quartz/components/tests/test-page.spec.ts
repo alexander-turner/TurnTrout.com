@@ -373,10 +373,6 @@ test.describe("Layout Breakpoints", () => {
   for (const { name, width } of breakpoints) {
     test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
-      test.skip(
-        testInfo.project.use.browserName === "chromium",
-        "Chromium SwiftShader hangs during viewport resize on CI",
-      )
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
 
@@ -993,7 +989,7 @@ test.describe("Checkboxes", () => {
           .filter((key) => key.startsWith("test-page-checkbox-"))
           .forEach((key) => localStorage.removeItem(key))
       })
-      await page.reload()
+      await reloadPage(page)
     })
 
     test("Checking parent checkbox cascades to nested children", async ({ page }) => {

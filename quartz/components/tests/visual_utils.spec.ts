@@ -489,10 +489,15 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
+    // Allow ±1px tolerance for DPR rounding across device presets
     // skipcq: JS-0339
-    expect(dimensions.width).toBeCloseTo(elementBox!.width)
+    expect(dimensions.width).toBeGreaterThanOrEqual(elementBox!.width - 1)
     // skipcq: JS-0339
-    expect(dimensions.height).toBeCloseTo(elementBox!.height)
+    expect(dimensions.width).toBeLessThanOrEqual(elementBox!.width + 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeGreaterThanOrEqual(elementBox!.height - 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeLessThanOrEqual(elementBox!.height + 1)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
@@ -503,8 +508,11 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 
   test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
@@ -516,8 +524,11 @@ test.describe("takeRegressionScreenshot", () => {
     const dimensions = await getImageDimensions(screenshot)
 
     // The dimensions should match the clip, not the element's bounding box
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 
   test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {

@@ -515,6 +515,10 @@ let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
 let mouseEventsLocked = false
+// Tracks whether currentHover was set by keyboard navigation. When true,
+// onMouseLeave should not clear currentHover (mobile Safari's .focus() on
+// <a> elements can fire spurious mouseleave events).
+let hoverSetByKeyboard = false
 
 /* istanbul ignore next */
 const appendLayout = (el: HTMLElement) => {
@@ -569,7 +573,10 @@ function handleResultNavigation(
   const nextSibling = (el: HTMLElement): HTMLElement | null =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : null
 
-  const canNavigate = document.activeElement === searchBar || currentHover !== null
+  const canNavigate =
+    document.activeElement === searchBar ||
+    document.activeElement?.classList.contains("result-card") ||
+    currentHover !== null
 
   /**
    * Focus a target result element and update the preview, if present.
@@ -582,6 +589,7 @@ function handleResultNavigation(
 
     // Lock mouse events during keyboard navigation
     mouseEventsLocked = true
+    hoverSetByKeyboard = true
 
     displayPreview(target)
 
@@ -601,7 +609,12 @@ function handleResultNavigation(
     if (currentHover) {
       return getTarget(currentHover)
     }
-    // If no current hover, start from the first result
+    // If focus is on a result card (e.g., after keyboard navigation moved focus
+    // away from the search bar), use that as the navigation anchor
+    if (document.activeElement?.classList.contains("result-card")) {
+      return getTarget(document.activeElement as HTMLElement)
+    }
+    // If no current hover or focused card, start from the first result
     return document.getElementsByClassName("result-card")[0] as HTMLElement | null
   }
 
@@ -1033,6 +1046,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   function onMouseEnter(ev: MouseEvent) {
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
+    hoverSetByKeyboard = false
     const target = ev.currentTarget as HTMLElement
     displayPreview(target, false)
   }
@@ -1040,6 +1054,10 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   // Add mouse leave handler to maintain focus state
   function onMouseLeave() {
     if (mouseEventsLocked) return
+    // Don't clear currentHover if it was set by keyboard navigation.
+    // Mobile browsers (especially Safari) fire spurious mouseleave events
+    // when .focus() is called on an <a> element during keyboard navigation.
+    if (hoverSetByKeyboard) return
     if (currentHover === itemTile) {
       currentHover = null
     }

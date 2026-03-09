@@ -304,11 +304,7 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   expect(metaX).not.toEqual(dummyX)
 })
 
-test("Popover is hidden on mobile", async ({ page, dummyLink }, testInfo) => {
-  test.skip(
-    testInfo.project.use.browserName === "chromium",
-    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
-  )
+test("Popover is hidden on mobile", async ({ page, dummyLink }) => {
   await page.setViewportSize({ width: 320, height: 600 })
   await expect(dummyLink).toBeVisible()
   await dummyLink.hover()
@@ -351,6 +347,11 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   // Wait for navigation to the new page. The href of dummyLink is /design.
   await page.waitForURL(`**/${linkSlug}`)
   await page.waitForLoadState("domcontentloaded")
+
+  // Move cursor to a neutral area so it doesn't accidentally hover over a
+  // link on the new page (which could trigger a *new* popover, especially in
+  // Safari where the cursor position persists after SPA navigation).
+  await page.mouse.move(0, 0)
 
   // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
@@ -589,10 +590,6 @@ test.describe("Footnote popovers", () => {
 // Use base (not test) so mobile tests don't inherit the desktop-only skip from the
 // file-level test.beforeEach. These tests explicitly set a mobile viewport.
 base.describe("Footnote popover on mobile", () => {
-  base.skip(
-    ({ browserName }) => browserName === "chromium",
-    "Chromium SwiftShader crashes at mobile viewport sizes on CI",
-  )
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
     await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
