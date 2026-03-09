@@ -8,7 +8,7 @@
           "rttMs": 40,
           "throughputKbps": 10240
         },
-        "skipAudits": ["color-contrast", "is-crawlable"],
+        "skipAudits": [],
         "disableStorageReset": false,
         "formFactor": "desktop",
         "screenEmulation": {
