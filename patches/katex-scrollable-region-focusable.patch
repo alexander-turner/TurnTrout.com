@@ -54,10 +54,10 @@ index c359459..56dce32 100755
      <math xmlns="http://www.w3.org/1998/Math/MathML">
        <semantics>
 diff --git a/test/katex-spec.ts b/test/katex-spec.ts
-index f4443e8..2052fc2 100644
+index f4443e8..8e9970b 100644
 --- a/test/katex-spec.ts
 +++ b/test/katex-spec.ts
-@@ -4530,3 +4530,30 @@ describe("\\emph", () => {
+@@ -4530,3 +4530,36 @@ describe("\\emph", () => {
          expect`\textit{\emph{foo \emph{bar}}}`.toBuildLike`\textit{\textup{foo \textit{bar}}}`;
      });
  });
@@ -86,5 +86,11 @@ index f4443e8..2052fc2 100644
 +        const markup = katex.renderToString("x^2", {output: "html"});
 +        expect(markup).toContain('tabindex="0"');
 +        expect(markup).toContain('role="math"');
++    });
++
++    it("should not add tabindex or role in mathml-only output mode", function() {
++        const markup = katex.renderToString("x^2", {output: "mathml"});
++        expect(markup).not.toContain('tabindex');
++        expect(markup).not.toContain('role="math"');
 +    });
 +});
