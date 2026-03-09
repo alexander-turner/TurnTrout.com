@@ -1188,22 +1188,22 @@ Quality gates
 
 ## Automated workflows
 
-Beyond push-triggered CI, several workflows run on schedules or in response to external events — keeping dependencies fresh, surfacing security issues, and drafting newsletters without manual intervention.
+Beyond push-triggered CI, several workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [claude-automation-template](https://github.com/alexander-turner/claude-automation-template).
 
-Monthly newsletter generation
-: On the 28th of each month, a workflow collects my commits since the last newsletter, extracts modified article metadata, and sends the commit history to the Claude API with a prompt template (`.github/prompts/newsletter-prompt.md`). Claude drafts a newsletter summarizing notable changes, which is emailed to me via the [Resend](https://resend.com/) API. A cached `.last-newsletter-commit` file tracks the commit range so each newsletter covers only new activity.
+Monthly newsletter
+: On the 28th of each month, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
 
-Weekly security vulnerability scan
-: Every Monday, a workflow fetches open Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. It feeds the combined security report to Claude Code (via [`claude-code-action`](https://github.com/anthropics/claude-code-action)), which triages the findings, applies fixes where possible, and opens or updates a PR labeled `security-scan`. This catches vulnerabilities that Dependabot alone can't fix (e.g., transitive dependency issues or code-level problems).
+Weekly security scan
+: Every Monday, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/security-vulnerability-scan.yaml) aggregates Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. [`claude-code-action`](https://github.com/anthropics/claude-code-action) triages the findings, applies fixes, and opens a PR.
 
-Template synchronization
-: The repository's automation infrastructure (hooks, workflow files, Claude configuration) descends from a shared [template repository](https://github.com/alexander-turner/claude-automation-template). A daily workflow compares local files against the template, copies new files, detects conflicts with local customizations, and opens a PR. When conflicts or deletions are found, it requests `@claude` review for resolution. A `.template-version` file tracks which template commit the repo is synced to.
+Template sync
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR — requesting `@claude` review when conflicts arise.
 
 Dependency auto-merge
-: Dependabot proposes weekly updates for npm (pnpm), Python (uv), and GitHub Actions dependencies. A `pull_request_target` workflow auto-approves and squash-merges non-major version bumps — major bumps are left for manual review. A similar workflow auto-merges DeepSource style-fix PRs.
+: [Dependabot](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/dependabot.yml) proposes weekly updates for npm, Python, and GitHub Actions dependencies. Non-major bumps are [auto-approved and squash-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-dependabot.yml); major bumps require manual review. [DeepSource](https://deepsource.com/) style-fix PRs are [auto-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-deepsource.yml) similarly.
 
-CI failure notifications for Claude branches
-: When any CI workflow fails on a `claude/*` branch, a workflow comments on the associated PR mentioning `@claude` with a summary of which workflows failed. It tracks failures per workflow (capped at 2 pings per workflow) to avoid notification spam while still ensuring failures get addressed.
+CI failure notifications
+: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow).
 
-Phone-home improvements
-: When a PR is merged whose body contains a "Lessons Learned" section, a workflow extracts those lessons and opens a corresponding issue on the template repository. This feeds improvements discovered in downstream projects back upstream so all projects benefit.
+Phone-home
+: When a merged PR contains a "Lessons Learned" section, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) files a corresponding issue on the [template repo](https://github.com/alexander-turner/claude-automation-template) so improvements propagate upstream.
