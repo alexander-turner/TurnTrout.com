@@ -142,6 +142,10 @@ My site [uses Mermaid diagrams](/design#mermaid-diagrams) for compact, searchabl
 
 The issue had been reported repeatedly since 2020 ([#1318](https://github.com/mermaid-js/mermaid/issues/1318), [#3267](https://github.com/mermaid-js/mermaid/issues/3267), [#3433](https://github.com/mermaid-js/mermaid/issues/3433), [#4346](https://github.com/mermaid-js/mermaid/issues/4346)) with no comprehensive fix in sight. In February 2026, I aimed Claude Code at this problem. With our [PR #7410](https://github.com/mermaid-js/mermaid/pull/7410), we prefixed every element ID with its diagram's unique SVG container ID, making collisions impossible. We also ensured that all future diagram types generate unique IDs across diagrams.
 
+## KaTeX accessibility attributes
+
+This site [uses KaTeX for math rendering](/design#math-rendering). When math content becomes scrollable (e.g. via CSS overflow), it isn't keyboard-focusable and lacks an appropriate ARIA role, violating WCAG 2.1 SC 2.1.1. [PR #4162](https://github.com/KaTeX/KaTeX/pull/4162) adds `tabindex="0"` and `role="math"` attributes to the root `.katex` element, making scrollable math keyboard-accessible and properly labeled for assistive technologies.
+
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:
