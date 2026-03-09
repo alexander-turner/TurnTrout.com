@@ -471,6 +471,17 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const isLink = (_i: number, el: CheerioElement): boolean =>
     el.type === "tag" && el.tagName === "link"
   const allLinks = headChildren.filter(isLink)
+
+  // Preloads and preconnects must come before sync scripts so the browser
+  // starts downloading CSS/fonts and establishing connections while the
+  // parser-blocking scripts execute.
+  const isPreloadOrPreconnect = (_i: number, el: CheerioElement): boolean => {
+    if (el.type !== "tag" || el.tagName !== "link") return false
+    const rel = el.attribs.rel
+    return rel === "preload" || rel === "preconnect"
+  }
+  const preloadAndPreconnect = allLinks.filter(isPreloadOrPreconnect)
+
   // Check if an element is a favicon
   const isFavicon = (_i: number, el: CheerioElement): boolean => {
     if (el.type !== "tag" || el.tagName !== "link") return false
@@ -478,7 +489,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
     return rel === "icon" || rel === "apple-touch-icon"
   }
   const faviconLinks = allLinks.filter(isFavicon)
-  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el))
+  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el) && !isPreloadOrPreconnect(i, el))
 
   // Anything else (scripts, etc.)
   const elementsSoFar = new Set([
@@ -493,8 +504,9 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
 
   head
     .empty()
-    .append(scriptsToPutAtTop)
     .append(metaAndTitle)
+    .append(preloadAndPreconnect)
+    .append(scriptsToPutAtTop)
     .append(faviconLinks)
     .append(criticalCSS)
     .append(otherLinks)
