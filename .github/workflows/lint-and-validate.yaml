@@ -73,6 +73,7 @@ jobs:
       code: ${{ steps.changes.outputs.code }}
       styles: ${{ steps.changes.outputs.styles }}
       source-checks: ${{ steps.changes.outputs.source-checks }}
+      any: ${{ steps.changes.outputs.content == 'true' || steps.changes.outputs.code == 'true' || steps.changes.outputs.styles == 'true' || steps.changes.outputs.source-checks == 'true' }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -124,18 +125,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        if: >
-          needs.detect-changes.outputs.content == 'true' ||
-          needs.detect-changes.outputs.code == 'true' ||
-          needs.detect-changes.outputs.styles == 'true' ||
-          needs.detect-changes.outputs.source-checks == 'true'
+        if: needs.detect-changes.outputs.any == 'true'
 
       - name: Setup base environment
-        if: >
-          needs.detect-changes.outputs.content == 'true' ||
-          needs.detect-changes.outputs.code == 'true' ||
-          needs.detect-changes.outputs.styles == 'true' ||
-          needs.detect-changes.outputs.source-checks == 'true'
+        if: needs.detect-changes.outputs.any == 'true'
         uses: ./.github/actions/setup-base-env
 
       - name: Install Vale
