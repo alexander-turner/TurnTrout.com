@@ -46,6 +46,7 @@ jobs:
   # Gate: only run on PRs if ci:run-lighthouse or ci:full-tests label is present.
   should-run:
     name: lighthouse-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
