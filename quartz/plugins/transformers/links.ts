@@ -171,6 +171,8 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                     seenFirstContentImage = true
                     node.properties.loading = "eager"
                     node.properties.fetchpriority = "high"
+                    // Store URL for <link rel="preload"> in <head>
+                    file.data.firstImageUrl = node.properties.src as string
                   } else {
                     node.properties.loading = "lazy"
                   }

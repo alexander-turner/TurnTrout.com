@@ -164,6 +164,12 @@ export default (() => {
         <link rel="stylesheet" href="/index.css" spa-preserve />
         <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
+        {/* Preload the first content image (likely LCP element) so the browser
+            starts downloading it immediately instead of waiting to discover the
+            <img> tag deep in the HTML body. */}
+        {fileData.firstImageUrl && (
+          <link rel="preload" href={fileData.firstImageUrl} as="image" crossOrigin="anonymous" />
+        )}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
