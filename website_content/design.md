@@ -637,7 +637,7 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 
 I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
 
-|  | Original | With upright punctuation |
+| Character | Original | With upright punctuation |
 | --: | :--: | :--: |
 | Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
 | Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
@@ -822,7 +822,7 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also run [Lighthouse accessibility checks](https://developer.chrome.com/docs/lighthouse/overview/) for six of my pages, demanding a perfect score of 100. Here are some highlights from my pipeline.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [Lighthouse](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
 
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
@@ -852,6 +852,14 @@ Miscellaneous improvements
   - Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
   - A `prefers-reduced-motion` media query disables animations site-wide.
   - I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
+
+## Lighthouse
+
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, and SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
+
+[^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
+
+I also run dedicated layout-shift-only Lighthouse checks on both desktop and mobile, requiring cumulative layout shift below 0.05 across several content-heavy pages.
 
 ## Auto-generated repository statistics
 
@@ -1171,8 +1179,8 @@ Site functionality
 
   I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
-Minimal layout shift
-: I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
+Lighthouse audits
+: I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.

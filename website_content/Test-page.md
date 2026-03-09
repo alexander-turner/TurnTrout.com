@@ -551,7 +551,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
 <div style="font-size:4rem;line-height:1.4 !important;" class="centered ignore-pa11y">
-<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
+<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
 </div>
@@ -741,7 +741,7 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 ### 8pt italic
 
-|  | Old (slanted) | New (upright) |
+| Character | Old (slanted) | New (upright) |
 | :-- | :-- | :-- |
 | Parentheses | <span class="italic-old">(quickly)</span> | _(quickly)_ |
 | Brackets | <span class="italic-old">[briefly]</span> | _[briefly]_ |
@@ -754,7 +754,7 @@ Enclosing punctuation should render upright (roman) while letter forms remain it
 
 ### 12pt italic
 
-|  | Old (slanted) | New (upright) |
+| Character | Old (slanted) | New (upright) |
 | :-- | :-- | :-- |
 | Parentheses | <span class="italic-12-old">(quickly)</span> | <span class="italic-12">(quickly)</span> |
 | Brackets | <span class="italic-12-old">[briefly]</span> | <span class="italic-12">[briefly]</span> |

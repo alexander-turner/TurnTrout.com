@@ -67,16 +67,32 @@ function getComponentResources(ctx: BuildCtx): ComponentResources {
   }
 }
 
-async function joinScripts(scripts: string[], excludeKatex = false): Promise<string> {
+interface JoinedScript {
+  code: string
+  sourceMap?: string
+}
+
+async function joinScripts(
+  scripts: string[],
+  excludeKatex = false,
+  sourcemapSlug?: string,
+): Promise<JoinedScript> {
   // wrap with iife to prevent scope collision
   const script = scripts.map((script) => `(function () {${script}})();`).join("\n")
 
   const res = await transpile(script, {
     minify: true,
     define: excludeKatex ? { katex: "{}" } : undefined,
+    sourcemap: sourcemapSlug ? "external" : false,
+    sourcefile: sourcemapSlug ? `${sourcemapSlug}.js` : undefined,
   })
 
-  return res.code
+  let code = res.code
+  if (sourcemapSlug && res.map) {
+    code += `\n//# sourceMappingURL=${sourcemapSlug}.js.map\n`
+  }
+
+  return { code, sourceMap: res.map }
 }
 
 /**
@@ -131,7 +147,7 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
       const stylesheet = `${componentResources.css.join("\n\n")}\n\n${styles}`
       const [prescript, postscript] = await Promise.all([
         joinScripts(componentResources.beforeDOMLoaded),
-        joinScripts(componentResources.afterDOMLoaded),
+        joinScripts(componentResources.afterDOMLoaded, false, "postscript"),
       ])
 
       promises.push(
@@ -157,15 +173,26 @@ export const ComponentResources: QuartzEmitterPlugin = () => {
           ctx,
           slug: "prescript" as FullSlug,
           ext: ".js",
-          content: prescript,
+          content: prescript.code,
         }),
         write({
           ctx,
           slug: "postscript" as FullSlug,
           ext: ".js",
-          content: postscript,
+          content: postscript.code,
         }),
       )
+
+      if (postscript.sourceMap) {
+        promises.push(
+          write({
+            ctx,
+            slug: "postscript.js" as FullSlug,
+            ext: ".map",
+            content: postscript.sourceMap,
+          }),
+        )
+      }
 
       return await Promise.all(promises)
     },

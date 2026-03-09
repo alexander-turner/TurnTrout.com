@@ -25,6 +25,7 @@ tsconfig.tsbuildinfo
 coverage
 lost-pixel/*
 .lostpixel
+.lighthouseci
 /test-results/
 /blob-report/
 /playwright-report/
