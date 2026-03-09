@@ -16,7 +16,7 @@ import { debounce } from "./component_script_utils"
 import { matchHTML } from "./search"
 import { isLocalUrl } from "./spa_utils"
 
-const { pondVideoId } = simpleConstants
+const { pondVideoId, spaFetchTimeoutMs } = simpleConstants
 
 // SPA accessibility announcement for screen readers
 const announcer = document.createElement("route-announcer")
@@ -333,8 +333,12 @@ async function fetchContent(url: URL): Promise<FetchResult> {
   let contentType: string | null = null
   let content: string | undefined
 
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), spaFetchTimeoutMs)
+
   try {
-    const res = await fetch(url.toString())
+    const res = await fetch(url.toString(), { signal: controller.signal })
+    clearTimeout(timeoutId)
     responseStatus = res.status
     contentType = res.headers.get("content-type")
 
@@ -351,6 +355,7 @@ async function fetchContent(url: URL): Promise<FetchResult> {
       return { status: "fallback", finalUrl: url }
     }
   } catch (e) {
+    clearTimeout(timeoutId)
     console.error(`[fetchContent] Fetch error for ${url.toString()}:`, e)
     window.location.href = url.toString()
     return { status: "fallback", finalUrl: url }
