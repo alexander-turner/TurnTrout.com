@@ -552,6 +552,8 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
 
 test.describe("Image's mix-blend-mode attribute", () => {
   test.beforeEach(async ({ page }) => {
+    // waitForPreviewArticle can take up to 15s in CI
+    test.slow()
     await search(page, "Testing site")
     await waitForPreviewArticle(page)
   })
