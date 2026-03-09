@@ -36,27 +36,29 @@ jobs:
 
   python-lint:
     needs: detect-changes
-    if: >
-      !startsWith(github.head_ref, 'deepsource-') &&
-      needs.detect-changes.outputs.python == 'true'
+    if: ${{ !startsWith(github.head_ref || '', 'deepsource-') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.python == 'true'
 
       - name: Setup base environment
+        if: needs.detect-changes.outputs.python == 'true'
         uses: ./.github/actions/setup-base-env
         with:
           install-node-deps: "false"
 
       - name: Run mypy
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           uv run python -m mypy \
             --config-file config/python/mypy.ini \
             scripts/*.py .github/scripts/*.py
 
       - name: Run docformatter check
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           uv run python -m docformatter \
             --check \
@@ -64,6 +66,7 @@ jobs:
             scripts/*.py .github/scripts/*.py
 
       - name: Run pylint
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           uv run python -m pylint \
             --rcfile config/python/.pylintrc \

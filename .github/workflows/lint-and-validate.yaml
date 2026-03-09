@@ -111,15 +111,12 @@ jobs:
 
   lint:
     needs: [update-dates, detect-changes]
-    # Run if detect-changes found changes, and not a deepsource PR
+    # Always run so the required check reports success (not skipped).
+    # Individual steps are conditional on detect-changes outputs.
     # update-dates is allowed to be skipped (runs only on push to main by users)
     # Skip if update-dates pushed changes (the new commit will trigger a fresh workflow)
     if: >
-      !startsWith(github.head_ref, 'deepsource-') &&
-      (needs.detect-changes.outputs.content == 'true' ||
-       needs.detect-changes.outputs.code == 'true' ||
-       needs.detect-changes.outputs.styles == 'true' ||
-       needs.detect-changes.outputs.source-checks == 'true') &&
+      !startsWith(github.head_ref || '', 'deepsource-') &&
       always() && !cancelled() &&
       needs.detect-changes.result == 'success' &&
       needs.update-dates.outputs.pushed != 'true'
@@ -127,8 +124,18 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: >
+          needs.detect-changes.outputs.content == 'true' ||
+          needs.detect-changes.outputs.code == 'true' ||
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
 
       - name: Setup base environment
+        if: >
+          needs.detect-changes.outputs.content == 'true' ||
+          needs.detect-changes.outputs.code == 'true' ||
+          needs.detect-changes.outputs.styles == 'true' ||
+          needs.detect-changes.outputs.source-checks == 'true'
         uses: ./.github/actions/setup-base-env
 
       - name: Install Vale

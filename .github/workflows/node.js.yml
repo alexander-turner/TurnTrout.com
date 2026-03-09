@@ -20,15 +20,6 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    paths:
-      - "quartz/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/javascript/**"
-      - "config/typescript/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   merge_group:
 
 permissions:
@@ -36,8 +27,30 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      node: ${{ steps.changes.outputs.node }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: changes
+        with:
+          filters: |
+            node:
+              - 'quartz/**'
+              - 'config/quartz/**'
+              - 'config/constants.json'
+              - 'config/javascript/**'
+              - 'config/typescript/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+
   build:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    needs: detect-changes
+    if: ${{ !startsWith(github.head_ref || '', 'deepsource-') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -47,8 +60,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.node == 'true'
       - name: Setup Build Environment
+        if: needs.detect-changes.outputs.node == 'true'
         uses: ./.github/actions/setup-build-env
         with:
           install-python: "false"
-      - run: pnpm test
+      - if: needs.detect-changes.outputs.node == 'true'
+        run: pnpm test

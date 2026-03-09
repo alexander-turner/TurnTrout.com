@@ -36,33 +36,36 @@ jobs:
 
   python-tests:
     needs: detect-changes
-    if: >
-      !startsWith(github.head_ref, 'deepsource-') &&
-      needs.detect-changes.outputs.python == 'true'
+    if: ${{ !startsWith(github.head_ref || '', 'deepsource-') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.python == 'true'
 
       - name: Setup build environment
+        if: needs.detect-changes.outputs.python == 'true'
         uses: ./.github/actions/setup-build-env
         with:
           install-node-deps: "false"
 
       - name: Install test dependencies
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
           pip install linkchecker
 
       - name: Install ImageMagick 7 via Homebrew
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           brew install imagemagick
           echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
 
       - name: Run pytest
+        if: needs.detect-changes.outputs.python == 'true'
         run: |
           uv run python -m pytest scripts \
             -m "not requires_r2" \

@@ -23,21 +23,6 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    paths:
-      - "quartz/**"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/*.test.tsx"
-      - "!quartz/**/tests/**"
-      - "website_content/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "config/stylelint/.variables-only-stylelintrc.json"
-      - "scripts/built_site_checks.py"
-      - "scripts/check_internal_links.py"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   merge_group:
 
 permissions:
@@ -45,24 +30,56 @@ permissions:
   contents: read
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      site: ${{ steps.changes.outputs.site }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+        id: changes
+        with:
+          filters: |
+            site:
+              - 'quartz/**'
+              - '!quartz/**/*.spec.ts'
+              - '!quartz/**/*.test.ts'
+              - '!quartz/**/*.test.tsx'
+              - '!quartz/**/tests/**'
+              - 'website_content/**'
+              - 'config/quartz/**'
+              - 'config/constants.json'
+              - 'config/stylelint/.variables-only-stylelintrc.json'
+              - 'scripts/built_site_checks.py'
+              - 'scripts/check_internal_links.py'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - '.github/actions/**'
+
   build:
     name: site-checks-build
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    needs: detect-changes
+    if: ${{ !startsWith(github.head_ref || '', 'deepsource-') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.site == 'true'
         with:
           fetch-depth: 0
         timeout-minutes: 5
 
       - name: Setup Build Environment
+        if: needs.detect-changes.outputs.site == 'true'
         uses: ./.github/actions/setup-build-env
 
       - name: Build site
+        if: needs.detect-changes.outputs.site == 'true'
         run: pnpm build
 
       - name: Upload built site
+        if: needs.detect-changes.outputs.site == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: site-build-checks-public-dir
@@ -70,25 +87,30 @@ jobs:
           retention-days: 1
 
   built-site-checks:
-    needs: build
+    needs: [detect-changes, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.site == 'true'
 
       - name: Setup base environment
+        if: needs.detect-changes.outputs.site == 'true'
         uses: ./.github/actions/setup-base-env
 
       - name: Install xmllint
+        if: needs.detect-changes.outputs.site == 'true'
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
       - name: Download built site
+        if: needs.detect-changes.outputs.site == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: site-build-checks-public-dir
           path: public/
 
       - name: Check CSS variables
+        if: needs.detect-changes.outputs.site == 'true'
         run: |
           # Run stylelint to check for unknown CSS variables
           # Filter out known false positives and check if any real issues remain
@@ -104,28 +126,34 @@ jobs:
           fi
 
       - name: Run built site checks
+        if: needs.detect-changes.outputs.site == 'true'
         run: uv run python scripts/built_site_checks.py
 
   linkchecker:
-    needs: build
+    needs: [detect-changes, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        if: needs.detect-changes.outputs.site == 'true'
 
       - name: Setup base environment
+        if: needs.detect-changes.outputs.site == 'true'
         uses: ./.github/actions/setup-base-env
 
       - name: Download built site
+        if: needs.detect-changes.outputs.site == 'true'
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           name: site-build-checks-public-dir
           path: public/
 
       - name: Install linkchecker
+        if: needs.detect-changes.outputs.site == 'true'
         run: pip install linkchecker
 
       - name: Start server and run linkchecker
+        if: needs.detect-changes.outputs.site == 'true'
         run: |
           # Start server in background
           pnpm exec serve public -l 8080 &
