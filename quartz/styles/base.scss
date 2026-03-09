@@ -13,7 +13,11 @@ html {
 
 .skip-to-content {
   position: absolute;
-  left: -9999px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+  width: 1px;
+  height: 1px;
   z-index: 9999;
   padding: 0.5em 1em;
   background: var(--background);
@@ -26,6 +30,11 @@ html {
   }
 
   &:focus {
+    clip-path: none;
+    overflow: visible;
+    white-space: normal;
+    width: auto;
+    height: auto;
     left: 50%;
     transform: translateX(-50%);
     top: 0;

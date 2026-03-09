@@ -102,6 +102,7 @@
   "autoplayStorageKey": "pond-video-autoplay",
   "instantScrollRestoreKey": "instantScrollRestore",
   "cdnBaseUrl": "https://assets.turntrout.com",
+  "spaFetchTimeoutMs": 10000,
   "popoverRemovalDelayMs": 300,
   "dropcapColors": [
     "red",
