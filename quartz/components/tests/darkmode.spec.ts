@@ -67,11 +67,20 @@ class DarkModeHelper {
   async verifyThemeLabel(expectedTheme: Theme): Promise<void> {
     const expectedLabel = expectedTheme.charAt(0).toUpperCase() + expectedTheme.slice(1)
 
-    // The theme label text is displayed via CSS ::after pseudo-element
-    // We need to read the CSS custom property value instead of textContent
+    // Read inline style directly — getComputedStyle can return "" for custom
+    // properties on WebKit/Safari even after the property is set via
+    // element.style.setProperty, especially right after navigation.
     const labelContent = await this.page.evaluate(() => {
-      const computedStyle = getComputedStyle(document.documentElement)
-      return computedStyle.getPropertyValue("--theme-label-content").replace(/"/g, "")
+      return (
+        document.documentElement.style
+          .getPropertyValue("--theme-label-content")
+          .replace(/"/g, "")
+          .trim() ||
+        getComputedStyle(document.documentElement)
+          .getPropertyValue("--theme-label-content")
+          .replace(/"/g, "")
+          .trim()
+      )
     })
 
     expect(labelContent).toBe(expectedLabel)
