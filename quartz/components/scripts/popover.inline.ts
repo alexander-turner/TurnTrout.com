@@ -26,7 +26,10 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 
     const focusableElements = [
       ...popoverElement.querySelectorAll<HTMLElement>(focusableSelector),
-    ].filter((el) => el.offsetParent !== null) // only visible elements
+    ].filter((el) => {
+      const style = getComputedStyle(el)
+      return style.display !== "none" && style.visibility !== "hidden"
+    })
 
     if (focusableElements.length === 0) return
 
