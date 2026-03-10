@@ -94,10 +94,11 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   const selector = "#article-title"
   const originalH1Text = await page.locator(selector).first().textContent()
 
-  // Hover and wait for popover
+  // Hover and wait for popover (WebKit can be slow to render visibility)
   await dummyLink.hover()
   const popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  await expect(popover).toBeVisible({ timeout: 10_000 })
   const popoverContent = await popover.locator(".popover-inner").textContent()
 
   // Check that we navigated to the right page
