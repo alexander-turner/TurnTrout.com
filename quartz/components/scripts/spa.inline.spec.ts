@@ -748,18 +748,17 @@ test.describe("Document Head & Body Updates", () => {
     // If the browser does a full navigation instead of SPA (e.g. mobile Safari),
     // __navFired won't exist on the new page — treat that as "navigated".
 
-    return () =>
-      page
-        .waitForFunction(
-          () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const w = window as any
-            return w.__navFired === undefined || w.__navFired === true
-          },
-          null,
-          { timeout: 10_000 },
-        )
-        .then(() => {})
+    return async () => {
+      await page.waitForFunction(
+        () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const win = window as any
+          return win.__navFired === undefined || win.__navFired === true
+        },
+        null,
+        { timeout: 10_000 },
+      )
+    }
   }
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {

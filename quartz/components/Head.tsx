@@ -173,19 +173,7 @@ export default (() => {
             <img> tag deep in the HTML body. */}
         {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
-        {/* Load full stylesheet without blocking render — critical CSS (inlined
-            by the build pipeline) covers above-the-fold styles, so we can defer
-            the full sheet. Same pattern as KaTeX CSS below. */}
-        <link
-          rel="stylesheet"
-          href="/index.css"
-          media="print"
-          {...({ onload: "this.media='all'" } as Record<string, string>)}
-          spa-preserve
-        />
-        <noscript>
-          <link rel="stylesheet" href="/index.css" />
-        </noscript>
+        <link rel="stylesheet" href="/index.css" spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />

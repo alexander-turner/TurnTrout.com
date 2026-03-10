@@ -202,14 +202,12 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
 
     const realReadFile = fs.promises.readFile
-    const readFileSpy = jest
-      .spyOn(fs.promises, "readFile")
-      .mockImplementation(async (fp, ...args) => {
-        if (fp === criticalScssPath) {
-          return manualCriticalCss
-        }
-        return realReadFile(fp, ...args)
-      })
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve(manualCriticalCss)
+      }
+      return realReadFile(fp, ...args)
+    })
 
     const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 
