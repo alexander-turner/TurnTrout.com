@@ -14,12 +14,25 @@ runs:
         install-sharp: "false"
         cache-playwright: "true"
         cache-puppeteer: "true"
+        cache-apt-playwright: ${{ inputs.install-playwright }}
         install-python: "false"
 
     - name: Install Playwright system dependencies
       if: inputs.install-playwright == 'true'
-      run: pnpm exec playwright install-deps chromium webkit firefox
       shell: bash
+      run: |
+        # Restore cached .deb packages so apt skips downloading them
+        if ls ~/apt-playwright-cache/*.deb &>/dev/null; then
+          sudo cp ~/apt-playwright-cache/*.deb /var/cache/apt/archives/
+        fi
+        # Install with retry for transient mirror failures
+        for attempt in 1 2 3; do
+          pnpm exec playwright install-deps chromium webkit firefox && break
+          [ "$attempt" -lt 3 ] && sleep $((attempt * 10)) || exit 1
+        done
+        # Save .deb packages for next run
+        mkdir -p ~/apt-playwright-cache
+        cp /var/cache/apt/archives/*.deb ~/apt-playwright-cache/ 2>/dev/null || true
 
     - name: Install ffmpeg from system packages
       run: |
