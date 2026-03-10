@@ -189,7 +189,7 @@ EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB unde
 
 I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website, taking the font footprint from 609KB to 113KB - a reduction of over 5x! Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
 
-For fonts that only appear on a few pages — like the [old italic comparison fonts](#font-selection) — I manually subset them to just the characters used in those comparisons (basic Latin, parentheses, and a few punctuation marks). This shrank the old italic fonts from 187KB to 36KB, and the old regular font from 82KB to 3KB. `subfont` handles the main body fonts; manual subsetting handles the long tail.
+For fonts that only appear on a few pages — like the [old italic comparison fonts](#font-selection) — I manually subset to just the characters used in those comparisons. This shrank the old italic fonts from 187KB to 36KB and the old regular font from 82KB to 3KB.
 
 ### Images
 
@@ -293,7 +293,11 @@ Instead, I hooked [the `critical` package](https://github.com/addyosmani/critica
 
 ## Non-blocking KaTeX CSS
 
-$\KaTeX$ math is rendered server-side, so the client only needs the KaTeX stylesheet for styling — not for rendering. I load `katex.min.css` with `media="print"` and an `onload` handler that swaps it to `media="all"` once it arrives. This keeps the stylesheet out of the critical rendering path: the browser doesn't block First Contentful Paint waiting for math styles, but the styles apply as soon as they load. A `<noscript>` fallback ensures math still looks right with JavaScript disabled.
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path.
+
+## Preloading the first image
+
+The first content image on each page is typically the [Largest Contentful Paint](https://web.dev/articles/lcp) element. By default, Quartz lazy-loads all images, which delays LCP because the browser won't fetch the image until it scrolls into view. I override this for the first `<img>`: it gets `loading="eager"` and `fetchpriority="high"`, while all subsequent images remain lazy.
 
 ## Deduplicating HTML requests
 
