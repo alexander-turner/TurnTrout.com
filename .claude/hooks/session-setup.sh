@@ -76,10 +76,10 @@ fi
 # Remove stop-hook retry counter for THIS project so a new session starts fresh
 # (keyed on project dir hash, matching verify_ci.py's _retry_file)
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
-RETRY_DIR="/tmp/claude-stop-$(id -u)"
+TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
+RETRY_DIR="${TMPDIR_ACTUAL}/claude-stop-$(id -u)"
 rm -f "${RETRY_DIR}/attempts-${PROJ_HASH}"
 # Remove stale push-commit marker (used by verify_ci.py to check remote CI)
-TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
 rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
 #######################################
