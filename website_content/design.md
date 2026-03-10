@@ -1205,5 +1205,5 @@ Dependency auto-merge
 CI failure notifications
 : When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow).
 
-Phone-home
+Self-improving tooling
 : Claude Code automatically improves its own tooling over time. When Claude merges a PR, it includes a "Lessons Learned" section documenting what worked and what didn't. A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) detects these sections and files corresponding issues on the [template repo](https://github.com/alexander-turner/claude-automation-template), propagating improvements upstream to all projects using the template.
