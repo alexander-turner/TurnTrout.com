@@ -85,6 +85,19 @@ jobs:
       - name: Build Quartz
         run: pnpm build
 
+      - name: Install subfont
+        run: pnpm add -g subfont
+      - name: Subset fonts for Lighthouse test pages
+        run: |
+          subfont --root public/ \
+            public/index.html \
+            public/design.html \
+            public/about.html \
+            public/research.html \
+            public/Test-page.html \
+            public/posts.html \
+            --formats woff2 --in-place --instance --inline-css --no-recursive
+
       - name: Install Wrangler
         run: pnpm add -g wrangler
 

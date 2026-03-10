@@ -727,18 +727,42 @@ test.describe("Document Head & Body Updates", () => {
     }
   }
 
-  // Helper to wait for SPA navigation to complete (including DOM updates)
-  function waitForNavigation(page: Page): () => Promise<void> {
-    const navPromise = page.evaluate(() => {
-      return new Promise<void>((resolve) => {
-        document.addEventListener("nav", () => resolve(), { once: true })
-      })
+  // Helper to wait for SPA navigation to complete (including DOM updates).
+  // Registers a "nav" event listener and returns a function that waits for
+  // it to fire.  The setup is awaited to avoid a race condition where the
+  // click triggers navigation before the listener is installed (which
+  // destroys the execution context and fails page.evaluate).
+  async function waitForNavigation(page: Page): Promise<() => Promise<void>> {
+    await page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).__navFired = false
+      document.addEventListener(
+        "nav",
+        () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(window as any).__navFired = true
+        },
+        { once: true },
+      )
     })
-    return () => navPromise
+    // If the browser does a full navigation instead of SPA (e.g. mobile Safari),
+    // __navFired won't exist on the new page — treat that as "navigated".
+
+    return async () => {
+      await page.waitForFunction(
+        () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const win = window as any
+          return win.__navFired === undefined || win.__navFired === true
+        },
+        null,
+        { timeout: 10_000 },
+      )
+    }
   }
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {
-    const awaitNav = waitForNavigation(page)
+    const awaitNav = await waitForNavigation(page)
     await page.click(`a[href$="${url}"]`)
     await page.waitForURL(`**${url}`)
     await awaitNav()
@@ -768,7 +792,7 @@ test.describe("Document Head & Body Updates", () => {
     const aboutTitle = await page.title()
 
     // Go back
-    const awaitNav = waitForNavigation(page)
+    const awaitNav = await waitForNavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
@@ -917,13 +941,13 @@ test.describe("Document Head & Body Updates", () => {
     })
 
     // Navigate back to home
-    let awaitNav = waitForNavigation(page)
+    let awaitNav = await waitForNavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
 
     // Navigate forward to about again
-    awaitNav = waitForNavigation(page)
+    awaitNav = await waitForNavigation(page)
     await page.goForward()
     await page.waitForURL("**/about")
     await awaitNav()

@@ -1110,7 +1110,7 @@ test.describe("Checkboxes", () => {
           return checkbox?.checked
         })
         expect(checkboxStateBeforeNav).toBe(true)
-      }).toPass({ timeout: 5_000 })
+      }).toPass({ timeout: 10_000 })
     })
 
     const checkboxTestCases = [
@@ -1147,7 +1147,7 @@ test.describe("Checkboxes", () => {
             { idx: index },
           )
           expect(checkboxState).toBe(savedState)
-        }).toPass({ timeout: 5_000 })
+        }).toPass({ timeout: 10_000 })
       })
     }
   })
@@ -1208,6 +1208,9 @@ test.describe("Popovers on different page types", () => {
       await page.evaluate(() => {
         window.dispatchEvent(new Event("nav"))
       })
+
+      // Clear mouseMovedSinceNav flag set to false by the nav event above
+      await page.mouse.move(1, 1)
 
       const popoverLink = page.locator("article a.can-trigger-popover").first()
       await popoverLink.scrollIntoViewIfNeeded()

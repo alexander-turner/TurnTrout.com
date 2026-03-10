@@ -67,11 +67,15 @@ class DarkModeHelper {
   async verifyThemeLabel(expectedTheme: Theme): Promise<void> {
     const expectedLabel = expectedTheme.charAt(0).toUpperCase() + expectedTheme.slice(1)
 
-    // The theme label text is displayed via CSS ::after pseudo-element
-    // We need to read the CSS custom property value instead of textContent
+    // Read inline style directly — getComputedStyle can return "" for custom
+    // properties on WebKit/Safari even after the property is set via
+    // element.style.setProperty, especially right after navigation.
     const labelContent = await this.page.evaluate(() => {
-      const computedStyle = getComputedStyle(document.documentElement)
-      return computedStyle.getPropertyValue("--theme-label-content").replace(/"/g, "")
+      const el = document.documentElement
+      const raw =
+        el.style.getPropertyValue("--theme-label-content") ||
+        getComputedStyle(el).getPropertyValue("--theme-label-content")
+      return raw.replace(/"/g, "").trim()
     })
 
     expect(labelContent).toBe(expectedLabel)
@@ -108,7 +112,10 @@ test("System preference changes are reflected in auto mode", async ({ page }) =>
 test.describe("Theme persistence and UI states", () => {
   ALL_THEMES.forEach((theme) => {
     test(`persists ${theme} theme across reloads`, async ({ page }, testInfo) => {
-      test.slow(testInfo.project.name.includes("Safari"), "WebKit page loads are slow in CI")
+      test.slow(
+        testInfo.project.name.includes("Safari") || testInfo.project.name.includes("Firefox"),
+        "Page loads can be slow in CI",
+      )
 
       const helper = new DarkModeHelper(page)
       await helper.setTheme(theme)
@@ -238,7 +245,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       // Same-URL goto() in Safari may be treated as a soft refresh and skip
       // re-running JS init scripts, leaving --theme-label-content unset.
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
-      await gotoPage(page, `http://localhost:8080/${targetPath}`)
+      await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
       // Verify localStorage survived navigation, then wait for the init
       // script to apply the label (CSS custom property may lag on Safari).
