@@ -71,16 +71,11 @@ class DarkModeHelper {
     // properties on WebKit/Safari even after the property is set via
     // element.style.setProperty, especially right after navigation.
     const labelContent = await this.page.evaluate(() => {
-      return (
-        document.documentElement.style
-          .getPropertyValue("--theme-label-content")
-          .replace(/"/g, "")
-          .trim() ||
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--theme-label-content")
-          .replace(/"/g, "")
-          .trim()
-      )
+      const el = document.documentElement
+      const raw =
+        el.style.getPropertyValue("--theme-label-content") ||
+        getComputedStyle(el).getPropertyValue("--theme-label-content")
+      return raw.replace(/"/g, "").trim()
     })
 
     expect(labelContent).toBe(expectedLabel)
