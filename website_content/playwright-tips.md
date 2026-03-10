@@ -63,6 +63,24 @@ Create a dedicated "test page"
 [Debug failures using Playwright traces](https://playwright.dev/docs/trace-viewer)
 : Traces let you inspect every moment of the test. You can see the state of the DOM before and after every Playwright command. On CI, save the traces as artifacts and use the `retain-on-failure` option.
 
+Verify persistent state before navigating
+: WebKit on Linux can occasionally drop `localStorage` if you navigate too quickly after writing to it. Before calling `page.goto()`, assert that your stored value is actually present. This turned a flaky dark-mode navigation test into a reliable one:
+
+  ```typescript
+  await helper.setTheme(theme)
+  // Confirm localStorage is set before navigating
+  await helper.verifyStorage(theme)
+  await gotoPage(page, targetUrl)
+  // Verify localStorage survived the navigation
+  await helper.verifyStorage(theme)
+  ```
+
+Beware browser-specific event ordering
+: Different browsers fire mouse events in subtly different orders. For example, when Playwright moves the cursor to a new element, `mousemove` may fire slightly _after_ `mouseenter`. If your application logic captures a flag at `mouseenter` time and checks it synchronously, the flag may not yet reflect the cursor's actual movement. I hit this when suppressing spurious Safari popovers after SPA navigation: checking a `mouseMovedSinceNav` flag at `mouseenter` time failed, but checking it inside a `setTimeout` callback (300ms later) gave `mousemove` time to set the flag. The general lesson: when coordinating between events, prefer deferred checks over synchronous snapshots.
+
+Prefer feature detection over timing buffers
+: When a browser quirk fires spurious events (e.g. Safari emitting `mouseenter` after an SPA navigation morphs the DOM under a stationary cursor), it's tempting to add a millisecond buffer: "ignore hovers for 500ms after navigation." This is fragile — too short and the flake returns; too long and it masks real interactions. Instead, track whether the triggering condition _actually occurred_. I replaced a `SAFARI_DOM_MORPH_BUFFER_MS` constant with a `mouseMovedSinceNav` boolean that resets on navigation and flips on `mousemove`. This approach is timing-independent and self-documenting.
+
 ## For screenshots in particular
 
 I ended up using [the free `lost-pixel` app](lost-pixel.com) to examine screenshot deltas and judge visual diffs. No matter what tool you use, though, you'll want your screenshots to be targeted and stable.
