@@ -35,5 +35,5 @@ jobs:
       - name: Run subfont with timing
         run: |
           echo "::group::subfont output"
-          time npx subfont --root public/ $(find public -type f -size +1100c -name "*.html") --formats woff2 --in-place --instance --inline-css --no-recursive --skip-source-map-processing
+          time NODE_OPTIONS="--max-old-space-size=6144" npx subfont --root public/ $(find public -type f -size +1100c -name "*.html") --formats woff2 --in-place --instance --inline-css --no-recursive --skip-source-map-processing
           echo "::endgroup::"
