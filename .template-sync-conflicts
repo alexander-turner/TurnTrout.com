@@ -1,1 +1,1 @@
-Template updates available for: .claude/README.md .claude/settings.json .claude/skills/pr-creation/SKILL.md .claude/hooks/pre-push-check.sh .claude/hooks/verify_ci.py .claude/hooks/session-setup.sh .hooks/pre-commit .hooks/commit-msg .github/workflows/template-sync.yaml .github/workflows/dependabot-auto-merge.yaml .github/workflows/claude.yaml .github/workflows/phone-home.yaml 
+No conflicts remaining.

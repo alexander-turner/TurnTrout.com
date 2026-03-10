@@ -3,7 +3,11 @@ name: Dependabot Auto-Merge
 # Automatically merges Dependabot PRs for minor/patch updates after CI passes.
 # Major version updates require manual review.
 
-on: pull_request_target
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
