@@ -77,7 +77,8 @@ fi
 # (keyed on project dir hash, matching verify_ci.py's _retry_file)
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
 TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
-rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
+RETRY_DIR="${TMPDIR_ACTUAL}/claude-stop-$(id -u)"
+rm -f "${RETRY_DIR}/attempts-${PROJ_HASH}"
 # Remove stale push-commit marker (used by verify_ci.py to check remote CI)
 rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
@@ -87,6 +88,13 @@ rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
 
 cd "$PROJECT_DIR" || exit 1
 git config core.hooksPath .hooks
+
+# Pre-fetch the base branch so diffs against $CLAUDE_CODE_BASE_REF work
+# immediately (e.g. when creating PRs). Failure is non-fatal.
+if [ -n "${CLAUDE_CODE_BASE_REF:-}" ]; then
+	git fetch origin "$CLAUDE_CODE_BASE_REF" --quiet 2>/dev/null ||
+		warn "Failed to fetch base branch $CLAUDE_CODE_BASE_REF"
+fi
 
 #######################################
 # GitHub CLI auth

@@ -229,6 +229,10 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
+      // Confirm localStorage is set before navigating — WebKit on Linux
+      // can occasionally drop localStorage if we navigate too quickly.
+      await helper.verifyStorage(theme)
+
       // Navigate to a genuinely different page (using the prefix) so that
       // init scripts re-run in all browsers including Safari/WebKit.
       // Same-URL goto() in Safari may be treated as a soft refresh and skip
@@ -236,9 +240,9 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
       await gotoPage(page, `http://localhost:8080/${targetPath}`)
 
-      // CSS custom property may not be set synchronously after navigation,
-      // especially on Safari where detectInitialState.js can lag behind the
-      // load event. Retry until the init script runs and sets the label.
+      // Verify localStorage survived navigation, then wait for the init
+      // script to apply the label (CSS custom property may lag on Safari).
+      await helper.verifyStorage(theme)
       await expect(async () => {
         await helper.verifyThemeLabel(theme)
       }).toPass({ timeout: 15_000 })

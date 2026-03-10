@@ -996,12 +996,10 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
-      // Its first nested child is index 5: "Nested unchecked item under checked parent"
-      // and that child has its own nested child at index 6.
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
-      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
+      // Find checkboxes by their label text to be invariant to additions elsewhere
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
+      const deeplyNested = page.getByLabel("Third nested")
 
       // Uncheck the parent (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1029,8 +1027,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1048,8 +1046,8 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
