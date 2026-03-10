@@ -475,11 +475,8 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   // Preloads and preconnects must come before sync scripts so the browser
   // starts downloading CSS/fonts and establishing connections while the
   // parser-blocking scripts execute.
-  const isPreloadOrPreconnect = (_i: number, el: CheerioElement): boolean => {
-    if (el.type !== "tag" || el.tagName !== "link") return false
-    const rel = el.attribs.rel
-    return rel === "preload" || rel === "preconnect"
-  }
+  const isPreloadOrPreconnect = (_i: number, el: CheerioElement): boolean =>
+    el.attribs.rel === "preload" || el.attribs.rel === "preconnect"
   const preloadAndPreconnect = allLinks.filter(isPreloadOrPreconnect)
 
   // Check if an element is a favicon

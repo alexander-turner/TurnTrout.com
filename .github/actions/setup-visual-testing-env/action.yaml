@@ -14,12 +14,43 @@ runs:
         install-sharp: "false"
         cache-playwright: "true"
         cache-puppeteer: "true"
+        cache-apt-playwright: ${{ inputs.install-playwright }}
         install-python: "false"
+
+    - name: Restore cached apt packages
+      if: inputs.install-playwright == 'true'
+      shell: bash
+      run: |
+        if [ -d ~/apt-playwright-cache ] && ls ~/apt-playwright-cache/*.deb &>/dev/null; then
+          sudo cp ~/apt-playwright-cache/*.deb /var/cache/apt/archives/
+          echo "Restored $(ls ~/apt-playwright-cache/*.deb | wc -l) cached .deb packages"
+        fi
 
     - name: Install Playwright system dependencies
       if: inputs.install-playwright == 'true'
-      run: pnpm exec playwright install-deps chromium webkit firefox
       shell: bash
+      run: |
+        for attempt in 1 2 3; do
+          echo "Attempt $attempt/3: installing Playwright system deps..."
+          if pnpm exec playwright install-deps chromium webkit firefox; then
+            break
+          fi
+          if [ "$attempt" -lt 3 ]; then
+            echo "Failed, retrying in $((attempt * 10))s..."
+            sleep $((attempt * 10))
+          else
+            echo "All attempts failed"
+            exit 1
+          fi
+        done
+
+    - name: Save apt packages to cache
+      if: inputs.install-playwright == 'true'
+      shell: bash
+      run: |
+        mkdir -p ~/apt-playwright-cache
+        cp /var/cache/apt/archives/*.deb ~/apt-playwright-cache/ 2>/dev/null || true
+        echo "Cached $(ls ~/apt-playwright-cache/*.deb 2>/dev/null | wc -l) .deb packages"
 
     - name: Install ffmpeg from system packages
       run: |
