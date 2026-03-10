@@ -764,6 +764,65 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that the first content image is optimized for LCP.
+
+    The first non-favicon <img> should have loading="eager" and
+    fetchpriority="high", and a matching <link rel="preload" as="image"> should
+    exist in <head>.
+    """
+    issues: list[str] = []
+
+    # Find the first non-favicon content image
+    article = soup.find("article")
+    if not article or not isinstance(article, Tag):
+        return issues
+
+    first_img = None
+    for img in _tags_only(article.find_all("img")):
+        raw_classes = img.get("class")
+        classes = raw_classes if isinstance(raw_classes, list) else []
+        # Skip favicons and images not processed by the links transformer
+        # (TSX-rendered images won't have a loading attribute)
+        if "favicon" not in classes and img.has_attr("loading"):
+            first_img = img
+            break
+
+    if not first_img:
+        return issues
+
+    src = first_img.get("src", "")
+    loading = first_img.get("loading", "")
+    fetchpriority = first_img.get("fetchpriority", "")
+
+    if loading != "eager":
+        issues.append(
+            f"First content image should have loading='eager', "
+            f"got '{loading}': {src}"
+        )
+    if fetchpriority != "high":
+        issues.append(
+            f"First content image should have fetchpriority='high', "
+            f"got '{fetchpriority}': {src}"
+        )
+
+    # Check for matching preload link in head
+    head = soup.find("head")
+    if head and isinstance(head, Tag) and src:
+        preload_links = head.find_all(
+            "link", attrs={"rel": "preload", "as": "image"}
+        )
+        preload_hrefs = [link.get("href") for link in _tags_only(preload_links)]
+        if str(src) not in preload_hrefs:
+            issues.append(
+                f"Missing <link rel='preload' as='image'> in <head> "
+                f"for first content image: {src}"
+            )
+
+    return issues
+
+
 def check_orphaned_subfigures(soup: BeautifulSoup) -> list[str]:
     """
     Check that all `.subfigure` elements have a `<figure>` ancestor.
@@ -1758,6 +1817,7 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),

@@ -189,6 +189,8 @@ EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB unde
 
 I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website, taking the font footprint from 609KB to 113KB - a reduction of over 5x! Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
 
+For fonts that only appear on a few pages — like the [old italic comparison fonts](#font-selection) — I manually subset to just the characters used in those comparisons. This shrank the old italic fonts from 187KB to 36KB and the old regular font from 82KB to 3KB.
+
 ### Images
 
 Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. For compatibility reasons, I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
@@ -288,6 +290,14 @@ Therefore, I wrote a plugin which fetches the width and height of each linked as
 Before the client to loads the main CSS stylesheet, the site looks like garbage. One solution is to manually include the most crucial styles in the `<head>` element, but that's brittle.
 
 Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
+
+## Non-blocking KaTeX CSS
+
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path.
+
+## Preloading the first image
+
+The first content image on each page is typically the [Largest Contentful Paint](https://web.dev/articles/lcp) element. By default, Quartz lazy-loads all images, which delays LCP because the browser won't fetch the image until it scrolls into view. I override this for the first `<img>`: it gets `loading="eager"` and `fetchpriority="high"`, while all subsequent images remain lazy.
 
 ## Deduplicating HTML requests
 
@@ -856,7 +866,7 @@ Miscellaneous improvements
 
 ## Lighthouse
 
-I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, and SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, _and_ SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
 
 [^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
 

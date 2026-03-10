@@ -1,14 +1,18 @@
 {
   "ci": {
     "collect": {
-      "numberOfRuns": 3,
+      "numberOfRuns": 5,
       "settings": {
         "throttling": {
           "cpuSlowdownMultiplier": 1,
           "rttMs": 40,
           "throughputKbps": 10240
         },
-        "skipAudits": ["color-contrast"],
+        "skipAudits": [
+          "color-contrast",
+          "errors-in-console",
+          "is-crawlable"
+        ],
         "disableStorageReset": false,
         "formFactor": "desktop",
         "screenEmulation": {

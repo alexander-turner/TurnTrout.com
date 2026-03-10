@@ -54,8 +54,8 @@ function getPreviewLocator(page: Page): Locator {
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
-  await expect(article).toBeAttached({ timeout: 10_000 })
-  await expect(article).not.toBeEmpty({ timeout: 10_000 })
+  await expect(article).toBeAttached({ timeout: 15_000 })
+  await expect(article).not.toBeEmpty({ timeout: 15_000 })
   return preview
 }
 
@@ -552,6 +552,8 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
 
 test.describe("Image's mix-blend-mode attribute", () => {
   test.beforeEach(async ({ page }) => {
+    // waitForPreviewArticle can take up to 15s in CI
+    test.slow()
     await search(page, "Testing site")
     await waitForPreviewArticle(page)
   })
@@ -579,9 +581,9 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   })
 })
 
-test("Search preview shows after bad entry", async ({ page }, testInfo) => {
-  // Four sequential searches can exceed 30s on Safari/WebKit in CI
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+test("Search preview shows after bad entry", async ({ page }) => {
+  // Four sequential searches with async preview fetches can exceed 30s in CI
+  test.slow()
 
   await search(page, "zzzzzz")
   await search(page, "Testing site")

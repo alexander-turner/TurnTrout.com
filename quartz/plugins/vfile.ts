@@ -54,6 +54,8 @@ export interface Data {
   children?: string[]
   /** BibTeX citation content, stored during transform for cross-thread access */
   bibtexContent?: string
+  /** URL of the first content image, used to preload the LCP element */
+  firstImageUrl?: string
   [key: string]: unknown
 }
 

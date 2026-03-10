@@ -36,6 +36,11 @@ test.beforeEach(async ({ page }) => {
   }
 
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+
+  // After page load, the nav event sets mouseMovedSinceNav=false to suppress
+  // spurious Safari mouseenter events.  Move the mouse once to clear this flag
+  // so hover-triggered popovers work reliably in tests.
+  await page.mouse.move(1, 1)
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -89,10 +94,11 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   const selector = "#article-title"
   const originalH1Text = await page.locator(selector).first().textContent()
 
-  // Hover and wait for popover
+  // Hover and wait for popover (WebKit can be slow to render visibility)
   await dummyLink.hover()
   const popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  await expect(popover).toBeVisible({ timeout: 10_000 })
   const popoverContent = await popover.locator(".popover-inner").textContent()
 
   // Check that we navigated to the right page
@@ -253,6 +259,8 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 })
 
 test("Popovers do not appear in search previews", async ({ page }) => {
+  // Search preview content is fetched asynchronously and can be slow on CI
+  test.slow()
   // Open search and search for a term that will have internal links
   await openSearch(page)
   const searchBar = page.locator("#search-bar")
@@ -265,13 +273,12 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Wait for the preview article content to fully load before interacting
-  const previewArticle = previewContainer.locator("article.search-preview")
-  await expect(previewArticle).toBeAttached({ timeout: 10_000 })
-
-  // Find an internal link in the preview and hover over it
+  // Wait for preview content to fully render (the article element is
+  // pre-created, so we wait for the actual link inside it to appear)
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
-  await expect(searchDummyLink).toBeVisible({ timeout: 10_000 })
+  await expect(searchDummyLink).toBeAttached({ timeout: 15_000 })
+  await searchDummyLink.scrollIntoViewIfNeeded()
+  await expect(searchDummyLink).toBeVisible({ timeout: 5_000 })
   await searchDummyLink.hover()
 
   // Verify no popover appears
@@ -334,6 +341,8 @@ for (const id of ["navbar", "toc-content"]) {
 }
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
+  // SPA navigation + DOM content load can be slow on CI runners
+  test.slow()
   await expect(dummyLink).toBeVisible()
   const linkHref = await dummyLink.getAttribute("href")
   const linkSlug = linkHref?.split("/").pop()
@@ -345,13 +354,12 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await dummyLink.click()
 
   // Wait for navigation to the new page. The href of dummyLink is /design.
-  await page.waitForURL(`**/${linkSlug}`)
-  await page.waitForLoadState("domcontentloaded")
+  await page.waitForURL(`**/${linkSlug}`, { timeout: 30_000 })
 
   // Move cursor to a neutral area so it doesn't accidentally hover over a
   // link on the new page (which could trigger a *new* popover, especially in
   // Safari where the cursor position persists after SPA navigation).
-  await page.mouse.move(0, 0)
+  await page.mouse.move(10, 10)
 
   // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
