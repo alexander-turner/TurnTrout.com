@@ -25,7 +25,7 @@ jobs:
 
       - name: Restore last reviewed commit
         id: cache-commit
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-
@@ -242,7 +242,7 @@ jobs:
 
       - name: Save last reviewed commit to cache
         if: steps.commits.outputs.skip != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-${{ steps.range.outputs.end_commit }}
