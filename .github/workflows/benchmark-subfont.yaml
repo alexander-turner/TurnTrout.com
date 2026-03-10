@@ -1,0 +1,45 @@
+name: Benchmark subfont
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "patches/subfont*"
+      - "scripts/subfont.sh"
+      - ".github/workflows/benchmark-subfont.yaml"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+        timeout-minutes: 5
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Install subfont globally
+        run: pnpm add -g subfont
+
+      - name: Count HTML files
+        run: |
+          num_files=$(find public -type f -size +1100c -name "*.html" | wc -l)
+          echo "Will subset $num_files HTML files"
+
+      - name: Run subfont with timing
+        run: |
+          echo "::group::subfont output"
+          time sh ./scripts/subfont.sh
+          echo "::endgroup::"
