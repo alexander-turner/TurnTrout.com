@@ -5,6 +5,8 @@ import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
+const getCollapsibleId = (locator: import("@playwright/test").Locator) =>
+  locator.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
 
 /** Wait for all collapsible admonitions to have their content-based IDs assigned.
  *  The IDs are set by admonition.inline.js (on the "nav" event), which hashes the
@@ -64,7 +66,7 @@ test.describe("Collapsible admonition state persistence", () => {
 
     // Get initial state and ID
     const initiallyCollapsed = await first.evaluate((el) => el.classList.contains("is-collapsed"))
-    const id = await first.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    const id = await getCollapsibleId(first)
     expect(id).toBeDefined()
 
     // Click title to toggle
@@ -95,7 +97,7 @@ test.describe("Collapsible admonition state persistence", () => {
     await expect(admonition).toHaveClass(/is-collapsed/)
 
     // Verify localStorage was written before reloading
-    const id = await admonition.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    const id = await getCollapsibleId(admonition)
     const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
     expect(stored).toBe("true")
 
@@ -120,7 +122,7 @@ test.describe("Collapsible admonition state persistence", () => {
     await expect(admonition).not.toHaveClass(/is-collapsed/)
 
     // Verify localStorage was written before reloading
-    const id = await admonition.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    const id = await getCollapsibleId(admonition)
     const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
     expect(stored).toBe("false")
 
