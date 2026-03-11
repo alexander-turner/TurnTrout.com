@@ -77,7 +77,7 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
 
@@ -131,7 +131,7 @@ jobs:
     timeout-minutes: 15
     needs: build_and_deploy
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: CLS Check (Desktop)
         id: lighthouse_desktop
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
@@ -159,7 +159,7 @@ jobs:
     timeout-minutes: 15
     needs: build_and_deploy
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: CLS Check (Mobile)
         id: lighthouse_mobile
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
@@ -187,7 +187,7 @@ jobs:
     timeout-minutes: 15
     needs: build_and_deploy
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
         id: lighthouse_full
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
