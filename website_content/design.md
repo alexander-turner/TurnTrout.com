@@ -1188,7 +1188,7 @@ Quality gates
 
 ## Automated workflows
 
-Beyond push-triggered CI, several workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](https://github.com/alexander-turner/claude-automation-template).
+Beyond push-triggered CI, several workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](/open-source#claude-code-automation-template).
 
 Monthly newsletter
 : On the 28th of each month, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).

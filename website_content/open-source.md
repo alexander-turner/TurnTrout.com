@@ -134,6 +134,21 @@ The way this works is that:
 2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
 3. The `lolcat` command splays the text 'cross the rainbow.
 
+# Claude Code automation template
+
+Subtitle: Use the template at [`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template).
+
+This [GitHub template repository](https://github.com/alexander-turner/claude-automation-template) packages the automation workflows I built for this site into a reusable starting point for any project using Claude Code. It includes:
+
+- **Monthly newsletter generation** --- collects recent commits, feeds them to the Claude API, and emails a draft summary.
+- **Weekly security scans** --- aggregates Dependabot, code scanning, and secret scanning alerts, then triages and auto-fixes via [`claude-code-action`](https://github.com/anthropics/claude-code-action).
+- **Template sync** --- a daily workflow that diffs downstream repos against the template and opens PRs with updates.
+- **Dependency auto-merge** --- non-major Dependabot bumps are auto-approved and squash-merged.
+- **CI failure notifications** --- comments on PRs mentioning `@claude` when CI fails on `claude/*` branches.
+- **Self-improving tooling** --- when Claude merges a PR, "Lessons Learned" sections are detected and filed as issues on the template repo, propagating improvements upstream.
+
+The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
+
 # Minor contributions
 
 ## Mermaid diagrams now generate unique element IDs
