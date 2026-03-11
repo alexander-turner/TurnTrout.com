@@ -741,6 +741,7 @@ img.emoji {
 .spoiler-content {
   filter: blur(4px);
   opacity: 0.5;
+  color: transparent;
 
   // Safari needs this
   & > * {
@@ -758,6 +759,7 @@ img.emoji {
 .spoiler-container.revealed .spoiler-content {
   filter: blur(0);
   opacity: 1;
+  color: inherit;
 }
 
 // Make sure the bullet points don't feel choked
