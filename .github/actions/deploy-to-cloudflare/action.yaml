@@ -37,5 +37,13 @@ runs:
         CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare-account-id }}
         CLOUDFLARE_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
       run: |
-        pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}
+        for attempt in 1 2 3; do
+          if pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}; then
+            exit 0
+          fi
+          echo "Deploy attempt $attempt failed, retrying in $((attempt * 15))s..."
+          sleep $((attempt * 15))
+        done
+        echo "All deploy attempts failed"
+        exit 1
       shell: bash

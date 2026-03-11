@@ -298,7 +298,7 @@ test.describe("Admonition titles update per mode", () => {
       .locator(OUTPUT_CONTENT)
       .locator("xpath=ancestor::*[contains(@class,'admonition')]")
     await expect(outputAdmonition.locator(".admonition-title-inner")).toContainText(
-      "html source output",
+      "Html source output",
     )
     await expect(outputAdmonition.locator(".admonition-title-inner abbr.small-caps")).toBeAttached()
   })

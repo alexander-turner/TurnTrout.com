@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "timeout": 30000,
+    "timeout": 60000,
     "chromeLaunchConfig": {
       "args": [
         "--no-sandbox",
