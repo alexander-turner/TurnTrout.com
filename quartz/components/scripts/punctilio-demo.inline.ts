@@ -189,7 +189,7 @@ document.addEventListener("nav", () => {
     if (outputTitleInner) {
       const icon = outputTitleInner.querySelector(".admonition-icon")
       if (currentMode === "html") {
-        outputTitleInner.innerHTML = '<abbr class="small-caps">Html</abbr> source output'
+        outputTitleInner.innerHTML = '<abbr class="small-caps">html</abbr> source output'
       } else if (currentMode === "markdown") {
         outputTitleInner.textContent = "Markdown source output"
       } else {
