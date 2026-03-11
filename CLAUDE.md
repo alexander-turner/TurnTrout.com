@@ -201,8 +201,14 @@ After pushing to main:
 
 ### CI Cost Optimization
 
-- **Playwright/visual tests always run on main**: Pushes to main always trigger Playwright and visual tests (no path filters). Both workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
-- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, always add the `ci:full-tests` label** (e.g., `gh pr edit <number> --add-label "ci:full-tests"`).
+- **Expensive tests always run on main**: Pushes to main always trigger Playwright, visual, and Lighthouse tests. All three workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
+- **Fine-grained CI labels on PRs**: On PRs, expensive tests only run when a matching label is added. Use fine-grained labels to run specific test suites, or `ci:full-tests` to run all of them:
+  - `ci:run-playwright` — Playwright integration tests only
+  - `ci:run-visual` — Visual regression tests only
+  - `ci:run-lighthouse` — Lighthouse performance/CLS tests only
+  - `ci:full-tests` — All of the above
+
+  Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`).
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
 - **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.

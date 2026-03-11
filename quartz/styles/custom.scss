@@ -725,6 +725,8 @@ img.emoji {
 }
 
 .spoiler-overlay {
+  --spoiler-bg: var(--bg, var(--background));
+
   position: absolute;
   height: 90%; // Visually center the overlay
   width: 100%;
@@ -735,12 +737,13 @@ img.emoji {
 
   &::after {
     content: "Click to show";
+    text-shadow: 0 0 16px var(--spoiler-bg);
   }
 }
 
 .spoiler-content {
   filter: blur(4px);
-  opacity: 0.5;
+  opacity: 0.65;
 
   // Safari needs this
   & > * {
