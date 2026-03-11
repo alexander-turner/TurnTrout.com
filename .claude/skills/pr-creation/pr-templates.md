@@ -22,10 +22,12 @@ gh pr create --base "$CLAUDE_CODE_BASE_REF" --title "<type>: <description>" --bo
 <How the changes were tested>
 
 ## Lessons Learned
-<Optional: generalizable insights that could improve the template for all projects>
-<Leave this section empty or omit it if there are no lessons worth sharing>
-<Examples: "CLAUDE.md should mention X", "The pre-push hook should also check Y",
- "Template sync should handle Z edge case">
+
+
+
+- **What**: <concrete change — e.g., "Add X to CLAUDE.md", "Hook Y should also check Z">
+- **Where**: <file or component — e.g., `CLAUDE.md`, `session-setup.sh`, `phone-home.yaml`>
+- **Why**: <1-2 sentences — what went wrong or was discovered>
 
 https://claude.ai/code/session_...
 EOF
@@ -48,7 +50,7 @@ Use imperative mood with a Conventional Commits type prefix:
 - Focus the summary on the "why", not the "what"
 - List concrete changes
 - Note any breaking changes
-- Include a "Lessons Learned" section if you discovered generalizable insights that could improve the template (this triggers the phone-home workflow to suggest improvements to the template repo)
+- Include a "Lessons Learned" section if you discovered generalizable insights that could improve the template (this triggers the phone-home workflow). Each lesson must specify **what** to change, **where**, and **why** — vague observations get ignored. Delete the section entirely if there are no lessons.
 - Include the Claude session URL at the end
 
 ## Updating PR Description After Additional Commits
@@ -65,7 +67,11 @@ gh pr edit --body "$(cat <<'EOF'
 <Updated testing information>
 
 ## Lessons Learned
-<Optional: generalizable insights from this session>
+
+
+- **What**: <concrete change>
+- **Where**: <file or component>
+- **Why**: <what went wrong or was discovered>
 
 https://claude.ai/code/session_...
 EOF
