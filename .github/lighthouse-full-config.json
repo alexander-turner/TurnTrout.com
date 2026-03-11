@@ -9,7 +9,6 @@
           "throughputKbps": 10240
         },
         "skipAudits": [
-          "color-contrast",
           "errors-in-console",
           "is-crawlable"
         ],
