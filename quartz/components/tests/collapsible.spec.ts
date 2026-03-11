@@ -94,6 +94,11 @@ test.describe("Collapsible admonition state persistence", () => {
     await admonition.locator(".admonition-title").click()
     await expect(admonition).toHaveClass(/is-collapsed/)
 
+    // Verify localStorage was written before reloading
+    const id = await admonition.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
+    expect(stored).toBe("true")
+
     // Reload page and verify it stayed collapsed
     await reloadPage(page)
     await waitForCollapsibleIds(page)
@@ -113,6 +118,11 @@ test.describe("Collapsible admonition state persistence", () => {
     // Open it
     await admonition.locator(".admonition-title").click()
     await expect(admonition).not.toHaveClass(/is-collapsed/)
+
+    // Verify localStorage was written before reloading
+    const id = await admonition.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+    const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
+    expect(stored).toBe("false")
 
     // Reload page and verify it stayed open
     await reloadPage(page)
