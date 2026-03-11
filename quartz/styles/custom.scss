@@ -735,6 +735,10 @@ img.emoji {
 
   &::after {
     content: "Click to show";
+    text-shadow:
+      0 0 8px var(--bg, var(--background)),
+      0 0 16px var(--bg, var(--background)),
+      0 0 24px var(--bg, var(--background));
   }
 }
 
