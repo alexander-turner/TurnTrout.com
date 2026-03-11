@@ -125,7 +125,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Testing Requirements
 
-- **Zero flakiness tolerance**: Every CI check must pass every time. Flaky tests, timeouts, and transient infrastructure failures are all bugs that must be fixed — not retried and ignored. If an external service can fail, add retry logic. If a timeout is too tight, fix the timeout. No exceptions.
+- **Zero flakiness tolerance**: Every CI check must pass every time. Prioritize root-cause fixes for anything we control (fix the test, fix the timeout, fix the code). For external services outside our control (e.g. Cloudflare API 504s), add retry logic as a last resort. No flakiness is acceptable regardless of source.
 - **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
