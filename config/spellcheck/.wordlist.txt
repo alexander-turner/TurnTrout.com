@@ -37,6 +37,7 @@ Christiano
 CoinRun
 Comercio
 Connor
+Contentful
 Critch-bargaining
 DL
 DM
@@ -67,6 +68,7 @@ Krueger
 Kwa
 LLM
 LLMs
+LCP
 LTFF
 Leahy
 LessWrong
