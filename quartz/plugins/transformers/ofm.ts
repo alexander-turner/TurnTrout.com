@@ -129,7 +129,9 @@ const createAdmonitionTitleInner = (
     {
       type: "text",
       /* istanbul ignore next -- admonition title formatting edge case */
-      value: useDefaultTitle ? capitalizedTypeString : `${titleContent} `,
+      value: useDefaultTitle
+        ? capitalizedTypeString
+        : `${titleContent.charAt(0).toUpperCase() + titleContent.slice(1)} `,
     },
     ...remainingChildren,
   ],
