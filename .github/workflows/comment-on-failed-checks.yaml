@@ -14,6 +14,8 @@ on:
       - "Deploy to Cloudflare"
     types:
       - completed
+    branches:
+      - "claude/**"
 
 permissions:
   pull-requests: write

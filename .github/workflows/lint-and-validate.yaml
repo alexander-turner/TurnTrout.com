@@ -33,8 +33,8 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+          filter: blob:none # Partial clone: skip historical file content (only need commit/tree objects for git diff --name-only)
           token: ${{ secrets.PUSH_TOKEN }}
-        timeout-minutes: 5
 
       - name: Setup Base Environment
         uses: ./.github/actions/setup-base-env
