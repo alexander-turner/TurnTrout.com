@@ -856,7 +856,7 @@ Scrollable content regions
 : Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
 
 Miscellaneous improvements
-: * Every interactive element is keyboard-navigable.
+- Every interactive element is keyboard-navigable.
   - Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
   - I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
   - For screen readers, a route announcer announces new pages even though my site is a single-page application.
