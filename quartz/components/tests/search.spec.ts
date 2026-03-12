@@ -410,7 +410,8 @@ test("Enter key navigates to first result", async ({ page }) => {
 })
 
 // Enter and click used to have different navigation methods
-test("Enter key navigation scrolls to first match", async ({ page }) => {
+test("Enter key navigation scrolls to first match", async ({ page }, testInfo) => {
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit SPA navigation is slower in CI")
   const initialUrl = page.url()
   // Use a term that appears far down the test page so scrolling is required
   await search(page, "Footnote spam")
@@ -421,8 +422,10 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   await page.keyboard.press("Enter")
   await page.waitForURL((url) => url.toString() !== initialUrl)
 
+  // waitForURL resolves on pushState; the SPA may still be fetching content
+  // and applying search highlights via scrollToMatch.
   const firstMatch = page.locator("article .search-match").first()
-  await expect(firstMatch).toBeAttached()
+  await expect(firstMatch).toBeAttached({ timeout: 10_000 })
   await expect(firstMatch).toBeInViewport()
 
   // Verify we actually scrolled (not at top of page)
@@ -641,7 +644,8 @@ test("The pond dropcaps, search preview visual regression test (lostpixel)", asy
 
 test("Preview container click navigates to the correct page and scrolls to the first match", async ({
   page,
-}) => {
+}, testInfo) => {
+  test.slow(testInfo.project.name.includes("Safari"), "WebKit SPA navigation is slower in CI")
   await search(page, "Shrek")
 
   // Get the URL of the first result for comparison
@@ -655,10 +659,10 @@ test("Preview container click navigates to the correct page and scrolls to the f
   await clickPreviewToNavigate(page)
   await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
 
-  // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
-  // Note: The text fragment hash (#:~:text=) is processed by the SPA and then stripped from the URL
+  // waitForURL resolves on pushState; the SPA may still be fetching content
+  // and applying search highlights via scrollToMatch.
   const firstMatch = page.locator("article .search-match").first()
-  await expect(firstMatch).toBeAttached()
+  await expect(firstMatch).toBeAttached({ timeout: 10_000 })
   await expect(firstMatch).toBeInViewport()
 })
 
