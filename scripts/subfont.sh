@@ -2,7 +2,7 @@
 
 set -e
 
-# Only subset files that are larger than 1100 bytes
+# Only subset HTML files that are larger than 1100 bytes
 html_files=$(find public -type f -size +1100c -name "*.html")
 
 # Count number of files
