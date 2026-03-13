@@ -87,6 +87,10 @@ function setupDarkMode() {
   const savedTheme = localStorage.getItem(savedThemeKey)
   const theme = savedTheme || "auto"
   handleThemeUpdate(theme as Theme)
+  // Signal to tests that dark mode init is complete (localStorage + CSS set).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__darkmodeReady = true
+  document.dispatchEvent(new CustomEvent("darkmode-ready", { detail: undefined }))
 
   const toggle = document.querySelector("#theme-toggle") as HTMLButtonElement
   if (toggle) {

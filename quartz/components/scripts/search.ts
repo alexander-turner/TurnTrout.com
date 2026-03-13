@@ -1289,6 +1289,10 @@ async function initializeSearch(): Promise<void> {
       }
 
       searchInitialized = true
+      // Signal to tests and external consumers that the index is ready.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).__searchIndexReady = true
+      document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
     } catch (error) {
       console.error("Error initializing search:", error)
       searchBar.placeholder = "Search failed to load."

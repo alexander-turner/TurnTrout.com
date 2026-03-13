@@ -715,21 +715,27 @@ test.describe("Document Head & Body Updates", () => {
   // Helper to ensure the about link is visible (opens mobile menu if needed)
   async function ensureAboutLinkVisible(page: Page): Promise<void> {
     const aboutLink = page.locator('a[href$="/about"]')
-    // Use toPass retry for the full menu-open → link-visible sequence.
-    // iPad Pro Safari/WebKit can be slow with menu animations.
-    await expect(async () => {
-      const isVisible = await aboutLink.isVisible().catch(() => false)
-      if (!isVisible) {
-        const menuButton = page.locator("#menu-button")
-        const menu = page.locator("#navbar-right .menu")
-        if (await menuButton.isVisible().catch(() => false)) {
-          await menuButton.click()
-          await expect(menu).toBeVisible({ timeout: 5_000 })
-          await expect(menu).toHaveClass(/visible/, { timeout: 2_000 })
-        }
-      }
-      await expect(aboutLink).toBeVisible({ timeout: 5_000 })
-    }).toPass({ timeout: 15_000 })
+    if (await aboutLink.isVisible()) return
+
+    const menuButton = page.locator("#menu-button")
+    if (await menuButton.isVisible()) {
+      const menu = page.locator("#navbar-right .menu")
+      await menuButton.click()
+      // Wait for the menu's CSS visibility transition to complete rather
+      // than polling with toPass(). The menu uses a CSS transition on
+      // opacity/visibility that fires transitionend when done.
+      await menu.evaluate((el) =>
+        Promise.race([
+          new Promise<void>((resolve) =>
+            el.addEventListener("transitionend", () => resolve(), { once: true }),
+          ),
+          // Fallback: if already visible (transition already completed)
+          new Promise<void>((resolve) => setTimeout(resolve, 2_000)),
+        ]),
+      )
+      await expect(menu).toHaveClass(/visible/, { timeout: 5_000 })
+    }
+    await expect(aboutLink).toBeVisible({ timeout: 10_000 })
   }
 
   // Helper to wait for SPA navigation to complete (including DOM updates).
