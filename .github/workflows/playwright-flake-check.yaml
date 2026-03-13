@@ -31,11 +31,15 @@ jobs:
       repeat: ${{ steps.check.outputs.repeat }}
     steps:
       - id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REPEAT_EACH: ${{ github.event.inputs.repeat-each || '3' }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'ci:flake-check') }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "repeat=${{ github.event.inputs.repeat-each || '3' }}" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:flake-check') }}" == "true" ]]; then
+            echo "repeat=$REPEAT_EACH" >> "$GITHUB_OUTPUT"
+          elif [[ "$HAS_LABEL" == "true" ]]; then
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "repeat=3" >> "$GITHUB_OUTPUT"
           else
@@ -117,6 +121,24 @@ jobs:
         with:
           name: flake-check-log-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-flake.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flake-check-winston-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flake-check-webserver-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 3
 
