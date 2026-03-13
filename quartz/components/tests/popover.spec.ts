@@ -10,6 +10,7 @@ import {
   isElementChecked,
   openSearch,
   gotoPage,
+  triggerAndWaitForSPANav,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -341,27 +342,20 @@ for (const id of ["navbar", "toc-content"]) {
 }
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
-  // SPA navigation + DOM content load can be slow on CI runners
-  test.slow()
   await expect(dummyLink).toBeVisible()
-  const linkHref = await dummyLink.getAttribute("href")
-  const linkSlug = linkHref?.split("/").pop()
 
   // Hover over the link to initiate a popover, but don't wait for it to appear
   await dummyLink.hover()
 
-  // Immediately click the link to navigate
-  await dummyLink.click()
-
-  // Wait for navigation to the new page. The href of dummyLink is /design.
-  await page.waitForURL(`**/${linkSlug}`, { timeout: 30_000 })
+  // Immediately click the link to navigate.  Wait for the SPA `nav` event
+  // which clears the pending popover timer and resets mouseMovedSinceNav.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
 
   // Move cursor to a neutral area so it doesn't accidentally hover over a
   // link on the new page (which could trigger a *new* popover, especially in
   // Safari where the cursor position persists after SPA navigation).
   await page.mouse.move(10, 10)
 
-  // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
   // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(1000)

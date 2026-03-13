@@ -556,3 +556,30 @@ export function isDesktopViewport(page: Page): boolean {
 export function isFirefox(testInfo: TestInfo): boolean {
   return testInfo.project.name.toLowerCase().includes("firefox")
 }
+
+/**
+ * Trigger an action and wait for the SPA to complete navigation.
+ *
+ * The SPA dispatches a custom `"nav"` event after fetch → DOM morph →
+ * scroll/search-highlight are all finished.  `page.waitForURL` resolves
+ * as soon as `pushState` fires — long before the DOM is ready — so tests
+ * that need post-navigation DOM state must use this helper instead.
+ */
+export async function triggerAndWaitForSPANav(
+  page: Page,
+  trigger: () => Promise<void>,
+): Promise<void> {
+  // Register the listener *before* the action so we never miss the event.
+  await page.evaluate(() => {
+    ;(window as unknown as Record<string, unknown>).__spaNavComplete = new Promise<void>(
+      (resolve) => {
+        document.addEventListener("nav", () => resolve(), { once: true })
+      },
+    )
+  })
+
+  await trigger()
+
+  // Playwright awaits the browser-side Promise returned by evaluate.
+  await page.evaluate(() => (window as unknown as Record<string, unknown>).__spaNavComplete)
+}
