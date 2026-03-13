@@ -563,8 +563,8 @@ importers:
         version: 9.2.0
     optionalDependencies:
       '@napi-rs/simple-git-android-arm-eabi':
-        specifier: 0.1.19
-        version: 0.1.19
+        specifier: 0.1.22
+        version: 0.1.22
       '@napi-rs/simple-git-android-arm64':
         specifier: 0.1.19
         version: 0.1.19
@@ -2058,6 +2058,12 @@ packages:
 
   '@napi-rs/simple-git-android-arm-eabi@0.1.19':
     resolution: {integrity: sha512-XryEH/hadZ4Duk/HS/HC/cA1j0RHmqUGey3MsCf65ZS0VrWMqChXM/xlTPWuY5jfCc/rPubHaqI7DZlbexnX/g==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [android]
+
+  '@napi-rs/simple-git-android-arm-eabi@0.1.22':
+    resolution: {integrity: sha512-JQZdnDNm8o43A5GOzwN/0Tz3CDBQtBUNqzVwEopm32uayjdjxev1Csp1JeaqF3v9djLDIvsSE39ecsN2LhCKKQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [android]
@@ -11649,6 +11655,9 @@ snapshots:
       - supports-color
 
   '@napi-rs/simple-git-android-arm-eabi@0.1.19':
+    optional: true
+
+  '@napi-rs/simple-git-android-arm-eabi@0.1.22':
     optional: true
 
   '@napi-rs/simple-git-android-arm64@0.1.19':
