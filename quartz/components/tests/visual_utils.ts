@@ -356,23 +356,40 @@ export async function getNextElementMatchingSelector(
 
 /** Open the search UI by clicking the search icon.
  *
- *  Waits for the SPA `nav` event to complete before interacting, ensuring
- *  event handlers are registered after back/forward navigation. */
+ *  Waits for search event handlers to be fully registered (signalled by
+ *  `onNav` in search.ts setting `window.__searchHandlersReady`) before
+ *  clicking, avoiding the race where the click handler isn't attached yet
+ *  after SPA navigation.
+ *
+ *  The click itself can still race with DOM updates (e.g. the SPA morphing
+ *  the page after goBack), so if the first click doesn't activate search
+ *  within 3 s we retry once. This is bounded to exactly 2 attempts — not a
+ *  polling loop. */
 export async function openSearch(page: Page) {
-  // After SPA navigation (e.g. goBack), handlers may not be registered yet.
-  // Wait for the nav event to have fired, which signals all setup is done.
-  await page.waitForFunction(() => {
-    // The nav event sets up search handlers; if the search icon has a
-    // click listener, we're ready. As a proxy, check that the search
-    // container exists in the DOM (it's always present after nav).
-    return document.getElementById("search-container") !== null
-  })
+  // After SPA navigation (e.g. goBack), onNav() re-registers all search
+  // event handlers asynchronously. Wait for the flag it sets at completion.
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchHandlersReady === true,
+    null,
+    { timeout: 15_000 },
+  )
 
-  if (!(await page.locator("#search-bar").isVisible())) {
-    await page.locator("#search-icon").click()
+  const searchContainer = page.locator("#search-container")
+  const searchBar = page.locator("#search-bar")
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (!(await searchBar.isVisible())) {
+      await page.locator("#search-icon").click()
+    }
+    try {
+      await expect(searchContainer).toHaveClass(/active/, { timeout: 3_000 })
+      break
+    } catch {
+      if (attempt === 1) throw new Error("openSearch: search container did not become active")
+    }
   }
-  await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 10_000 })
-  await expect(page.locator("#search-bar")).toBeVisible({ timeout: 10_000 })
+  await expect(searchBar).toBeVisible({ timeout: 5_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {

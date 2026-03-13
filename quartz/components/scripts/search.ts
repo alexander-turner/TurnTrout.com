@@ -703,6 +703,10 @@ let cleanupListeners: (() => void) | undefined
  */
 /* istanbul ignore next */
 async function onNav(e: CustomEventMap["nav"]) {
+  // Reset ready flag so tests wait for re-registration after SPA navigation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = false
+
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
     cleanupListeners()
@@ -802,6 +806,10 @@ async function onNav(e: CustomEventMap["nav"]) {
     listeners.forEach((cleanup) => cleanup())
     listeners.clear()
   }
+
+  // Signal that search event handlers are fully registered for this page.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = true
 }
 
 /**
