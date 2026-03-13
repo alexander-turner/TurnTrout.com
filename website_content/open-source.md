@@ -146,6 +146,10 @@ The issue had been reported repeatedly since 2020 ([#1318](https://github.com/me
 
 This site [uses KaTeX for math rendering](/design#math-rendering). When math content becomes scrollable (e.g. via CSS overflow), it isn't keyboard-focusable and lacks an appropriate ARIA role, violating WCAG 2.1 SC 2.1.1. [PR #4162](https://github.com/KaTeX/KaTeX/pull/4162) adds `tabindex="0"` and `role="math"` attributes to the root `.katex` element, making scrollable math keyboard-accessible and properly labeled for assistive technologies.
 
+## KaTeX DOM size reduction
+
+KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that are only used internally during the build process for spacing calculations. These classes appear in the final HTML output even though no CSS rules reference them, unnecessarily increasing DOM size. [PR #4164](https://github.com/KaTeX/KaTeX/pull/4164) strips these build-time-only classes from the rendered output, reducing KaTeX's DOM footprint by ~15%.
+
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:
