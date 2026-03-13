@@ -711,20 +711,21 @@ test.describe("Document Head & Body Updates", () => {
   // Helper to ensure the about link is visible (opens mobile menu if needed)
   async function ensureAboutLinkVisible(page: Page): Promise<void> {
     const aboutLink = page.locator('a[href$="/about"]')
-    const isVisible = await aboutLink.isVisible().catch(() => false)
-    if (!isVisible) {
-      // On mobile, the menu might be hidden. Try opening it.
-      const menuButton = page.locator("#menu-button")
-      const menu = page.locator("#navbar-right .menu")
-      if (await menuButton.isVisible().catch(() => false)) {
-        await menuButton.click()
-        // Wait for menu to become visible
-        await expect(menu).toBeVisible()
-        await expect(menu).toHaveClass(/visible/)
+    // Use toPass retry for the full menu-open → link-visible sequence.
+    // iPad Pro Safari/WebKit can be slow with menu animations.
+    await expect(async () => {
+      const isVisible = await aboutLink.isVisible().catch(() => false)
+      if (!isVisible) {
+        const menuButton = page.locator("#menu-button")
+        const menu = page.locator("#navbar-right .menu")
+        if (await menuButton.isVisible().catch(() => false)) {
+          await menuButton.click()
+          await expect(menu).toBeVisible({ timeout: 5_000 })
+          await expect(menu).toHaveClass(/visible/, { timeout: 2_000 })
+        }
       }
-      // If still not visible, use force click
-      await aboutLink.scrollIntoViewIfNeeded()
-    }
+      await expect(aboutLink).toBeVisible({ timeout: 5_000 })
+    }).toPass({ timeout: 15_000 })
   }
 
   // Helper to wait for SPA navigation to complete (including DOM updates).
@@ -763,8 +764,8 @@ test.describe("Document Head & Body Updates", () => {
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {
     const awaitNav = await waitForNavigation(page)
-    await page.click(`a[href$="${url}"]`)
-    await page.waitForURL(`**${url}`)
+    await page.click(`a[href$="${url}"]`, { timeout: 10_000 })
+    await page.waitForURL(`**${url}`, { timeout: 15_000 })
     await awaitNav()
   }
 

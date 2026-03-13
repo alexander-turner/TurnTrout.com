@@ -398,6 +398,9 @@ export async function search(page: Page, term: string) {
   // and Desktop Safari are particularly susceptible to this race.
   await expect(async () => {
     await searchBar.fill(term)
+    // Explicitly dispatch input event — Playwright's fill() should do this,
+    // but Firefox on tablet viewports sometimes fails to trigger the handler.
+    await searchBar.dispatchEvent("input")
     await expect(searchLayout).toBeVisible({ timeout: 5_000 })
     await expect(searchLayout).toHaveClass(/display-results/, { timeout: 5_000 })
   }).toPass({ timeout: 30_000 })
