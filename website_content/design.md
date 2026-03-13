@@ -1203,7 +1203,7 @@ Dependency auto-merge
 : [Dependabot](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/dependabot.yml) proposes weekly updates for `npm`, Python, and GitHub Actions dependencies. Non-major bumps are [auto-approved and squash-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-dependabot.yml), while major bumps require manual review. [DeepSource](https://deepsource.com/) style-fix PRs are [auto-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-deepsource.yml).
 
 CI failure notifications
-: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow).
+: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 5 pings per workflow).
 
 Self-improving tooling
 : Claude Code automatically improves its own tooling over time. When Claude merges a PR, it includes a "Lessons Learned" section documenting what worked and what didn't. A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) detects these sections and files corresponding issues on the [template repo](https://github.com/alexander-turner/claude-automation-template), propagating improvements upstream to all projects using the template.
