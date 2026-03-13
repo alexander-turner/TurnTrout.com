@@ -777,9 +777,12 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
-  // Move mouse away from results so that when the mouseover lock expires,
+  // Move mouse far from results so that when the mouseover lock expires,
   // no accidental hover event steals focus from the first result.
-  await page.mouse.move(0, 0)
+  // Use bottom-right corner to avoid overlapping result cards near (0,0)
+  // on tablet viewports like iPad Pro.
+  const viewport = page.viewportSize()!
+  await page.mouse.move(viewport.width - 1, viewport.height - 1)
 
   // The search input is debounced (400ms), so `search()` may return before
   // the new results render. Wait for the first result card to reflect the

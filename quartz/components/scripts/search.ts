@@ -1151,10 +1151,11 @@ function displayResults(finalResults: Item[], results: HTMLElement, enablePrevie
   } else {
     results.append(...finalResults.map((result) => resultToHTML(result, enablePreview)))
 
-    // focus on first result and update preview
+    // Focus on the first result and update preview.
+    // Call focusCard directly to ensure aria-selected is always set,
+    // even when displayPreview returns early (preview disabled).
     const firstChild = results.firstElementChild as HTMLElement
-    firstChild.classList.add("focus")
-    currentHover = firstChild as HTMLInputElement
+    focusCard(firstChild, false)
 
     displayPreview(firstChild, false)
   }

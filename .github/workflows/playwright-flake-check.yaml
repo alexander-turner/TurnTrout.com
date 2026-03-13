@@ -1,0 +1,147 @@
+name: Playwright Flake Check
+
+# Runs each Playwright test multiple times to detect flaky tests.
+# Triggered manually or by adding the ci:flake-check label to a PR.
+
+concurrency:
+  group: playwright-flake-check-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeat-each:
+        description: "Number of times to repeat each test"
+        required: false
+        default: "3"
+        type: string
+  pull_request:
+    types: [labeled]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  should-run:
+    name: flake-check-gate
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+      repeat: ${{ steps.check.outputs.repeat }}
+    steps:
+      - id: check
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "repeat=${{ github.event.inputs.repeat-each || '3' }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:flake-check') }}" == "true" ]]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "repeat=3" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "repeat=3" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: flake-check-build
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Build Environment
+        uses: ./.github/actions/setup-build-env
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flake-check-public-dir
+          path: public/
+          retention-days: 1
+
+  flake-check:
+    needs: [should-run, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ["1/10", "2/10", "3/10", "4/10", "5/10", "6/10", "7/10", "8/10", "9/10", "10/10"]
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Puppeteer Chrome
+        run: pnpm exec puppeteer browsers install chrome
+
+      - name: Download built site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: flake-check-public-dir
+          path: public/
+
+      - name: Run Playwright tests (repeat-each=${{ needs.should-run.outputs.repeat }})
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --grep "^(?:(?!lostpixel).)*$" \
+            --shard ${{ matrix.shard }} \
+            --repeat-each ${{ needs.should-run.outputs.repeat }} \
+            | tee playwright-flake.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload flake check logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flake-check-log-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-flake.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Playwright traces
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flake-check-traces-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if flaky tests detected
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  summarize:
+    name: Flake Check Summary
+    if: always() && needs.flake-check.result == 'failure'
+    needs: flake-check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: ./.github/actions/summarize-failed-shards
+        with:
+          log-pattern: flake-check-log-shard-*
+          final-log-name: flake-check-failed-logs
