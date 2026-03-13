@@ -12,3 +12,4 @@ htmlcov/
 .logs/
 test-results/
 pnpm-lock.yaml
+.dmypy.json
