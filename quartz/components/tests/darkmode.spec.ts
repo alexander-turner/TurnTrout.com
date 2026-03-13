@@ -247,10 +247,12 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
       await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
-      // Verify localStorage survived navigation, then wait for the init
+      // Verify localStorage survived navigation and wait for the init
       // script to apply the label (CSS custom property may lag on Safari).
-      await helper.verifyStorage(theme)
+      // Both checks are inside toPass() because after domcontentloaded,
+      // setupDarkMode() may not have written to localStorage yet.
       await expect(async () => {
+        await helper.verifyStorage(theme)
         await helper.verifyThemeLabel(theme)
       }).toPass({ timeout: 15_000 })
       await helper.verifyTheme(theme)
