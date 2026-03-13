@@ -272,11 +272,14 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewArticle = previewContainer.locator("article.search-preview")
   await expect(previewArticle).toBeAttached({ timeout: 30_000 })
 
-  // Wait for the specific link inside the preview content
+  // Wait for the specific link inside the preview content. The preview can
+  // re-render if result selection changes, detaching elements, so retry.
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
-  await expect(searchDummyLink).toBeAttached({ timeout: 15_000 })
-  await searchDummyLink.scrollIntoViewIfNeeded()
-  await expect(searchDummyLink).toBeVisible({ timeout: 5_000 })
+  await expect(async () => {
+    await expect(searchDummyLink).toBeAttached({ timeout: 5_000 })
+    await searchDummyLink.scrollIntoViewIfNeeded()
+    await expect(searchDummyLink).toBeVisible({ timeout: 2_000 })
+  }).toPass({ timeout: 30_000 })
   await searchDummyLink.hover()
 
   // Verify no popover appears

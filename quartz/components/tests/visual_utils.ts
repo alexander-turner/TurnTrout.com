@@ -392,18 +392,19 @@ export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
   const searchLayout = page.locator("#search-layout")
 
-  // Use toPass() retry to handle browser timing issues where fill()
-  // may not reliably trigger the input event handler if the search script
-  // hasn't fully initialized its event listeners yet. iPad Pro Firefox
-  // and Desktop Safari are particularly susceptible to this race.
+  // Fill the search bar and wait for results. The search handler is debounced
+  // (400ms) and initializeSearch() fetches the index on first use, which can
+  // take 5-10s on CI. The inner visibility timeout must be long enough for
+  // the index to load; retrying fill() too soon resets the debounce timer
+  // and prevents onType() from completing.
   await expect(async () => {
     await searchBar.fill(term)
     // Explicitly dispatch input event — Playwright's fill() should do this,
     // but Firefox on tablet viewports sometimes fails to trigger the handler.
     await searchBar.dispatchEvent("input")
-    await expect(searchLayout).toBeVisible({ timeout: 5_000 })
-    await expect(searchLayout).toHaveClass(/display-results/, { timeout: 5_000 })
-  }).toPass({ timeout: 30_000 })
+    await expect(searchLayout).toBeVisible({ timeout: 15_000 })
+    await expect(searchLayout).toHaveClass(/display-results/, { timeout: 2_000 })
+  }).toPass({ timeout: 45_000 })
 
   // Wait for results to appear — the display-results class is set before
   // searchAsync completes, so also wait for actual result cards to render.

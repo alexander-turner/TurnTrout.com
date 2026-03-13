@@ -456,20 +456,23 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
   await expect(playIcon).toBeHidden()
   await expect(autoplayToggle).toHaveAttribute("aria-label", "Disable video autoplay")
 
-  // Wait for video to have enough data loaded, then verify it starts playing
+  // Wait for video to have enough data loaded, then verify it starts playing.
+  // Safari can report readyState=4 and paused=false before currentTime advances,
+  // so use timeupdate (which fires on every frame) without { once: true }.
   await video.evaluate((videoElement: HTMLVideoElement) => {
     return new Promise<void>((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(
           new Error(
-            `Video failed to reach playable state: readyState=${videoElement.readyState}, paused=${videoElement.paused}`,
+            `Video failed to reach playable state: readyState=${videoElement.readyState}, paused=${videoElement.paused}, currentTime=${videoElement.currentTime}`,
           ),
         )
-      }, 10000)
+      }, 15_000)
 
       const checkPlayable = () => {
         if (videoElement.readyState >= 3 && !videoElement.paused && videoElement.currentTime > 0) {
           clearTimeout(timeout)
+          videoElement.removeEventListener("timeupdate", checkPlayable)
           resolve()
         }
       }
@@ -478,9 +481,11 @@ test("Video autoplay preference persists across page reloads", async ({ page }) 
         clearTimeout(timeout)
         resolve()
       } else {
+        // Use timeupdate without once — it fires each frame, giving us
+        // repeated chances to check currentTime after it advances.
+        videoElement.addEventListener("timeupdate", checkPlayable)
         videoElement.addEventListener("canplay", checkPlayable, { once: true })
         videoElement.addEventListener("playing", checkPlayable, { once: true })
-        videoElement.addEventListener("timeupdate", checkPlayable, { once: true })
       }
     })
   })
