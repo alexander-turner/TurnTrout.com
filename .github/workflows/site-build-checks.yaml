@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-        timeout-minutes: 5
+          filter: blob:none
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env

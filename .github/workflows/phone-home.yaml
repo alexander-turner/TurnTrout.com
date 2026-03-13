@@ -16,8 +16,10 @@ permissions:
 
 jobs:
   phone-home:
-    # Only run for merged PRs (not closed-without-merge)
-    if: github.event.pull_request.merged == true
+    # Only run for merged PRs that have the phone-home label
+    if: >
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'phone-home')
     runs-on: ubuntu-latest
     steps:
       - name: Extract and submit improvements

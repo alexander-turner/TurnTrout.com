@@ -13,6 +13,7 @@ import {
   isElementChecked,
   openSearch,
   gotoPage,
+  triggerAndWaitForSPANav,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -411,15 +412,13 @@ test("Enter key navigates to first result", async ({ page }) => {
 
 // Enter and click used to have different navigation methods
 test("Enter key navigation scrolls to first match", async ({ page }) => {
-  const initialUrl = page.url()
   // Use a term that appears far down the test page so scrolling is required
   await search(page, "Footnote spam")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  await page.keyboard.press("Enter")
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
 
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
@@ -430,11 +429,7 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text stays at top even with body matches", async ({
-  page,
-}, testInfo) => {
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit search rendering is slower in CI")
-  const initialUrl = page.url()
+test("Search matching title text stays at top even with body matches", async ({ page }) => {
   // "Testing site" matches the test page title ("Testing Site Features") and
   // the sub-token "Testing" also appears in the body ("visual regression testing").
   // When the title matches, the page should stay at the top.
@@ -444,13 +439,7 @@ test("Search matching title text stays at top even with body matches", async ({
   // result, which may differ across viewport sizes)
   const testPageResult = page.locator('.result-card[id="test-page"]')
   await expect(testPageResult).toBeVisible()
-  await testPageResult.click()
-
-  await page.waitForURL((url) => url.toString() !== initialUrl)
-  // waitForURL resolves as soon as pushState fires; the SPA may still be
-  // rendering content and applying search highlights.  Wait for the article
-  // title element to be present before checking for search-match spans.
-  await expect(page.locator("#article-title")).toBeAttached()
+  await triggerAndWaitForSPANav(page, () => testPageResult.click())
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
@@ -652,11 +641,8 @@ test("Preview container click navigates to the correct page and scrolls to the f
 
   // Wait for preview content to load, then navigate
   await waitForPreviewArticle(page)
-  await clickPreviewToNavigate(page)
-  await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
 
-  // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
-  // Note: The text fragment hash (#:~:text=) is processed by the SPA and then stripped from the URL
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
   await expect(firstMatch).toBeInViewport()

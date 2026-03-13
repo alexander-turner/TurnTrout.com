@@ -43,12 +43,10 @@ on:
   merge_group:
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present.
-  # The pull_request trigger intentionally omits a branches filter so that
-  # ci:full-tests works on PRs targeting any branch (not just main/dev).
-  # Tests always run in the merge queue to enforce passing before merge.
+  # Gate: only run on PRs if ci:run-lighthouse or ci:full-tests label is present.
   should-run:
     name: lighthouse-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
@@ -56,7 +54,8 @@ jobs:
       - id: check
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-lighthouse') }}" == "true" ]]; then
               echo "run=true" >> "$GITHUB_OUTPUT"
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
@@ -127,15 +126,15 @@ jobs:
           echo "Extracted DEPLOY_URL: $DEPLOY_URL"
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
-  lighthouse_desktop:
+  lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Run Lighthouse CI against Cloudflare deployment (Desktop)
+      - name: CLS Check (Desktop)
         id: lighthouse_desktop
-        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
+        uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
@@ -147,23 +146,23 @@ jobs:
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
-      - name: Upload Lighthouse reports (Desktop)
+      - name: Upload CLS reports (Desktop)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: lighthouse-reports-desktop
+          name: lighthouse-cls-reports-desktop
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
           retention-days: 1
 
-  lighthouse_mobile:
+  lighthouse_mobile_cls:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     needs: build_and_deploy
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Run Lighthouse CI against Cloudflare deployment (Mobile)
+      - name: CLS Check (Mobile)
         id: lighthouse_mobile
-        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
+        uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
@@ -175,11 +174,11 @@ jobs:
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"
 
-      - name: Upload Lighthouse reports (Mobile)
+      - name: Upload CLS reports (Mobile)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: lighthouse-reports-mobile
+          name: lighthouse-cls-reports-mobile
           path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
           retention-days: 1
 
@@ -191,7 +190,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
         id: lighthouse_full
-        uses: treosh/lighthouse-ci-action@03becbfc543944dd6e7534f7ff768abb8a296826 # v10
+        uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/

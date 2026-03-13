@@ -27,9 +27,9 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present.
+  # Gate: only run on PRs if ci:run-visual or ci:full-tests label is present.
   # The pull_request trigger intentionally omits a branches filter so that
-  # ci:full-tests works on PRs targeting any branch (not just main/dev).
+  # these labels work on PRs targeting any branch (not just main/dev).
   # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: visual-should-run
@@ -40,7 +40,8 @@ jobs:
       - id: check
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
               echo "run=true" >> "$GITHUB_OUTPUT"
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
