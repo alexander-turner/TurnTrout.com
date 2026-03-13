@@ -1297,7 +1297,8 @@ async function initializeSearch(): Promise<void> {
       }
 
       searchInitialized = true
-      // Signal to tests and external consumers that the index is ready.
+      // Signal to tests that the index is ready. Unlike __searchHandlersReady,
+      // this is never reset — the index persists across SPA navigations.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(window as any).__searchIndexReady = true
       document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))

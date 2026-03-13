@@ -378,17 +378,18 @@ export async function openSearch(page: Page) {
   const searchContainer = page.locator("#search-container")
   const searchBar = page.locator("#search-bar")
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    if (!(await searchBar.isVisible())) {
-      await page.locator("#search-icon").click()
-    }
-    try {
-      await expect(searchContainer).toHaveClass(/active/, { timeout: 3_000 })
-      break
-    } catch {
-      if (attempt === 1) throw new Error("openSearch: search container did not become active")
-    }
+  // Click the search icon if search isn't already open. If the first click
+  // doesn't activate search (e.g. DOM morphed between click and class check),
+  // retry once — bounded to exactly 2 attempts.
+  if (!(await searchBar.isVisible())) {
+    await page.locator("#search-icon").click()
   }
+  const isActive = await searchContainer.evaluate((el) => el.classList.contains("active"))
+  if (!isActive) {
+    // Retry: re-click in case the first was swallowed by a DOM update
+    await page.locator("#search-icon").click()
+  }
+  await expect(searchContainer).toHaveClass(/active/, { timeout: 5_000 })
   await expect(searchBar).toBeVisible({ timeout: 5_000 })
 }
 
@@ -407,20 +408,11 @@ export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
   const searchLayout = page.locator("#search-layout")
 
-  // Wait for the search index to be ready before filling. The index loads
-  // lazily on first interaction (focus/click) and dispatches a custom
-  // "search-index-ready" event when complete. Waiting for this signal avoids
-  // the old toPass() retry loop that would repeatedly fill() and reset the
-  // 400ms debounce timer.
+  // Wait for the search index to load before filling (avoids resetting
+  // the 400ms debounce timer with repeated fill() retries).
   await page.waitForFunction(
-    () => {
-      // Check if index is already initialized (subsequent searches)
-      // by looking for the custom event marker or trying a quick check.
-      // The search module sets searchInitialized=true and dispatches
-      // "search-index-ready" once. We listen for both paths.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (window as any).__searchIndexReady === true
-    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchIndexReady === true,
     null,
     { timeout: 30_000 },
   )

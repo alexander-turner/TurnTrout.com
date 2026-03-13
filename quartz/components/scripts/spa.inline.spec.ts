@@ -721,18 +721,6 @@ test.describe("Document Head & Body Updates", () => {
     if (await menuButton.isVisible()) {
       const menu = page.locator("#navbar-right .menu")
       await menuButton.click()
-      // Wait for the menu's CSS visibility transition to complete rather
-      // than polling with toPass(). The menu uses a CSS transition on
-      // opacity/visibility that fires transitionend when done.
-      await menu.evaluate((el) =>
-        Promise.race([
-          new Promise<void>((resolve) =>
-            el.addEventListener("transitionend", () => resolve(), { once: true }),
-          ),
-          // Fallback: if already visible (transition already completed)
-          new Promise<void>((resolve) => setTimeout(resolve, 2_000)),
-        ]),
-      )
       await expect(menu).toHaveClass(/visible/, { timeout: 5_000 })
     }
     await expect(aboutLink).toBeVisible({ timeout: 10_000 })
@@ -774,7 +762,7 @@ test.describe("Document Head & Body Updates", () => {
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {
     const awaitNav = await waitForNavigation(page)
-    await page.click(`a[href$="${url}"]`, { timeout: 10_000 })
+    await page.locator(`a[href$="${url}"]`).first().click()
     await page.waitForURL(`**${url}`, { timeout: 15_000 })
     await awaitNav()
   }
