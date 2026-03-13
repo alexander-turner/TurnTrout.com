@@ -390,13 +390,16 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 // skipcq: JS-0098
 export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
-  await searchBar.fill(term)
-
-  // Wait for search layout to be visible with results (longer timeout for Safari/WebKit)
   const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toBeAttached({ timeout: 10_000 })
-  await expect(searchLayout).toBeVisible({ timeout: 10_000 })
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+
+  // Use toPass() retry to handle Safari/WebKit timing issues where fill()
+  // may not reliably trigger the input event handler if the search script
+  // hasn't fully initialized its event listeners yet.
+  await expect(async () => {
+    await searchBar.fill(term)
+    await expect(searchLayout).toBeVisible({ timeout: 5_000 })
+    await expect(searchLayout).toHaveClass(/display-results/, { timeout: 2_000 })
+  }).toPass({ timeout: 15_000 })
 
   // Wait for results to appear — the display-results class is set before
   // searchAsync completes, so also wait for actual result cards to render.

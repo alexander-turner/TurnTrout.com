@@ -144,7 +144,7 @@ The issue had been reported repeatedly since 2020 ([#1318](https://github.com/me
 
 ## KaTeX accessibility attributes
 
-This site [uses KaTeX for math rendering](/design#math-rendering). When math content becomes scrollable (e.g. via CSS overflow), it isn't keyboard-focusable and lacks an appropriate ARIA role, violating WCAG 2.1 SC 2.1.1. [PR #4162](https://github.com/KaTeX/KaTeX/pull/4162) adds `tabindex="0"` and `role="math"` attributes to the root `.katex` element, making scrollable math keyboard-accessible and properly labeled for assistive technologies.
+This site [uses KaTeX for math rendering](/design#smaller-features). When math content becomes scrollable (e.g. via CSS overflow), it isn't keyboard-focusable and lacks an appropriate ARIA role, violating WCAG 2.1 SC 2.1.1. [PR #4162](https://github.com/KaTeX/KaTeX/pull/4162) adds `tabindex="0"` and `role="math"` attributes to the root `.katex` element, making scrollable math keyboard-accessible and properly labeled for assistive technologies.
 
 ## KaTeX DOM size reduction
 
