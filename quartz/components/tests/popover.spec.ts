@@ -214,9 +214,9 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
-  // Set noPopover attribute
+  // Set noPopover attribute on the specific link we'll hover
   await page.evaluate(() => {
-    const link = document.querySelector(".can-trigger-popover")
+    const link = document.querySelector("#first-link-test-page")
     if (link) link.setAttribute("data-no-popover", "true")
   })
 
