@@ -1,0 +1,96 @@
+diff --git a/src/buildTree.ts b/src/buildTree.ts
+index 1feefa2..52020e4 100644
+--- a/src/buildTree.ts
++++ b/src/buildTree.ts
+@@ -49,6 +49,13 @@ export const buildTree = function(
+         katexNode = makeSpan(["katex"], [mathMLNode, htmlNode]);
+     }
+ 
++    // Add accessibility attributes so that when the .katex element becomes
++    // scrollable (e.g. via CSS overflow), it is keyboard-focusable and has
++    // an appropriate ARIA role per WCAG 2.1 SC 2.1.1 and the axe
++    // scrollable-region-focusable rule.
++    katexNode.setAttribute("tabindex", "0");
++    katexNode.setAttribute("role", "math");
++
+     return displayWrap(katexNode, settings);
+ };
+ 
+@@ -60,6 +67,8 @@ export const buildHTMLTree = function(
+     const options = optionsFromSettings(settings);
+     const htmlNode = buildHTML(tree, options);
+     const katexNode = makeSpan(["katex"], [htmlNode]);
++    katexNode.setAttribute("tabindex", "0");
++    katexNode.setAttribute("role", "math");
+     return displayWrap(katexNode, settings);
+ };
+ 
+diff --git a/test/__snapshots__/katex-spec.ts.snap b/test/__snapshots__/katex-spec.ts.snap
+index c359459..56dce32 100755
+--- a/test/__snapshots__/katex-spec.ts.snap
++++ b/test/__snapshots__/katex-spec.ts.snap
+@@ -1057,7 +1057,10 @@ exports[`An includegraphics builder should render with trust setting 1`] = `
+ `;
+ 
+ exports[`Extending katex by new fonts and symbols Add new font class to new extended symbols 1`] = `
+-<span class="katex">
++<span class="katex"
++      tabindex="0"
++      role="math"
++>
+   <span class="katex-mathml">
+     <math xmlns="http://www.w3.org/1998/Math/MathML">
+       <semantics>
+@@ -1130,7 +1133,10 @@ exports[`Extending katex by new fonts and symbols Add new font class to new exte
+ `;
+ 
+ exports[`Newlines via \\\\ and \\newline \\\\ causes newline, even after mrel and mop 1`] = `
+-<span class="katex">
++<span class="katex"
++      tabindex="0"
++      role="math"
++>
+   <span class="katex-mathml">
+     <math xmlns="http://www.w3.org/1998/Math/MathML">
+       <semantics>
+diff --git a/test/katex-spec.ts b/test/katex-spec.ts
+index f4443e8..8e9970b 100644
+--- a/test/katex-spec.ts
++++ b/test/katex-spec.ts
+@@ -4530,3 +4530,36 @@ describe("\\emph", () => {
+         expect`\textit{\emph{foo \emph{bar}}}`.toBuildLike`\textit{\textup{foo \textit{bar}}}`;
+     });
+ });
++
++describe("Accessibility attributes", function() {
++    it("should add tabindex and role to inline math", function() {
++        const markup = katex.renderToString("x^2");
++        expect(markup).toContain('tabindex="0"');
++        expect(markup).toContain('role="math"');
++    });
++
++    it("should add tabindex and role to display math", function() {
++        const markup = katex.renderToString("x^2", {displayMode: true});
++        expect(markup).toContain('tabindex="0"');
++        expect(markup).toContain('role="math"');
++    });
++
++    it("should add attributes to the .katex element", function() {
++        const markup = katex.renderToString("x^2");
++        // Verify the attributes are on the katex span, not elsewhere
++        expect(markup).toMatch(/<span class="katex"[^>]*tabindex="0"/);
++        expect(markup).toMatch(/<span class="katex"[^>]*role="math"/);
++    });
++
++    it("should add tabindex and role in html output mode", function() {
++        const markup = katex.renderToString("x^2", {output: "html"});
++        expect(markup).toContain('tabindex="0"');
++        expect(markup).toContain('role="math"');
++    });
++
++    it("should not add tabindex or role in mathml-only output mode", function() {
++        const markup = katex.renderToString("x^2", {output: "mathml"});
++        expect(markup).not.toContain('tabindex');
++        expect(markup).not.toContain('role="math"');
++    });
++});
