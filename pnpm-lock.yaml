@@ -271,7 +271,7 @@ importers:
         version: 0.5.21
       subfont:
         specifier: github:alexander-turner/subfont#claude/fix-subfont-ci-performance-Xi5yJ
-        version: https://codeload.github.com/alexander-turner/subfont/tar.gz/28173a3712dfc17de3682003308c7035d3559e18(@types/babel__core@7.20.5)(typescript@5.7.3)
+        version: https://codeload.github.com/alexander-turner/subfont/tar.gz/39bcd2f1710f6fbc5afe1222b691c386031bd0e7(@types/babel__core@7.20.5)(typescript@5.7.3)
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -8935,8 +8935,8 @@ packages:
   subarg@1.0.0:
     resolution: {integrity: sha512-RIrIdRY0X1xojthNcVtgT9sjpOGagEUKpZdgBUi054OEPFo282yg+zE+t1Rj3+RqKq2xStL7uUHhY+AjbC4BXg==}
 
-  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/28173a3712dfc17de3682003308c7035d3559e18:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/28173a3712dfc17de3682003308c7035d3559e18}
+  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/39bcd2f1710f6fbc5afe1222b691c386031bd0e7:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/39bcd2f1710f6fbc5afe1222b691c386031bd0e7}
     version: 7.2.1
     engines: {node: '>=10.0.0'}
     hasBin: true
@@ -20307,7 +20307,7 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/28173a3712dfc17de3682003308c7035d3559e18(@types/babel__core@7.20.5)(typescript@5.7.3):
+  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/39bcd2f1710f6fbc5afe1222b691c386031bd0e7(@types/babel__core@7.20.5)(typescript@5.7.3):
     dependencies:
       '@gustavnikolaj/async-main-wrap': 3.0.1
       '@hookun/parse-animation-shorthand': 0.1.5
