@@ -569,17 +569,15 @@ export async function triggerAndWaitForSPANav(
   page: Page,
   trigger: () => Promise<void>,
 ): Promise<void> {
-  // Register the listener *before* the action so we never miss the event.
-  await page.evaluate(() => {
-    ;(window as unknown as Record<string, unknown>).__spaNavComplete = new Promise<void>(
-      (resolve) => {
-        document.addEventListener("nav", () => resolve(), { once: true })
-      },
-    )
-  })
+  // Start listening *before* the action so we never miss the event.
+  // page.evaluate returns a Promise that resolves when the browser-side Promise resolves.
+  const navPromise = page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        document.addEventListener("nav", () => resolve(), { once: true }),
+      ),
+  )
 
   await trigger()
-
-  // Playwright awaits the browser-side Promise returned by evaluate.
-  await page.evaluate(() => (window as unknown as Record<string, unknown>).__spaNavComplete)
+  await navPromise
 }
