@@ -4,13 +4,13 @@ This directory contains configuration and skills for Claude Code.
 
 ## Structure
 
-```text
+```
 .claude/
 ├── settings.json              # Claude Code hooks configuration
 ├── hooks/
 │   ├── session-setup.sh      # Runs on session start (installs tools, configures git)
 │   ├── pre-push-check.sh    # Runs before git push / gh pr (build, lint, typecheck)
-│   ├── post-push-ci-watch.sh # Runs after git push / gh pr (polls GitHub Actions)
+│   ├── post-push-ci-watch.sh  # Runs after git push / gh pr (polls GitHub Actions)
 │   ├── verify_ci.py          # Runs on session stop (blocks if local or remote CI fails)
 │   └── lib-checks.sh        # Shared bash helpers (exists, has_script)
 └── skills/
