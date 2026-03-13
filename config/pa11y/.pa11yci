@@ -21,7 +21,6 @@
     "ignore": [
       "frame-tested"
     ],
-    "useIncognitoBrowserContext": true,
-    "concurrency": 2
+    "concurrency": 1
   }
 }
