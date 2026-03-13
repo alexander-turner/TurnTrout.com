@@ -8,7 +8,7 @@ import {
   isDesktopViewport,
   getAllWithWait,
   isElementChecked,
-  openSearch,
+  search,
   gotoPage,
   triggerAndWaitForSPANav,
 } from "./visual_utils"
@@ -262,24 +262,16 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Search preview content is fetched asynchronously and can be slow on CI
   test.slow()
-  // Open search and search for a term that will have internal links
-  await openSearch(page)
-  const searchBar = page.locator("#search-bar")
-  await searchBar.fill("Test page")
-
-  // Wait for search results to render before checking preview
-  const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+  // Use search() helper for reliable fill+result rendering (toPass retry)
+  await search(page, "Test page")
 
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Wait for preview content to fully render (the article element is
-  // pre-created, so we wait for the actual link inside it to appear)
+  // Wait for the link inside the preview content to render (fetched async)
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
-  await expect(searchDummyLink).toBeAttached({ timeout: 15_000 })
+  await expect(searchDummyLink).toBeVisible({ timeout: 30_000 })
   await searchDummyLink.scrollIntoViewIfNeeded()
-  await expect(searchDummyLink).toBeVisible({ timeout: 5_000 })
   await searchDummyLink.hover()
 
   // Verify no popover appears

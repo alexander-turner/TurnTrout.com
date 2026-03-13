@@ -671,11 +671,14 @@ test("Search matches in preview do not have fade animation", async ({ page }) =>
   const previewMatch = preview.locator(".search-match").first()
   await expect(previewMatch).toBeAttached()
 
-  const previewAnimation = await previewMatch.evaluate((el) => {
-    const styles = window.getComputedStyle(el)
-    return styles.animationName
-  })
-  expect(previewAnimation).toBe("none")
+  // WebKit/Safari may need a few frames for the CSS exclusion
+  // :not(#search-container .search-match) to settle.
+  await expect(async () => {
+    const animation = await previewMatch.evaluate((el) => {
+      return window.getComputedStyle(el).animationName
+    })
+    expect(animation).toBe("none")
+  }).toPass({ timeout: 5_000 })
 })
 
 test("Search matches on navigated page have fade animation", async ({ page }) => {

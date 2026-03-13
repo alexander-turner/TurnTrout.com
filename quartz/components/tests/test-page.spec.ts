@@ -1008,12 +1008,15 @@ test.describe("Checkboxes", () => {
       await expect(nestedChild).toBeChecked({ checked: false })
       await expect(deeplyNested).toBeChecked({ checked: false })
 
-      // Check the parent — children should cascade to checked
+      // Check the parent — children should cascade to checked.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
 
-      await expect(parentCheckbox).toBeChecked({ checked: true })
-      await expect(nestedChild).toBeChecked({ checked: true })
-      await expect(deeplyNested).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(parentCheckbox).toBeChecked({ checked: true })
+        await expect(nestedChild).toBeChecked({ checked: true })
+        await expect(deeplyNested).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
 
       // Uncheck parent — children should NOT be affected (cascade down only on check)
       await parentCheckbox.click()
@@ -1033,9 +1036,12 @@ test.describe("Checkboxes", () => {
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
 
-      // Check parent (cascades to child), then uncheck child
+      // Check parent (cascades to child), then uncheck child.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
-      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
 
       await nestedChild.click()
       await expect(nestedChild).toBeChecked({ checked: false })
@@ -1052,15 +1058,21 @@ test.describe("Checkboxes", () => {
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
 
-      // Check parent (cascades), uncheck child, uncheck parent, re-check parent
+      // Check parent (cascades), uncheck child, uncheck parent, re-check parent.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
       await nestedChild.click()
       await expect(nestedChild).toBeChecked({ checked: false })
 
       await parentCheckbox.click() // uncheck parent
       await parentCheckbox.click() // re-check parent — should re-cascade
 
-      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
     })
   })
 

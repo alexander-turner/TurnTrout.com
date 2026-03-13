@@ -348,9 +348,13 @@ test.describe("Instant Scroll Restoration", () => {
 
     await reloadPage(page, "domcontentloaded")
 
-    // Check final scroll position
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // Wait for scroll restoration — iPad Pro Safari may restore scroll
+    // asynchronously after domcontentloaded.
+    await page.waitForFunction((target) => Math.abs(window.scrollY - target) < 50, scrollPos, {
+      timeout: 10_000,
+    })
 
+    const finalScroll = await page.evaluate(() => window.scrollY)
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
 
@@ -711,20 +715,15 @@ test.describe("Document Head & Body Updates", () => {
   // Helper to ensure the about link is visible (opens mobile menu if needed)
   async function ensureAboutLinkVisible(page: Page): Promise<void> {
     const aboutLink = page.locator('a[href$="/about"]')
-    const isVisible = await aboutLink.isVisible().catch(() => false)
-    if (!isVisible) {
-      // On mobile, the menu might be hidden. Try opening it.
-      const menuButton = page.locator("#menu-button")
+    if (await aboutLink.isVisible()) return
+
+    const menuButton = page.locator("#menu-button")
+    if (await menuButton.isVisible()) {
       const menu = page.locator("#navbar-right .menu")
-      if (await menuButton.isVisible().catch(() => false)) {
-        await menuButton.click()
-        // Wait for menu to become visible
-        await expect(menu).toBeVisible()
-        await expect(menu).toHaveClass(/visible/)
-      }
-      // If still not visible, use force click
-      await aboutLink.scrollIntoViewIfNeeded()
+      await menuButton.click()
+      await expect(menu).toHaveClass(/visible/, { timeout: 5_000 })
     }
+    await expect(aboutLink).toBeVisible({ timeout: 10_000 })
   }
 
   // Helper to wait for SPA navigation to complete (including DOM updates).
@@ -763,8 +762,8 @@ test.describe("Document Head & Body Updates", () => {
 
   async function navigateAndWait(page: Page, url: string): Promise<void> {
     const awaitNav = await waitForNavigation(page)
-    await page.click(`a[href$="${url}"]`)
-    await page.waitForURL(`**${url}`)
+    await page.locator(`a[href$="${url}"]`).first().click()
+    await page.waitForURL(`**${url}`, { timeout: 15_000 })
     await awaitNav()
   }
 

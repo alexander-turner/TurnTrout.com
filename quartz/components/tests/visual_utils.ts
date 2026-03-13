@@ -356,25 +356,41 @@ export async function getNextElementMatchingSelector(
 
 /** Open the search UI by clicking the search icon.
  *
- *  Uses toPass() to atomically retry the full click → active → visible
- *  sequence.  After page.goBack(), the SPA navigation machinery
- *  (handlePopstate → onNav) may still be running asynchronously, so the
- *  search icon click handler might not be registered yet or the DOM state
- *  may shift between checks.  Retrying the entire block avoids the race
- *  between the browser-side "active" class appearing and the Playwright-side
- *  visibility check.
+ *  Waits for search event handlers to be fully registered (signalled by
+ *  `onNav` in search.ts setting `window.__searchHandlersReady`) before
+ *  clicking, avoiding the race where the click handler isn't attached yet
+ *  after SPA navigation.
  *
- *  Checks whether search bar is already visible before clicking to avoid
- *  the case where a retry click toggles search closed. */
+ *  The click itself can still race with DOM updates (e.g. the SPA morphing
+ *  the page after goBack), so if the first click doesn't activate search
+ *  within 3 s we retry once. This is bounded to exactly 2 attempts — not a
+ *  polling loop. */
 export async function openSearch(page: Page) {
-  await expect(async () => {
-    // Only click if search is not already visible (clicking toggles)
-    if (!(await page.locator("#search-bar").isVisible())) {
-      await page.locator("#search-icon").click({ timeout: 2_000 })
-    }
-    await expect(page.locator("#search-container")).toHaveClass(/active/, { timeout: 2_000 })
-    await expect(page.locator("#search-bar")).toBeVisible({ timeout: 2_000 })
-  }).toPass({ timeout: 15_000 })
+  // After SPA navigation (e.g. goBack), onNav() re-registers all search
+  // event handlers asynchronously. Wait for the flag it sets at completion.
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchHandlersReady === true,
+    null,
+    { timeout: 15_000 },
+  )
+
+  const searchContainer = page.locator("#search-container")
+  const searchBar = page.locator("#search-bar")
+
+  // Click the search icon if search isn't already open. If the first click
+  // doesn't activate search (e.g. DOM morphed between click and class check),
+  // retry once — bounded to exactly 2 attempts.
+  if (!(await searchBar.isVisible())) {
+    await page.locator("#search-icon").click()
+  }
+  const isActive = await searchContainer.evaluate((el) => el.classList.contains("active"))
+  if (!isActive) {
+    // Retry: re-click in case the first was swallowed by a DOM update
+    await page.locator("#search-icon").click()
+  }
+  await expect(searchContainer).toHaveClass(/active/, { timeout: 5_000 })
+  await expect(searchBar).toBeVisible({ timeout: 5_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {
@@ -390,13 +406,23 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 // skipcq: JS-0098
 export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
-  await searchBar.fill(term)
-
-  // Wait for search layout to be visible with results (longer timeout for Safari/WebKit)
   const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toBeAttached({ timeout: 10_000 })
-  await expect(searchLayout).toBeVisible({ timeout: 10_000 })
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+
+  // Wait for the search index to load before filling (avoids resetting
+  // the 400ms debounce timer with repeated fill() retries).
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchIndexReady === true,
+    null,
+    { timeout: 30_000 },
+  )
+
+  await searchBar.fill(term)
+  // Explicitly dispatch input event — Playwright's fill() should do this,
+  // but Firefox on tablet viewports sometimes fails to trigger the handler.
+  await searchBar.dispatchEvent("input")
+  await expect(searchLayout).toBeVisible({ timeout: 15_000 })
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 15_000 })
 
   // Wait for results to appear — the display-results class is set before
   // searchAsync completes, so also wait for actual result cards to render.
