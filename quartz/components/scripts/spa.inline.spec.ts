@@ -348,9 +348,13 @@ test.describe("Instant Scroll Restoration", () => {
 
     await reloadPage(page, "domcontentloaded")
 
-    // Check final scroll position
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // Wait for scroll restoration — iPad Pro Safari may restore scroll
+    // asynchronously after domcontentloaded.
+    await page.waitForFunction((target) => Math.abs(window.scrollY - target) < 50, scrollPos, {
+      timeout: 10_000,
+    })
 
+    const finalScroll = await page.evaluate(() => window.scrollY)
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
 
