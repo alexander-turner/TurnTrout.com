@@ -215,10 +215,7 @@ test("Popover does not show when noPopover attribute is true", async ({ page, du
   await expect(dummyLink).toBeVisible()
 
   // Set noPopover attribute on the specific link we'll hover
-  await page.evaluate(() => {
-    const link = document.querySelector("#first-link-test-page")
-    if (link) link.setAttribute("data-no-popover", "true")
-  })
+  await dummyLink.evaluate((el) => el.setAttribute("data-no-popover", "true"))
 
   await dummyLink.hover()
   const popover = page.locator(".popover")
