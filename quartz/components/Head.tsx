@@ -197,7 +197,11 @@ export default (() => {
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
-        <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
+        <script
+          defer
+          src="https://cdn.jsdelivr.net/gh/alexander-turner/KaTeX@claude/add-math-accessibility-6wl4u/contrib/a11y-tabindex/a11y-tabindex.js"
+          spa-preserve
+        />
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
           <style
