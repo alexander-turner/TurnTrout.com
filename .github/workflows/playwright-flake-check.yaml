@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
@@ -63,7 +63,7 @@ jobs:
         run: pnpm build
 
       - name: Upload built site
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-public-dir
           path: public/
@@ -78,7 +78,7 @@ jobs:
       matrix:
         shard: ["1/10", "2/10", "3/10", "4/10", "5/10", "6/10", "7/10", "8/10", "9/10", "10/10"]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -92,7 +92,7 @@ jobs:
         run: pnpm exec puppeteer browsers install chrome
 
       - name: Download built site
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: flake-check-public-dir
           path: public/
@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload flake check logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-log-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-flake.log
@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload Winston logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-winston-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -135,7 +135,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-webserver-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -144,7 +144,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-traces-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
@@ -162,7 +162,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: flake-check-log-shard-*
