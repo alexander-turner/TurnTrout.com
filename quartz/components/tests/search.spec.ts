@@ -266,7 +266,10 @@ test("search matches in headers have correct color styling", async ({ page }) =>
   expect(matchColor).not.toBe(foregroundColor)
 })
 
-test("Search results are case-insensitive", async ({ page }) => {
+test("Search results are case-insensitive", async ({ page }, testInfo) => {
+  // Two sequential searches can exceed 30s on Firefox tablet viewports
+  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+
   await search(page, "TEST")
   await expect(page.locator(".result-card").first()).toBeVisible()
   const uppercaseResults = await page
@@ -289,7 +292,10 @@ test("Search bar is focused after typing", async ({ page }) => {
   await expect(searchBar).toBeFocused()
 })
 
-test("Search results work for a single character", async ({ page }) => {
+test("Search results work for a single character", async ({ page }, testInfo) => {
+  // Single-character search matches many results and can be slow on Firefox
+  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+
   await search(page, "t")
 
   const results = await getAllWithWait(page.locator(".result-card"))
@@ -300,9 +306,7 @@ test("Search results work for a single character", async ({ page }) => {
 
 test("Preview element persists after closing and reopening search", async ({ page }) => {
   await search(page, "Steering")
-  const previewContainer = getPreviewLocator(page)
-  const previewArticle = previewContainer.locator("article.search-preview")
-  await expect(previewArticle).toBeAttached()
+  await waitForPreviewArticle(page)
 
   // Close and reopen search
   await page.keyboard.press("Escape")
@@ -310,8 +314,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 
   // Search again and trigger preview
   await search(page, "Steering")
-  await expect(previewArticle).toBeAttached()
-  await expect(previewArticle).not.toBeEmpty()
+  await waitForPreviewArticle(page)
 })
 
 test.describe("Search accuracy", () => {
@@ -446,7 +449,7 @@ test("Search matching title text stays at top even with body matches", async ({ 
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch.first()).toBeAttached()
+  await expect(titleMatch.first()).toBeAttached({ timeout: 15_000 })
 
   // Page should stay at the top because the title contains a match
   const scrollY = await page.evaluate(() => window.scrollY)

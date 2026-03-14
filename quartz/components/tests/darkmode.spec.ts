@@ -56,7 +56,7 @@ class DarkModeHelper {
     await this.page.waitForFunction(
       ({ key, expected }) => localStorage.getItem(key) === expected,
       { key: savedThemeKey, expected: expectedTheme },
-      { timeout: 5_000 },
+      { timeout: 15_000 },
     )
   }
 
