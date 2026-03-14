@@ -953,6 +953,21 @@ describe("elementToJsx", () => {
     expect(jsxElement.props.children).toBe("CSS")
   })
 
+  it("should handle abbr elements with no children gracefully", () => {
+    const node = {
+      type: "element",
+      tagName: "abbr",
+      properties: { className: ["small-caps"] },
+      children: [],
+    } as unknown as RootContent
+    const result = elementToJsx(node)
+
+    const jsxElement = expectJSXElement(result)
+    expect(jsxElement.type).toBe("abbr")
+    expect(jsxElement.props.className).toBe("small-caps")
+    expect(jsxElement.props.children).toBe("")
+  })
+
   it("should return null for unsupported element types", () => {
     const unsupportedNode = { type: "comment", value: "<!-- comment -->" } as unknown as RootContent
     const result = elementToJsx(unsupportedNode)

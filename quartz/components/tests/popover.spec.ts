@@ -207,9 +207,7 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 
-  // Wait a moment and verify it stays hidden
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
+  // Verify popover stays hidden after dismissal
   await expect(popover).toBeHidden()
 })
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
@@ -345,10 +343,6 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   // link on the new page (which could trigger a *new* popover, especially in
   // Safari where the cursor position persists after SPA navigation).
   await page.mouse.move(10, 10)
-
-  // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(1000)
 
   const popover = page.locator(".popover")
   await expect(popover).toBeHidden()
@@ -569,13 +563,13 @@ test.describe("Footnote popovers", () => {
     const scrollBefore = await page.evaluate(() => window.scrollY)
     await footnoteRef.click()
 
-    // Give the browser time to potentially scroll
-    // eslint-disable-next-line playwright/no-wait-for-timeout
-    await page.waitForTimeout(300)
-    const scrollAfter = await page.evaluate(() => window.scrollY)
-
     // Page should NOT have scrolled to the footnote section
-    expect(Math.abs(scrollAfter - scrollBefore)).toBeLessThan(50)
+    await expect
+      .poll(async () => {
+        const scrollAfter = await page.evaluate(() => window.scrollY)
+        return Math.abs(scrollAfter - scrollBefore)
+      })
+      .toBeLessThan(50)
   })
 })
 

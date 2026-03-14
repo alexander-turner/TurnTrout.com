@@ -4,7 +4,7 @@ import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
 import { test, expect } from "./fixtures"
 
-const { searchPlaceholderDesktop, searchPlaceholderMobile, mouseFocusDelay } = simpleConstants
+const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -750,10 +750,6 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   await expect(thirdResult).not.toHaveClass(/focus/)
   await moveMouseToSafePosition(page)
 
-  // Wait for mouse lock to expire after keyboard navigation
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(mouseFocusDelay * 3)
-
   await expect(async () => {
     await thirdResult.hover()
     await expect(thirdResult).toHaveClass(/focus/)
@@ -792,10 +788,6 @@ test("should not select a search result on initial render, even if the mouse is 
   expect(searchBarBox).not.toBeNull()
   // skipcq: JS-0339 - searchBarBox is checked for nullability above
   await page.mouse.move(searchBarBox!.x + 5, searchBarBox!.y + 5)
-
-  // Wait for the mouseFocusDelay lock (100ms) to expire, plus margin.
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(mouseFocusDelay + 100)
 
   // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
