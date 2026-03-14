@@ -11,6 +11,7 @@ import {
   search,
   gotoPage,
   triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -68,7 +69,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   })
 
   // Move mouse away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 })
 
@@ -139,7 +140,7 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
     await link.scrollIntoViewIfNeeded()
     await expect(link).toBeVisible()
     await link.hover()
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
   }
 
   await expect(page.locator(".popover")).toHaveCount(0)
@@ -203,7 +204,7 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 
   // Wait a moment and verify it stays hidden
@@ -287,7 +288,7 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   const metaX = (await metaPopover.boundingBox())?.x
 
   // Move mouse and wait for it to go away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(metaPopover).toBeHidden()
 
   await dummyLink.scrollIntoViewIfNeeded()

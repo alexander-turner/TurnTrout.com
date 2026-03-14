@@ -14,6 +14,7 @@ import {
   openSearch,
   gotoPage,
   triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -34,7 +35,7 @@ test.beforeEach(async ({ page }) => {
 
   // Park the mouse in a safe corner so Firefox doesn't fire spurious
   // mouseenter events when result cards render under the cursor.
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
 })
 
 function isMobileViewport(page: Page): boolean {
@@ -407,9 +408,8 @@ test("Enter key navigates to first result", async ({ page }) => {
   await search(page, "test")
 
   const firstResult = page.locator(".result-card").first()
-  await firstResult.press("Enter")
+  await triggerAndWaitForSPANav(page, () => firstResult.press("Enter"))
 
-  await page.waitForURL((url) => url.toString() !== initialUrl)
   await expect(page).not.toHaveURL(initialUrl)
 })
 
@@ -453,7 +453,6 @@ test("Search matching title text stays at top even with body matches", async ({ 
   expect(scrollY).toBe(0)
 })
 
-// eslint-disable-next-line playwright/expect-expect
 test("Search URL updates as we select different results", async ({ page }) => {
   const initialUrl = page.url()
   await search(page, "Shrek")
@@ -461,9 +460,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
   // Verify preview content loads for the first result
   await waitForPreviewArticle(page)
 
-  await clickPreviewToNavigate(page)
-
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
   const firstResultUrl = page.url()
 
   // Search again — use openSearch to wait for component initialization after goBack.
@@ -476,10 +473,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   // Navigate to the second result
   await page.keyboard.press("ArrowDown")
   await waitForPreviewArticle(page)
-  await clickPreviewToNavigate(page)
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
 
-  const urlsSoFar = new Set([initialUrl, firstResultUrl])
-  await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
+  await expect(page).not.toHaveURL(initialUrl)
+  await expect(page).not.toHaveURL(firstResultUrl)
 })
 
 /* eslint-disable playwright/expect-expect */
@@ -689,8 +686,7 @@ test("Search matches on navigated page have fade animation", async ({ page }) =>
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  await page.keyboard.press("Enter")
-  await page.waitForLoadState("domcontentloaded")
+  await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
 
   const pageMatch = page.locator("article .search-match").first()
   await expect(pageMatch).toBeVisible()
@@ -749,7 +745,7 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   // event fires reliably when hovering the third result.
   const thirdResult = page.locator(".result-card").nth(2)
   await expect(thirdResult).not.toHaveClass(/focus/)
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
 
   // Wait for mouse lock to expire after keyboard navigation
   // eslint-disable-next-line playwright/no-wait-for-timeout
@@ -856,10 +852,9 @@ navigationMethods.forEach(({ down, description }) => {
     const firstResult = page.locator(".result-card").first()
     await expect(firstResult).toHaveAttribute("href", "http://localhost:8080/test-page")
 
-    const initialUrl = await firstResult.getAttribute("href")
     await page.keyboard.press(down)
-    await page.keyboard.press("Enter")
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
+    await expect(page).not.toHaveURL("http://localhost:8080/test-page")
   })
 })
 
