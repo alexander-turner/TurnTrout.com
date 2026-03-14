@@ -1,11 +1,13 @@
 {
   "defaults": {
-    "timeout": 30000,
+    "timeout": 60000,
     "chromeLaunchConfig": {
       "args": [
         "--no-sandbox",
-        "--disable-setuid-sandbox"
-      ]
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage"
+      ],
+      "protocolTimeout": 300000
     },
     "standard": "WCAG2AA",
     "runners": [

@@ -125,6 +125,10 @@ export default (() => {
     })
 
     const fontPreloadNames = [
+      // Main body font — preloading it prevents a font-swap LCP delay
+      // (text first renders with a fallback font, then repaints with the
+      // web font, and that repaint IS the LCP event on text-heavy pages)
+      "EBGaramond/EBGaramond08-Regular",
       "EBGaramond/EBGaramond-InitialsF1",
       "EBGaramond/EBGaramond-InitialsF2",
     ]
@@ -157,17 +161,36 @@ export default (() => {
     return (
       <head>
         <meta charSet="utf-8" />
-        {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {headJsx}
-        <link rel="preload" href="/index.css" as="style" spa-preserve />
-        <link rel="stylesheet" href="/index.css" spa-preserve />
+        {/* Preload hints and preconnects BEFORE sync scripts so the browser
+            starts downloading CSS and establishing connections while scripts
+            block the parser. */}
         <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
+        <link rel="preload" href="/index.css" as="style" spa-preserve />
+        {/* Preload the first content image (likely LCP element) so the browser
+            starts downloading it immediately instead of waiting to discover the
+            <img> tag deep in the HTML body. */}
+        {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
+        {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
+        <link rel="stylesheet" href="/index.css" spa-preserve />
+        {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        {/* Load KaTeX CSS without blocking render — math styling applies
+            once the sheet loads, but FCP/LCP aren't delayed.
+            Use spread to bypass Preact's onLoad type (expects function, but SSR needs string). */}
+        <link
+          rel="stylesheet"
+          href="/static/styles/katex.min.css"
+          media="print"
+          {...({ onload: "this.media='all'" } as Record<string, string>)}
+          spa-preserve
+        />
+        <noscript>
+          <link rel="stylesheet" href="/static/styles/katex.min.css" />
+        </noscript>
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />

@@ -17,8 +17,9 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-03-08 23:44:38.062842
+date_updated: 2026-03-13 20:17:18.991022
 ---
+
 
 
 # Punctilio for meticulous typography
@@ -136,17 +137,23 @@ The way this works is that:
 
 # Claude Code automation template
 
-[`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code.
+[`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
 
-The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
-
-# Minor contributions
+# Pull requests on other projects
 
 ## Mermaid diagrams now generate unique element IDs
 
 My site [uses Mermaid diagrams](/design#mermaid-diagrams) for compact, searchable, and dynamically styled graphics. However,  [the `a11y` accessibility checker](/design#accessibility) revealed a "bigly" problem. When a page contains multiple diagrams, some element IDs collide (like those for arrowhead markers and node containers). Thus, calling `url(#arrowhead)` in the third diagram might bind to a marker defined in the first. Arrowheads vanish, click handlers fire on the wrong diagram, and CSS styles corrupt.
 
 The issue had been reported repeatedly since 2020 ([#1318](https://github.com/mermaid-js/mermaid/issues/1318), [#3267](https://github.com/mermaid-js/mermaid/issues/3267), [#3433](https://github.com/mermaid-js/mermaid/issues/3433), [#4346](https://github.com/mermaid-js/mermaid/issues/4346)) with no comprehensive fix in sight. In February 2026, I aimed Claude Code at this problem. With our [PR #7410](https://github.com/mermaid-js/mermaid/pull/7410), we prefixed every element ID with its diagram's unique SVG container ID, making collisions impossible. We also ensured that all future diagram types generate unique IDs across diagrams.
+
+## KaTeX accessibility attributes
+
+When math content becomes scrollable (e.g. via CSS overflow), it cannot be focused via keyboard and lacks an appropriate ARIA role, violating WCAG 2.1 SC 2.1.1. [PR #4162](https://github.com/KaTeX/KaTeX/pull/4162) adds `tabindex="0"` and `role="math"` attributes to the root `.katex` element, making scrollable math keyboard-accessible and properly labeled for assistive technologies.
+
+## KaTeX DOM size reduction
+
+KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the final HTML output even though no CSS rules reference them. [PR #4164](https://github.com/KaTeX/KaTeX/pull/4164) strips these build-time-only classes from the rendered output, reducing the KaTeX DOM footprint by ~15%.
 
 ## SCSS linting rule
 

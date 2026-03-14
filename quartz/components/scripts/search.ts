@@ -702,7 +702,11 @@ let cleanupListeners: (() => void) | undefined
  * @param e - Navigation event
  */
 /* istanbul ignore next */
-async function onNav(e: CustomEventMap["nav"]) {
+function onNav(e: CustomEventMap["nav"]) {
+  // Reset ready flag so tests wait for re-registration after SPA navigation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = false
+
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
     cleanupListeners()
@@ -722,8 +726,11 @@ async function onNav(e: CustomEventMap["nav"]) {
     throw new Error("getContentIndex not initialized - check script injection order")
   }
 
-  data = await getContentIndex()
-  if (!data) return
+  // Start fetching content index in the background (cached for later use
+  // by initializeSearch). Don't block handler registration on the fetch —
+  // data is only needed when the user actually performs a search.
+  getContentIndex()
+
   results = document.createElement("div")
   const container = document.getElementById("search-container")
   const searchIcon = document.getElementById("search-icon")
@@ -802,6 +809,10 @@ async function onNav(e: CustomEventMap["nav"]) {
     listeners.forEach((cleanup) => cleanup())
     listeners.clear()
   }
+
+  // Signal that search event handlers are fully registered for this page.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = true
 }
 
 /**
@@ -1143,10 +1154,11 @@ function displayResults(finalResults: Item[], results: HTMLElement, enablePrevie
   } else {
     results.append(...finalResults.map((result) => resultToHTML(result, enablePreview)))
 
-    // focus on first result and update preview
+    // Focus on the first result and update preview.
+    // Call focusCard directly to ensure aria-selected is always set,
+    // even when displayPreview returns early (preview disabled).
     const firstChild = results.firstElementChild as HTMLElement
-    firstChild.classList.add("focus")
-    currentHover = firstChild as HTMLInputElement
+    focusCard(firstChild, false)
 
     displayPreview(firstChild, false)
   }
@@ -1283,12 +1295,21 @@ async function initializeSearch(): Promise<void> {
       // Create the index
       index = createSearchIndex()
 
-      // Fetch and fill the index with data
+      // Ensure content index is available (fetch started by onNav, cached).
+      // getContentIndex is injected by renderPage.tsx and may not exist in unit tests.
+      if (!data && typeof getContentIndex === "function") {
+        data = await getContentIndex()
+      }
       if (data) {
         await fillDocument(data)
       }
 
       searchInitialized = true
+      // Signal to tests that the index is ready. Unlike __searchHandlersReady,
+      // this is never reset — the index persists across SPA navigations.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).__searchIndexReady = true
+      document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
     } catch (error) {
       console.error("Error initializing search:", error)
       searchBar.placeholder = "Search failed to load."

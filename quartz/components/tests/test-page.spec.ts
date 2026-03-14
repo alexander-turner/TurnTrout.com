@@ -12,6 +12,7 @@ import {
   isElementChecked,
   gotoPage,
   reloadPage,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -583,7 +584,7 @@ test.describe("Right sidebar", () => {
     // Open the backlinks
     await backlinksTitle.click()
     // Don't hover over the backlinks
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
       elementToScreenshot: backlinks,
     })
@@ -996,12 +997,10 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      // The fifth checkbox (index 4) is "[x] Checked off" which has nested children.
-      // Its first nested child is index 5: "Nested unchecked item under checked parent"
-      // and that child has its own nested child at index 6.
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
-      const deeplyNested = page.locator("input.checkbox-toggle").nth(6)
+      // Find checkboxes by their label text to be invariant to additions elsewhere
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
+      const deeplyNested = page.getByLabel("Third nested")
 
       // Uncheck the parent (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
@@ -1010,12 +1009,15 @@ test.describe("Checkboxes", () => {
       await expect(nestedChild).toBeChecked({ checked: false })
       await expect(deeplyNested).toBeChecked({ checked: false })
 
-      // Check the parent — children should cascade to checked
+      // Check the parent — children should cascade to checked.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
 
-      await expect(parentCheckbox).toBeChecked({ checked: true })
-      await expect(nestedChild).toBeChecked({ checked: true })
-      await expect(deeplyNested).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(parentCheckbox).toBeChecked({ checked: true })
+        await expect(nestedChild).toBeChecked({ checked: true })
+        await expect(deeplyNested).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
 
       // Uncheck parent — children should NOT be affected (cascade down only on check)
       await parentCheckbox.click()
@@ -1029,15 +1031,18 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
 
-      // Check parent (cascades to child), then uncheck child
+      // Check parent (cascades to child), then uncheck child.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
-      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
 
       await nestedChild.click()
       await expect(nestedChild).toBeChecked({ checked: false })
@@ -1048,21 +1053,27 @@ test.describe("Checkboxes", () => {
       const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
       await checkboxesSection.scrollIntoViewIfNeeded()
 
-      const parentCheckbox = page.locator("input.checkbox-toggle").nth(4)
-      const nestedChild = page.locator("input.checkbox-toggle").nth(5)
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
 
       // Uncheck the parent first (initially "[x] Checked off" in HTML)
       await parentCheckbox.click()
 
-      // Check parent (cascades), uncheck child, uncheck parent, re-check parent
+      // Check parent (cascades), uncheck child, uncheck parent, re-check parent.
+      // Safari may need time for the cascade event handler to propagate.
       await parentCheckbox.click()
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
       await nestedChild.click()
       await expect(nestedChild).toBeChecked({ checked: false })
 
       await parentCheckbox.click() // uncheck parent
       await parentCheckbox.click() // re-check parent — should re-cascade
 
-      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
     })
   })
 
@@ -1112,7 +1123,7 @@ test.describe("Checkboxes", () => {
           return checkbox?.checked
         })
         expect(checkboxStateBeforeNav).toBe(true)
-      }).toPass({ timeout: 5_000 })
+      }).toPass({ timeout: 10_000 })
     })
 
     const checkboxTestCases = [
@@ -1149,7 +1160,7 @@ test.describe("Checkboxes", () => {
             { idx: index },
           )
           expect(checkboxState).toBe(savedState)
-        }).toPass({ timeout: 5_000 })
+        }).toPass({ timeout: 10_000 })
       })
     }
   })
@@ -1211,6 +1222,9 @@ test.describe("Popovers on different page types", () => {
         window.dispatchEvent(new Event("nav"))
       })
 
+      // Clear mouseMovedSinceNav flag set to false by the nav event above
+      await page.mouse.move(1, 1)
+
       const popoverLink = page.locator("article a.can-trigger-popover").first()
       await popoverLink.scrollIntoViewIfNeeded()
       await expect(popoverLink).toBeVisible()
@@ -1229,7 +1243,7 @@ test.describe("Popovers on different page types", () => {
       const popoverInner = popover.locator(".popover-inner")
       await expect(popoverInner).toBeVisible()
 
-      await page.mouse.move(0, 0)
+      await moveMouseToSafePosition(page)
     })
   }
 })

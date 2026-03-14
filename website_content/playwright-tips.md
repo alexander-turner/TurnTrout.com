@@ -63,6 +63,15 @@ Create a dedicated "test page"
 [Debug failures using Playwright traces](https://playwright.dev/docs/trace-viewer)
 : Traces let you inspect every moment of the test. You can see the state of the DOM before and after every Playwright command. On CI, save the traces as artifacts and use the `retain-on-failure` option.
 
+Verify persistent state before navigating
+: WebKit on Linux can drop `localStorage` if you navigate too quickly after writing to it. Assert that stored values are present before calling `page.goto()`, and verify they survived after navigation.
+
+Beware browser-specific event ordering
+: `mousemove` may fire slightly _after_ `mouseenter` when Playwright teleports the cursor. I had a `mouseMovedSinceNav` flag that was set by `mousemove` and read by the `mouseenter` handler to decide whether to show a popover. The bug: `mouseenter` fired first and saw the flag as `false`, so the popover was suppressed even though the user had genuinely moved the mouse. The fix was to read the flag inside a `setTimeout` callback (300ms later) instead of synchronously — by then, `mousemove` had fired and set it.
+
+Prefer feature detection over timing buffers
+: When a browser quirk fires spurious events (e.g. Safari emitting `mouseenter` after an SPA navigation morphs the DOM under a stationary cursor), resist the urge to add a millisecond buffer like "ignore hovers for 500ms." Instead, track whether the triggering condition actually occurred — e.g. a `mouseMovedSinceNav` boolean that resets on navigation and flips on `mousemove`. This is timing-independent and self-documenting.
+
 ## For screenshots in particular
 
 I ended up using [the free `lost-pixel` app](lost-pixel.com) to examine screenshot deltas and judge visual diffs. No matter what tool you use, though, you'll want your screenshots to be targeted and stable.

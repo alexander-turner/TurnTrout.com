@@ -12,8 +12,9 @@ tags:
   - website
   - personal
 date_published: 2024-10-30 18:09:31.133945
-date_updated: 2026-02-23 17:58:50.463964
+date_updated: 2026-03-13 20:17:18.991022
 ---
+
 
 
 For months, I have built a new home for my online content: [`www.turntrout.com`](/). I brooked no compromises. Over [2,220 commits later](https://github.com/alexander-turner/TurnTrout.com/commits/main/),[^commits] I'm ready to publicize.
@@ -39,7 +40,7 @@ I am pleased to present the _initial release_ of `www.turntrout.com` - I have ma
 ![A screenshot of the "Shard Theory of Human Values" post on the turntrout.com website, showcasing the desktop design. The three-column layout features a left sidebar with a pixel art pond logo, a central article with a serif font and large dropcap, and a right sidebar with a table of contents.](https://assets.turntrout.com/static/images/posts/site_desktop.avif)
 Figure: The site is most beautiful on the desktop. For example, the desktop enables hover previews for internal links.
 
-Many folks see the first <span class="dropcap" data-first-letter="D">d</span>ropcap and think of [`gwern.net`](https://gwern.net). Some of my site's features were inspired by `gwern`'s site, but some others were convergent design choices. For example, I forked the [Quartz static site generator](https://quartz.jzhao.xyz/) , which already included [hover previews for internal links.](/design#smaller-features) However, `gwern`'s site inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), and [cryptographic timestamping](/design#finishing-touches).
+Many folks see the first <span class="dropcap" data-first-letter="D">d</span>ropcap and think of [`gwern.net`](https://gwern.net). Some of my site's features were inspired by `gwern`'s site, but some others were convergent design choices. For example, I forked the [Quartz static site generator](https://quartz.jzhao.xyz/) , which already included [hover previews for internal links.](/design#smaller-features) However, `gwern`'s site inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), and [cryptographic timestamping](/design#build-pipeline-extras).
 
 The serif font is the open-source [EB Garamond](https://github.com/georgd/EB-Garamond) - that choice inspired by the beautiful Garamond of [`ReadTheSequences.com`](https://readthesequences.com). However, most of [this website's design](/design) was by my own taste.
 

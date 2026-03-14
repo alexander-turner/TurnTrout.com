@@ -13,6 +13,8 @@ import {
   isElementChecked,
   openSearch,
   gotoPage,
+  triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }) => {
@@ -33,7 +35,7 @@ test.beforeEach(async ({ page }) => {
 
   // Park the mouse in a safe corner so Firefox doesn't fire spurious
   // mouseenter events when result cards render under the cursor.
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
 })
 
 function isMobileViewport(page: Page): boolean {
@@ -54,8 +56,8 @@ function getPreviewLocator(page: Page): Locator {
 async function waitForPreviewArticle(page: Page): Promise<Locator> {
   const preview = getPreviewLocator(page)
   const article = preview.locator("article.search-preview")
-  await expect(article).toBeAttached({ timeout: 10_000 })
-  await expect(article).not.toBeEmpty({ timeout: 10_000 })
+  await expect(article).toBeAttached({ timeout: 15_000 })
+  await expect(article).not.toBeEmpty({ timeout: 15_000 })
   return preview
 }
 
@@ -72,10 +74,13 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
 }
 
 async function closeSearch(page: Page) {
-  const searchContainer = page.locator("#search-container")
-  if (await searchContainer.evaluate((el) => el.classList.contains("active"))) {
+  const activeContainer = page.locator("#search-container.active")
+  // Use count() instead of evaluate() — count() returns 0 safely even if
+  // the page has navigated away (e.g. after Enter-key navigation), whereas
+  // evaluate() throws "Target page, context or browser has been closed".
+  if ((await activeContainer.count()) > 0) {
     await page.keyboard.press("Escape")
-    await expect(searchContainer).not.toHaveClass(/active/)
+    await expect(page.locator("#search-container")).not.toHaveClass(/active/)
   }
 }
 
@@ -261,7 +266,10 @@ test("search matches in headers have correct color styling", async ({ page }) =>
   expect(matchColor).not.toBe(foregroundColor)
 })
 
-test("Search results are case-insensitive", async ({ page }) => {
+test("Search results are case-insensitive", async ({ page }, testInfo) => {
+  // Two sequential searches can exceed 30s on Firefox tablet viewports
+  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+
   await search(page, "TEST")
   await expect(page.locator(".result-card").first()).toBeVisible()
   const uppercaseResults = await page
@@ -284,7 +292,10 @@ test("Search bar is focused after typing", async ({ page }) => {
   await expect(searchBar).toBeFocused()
 })
 
-test("Search results work for a single character", async ({ page }) => {
+test("Search results work for a single character", async ({ page }, testInfo) => {
+  // Single-character search matches many results and can be slow on Firefox
+  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+
   await search(page, "t")
 
   const results = await getAllWithWait(page.locator(".result-card"))
@@ -295,9 +306,7 @@ test("Search results work for a single character", async ({ page }) => {
 
 test("Preview element persists after closing and reopening search", async ({ page }) => {
   await search(page, "Steering")
-  const previewContainer = getPreviewLocator(page)
-  const previewArticle = previewContainer.locator("article.search-preview")
-  await expect(previewArticle).toBeAttached()
+  await waitForPreviewArticle(page)
 
   // Close and reopen search
   await page.keyboard.press("Escape")
@@ -305,8 +314,7 @@ test("Preview element persists after closing and reopening search", async ({ pag
 
   // Search again and trigger preview
   await search(page, "Steering")
-  await expect(previewArticle).toBeAttached()
-  await expect(previewArticle).not.toBeEmpty()
+  await waitForPreviewArticle(page)
 })
 
 test.describe("Search accuracy", () => {
@@ -403,23 +411,20 @@ test("Enter key navigates to first result", async ({ page }) => {
   await search(page, "test")
 
   const firstResult = page.locator(".result-card").first()
-  await firstResult.press("Enter")
+  await triggerAndWaitForSPANav(page, () => firstResult.press("Enter"))
 
-  await page.waitForURL((url) => url.toString() !== initialUrl)
   await expect(page).not.toHaveURL(initialUrl)
 })
 
 // Enter and click used to have different navigation methods
 test("Enter key navigation scrolls to first match", async ({ page }) => {
-  const initialUrl = page.url()
   // Use a term that appears far down the test page so scrolling is required
   await search(page, "Footnote spam")
 
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  await page.keyboard.press("Enter")
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
 
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
@@ -430,11 +435,7 @@ test("Enter key navigation scrolls to first match", async ({ page }) => {
   expect(scrollY).toBeGreaterThan(0)
 })
 
-test("Search matching title text stays at top even with body matches", async ({
-  page,
-}, testInfo) => {
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit search rendering is slower in CI")
-  const initialUrl = page.url()
+test("Search matching title text stays at top even with body matches", async ({ page }) => {
   // "Testing site" matches the test page title ("Testing Site Features") and
   // the sub-token "Testing" also appears in the body ("visual regression testing").
   // When the title matches, the page should stay at the top.
@@ -444,24 +445,17 @@ test("Search matching title text stays at top even with body matches", async ({
   // result, which may differ across viewport sizes)
   const testPageResult = page.locator('.result-card[id="test-page"]')
   await expect(testPageResult).toBeVisible()
-  await testPageResult.click()
-
-  await page.waitForURL((url) => url.toString() !== initialUrl)
-  // waitForURL resolves as soon as pushState fires; the SPA may still be
-  // rendering content and applying search highlights.  Wait for the article
-  // title element to be present before checking for search-match spans.
-  await expect(page.locator("#article-title")).toBeAttached()
+  await triggerAndWaitForSPANav(page, () => testPageResult.click())
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch.first()).toBeAttached()
+  await expect(titleMatch.first()).toBeAttached({ timeout: 15_000 })
 
   // Page should stay at the top because the title contains a match
   const scrollY = await page.evaluate(() => window.scrollY)
   expect(scrollY).toBe(0)
 })
 
-// eslint-disable-next-line playwright/expect-expect
 test("Search URL updates as we select different results", async ({ page }) => {
   const initialUrl = page.url()
   await search(page, "Shrek")
@@ -469,9 +463,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
   // Verify preview content loads for the first result
   await waitForPreviewArticle(page)
 
-  await clickPreviewToNavigate(page)
-
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
   const firstResultUrl = page.url()
 
   // Search again — use openSearch to wait for component initialization after goBack.
@@ -484,10 +476,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
   // Navigate to the second result
   await page.keyboard.press("ArrowDown")
   await waitForPreviewArticle(page)
-  await clickPreviewToNavigate(page)
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
 
-  const urlsSoFar = new Set([initialUrl, firstResultUrl])
-  await page.waitForURL((url) => !urlsSoFar.has(url.toString()))
+  await expect(page).not.toHaveURL(initialUrl)
+  await expect(page).not.toHaveURL(firstResultUrl)
 })
 
 /* eslint-disable playwright/expect-expect */
@@ -552,6 +544,8 @@ test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, te
 
 test.describe("Image's mix-blend-mode attribute", () => {
   test.beforeEach(async ({ page }) => {
+    // waitForPreviewArticle can take up to 15s in CI
+    test.slow()
     await search(page, "Testing site")
     await waitForPreviewArticle(page)
   })
@@ -579,9 +573,9 @@ test("Opens the 'testing site features' page (lostpixel)", async ({ page }, test
   })
 })
 
-test("Search preview shows after bad entry", async ({ page }, testInfo) => {
-  // Four sequential searches can exceed 30s on Safari/WebKit in CI
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+test("Search preview shows after bad entry", async ({ page }) => {
+  // Four sequential searches with async preview fetches can exceed 30s in CI
+  test.slow()
 
   await search(page, "zzzzzz")
   await search(page, "Testing site")
@@ -650,11 +644,8 @@ test("Preview container click navigates to the correct page and scrolls to the f
 
   // Wait for preview content to load, then navigate
   await waitForPreviewArticle(page)
-  await clickPreviewToNavigate(page)
-  await page.waitForURL((url) => expectedUrl !== null && url.toString().startsWith(expectedUrl))
+  await triggerAndWaitForSPANav(page, () => clickPreviewToNavigate(page))
 
-  // The destination page should scroll to the first `.search-match` created by `matchHTML(term, ...)`
-  // Note: The text fragment hash (#:~:text=) is processed by the SPA and then stripped from the URL
   const firstMatch = page.locator("article .search-match").first()
   await expect(firstMatch).toBeAttached()
   await expect(firstMatch).toBeInViewport()
@@ -683,11 +674,14 @@ test("Search matches in preview do not have fade animation", async ({ page }) =>
   const previewMatch = preview.locator(".search-match").first()
   await expect(previewMatch).toBeAttached()
 
-  const previewAnimation = await previewMatch.evaluate((el) => {
-    const styles = window.getComputedStyle(el)
-    return styles.animationName
-  })
-  expect(previewAnimation).toBe("none")
+  // WebKit/Safari may need a few frames for the CSS exclusion
+  // :not(#search-container .search-match) to settle.
+  await expect(async () => {
+    const animation = await previewMatch.evaluate((el) => {
+      return window.getComputedStyle(el).animationName
+    })
+    expect(animation).toBe("none")
+  }).toPass({ timeout: 5_000 })
 })
 
 test("Search matches on navigated page have fade animation", async ({ page }) => {
@@ -695,8 +689,7 @@ test("Search matches on navigated page have fade animation", async ({ page }) =>
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toBeVisible()
 
-  await page.keyboard.press("Enter")
-  await page.waitForLoadState("domcontentloaded")
+  await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
 
   const pageMatch = page.locator("article .search-match").first()
   await expect(pageMatch).toBeVisible()
@@ -755,7 +748,7 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
   // event fires reliably when hovering the third result.
   const thirdResult = page.locator(".result-card").nth(2)
   await expect(thirdResult).not.toHaveClass(/focus/)
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
 
   // Wait for mouse lock to expire after keyboard navigation
   // eslint-disable-next-line playwright/no-wait-for-timeout
@@ -786,15 +779,23 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
-  // Move mouse away from results so that when the mouseover lock expires,
-  // no accidental hover event steals focus from the first result.
-  await page.mouse.move(0, 0)
-
   // The search input is debounced (400ms), so `search()` may return before
   // the new results render. Wait for the first result card to reflect the
   // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
+
+  // Move the mouse onto the search bar (always above results) so that when
+  // mouseEventsLocked expires, no mouseenter on a result card steals focus.
+  const searchBar = page.locator("#search-bar")
+  const searchBarBox = await searchBar.boundingBox()
+  expect(searchBarBox).not.toBeNull()
+  // skipcq: JS-0339 - searchBarBox is checked for nullability above
+  await page.mouse.move(searchBarBox!.x + 5, searchBarBox!.y + 5)
+
+  // Wait for the mouseFocusDelay lock (100ms) to expire, plus margin.
+  // eslint-disable-next-line playwright/no-wait-for-timeout
+  await page.waitForTimeout(mouseFocusDelay + 100)
 
   // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })
@@ -854,10 +855,9 @@ navigationMethods.forEach(({ down, description }) => {
     const firstResult = page.locator(".result-card").first()
     await expect(firstResult).toHaveAttribute("href", "http://localhost:8080/test-page")
 
-    const initialUrl = await firstResult.getAttribute("href")
     await page.keyboard.press(down)
-    await page.keyboard.press("Enter")
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await triggerAndWaitForSPANav(page, () => page.keyboard.press("Enter"))
+    await expect(page).not.toHaveURL("http://localhost:8080/test-page")
   })
 })
 

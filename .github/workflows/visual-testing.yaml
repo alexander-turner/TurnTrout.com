@@ -27,9 +27,9 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present.
+  # Gate: only run on PRs if ci:run-visual or ci:full-tests label is present.
   # The pull_request trigger intentionally omits a branches filter so that
-  # ci:full-tests works on PRs targeting any branch (not just main/dev).
+  # these labels work on PRs targeting any branch (not just main/dev).
   # Tests always run in the merge queue to enforce passing before merge.
   should-run:
     name: visual-should-run
@@ -40,7 +40,8 @@ jobs:
       - id: check
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
               echo "run=true" >> "$GITHUB_OUTPUT"
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
@@ -56,7 +57,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
@@ -68,7 +69,7 @@ jobs:
         run: pnpm build
 
       - name: Upload built site
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: visual-testing-public-dir
           path: public/
@@ -96,7 +97,7 @@ jobs:
             "10/10",
           ]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -113,7 +114,7 @@ jobs:
         run: pnpm exec puppeteer browsers install chrome
 
       - name: Download built site
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: visual-testing-public-dir
           path: public/
@@ -136,7 +137,7 @@ jobs:
 
       - name: Upload Playwright logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -145,7 +146,7 @@ jobs:
 
       - name: Upload Winston logs
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -154,7 +155,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -162,7 +163,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: steps.playwright.outcome == 'failure'
         with:
           name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
@@ -170,7 +171,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
           name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
@@ -188,7 +189,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: visual-testing-log-shard-*
@@ -201,13 +202,13 @@ jobs:
     if: needs.visual-testing.result == 'success'
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
       - name: Download all Lost Pixel screenshot shards
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           pattern: lost-pixel-screenshots-*
           path: ./all-lost-pixel-shards
