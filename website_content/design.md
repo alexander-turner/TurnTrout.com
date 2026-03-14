@@ -1198,3 +1198,25 @@ Lighthouse audits
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+
+## Automated workflows
+
+Several GitHub workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](/open-source#claude-code-automation-template).
+
+Monthly newsletter
+: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
+
+Weekly security scan
+: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/security-vulnerability-scan.yaml) aggregates Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. [`claude-code-action`](https://github.com/anthropics/claude-code-action) triages the findings, applies fixes, and opens a PR.
+
+Template sync
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
+
+Dependency auto-merge
+: [Dependabot](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/dependabot.yml) proposes weekly updates for `npm`, Python, and GitHub Actions dependencies. Non-major bumps are [auto-approved and -merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-dependabot.yml), while major bumps require manual review. [DeepSource](https://deepsource.com/) style-fix PRs are also [auto-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-deepsource.yml).
+
+CI failure notifications
+: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow). The pings keep Claude Code going without my involvement.
+
+Self-improving tooling
+: When Claude merges a PR, it includes a "Lessons Learned" section documenting what worked and what didn't. A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) detects these sections and files corresponding issues on the [template repo](https://github.com/alexander-turner/claude-automation-template), propagating improvements upstream to all projects using the template.
