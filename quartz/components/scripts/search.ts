@@ -496,6 +496,11 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
     removeAllChildren(results)
   }
 
+  // Clear display-results so the search helper doesn't see stale state
+  // when search is reopened after Escape.
+  const layout = document.getElementById("search-layout")
+  layout?.classList.remove("display-results")
+
   // Clean up preview
   if (previewManagerArg) {
     previewManagerArg.hide()
