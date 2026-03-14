@@ -154,7 +154,7 @@
     "sharp": "0.34.5",
     "shiki": "1.3.0",
     "source-map-support": "0.5.21",
-    "subfont": "github:alexander-turner/subfont#claude/fix-subfont-ci-performance-Xi5yJ",
+    "subfont": "github:alexander-turner/subfont#2890cb3",
     "title-case": "4.3.2",
     "to-vfile": "8.0.0",
     "toml": "3.0.0",
