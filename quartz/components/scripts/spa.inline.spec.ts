@@ -112,6 +112,43 @@ async function doesMarkerExist(page: Page): Promise<boolean> {
   })
 }
 
+/**
+ * Waits for SPA navigation to complete (including DOM updates).
+ * Registers a "nav" event listener and returns a function that waits for
+ * it to fire. The setup is awaited to avoid a race condition where the
+ * click triggers navigation before the listener is installed (which
+ * destroys the execution context and fails page.evaluate).
+ *
+ * If the browser does a full navigation instead of SPA (e.g. mobile Safari),
+ * __navFired won't exist on the new page — treat that as "navigated".
+ */
+async function waitForSPANavigation(page: Page): Promise<() => Promise<void>> {
+  await page.evaluate(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(window as any).__navFired = false
+    document.addEventListener(
+      "nav",
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(window as any).__navFired = true
+      },
+      { once: true },
+    )
+  })
+
+  return async () => {
+    await page.waitForFunction(
+      () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const win = window as any
+        return win.__navFired === undefined || win.__navFired === true
+      },
+      null,
+      { timeout: 15_000 },
+    )
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   // Log any console errors to help diagnose issues
   page.on("pageerror", (error) => console.error("Page Error:", error))
@@ -144,13 +181,15 @@ test.describe("Local Link Navigation", () => {
         document.body.appendChild(link)
       }, href)
 
+      // Set up nav event listener BEFORE clicking to avoid race condition
+      const awaitNav = await waitForSPANavigation(page)
       const designLink = page.locator("a").last()
       // OK to click since we aren't depending on scroll position
       await designLink.click()
-      await page.waitForLoadState("domcontentloaded")
+      // Wait for the SPA's "nav" event (or full-page load fallback)
+      await awaitNav()
 
-      // Explicitly wait for the URL to change
-      await page.waitForURL((url) => url.toString() !== initialUrl)
+      expect(page.url()).not.toBe(initialUrl)
 
       // Check if the marker still exists, indicating no full reload
       const markerExists = await doesMarkerExist(page)
@@ -726,42 +765,8 @@ test.describe("Document Head & Body Updates", () => {
     await expect(aboutLink).toBeVisible({ timeout: 10_000 })
   }
 
-  // Helper to wait for SPA navigation to complete (including DOM updates).
-  // Registers a "nav" event listener and returns a function that waits for
-  // it to fire.  The setup is awaited to avoid a race condition where the
-  // click triggers navigation before the listener is installed (which
-  // destroys the execution context and fails page.evaluate).
-  async function waitForNavigation(page: Page): Promise<() => Promise<void>> {
-    await page.evaluate(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window as any).__navFired = false
-      document.addEventListener(
-        "nav",
-        () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(window as any).__navFired = true
-        },
-        { once: true },
-      )
-    })
-    // If the browser does a full navigation instead of SPA (e.g. mobile Safari),
-    // __navFired won't exist on the new page — treat that as "navigated".
-
-    return async () => {
-      await page.waitForFunction(
-        () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const win = window as any
-          return win.__navFired === undefined || win.__navFired === true
-        },
-        null,
-        { timeout: 10_000 },
-      )
-    }
-  }
-
   async function navigateAndWait(page: Page, url: string): Promise<void> {
-    const awaitNav = await waitForNavigation(page)
+    const awaitNav = await waitForSPANavigation(page)
     await page.locator(`a[href$="${url}"]`).first().click()
     await page.waitForURL(`**${url}`, { timeout: 15_000 })
     await awaitNav()
@@ -791,7 +796,7 @@ test.describe("Document Head & Body Updates", () => {
     const aboutTitle = await page.title()
 
     // Go back
-    const awaitNav = await waitForNavigation(page)
+    const awaitNav = await waitForSPANavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
@@ -940,13 +945,13 @@ test.describe("Document Head & Body Updates", () => {
     })
 
     // Navigate back to home
-    let awaitNav = await waitForNavigation(page)
+    let awaitNav = await waitForSPANavigation(page)
     await page.goBack()
     await page.waitForURL(`**/${testingPageSlug}`)
     await awaitNav()
 
     // Navigate forward to about again
-    awaitNav = await waitForNavigation(page)
+    awaitNav = await waitForSPANavigation(page)
     await page.goForward()
     await page.waitForURL("**/about")
     await awaitNav()

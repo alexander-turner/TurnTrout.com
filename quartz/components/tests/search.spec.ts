@@ -73,10 +73,13 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
 }
 
 async function closeSearch(page: Page) {
-  const searchContainer = page.locator("#search-container")
-  if (await searchContainer.evaluate((el) => el.classList.contains("active"))) {
+  const activeContainer = page.locator("#search-container.active")
+  // Use count() instead of evaluate() — count() returns 0 safely even if
+  // the page has navigated away (e.g. after Enter-key navigation), whereas
+  // evaluate() throws "Target page, context or browser has been closed".
+  if ((await activeContainer.count()) > 0) {
     await page.keyboard.press("Escape")
-    await expect(searchContainer).not.toHaveClass(/active/)
+    await expect(page.locator("#search-container")).not.toHaveClass(/active/)
   }
 }
 
