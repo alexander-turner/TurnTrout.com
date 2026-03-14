@@ -1001,3 +1001,21 @@ test.describe("Search preview scroll behavior", () => {
     await expect(firstMatch).toBeInViewport()
   })
 })
+
+test("Search preview tables have scroll indicators", async ({ page }) => {
+  test.skip(isMobileViewport(page), "Preview container is desktop-only")
+
+  // Use a narrow viewport so the wide table overflows in the search preview
+  const currentSize = page.viewportSize() as { width: number; height: number }
+  await page.setViewportSize({ width: tabletBreakpoint + 50, height: currentSize.height })
+
+  await search(page, "Scroll indicators")
+  const preview = await waitForPreviewArticle(page)
+
+  // The test page has a wide 8-column table in the "Scroll indicators" section.
+  // At this narrow viewport it overflows, triggering the right fade gradient.
+  const scrollIndicatorWithFade = preview.locator(".scroll-indicator.can-scroll-right")
+  await expect(async () => {
+    await expect(scrollIndicatorWithFade.first()).toBeAttached()
+  }).toPass({ timeout: 10_000 })
+})

@@ -8,6 +8,7 @@ import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Global function injected by renderPage.tsx to lazy-load content index
 declare global {
@@ -323,6 +324,9 @@ export class PreviewManager {
       // Clear existing content and append new content
       this.inner.innerHTML = ""
       this.inner.appendChild(fragment)
+
+      // Wrap scrollable tables/equations so they get fade-gradient indicators
+      wrapScrollables(this.inner)
 
       // Set click handler
       this.inner.onclick = () => {
@@ -958,6 +962,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
       article.appendChild(matchHTML(currentSearchTerm, el as HTMLElement))
     })
     cardPreview.appendChild(article)
+
+    // Wrap scrollable tables/equations so they get fade-gradient indicators
+    wrapScrollables(cardPreview)
 
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
