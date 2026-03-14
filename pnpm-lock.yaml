@@ -183,8 +183,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 3.0.5
-        version: 3.0.5(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        specifier: 3.2.0
+        version: 3.2.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.1
         version: 19.2.1
@@ -7766,8 +7766,8 @@ packages:
   pumpify@1.5.1:
     resolution: {integrity: sha512-oClZI37HvuUJJxSKKrC17bZ9Cu0ZYhEAGPsPUy9KlMUmv9dKX2o77RUmq7f3XjIxbwyGwYzbzQ1L2Ks8sIradQ==}
 
-  punctilio@3.0.5:
-    resolution: {integrity: sha512-AOyLwRcFdg/rhUc8109NONsMTN6m/moXYXyfdJ257qhXjfGtqi9Qdgk+4bRW91hhT53xK259x5Fio0px8Cvm1A==}
+  punctilio@3.2.0:
+    resolution: {integrity: sha512-CkIRp9qqisV/zvqA8g9UFi1/eRb26c7QKOqCyzd2GeyQFGXqNNr+TK3ilqho19tjkGaBgk1N745yaNLZeHCTxA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       remark-parse: ^11.0.0
@@ -18786,7 +18786,7 @@ snapshots:
       inherits: 2.0.4
       pump: 2.0.1
 
-  punctilio@3.0.5(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@3.2.0(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       unist-util-visit-parents: 6.0.1
