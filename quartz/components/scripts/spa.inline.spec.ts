@@ -11,7 +11,13 @@ import type { Page } from "@playwright/test"
 
 import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
 import { test, expect } from "../tests/fixtures"
-import { isDesktopViewport, getAllWithWait, gotoPage, reloadPage } from "../tests/visual_utils"
+import {
+  isDesktopViewport,
+  getAllWithWait,
+  gotoPage,
+  reloadPage,
+  triggerAndWaitForSPANav,
+} from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
 
@@ -146,11 +152,9 @@ test.describe("Local Link Navigation", () => {
 
       const designLink = page.locator("a").last()
       // OK to click since we aren't depending on scroll position
-      await designLink.click()
-      await page.waitForLoadState("domcontentloaded")
+      await triggerAndWaitForSPANav(page, () => designLink.click())
 
-      // Explicitly wait for the URL to change
-      await page.waitForURL((url) => url.toString() !== initialUrl)
+      await expect(page).not.toHaveURL(initialUrl)
 
       // Check if the marker still exists, indicating no full reload
       const markerExists = await doesMarkerExist(page)
@@ -452,13 +456,13 @@ test.describe("Popstate (Back/Forward) Navigation", () => {
     const initialUrl = page.url()
 
     await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await page.waitForURL("**/design")
 
     await page.goBack()
     await page.waitForURL(initialUrl)
 
     await page.goForward()
-    await page.waitForURL((url) => url.toString() !== initialUrl)
+    await page.waitForURL("**/design")
   })
 })
 
@@ -726,45 +730,9 @@ test.describe("Document Head & Body Updates", () => {
     await expect(aboutLink).toBeVisible({ timeout: 10_000 })
   }
 
-  // Helper to wait for SPA navigation to complete (including DOM updates).
-  // Registers a "nav" event listener and returns a function that waits for
-  // it to fire.  The setup is awaited to avoid a race condition where the
-  // click triggers navigation before the listener is installed (which
-  // destroys the execution context and fails page.evaluate).
-  async function waitForNavigation(page: Page): Promise<() => Promise<void>> {
-    await page.evaluate(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window as any).__navFired = false
-      document.addEventListener(
-        "nav",
-        () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ;(window as any).__navFired = true
-        },
-        { once: true },
-      )
-    })
-    // If the browser does a full navigation instead of SPA (e.g. mobile Safari),
-    // __navFired won't exist on the new page — treat that as "navigated".
-
-    return async () => {
-      await page.waitForFunction(
-        () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const win = window as any
-          return win.__navFired === undefined || win.__navFired === true
-        },
-        null,
-        { timeout: 10_000 },
-      )
-    }
-  }
-
   async function navigateAndWait(page: Page, url: string): Promise<void> {
-    const awaitNav = await waitForNavigation(page)
-    await page.locator(`a[href$="${url}"]`).first().click()
+    await triggerAndWaitForSPANav(page, () => page.locator(`a[href$="${url}"]`).first().click())
     await page.waitForURL(`**${url}`, { timeout: 15_000 })
-    await awaitNav()
   }
 
   test("updates page title when navigating between pages", async ({ page }) => {
@@ -791,10 +759,8 @@ test.describe("Document Head & Body Updates", () => {
     const aboutTitle = await page.title()
 
     // Go back
-    const awaitNav = await waitForNavigation(page)
-    await page.goBack()
+    await triggerAndWaitForSPANav(page, () => page.goBack())
     await page.waitForURL(`**/${testingPageSlug}`)
-    await awaitNav()
     await page.waitForFunction(() => document.title !== "")
 
     const restoredTitle = await page.title()
@@ -940,16 +906,12 @@ test.describe("Document Head & Body Updates", () => {
     })
 
     // Navigate back to home
-    let awaitNav = await waitForNavigation(page)
-    await page.goBack()
+    await triggerAndWaitForSPANav(page, () => page.goBack())
     await page.waitForURL(`**/${testingPageSlug}`)
-    await awaitNav()
 
     // Navigate forward to about again
-    awaitNav = await waitForNavigation(page)
-    await page.goForward()
+    await triggerAndWaitForSPANav(page, () => page.goForward())
     await page.waitForURL("**/about")
-    await awaitNav()
 
     const finalTitle = await page.title()
     const finalDescription = await page.evaluate(() => {

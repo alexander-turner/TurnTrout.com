@@ -584,6 +584,19 @@ export function isFirefox(testInfo: TestInfo): boolean {
 }
 
 /**
+ * Move the mouse to a position guaranteed not to overlap any UI elements.
+ * Using (0, 0) can overlap with navbar/menu on certain viewports (especially
+ * iPad Pro), triggering spurious mouseenter events that interfere with tests.
+ */
+export async function moveMouseToSafePosition(page: Page): Promise<void> {
+  const viewport = page.viewportSize()
+  // Bottom-right corner is safe: no navbar, no sidebar, no popovers
+  const x = viewport ? viewport.width - 1 : 1200
+  const y = viewport ? viewport.height - 1 : 800
+  await page.mouse.move(x, y)
+}
+
+/**
  * Trigger an action and wait for the SPA to complete navigation.
  *
  * The SPA dispatches a custom `"nav"` event after fetch → DOM morph →
@@ -593,7 +606,7 @@ export function isFirefox(testInfo: TestInfo): boolean {
  */
 export async function triggerAndWaitForSPANav(
   page: Page,
-  trigger: () => Promise<void>,
+  trigger: () => Promise<unknown>,
 ): Promise<void> {
   // Start listening *before* the action so we never miss the event.
   // page.evaluate returns a Promise that resolves when the browser-side Promise resolves.

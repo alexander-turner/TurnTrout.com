@@ -9,6 +9,8 @@ import {
   setTheme,
   reloadPage,
   gotoPage,
+  triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -142,7 +144,7 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await expect(navbarRightMenu).toBeVisible()
   await expect(navbarRightMenu).toHaveClass(/visible/)
   // Move mouse away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
     elementToScreenshot: navbarRightMenu,
   })
@@ -172,7 +174,7 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
   await expect(navbarRightMenu).toHaveClass(/visible/)
 
   // Move mouse away to avoid hover states
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await takeRegressionScreenshot(page, testInfo, "visible-menu", {
     elementToScreenshot: navbarRightMenu,
   })
@@ -275,8 +277,8 @@ test("Content behind hidden navbar is clickable on mobile", async ({ page }) => 
   await expect(href).toHaveAttribute("href")
 
   const initialUrl = page.url()
-  await firstVisibleLink.click()
-  await page.waitForURL((url) => url.href !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => firstVisibleLink.click())
+  await expect(page).not.toHaveURL(initialUrl)
 })
 
 test("Menu disappears gradually when scrolling down", async ({ page }) => {
@@ -532,10 +534,8 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
 
-  const initialUrl = page.url()
   const localLink = page.locator("a:not(.skip-to-content)").first()
-  await localLink.click()
-  await page.waitForURL((url) => url.toString() !== initialUrl)
+  await triggerAndWaitForSPANav(page, () => localLink.click())
 
   const timestampAfterNavigation = await getTimestampAfterNavigation(page)
   expect(timestampAfterNavigation).toBeCloseTo(timestampBeforeNavigation, 0)

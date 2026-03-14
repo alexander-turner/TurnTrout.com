@@ -12,6 +12,7 @@ import {
   isElementChecked,
   gotoPage,
   reloadPage,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -583,7 +584,7 @@ test.describe("Right sidebar", () => {
     // Open the backlinks
     await backlinksTitle.click()
     // Don't hover over the backlinks
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
       elementToScreenshot: backlinks,
     })
@@ -1242,7 +1243,7 @@ test.describe("Popovers on different page types", () => {
       const popoverInner = popover.locator(".popover-inner")
       await expect(popoverInner).toBeVisible()
 
-      await page.mouse.move(0, 0)
+      await moveMouseToSafePosition(page)
     })
   }
 })
