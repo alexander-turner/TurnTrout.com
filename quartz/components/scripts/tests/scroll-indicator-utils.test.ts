@@ -45,7 +45,7 @@ describe("wrapScrollables", () => {
     },
   )
 
-  it("skips already-wrapped and parentless elements", () => {
+  it("re-attaches listeners to already-wrapped elements", () => {
     const container = document.createElement("div")
     const existing = document.createElement("div")
     existing.className = "scroll-indicator"
@@ -54,12 +54,31 @@ describe("wrapScrollables", () => {
     existing.appendChild(tc)
     container.appendChild(existing)
 
+    Object.defineProperty(tc, "scrollWidth", { value: 200, configurable: true })
+    Object.defineProperty(tc, "clientWidth", { value: 100, configurable: true })
+    Object.defineProperty(tc, "scrollLeft", { value: 0, configurable: true })
+
+    const observers = wrapScrollables(container)
+    expect(observers).toHaveLength(1)
+    // The existing wrapper should get scroll classes
+    expect(existing.classList.contains("can-scroll-right")).toBe(true)
+    // Should NOT create a new wrapper (element stays in existing wrapper)
+    expect(tc.parentElement).toBe(existing)
+  })
+
+  it("skips parentless elements", () => {
+    const container = document.createElement("div")
+    const tc = document.createElement("div")
+    tc.className = "table-container"
+    container.appendChild(tc)
+
     const detached = document.createElement("div")
     detached.className = "table-container"
     jest
       .spyOn(container, "querySelectorAll")
       .mockReturnValue([tc, detached] as unknown as NodeListOf<HTMLElement>)
 
-    expect(wrapScrollables(container)).toHaveLength(0)
+    // tc gets wrapped (1 observer), detached is skipped (no parent)
+    expect(wrapScrollables(container)).toHaveLength(1)
   })
 })

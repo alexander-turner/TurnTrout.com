@@ -8,6 +8,7 @@ import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Global function injected by renderPage.tsx to lazy-load content index
 declare global {
@@ -323,6 +324,9 @@ export class PreviewManager {
       // Clear existing content and append new content
       this.inner.innerHTML = ""
       this.inner.appendChild(fragment)
+
+      // Wrap scrollable tables/equations so they get fade-gradient indicators
+      wrapScrollables(this.inner)
 
       // Set click handler
       this.inner.onclick = () => {
@@ -964,6 +968,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
     })
     cardPreview.appendChild(article)
 
+    // Wrap scrollable tables/equations so they get fade-gradient indicators
+    wrapScrollables(cardPreview)
+
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
       const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
@@ -1044,9 +1051,9 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   itemTile.appendChild(document.createElement("br"))
 
   if (!enablePreview) {
-    const p = document.createElement("p")
-    p.innerHTML = content
-    itemTile.appendChild(p)
+    const contentPreview = document.createElement("p")
+    contentPreview.innerHTML = content
+    itemTile.appendChild(contentPreview)
   }
 
   // On mobile/tablet, embed a small card preview slice in each card.
