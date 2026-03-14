@@ -624,7 +624,13 @@ function createRouter() {
     document.addEventListener("click", async (event) => {
       // Use getOpts to check for valid local links ignoring modifiers/targets
       const opts = getOpts(event)
-      if (!opts || !opts.url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) {
+      if (
+        !opts ||
+        !opts.url ||
+        event.defaultPrevented ||
+        (event as MouseEvent).ctrlKey ||
+        (event as MouseEvent).metaKey
+      ) {
         return // Let browser handle normal links, external links, or modified clicks
       }
 
