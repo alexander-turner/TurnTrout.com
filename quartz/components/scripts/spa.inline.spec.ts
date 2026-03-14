@@ -357,9 +357,12 @@ test.describe("Instant Scroll Restoration", () => {
     // browser navigation that preserves state and doesn't trigger the CDP crash.
     await page
       .evaluate(() => location.reload())
-      .catch(() => {
-        // The evaluate may reject with "execution context destroyed" as the page
-        // unloads — this is expected and harmless.
+      .catch((error: Error) => {
+        // The evaluate rejects with "execution context destroyed" as the page
+        // unloads — this is expected and harmless. Re-throw anything else.
+        if (!error.message?.includes("context")) {
+          throw error
+        }
       })
     await page.waitForLoadState("domcontentloaded")
 
