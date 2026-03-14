@@ -1,0 +1,13 @@
+diff --git a/node_modules/subfont/lib/subfont.js b/node_modules/subfont/lib/subfont.js
+index 73155dd..a1b2c3d 100644
+--- a/node_modules/subfont/lib/subfont.js
++++ b/node_modules/subfont/lib/subfont.js
+@@ -316,7 +316,7 @@ module.exports = async function subfont(
+     let maxOriginalCodePoints = 0;
+     for (const fontUsage of fontUsages) {
+       sumSmallestSubsetSize += fontUsage.smallestSubsetSize || 0;
+-      sumSmallestOriginalSize += fontUsage.smallestOriginalSize;
++      sumSmallestOriginalSize += fontUsage.smallestOriginalSize || 0;
+       maxUsedCodePoints = Math.max(
+         fontUsage.codepoints.used.length,
+         maxUsedCodePoints
