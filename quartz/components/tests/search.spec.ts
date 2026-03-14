@@ -779,19 +779,15 @@ test("should not select a search result on initial render, even if the mouse is 
 
   await search(page, "test")
 
-  // The search input is debounced (400ms), so `search()` may return before
-  // the new results render. Wait for the first result card to reflect the
-  // "test" query before interacting with it.
+  // Move mouse away from results IMMEDIATELY after search() returns, while
+  // mouseEventsLocked is still true (100ms window). If we wait too long
+  // (e.g., for toHaveId), the lock expires and the mouse.move path through
+  // result cards fires mouseenter, stealing focus from the first card.
+  await moveMouseToSafePosition(page)
+
+  // Now wait for the first result card to reflect the "test" query.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
-
-  // Move the mouse onto the search bar (always above results) so that when
-  // mouseEventsLocked expires, no mouseenter on a result card steals focus.
-  const searchBar = page.locator("#search-bar")
-  const searchBarBox = await searchBar.boundingBox()
-  expect(searchBarBox).not.toBeNull()
-  // skipcq: JS-0339 - searchBarBox is checked for nullability above
-  await page.mouse.move(searchBarBox!.x + 5, searchBarBox!.y + 5)
 
   // Wait for the mouseFocusDelay lock (100ms) to expire, plus margin.
   // eslint-disable-next-line playwright/no-wait-for-timeout

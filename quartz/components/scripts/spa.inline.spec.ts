@@ -350,7 +350,18 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    await reloadPage(page, "domcontentloaded")
+    // Use location.reload() instead of reloadPage (about:blank → goto) because
+    // reloadPage creates a new history entry, losing history.state.scroll.
+    // Real users do browser reloads which preserve history.state. Playwright's
+    // page.reload() crashes on Safari, but location.reload() is a standard
+    // browser navigation that preserves state and doesn't trigger the CDP crash.
+    await page
+      .evaluate(() => location.reload())
+      .catch(() => {
+        // The evaluate may reject with "execution context destroyed" as the page
+        // unloads — this is expected and harmless.
+      })
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for scroll restoration — iPad Pro Safari may restore scroll
     // asynchronously after domcontentloaded.
