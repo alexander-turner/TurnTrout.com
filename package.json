@@ -288,7 +288,7 @@
     "ts-jest": "29.1.2",
     "tsx": "4.19.3",
     "typescript": "5.7.3",
-    "typescript-eslint": "8.23.0",
+    "typescript-eslint": "8.57.0",
     "unist-util-visit": "5.1.0",
     "unist-util-visit-parents": "6.0.1",
     "whatwg-fetch": "3.6.20",
