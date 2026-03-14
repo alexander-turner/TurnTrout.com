@@ -267,9 +267,6 @@ test("search matches in headers have correct color styling", async ({ page }) =>
 })
 
 test("Search results are case-insensitive", async ({ page }) => {
-  // Two sequential searches with index loading + debounce can exceed 30s in CI
-  test.slow()
-
   await search(page, "TEST")
   await expect(page.locator(".result-card").first()).toBeVisible()
   const uppercaseResults = await page
@@ -302,9 +299,6 @@ test("Search results work for a single character", async ({ page }) => {
 })
 
 test("Preview element persists after closing and reopening search", async ({ page }) => {
-  // Close/reopen/re-search cycle can exceed 30s on slow CI browsers
-  test.slow()
-
   await search(page, "Steering")
   const previewContainer = getPreviewLocator(page)
   const previewArticle = previewContainer.locator("article.search-preview")
@@ -450,10 +444,9 @@ test("Search matching title text stays at top even with body matches", async ({ 
   await expect(testPageResult).toBeVisible()
   await triggerAndWaitForSPANav(page, () => testPageResult.click())
 
-  // The title should contain a highlighted match — search highlighting runs
-  // asynchronously after SPA navigation and can be slow on Safari in CI.
+  // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch.first()).toBeAttached({ timeout: 15_000 })
+  await expect(titleMatch.first()).toBeAttached()
 
   // Page should stay at the top because the title contains a match
   const scrollY = await page.evaluate(() => window.scrollY)

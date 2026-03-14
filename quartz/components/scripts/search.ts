@@ -702,7 +702,7 @@ let cleanupListeners: (() => void) | undefined
  * @param e - Navigation event
  */
 /* istanbul ignore next */
-async function onNav(e: CustomEventMap["nav"]) {
+function onNav(e: CustomEventMap["nav"]) {
   // Reset ready flag so tests wait for re-registration after SPA navigation.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).__searchHandlersReady = false
@@ -726,8 +726,11 @@ async function onNav(e: CustomEventMap["nav"]) {
     throw new Error("getContentIndex not initialized - check script injection order")
   }
 
-  data = await getContentIndex()
-  if (!data) return
+  // Start fetching content index in the background (cached for later use
+  // by initializeSearch). Don't block handler registration on the fetch —
+  // data is only needed when the user actually performs a search.
+  getContentIndex()
+
   results = document.createElement("div")
   const container = document.getElementById("search-container")
   const searchIcon = document.getElementById("search-icon")
@@ -1292,7 +1295,11 @@ async function initializeSearch(): Promise<void> {
       // Create the index
       index = createSearchIndex()
 
-      // Fetch and fill the index with data
+      // Ensure content index is available (fetch started by onNav, cached).
+      // getContentIndex is injected by renderPage.tsx and may not exist in unit tests.
+      if (!data && typeof getContentIndex === "function") {
+        data = await getContentIndex()
+      }
       if (data) {
         await fillDocument(data)
       }
