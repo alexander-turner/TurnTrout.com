@@ -6,7 +6,8 @@
         "--no-sandbox",
         "--disable-setuid-sandbox",
         "--disable-dev-shm-usage"
-      ]
+      ],
+      "protocolTimeout": 300000
     },
     "standard": "WCAG2AA",
     "runners": [
