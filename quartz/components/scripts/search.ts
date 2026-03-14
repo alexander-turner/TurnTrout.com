@@ -1046,9 +1046,9 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   itemTile.appendChild(document.createElement("br"))
 
   if (!enablePreview) {
-    const p = document.createElement("p")
-    p.innerHTML = content
-    itemTile.appendChild(p)
+    const contentPreview = document.createElement("p")
+    contentPreview.innerHTML = content
+    itemTile.appendChild(contentPreview)
   }
 
   // On mobile/tablet, embed a small card preview slice in each card.
