@@ -90,9 +90,13 @@
     if (element.dataset.collapsibleId) return // Already processed
     const slug = document.body?.dataset?.slug
     if (!slug) return
-    const title = element.querySelector(".admonition-title")?.textContent?.trim() || ""
-    // Use title-only (not body) to avoid streaming-parse race conditions where
-    // .admonition-content children haven't been added to the DOM yet.
+    // During streaming parse, the MutationObserver fires when the <blockquote>
+    // is added but before its .admonition-title child is parsed. An empty title
+    // produces a wrong hash, causing the Map lookup to miss and the default
+    // is-collapsed class to persist. Defer to setupAdmonition() on "nav" instead.
+    const titleEl = element.querySelector(".admonition-title")
+    if (!titleEl?.textContent?.trim()) return
+    const title = titleEl.textContent.trim()
     element.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title)
     if (window.__quartz_collapsible_states.has(element.dataset.collapsibleId))
       element.classList.toggle(

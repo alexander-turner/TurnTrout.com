@@ -8,8 +8,10 @@ import {
   isDesktopViewport,
   getAllWithWait,
   isElementChecked,
-  openSearch,
+  search,
   gotoPage,
+  triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -67,7 +69,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   })
 
   // Move mouse away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 })
 
@@ -138,7 +140,7 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
     await link.scrollIntoViewIfNeeded()
     await expect(link).toBeVisible()
     await link.hover()
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
   }
 
   await expect(page.locator(".popover")).toHaveCount(0)
@@ -202,7 +204,7 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 
   // Wait a moment and verify it stays hidden
@@ -213,11 +215,8 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
-  // Set noPopover attribute
-  await page.evaluate(() => {
-    const link = document.querySelector(".can-trigger-popover")
-    if (link) link.setAttribute("data-no-popover", "true")
-  })
+  // Set noPopover attribute on the specific link we'll hover
+  await dummyLink.evaluate((el) => el.setAttribute("data-no-popover", "true"))
 
   await dummyLink.hover()
   const popover = page.locator(".popover")
@@ -261,24 +260,16 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Search preview content is fetched asynchronously and can be slow on CI
   test.slow()
-  // Open search and search for a term that will have internal links
-  await openSearch(page)
-  const searchBar = page.locator("#search-bar")
-  await searchBar.fill("Test page")
-
-  // Wait for search results to render before checking preview
-  const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+  // Use search() helper for reliable fill+result rendering (toPass retry)
+  await search(page, "Test page")
 
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Wait for preview content to fully render (the article element is
-  // pre-created, so we wait for the actual link inside it to appear)
+  // Wait for the link inside the preview content to render (fetched async)
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
-  await expect(searchDummyLink).toBeAttached({ timeout: 15_000 })
+  await expect(searchDummyLink).toBeVisible({ timeout: 30_000 })
   await searchDummyLink.scrollIntoViewIfNeeded()
-  await expect(searchDummyLink).toBeVisible({ timeout: 5_000 })
   await searchDummyLink.hover()
 
   // Verify no popover appears
@@ -297,7 +288,7 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   const metaX = (await metaPopover.boundingBox())?.x
 
   // Move mouse and wait for it to go away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(metaPopover).toBeHidden()
 
   await dummyLink.scrollIntoViewIfNeeded()
@@ -341,27 +332,20 @@ for (const id of ["navbar", "toc-content"]) {
 }
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
-  // SPA navigation + DOM content load can be slow on CI runners
-  test.slow()
   await expect(dummyLink).toBeVisible()
-  const linkHref = await dummyLink.getAttribute("href")
-  const linkSlug = linkHref?.split("/").pop()
 
   // Hover over the link to initiate a popover, but don't wait for it to appear
   await dummyLink.hover()
 
-  // Immediately click the link to navigate
-  await dummyLink.click()
-
-  // Wait for navigation to the new page. The href of dummyLink is /design.
-  await page.waitForURL(`**/${linkSlug}`, { timeout: 30_000 })
+  // Immediately click the link to navigate.  Wait for the SPA `nav` event
+  // which clears the pending popover timer and resets mouseMovedSinceNav.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
 
   // Move cursor to a neutral area so it doesn't accidentally hover over a
   // link on the new page (which could trigger a *new* popover, especially in
   // Safari where the cursor position persists after SPA navigation).
   await page.mouse.move(10, 10)
 
-  // The 'nav' event should have cleared the pending popover timer.
   // Wait longer than the popover delay (300ms) to confirm it doesn't appear.
   // eslint-disable-next-line playwright/no-wait-for-timeout
   await page.waitForTimeout(1000)

@@ -80,7 +80,7 @@ TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/de
 RETRY_DIR="${TMPDIR_ACTUAL}/claude-stop-$(id -u)"
 rm -f "${RETRY_DIR}/attempts-${PROJ_HASH}"
 # Remove stale push-commit marker (used by verify_ci.py to check remote CI)
-rm -f "${TMPDIR_ACTUAL}/claude-last-push-commit"
+rm -f "/tmp/claude-last-push-commit"
 
 #######################################
 # Git setup

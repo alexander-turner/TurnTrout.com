@@ -5,6 +5,19 @@ import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions
 const getCollapsibles = (page: Page) => page.locator(".admonition.is-collapsible")
+const getCollapsibleId = (locator: import("@playwright/test").Locator) =>
+  locator.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
+
+/** Assert that an admonition's collapsed state was persisted to localStorage. */
+async function expectStoredState(
+  page: Page,
+  admonition: import("@playwright/test").Locator,
+  isCollapsed: boolean,
+): Promise<void> {
+  const id = await getCollapsibleId(admonition)
+  const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
+  expect(stored).toBe(isCollapsed ? "true" : "false")
+}
 
 /** Wait for all collapsible admonitions to have their content-based IDs assigned.
  *  The IDs are set by admonition.inline.js (on the "nav" event), which hashes the
@@ -62,24 +75,16 @@ test.describe("Collapsible admonition state persistence", () => {
     const collapsibles = getCollapsibles(page)
     const first = collapsibles.first()
 
-    // Get initial state and ID
+    // Get initial state
     const initiallyCollapsed = await first.evaluate((el) => el.classList.contains("is-collapsed"))
-    const id = await first.evaluate((el) => (el as HTMLElement).dataset.collapsibleId)
-    expect(id).toBeDefined()
 
     // Click title to toggle
     await first.locator(".admonition-title").click()
 
-    // Verify state changed
+    // Verify state changed and localStorage updated
     const newState = await first.evaluate((el) => el.classList.contains("is-collapsed"))
     expect(newState).toBe(!initiallyCollapsed)
-
-    // Verify localStorage was updated
-    const stored = await page.evaluate(
-      (collapsibleId) => localStorage.getItem(collapsibleId),
-      id as string,
-    )
-    expect(stored).toBe(newState ? "true" : "false")
+    await expectStoredState(page, first, newState)
   })
 
   test("collapsing an open admonition persists across reload", async ({ page }) => {
@@ -93,6 +98,8 @@ test.describe("Collapsible admonition state persistence", () => {
     // Collapse it
     await admonition.locator(".admonition-title").click()
     await expect(admonition).toHaveClass(/is-collapsed/)
+
+    await expectStoredState(page, admonition, true)
 
     // Reload page and verify it stayed collapsed
     await reloadPage(page)
@@ -113,6 +120,8 @@ test.describe("Collapsible admonition state persistence", () => {
     // Open it
     await admonition.locator(".admonition-title").click()
     await expect(admonition).not.toHaveClass(/is-collapsed/)
+
+    await expectStoredState(page, admonition, false)
 
     // Reload page and verify it stayed open
     await reloadPage(page)

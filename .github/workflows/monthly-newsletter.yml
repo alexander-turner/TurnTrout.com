@@ -19,13 +19,14 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Full history for git log
+          fetch-depth: 0
+          filter: blob:none # Full commit history for git log, skip historical blobs
 
       - name: Restore last reviewed commit
         id: cache-commit
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-
@@ -242,7 +243,7 @@ jobs:
 
       - name: Save last reviewed commit to cache
         if: steps.commits.outputs.skip != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-${{ steps.range.outputs.end_commit }}

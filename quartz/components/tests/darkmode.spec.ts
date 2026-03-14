@@ -56,7 +56,7 @@ class DarkModeHelper {
     await this.page.waitForFunction(
       ({ key, expected }) => localStorage.getItem(key) === expected,
       { key: savedThemeKey, expected: expectedTheme },
-      { timeout: 5_000 },
+      { timeout: 15_000 },
     )
   }
 
@@ -247,12 +247,18 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
       await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
-      // Verify localStorage survived navigation, then wait for the init
-      // script to apply the label (CSS custom property may lag on Safari).
+      // Wait for setupDarkMode() to complete (writes localStorage + CSS
+      // custom property). This replaces a toPass() retry with an event-driven
+      // signal: setupDarkMode() dispatches "darkmode-ready" and sets a flag.
+      await page.waitForFunction(
+        () =>
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).__darkmodeReady === true,
+        null,
+        { timeout: 15_000 },
+      )
       await helper.verifyStorage(theme)
-      await expect(async () => {
-        await helper.verifyThemeLabel(theme)
-      }).toPass({ timeout: 15_000 })
+      await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)
     })
   })

@@ -125,6 +125,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 
 ## Testing Requirements
 
+- **Zero flakiness tolerance**: Every CI check must pass every time. Prioritize root-cause fixes for anything we control (fix the test, fix the timeout, fix the code). For external services outside our control (e.g. Cloudflare API 504s), add retry logic as a last resort. No flakiness is acceptable regardless of source.
 - **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
@@ -207,6 +208,7 @@ After pushing to main:
   - `ci:run-visual` — Visual regression tests only
   - `ci:run-lighthouse` — Lighthouse performance/CLS tests only
   - `ci:full-tests` — All of the above
+  - `ci:flake-check` — Run Playwright tests with `--repeat-each 3` to detect flaky tests (also available via `workflow_dispatch` with configurable repeat count)
 
   Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`).
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
