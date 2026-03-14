@@ -42,7 +42,7 @@ jobs:
             const headSha = context.payload.workflow_run.head_sha.substring(0, 7);
 
             const trackerMarker = '<!-- claude-failure-tracker -->';
-            const maxAttempts = 2; // Stop pinging after 2 failures per workflow
+            const maxAttempts = 5; // Stop pinging after 5 failures per workflow
 
             try {
               // Find existing tracker comment (paginate to handle PRs with many comments)
