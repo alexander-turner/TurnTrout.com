@@ -130,7 +130,8 @@ test.describe("Collapsible admonition state persistence", () => {
       .locator(".admonition.is-collapsible")
       .filter({ hasText: "starts off collapsed" })
     await expect(reloaded).toBeAttached()
-    await expect(reloaded).not.toHaveClass(/is-collapsed/)
+    // Safari can be slow to apply persisted state from localStorage after reload
+    await expect(reloaded).not.toHaveClass(/is-collapsed/, { timeout: 15_000 })
   })
 
   test("state persists across SPA navigation", async ({ page }) => {

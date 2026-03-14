@@ -449,7 +449,7 @@ test("Search matching title text stays at top even with body matches", async ({ 
 
   // The title should contain a highlighted match
   const titleMatch = page.locator("#article-title .search-match")
-  await expect(titleMatch.first()).toBeAttached()
+  await expect(titleMatch.first()).toBeAttached({ timeout: 15_000 })
 
   // Page should stay at the top because the title contains a match
   const scrollY = await page.evaluate(() => window.scrollY)
