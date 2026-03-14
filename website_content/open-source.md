@@ -135,6 +135,10 @@ The way this works is that:
 2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
 3. The `lolcat` command splays the text 'cross the rainbow.
 
+# Claude Code automation template
+
+[`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.
+
 # Pull requests on other projects
 
 ## Mermaid diagrams now generate unique element IDs
