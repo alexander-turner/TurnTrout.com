@@ -189,7 +189,7 @@ test.describe("Local Link Navigation", () => {
       // Wait for the SPA's "nav" event (or full-page load fallback)
       await awaitNav()
 
-      expect(page.url()).not.toBe(initialUrl)
+      await expect(page).not.toHaveURL(initialUrl)
 
       // Check if the marker still exists, indicating no full reload
       const markerExists = await doesMarkerExist(page)
