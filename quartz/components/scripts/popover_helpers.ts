@@ -297,52 +297,55 @@ export function attachPopoverEventListeners(
     }
   }
 
-  popoverElement.addEventListener("click", clickPopover)
+  const controller = new AbortController()
+  const { signal } = controller
+
+  popoverElement.addEventListener("click", clickPopover, { signal })
 
   // Hover listeners only for non-footnote popovers. Footnote popovers are
   // click-only: opened by clicking the footnote ref, dismissed by clicking
   // outside, pressing Escape, or clicking the close button.
-  let mouseenterLink: (() => void) | undefined
-  let mouseleaveLink: (() => void) | undefined
-  let mouseenterPopover: (() => void) | undefined
-  let mouseleavePopover: (() => void) | undefined
-
   if (!isFootnote) {
-    mouseenterLink = () => {
-      isMouseOverLink = true
-      showPopover()
-    }
-    mouseleaveLink = () => {
-      isMouseOverLink = false
-      if (!popoverElement.dataset.pinned) {
-        removePopover()
-      }
-    }
-    mouseenterPopover = () => {
-      isMouseOverPopover = true
-    }
-    mouseleavePopover = () => {
-      isMouseOverPopover = false
-      if (!popoverElement.dataset.pinned) {
-        removePopover()
-      }
-    }
-
-    linkElement.addEventListener("mouseenter", mouseenterLink)
-    linkElement.addEventListener("mouseleave", mouseleaveLink)
-    popoverElement.addEventListener("mouseenter", mouseenterPopover)
-    popoverElement.addEventListener("mouseleave", mouseleavePopover)
+    linkElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverLink = true
+        showPopover()
+      },
+      { signal },
+    )
+    linkElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverLink = false
+        if (!popoverElement.dataset.pinned) {
+          removePopover()
+        }
+      },
+      { signal },
+    )
+    popoverElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverPopover = true
+      },
+      { signal },
+    )
+    popoverElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverPopover = false
+        if (!popoverElement.dataset.pinned) {
+          removePopover()
+        }
+      },
+      { signal },
+    )
   }
 
   // Returned cleanup function
   return () => {
-    if (mouseenterLink) linkElement.removeEventListener("mouseenter", mouseenterLink)
-    if (mouseleaveLink) linkElement.removeEventListener("mouseleave", mouseleaveLink)
-    if (mouseenterPopover) popoverElement.removeEventListener("mouseenter", mouseenterPopover)
-    if (mouseleavePopover) popoverElement.removeEventListener("mouseleave", mouseleavePopover)
-    popoverElement.removeEventListener("click", clickPopover)
-
-    // Also trigger removal logic if cleanup is called directly
+    controller.abort()
     popoverElement.remove()
     onRemove()
   }
