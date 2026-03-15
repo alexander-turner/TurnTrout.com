@@ -95,6 +95,7 @@
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
   "scrollTolerance": 30,
+  "urlBarScrollTolerance": 60,
   "listTolerance": 5,
   "maxCardImageSizeKb": 300,
   "playwrightConfigs": 9,

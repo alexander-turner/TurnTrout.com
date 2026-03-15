@@ -238,7 +238,7 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
  * Renders an abbreviation element (<abbr>) in the TOC with the appropriate class names and text content.
  */
 const handleAbbr = (elt: Element): JSX.Element => {
-  const abbrText = (elt.children[0] as { value: string }).value
+  const abbrText = elt.children.length > 0 ? (elt.children[0] as { value: string }).value : ""
   const className = (elt.properties?.className as string[])?.join(" ") || ""
   return <abbr className={className}>{abbrText}</abbr>
 }
@@ -322,7 +322,7 @@ document.addEventListener('nav', function() {
     currentSection = newSection;
 
     navLinks.forEach((link) => {
-      const slug = link.getAttribute('href').split("#")[1];
+      const slug = link.getAttribute('href')?.split("#")[1];
       link.classList.toggle("active", currentSection && slug === currentSection);
     });
   }
