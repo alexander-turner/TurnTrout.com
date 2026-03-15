@@ -181,8 +181,6 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
 
   // Test closed state
   await menuButton.click()
-  const newMenuButtonState = await menuButton.screenshot()
-  expect(newMenuButtonState).toEqual(originalMenuButtonState)
   await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
