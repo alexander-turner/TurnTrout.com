@@ -148,10 +148,11 @@ test("ArrowDown navigation does not get stuck below the second result", async ({
   await page.waitForLoadState("domcontentloaded")
 
   const resultCards = page.locator(".result-card")
-  await expect(resultCards.nth(0)).toBeVisible()
 
-  const totalResults = await resultCards.count()
-  expect(totalResults).toBeGreaterThan(2)
+  // Wait for at least 3 results to render — Firefox on tablet viewports
+  // may render results asynchronously, and nth(2) fails with
+  // "element(s) not found" if checked too early.
+  await expect(resultCards.nth(2)).toBeVisible({ timeout: 10_000 })
 
   await expect(resultCards.nth(0)).toHaveClass(/focus/)
 
@@ -191,9 +192,10 @@ test("Search layout restores height when tab becomes visible again", async ({ pa
     document.dispatchEvent(new Event("visibilitychange"))
   })
 
-  // After visibility change, the layout should be restored
-  const heightAfter = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
-  expect(heightAfter).toBeGreaterThan(0)
+  // After visibility change, the layout should be restored.
+  // Firefox may defer the layout recalculation, so poll rather than
+  // reading offsetHeight synchronously.
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 5_000 })
 })
 
 test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
@@ -773,6 +775,17 @@ test("should not select a search result on initial render, even if the mouse is 
   const { x, y, width, height } = secondResultPos!
   await page.mouse.move(x + width / 2, y + height / 2)
 
+  // Park the mouse on the search bar BEFORE the new search renders, so that
+  // when mouseEventsLocked expires the cursor isn't over a result card.
+  // Previously the mouse.move happened AFTER results rendered, racing with
+  // the 100ms lock — on Firefox the move could traverse cards and fire
+  // mouseenter after the lock expired, stealing focus from the first result.
+  const searchBar = page.locator("#search-bar")
+  const searchBarBox = await searchBar.boundingBox()
+  expect(searchBarBox).not.toBeNull()
+  // skipcq: JS-0339 - searchBarBox is checked for nullability above
+  await page.mouse.move(searchBarBox!.x + 5, searchBarBox!.y + 5)
+
   await search(page, "test")
 
   // The search input is debounced (400ms), so `search()` may return before
@@ -780,14 +793,6 @@ test("should not select a search result on initial render, even if the mouse is 
   // "test" query before interacting with it.
   const firstResult = page.locator(".result-card").first()
   await expect(firstResult).toHaveId("test-page", { timeout: 10_000 })
-
-  // Move the mouse onto the search bar (always above results) so that when
-  // mouseEventsLocked expires, no mouseenter on a result card steals focus.
-  const searchBar = page.locator("#search-bar")
-  const searchBarBox = await searchBar.boundingBox()
-  expect(searchBarBox).not.toBeNull()
-  // skipcq: JS-0339 - searchBarBox is checked for nullability above
-  await page.mouse.move(searchBarBox!.x + 5, searchBarBox!.y + 5)
 
   // The first result should have focus (assigned during displayResults)
   await expect(firstResult).toHaveClass(/focus/, { timeout: 10_000 })

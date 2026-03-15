@@ -353,12 +353,19 @@ test.describe("Instant Scroll Restoration", () => {
     await reloadPage(page, "domcontentloaded")
 
     // Wait for scroll restoration — iPad Pro Safari may restore scroll
-    // asynchronously after domcontentloaded.
-    await page.waitForFunction((target) => Math.abs(window.scrollY - target) < 50, scrollPos, {
-      timeout: 10_000,
-    })
-
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // asynchronously after domcontentloaded.  Use waitForFunction to both
+    // wait AND read the value in a single evaluation, avoiding a race where
+    // a late SPA navigation destroys the execution context between separate
+    // waitForFunction + page.evaluate calls (seen on Firefox & Safari).
+    const handle = await page.waitForFunction(
+      (target) => {
+        if (Math.abs(window.scrollY - target) < 50) return window.scrollY
+        return false
+      },
+      scrollPos,
+      { timeout: 10_000 },
+    )
+    const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
 
@@ -374,10 +381,12 @@ test.describe("Instant Scroll Restoration", () => {
     // Reload and wait for completion
     await reloadPage(page, "domcontentloaded")
 
-    // Wait until the page has scrolled somewhere below the top
-    await page.waitForFunction(() => window.scrollY > 0)
-
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // Wait until the page has scrolled somewhere below the top.
+    // Use waitForFunction to both wait AND read the value in a single
+    // evaluation, avoiding a race where a late SPA navigation destroys
+    // the execution context between separate calls.
+    const handle = await page.waitForFunction(() => (window.scrollY > 0 ? window.scrollY : false))
+    const finalScroll = await handle.jsonValue()
 
     expect(finalScroll).toBeGreaterThan(0)
   })
