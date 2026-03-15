@@ -337,7 +337,11 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Instant Scroll Restoration", () => {
-  test("restores saved scroll position immediately on reload", async ({ page }) => {
+  test("restores saved scroll position immediately on reload", async ({ page }, testInfo) => {
+    test.slow(
+      testInfo.project.name.includes("Safari"),
+      "Safari scroll restoration can be slow in CI",
+    )
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -369,7 +373,7 @@ test.describe("Instant Scroll Restoration", () => {
     // Wait for scroll restoration — iPad Pro Safari may restore scroll
     // asynchronously after domcontentloaded.
     await page.waitForFunction((target) => Math.abs(window.scrollY - target) < 50, scrollPos, {
-      timeout: 10_000,
+      timeout: 15_000,
     })
 
     const finalScroll = await page.evaluate(() => window.scrollY)
