@@ -2315,6 +2315,38 @@ def test_head_with_retry_succeeds_after_timeout(monkeypatch):
     assert calls == [10, 20]  # timeout doubles on retry
 
 
+def test_head_with_retry_retries_on_5xx(monkeypatch):
+    """Retry on 5xx server errors, return last response if still failing."""
+    calls = []
+
+    def mock_head(url, timeout) -> object:
+        calls.append(timeout)
+        if len(calls) < 3:
+            return type("MockResponse", (), {"ok": False, "status_code": 520})
+        return type("MockResponse", (), {"ok": True, "status_code": 200})
+
+    monkeypatch.setattr(requests, "head", mock_head)
+    resp = built_site_checks._head_with_retry("https://example.com")
+    assert resp.ok
+    assert len(calls) == 3
+
+
+def test_head_with_retry_returns_last_5xx_after_exhausting_retries(
+    monkeypatch,
+):
+    """All retries get 5xx — returns last response."""
+    mock_resp = requests.Response()
+    mock_resp.status_code = 502
+
+    monkeypatch.setattr(
+        requests,
+        "head",
+        lambda url, timeout: mock_resp,
+    )
+    resp = built_site_checks._head_with_retry("https://example.com")
+    assert resp.status_code == 502
+
+
 def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
     """All retries fail — re-raises the last exception."""
     monkeypatch.setattr(
@@ -2438,7 +2470,7 @@ def test_check_iframe_sources(
         ),
         (
             '<iframe src="https://bad.example/embed"></iframe>',
-            [(False, 500)],
+            [(False, 500), (False, 500), (False, 500)],
             [
                 "Iframe embed returned status 500: https://bad.example/embed",
             ],
@@ -2496,7 +2528,7 @@ def test_check_iframe_embeds(
     issues = built_site_checks.check_iframe_embeds(soup)
 
     assert sorted(issues) == sorted(expected_issues)
-    assert requested_urls == expected_urls
+    assert set(requested_urls) == set(expected_urls)
 
 
 @pytest.mark.parametrize(
