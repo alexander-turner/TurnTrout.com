@@ -50,11 +50,12 @@ export async function setTheme(page: Page, theme: Theme) {
     { t: theme, key: savedThemeKey },
   )
 
-  // Wait a frame for theme to apply
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve())
-    })
+  // Verify the localStorage write was committed before proceeding.
+  // Safari may not flush writes synchronously, causing detectInitialState.js
+  // to read stale data if navigation starts too quickly.
+  await page.waitForFunction(({ key, expected }) => localStorage.getItem(key) === expected, {
+    key: savedThemeKey,
+    expected: theme,
   })
 }
 

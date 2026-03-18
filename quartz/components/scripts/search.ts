@@ -8,6 +8,7 @@ import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Global function injected by renderPage.tsx to lazy-load content index
 declare global {
@@ -324,6 +325,9 @@ export class PreviewManager {
       this.inner.innerHTML = ""
       this.inner.appendChild(fragment)
 
+      // Wrap scrollable tables/equations so they get fade-gradient indicators
+      wrapScrollables(this.inner)
+
       // Set click handler
       this.inner.onclick = () => {
         const targetUrl = resolveSlug(slug, baseSlug)
@@ -495,6 +499,11 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
   if (results) {
     removeAllChildren(results)
   }
+
+  // Clear display-results so the search helper doesn't see stale state
+  // when search is reopened after Escape.
+  const layout = document.getElementById("search-layout")
+  layout?.classList.remove("display-results")
 
   // Clean up preview
   if (previewManagerArg) {
@@ -959,6 +968,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
     })
     cardPreview.appendChild(article)
 
+    // Wrap scrollable tables/equations so they get fade-gradient indicators
+    wrapScrollables(cardPreview)
+
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
       const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
@@ -1039,9 +1051,9 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   itemTile.appendChild(document.createElement("br"))
 
   if (!enablePreview) {
-    const p = document.createElement("p")
-    p.innerHTML = content
-    itemTile.appendChild(p)
+    const contentPreview = document.createElement("p")
+    contentPreview.innerHTML = content
+    itemTile.appendChild(contentPreview)
   }
 
   // On mobile/tablet, embed a small card preview slice in each card.

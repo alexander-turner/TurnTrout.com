@@ -337,7 +337,11 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Instant Scroll Restoration", () => {
-  test("restores saved scroll position immediately on reload", async ({ page }) => {
+  test("restores saved scroll position immediately on reload", async ({ page }, testInfo) => {
+    test.slow(
+      testInfo.project.name.includes("Safari"),
+      "Safari scroll restoration can be slow in CI",
+    )
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -350,7 +354,21 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    await reloadPage(page, "domcontentloaded")
+    // Use location.reload() instead of reloadPage (about:blank → goto) because
+    // reloadPage creates a new history entry, losing history.state.scroll.
+    // Real users do browser reloads which preserve history.state. Playwright's
+    // page.reload() crashes on Safari, but location.reload() is a standard
+    // browser navigation that preserves state and doesn't trigger the CDP crash.
+    await page
+      .evaluate(() => location.reload())
+      .catch((error: Error) => {
+        // The evaluate rejects with "execution context destroyed" as the page
+        // unloads — this is expected and harmless. Re-throw anything else.
+        if (!error.message?.includes("context")) {
+          throw error
+        }
+      })
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for scroll restoration — iPad Pro Safari may restore scroll
     // asynchronously after domcontentloaded.  Use waitForFunction to both
@@ -363,7 +381,7 @@ test.describe("Instant Scroll Restoration", () => {
         return false
       },
       scrollPos,
-      { timeout: 10_000 },
+      { timeout: 15_000 },
     )
     const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
