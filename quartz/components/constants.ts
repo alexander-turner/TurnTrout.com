@@ -39,6 +39,7 @@ export const {
   designPageSlug,
   tightScrollTolerance,
   scrollTolerance,
+  urlBarScrollTolerance,
   listTolerance,
   playwrightConfigs,
   savedThemeKey,

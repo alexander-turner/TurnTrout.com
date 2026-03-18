@@ -1142,16 +1142,21 @@ def meta_tags_early(file_path: Path) -> list[str]:
 
 
 def _head_with_retry(
-    url: str, timeout: int = 10, retries: int = 2
+    url: str, timeout: int = 10, retries: int = 3
 ) -> requests.Response:
-    """HEAD request with retry on timeout/connection errors."""
-    last_exc: requests.RequestException | None = None
+    """HEAD request with retry on timeout, connection, and server errors."""
+    last_result: requests.Response | requests.RequestException | None = None
     for attempt in range(retries):
         try:
-            return requests.head(url, timeout=timeout * (attempt + 1))
+            response = requests.head(url, timeout=timeout * (attempt + 1))
+            if response.status_code < 500:
+                return response
+            last_result = response
         except (requests.ConnectionError, requests.Timeout) as exc:
-            last_exc = exc
-    raise last_exc  # type: ignore[misc]
+            last_result = exc
+    if isinstance(last_result, requests.RequestException):
+        raise last_result
+    return last_result  # type: ignore[return-value]
 
 
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:

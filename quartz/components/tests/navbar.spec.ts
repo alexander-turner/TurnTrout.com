@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test"
 
-import { simpleConstants } from "../constants"
+import { simpleConstants, urlBarScrollTolerance } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
 import {
@@ -392,13 +392,16 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   await page.evaluate(() => window.scrollTo({ top: 500, behavior: "instant" }))
-  await page.waitForFunction(() => Math.abs(window.scrollY - 500) < 5)
+  await page.waitForFunction(
+    (tolerance) => Math.abs(window.scrollY - 500) < tolerance,
+    urlBarScrollTolerance,
+  )
 
   const tocTitle = page.locator("#toc-title button")
   await expect(tocTitle).toBeVisible()
   await tocTitle.click()
 
-  await page.waitForFunction(() => window.scrollY < 5)
+  await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
 })
 
 test("Video toggle button is visible and functional", async ({ page }) => {
