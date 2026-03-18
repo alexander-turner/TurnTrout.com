@@ -1,0 +1,206 @@
+diff --git a/node_modules/katex/dist/katex.js b/node_modules/katex/dist/katex.js
+--- a/node_modules/katex/dist/katex.js
++++ b/node_modules/katex/dist/katex.js
+@@ -3879,6 +3879,20 @@
+   return classes.filter(cls => cls).join(" ");
+ };
+ 
++// Classes used only at build-time (spacing, line-breaking) that have no CSS
++// rules. These are stripped from toMarkup() output to reduce HTML size.
++const unstyledClasses = new Set([
++    "mord", "mbin", "mrel", "mop", "mopen", "mclose", "mpunct", "minner",
++    "mtight", "nobreak", "allowbreak", "delimsizinginner",
++]);
++
++/**
++ * Filter out unstyled classes that are only used at build-time for spacing.
++ */
++const filterClasses = function(classes) {
++    return classes.filter(cls => cls && !unstyledClasses.has(cls));
++};
++
+ const initNode = function (classes, options, style) {
+   this.classes = classes || [];
+   this.attributes = {};
+@@ -3946,10 +3960,11 @@
+  */
+ 
+ const toMarkup = function (tagName) {
+-  let markup = "<" + tagName; // Add the class
++  let markup = "<" + tagName; // Add the class, filtering out build-time-only classes
+ 
+-  if (this.classes.length) {
+-    markup += " class=\"" + utils.escape(createClass(this.classes)) + "\"";
++  const filteredClassName = createClass(filterClasses(this.classes));
++  if (filteredClassName) {
++    markup += " class=\"" + utils.escape(filteredClassName) + "\"";
+   }
+ 
+   let styles = ""; // Add the styles, after hyphenation
+@@ -4029,11 +4044,31 @@
+     return utils.contains(this.classes, className);
+   }
+ 
++  /**
++   * Check if this span can be unwrapped in markup — it has children,
++   * originally had classes that were ALL build-time-only (e.g. "mord"),
++   * and no other visible attributes.
++   */
++  canUnwrap() {
++    return this.children.length > 0 &&
++        this.classes.length > 0 &&
++        Object.keys(this.style).length === 0 &&
++        Object.keys(this.attributes).length === 0 &&
++        !filterClasses(this.classes).length;
++  }
++
+   toNode() {
+     return toNode.call(this, "span");
+   }
+ 
+   toMarkup() {
++    if (this.canUnwrap()) {
++      let childMarkup = "";
++      for (let i = 0; i < this.children.length; i++) {
++        childMarkup += this.children[i].toMarkup();
++      }
++      return childMarkup;
++    }
+     return toMarkup.call(this, "span");
+   }
+ 
+@@ -4234,10 +4269,11 @@
+     let needsSpan = false;
+     let markup = "<span";
+ 
+-    if (this.classes.length) {
++    const filteredClassName = createClass(filterClasses(this.classes));
++    if (filteredClassName) {
+       needsSpan = true;
+       markup += " class=\"";
+-      markup += utils.escape(createClass(this.classes));
++      markup += utils.escape(filteredClassName);
+       markup += "\"";
+     }
+ 
+@@ -7193,6 +7229,8 @@
+   } else if (settings.output === "html") {
+     const htmlNode = buildHTML(tree, options);
+     katexNode = buildCommon.makeSpan(["katex"], [htmlNode]);
++    katexNode.setAttribute("role", "math");
++    katexNode.setAttribute("aria-label", expression);
+   } else {
+     const mathMLNode = buildMathML(tree, expression, options, settings.displayMode, false);
+     const htmlNode = buildHTML(tree, options);
+@@ -7205,6 +7243,8 @@
+   const options = optionsFromSettings(settings);
+   const htmlNode = buildHTML(tree, options);
+   const katexNode = buildCommon.makeSpan(["katex"], [htmlNode]);
++  katexNode.setAttribute("role", "math");
++  katexNode.setAttribute("aria-label", expression);
+   return displayWrap(katexNode, settings);
+ };
+ /* harmony default export */ var src_buildTree = ((/* unused pure expression or super */ null && (buildTree)));
+diff --git a/node_modules/katex/dist/katex.mjs b/node_modules/katex/dist/katex.mjs
+--- a/node_modules/katex/dist/katex.mjs
++++ b/node_modules/katex/dist/katex.mjs
+@@ -3890,6 +3890,20 @@
+   return classes.filter(cls => cls).join(" ");
+ };
+ 
++// Classes used only at build-time (spacing, line-breaking) that have no CSS
++// rules. These are stripped from toMarkup() output to reduce HTML size.
++var unstyledClasses = new Set([
++    "mord", "mbin", "mrel", "mop", "mopen", "mclose", "mpunct", "minner",
++    "mtight", "nobreak", "allowbreak", "delimsizinginner",
++]);
++
++/**
++ * Filter out unstyled classes that are only used at build-time for spacing.
++ */
++var filterClasses = function filterClasses(classes) {
++    return classes.filter(cls => cls && !unstyledClasses.has(cls));
++};
++
+ var initNode = function initNode(classes, options, style) {
+   this.classes = classes || [];
+   this.attributes = {};
+@@ -3957,10 +3971,11 @@
+  */
+ 
+ var toMarkup = function toMarkup(tagName) {
+-  var markup = "<" + tagName; // Add the class
++  var markup = "<" + tagName; // Add the class, filtering out build-time-only classes
+ 
+-  if (this.classes.length) {
+-    markup += " class=\"" + utils.escape(createClass(this.classes)) + "\"";
++  var filteredClassName = createClass(filterClasses(this.classes));
++  if (filteredClassName) {
++    markup += " class=\"" + utils.escape(filteredClassName) + "\"";
+   }
+ 
+   var styles = ""; // Add the styles, after hyphenation
+@@ -4040,11 +4055,31 @@
+     return utils.contains(this.classes, className);
+   }
+ 
++  /**
++   * Check if this span can be unwrapped in markup — it has children,
++   * originally had classes that were ALL build-time-only (e.g. "mord"),
++   * and no other visible attributes.
++   */
++  canUnwrap() {
++    return this.children.length > 0 &&
++        this.classes.length > 0 &&
++        Object.keys(this.style).length === 0 &&
++        Object.keys(this.attributes).length === 0 &&
++        !filterClasses(this.classes).length;
++  }
++
+   toNode() {
+     return toNode.call(this, "span");
+   }
+ 
+   toMarkup() {
++    if (this.canUnwrap()) {
++      var childMarkup = "";
++      for (var i = 0; i < this.children.length; i++) {
++        childMarkup += this.children[i].toMarkup();
++      }
++      return childMarkup;
++    }
+     return toMarkup.call(this, "span");
+   }
+ 
+@@ -4245,10 +4280,11 @@
+     var needsSpan = false;
+     var markup = "<span";
+ 
+-    if (this.classes.length) {
++    var filteredClassName = createClass(filterClasses(this.classes));
++    if (filteredClassName) {
+       needsSpan = true;
+       markup += " class=\"";
+-      markup += utils.escape(createClass(this.classes));
++      markup += utils.escape(filteredClassName);
+       markup += "\"";
+     }
+ 
+@@ -7173,6 +7209,8 @@
+   } else if (settings.output === "html") {
+     var htmlNode = buildHTML(tree, options);
+     katexNode = buildCommon.makeSpan(["katex"], [htmlNode]);
++    katexNode.setAttribute("role", "math");
++    katexNode.setAttribute("aria-label", expression);
+   } else {
+     var mathMLNode = buildMathML(tree, expression, options, settings.displayMode, false);
+ 
+@@ -7187,6 +7225,8 @@
+   var options = optionsFromSettings(settings);
+   var htmlNode = buildHTML(tree, options);
+   var katexNode = buildCommon.makeSpan(["katex"], [htmlNode]);
++  katexNode.setAttribute("role", "math");
++  katexNode.setAttribute("aria-label", expression);
+   return displayWrap(katexNode, settings);
+ };
+ 

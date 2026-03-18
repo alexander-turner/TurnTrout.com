@@ -337,7 +337,11 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Instant Scroll Restoration", () => {
-  test("restores saved scroll position immediately on reload", async ({ page }) => {
+  test("restores saved scroll position immediately on reload", async ({ page }, testInfo) => {
+    test.slow(
+      testInfo.project.name.includes("Safari"),
+      "Safari scroll restoration can be slow in CI",
+    )
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -350,15 +354,36 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
-    await reloadPage(page, "domcontentloaded")
+    // Use location.reload() instead of reloadPage (about:blank → goto) because
+    // reloadPage creates a new history entry, losing history.state.scroll.
+    // Real users do browser reloads which preserve history.state. Playwright's
+    // page.reload() crashes on Safari, but location.reload() is a standard
+    // browser navigation that preserves state and doesn't trigger the CDP crash.
+    await page
+      .evaluate(() => location.reload())
+      .catch((error: Error) => {
+        // The evaluate rejects with "execution context destroyed" as the page
+        // unloads — this is expected and harmless. Re-throw anything else.
+        if (!error.message?.includes("context")) {
+          throw error
+        }
+      })
+    await page.waitForLoadState("domcontentloaded")
 
     // Wait for scroll restoration — iPad Pro Safari may restore scroll
-    // asynchronously after domcontentloaded.
-    await page.waitForFunction((target) => Math.abs(window.scrollY - target) < 50, scrollPos, {
-      timeout: 10_000,
-    })
-
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // asynchronously after domcontentloaded.  Use waitForFunction to both
+    // wait AND read the value in a single evaluation, avoiding a race where
+    // a late SPA navigation destroys the execution context between separate
+    // waitForFunction + page.evaluate calls (seen on Firefox & Safari).
+    const handle = await page.waitForFunction(
+      (target) => {
+        if (Math.abs(window.scrollY - target) < 50) return window.scrollY
+        return false
+      },
+      scrollPos,
+      { timeout: 15_000 },
+    )
+    const finalScroll = await handle.jsonValue()
     expect(finalScroll).toBeCloseTo(scrollPos, -1)
   })
 
@@ -374,10 +399,12 @@ test.describe("Instant Scroll Restoration", () => {
     // Reload and wait for completion
     await reloadPage(page, "domcontentloaded")
 
-    // Wait until the page has scrolled somewhere below the top
-    await page.waitForFunction(() => window.scrollY > 0)
-
-    const finalScroll = await page.evaluate(() => window.scrollY)
+    // Wait until the page has scrolled somewhere below the top.
+    // Use waitForFunction to both wait AND read the value in a single
+    // evaluation, avoiding a race where a late SPA navigation destroys
+    // the execution context between separate calls.
+    const handle = await page.waitForFunction(() => (window.scrollY > 0 ? window.scrollY : false))
+    const finalScroll = await handle.jsonValue()
 
     expect(finalScroll).toBeGreaterThan(0)
   })
