@@ -201,7 +201,12 @@ describe("renderLastUpdated", () => {
     const linkWithFavicon = children[0]
     expect(linkWithFavicon.type).toBe("a")
     expect(linkWithFavicon.props.href).toContain("github.com")
-    expect(linkWithFavicon.props.children).toBe("Updated")
+    const linkChildren = linkWithFavicon.props.children
+    expect(linkChildren).toHaveLength(2)
+    expect(linkChildren[0].type).toBe("svg")
+    expect(linkChildren[0].props.class).toBe("favicon")
+    expect(linkChildren[0].props["data-domain"]).toBe("github_com")
+    expect(linkChildren[1]).toBe("Updated")
   })
 
   it("should use correct GitHub URL in link", () => {

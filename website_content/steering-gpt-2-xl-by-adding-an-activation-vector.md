@@ -1122,8 +1122,6 @@ Subtitle: Originally made at ["predictions for algebraically editing LM forward 
 
 <iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-for-a" title="Algebraic value editing works (for at least one "X vector") in language models" frameborder="0" class="manifold-embed"></iframe>
 
-<iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-bette" title="Algebraic value editing works better for larger language models, all else equal" frameborder="0" class="manifold-embed"></iframe>
-
 <iframe src="https://manifold.markets/embed/MartinRandall/if-algebraic-value-edits-work-well" title="If algebraic value edits work well in language models, they are also composable" frameborder="0" class="manifold-embed"></iframe>
 
 <iframe src="https://manifold.markets/embed/MartinRandall/if-algebraic-value-edits-work-at-al" title="If algebraic value edits work at all in LMs, they are hard to make without substantially degrading capabilities" frameborder="0" class="manifold-embed"></iframe>

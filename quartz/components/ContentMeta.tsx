@@ -8,6 +8,7 @@ import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { Backlinks } from "./Backlinks"
 import { formatTitle } from "./component_utils"
+import { cdnBaseUrl } from "./constants"
 import { DateElement } from "./Date"
 import style from "./styles/contentMeta.scss"
 import { TagList } from "./TagList"
@@ -68,8 +69,15 @@ export function renderLastUpdated(
 
   const githubStem = "https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/"
   const githubUrl = `${githubStem}${fileData.relativePath}`
+  const githubFaviconUrl = `${cdnBaseUrl}/static/images/external-favicons/github_com.svg`
   const githubLink = (
     <a href={githubUrl} className="external" target="_blank" rel="noopener noreferrer">
+      <svg
+        className="favicon"
+        data-domain="github_com"
+        style={`--mask-url: url(${githubFaviconUrl});`}
+        aria-hidden="true"
+      />
       Updated
     </a>
   )
