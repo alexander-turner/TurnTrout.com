@@ -47,11 +47,16 @@ test.beforeEach(async ({ page }) => {
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-  // Hide all video and audio controls
+  // Immediately pause and freeze all media to prevent autoplay from advancing
+  // to an unpredictable frame before screenshots are taken
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
     mediaElements.forEach((media) => {
       media.removeAttribute("controls")
+      if (media instanceof HTMLMediaElement) {
+        media.autoplay = false
+        media.pause()
+      }
     })
   })
 })

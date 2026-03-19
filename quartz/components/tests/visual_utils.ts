@@ -458,6 +458,27 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
     const promises = elements.map((el) =>
       el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
         media.pause()
+        // Prevent autoplay from resuming after seek
+        media.autoplay = false
+
+        // Seek to target time, wait for "seeked" event, then wait for a double
+        // requestAnimationFrame to ensure the compositor has actually painted
+        // the target frame (Safari fires "seeked" before the frame is rendered).
+        const seekAndWait = (time: number): Promise<void> => {
+          media.currentTime = time
+          return Promise.race([
+            new Promise<void>((resolve) => {
+              media.addEventListener(
+                "seeked",
+                () => {
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+                },
+                { once: true },
+              )
+            }),
+            new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+          ])
+        }
 
         const targetTime = target === "start" ? 0 : media.duration
 
@@ -466,21 +487,10 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
-          // Skip seek if already at target (avoids waiting for a seeked event that may never fire)
-          if (media.currentTime === targetTime) return Promise.resolve()
-
-          media.currentTime = targetTime
-          // Wait for the browser to actually render the target frame
-          return Promise.race([
-            new Promise<void>((resolve) => {
-              media.addEventListener("seeked", () => resolve(), { once: true })
-            }),
-            new Promise<void>((resolve) => setTimeout(resolve, 500)),
-          ])
+          return seekAndWait(targetTime)
         }
 
         // Wait for metadata with timeout fallback
-
         return Promise.race([
           new Promise<void>((resolve) => {
             media.addEventListener(
@@ -488,8 +498,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               () => {
                 const time = target === "start" ? 0 : media.duration
                 if (Number.isFinite(time)) {
-                  media.currentTime = time
-                  media.addEventListener("seeked", () => resolve(), { once: true })
+                  seekAndWait(time).then(resolve)
                 } else {
                   resolve()
                 }
@@ -502,7 +511,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 500)),
+          new Promise<void>((resolve) => setTimeout(resolve, 1000)),
         ])
       }, seekTo),
     )
