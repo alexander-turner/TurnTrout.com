@@ -185,6 +185,14 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
+
+    // Assert no video has advanced past frame 0
+    const mediaScope = options?.elementToScreenshot ?? page
+    const videos = await mediaScope.locator("video").all()
+    for (const video of videos) {
+      const currentTime = await video.evaluate((v: HTMLVideoElement) => v.currentTime)
+      expect(currentTime, "Video should be at time 0 for screenshot").toBe(0)
+    }
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
