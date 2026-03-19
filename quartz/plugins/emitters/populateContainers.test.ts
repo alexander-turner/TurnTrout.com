@@ -596,7 +596,7 @@ describe("PopulateContainers", () => {
       })
     })
 
-    describe("addFaviconsToExternalLinks", () => {
+    describe("addFaviconsToLinks", () => {
       const countsFaviconElements = (html: string): number => {
         const root = fromHtml(html)
         let count = 0
@@ -619,7 +619,7 @@ describe("PopulateContainers", () => {
         const html =
           '<html><body><a class="external" href="https://github.com/foo">Link</a></body></html>'
         const root = fromHtml(html)
-        await populateModule.addFaviconsToExternalLinks(root)
+        await populateModule.addFaviconsToLinks(root)
 
         expect(countsFaviconElements(toHtml(root))).toBeGreaterThan(0)
       })
@@ -630,7 +630,7 @@ describe("PopulateContainers", () => {
         const html =
           '<html><body><a class="external" href="https://github.com/foo">Li<span class="favicon-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
         const root = fromHtml(html)
-        await populateModule.addFaviconsToExternalLinks(root)
+        await populateModule.addFaviconsToLinks(root)
 
         expect(countsFaviconElements(toHtml(root))).toBe(2) // favicon-span + favicon img
       })

@@ -390,7 +390,7 @@ export const populateElements = async (
   if (modified) {
     // Add favicons to any external links injected by population that
     // missed the favicon transformer (which runs before emit)
-    await addFaviconsToExternalLinks(root)
+    await addFaviconsToLinks(root)
     fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
     return [htmlPath as FilePath]
   }
@@ -403,7 +403,7 @@ export const populateElements = async (
  * favicon transformer. Populated content is injected after the favicon
  * transformer runs, so links in populated containers need this post-pass.
  */
-export async function addFaviconsToExternalLinks(root: Root): Promise<void> {
+export async function addFaviconsToLinks(root: Root): Promise<void> {
   const faviconCounts = await getFaviconCounts()
   const nodesToProcess: [Element, Parent][] = []
 
