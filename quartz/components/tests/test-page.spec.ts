@@ -43,7 +43,9 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await gotoPage(page, "http://localhost:8080/test-page", "load")
+  // Use domcontentloaded instead of load — Firefox can stall on subresource
+  // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -936,8 +938,8 @@ test.describe("Checkboxes", () => {
     await firstCheckbox.click()
     await expect(firstCheckbox).toBeChecked({ checked: !initialState })
 
-    // Reload the page
-    await reloadPage(page)
+    // Reload the page — use domcontentloaded to avoid Firefox subresource stalls
+    await reloadPage(page, "domcontentloaded")
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     // Check if state persisted

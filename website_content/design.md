@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-03-13 20:17:18.991022
+date_updated: 2026-03-14 18:01:37.065813
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 
 
@@ -857,13 +859,7 @@ Scrollable content regions
 : Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
 
 Miscellaneous improvements
-  - Every interactive element is keyboard-navigable.
-  - Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly.
-  - I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text.
-  - For screen readers, a route announcer announces new pages even though my site is a single-page application.
-  - Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels.
-  - A `prefers-reduced-motion` media query disables animations site-wide.
-  - I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
+: Every interactive element is keyboard-navigable. Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly. I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text. A route announcer announces new pages for screen readers, even though my site is a single-page application. Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels. A `prefers-reduced-motion` media query disables animations site-wide. I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
 
 ## Lighthouse
 

@@ -45,7 +45,11 @@ class DarkModeHelper {
           )
         : expectedTheme
 
-    await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme)
+    // Safari/WebKit can be slow to initialize the dark mode script after SPA
+    // navigation, so allow extra time for the attribute to be set.
+    await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme, {
+      timeout: 10_000,
+    })
     await expect(this.page.locator("#day-icon")).toBeVisible({ visible: actualTheme === "light" })
     await expect(this.page.locator("#night-icon")).toBeVisible({ visible: actualTheme === "dark" })
   }

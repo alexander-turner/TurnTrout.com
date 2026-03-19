@@ -143,6 +143,10 @@
     {
       "pattern": "^xcancel\\.com$",
       "to": "x.com"
+    },
+    {
+      "pattern": "^.*effectivealtruism\\.org$",
+      "to": "forum.effectivealtruism.org"
     }
   ],
   "unicodeTypography": {

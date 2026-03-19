@@ -50,11 +50,12 @@ export async function setTheme(page: Page, theme: Theme) {
     { t: theme, key: savedThemeKey },
   )
 
-  // Wait a frame for theme to apply
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve())
-    })
+  // Verify the localStorage write was committed before proceeding.
+  // Safari may not flush writes synchronously, causing detectInitialState.js
+  // to read stale data if navigation starts too quickly.
+  await page.waitForFunction(({ key, expected }) => localStorage.getItem(key) === expected, {
+    key: savedThemeKey,
+    expected: theme,
   })
 }
 
@@ -416,6 +417,20 @@ export async function search(page: Page, term: string) {
     null,
     { timeout: 30_000 },
   )
+
+  // If results are already displayed from a previous search, clear them
+  // directly via the DOM. We can't rely on the app's debounced input handler
+  // because it creates a "No results" .result-card element even for empty
+  // queries, so waiting for .result-card to detach would never succeed.
+  const hasExistingResults = (await page.locator(".result-card").count()) > 0
+  if (hasExistingResults) {
+    await page.evaluate(() => {
+      const results = document.getElementById("results-container")
+      if (results) results.innerHTML = ""
+      const layout = document.getElementById("search-layout")
+      layout?.classList.remove("display-results")
+    })
+  }
 
   await searchBar.fill(term)
   // Explicitly dispatch input event — Playwright's fill() should do this,
