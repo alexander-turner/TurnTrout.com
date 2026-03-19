@@ -467,7 +467,13 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
           media.currentTime = targetTime
-          return Promise.resolve()
+          // Wait for the browser to actually render the target frame
+          return Promise.race([
+            new Promise<void>((resolve) => {
+              media.addEventListener("seeked", () => resolve(), { once: true })
+            }),
+            new Promise<void>((resolve) => setTimeout(resolve, 500)),
+          ])
         }
 
         // Wait for metadata with timeout fallback
@@ -478,8 +484,12 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               "loadedmetadata",
               () => {
                 const time = target === "start" ? 0 : media.duration
-                if (Number.isFinite(time)) media.currentTime = time
-                resolve()
+                if (Number.isFinite(time)) {
+                  media.currentTime = time
+                  media.addEventListener("seeked", () => resolve(), { once: true })
+                } else {
+                  resolve()
+                }
               },
               { once: true },
             )
