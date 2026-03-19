@@ -557,10 +557,10 @@ describe("PopulateContainers", () => {
         })
         expect(faviconSpan.children[1]).toMatchObject({
           tagName: "svg",
-          properties: expect.objectContaining({
+          properties: {
             class: expect.stringContaining("favicon"),
             style: expect.stringContaining(faviconPath),
-          }),
+          },
         })
       })
 
@@ -571,6 +571,7 @@ describe("PopulateContainers", () => {
           altText,
         )
         const elements = await generator()
+        expect(elements).toHaveLength(1)
         const faviconElement = elements[0].children[1] as Element
         expect(faviconElement.properties).toMatchObject({
           role: "img",
