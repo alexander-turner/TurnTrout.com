@@ -458,8 +458,6 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
     const promises = elements.map((el) =>
       el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
         media.pause()
-        // Prevent autoplay from resuming after seek
-        media.autoplay = false
 
         // Seek to target time, wait for "seeked" event, then wait for a double
         // requestAnimationFrame to ensure the compositor has actually painted
