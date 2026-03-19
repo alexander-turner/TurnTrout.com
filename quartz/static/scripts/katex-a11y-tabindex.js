@@ -68,7 +68,11 @@ function init() {
   // Handle all existing .katex elements.
   document.querySelectorAll(".katex").forEach((el) => observeKatex(el, resizeObserver))
 
-  // Watch for new .katex elements added to the DOM.
+  // Watch for new .katex elements added to the DOM (e.g. SPA navigation).
+  // Only observe the article/content area to avoid processing unrelated DOM
+  // mutations (e.g. from accessibility testing tools that inject iframes).
+  const contentRoot =
+    document.querySelector("article") || document.querySelector("#quartz-body") || document.body
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       const nodes = Array.from(mutation.addedNodes)
@@ -82,7 +86,7 @@ function init() {
         }
       }
     }
-  }).observe(document.body, { childList: true, subtree: true })
+  }).observe(contentRoot, { childList: true, subtree: true })
 }
 
 if (document.readyState !== "loading") {

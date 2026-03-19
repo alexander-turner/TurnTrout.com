@@ -678,14 +678,15 @@ test("Search matches in preview do not have fade animation", async ({ page }) =>
   const previewMatch = preview.locator(".search-match").first()
   await expect(previewMatch).toBeAttached()
 
-  // WebKit/Safari may need a few frames for the CSS exclusion
-  // :not(#search-container .search-match) to settle.
+  // WebKit/Safari may need many frames for the CSS exclusion
+  // :not(#search-container .search-match) to settle — iPad Safari in CI
+  // can be especially slow.
   await expect(async () => {
     const animation = await previewMatch.evaluate((el) => {
       return window.getComputedStyle(el).animationName
     })
     expect(animation).toBe("none")
-  }).toPass({ timeout: 5_000 })
+  }).toPass({ timeout: 10_000 })
 })
 
 test("Search matches on navigated page have fade animation", async ({ page }) => {
