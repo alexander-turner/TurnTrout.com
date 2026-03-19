@@ -1,7 +1,7 @@
 import { execSync } from "child_process"
 import fs from "fs"
 import { globby } from "globby"
-import { type Element, type Root } from "hast"
+import { type Element, type Parent, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
@@ -17,6 +17,7 @@ import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
   getFaviconUrl,
+  ModifyNode,
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
@@ -387,11 +388,32 @@ export const populateElements = async (
   }
 
   if (modified) {
+    // Add favicons to any external links injected by population that
+    // missed the favicon transformer (which runs before emit)
+    await addFaviconsToLinks(root)
     fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
     return [htmlPath as FilePath]
   }
 
   return []
+}
+
+/**
+ * Adds favicons to links in the HAST tree using the same logic as the
+ * favicon transformer. Populated content is injected after the favicon
+ * transformer runs, so links in populated containers need this post-pass.
+ */
+export async function addFaviconsToLinks(root: Root): Promise<void> {
+  const faviconCounts = await getFaviconCounts()
+  const nodesToProcess: [Element, Parent][] = []
+
+  visit(root, "element", (node, _index, parent) => {
+    if (node.tagName === "a" && node.properties?.href && parent) {
+      nodesToProcess.push([node, parent as Parent])
+    }
+  })
+
+  await Promise.all(nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)))
 }
 
 /**
