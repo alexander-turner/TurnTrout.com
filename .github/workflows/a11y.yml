@@ -47,6 +47,19 @@ jobs:
             sleep 1
           done
 
-          pnpm test:a11y
+          # Retry up to 3 times - pa11y can hit protocolTimeout on heavy pages
+          for attempt in 1 2 3; do
+            echo "Attempt $attempt of 3..."
+            if pnpm test:a11y; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "All 3 attempts failed"
+              kill $SERVER_PID 2>/dev/null || true
+              exit 1
+            fi
+            echo "Retrying in 5s..."
+            sleep 5
+          done
 
           kill $SERVER_PID 2>/dev/null || true

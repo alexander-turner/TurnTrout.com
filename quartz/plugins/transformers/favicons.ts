@@ -23,7 +23,7 @@ import {
   faviconSubstringBlacklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { hasClass, spliceAndWrapLastChars } from "./utils"
+import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
 
@@ -641,10 +641,10 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     .reverse()
     .find((child) => child.type === "element" || !isEmpty(child as Element | Text))
 
-  // If no valid last child found, just append the favicon
+  // If no valid last child found, wrap favicon in a favicon-span
   if (!lastChild) {
-    logger.debug("No valid last child found, appending favicon directly")
-    return imgNodeToAppend
+    logger.debug("No valid last child found, wrapping favicon in favicon-span")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   // If the last child is a span.favicon-span, append the favicon directly to it
@@ -668,10 +668,10 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     return null
   }
 
-  // If last child is not a text node or has no value, just append the favicon
+  // If last child is not a text node or has no value, wrap favicon in a favicon-span
   if (lastChild.type !== "text" || !lastChild.value) {
-    logger.debug("Appending favicon directly to node")
-    return imgNodeToAppend
+    logger.debug("Wrapping favicon in favicon-span (no text to splice)")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   const lastChildText = lastChild as Text
