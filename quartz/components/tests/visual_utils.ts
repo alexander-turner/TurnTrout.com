@@ -186,26 +186,24 @@ export async function takeRegressionScreenshot(
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
 
-    // Verify every video is paused at time 0. If the initial seek timed out
-    // (e.g. slow CI), retry up to 3 times before failing.
+    // Wait for every video to be paused at time 0. Re-seeks if the initial
+    // seek timed out (e.g. slow CI).
     const mediaScope = options?.elementToScreenshot ?? page
     const videos = await mediaScope.locator("video").all()
     for (const video of videos) {
-      let currentTime = await video.evaluate((v: HTMLVideoElement) => v.currentTime)
-      let retries = 0
-      while (currentTime !== 0 && retries < 3) {
-        retries++
-        await video.evaluate((v: HTMLVideoElement) => {
-          v.pause()
-          v.currentTime = 0
-          return new Promise<void>((resolve) => {
-            v.addEventListener("seeked", () => resolve(), { once: true })
-            setTimeout(resolve, 2000)
-          })
-        })
-        currentTime = await video.evaluate((v: HTMLVideoElement) => v.currentTime)
-      }
-      expect(currentTime, "Video should be at time 0 for screenshot").toBe(0)
+      const handle = await video.elementHandle()
+      await page.waitForFunction(
+        (el) => {
+          const v = el as HTMLVideoElement
+          if (v.currentTime !== 0) {
+            v.pause()
+            v.currentTime = 0
+          }
+          return v.paused && v.currentTime === 0
+        },
+        handle!,
+        { timeout: 5000 },
+      )
     }
   }
 
