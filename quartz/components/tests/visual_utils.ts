@@ -192,16 +192,17 @@ export async function takeRegressionScreenshot(
     const videos = await mediaScope.locator("video").all()
     for (const video of videos) {
       const handle = await video.elementHandle()
+      if (!handle) throw new Error("Could not get element handle for video")
       await page.waitForFunction(
         (el) => {
-          const v = el as HTMLVideoElement
-          if (v.currentTime !== 0) {
-            v.pause()
-            v.currentTime = 0
+          const videoEl = el as HTMLVideoElement
+          if (videoEl.currentTime !== 0) {
+            videoEl.pause()
+            videoEl.currentTime = 0
           }
-          return v.paused && v.currentTime === 0
+          return videoEl.paused && videoEl.currentTime === 0
         },
-        handle!,
+        handle,
         { timeout: 5000 },
       )
     }
