@@ -418,6 +418,17 @@ export async function search(page: Page, term: string) {
     { timeout: 30_000 },
   )
 
+  // If results are already displayed from a previous search, clear them
+  // first. Otherwise all post-conditions (display-results class, visible
+  // result cards) are already satisfied, and the helper returns before the
+  // debounced new search fires — causing flaky failures on iPad Safari.
+  const hasExistingResults = (await page.locator(".result-card").count()) > 0
+  if (hasExistingResults) {
+    await searchBar.fill("")
+    await searchBar.dispatchEvent("input")
+    await expect(page.locator(".result-card").first()).not.toBeAttached({ timeout: 10_000 })
+  }
+
   await searchBar.fill(term)
   // Explicitly dispatch input event — Playwright's fill() should do this,
   // but Firefox on tablet viewports sometimes fails to trigger the handler.
