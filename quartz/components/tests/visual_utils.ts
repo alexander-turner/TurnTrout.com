@@ -466,6 +466,9 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
+          // Skip seek if already at target (avoids waiting for a seeked event that may never fire)
+          if (media.currentTime === targetTime) return Promise.resolve()
+
           media.currentTime = targetTime
           // Wait for the browser to actually render the target frame
           return Promise.race([
