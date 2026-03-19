@@ -419,14 +419,17 @@ export async function search(page: Page, term: string) {
   )
 
   // If results are already displayed from a previous search, clear them
-  // first. Otherwise all post-conditions (display-results class, visible
-  // result cards) are already satisfied, and the helper returns before the
-  // debounced new search fires — causing flaky failures on iPad Safari.
+  // directly via the DOM. We can't rely on the app's debounced input handler
+  // because it creates a "No results" .result-card element even for empty
+  // queries, so waiting for .result-card to detach would never succeed.
   const hasExistingResults = (await page.locator(".result-card").count()) > 0
   if (hasExistingResults) {
-    await searchBar.fill("")
-    await searchBar.dispatchEvent("input")
-    await expect(page.locator(".result-card").first()).not.toBeAttached({ timeout: 10_000 })
+    await page.evaluate(() => {
+      const results = document.getElementById("results-container")
+      if (results) results.innerHTML = ""
+      const layout = document.getElementById("search-layout")
+      layout?.classList.remove("display-results")
+    })
   }
 
   await searchBar.fill(term)
