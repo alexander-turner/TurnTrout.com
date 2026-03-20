@@ -1,0 +1,29 @@
+name: Combine Dependabot PRs
+
+# Combines all open Dependabot PRs (npm, uv, github-actions) into a single PR.
+# Runs weekly after Dependabot creates its PRs, or manually via workflow_dispatch.
+
+on:
+  schedule:
+    - cron: "0 12 * * 3" # Wednesday at noon UTC, after Dependabot's Monday runs
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+jobs:
+  combine-prs:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: github/combine-prs@v5
+        with:
+          branch_prefix: dependabot
+          pr_title: "chore(deps): combined dependency updates"
+          pr_body_header: "# Combined Dependency Updates"
+          ci_required: true
+          min_combine_number: 2
+          combine_branch_name: dependabot-combined
+          labels: dependencies
+          autoclose: true
