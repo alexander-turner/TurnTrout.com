@@ -33,7 +33,9 @@ jobs:
         uses: ./.github/actions/setup-build-env
       - name: Build site
         run: pnpm build
+        timeout-minutes: 10
       - name: Start server and run accessibility checks
+        timeout-minutes: 10
         run: |
           # Start server in background
           pnpm exec serve public -l 8080 &
