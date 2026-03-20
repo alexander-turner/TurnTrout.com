@@ -180,14 +180,13 @@ export const FixFootnotes: QuartzTransformerPlugin = () => {
 
             // Rename aria-describedby from upstream "footnote-label" to "footnotes"
             visit(tree, "element", (node) => {
-              const props = node.properties
-              if (!props) return
-              const describedBy = props.ariaDescribedBy
+              const describedBy = node.properties?.ariaDescribedBy
               if (
                 Array.isArray(describedBy) &&
-                describedBy.includes(UPSTREAM_FOOTNOTE_HEADING_ID)
+                describedBy.includes(UPSTREAM_FOOTNOTE_HEADING_ID) &&
+                node.properties
               ) {
-                props.ariaDescribedBy = describedBy.map((v) =>
+                node.properties.ariaDescribedBy = describedBy.map((v) =>
                   v === UPSTREAM_FOOTNOTE_HEADING_ID ? footnoteHeadingId : v,
                 )
               }
