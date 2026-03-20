@@ -350,7 +350,7 @@ export const populateElements = async (
 ): Promise<FilePath[]> => {
   const html = fs.readFileSync(htmlPath, "utf-8")
   const root = fromHtml(html)
-  let modified = false
+  const populatedElements: Element[] = []
 
   for (const config of configs) {
     // Validate that config has exactly one of id or className
@@ -367,7 +367,7 @@ export const populateElements = async (
 
       const content = await config.generator()
       element.children = content
-      modified = true
+      populatedElements.push(element)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -379,18 +379,20 @@ export const populateElements = async (
       const content = await config.generator()
       for (const element of elements) {
         element.children = content
+        populatedElements.push(element)
       }
-      modified = true
       logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
       throw new Error("Config missing both id and className")
     }
   }
 
-  if (modified) {
-    // Add favicons to any external links injected by population that
-    // missed the favicon transformer (which runs before emit)
-    await addFaviconsToLinks(root)
+  if (populatedElements.length > 0) {
+    // Add favicons only to links within populated containers, not the entire page.
+    // The favicon transformer already processed the rest of the page.
+    for (const element of populatedElements) {
+      await addFaviconsToLinks(element)
+    }
     fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
     return [htmlPath as FilePath]
   }
@@ -399,15 +401,15 @@ export const populateElements = async (
 }
 
 /**
- * Adds favicons to links in the HAST tree using the same logic as the
+ * Adds favicons to links within a subtree using the same logic as the
  * favicon transformer. Populated content is injected after the favicon
  * transformer runs, so links in populated containers need this post-pass.
  */
-export async function addFaviconsToLinks(root: Root): Promise<void> {
+export async function addFaviconsToLinks(subtree: Element | Root): Promise<void> {
   const faviconCounts = await getFaviconCounts()
   const nodesToProcess: [Element, Parent][] = []
 
-  visit(root, "element", (node, _index, parent) => {
+  visit(subtree, "element", (node, _index, parent) => {
     if (node.tagName === "a" && node.properties?.href && parent) {
       nodesToProcess.push([node, parent as Parent])
     }
