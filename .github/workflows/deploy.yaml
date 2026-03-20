@@ -145,11 +145,47 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|playwright-tests \(\d+\/\d+\)|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
+          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|playwright-tests \(\d+\/\d+\)|combine-and-upload|Summarize Failures|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
           fail-on-no-checks: false
+
+      - name: Verify Lost Pixel visual changes are minimal
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Query check runs for this commit to find Lost Pixel results
+          SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            --paginate \
+            --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0].output.summary // empty' \
+            2>/dev/null || true)
+
+          if [ -z "$SUMMARY" ]; then
+            # Also check commit statuses (Lost Pixel may use status API)
+            SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
+              --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
+              2>/dev/null || true)
+          fi
+
+          if [ -z "$SUMMARY" ]; then
+            echo "No Lost Pixel check found — skipping visual diff count verification"
+            exit 0
+          fi
+
+          echo "Lost Pixel result: $SUMMARY"
+
+          # Extract the number of changed images from the summary
+          # Match patterns like "5 changed", "5 visual changes", or just leading numbers
+          COUNT=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
+          COUNT=${COUNT:-0}
+
+          echo "Visual changes detected: $COUNT"
+          if [ "$COUNT" -ge 10 ]; then
+            echo "::error::Too many visual changes ($COUNT). Maximum allowed: 9"
+            exit 1
+          fi
+          echo "Visual changes within acceptable range (< 10)"
 
   deploy:
     needs: [prepare-deploy, verify-tests]
