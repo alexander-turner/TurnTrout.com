@@ -294,9 +294,9 @@ Before the client to loads the main CSS stylesheet, the site looks like garbage.
 
 Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
 
-## Non-blocking KaTeX CSS
+## Non-blocking CSS loading
 
-Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path.
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path. The same technique applies to any stylesheet that isn't needed for the initial paint.
 
 ## Preloading the first image
 
@@ -343,24 +343,26 @@ As a result of this finagling, while you're hanging out by The Pond, you never l
 
 This website contains many design elements. To maintain a regular, assured style and to avoid patchwork chaos, I made two important design choices.
 
-Exponential font sizing
-: I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
+### Exponential font sizing
 
-  After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
+I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
 
-  <div class="h1">Header 1</div>
-  <div class="h2">Header 2</div>
-  <div class="h3">Header 3</div>
-  <div class="h4">Header 4</div>
-  <div class="h5">Header 5</div>
+After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-  <div>Normal text</div>
-  <div style="font-size:var(--font-size-minus-1)">Smaller text</div>
-  <div style="font-size:var(--font-size-minus-2)">Smaller text</div>
-  <div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+<div class="h1">Header 1</div>
+<div class="h2">Header 2</div>
+<div class="h3">Header 3</div>
+<div class="h4">Header 4</div>
+<div class="h5">Header 5</div>
 
-All spacing is a simple multiple of a base measurement
-: If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
+<div>Normal text</div>
+<div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+
+### All spacing is a simple multiple of a base measurement
+
+If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
 [^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
 
