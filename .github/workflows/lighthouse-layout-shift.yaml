@@ -138,6 +138,7 @@ jobs:
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/design#footnote-label
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
@@ -166,6 +167,7 @@ jobs:
         with:
           urls: |
             ${{ needs.build_and_deploy.outputs.deploy_url }}/design
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/design#footnote-label
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
