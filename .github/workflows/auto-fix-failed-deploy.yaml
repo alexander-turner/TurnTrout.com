@@ -14,6 +14,8 @@ permissions:
   issues: write
   actions: read
 
+# If a deploy succeeds while we're creating a failure issue, cancel-in-progress
+# drops the issue creation — which is correct since CI is already passing.
 concurrency:
   group: auto-fix-deploy-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
@@ -67,8 +69,14 @@ jobs:
             });
 
             const failedJobs = jobs.filter(j => j.conclusion === 'failure');
+            if (failedJobs.length === 0) {
+              console.log('Run failed but no individual jobs show failure (infrastructure issue?), skipping');
+              return;
+            }
+
             const jobSummaries = [];
-            const maxLogBytes = 50_000;
+            // GitHub issue body limit is 65,536 chars; leave room for the template
+            const maxLogBytes = 45_000;
             let totalBytes = 0;
 
             for (const job of failedJobs) {
@@ -103,7 +111,7 @@ jobs:
               `@claude The **${run.name}** workflow failed on \`${branch}\` at commit ${sha}.`,
               '',
               `**Failed run:** ${run.html_url}`,
-              `**Failed jobs:** ${failedJobs.map(j => j.name).join(', ') || 'unknown'}`,
+              `**Failed jobs:** ${failedJobs.map(j => j.name).join(', ')}`,
               '',
               '## Failed job logs',
               '',
