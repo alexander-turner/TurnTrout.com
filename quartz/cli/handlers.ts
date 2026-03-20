@@ -388,32 +388,40 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
     }
 
     try {
-      const { css } = await generate({
-        inline: false,
+      const penthouseConfig = {
+        timeout: 120000,
+        blockJSRequests: false,
+        waitForStatus: "networkidle0" as const,
+        renderWaitTime: 2000,
+        puppeteer: {
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu",
+          ],
+        },
+      }
+      const cssFiles = [
+        path.join(outputDir, "index.css"),
+        path.join(outputDir, "static", "styles", "katex.min.css"),
+      ]
+      const sharedOpts = {
+        inline: false as const,
         base: outputDir,
-        src: "index.html",
         width: 1700,
         height: 900,
-        css: [
-          path.join(outputDir, "index.css"),
-          path.join(outputDir, "static", "styles", "katex.min.css"),
-        ],
-        penthouse: {
-          timeout: 120000,
-          blockJSRequests: false,
-          waitForStatus: "networkidle0",
-          renderWaitTime: 2000,
-          puppeteer: {
-            args: [
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-accelerated-2d-canvas",
-              "--disable-gpu",
-            ],
-          },
-        },
-      })
+        css: cssFiles,
+        penthouse: penthouseConfig,
+      }
+
+      // Analyze multiple pages for broader critical CSS coverage
+      const pages = ["index.html", "Test-page.html"]
+      const cssResults = await Promise.all(
+        pages.map((src) => generate({ ...sharedOpts, src }).then((r: { css: string }) => r.css)),
+      )
+      const css = cssResults.join("\n")
 
       // Append essential theme variables
       const manualCriticalCss = await fsPromises.readFile(
