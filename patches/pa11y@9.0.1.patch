@@ -2,18 +2,7 @@ diff --git a/lib/pa11y.js b/lib/pa11y.js
 index 1234567..abcdefg 100644
 --- a/lib/pa11y.js
 +++ b/lib/pa11y.js
-@@ -167,6 +167,10 @@ async function setPage(url, options, state) {
- 		await state.page.setUserAgent(options.userAgent);
- 	}
- 	await state.page.setViewport(options.viewport);
-+	// Puppeteer's default page.evaluate() timeout is 30 s, which is too
-+	// short for axe/htmlcs on heavy pages.  Align it with the pa11y
-+	// per-URL timeout so the two limits don't fight each other.
-+	state.page.setDefaultTimeout(options.timeout);
- }
-
- /**
-@@ -243,7 +247,10 @@ async function gotoUrl(url, options, state) {
+@@ -243,7 +243,10 @@ async function gotoUrl(url, options, state) {
  	// Navigate to the URL we're going to test
  	if (!options.ignoreUrl) {
  		await state.page.goto(url, {
