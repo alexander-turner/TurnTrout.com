@@ -3,7 +3,7 @@ import type { Root, Element, ElementContent, Parent } from "hast"
 import { h } from "hastscript"
 import { visit, SKIP } from "unist-util-visit"
 
-import { footnoteHeadingId, upstreamFootnoteHeadingId } from "../../components/constants"
+import { footnoteHeadingId } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"
 
 export interface FootnoteLocation {
@@ -44,12 +44,15 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
+/** The ID that mdast-util-to-hast hardcodes on the footnotes heading */
+const UPSTREAM_FOOTNOTE_HEADING_ID = "footnote-label"
+
 /** IDs that identify a footnote heading (upstream uses "footnote-label", we normalize to "footnotes") */
-const FOOTNOTE_HEADING_IDS = new Set([footnoteHeadingId, upstreamFootnoteHeadingId])
+const FOOTNOTE_HEADING_IDS = new Set([footnoteHeadingId, UPSTREAM_FOOTNOTE_HEADING_ID])
 
 // skipcq: JS-D1001
 function isFootnoteHeadingId(id: unknown): boolean {
-  return FOOTNOTE_HEADING_IDS.has(String(id))
+  return typeof id === "string" && FOOTNOTE_HEADING_IDS.has(id)
 }
 
 // skipcq: JS-D1001
@@ -178,9 +181,12 @@ export const FixFootnotes: QuartzTransformerPlugin = () => {
             // Rename aria-describedby from upstream "footnote-label" to "footnotes"
             visit(tree, "element", (node) => {
               const describedBy = node.properties?.ariaDescribedBy
-              if (Array.isArray(describedBy) && describedBy.includes(upstreamFootnoteHeadingId)) {
+              if (
+                Array.isArray(describedBy) &&
+                describedBy.includes(UPSTREAM_FOOTNOTE_HEADING_ID)
+              ) {
                 node.properties!.ariaDescribedBy = describedBy.map((v) =>
-                  v === upstreamFootnoteHeadingId ? footnoteHeadingId : v,
+                  v === UPSTREAM_FOOTNOTE_HEADING_ID ? footnoteHeadingId : v,
                 )
               }
             })

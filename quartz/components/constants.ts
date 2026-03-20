@@ -36,7 +36,6 @@ export const {
   emojisToReplace,
   charsToMoveIntoLinkFromRight,
   footnoteHeadingId,
-  upstreamFootnoteHeadingId,
   testPageSlug,
   designPageSlug,
   tightScrollTolerance,
