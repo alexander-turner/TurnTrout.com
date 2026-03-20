@@ -4,7 +4,6 @@ on:
   workflow_run:
     workflows:
       - "Deploy to Cloudflare"
-      - "Node tests"
     types:
       - completed
     branches:
