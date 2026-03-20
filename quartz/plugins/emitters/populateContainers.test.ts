@@ -841,27 +841,34 @@ describe("PopulateContainers", () => {
           },
         ])
 
+        const root = fromHtml(writtenContent)
+
+        const countFaviconsInSubtree = (subtree: Element): number => {
+          let count = 0
+          visit(subtree, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) count++
+          })
+          return count
+        }
+
         // The link outside the populated container should NOT have a favicon
-        // (it was already processed by the transformer during the build)
-        const outsideMatch = writtenContent.match(
-          /href="https:\/\/github\.com\/outside"[^>]*>Outside<\/a>/,
-        )
-        expect(outsideMatch).not.toBeNull()
+        let outsideLinkFavicons = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "a") return
+          if (String(node.properties?.href) !== "https://github.com/outside") return
+          outsideLinkFavicons = countFaviconsInSubtree(node)
+        })
+        expect(outsideLinkFavicons).toBe(0)
 
         // The link inside the populated container SHOULD have a favicon
-        expect(writtenContent).toContain("github.com/inside")
-        const root = fromHtml(writtenContent)
         let insideFaviconCount = 0
         visit(root, "element", (node) => {
           if (node.tagName !== "div") return
-          const id = node.properties?.id
-          if (id !== "populate-me") return
-          visit(node, "element", (child) => {
-            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
-            if (cls.includes("favicon")) insideFaviconCount++
-          })
+          if (node.properties?.id !== "populate-me") return
+          insideFaviconCount = countFaviconsInSubtree(node)
         })
-        expect(insideFaviconCount).toBeGreaterThan(0)
+        expect(insideFaviconCount).toBe(1)
       })
     })
   })
