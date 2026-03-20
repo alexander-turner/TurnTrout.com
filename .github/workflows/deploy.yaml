@@ -151,26 +151,52 @@ jobs:
           running-workflow-name: "Deploy to Cloudflare"
           fail-on-no-checks: false
 
-      - name: Verify Lost Pixel visual changes are minimal
+      - name: Wait for Lost Pixel status and verify visual changes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Query check runs for this commit to find Lost Pixel results
-          SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-            --paginate \
-            --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0].output.summary // empty' \
-            2>/dev/null || true)
-
-          if [ -z "$SUMMARY" ]; then
-            # Also check commit statuses (Lost Pixel may use status API)
-            SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
-              --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
-              2>/dev/null || true)
+          # Check if visual testing was skipped (combine-and-upload won't produce a LP check)
+          COMBINE_STATUS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            --jq '[.check_runs[] | select(.name == "combine-and-upload")] | .[0].conclusion // "missing"' \
+            2>/dev/null || echo "missing")
+          if [ "$COMBINE_STATUS" = "skipped" ] || [ "$COMBINE_STATUS" = "missing" ]; then
+            echo "combine-and-upload was skipped or not found — no Lost Pixel check expected"
+            exit 0
           fi
 
+          # Poll for the Lost Pixel check (created by LP platform ~10 min after upload)
+          MAX_ATTEMPTS=40  # 40 × 30s = 20 min max wait
+          ATTEMPT=0
+          SUMMARY=""
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+
+            # Check runs (GitHub App check)
+            SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+              --paginate \
+              --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0].output.summary // empty' \
+              2>/dev/null || true)
+
+            if [ -z "$SUMMARY" ]; then
+              # Also check commit statuses (Lost Pixel may use status API)
+              SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
+                --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
+                2>/dev/null || true)
+            fi
+
+            if [ -n "$SUMMARY" ]; then
+              echo "Lost Pixel check found on attempt $ATTEMPT"
+              break
+            fi
+
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Lost Pixel check not yet available, waiting 30s..."
+            sleep 30
+          done
+
           if [ -z "$SUMMARY" ]; then
-            echo "No Lost Pixel check found — skipping visual diff count verification"
-            exit 0
+            echo "::error::Lost Pixel check never appeared after $MAX_ATTEMPTS attempts"
+            exit 1
           fi
 
           echo "Lost Pixel result: $SUMMARY"
