@@ -831,7 +831,7 @@ describe("PopulateContainers", () => {
         await populateModule.populateElements("/tmp/test.html", [
           {
             id: "populate-me",
-            generator: async () => {
+            generator: () => {
               const fragment = fromHtml(
                 '<a class="external" href="https://github.com/inside">Inside</a>',
                 { fragment: true },
