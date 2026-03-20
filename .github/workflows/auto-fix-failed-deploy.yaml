@@ -1,9 +1,10 @@
-name: Auto-fix failed deploy
+name: Auto-fix failed CI
 
 on:
   workflow_run:
     workflows:
       - "Deploy to Cloudflare"
+      - "Node tests"
     types:
       - completed
     branches:
@@ -28,6 +29,7 @@ jobs:
           script: |
             const runId = context.payload.workflow_run.id;
             const runUrl = context.payload.workflow_run.html_url;
+            const workflowName = context.payload.workflow_run.name;
             const sha = context.payload.workflow_run.head_sha.substring(0, 7);
             const branch = context.payload.workflow_run.head_branch;
             const maxIssues = 3; // Circuit breaker: stop after 3 issues per branch
@@ -104,7 +106,7 @@ jobs:
             // --- Create the issue ---
             const body = [
               marker,
-              `@claude The deploy to Cloudflare failed on \`${branch}\` at commit ${sha}.`,
+              `@claude The **${workflowName}** workflow failed on \`${branch}\` at commit ${sha}.`,
               '',
               `**Failed run:** ${runUrl}`,
               `**Failed jobs:** ${failedJobNames}`,
@@ -122,9 +124,46 @@ jobs:
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `fix: Deploy failed on ${branch} (${sha})`,
+              title: `fix: ${workflowName} failed on ${branch} (${sha})`,
               body: body,
               labels: ['auto-fix-deploy'],
             });
 
             console.log(`Created issue #${issue.number}: ${issue.html_url}`);
+
+  close-fixed-issue:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Close resolved issues
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const branch = context.payload.workflow_run.head_branch;
+            const marker = `<!-- auto-fix-deploy-${branch} -->`;
+
+            const { data: openIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'auto-fix-deploy',
+              state: 'open',
+              per_page: 10,
+            });
+
+            const branchIssues = openIssues.filter(i => i.body?.includes(marker));
+            for (const issue of branchIssues) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `Automatically closing: CI is passing again on \`${branch}\`.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed',
+                state_reason: 'completed',
+              });
+              console.log(`Closed issue #${issue.number}`);
+            }
