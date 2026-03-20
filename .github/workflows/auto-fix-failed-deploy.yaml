@@ -97,7 +97,7 @@ jobs:
                   .map(line => line.replace(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z /, ''))
                   .join('\n');
 
-                const tail = cleaned.substring(0, maxLogBytes - totalBytes);
+                const tail = cleaned.slice(-(maxLogBytes - totalBytes));
                 totalBytes += tail.length;
                 jobSummaries.push(`### ${job.name}\n\n\`\`\`\n${tail}\n\`\`\``);
               } catch (e) {
