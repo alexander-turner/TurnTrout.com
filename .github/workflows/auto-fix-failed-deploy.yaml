@@ -87,7 +87,7 @@ jobs:
                 });
 
                 const lines = logData.split('\n');
-                let tail = lines.slice(-80).join('\n');
+                let tail = lines.slice(-500).join('\n');
                 if (totalBytes + tail.length > maxLogBytes) {
                   tail = tail.substring(0, maxLogBytes - totalBytes);
                 }
@@ -119,29 +119,21 @@ jobs:
               `Target branch: \`${branch}\``,
             ].join('\n');
 
-            try {
-              // Ensure the label exists (ignore 422 if created concurrently)
-              try {
-                await github.rest.issues.createLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: 'auto-fix-deploy',
-                  color: 'e11d48',
-                  description: 'Automated issue created when deploy fails on main/dev',
-                });
-              } catch (e) {
-                if (e.status !== 422) throw e;
-              }
+            // Ensure the label exists (ignore 422 if created concurrently)
+            const labelResult = await github.rest.issues.createLabel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'auto-fix-deploy',
+              color: 'e11d48',
+              description: 'Automated issue created when deploy fails on main/dev',
+            }).catch(e => { if (e.status !== 422) throw e; });
 
-              const { data: issue } = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: `fix: Deploy failed on ${branch} (${sha})`,
-                body: body,
-                labels: ['auto-fix-deploy'],
-              });
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `fix: Deploy failed on ${branch} (${sha})`,
+              body: body,
+              labels: ['auto-fix-deploy'],
+            });
 
-              console.log(`Created issue #${issue.number}: ${issue.html_url}`);
-            } catch (error) {
-              core.setFailed(`Failed to create issue: ${error.message}`);
-            }
+            console.log(`Created issue #${issue.number}: ${issue.html_url}`);
