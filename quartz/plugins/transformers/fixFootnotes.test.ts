@@ -18,11 +18,11 @@ import {
   cleanupIframeFootnoteText,
 } from "./fixFootnotes"
 
-const parseHtml = async (html: string): Promise<Root> => {
+const parseHtml = (html: string): Root => {
   return unified().use(rehypeParse, { fragment: true }).parse(html) as Root
 }
 
-const stringifyHtml = async (tree: Root): Promise<string> => {
+const stringifyHtml = (tree: Root): string => {
   return String(unified().use(rehypeStringify).stringify(tree))
 }
 
@@ -96,10 +96,10 @@ describe("FixFootnotes helpers", () => {
       expect(hasFootnoteHeading(section)).toBe(expected)
     })
 
-    it("detects heading in parsed HTML", async () => {
+    it("detects heading in parsed HTML", () => {
       const html =
         '<section><h1 id="footnote-label">Footnotes</h1><ol><li id="user-content-fn-1">Content</li></ol></section>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const section = tree.children[0] as Element
       expect(hasFootnoteHeading(section)).toBe(true)
     })
@@ -154,9 +154,9 @@ describe("FixFootnotes helpers", () => {
       expect(isAlreadyWrapped(parent)).toBe(expected)
     })
 
-    it("returns true for section with data-footnotes from parsed HTML", async () => {
+    it("returns true for section with data-footnotes from parsed HTML", () => {
       const html = '<section data-footnotes class="footnotes"></section>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const section = tree.children[0] as Element
       expect(isAlreadyWrapped(section)).toBe(true)
     })
@@ -202,26 +202,26 @@ describe("FixFootnotes helpers", () => {
         (result: string) => expect(result).toContain("Keep this"),
         "handles mixed text and whitespace",
       ],
-    ])("%s", async (html, assertion) => {
-      const tree = await parseHtml(html)
+    ])("%s", (html, assertion) => {
+      const tree = parseHtml(html)
       cleanupIframeFootnoteText(tree)
-      const result = await stringifyHtml(tree)
+      const result = stringifyHtml(tree)
       assertion(result)
     })
   })
 
   describe("findFootnoteList", () => {
-    it("finds footnote list", async () => {
+    it("finds footnote list", () => {
       const html = '<p>Text</p><ol><li id="user-content-fn-1">Footnote</li></ol>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const location = findFootnoteList(tree)
       expect(location).not.toBeNull()
       expect(location?.node.tagName).toBe("ol")
     })
 
-    it("returns null when no footnote list exists", async () => {
+    it("returns null when no footnote list exists", () => {
       const html = '<p>Text</p><ol><li id="regular">Item</li></ol>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const location = findFootnoteList(tree)
       expect(location).toBeNull()
     })
