@@ -709,9 +709,10 @@ describe("Favicon Utilities", () => {
       ])("should handle %s correctly", (node) => {
         favicons.insertFavicon(imgPath, node)
 
-        // For non-text/empty nodes, favicon is appended directly (no span wrapping)
+        // For non-text/empty nodes, favicon is wrapped in favicon-span
         const lastChild = node.children[node.children.length - 1] as Element
-        expect(lastChild).toMatchObject(createExpectedFavicon(imgPath))
+        expect(lastChild).toMatchObject(faviconSpanNode)
+        expect(lastChild.children[1]).toMatchObject(createExpectedFavicon(imgPath))
       })
 
       /*
@@ -872,8 +873,10 @@ describe("Favicon Utilities", () => {
       const parent = h("div", [node])
 
       await favicons.ModifyNode(node, parent, faviconCounts)
-      // Empty node: favicon appended directly (no span wrapping)
-      const faviconElement = node.children[0] as Element
+      // Empty node: favicon wrapped in favicon-span
+      const faviconSpan = node.children[0] as Element
+      expect(faviconSpan).toMatchObject(faviconSpanNode)
+      const faviconElement = faviconSpan.children[1] as Element
       expect(faviconElement.tagName).toBe("svg")
       expect(faviconElement.properties.style).toContain(expectedPath)
     })
@@ -889,8 +892,10 @@ describe("Favicon Utilities", () => {
       const parent = h("div", [node])
 
       await favicons.ModifyNode(node, parent, faviconCounts)
-      // Empty node: favicon appended directly (no span wrapping)
-      const faviconElement = node.children[0] as Element
+      // Empty node: favicon wrapped in favicon-span
+      const faviconSpan = node.children[0] as Element
+      expect(faviconSpan).toMatchObject(faviconSpanNode)
+      const faviconElement = faviconSpan.children[1] as Element
       expect(faviconElement.tagName).toBe("svg")
       expect(faviconElement.properties.style).toContain(expectedPath)
     })
@@ -912,8 +917,10 @@ describe("Favicon Utilities", () => {
         (node: Element) => {
           expect(node.properties.className).toContain("same-page-link")
           expect(node.children.length).toBe(1)
-          // ANCHOR_PATH is SVG, empty node so favicon appended directly
-          const faviconElement = node.children[0] as Element
+          // ANCHOR_PATH is SVG, empty node: favicon wrapped in favicon-span
+          const faviconSpan = node.children[0] as Element
+          expect(faviconSpan).toMatchObject(faviconSpanNode)
+          const faviconElement = faviconSpan.children[1] as Element
           expect(faviconElement.tagName).toBe("svg")
           expect(faviconElement.properties.style).toContain(specialFaviconPaths.anchor)
         },
@@ -1079,9 +1086,10 @@ describe("Favicon Utilities", () => {
 
         await favicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        // Empty node: favicon appended directly
-        const faviconElement = node.children[0] as Element
-        expect(faviconElement).toHaveProperty("properties.src", faviconPath)
+        // Empty node: favicon wrapped in favicon-span
+        const faviconSpan = node.children[0] as Element
+        expect(faviconSpan).toMatchObject(faviconSpanNode)
+        expect(faviconSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
 
       it(`should add favicons that appear more than ${minFaviconCount} times`, async () => {
@@ -1101,9 +1109,10 @@ describe("Favicon Utilities", () => {
 
         await favicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        // Empty node: favicon appended directly
-        const faviconElement = node.children[0] as Element
-        expect(faviconElement).toHaveProperty("properties.src", faviconPath)
+        // Empty node: favicon wrapped in favicon-span
+        const faviconSpan = node.children[0] as Element
+        expect(faviconSpan).toMatchObject(faviconSpanNode)
+        expect(faviconSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
 
       it("should skip favicons not in counts map (treat as 0)", async () => {
@@ -1137,8 +1146,10 @@ describe("Favicon Utilities", () => {
 
           await favicons.ModifyNode(node, parent, counts)
           expect(node.children.length).toBeGreaterThan(0)
-          // Empty node: favicon appended directly (no span wrapping)
-          const faviconElement = node.children[0] as Element
+          // Empty node: favicon wrapped in favicon-span
+          const faviconSpan = node.children[0] as Element
+          expect(faviconSpan).toMatchObject(faviconSpanNode)
+          const faviconElement = faviconSpan.children[1] as Element
           expect(faviconElement.tagName).toBe("svg")
           expect(faviconElement.properties.style).toContain(expectedPath)
         },
@@ -1160,8 +1171,10 @@ describe("Favicon Utilities", () => {
 
         await favicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        // Empty node: favicon appended directly
-        const faviconEl = node.children[0] as Element
+        // Empty node: favicon wrapped in favicon-span
+        const faviconSpan = node.children[0] as Element
+        expect(faviconSpan).toMatchObject(faviconSpanNode)
+        const faviconEl = faviconSpan.children[1] as Element
         expect(faviconEl).toHaveProperty("properties.style")
         expect(faviconEl.properties.style).toContain(faviconPath)
       })
@@ -1203,9 +1216,10 @@ describe("Favicon Utilities", () => {
 
         await favicons.ModifyNode(node, parent, counts)
         expect(node.children.length).toBeGreaterThan(0)
-        // Empty node: favicon appended directly
-        const faviconElement = node.children[0] as Element
-        expect(faviconElement).toHaveProperty("properties.src", faviconPath)
+        // Empty node: favicon wrapped in favicon-span
+        const faviconSpan = node.children[0] as Element
+        expect(faviconSpan).toMatchObject(faviconSpanNode)
+        expect(faviconSpan.children[1]).toHaveProperty("properties.src", faviconPath)
       })
     })
   })
@@ -1676,14 +1690,18 @@ describe("AddFavicons plugin", () => {
     const sectionLink = divElement.children[1] as Element
 
     expect(mailtoLink.children.length).toBe(1)
-    // MAIL_PATH is SVG, empty node so favicon appended directly
-    const mailFavicon = mailtoLink.children[0] as Element
+    // MAIL_PATH is SVG, empty node: favicon wrapped in favicon-span
+    const mailSpan = mailtoLink.children[0] as Element
+    expect(mailSpan).toMatchObject(faviconSpanNode)
+    const mailFavicon = mailSpan.children[1] as Element
     expect(mailFavicon.tagName).toBe("svg")
     expect(mailFavicon.properties.style).toContain(specialFaviconPaths.mail)
 
     expect(sectionLink.children.length).toBe(1)
-    // ANCHOR_PATH is SVG, empty node so favicon appended directly
-    const anchorFavicon = sectionLink.children[0] as Element
+    // ANCHOR_PATH is SVG, empty node: favicon wrapped in favicon-span
+    const anchorSpan = sectionLink.children[0] as Element
+    expect(anchorSpan).toMatchObject(faviconSpanNode)
+    const anchorFavicon = anchorSpan.children[1] as Element
     expect(anchorFavicon.tagName).toBe("svg")
     expect(anchorFavicon.properties.style).toContain(specialFaviconPaths.anchor)
   })
@@ -1937,8 +1955,10 @@ describe("getQuartzPath hostname normalization", () => {
       await favicons.ModifyNode(node, parent, faviconCounts)
 
       expect(node.children.length).toBeGreaterThan(0)
-      // Empty node: favicon appended directly
-      const insertedFavicon = node.children[0] as Element
+      // Empty node: favicon wrapped in favicon-span
+      const faviconSpan = node.children[0] as Element
+      expect(faviconSpan).toMatchObject(faviconSpanNode)
+      const insertedFavicon = faviconSpan.children[1] as Element
       expect(insertedFavicon.properties.src).toBe(normalizedAvifUrl)
     })
 
@@ -2001,8 +2021,9 @@ describe("maybeSpliceText edge cases", () => {
   it("should handle node with only whitespace text", () => {
     const node = h("a", {}, ["   "])
     const result = favicons.maybeSpliceText(node, favicons.createFaviconElement(imgPath))
-    // Whitespace-only text is treated as empty, favicon returned directly (no span wrapping)
-    expect(result).toMatchObject(createExpectedFavicon(imgPath))
+    // Whitespace-only text is treated as empty, favicon wrapped in favicon-span
+    expect(result).toMatchObject(faviconSpanNode)
+    expect(result?.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it.each([
@@ -2043,18 +2064,20 @@ describe("maybeSpliceText edge cases", () => {
   it("should handle node with element child that has no text", () => {
     const node = h("a", {}, [h("div")])
     const result = favicons.maybeSpliceText(node, favicons.createFaviconElement(imgPath))
-    // div is not zoomable and not text, favicon returned directly (no span wrapping)
+    // div is not zoomable and not text, favicon wrapped in favicon-span
     expect(node.children.length).toBe(1) // only the div
-    expect(result).toMatchObject(createExpectedFavicon(imgPath))
+    expect(result).toMatchObject(faviconSpanNode)
+    expect(result?.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should handle node with mixed children ending in element", () => {
     const node = h("a", {}, [{ type: "text", value: "Text " }, h("span", {}, ["More"])])
     favicons.insertFavicon(imgPath, node)
-    // span is not in tagsToZoomInto and not text, so favicon appended directly
-    expect(node.children.length).toBe(3) // text + span + favicon
-    const faviconEl = node.children[2] as Element
-    expect(faviconEl).toMatchObject(createExpectedFavicon(imgPath))
+    // span is not in tagsToZoomInto and not text, so favicon wrapped in favicon-span
+    expect(node.children.length).toBe(3) // text + span + favicon-span
+    const faviconSpan = node.children[2] as Element
+    expect(faviconSpan).toMatchObject(faviconSpanNode)
+    expect(faviconSpan.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 
   it("should zoom into abbr inside link (RSS link structure)", () => {
@@ -2146,11 +2169,12 @@ describe("favicon must be inside favicon-span (prevents line-break orphaning)", 
   it.each([
     ["empty node", h("a", {}, [])],
     ["non-text last child (div)", h("a", {}, [h("div")])],
-  ])("returns favicon directly for %s (no text to splice)", (_name, node) => {
+  ])("wraps favicon in favicon-span for %s (no text to splice)", (_name, node) => {
     const result = favicons.maybeSpliceText(node as Element, favicons.createFaviconElement(imgPath))
-    // For nodes without text, favicon is returned directly (no span wrapping)
+    // For nodes without text, favicon is still wrapped in favicon-span
     expect(result).toBeDefined()
-    expect(result).toMatchObject(createExpectedFavicon(imgPath))
+    expect(result).toMatchObject(faviconSpanNode)
+    expect(result?.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 })
 

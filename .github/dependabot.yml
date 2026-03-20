@@ -6,6 +6,11 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    groups:
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   # "uv" ecosystem specifically handles uv.lock updates
   - package-ecosystem: "uv"
@@ -13,9 +18,19 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    groups:
+      uv-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   # Keep GitHub Actions versions up to date
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"

@@ -13,10 +13,11 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-03-14 18:01:37.065813
+date_updated: 2026-03-20 18:10:19.737372
 no_dropcap: false
 createBibtex: true
 ---
+
 
 
 
@@ -192,7 +193,7 @@ EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB unde
 
 I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website, taking the font footprint from 609KB to 113KB - a reduction of over 5x! Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
 
-For fonts that only appear on a few pages — like the [old italic comparison fonts](#font-selection) — I manually subset to just the characters used in those comparisons. This shrank the old italic fonts from 187KB to 36KB and the old regular font from 82KB to 3KB.
+For fonts that only appear on a few pages — like the [old italic comparison fonts](#upright-punctuation-in-italic-text) — I manually subset to just the characters used in those comparisons. This shrank the old italic fonts from 187KB to 36KB and the old regular font from 82KB to 3KB.
 
 ### Images
 

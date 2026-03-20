@@ -17,6 +17,8 @@ jest.unstable_mockModule("child_process", () => ({
 import fs from "fs"
 import { type Element } from "hast"
 import { fromHtml } from "hast-util-from-html"
+import { toHtml } from "hast-util-to-html"
+import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
@@ -543,7 +545,7 @@ describe("PopulateContainers", () => {
       it.each([
         ["turntrout", specialFaviconPaths.turntrout],
         ["anchor", specialFaviconPaths.anchor],
-      ])("should generate %s favicon element inside favicon-span", async (_name, faviconPath) => {
+      ])("should generate %s favicon inside favicon-span", async (_name, faviconPath) => {
         const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
         expect(elements).toHaveLength(1)
@@ -562,7 +564,7 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should generate accessible favicon element when alt text provided", async () => {
+      it("should make favicon accessible when alt text is provided", async () => {
         const altText = "A trout jumping to the left."
         const generator = populateModule.generateSpecialFaviconContent(
           specialFaviconPaths.turntrout,
@@ -570,22 +572,17 @@ describe("PopulateContainers", () => {
         )
         const elements = await generator()
         expect(elements).toHaveLength(1)
-
         const faviconElement = elements[0].children[1] as Element
-        expect(faviconElement).toMatchObject({
-          tagName: "svg",
-          properties: {
-            role: "img",
-            "aria-label": altText,
-          },
+        expect(faviconElement.properties).toMatchObject({
+          role: "img",
+          "aria-label": altText,
         })
-        // Should not have hidden properties when accessible
         expect(faviconElement.properties["aria-hidden"]).toBeUndefined()
       })
     })
 
     describe("generateMetadataAdmonition", () => {
-      it("should generate a metadata admonition using renderPostStatistics", async () => {
+      it("should generate admonition with no post-statistics ID", async () => {
         const generator = populateModule.generateMetadataAdmonition()
         const elements = await generator()
 
@@ -596,14 +593,47 @@ describe("PopulateContainers", () => {
           expect.arrayContaining(["admonition", "admonition-metadata"]),
         )
         expect(blockquote.properties?.dataAdmonition).toBe("info")
+        expect(blockquote.properties?.id).toBeUndefined()
+      })
+    })
+
+    describe("addFaviconsToLinks", () => {
+      const countsFaviconElements = (html: string): number => {
+        const root = fromHtml(html)
+        let count = 0
+        visit(root, "element", (node) => {
+          const cls = String(node.properties?.class ?? node.properties?.className ?? "")
+          if (cls.includes("favicon")) count++
+        })
+        return count
+      }
+
+      it("should add favicons to external links using ModifyNode", async () => {
+        // Set up counts so github.com meets the threshold
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        // Pre-populate urlCache so MaybeSaveFavicon resolves without network
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Link</a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBeGreaterThan(0)
       })
 
-      it("should strip the post-statistics ID to avoid duplicates", async () => {
-        const generator = populateModule.generateMetadataAdmonition()
-        const elements = await generator()
+      it("should not duplicate favicons on links that already have them", async () => {
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
 
-        const blockquote = elements[0]
-        expect(blockquote.properties?.id).toBeUndefined()
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Li<span class="favicon-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBe(2) // favicon-span + favicon img
       })
     })
 
@@ -772,6 +802,73 @@ describe("PopulateContainers", () => {
 
         existsSpy.mockRestore()
         readSpy.mockRestore()
+      })
+
+      it("should only add favicons to links inside populated containers, not the whole page", async () => {
+        // Set up favicon data so github.com links would get favicons
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        // Page has an external link OUTSIDE the populated container and the
+        // populated container will inject one INSIDE
+        const html = [
+          "<html><body>",
+          '<a class="external" href="https://github.com/outside">Outside</a>',
+          '<div id="populate-me"></div>',
+          "</body></html>",
+        ].join("")
+
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        const root = fromHtml(writtenContent)
+
+        const countFaviconsInSubtree = (subtree: Element): number => {
+          let count = 0
+          visit(subtree, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) count++
+          })
+          return count
+        }
+
+        // The link outside the populated container should NOT have a favicon
+        let outsideLinkFavicons = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "a") return
+          if (String(node.properties?.href) !== "https://github.com/outside") return
+          outsideLinkFavicons = countFaviconsInSubtree(node)
+        })
+        expect(outsideLinkFavicons).toBe(0)
+
+        // The link inside the populated container SHOULD have a favicon
+        let insideFaviconCount = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "div") return
+          if (node.properties?.id !== "populate-me") return
+          insideFaviconCount = countFaviconsInSubtree(node)
+        })
+        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
       })
     })
   })
