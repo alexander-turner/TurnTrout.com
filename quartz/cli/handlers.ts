@@ -417,7 +417,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       }
 
       // Analyze multiple pages for broader critical CSS coverage
-      const pages = ["index.html", "Test-page.html"]
+      const pages = ["index.html", "test-page.html"]
       const cssResults = await Promise.all(
         pages.map((src) => generate({ ...sharedOpts, src }).then((r: { css: string }) => r.css)),
       )
