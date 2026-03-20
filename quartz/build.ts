@@ -1,5 +1,4 @@
 import { Mutex } from "async-mutex"
-
 const beep = await import("beepbeep")
 
 import chalk from "chalk"
