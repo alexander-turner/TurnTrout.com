@@ -803,6 +803,73 @@ describe("PopulateContainers", () => {
         existsSpy.mockRestore()
         readSpy.mockRestore()
       })
+
+      it("should only add favicons to links inside populated containers, not the whole page", async () => {
+        // Set up favicon data so github.com links would get favicons
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        // Page has an external link OUTSIDE the populated container and the
+        // populated container will inject one INSIDE
+        const html = [
+          "<html><body>",
+          '<a class="external" href="https://github.com/outside">Outside</a>',
+          '<div id="populate-me"></div>',
+          "</body></html>",
+        ].join("")
+
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        const root = fromHtml(writtenContent)
+
+        const countFaviconsInSubtree = (subtree: Element): number => {
+          let count = 0
+          visit(subtree, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) count++
+          })
+          return count
+        }
+
+        // The link outside the populated container should NOT have a favicon
+        let outsideLinkFavicons = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "a") return
+          if (String(node.properties?.href) !== "https://github.com/outside") return
+          outsideLinkFavicons = countFaviconsInSubtree(node)
+        })
+        expect(outsideLinkFavicons).toBe(0)
+
+        // The link inside the populated container SHOULD have a favicon
+        let insideFaviconCount = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "div") return
+          if (node.properties?.id !== "populate-me") return
+          insideFaviconCount = countFaviconsInSubtree(node)
+        })
+        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
+      })
     })
   })
 
