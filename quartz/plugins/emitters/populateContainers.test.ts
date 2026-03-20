@@ -868,7 +868,7 @@ describe("PopulateContainers", () => {
           if (node.properties?.id !== "populate-me") return
           insideFaviconCount = countFaviconsInSubtree(node)
         })
-        expect(insideFaviconCount).toBe(1)
+        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
       })
     })
   })
