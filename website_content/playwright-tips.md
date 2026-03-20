@@ -61,7 +61,7 @@ Avoid `page.reload()` — navigate via `about:blank` instead
   ```
 
 Use `fullyParallel` with sharding
-: [Parallelism](https://playwright.dev/docs/test-parallel) within a single machine originally didn't work for me, but `fullyParallel: true` combined with heavy sharding on CI now works well. I run ~30 shards, each executing a few tests in parallel. This is much faster than serial execution without the instability of running everything in parallel on one machine.
+: [Parallelism](https://playwright.dev/docs/test-parallel) within a single machine originally didn't work for me due to other flakiness, but `fullyParallel: true` combined with heavy sharding on CI now works well. I run ~30 shards, each executing a few tests in parallel.
 
 Lint, lint, and then lint some more
 : Linting is not a luxury. My Playwright struggles went from "hopeless" to "winning" when I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
@@ -84,11 +84,8 @@ Prefer feature detection over timing buffers
 Use `domcontentloaded` instead of `load` when possible
 : Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.
 
-Wait for SPA navigation events, not URL changes
-: If your site uses SPA navigation, `page.waitForURL` resolves as soon as `pushState` fires — long before the DOM is ready. Instead, listen for a custom event that your SPA dispatches after the DOM morph is complete. Start listening _before_ the trigger action so you never miss the event.
-
 Move the mouse to a safe position before visual assertions
-: Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to the bottom-right corner of the viewport instead, where no UI elements live.
+: Using `page.mouse.move(0, 0)` can overlap with navbar or menu elements on certain viewports (especially tablets), triggering spurious `mouseenter` events. Move the mouse to a position where no UI elements live.
 
 Set `deviceScaleFactor: 1` to eliminate subpixel jitter
 : Different CI runners may have different DPR settings, causing text subpixel rendering differences. Explicitly setting `deviceScaleFactor: 1` in your config and using `scale: "css"` in screenshot options normalizes this across environments.
