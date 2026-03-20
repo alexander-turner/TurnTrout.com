@@ -78,6 +78,11 @@ describe("FixFootnotes helpers", () => {
         "section with wrong heading id",
       ],
       [
+        h("section", [h("h1", { id: undefined }, ["Footnotes"]), footnoteList()]) as Element,
+        false,
+        "section with undefined heading id",
+      ],
+      [
         h("section", [h("h2", { id: "footnote-label" }, ["Footnotes"]), footnoteList()]) as Element,
         true,
         "section with h2 heading using upstream footnote-label id",
@@ -272,7 +277,7 @@ describe("FixFootnotes plugin", () => {
       </section>
     `,
     withAriaDescribedBy: `
-      <p>Text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+      <p>Text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label other-desc">1</a></sup></p>
       <section data-footnotes class="footnotes">
         <h2 id="footnote-label">Footnotes</h2>
         <ol>
@@ -336,11 +341,11 @@ describe("FixFootnotes plugin", () => {
     [
       fixtures.withAriaDescribedBy,
       (result: string) => {
-        expect(result).toContain('aria-describedby="footnotes"')
-        expect(result).not.toContain('aria-describedby="footnote-label"')
+        expect(result).toContain('aria-describedby="footnotes other-desc"')
+        expect(result).not.toContain('aria-describedby="footnote-label')
         expect(result).toContain('id="footnotes"')
       },
-      "renames aria-describedby from upstream footnote-label to footnotes",
+      "renames aria-describedby, preserving other values",
     ],
     [
       fixtures.noFootnotes,
