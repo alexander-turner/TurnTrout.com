@@ -247,7 +247,7 @@ However, it was quite difficult to produce a transparent MP4 (as required by Saf
 
 I love the desktop website's pond video. However, some find it distracting. Therefore, I pause the video by default but provide a play button for those who want it on loop.
 
-<figure class="float-right">
+<figure>
 <video aria-label="A demonstration of the play and pause controls for the website's animated pond scene. A cursor clicks the pause icon to stop the animation and then clicks the play icon to resume it." autoplay="" loop="" muted="" playsinline="" style="margin: 0;"><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.mp4" type="video/mp4; codecs=hvc1"/><source src="https://assets.turntrout.com/static/images/posts/design-20250914111611.webm" type="video/webm"/></video>
 </figure>
 
