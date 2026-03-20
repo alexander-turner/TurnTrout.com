@@ -119,15 +119,6 @@ jobs:
               `Target branch: \`${branch}\``,
             ].join('\n');
 
-            // Ensure the label exists (ignore 422 if created concurrently)
-            const labelResult = await github.rest.issues.createLabel({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'auto-fix-deploy',
-              color: 'e11d48',
-              description: 'Automated issue created when deploy fails on main/dev',
-            }).catch(e => { if (e.status !== 422) throw e; });
-
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
