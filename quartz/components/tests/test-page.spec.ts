@@ -39,6 +39,31 @@ test.beforeEach(async ({ page }) => {
       value: () => Promise.resolve(),
       writable: true,
     })
+
+    // Intercept video/audio elements as they're created to disable autoplay
+    // before the browser processes the attribute. This runs before any HTML
+    // is parsed, so no frames can advance before we freeze them.
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLMediaElement) {
+            node.autoplay = false
+            node.preload = "metadata"
+            node.pause()
+          }
+          // Also check children of added container nodes
+          if (node instanceof Element) {
+            for (const media of node.querySelectorAll("video, audio")) {
+              if (media instanceof HTMLMediaElement) {
+                media.autoplay = false
+                media.preload = "metadata"
+                media.pause()
+              }
+            }
+          }
+        }
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true })
   })
 
   page.on("pageerror", (err) => console.error(err))
@@ -47,7 +72,7 @@ test.beforeEach(async ({ page }) => {
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-  // Hide all video and audio controls
+  // Hide all video and audio controls (autoplay already disabled by addInitScript)
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
     mediaElements.forEach((media) => {

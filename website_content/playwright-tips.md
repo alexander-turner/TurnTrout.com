@@ -94,6 +94,9 @@ For elements with the `controls` attribute, scrub to the end
 
   ![[https://assets.turntrout.com/static/images/posts/design-20250810160319.avif|An HTML audio player under the heading "Audio". The progress bar shows a small, lighter-colored segment at the beginning, indicating the portion of audio data that has been fetched.]] <figcaption>In the loading bar, the medium shade displays how much data has been fetched.</figcaption>
 
+Verify videos are paused at frame 0 before screenshotting
+: Even with autoplay disabled and an initial `pause()` + `currentTime = 0` seek, slow CI runners can time out before the `seeked` event fires — leaving the video at a non-zero frame. Use `page.waitForFunction` to poll each video element, re-issuing `pause()` and `currentTime = 0` on each poll iteration until the browser confirms `paused && currentTime === 0`. This catches races that a single seek-and-hope approach misses.
+
 Isolate the relevant DOM
 : While `toHaveScreenshot` guarantees stability _within_ a session, my screenshots were still wobbling in response to unrelated changes earlier in the page. For some reason, there were a few pixels of difference due to e.g. an additional line being present earlier in the page.
 

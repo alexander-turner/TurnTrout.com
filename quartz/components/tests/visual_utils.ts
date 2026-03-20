@@ -185,6 +185,27 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
+
+    // Wait for every video to be paused at time 0. Re-seeks if the initial
+    // seek timed out (e.g. slow CI).
+    const mediaScope = options?.elementToScreenshot ?? page
+    const videos = await mediaScope.locator("video").all()
+    for (const video of videos) {
+      const handle = await video.elementHandle()
+      if (!handle) throw new Error("Could not get element handle for video")
+      await page.waitForFunction(
+        (el) => {
+          const videoEl = el as HTMLVideoElement
+          if (videoEl.currentTime !== 0) {
+            videoEl.pause()
+            videoEl.currentTime = 0
+          }
+          return videoEl.paused && videoEl.currentTime === 0
+        },
+        handle,
+        { timeout: 5000 },
+      )
+    }
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -459,6 +480,25 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
         media.pause()
 
+        // Seek to target time, wait for "seeked" event, then wait for a double
+        // requestAnimationFrame to ensure the compositor has actually painted
+        // the target frame (Safari fires "seeked" before the frame is rendered).
+        const seekAndWait = (time: number): Promise<void> => {
+          media.currentTime = time
+          return Promise.race([
+            new Promise<void>((resolve) => {
+              media.addEventListener(
+                "seeked",
+                () => {
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+                },
+                { once: true },
+              )
+            }),
+            new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+          ])
+        }
+
         const targetTime = target === "start" ? 0 : media.duration
 
         // Per HTML spec: when readyState is HAVE_NOTHING (0), setting currentTime updates
@@ -466,20 +506,21 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
-          media.currentTime = targetTime
-          return Promise.resolve()
+          return seekAndWait(targetTime)
         }
 
         // Wait for metadata with timeout fallback
-
         return Promise.race([
           new Promise<void>((resolve) => {
             media.addEventListener(
               "loadedmetadata",
               () => {
                 const time = target === "start" ? 0 : media.duration
-                if (Number.isFinite(time)) media.currentTime = time
-                resolve()
+                if (Number.isFinite(time)) {
+                  seekAndWait(time).then(resolve)
+                } else {
+                  resolve()
+                }
               },
               { once: true },
             )
@@ -489,7 +530,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 500)),
+          new Promise<void>((resolve) => setTimeout(resolve, 1000)),
         ])
       }, seekTo),
     )
