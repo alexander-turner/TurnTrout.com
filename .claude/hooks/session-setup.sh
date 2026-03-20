@@ -180,6 +180,9 @@ fi
 if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
 	git -C "$PROJECT_DIR/.timestamps" remote set-url origin \
 		"https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git"
+	# Web sessions lack CA certs for direct GitHub access; disable SSL
+	# verification for this repo only (the token provides auth security).
+	git -C "$PROJECT_DIR/.timestamps" config http.sslVerify false
 fi
 
 # Install opentimestamps-client (needed by post-commit hook, not pre-installed in web sessions)
