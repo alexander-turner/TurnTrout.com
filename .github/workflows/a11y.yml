@@ -25,7 +25,7 @@ jobs:
   a11y:
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -47,8 +47,8 @@ jobs:
             sleep 1
           done
 
-          # Retry up to 3 times — Chrome intermittently hangs on heavy
-          # pages, hitting the 600s protocolTimeout (not a pa11y bug).
+          # Retry up to 3 times — Chrome intermittently hangs on
+          # certain pages under CI memory pressure.
           for attempt in 1 2 3; do
             if pnpm test:a11y; then
               break
