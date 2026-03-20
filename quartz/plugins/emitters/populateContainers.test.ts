@@ -803,6 +803,66 @@ describe("PopulateContainers", () => {
         existsSpy.mockRestore()
         readSpy.mockRestore()
       })
+
+      it("should only add favicons to links inside populated containers, not the whole page", async () => {
+        // Set up favicon data so github.com links would get favicons
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        // Page has an external link OUTSIDE the populated container and the
+        // populated container will inject one INSIDE
+        const html = [
+          "<html><body>",
+          '<a class="external" href="https://github.com/outside">Outside</a>',
+          '<div id="populate-me"></div>',
+          "</body></html>",
+        ].join("")
+
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            generator: async () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        // The link outside the populated container should NOT have a favicon
+        // (it was already processed by the transformer during the build)
+        const outsideMatch = writtenContent.match(
+          /href="https:\/\/github\.com\/outside"[^>]*>Outside<\/a>/,
+        )
+        expect(outsideMatch).not.toBeNull()
+
+        // The link inside the populated container SHOULD have a favicon
+        expect(writtenContent).toContain("github.com/inside")
+        const root = fromHtml(writtenContent)
+        let insideFaviconCount = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "div") return
+          const id = node.properties?.id
+          if (id !== "populate-me") return
+          visit(node, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) insideFaviconCount++
+          })
+        })
+        expect(insideFaviconCount).toBeGreaterThan(0)
+      })
     })
   })
 
