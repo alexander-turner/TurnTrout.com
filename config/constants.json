@@ -91,6 +91,8 @@
     "\u2019",
     "s"
   ],
+  "footnoteHeadingId": "footnotes",
+  "upstreamFootnoteHeadingId": "footnote-label",
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,

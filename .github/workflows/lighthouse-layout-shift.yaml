@@ -142,7 +142,7 @@ jobs:
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
@@ -170,7 +170,7 @@ jobs:
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
             ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
+            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"
 

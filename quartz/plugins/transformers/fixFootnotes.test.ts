@@ -80,7 +80,12 @@ describe("FixFootnotes helpers", () => {
       [
         h("section", [h("h2", { id: "footnote-label" }, ["Footnotes"]), footnoteList()]) as Element,
         true,
-        "section with h2 heading (remark-gfm-footnotes style)",
+        "section with h2 heading using upstream footnote-label id",
+      ],
+      [
+        h("section", [h("h2", { id: "footnotes" }, ["Footnotes"]), footnoteList()]) as Element,
+        true,
+        "section with h2 heading using normalized footnotes id",
       ],
     ])("returns %s for %s", (section, expected) => {
       expect(hasFootnoteHeading(section)).toBe(expected)
@@ -99,7 +104,7 @@ describe("FixFootnotes helpers", () => {
     it("creates h1 with correct id, class, and text", () => {
       const heading = createFootnoteHeading()
       expect(heading.tagName).toBe("h1")
-      expect(heading.properties?.id).toBe("footnote-label")
+      expect(heading.properties?.id).toBe("footnotes") // normalized ID
       expect(heading.properties?.className).toContain("sr-only")
       expect(heading.children[0]).toEqual({ type: "text", value: "Footnotes" })
     })
@@ -121,7 +126,7 @@ describe("FixFootnotes helpers", () => {
       expect(section.children.length).toBe(initialLength)
     })
 
-    it("upgrades h2 to h1", () => {
+    it("upgrades h2 to h1 and normalizes id", () => {
       const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
         h("h2", { id: "footnote-label" }, ["Footnotes"]),
         footnoteList(),
@@ -129,6 +134,7 @@ describe("FixFootnotes helpers", () => {
       addHeadingToSection(section)
       const heading = section.children[0] as Element
       expect(heading.tagName).toBe("h1")
+      expect(heading.properties?.id).toBe("footnotes")
       expect(heading.properties?.className).toContain("sr-only")
       expect(section.children.length).toBe(2)
     })
@@ -265,6 +271,15 @@ describe("FixFootnotes plugin", () => {
         </ol>
       </section>
     `,
+    withAriaDescribedBy: `
+      <p>Text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label">1</a></sup></p>
+      <section data-footnotes class="footnotes">
+        <h2 id="footnote-label">Footnotes</h2>
+        <ol>
+          <li id="user-content-fn-1"><p>Content</p></li>
+        </ol>
+      </section>
+    `,
     noFootnotes: `
       <p>Just regular content</p>
       <iframe src="https://example.com"></iframe>
@@ -276,7 +291,7 @@ describe("FixFootnotes plugin", () => {
       fixtures.orphanedFootnotes,
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("<h1")
         expect(result).toContain("Footnotes")
       },
@@ -286,21 +301,21 @@ describe("FixFootnotes plugin", () => {
       fixtures.wrappedFootnotes,
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         const h1Count = (result.match(/<h1/g) || []).length
         expect(h1Count).toBe(1)
       },
-      "does not modify already properly wrapped footnotes",
+      "preserves already wrapped footnotes, renaming heading id",
     ],
     [
       fixtures.wrappedWithH2,
       (result: string) => {
         expect(result).toContain("<h1")
         expect(result).not.toContain("<h2")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("sr-only")
       },
-      "upgrades h2 heading to h1",
+      "upgrades h2 heading to h1 and normalizes id",
     ],
     [
       fixtures.iframeWithFootnotes,
@@ -313,10 +328,19 @@ describe("FixFootnotes plugin", () => {
     [
       fixtures.sectionWithoutHeading,
       (result: string) => {
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("<h1")
       },
       "adds heading to section missing it",
+    ],
+    [
+      fixtures.withAriaDescribedBy,
+      (result: string) => {
+        expect(result).toContain('aria-describedby="footnotes"')
+        expect(result).not.toContain('aria-describedby="footnote-label"')
+        expect(result).toContain('id="footnotes"')
+      },
+      "renames aria-describedby from upstream footnote-label to footnotes",
     ],
     [
       fixtures.noFootnotes,

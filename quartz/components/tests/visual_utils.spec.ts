@@ -97,7 +97,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>
@@ -113,14 +113,14 @@ test.describe("wrapH1SectionsInSpans", () => {
     // The main heading gets its own span
     expect(html).toContain('<span id="h1-span-main-heading">')
     // The footnote section gets its own span
-    expect(html).toContain('<span id="h1-span-footnote-label">')
+    expect(html).toContain('<span id="h1-span-footnotes">')
 
     // The footnote section is NOT inside the main heading's span
     const mainSpan = page.locator("#h1-span-main-heading")
     await expect(mainSpan.locator("section[data-footnotes]")).toHaveCount(0)
 
     // The footnote section IS inside its own span
-    const footnoteSpan = page.locator("#h1-span-footnote-label")
+    const footnoteSpan = page.locator("#h1-span-footnotes")
     await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
   })
 
@@ -132,7 +132,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>

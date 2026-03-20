@@ -35,6 +35,8 @@ export const {
   twemojiBaseUrl,
   emojisToReplace,
   charsToMoveIntoLinkFromRight,
+  footnoteHeadingId,
+  upstreamFootnoteHeadingId,
   testPageSlug,
   designPageSlug,
   tightScrollTolerance,
