@@ -9,6 +9,20 @@ on:
     branches:
       - main
       - dev
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "Which job to test"
+        type: choice
+        options:
+          - create-issue
+          - close-issue
+      test_branch:
+        description: "Branch to simulate failure/success on"
+        default: "test-auto-fix"
+      run_id:
+        description: "Real workflow run ID to pull logs from (create-issue only)"
+        default: ""
 
 permissions:
   issues: write
@@ -19,18 +33,29 @@ concurrency:
 
 jobs:
   create-fix-issue:
-    if: github.event.workflow_run.conclusion == 'failure'
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_mode == 'create-issue')
     runs-on: ubuntu-24.04
     steps:
       - name: Create issue for Claude to fix
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
-            const runId = context.payload.workflow_run.id;
-            const runUrl = context.payload.workflow_run.html_url;
-            const workflowName = context.payload.workflow_run.name;
-            const sha = context.payload.workflow_run.head_sha.substring(0, 7);
-            const branch = context.payload.workflow_run.head_branch;
+            const isTest = context.eventName === 'workflow_dispatch';
+            const runId = isTest
+              ? (context.payload.inputs.run_id || null)
+              : context.payload.workflow_run.id;
+            const runUrl = isTest
+              ? `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId || 'test'}`
+              : context.payload.workflow_run.html_url;
+            const workflowName = isTest ? 'Test Run' : context.payload.workflow_run.name;
+            const sha = isTest
+              ? context.sha.substring(0, 7)
+              : context.payload.workflow_run.head_sha.substring(0, 7);
+            const branch = isTest
+              ? context.payload.inputs.test_branch
+              : context.payload.workflow_run.head_branch;
             const maxIssues = 3; // Circuit breaker: stop after 3 issues per branch
 
             // --- Circuit breaker: count recent auto-fix issues for this branch ---
@@ -63,6 +88,12 @@ jobs:
             }
 
             // --- Collect failed job logs ---
+            if (!runId) {
+              // workflow_dispatch without a run_id — skip log collection
+              var failedJobNames = 'N/A (test mode)';
+              var jobDetails = '_No run ID provided — skipping log collection._';
+            } else {
+
             const { data: { jobs } } = await github.rest.actions.listJobsForWorkflowRun({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -99,8 +130,10 @@ jobs:
               }
             }
 
-            const failedJobNames = failedJobs.map(j => j.name).join(', ');
-            const jobDetails = jobSummaries.join('\n\n');
+            var failedJobNames = failedJobs.map(j => j.name).join(', ');
+            var jobDetails = jobSummaries.join('\n\n');
+
+            } // end if (runId)
 
             // --- Create the issue ---
             const body = [
@@ -131,14 +164,18 @@ jobs:
             console.log(`Created issue #${issue.number}: ${issue.html_url}`);
 
   close-fixed-issue:
-    if: github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event.workflow_run.conclusion == 'success' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_mode == 'close-issue')
     runs-on: ubuntu-24.04
     steps:
       - name: Close resolved issues
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
-            const branch = context.payload.workflow_run.head_branch;
+            const branch = context.eventName === 'workflow_dispatch'
+              ? context.payload.inputs.test_branch
+              : context.payload.workflow_run.head_branch;
             const marker = `<!-- auto-fix-deploy-${branch} -->`;
 
             const { data: openIssues } = await github.rest.issues.listForRepo({
