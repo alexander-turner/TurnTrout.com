@@ -166,7 +166,7 @@
     "winston-transport": "^4.9.0",
     "ws": "8.18.1",
     "xml2js": "0.6.2",
-    "yargs": "17.7.2"
+    "yargs": "18.0.0"
   },
   "optionalDependencies": {
     "@napi-rs/simple-git-android-arm-eabi": "0.1.19",
