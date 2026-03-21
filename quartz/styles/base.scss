@@ -6,11 +6,6 @@
 @use "./fonts";
 @use "./timeline";
 
-// TEMPORARY: testing lost-pixel detection — revert after confirming failure
-* {
-  color: red !important;
-}
-
 html {
   scroll-behavior: auto;
   width: 100%;
