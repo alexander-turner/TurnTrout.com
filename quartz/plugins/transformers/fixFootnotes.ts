@@ -91,6 +91,18 @@ export function addHeadingToSection(sectionElement: Element): void {
       id: footnoteHeadingId,
       className: ["sr-only"],
     }
+    // Update any autolinked anchor inside the heading (rehypeAutolinkHeadings wraps
+    // heading text in <a href="#old-id">) to point to the normalized ID
+    for (const child of existingHeading.children) {
+      if (
+        child.type === "element" &&
+        child.tagName === "a" &&
+        typeof child.properties?.href === "string" &&
+        child.properties.href === `#${UPSTREAM_FOOTNOTE_HEADING_ID}`
+      ) {
+        child.properties.href = `#${footnoteHeadingId}`
+      }
+    }
   } else {
     sectionElement.children.unshift(createFootnoteHeading() as ElementContent)
   }

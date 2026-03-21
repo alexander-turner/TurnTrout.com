@@ -143,6 +143,19 @@ describe("FixFootnotes helpers", () => {
       expect(heading.properties?.className).toContain("sr-only")
       expect(section.children.length).toBe(2)
     })
+
+    it("updates autolinked anchor href inside heading", () => {
+      const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
+        h("h1", { id: "footnote-label" }, [
+          h("a", { href: "#footnote-label", "data-no-popover": "true" }, ["Footnotes"]),
+        ]),
+        footnoteList(),
+      ]) as Element
+      addHeadingToSection(section)
+      const heading = section.children[0] as Element
+      const link = heading.children[0] as Element
+      expect(link.properties?.href).toBe("#footnotes")
+    })
   })
 
   describe("isAlreadyWrapped", () => {
