@@ -3,6 +3,7 @@ import type { Root, Element, ElementContent, Parent } from "hast"
 import { h } from "hastscript"
 import { visit, SKIP } from "unist-util-visit"
 
+import { footnoteHeadingId } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"
 
 export interface FootnoteLocation {
@@ -43,6 +44,17 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
   return footnoteLocation
 }
 
+/** The ID that mdast-util-to-hast hardcodes on the footnotes heading */
+const UPSTREAM_FOOTNOTE_HEADING_ID = "footnote-label"
+
+/** IDs that identify a footnote heading (upstream uses "footnote-label", we normalize to "footnotes") */
+const FOOTNOTE_HEADING_IDS = new Set([footnoteHeadingId, UPSTREAM_FOOTNOTE_HEADING_ID])
+
+// skipcq: JS-D1001
+function isFootnoteHeadingId(id: unknown): boolean {
+  return typeof id === "string" && FOOTNOTE_HEADING_IDS.has(id)
+}
+
 // skipcq: JS-D1001
 export function hasFootnoteHeading(sectionElement: Element): boolean {
   return sectionElement.children.some((child: ElementContent) => {
@@ -50,14 +62,13 @@ export function hasFootnoteHeading(sectionElement: Element): boolean {
     if (child.type !== "element" || (child.tagName !== "h1" && child.tagName !== "h2")) {
       return false
     }
-    const id = child.properties?.id
-    return id?.toString() === "footnote-label" || id === "footnote-label"
+    return isFootnoteHeadingId(child.properties?.id)
   })
 }
 
 // skipcq: JS-D1001
 export function createFootnoteHeading(): Element {
-  return h("h1", { id: "footnote-label", className: ["sr-only"] }, ["Footnotes"])
+  return h("h1", { id: footnoteHeadingId, className: ["sr-only"] }, ["Footnotes"])
 }
 
 /**
@@ -70,14 +81,27 @@ export function addHeadingToSection(sectionElement: Element): void {
     (child: ElementContent) =>
       child.type === "element" &&
       (child.tagName === "h1" || child.tagName === "h2") &&
-      child.properties?.id?.toString() === "footnote-label",
+      isFootnoteHeadingId(child.properties?.id),
   ) as Element | undefined
 
   if (existingHeading) {
     existingHeading.tagName = "h1"
     existingHeading.properties = {
       ...existingHeading.properties,
+      id: footnoteHeadingId,
       className: ["sr-only"],
+    }
+    // Update any autolinked anchor inside the heading (rehypeAutolinkHeadings wraps
+    // heading text in <a href="#old-id">) to point to the normalized ID
+    for (const child of existingHeading.children) {
+      if (
+        child.type === "element" &&
+        child.tagName === "a" &&
+        typeof child.properties?.href === "string" &&
+        child.properties.href === `#${UPSTREAM_FOOTNOTE_HEADING_ID}`
+      ) {
+        child.properties.href = `#${footnoteHeadingId}`
+      }
     }
   } else {
     sectionElement.children.unshift(createFootnoteHeading() as ElementContent)
@@ -138,7 +162,7 @@ export function cleanupIframeFootnoteText(tree: Root): void {
  * This plugin:
  * 1. Finds footnote lists (ol elements with li children that have user-content-fn- ids)
  * 2. Ensures they're wrapped in a proper section with data-footnotes attribute
- * 3. Adds the footnote-label heading if missing
+ * 3. Adds the footnotes heading if missing
  * 4. Cleans up any text nodes that were placed incorrectly in iframes
  */
 export const FixFootnotes: QuartzTransformerPlugin = () => {
@@ -157,15 +181,28 @@ export const FixFootnotes: QuartzTransformerPlugin = () => {
             // Check if the list is already properly wrapped in a section with data-footnotes
             if (isAlreadyWrapped(location.parent)) {
               addHeadingToSection(location.parent)
-              return
+            } else {
+              // Clean up any text nodes that contain "Footnotes" from preceding iframes
+              cleanupIframeFootnoteText(tree)
+
+              // Create the proper section wrapper and replace the ol
+              const footnoteSection = createFootnoteSection(location.node)
+              location.parent.children[location.index] = footnoteSection as ElementContent
             }
 
-            // Clean up any text nodes that contain "Footnotes" from preceding iframes
-            cleanupIframeFootnoteText(tree)
-
-            // Create the proper section wrapper and replace the ol
-            const footnoteSection = createFootnoteSection(location.node)
-            location.parent.children[location.index] = footnoteSection as ElementContent
+            // Rename aria-describedby from upstream "footnote-label" to "footnotes"
+            visit(tree, "element", (node) => {
+              const describedBy = node.properties?.ariaDescribedBy
+              if (
+                Array.isArray(describedBy) &&
+                describedBy.includes(UPSTREAM_FOOTNOTE_HEADING_ID) &&
+                node.properties
+              ) {
+                node.properties.ariaDescribedBy = describedBy.map((v) =>
+                  v === UPSTREAM_FOOTNOTE_HEADING_ID ? footnoteHeadingId : v,
+                )
+              }
+            })
           }
         },
       ]

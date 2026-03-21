@@ -34,7 +34,7 @@ Over the years, I've worked on lots of research problems. Every time, I felt inv
 
 As of November 2023, I am a research scientist on Google DeepMind's scalable alignment team in the Bay area.[^disclaim] I lead [a MATS mentorship team called "Team Shard". If you want to break into the alignment field, consider applying to work with me](/team-shard). My [Google Scholar is here.](https://scholar.google.com/citations?user=thAHiVcAAAAJ)
 
-This page is chronological. For my most recent work, [navigate to the end of the page!](#footnote-label)
+This page is chronological. For my most recent work, [navigate to the end of the page!](#footnotes)
 
 [^disclaim]: Of course, all of my hot takes are my own, not Google's.
 

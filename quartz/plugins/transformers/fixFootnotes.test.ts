@@ -18,11 +18,11 @@ import {
   cleanupIframeFootnoteText,
 } from "./fixFootnotes"
 
-const parseHtml = async (html: string): Promise<Root> => {
+const parseHtml = (html: string): Root => {
   return unified().use(rehypeParse, { fragment: true }).parse(html) as Root
 }
 
-const stringifyHtml = async (tree: Root): Promise<string> => {
+const stringifyHtml = (tree: Root): string => {
   return String(unified().use(rehypeStringify).stringify(tree))
 }
 
@@ -78,18 +78,28 @@ describe("FixFootnotes helpers", () => {
         "section with wrong heading id",
       ],
       [
+        h("section", [h("h1", { id: undefined }, ["Footnotes"]), footnoteList()]) as Element,
+        false,
+        "section with undefined heading id",
+      ],
+      [
         h("section", [h("h2", { id: "footnote-label" }, ["Footnotes"]), footnoteList()]) as Element,
         true,
-        "section with h2 heading (remark-gfm-footnotes style)",
+        "section with h2 heading using upstream footnote-label id",
+      ],
+      [
+        h("section", [h("h2", { id: "footnotes" }, ["Footnotes"]), footnoteList()]) as Element,
+        true,
+        "section with h2 heading using normalized footnotes id",
       ],
     ])("returns %s for %s", (section, expected) => {
       expect(hasFootnoteHeading(section)).toBe(expected)
     })
 
-    it("detects heading in parsed HTML", async () => {
+    it("detects heading in parsed HTML", () => {
       const html =
         '<section><h1 id="footnote-label">Footnotes</h1><ol><li id="user-content-fn-1">Content</li></ol></section>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const section = tree.children[0] as Element
       expect(hasFootnoteHeading(section)).toBe(true)
     })
@@ -99,7 +109,7 @@ describe("FixFootnotes helpers", () => {
     it("creates h1 with correct id, class, and text", () => {
       const heading = createFootnoteHeading()
       expect(heading.tagName).toBe("h1")
-      expect(heading.properties?.id).toBe("footnote-label")
+      expect(heading.properties?.id).toBe("footnotes") // normalized ID
       expect(heading.properties?.className).toContain("sr-only")
       expect(heading.children[0]).toEqual({ type: "text", value: "Footnotes" })
     })
@@ -121,7 +131,7 @@ describe("FixFootnotes helpers", () => {
       expect(section.children.length).toBe(initialLength)
     })
 
-    it("upgrades h2 to h1", () => {
+    it("upgrades h2 to h1 and normalizes id", () => {
       const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
         h("h2", { id: "footnote-label" }, ["Footnotes"]),
         footnoteList(),
@@ -129,8 +139,22 @@ describe("FixFootnotes helpers", () => {
       addHeadingToSection(section)
       const heading = section.children[0] as Element
       expect(heading.tagName).toBe("h1")
+      expect(heading.properties?.id).toBe("footnotes")
       expect(heading.properties?.className).toContain("sr-only")
       expect(section.children.length).toBe(2)
+    })
+
+    it("updates autolinked anchor href inside heading", () => {
+      const section = h("section", { dataFootnotes: true, className: ["footnotes"] }, [
+        h("h1", { id: "footnote-label" }, [
+          h("a", { href: "#footnote-label", "data-no-popover": "true" }, ["Footnotes"]),
+        ]),
+        footnoteList(),
+      ]) as Element
+      addHeadingToSection(section)
+      const heading = section.children[0] as Element
+      const link = heading.children[0] as Element
+      expect(link.properties?.href).toBe("#footnotes")
     })
   })
 
@@ -143,9 +167,9 @@ describe("FixFootnotes helpers", () => {
       expect(isAlreadyWrapped(parent)).toBe(expected)
     })
 
-    it("returns true for section with data-footnotes from parsed HTML", async () => {
+    it("returns true for section with data-footnotes from parsed HTML", () => {
       const html = '<section data-footnotes class="footnotes"></section>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const section = tree.children[0] as Element
       expect(isAlreadyWrapped(section)).toBe(true)
     })
@@ -191,26 +215,26 @@ describe("FixFootnotes helpers", () => {
         (result: string) => expect(result).toContain("Keep this"),
         "handles mixed text and whitespace",
       ],
-    ])("%s", async (html, assertion) => {
-      const tree = await parseHtml(html)
+    ])("%s", (html, assertion) => {
+      const tree = parseHtml(html)
       cleanupIframeFootnoteText(tree)
-      const result = await stringifyHtml(tree)
+      const result = stringifyHtml(tree)
       assertion(result)
     })
   })
 
   describe("findFootnoteList", () => {
-    it("finds footnote list", async () => {
+    it("finds footnote list", () => {
       const html = '<p>Text</p><ol><li id="user-content-fn-1">Footnote</li></ol>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const location = findFootnoteList(tree)
       expect(location).not.toBeNull()
       expect(location?.node.tagName).toBe("ol")
     })
 
-    it("returns null when no footnote list exists", async () => {
+    it("returns null when no footnote list exists", () => {
       const html = '<p>Text</p><ol><li id="regular">Item</li></ol>'
-      const tree = await parseHtml(html)
+      const tree = parseHtml(html)
       const location = findFootnoteList(tree)
       expect(location).toBeNull()
     })
@@ -265,6 +289,15 @@ describe("FixFootnotes plugin", () => {
         </ol>
       </section>
     `,
+    withAriaDescribedBy: `
+      <p>Text<sup><a href="#user-content-fn-1" id="user-content-fnref-1" data-footnote-ref aria-describedby="footnote-label other-desc">1</a></sup></p>
+      <section data-footnotes class="footnotes">
+        <h2 id="footnote-label">Footnotes</h2>
+        <ol>
+          <li id="user-content-fn-1"><p>Content</p></li>
+        </ol>
+      </section>
+    `,
     noFootnotes: `
       <p>Just regular content</p>
       <iframe src="https://example.com"></iframe>
@@ -276,7 +309,7 @@ describe("FixFootnotes plugin", () => {
       fixtures.orphanedFootnotes,
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("<h1")
         expect(result).toContain("Footnotes")
       },
@@ -286,21 +319,21 @@ describe("FixFootnotes plugin", () => {
       fixtures.wrappedFootnotes,
       (result: string) => {
         expect(result).toContain("<section data-footnotes")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         const h1Count = (result.match(/<h1/g) || []).length
         expect(h1Count).toBe(1)
       },
-      "does not modify already properly wrapped footnotes",
+      "preserves already wrapped footnotes, renaming heading id",
     ],
     [
       fixtures.wrappedWithH2,
       (result: string) => {
         expect(result).toContain("<h1")
         expect(result).not.toContain("<h2")
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("sr-only")
       },
-      "upgrades h2 heading to h1",
+      "upgrades h2 heading to h1 and normalizes id",
     ],
     [
       fixtures.iframeWithFootnotes,
@@ -313,10 +346,19 @@ describe("FixFootnotes plugin", () => {
     [
       fixtures.sectionWithoutHeading,
       (result: string) => {
-        expect(result).toContain('id="footnote-label"')
+        expect(result).toContain('id="footnotes"')
         expect(result).toContain("<h1")
       },
       "adds heading to section missing it",
+    ],
+    [
+      fixtures.withAriaDescribedBy,
+      (result: string) => {
+        expect(result).toContain('aria-describedby="footnotes other-desc"')
+        expect(result).not.toContain('aria-describedby="footnote-label')
+        expect(result).toContain('id="footnotes"')
+      },
+      "renames aria-describedby, preserving other values",
     ],
     [
       fixtures.noFootnotes,
