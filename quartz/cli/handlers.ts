@@ -391,7 +391,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       const { css } = await generate({
         inline: false,
         base: outputDir,
-        src: "index.html",
+        src: "test-page.html",
         width: 1700,
         height: 900,
         css: [

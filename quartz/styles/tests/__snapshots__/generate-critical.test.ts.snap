@@ -93,6 +93,12 @@ em {
   --blue: #3e6ccb;
 }
 
+.float-right {
+  float: right;
+  max-width: 45%;
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(2 * $base-margin);
+}
+
 .sidebar {
   display: flex;
   flex-direction: column;
