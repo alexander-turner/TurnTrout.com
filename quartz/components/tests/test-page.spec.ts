@@ -232,7 +232,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
     await expect(bigFaviconDemo).toBeVisible()
