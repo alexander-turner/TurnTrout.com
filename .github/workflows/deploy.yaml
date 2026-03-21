@@ -212,11 +212,11 @@ jobs:
           ADDED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
           DELETED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
 
-          # If none of the patterns matched, warn — the LP summary format may have changed
+          # If none of the patterns matched, fail — the LP summary format may have changed
           if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
-            echo "::warning::Could not parse any counts from Lost Pixel summary. Format may have changed."
+            echo "::error::Could not parse any counts from Lost Pixel summary. Format may have changed."
             echo "Raw summary: $SUMMARY"
-            exit 0
+            exit 1
           fi
 
           CHANGED=${CHANGED:-0}
