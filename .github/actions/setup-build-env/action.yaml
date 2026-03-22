@@ -21,9 +21,9 @@ runs:
         cache-puppeteer: "true"
         install-python: ${{ inputs.install-python }}
 
-    - name: Install browsers (Playwright chromium for Mermaid, Puppeteer Chrome for critical CSS)
+    - name: Install Chromium for Mermaid rendering and critical CSS
       if: inputs.install-node-deps == 'true'
-      run: pnpm run install-browsers
+      run: pnpm playwright install chromium && npx puppeteer browsers install chrome
       shell: bash
 
     - name: Install Build Dependencies
