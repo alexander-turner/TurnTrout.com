@@ -1,5 +1,3 @@
-@use "./variables.scss" as *;
-
 @media print {
   // ── Hide interactive / navigation UI ─────────────────────────────
   #left-sidebar,
@@ -17,6 +15,8 @@
   footer,
   .scroll-indicator::before,
   .scroll-indicator::after,
+  .favicon,
+  .favicon-span,
   .manifold-embed,
   iframe {
     display: none !important;
@@ -43,12 +43,6 @@
   @page {
     margin: 2cm 2.5cm;
     size: auto;
-  }
-
-  // ── Typography: tighten for print ────────────────────────────────
-  body {
-    font-size: 11pt;
-    line-height: 1.5;
   }
 
   h1,
@@ -111,14 +105,6 @@
     border-top: 1px solid #ccc;
     padding-top: 1em;
     font-size: 0.9em;
-
-    &::before {
-      content: "Notes";
-      display: block;
-      font-weight: $semi-bold-weight;
-      font-size: 1.1em;
-      margin-bottom: 0.5em;
-    }
   }
 
   // Hide backref arrows (useless in print)
