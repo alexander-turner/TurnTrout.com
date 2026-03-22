@@ -529,8 +529,7 @@ async function getTimestampAfterNavigation(page: Page): Promise<number> {
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // WebKit (Safari) resets video.currentTime after SPA navigation; skip until fixed.
-  test.skip(isSafariBrowser(page), "Safari resets video currentTime after SPA navigation")
+  test.slow(isSafariBrowser(page), "WebKit needs extra time for video buffering")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -544,8 +543,7 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // WebKit resets video.currentTime after page refresh; skip until fixed.
-  test.skip(isSafariBrowser(page), "Safari resets video currentTime after page refresh")
+  test.slow(isSafariBrowser(page), "WebKit needs extra time for video buffering")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

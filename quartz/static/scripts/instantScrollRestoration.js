@@ -45,6 +45,14 @@
 
   // Don't restore hash if we have a saved scroll position - user manually scrolled away
   const shouldRestoreHash = !savedScroll && location.hash.length > 1
+
+  // If we have a saved scroll position and a hash is present, strip the hash
+  // from the URL so the browser doesn't fire native hash-scroll after our
+  // restoration (WebKit fires this late, overriding the restored position).
+  if (savedScroll !== null && location.hash.length > 1) {
+    var hashlessUrl = location.pathname + location.search
+    history.replaceState(history.state, "", hashlessUrl)
+  }
   /**
    * Returns the computed scroll-margin-top (in px) for a given element.
    * Falls back to 0 if the property is unavailable or unparsable.

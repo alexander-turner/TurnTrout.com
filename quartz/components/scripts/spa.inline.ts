@@ -12,6 +12,7 @@ import {
   instantScrollRestoreKey,
   scrollPositionKeyPrefix,
   scrollPositionMinThreshold,
+  sessionStoragePondVideoKey,
   SEARCH_MATCH_CLASS,
 } from "../constants"
 import { debounce } from "./component_script_utils"
@@ -518,6 +519,14 @@ let lastKnownPathname = window.location.pathname
  */
 async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }): Promise<void> {
   removePopovers()
+
+  // Save video timestamp before DOM morph so it survives navigation.
+  // The timeupdate listener in navbar.inline.ts saves periodically, but if the
+  // video is paused the last saved value may be stale.
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
+  if (videoElement) {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+  }
 
   // 1. Persist the current scroll position in the *existing* history entry so that
   // navigating back restores the correct position (e.g., top-of-page before an

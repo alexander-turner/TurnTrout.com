@@ -278,9 +278,9 @@ test.describe("Scroll Behavior", () => {
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
     }, testInfo) => {
-      test.skip(
+      test.slow(
         testInfo.project.use.browserName === "webkit",
-        "WebKit has unreliable scroll restoration after hash navigation",
+        "WebKit needs extra time for scroll restoration after hash navigation",
       )
 
       const anchorId = await createFinalAnchor(page)
@@ -763,11 +763,13 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
   })
 
-  test("is removed after navigation to a different page", async ({ page }) => {
+  test("is removed after navigation to a different page", async ({ page }, testInfo) => {
+    test.slow(testInfo.project.use.browserName === "webkit", "WebKit SPA navigation can be slow")
+
     const cssLocator = page.locator("style#critical-css")
     await expect(cssLocator).toHaveCount(0)
 
-    // Create a link to another page
+    // Create a link to another page and navigate via SPA
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "/design"
@@ -776,8 +778,7 @@ test.describe("Critical CSS", () => {
       document.body.appendChild(link)
     })
 
-    await page.click("#design-link")
-    await page.waitForURL("**/design")
+    await triggerAndWaitForSPANav(page, () => page.click("#design-link"))
 
     await expect(cssLocator).toHaveCount(0)
   })
