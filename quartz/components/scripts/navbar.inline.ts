@@ -100,6 +100,15 @@ function setupPondVideo(): void {
       videoElement.play().catch((error: Error) => {
         console.error("[setupPondVideo] Play failed:", error)
       })
+    } else if (savedTime) {
+      // Safari/WebKit may not apply currentTime on paused videos reliably.
+      // A brief play/pause cycle forces the seek through the video pipeline.
+      videoElement
+        .play()
+        .then(() => videoElement.pause())
+        .catch(() => {
+          // AbortError is expected if pause() races with play() — harmless
+        })
     }
   }
 
