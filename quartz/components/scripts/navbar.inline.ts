@@ -120,6 +120,13 @@ function setupPondVideo(): void {
     videoElement.addEventListener("loadedmetadata", restoreOnce, { once: true, signal })
     videoElement.addEventListener("loadeddata", restoreOnce, { once: true, signal })
     videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
+
+    // Safari may not eagerly load video metadata after a full page reload when
+    // autoplay is disabled, despite preload="auto". Explicitly kick off loading
+    // so the metadata events above will fire and the saved timestamp is restored.
+    if (savedTime && !autoplayEnabled) {
+      videoElement.load()
+    }
   }
 
   // Save timestamp before page unload/refresh
