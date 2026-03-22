@@ -64,9 +64,15 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build_and_deploy:
+  build:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: lighthouse-public-dir
+
+  deploy:
+    needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -78,11 +84,15 @@ jobs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
 
-      - name: Build Quartz
-        run: pnpm build
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: lighthouse-public-dir
+          path: public/
 
       - name: Install subfont
         run: pnpm add -g subfont
@@ -129,7 +139,7 @@ jobs:
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    needs: build_and_deploy
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: CLS Check (Desktop)
@@ -137,13 +147,13 @@ jobs:
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design#footnote-label
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnotes
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
@@ -158,7 +168,7 @@ jobs:
   lighthouse_mobile_cls:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    needs: build_and_deploy
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: CLS Check (Mobile)
@@ -166,13 +176,13 @@ jobs:
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design#footnote-label
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnotes
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"
 
@@ -187,7 +197,7 @@ jobs:
   lighthouse_full_audit:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    needs: build_and_deploy
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
@@ -195,12 +205,12 @@ jobs:
         uses: treosh/lighthouse-ci-action@fcd65974f7c4c2bf0ee9d09b84d2489183c29726 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/about
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/research
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/posts
+            ${{ needs.deploy.outputs.deploy_url }}/
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/about
+            ${{ needs.deploy.outputs.deploy_url }}/research
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/posts
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-full-config.json"
 

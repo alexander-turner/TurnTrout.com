@@ -48,26 +48,10 @@ jobs:
   build:
     name: site-checks-build
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 0
-          filter: blob:none
-
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
-
-      - name: Build site
-        run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: site-build-checks-public-dir
-          path: public/
-          retention-days: 1
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: site-build-checks-public-dir
+      fetch-depth: 0
 
   built-site-checks:
     needs: build
