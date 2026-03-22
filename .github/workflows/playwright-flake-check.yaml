@@ -51,23 +51,9 @@ jobs:
     name: flake-check-build
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
-
-      - name: Build site
-        run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: flake-check-public-dir
-          path: public/
-          retention-days: 1
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: flake-check-public-dir
 
   flake-check:
     needs: [should-run, build]
@@ -88,8 +74,8 @@ jobs:
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
-      - name: Install Puppeteer Chrome
-        run: pnpm exec puppeteer browsers install chrome
+      - name: Install browsers
+        run: pnpm run install-browsers
 
       - name: Download built site
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7

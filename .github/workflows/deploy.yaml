@@ -30,7 +30,14 @@ permissions:
   pull-requests: write
 
 jobs:
+  deploy-build:
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: deploy-public-dir
+      fetch-depth: 0
+
   prepare-deploy:
+    needs: deploy-build
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
@@ -42,8 +49,11 @@ jobs:
       - name: Setup Build Environment
         uses: ./.github/actions/setup-build-env
 
-      - name: Build Quartz and generate critical CSS
-        run: pnpm build
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: deploy-public-dir
+          path: public/
 
       # --- PR preview: deploy immediately without subfont ---
       - name: Deploy PR preview to Cloudflare Pages
@@ -145,7 +155,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|playwright-tests \(\d+\/\d+\)|combine-and-upload|Summarize Failures|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
+          check-regexp: '^(playwright-should-run|playwright-build / build|visual-should-run|visual-testing-build / build|site-checks-build / build|detect-changes|visual-testing \(\d+\/\d+\)|playwright-tests \(\d+\/\d+\)|combine-and-upload|Summarize Failures|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y-build / build|a11y|deploy-build / build)$'
           wait-interval: 10
           allowed-conclusions: success,skipped
           running-workflow-name: "Deploy to Cloudflare"
