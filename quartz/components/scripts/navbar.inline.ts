@@ -103,11 +103,10 @@ function setupPondVideo(): void {
     }
   }
 
-  // Wait for video to have enough data buffered. readyState >= 2 (HAVE_CURRENT_DATA)
-  // is sufficient for setting currentTime; >= 3 (HAVE_FUTURE_DATA) for smooth playback.
-  // We listen for both canplay and loadeddata because Safari may not reliably fire
-  // canplay after DOM morphing or page refresh.
-  if (videoElement.readyState >= 2) {
+  // Wait for video metadata to load. readyState >= 1 (HAVE_METADATA) is sufficient
+  // for setting currentTime. We listen for loadedmetadata, loadeddata, and canplay
+  // because Safari may not reliably fire later events after DOM morphing or page refresh.
+  if (videoElement.readyState >= 1) {
     console.debug("[setupPondVideo] Video already ready, readyState:", videoElement.readyState)
     restoreVideoState()
   } else {
@@ -118,8 +117,9 @@ function setupPondVideo(): void {
       restored = true
       restoreVideoState()
     }
-    videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("loadedmetadata", restoreOnce, { once: true, signal })
     videoElement.addEventListener("loadeddata", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
   }
 
   // Save timestamp before page unload/refresh

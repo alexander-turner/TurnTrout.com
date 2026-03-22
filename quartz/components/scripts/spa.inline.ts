@@ -589,10 +589,45 @@ function restoreScrollPosition(targetUrl: URL): void {
   if (typeof scrollTarget === "number") {
     console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
     window.scrollTo({ top: scrollTarget, behavior: "instant" })
+
+    // Safari/WebKit fires its own native hash-scroll after our restoration when
+    // the URL contains a hash, overriding the saved position. Monitor for drift
+    // and re-apply for several frames to win the race.
+    if (targetUrl.hash) {
+      guardScrollAgainstHashDrift(scrollTarget)
+    }
   } else if (targetUrl.hash) {
     console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
     scrollToUrlTarget(targetUrl.hash)
   }
+}
+
+/**
+ * Monitors scroll position for a number of frames and corrects any drift caused
+ * by the browser's native hash-scroll overriding our programmatic restoration.
+ * Cancels immediately if the user interacts (wheel/touch/pointer/key).
+ */
+function guardScrollAgainstHashDrift(targetPos: number): void {
+  let frameCount = 0
+  const MAX_FRAMES = 60
+  let cancelled = false
+
+  const cancel = () => {
+    cancelled = true
+  }
+  for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+    window.addEventListener(event, cancel, { passive: true, once: true })
+  }
+
+  const monitor = () => {
+    if (cancelled || frameCount >= MAX_FRAMES) return
+    if (Math.abs(window.scrollY - targetPos) > 2) {
+      window.scrollTo({ top: targetPos, behavior: "instant" })
+    }
+    frameCount++
+    requestAnimationFrame(monitor)
+  }
+  requestAnimationFrame(monitor)
 }
 
 /**
