@@ -1110,11 +1110,6 @@ test.describe("Checkboxes", () => {
       keysToRemove.forEach((key) => localStorage.removeItem(key))
     }
 
-    // Ensure clean slate before each test
-    test.beforeEach(async ({ page }) => {
-      await page.addInitScript(clearCheckboxKeys)
-    })
-
     // Clean up after each test
     test.afterEach(async ({ page }) => {
       await page.evaluate(clearCheckboxKeys)
@@ -1127,18 +1122,13 @@ test.describe("Checkboxes", () => {
       // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
       // Without this fix, users would see a flash of the wrong checkbox state.
 
-      const checkboxKey = "test-page-checkbox-0"
-
-      // Set up localStorage BEFORE page load to simulate a returning user
-      // who previously checked the first checkbox (which defaults to unchecked in HTML)
-      await page.addInitScript(
-        ({ key }) => {
-          localStorage.setItem(key, "true")
-        },
-        { key: checkboxKey },
-      )
-
-      await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+      // Set localStorage on the live page, then reload to trigger restoration.
+      // We use evaluate+reloadPage instead of addInitScript+gotoPage because
+      // WebKit treats same-URL goto() as a soft refresh that skips init scripts.
+      await page.evaluate(() => {
+        localStorage.setItem("test-page-checkbox-0", "true")
+      })
+      await reloadPage(page, "domcontentloaded")
 
       // Check checkbox state — MutationObserver restores before first paint, but
       // Safari may deliver the callback slightly after domcontentloaded.
@@ -1163,15 +1153,14 @@ test.describe("Checkboxes", () => {
       }) => {
         const checkboxKey = `test-page-checkbox-${index}`
 
-        // Set up localStorage BEFORE page load
-        await page.addInitScript(
+        // Set localStorage on the live page, then reload to trigger restoration.
+        await page.evaluate(
           ({ key, state }) => {
             localStorage.setItem(key, state ? "true" : "false")
           },
           { key: checkboxKey, state: savedState },
         )
-
-        await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+        await reloadPage(page, "domcontentloaded")
 
         // Check checkbox state — MutationObserver restores before first paint, but
         // Safari may deliver the callback slightly after domcontentloaded.
