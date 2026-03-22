@@ -49,7 +49,7 @@
   // When we have a saved scroll AND a hash, the browser will try to hash-scroll
   // after our restoration (WebKit fires this especially late). We extend monitoring
   // to win the race via RAF re-application rather than mutating the URL.
-  var expectHashConflict = savedScroll !== null && location.hash.length > 1
+  const expectHashConflict = savedScroll !== null && location.hash.length > 1
 
   /**
    * Returns the computed scroll-margin-top (in px) for a given element.
