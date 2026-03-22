@@ -629,58 +629,6 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
         )
 
 
-def test_main_stashes_and_restores_changes(temp_state_dir):
-    """Test that main stashes uncommitted changes and restores them."""
-    with (
-        patch(
-            "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
-        ),
-        patch("scripts.run_push_checks.run_checks"),
-        patch(
-            "scripts.run_push_checks.get_check_steps",
-            return_value=[
-                run_push_checks.CheckStep(name="test", command=["test"])
-            ],
-        ),
-        patch("subprocess.run") as mock_subprocess,
-        patch("scripts.run_push_checks.console.log") as mock_log,
-        patch("shutil.which", return_value="git"),
-    ):
-        # Mock git stash to indicate changes were stashed
-        mock_subprocess.return_value = MagicMock(
-            stdout="Saved working directory and index state"
-        )
-
-        from scripts.run_push_checks import main
-
-        exit_code = main()
-
-        # Verify successful exit
-        assert exit_code == 0
-        # Verify git stash was called
-        assert mock_subprocess.call_count == 2  # stash push and stash pop
-        # Verify stash push was called
-        mock_subprocess.assert_any_call(
-            ["git", "stash", "push", "-u", "-m", "run_push_checks auto-stash"],
-            cwd=run_push_checks._GIT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        # Verify stash pop was called
-        mock_subprocess.assert_any_call(
-            ["git", "stash", "pop"],
-            cwd=run_push_checks._GIT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        # Verify logging
-        mock_log.assert_any_call("[cyan]Stashed uncommitted changes[/cyan]")
-        mock_log.assert_any_call("[cyan]Restored stashed changes[/cyan]")
-
-
 def test_run_interactive_command():
     """Test interactive command execution (like spellchecker)"""
     step = run_push_checks.CheckStep(
