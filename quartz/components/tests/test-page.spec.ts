@@ -127,6 +127,13 @@ test.describe("Test page sections", () => {
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
   })
+
+  test("Print media layout (lostpixel)", async ({ page }, testInfo) => {
+    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
+    await page.emulateMedia({ media: "print" })
+    await getH1Screenshots(page, testInfo, null, "light")
+  })
 })
 
 test.describe("Unique content around the site", () => {
