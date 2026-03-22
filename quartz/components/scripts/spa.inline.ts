@@ -207,15 +207,23 @@ async function updatePage(html: Document, url: URL): Promise<void> {
   // micromorph will merge it into the existing DOM structure
   html.body.appendChild(announcer)
 
-  // Clean up potential extension-injected siblings around the video
+  // Clean up non-video siblings in both old and new containers so micromorph
+  // compares them positionally as [video] vs [video] → MODIFY (preserves the
+  // existing loaded element).  Without this, whitespace text nodes or
+  // extension-injected elements cause a position mismatch that REPLACEs the
+  // video, losing its readyState/currentTime.
   const videoElement = document.getElementById(pondVideoId)
   if (videoElement?.parentElement) {
-    const parent = videoElement.parentElement
-    Array.from(parent.childNodes).forEach((node) => {
-      if (node !== videoElement) {
-        parent.removeChild(node)
+    const containerId = videoElement.parentElement.id
+    for (const root of [document, html]) {
+      const container = root.getElementById(containerId)
+      const video = container?.querySelector(`#${pondVideoId}`)
+      if (container && video) {
+        Array.from(container.childNodes).forEach((node) => {
+          if (node !== video) container.removeChild(node)
+        })
       }
-    })
+    }
   }
 
   console.debug(`[updatePage] Starting DOM update for ${url.pathname}`)
