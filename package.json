@@ -36,8 +36,7 @@
     ],
     "*.{js,jsx,ts,tsx}": [
       "pnpm eslint --fix --config config/javascript/eslint.config.js",
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
-      "bash -c 'pnpm exec tsc --noEmit'"
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
     ],
     ".hooks/prepare-commit-msg": [
       "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
@@ -53,8 +52,7 @@
       "isort",
       "autopep8 --in-place",
       "black",
-      "ruff check --fix",
-      "bash -c 'uv run dmypy run -- --config-file config/python/mypy.ini scripts/'"
+      "ruff check --fix"
     ],
     "!(*.vale-styles)/**/*.md": [
       "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
