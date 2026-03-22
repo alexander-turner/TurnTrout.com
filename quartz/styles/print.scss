@@ -1,0 +1,168 @@
+@use "./variables.scss" as *;
+
+@media print {
+  // ── Hide interactive / navigation UI ─────────────────────────────
+  #left-sidebar,
+  #right-sidebar,
+  #search-container,
+  #search-layout,
+  .search,
+  .popover,
+  .skip-to-content,
+  #menu-button,
+  #subscription-and-contact,
+  .sequence-links,
+  .sequence-nav,
+  .after-article-components,
+  footer,
+  .scroll-indicator::before,
+  .scroll-indicator::after,
+  .manifold-embed,
+  iframe {
+    display: none !important;
+  }
+
+  // ── Layout: single column, full width ────────────────────────────
+  .page,
+  #quartz-body,
+  #center-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .page-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+  }
+
+  // ── Page margins ─────────────────────────────────────────────────
+  @page {
+    margin: 2cm 2.5cm;
+    size: auto;
+  }
+
+  // ── Typography: tighten for print ────────────────────────────────
+  body {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid;
+  }
+
+  p,
+  li,
+  blockquote,
+  figcaption,
+  dt,
+  dd {
+    orphans: 3;
+    widows: 3;
+  }
+
+  // ── Prevent breaks inside key elements ───────────────────────────
+  figure,
+  blockquote,
+  pre,
+  table,
+  .admonition,
+  img {
+    break-inside: avoid;
+  }
+
+  // ── Images & video ───────────────────────────────────────────────
+  img,
+  video {
+    max-width: 100% !important;
+    mix-blend-mode: normal !important;
+  }
+
+  // ── Links: show URLs for external links ──────────────────────────
+  article a[href^="http"]:not([href*="turntrout.com"])::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    word-break: break-all;
+  }
+
+  // Don't append URLs to footnote backrefs or anchor links
+  a[data-footnote-backref]::after,
+  a[role="anchor"]::after,
+  a[id*="fnref-"]::after {
+    content: none !important;
+  }
+
+  a {
+    background-color: transparent !important;
+  }
+
+  // ── Footnotes: clean endnotes section ────────────────────────────
+  .footnotes {
+    margin-top: 2em;
+    border-top: 1px solid #ccc;
+    padding-top: 1em;
+    font-size: 0.9em;
+
+    &::before {
+      content: "Notes";
+      display: block;
+      font-weight: $semi-bold-weight;
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+    }
+  }
+
+  // Hide backref arrows (useless in print)
+  .data-footnote-backref,
+  a[data-footnote-backref] {
+    display: none !important;
+  }
+
+  // Footnote references: plain superscript numbers
+  a[id*="fnref-"] {
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  // ── Code blocks ──────────────────────────────────────────────────
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    font-size: 0.85em;
+  }
+
+  // ── Spoilers: reveal in print ────────────────────────────────────
+  .spoiler-overlay {
+    display: none !important;
+  }
+
+  .spoiler-content {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  // ── Collapsibles: expand in print ────────────────────────────────
+  .collapsible .content {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .fold-icon {
+    display: none !important;
+  }
+
+  // ── Disable transitions/animations ───────────────────────────────
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
