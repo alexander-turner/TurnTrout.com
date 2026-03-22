@@ -603,16 +603,22 @@ export async function gotoPage(
  *  Avoids page.reload() which can trigger "WebKit encountered an internal
  *  error" crashes in the Safari driver.  A same-URL goto() in Safari/WebKit
  *  may be treated as a soft refresh that skips re-running init scripts, so we
- *  navigate to a different same-origin path first to force a full page load.
- *  Using a same-origin path (not about:blank) preserves sessionStorage. */
+ *  bounce through a minimal same-origin page first to force a full page load.
+ *  Using a same-origin page (not about:blank) preserves sessionStorage, and
+ *  returning empty HTML avoids loading the SPA framework which could intercept
+ *  the subsequent navigation. */
 export async function reloadPage(
   page: Page,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
   const url = new URL(page.url())
-  // Navigate to a different same-origin path to force a real reload
-  const bouncePath = url.pathname === "/" ? "/404" : "/"
-  await page.goto(`${url.origin}${bouncePath}`, { waitUntil: "commit" })
+  // Serve a minimal same-origin page: preserves sessionStorage, no SPA interference
+  const bounceUrl = `${url.origin}/__reload_bounce__`
+  await page.route(bounceUrl, (route) =>
+    route.fulfill({ body: "<html></html>", contentType: "text/html" }),
+  )
+  await page.goto(bounceUrl, { waitUntil: "commit" })
+  await page.unroute(bounceUrl)
   await gotoPage(page, url.href, loadState)
 }
 
