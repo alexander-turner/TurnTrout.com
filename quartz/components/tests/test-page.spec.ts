@@ -132,7 +132,7 @@ test.describe("Test page sections", () => {
     test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
     await page.emulateMedia({ media: "print" })
-    await getH1Screenshots(page, testInfo, null, "light")
+    await takeRegressionScreenshot(page, testInfo, "print-layout")
   })
 })
 
