@@ -73,6 +73,7 @@ function init() {
   // mutations (e.g. from accessibility testing tools that inject iframes).
   const contentRoot =
     document.querySelector("article") || document.querySelector("#quartz-body") || document.body
+  if (!contentRoot) return
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       const nodes = Array.from(mutation.addedNodes)
