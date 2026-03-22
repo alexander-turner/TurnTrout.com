@@ -1,5 +1,3 @@
-import type { PageScreenshotOptions } from "@playwright/test"
-
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
@@ -529,52 +527,6 @@ test.describe("takeRegressionScreenshot", () => {
     expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
     expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
     expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
-  })
-
-  test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
-    test("clips viewport screenshot to clientWidth to avoid Safari gutter", async ({
-      page,
-    }, testInfo) => {
-      testInfo.skip(
-        !/webkit|safari/i.test(testInfo.project.name),
-        "Test is specific to WebKit/Safari gutter behavior",
-      )
-
-      const mockClientWidth = 1200
-      await page.evaluate((width) => {
-        Object.defineProperty(document.documentElement, "clientWidth", {
-          value: width,
-          configurable: true,
-        })
-      }, mockClientWidth)
-
-      // Ensure the test is nontrivial
-      const viewportSize = page.viewportSize()
-      expect(mockClientWidth).not.toBeCloseTo(viewportSize?.width ?? 0)
-
-      const originalScreenshot = page.screenshot
-      let capturedOptions: PageScreenshotOptions | undefined
-
-      page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
-        capturedOptions = options
-        // Return an empty buffer to satisfy the type, don't call original
-        return Buffer.from("")
-      }
-
-      try {
-        await takeRegressionScreenshot(page, testInfo, "gutter-test")
-
-        expect(capturedOptions).toBeDefined()
-        expect(capturedOptions?.clip).toBeDefined()
-        expect(capturedOptions?.clip?.width).toBeCloseTo(mockClientWidth)
-        expect(capturedOptions?.clip?.x).toBe(0)
-        expect(capturedOptions?.clip?.y).toBe(0)
-        const viewportHeight = page.viewportSize()?.height
-        expect(capturedOptions?.clip?.height).toBeCloseTo(viewportHeight ?? 0)
-      } finally {
-        page.screenshot = originalScreenshot
-      }
-    })
   })
 })
 

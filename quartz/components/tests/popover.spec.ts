@@ -49,12 +49,6 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   page,
   dummyLink,
 }, testInfo) => {
-  // DOM isolation (hiding all other elements) crashes Desktop Safari WebKit;
-  // visual coverage is provided by the Chrome and Firefox configurations.
-  test.skip(
-    page.context().browser()?.browserType().name() === "webkit",
-    "DOM isolation crashes Desktop Safari WebKit",
-  )
   await expect(dummyLink).toBeVisible()
 
   // Initial state - no popover
