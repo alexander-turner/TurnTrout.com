@@ -48,7 +48,6 @@ test.beforeEach(async ({ page }) => {
         for (const node of mutation.addedNodes) {
           if (node instanceof HTMLMediaElement) {
             node.autoplay = false
-            node.preload = "metadata"
             node.pause()
           }
           // Also check children of added container nodes
@@ -56,7 +55,6 @@ test.beforeEach(async ({ page }) => {
             for (const media of node.querySelectorAll("video, audio")) {
               if (media instanceof HTMLMediaElement) {
                 media.autoplay = false
-                media.preload = "metadata"
                 media.pause()
               }
             }
