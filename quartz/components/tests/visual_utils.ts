@@ -141,8 +141,6 @@ async function performDOMIsolation(
  * @returns A promise that resolves once the DOM restoration is complete.
  */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
-  // WebKit may crash during screenshots; if the page is already closed there's nothing to restore
-  if (page.isClosed()) return
   await page.evaluate(() => {
     const hiddenElements = window.__elementsToRestoreData
     if (hiddenElements) {
@@ -217,19 +215,6 @@ export async function takeRegressionScreenshot(
       await restoreDOM()
     }
   } else {
-    // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
-    if (!options?.clip) {
-      const viewportSize = page.viewportSize()
-      if (!viewportSize) throw new Error("Could not get viewport size for clipping")
-      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
-      screenshotOptions.clip = {
-        x: 0,
-        y: 0,
-        width: clientWidth,
-        height: viewportSize.height,
-      }
-    }
-
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
