@@ -145,7 +145,10 @@ test.describe("Test page sections", () => {
     await page.emulateMedia({ media: "screen" })
     await setTheme(page, "dark")
     await page.emulateMedia({ media: "print" })
-    const darkScreenshot = await page.screenshot({ fullPage: true })
+    const darkScreenshot = await page.screenshot({
+      animations: "disabled",
+      scale: "css",
+    })
 
     expect(darkScreenshot).toEqual(lightScreenshot)
   })
