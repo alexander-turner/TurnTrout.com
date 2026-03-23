@@ -2,9 +2,11 @@
 
 @media print {
   // ── Force light mode with pure-white background ─────────────────
-  // Always use light colors in print so dark-mode users don't waste
-  // ink on dark backgrounds.
-  :root {
+  // Override dark-mode palette to light-mode values so dark-mode
+  // users don't waste ink. Palette colors come from colors.scss
+  // (Catppuccin Latte). Theme-specific variables use SCSS values.
+  :root[data-theme="dark"] {
+    // Catppuccin Latte palette (mirrors colors.scss light-mode)
     --pink: #d020a3 !important;
     --red: #be415c !important;
     --orange: #a45c19 !important;
@@ -16,6 +18,10 @@
     --lavender: #4963fd !important;
     --purple: #6f42c1 !important;
     --gold: #9b6700 !important;
+    --maroon: color-mix(in srgb, #be415c, #{$foreground-light} 35%) !important;
+  }
+
+  :root {
     --background: #fff !important;
     --midground-faint: #{$midground-faint-light} !important;
     --midground: #{$midground-light} !important;
@@ -27,7 +33,6 @@
     --light: #fff !important;
     --dark: #{$foreground-light} !important;
     --dark-gray: #5c5f77 !important;
-    --maroon: color-mix(in srgb, #be415c, #{$foreground-light} 35%) !important;
 
     color-scheme: light !important;
   }
