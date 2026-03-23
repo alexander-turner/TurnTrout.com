@@ -342,6 +342,40 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await expect(popover).toBeHidden()
 })
 
+test("In-flight popover fetch does not create orphaned popover after navigation", async ({
+  page,
+  dummyLink,
+}) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Delay the popover fetch so it completes *after* SPA navigation.
+  // Only delay the first request (the popover fetch); let the SPA nav fetch through.
+  let intercepted = false
+  await page.route("**/design", async (route) => {
+    if (!intercepted) {
+      intercepted = true
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+    await route.continue()
+  })
+
+  // Hover to start the popover timer, then wait for mouseEnterHandler to fire
+  // and begin its async fetch (which is now delayed by the route above).
+  await dummyLink.hover()
+  await page.waitForTimeout(400) // past the 300ms popoverRemovalDelayMs
+
+  // Click the link to trigger SPA navigation while the popover fetch is in-flight.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+
+  // Keep the mouse still (simulating the user's reported behavior).
+  // Wait long enough for the delayed popover fetch to resolve.
+  await page.waitForTimeout(1200)
+
+  // No orphaned popover should appear on the new page.
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveCount(0)
+})
+
 test.describe("Footnote popovers", () => {
   test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
