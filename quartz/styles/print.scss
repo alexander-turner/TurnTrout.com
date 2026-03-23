@@ -183,6 +183,11 @@
     font-size: 0.85em;
   }
 
+  // ── Dropcap: lighten background letter ───────────────────────
+  article[data-use-dropcap="true"] > p:first-of-type::before {
+    color: var(--midground-faint) !important;
+  }
+
   // ── Spoilers: reveal in print ────────────────────────────────────
   .spoiler-overlay {
     display: none !important;
@@ -198,10 +203,7 @@
     border: 1px solid #999 !important;
     background-color: #fafafa !important;
     max-width: 100% !important;
-    width: 100% !important;
     box-sizing: border-box !important;
-    overflow: hidden !important;
-    overflow-wrap: anywhere !important;
 
     &.is-collapsed > .admonition-content {
       display: block !important;
@@ -213,9 +215,9 @@
     }
 
     .admonition-icon {
-      // mask-image icons render in print — keep them
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
+      // mask-image icons load from remote URLs; browsers don't fetch
+      // them in print, so the background-color shows as a solid square.
+      display: none !important;
     }
   }
 
