@@ -45,6 +45,12 @@
 
   // Don't restore hash if we have a saved scroll position - user manually scrolled away
   const shouldRestoreHash = !savedScroll && location.hash.length > 1
+
+  // When we have a saved scroll AND a hash, the browser will try to hash-scroll
+  // after our restoration (WebKit fires this especially late). We extend monitoring
+  // to win the race via RAF re-application rather than mutating the URL.
+  const expectHashConflict = savedScroll !== null && location.hash.length > 1
+
   /**
    * Returns the computed scroll-margin-top (in px) for a given element.
    * Falls back to 0 if the property is unavailable or unparsable.
@@ -136,9 +142,11 @@
   }
 
   function waitForLayoutStability(targetPos) {
-    // Monitor for a few frames to catch Firefox layout drift
+    // Monitor for a few frames to catch Firefox layout drift.
+    // When a hash conflict is expected (saved scroll + URL hash), WebKit's native
+    // hash-scroll can fire much later, so we monitor for longer.
     let frameCount = 0
-    const MAX_MONITOR_FRAMES = 15 // A few more frames to catch late drift
+    const MAX_MONITOR_FRAMES = expectHashConflict ? 60 : 15
     let userHasScrolled = false
 
     // Track explicit user interaction separate from scroll events, since some browsers
@@ -193,6 +201,13 @@
       }
 
       if (delta > LARGE_DELTA_THRESHOLD) {
+        // When we expect the browser to hash-scroll (saved scroll + URL hash),
+        // forgive all large drifts that aren't preceded by user interaction —
+        // they come from the browser's native hash-scroll, not the user.
+        if (expectHashConflict) {
+          return
+        }
+
         const elapsed = performance.now() - monitoringStart
         const withinForgivenessWindow = !largeDriftForgiven && frameCount < 3 && elapsed < 150
 

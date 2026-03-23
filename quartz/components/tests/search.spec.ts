@@ -116,8 +116,8 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
 })
 
 test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
-  // Search + preview fetch + screenshot can exceed 30s on Safari in CI
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+  // Search index loading + preview fetch + screenshot can exceed 30s in CI
+  test.slow()
 
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
