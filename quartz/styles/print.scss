@@ -144,11 +144,13 @@
     word-break: break-all;
   }
 
-  // Don't append URLs to footnote backrefs, anchor links, or heading links
+  // Don't append URLs to footnote backrefs, anchor links, heading links,
+  // or within-page anchors (e.g. TOC links like #formalism)
   a[data-footnote-backref]::after,
   a[role="anchor"]::after,
   a[id*="fnref-"]::after,
-  .page-header a::after {
+  .page-header a::after,
+  article a[href^="#"]::after {
     content: none !important;
   }
 
@@ -183,9 +185,9 @@
     font-size: 0.85em;
   }
 
-  // ── Dropcap: lighten background letter ───────────────────────
-  article[data-use-dropcap="true"] > p:first-of-type::before {
-    color: var(--midground-faint) !important;
+  // ── Dropcap: lighten background letter for white paper ───────
+  article[data-use-dropcap="true"] {
+    --before-color: #ccc !important;
   }
 
   // ── Spoilers: reveal in print ────────────────────────────────────
@@ -215,9 +217,17 @@
     }
 
     .admonition-icon {
-      // mask-image icons load from remote URLs; browsers don't fetch
-      // them in print, so the background-color shows as a solid square.
-      display: none !important;
+      // CSS masks don't render in print; show the SVG directly instead
+      background-color: transparent !important;
+      mask-image: none !important;
+      mask-image: none !important;
+
+      &::before {
+        content: var(--admonition-icon) !important;
+        display: inline-block;
+        width: var(--icon-size);
+        height: var(--icon-size);
+      }
     }
   }
 
