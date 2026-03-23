@@ -23,6 +23,7 @@ permissions:
 
 jobs:
   a11y-build:
+    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     uses: ./.github/workflows/build-site.yaml
     with:
       artifact-name: a11y-public-dir
