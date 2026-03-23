@@ -6,6 +6,7 @@ import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
+  isSafariBrowser,
   setTheme,
   reloadPage,
   gotoPage,
@@ -20,10 +21,6 @@ interface VideoElements {
   autoplayToggle: Locator
   playIcon: Locator
   pauseIcon: Locator
-}
-
-function isSafariBrowser(page: Page): boolean {
-  return page.context().browser()?.browserType().name() === "webkit"
 }
 
 function getVideoElements(page: Page): VideoElements {

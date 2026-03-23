@@ -633,6 +633,11 @@ export function isFirefox(testInfo: TestInfo): boolean {
   return testInfo.project.name.toLowerCase().includes("firefox")
 }
 
+// Detect if the current test is running in Safari/WebKit
+export function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
+}
+
 /**
  * Move the mouse to a position guaranteed not to overlap any UI elements.
  * Using (0, 0) can overlap with navbar/menu on certain viewports (especially
