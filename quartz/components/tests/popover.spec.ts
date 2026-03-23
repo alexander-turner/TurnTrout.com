@@ -352,12 +352,10 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   // Use a promise to signal when the fetch has been intercepted, and a
   // second one to control when it resolves (after navigation completes).
 
-  // Assigned synchronously inside the Promise executor below.
-  // noop default satisfies TypeScript without a non-null assertion.
-  let releasePopoverFetch: () => void = Function.prototype as () => void
+  let releasePopoverFetch: () => void = jest.fn()
   const popoverFetchIntercepted = new Promise<void>((resolve) => {
-    const holdFetch = new Promise<void>((r) => {
-      releasePopoverFetch = r
+    const holdFetch = new Promise<void>((release) => {
+      releasePopoverFetch = release
     })
     let firstRequest = true
     page.route("**/design", async (route) => {
