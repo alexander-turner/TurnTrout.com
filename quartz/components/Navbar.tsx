@@ -169,9 +169,9 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
 
   const randomPostItem = (
     <li key="random-post">
-      <button type="button" id="random-post-link" aria-label="Go to a random post">
+      <a href="/posts" id="random-post-link">
         Random post
-      </button>
+      </a>
     </li>
   )
 

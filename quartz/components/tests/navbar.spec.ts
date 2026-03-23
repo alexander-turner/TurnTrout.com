@@ -402,20 +402,20 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
 })
 
-test("Random post button is visible on desktop", async ({ page }) => {
+test("Random post link is visible on desktop", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   await expect(page.locator("#random-post-link")).toBeVisible()
 })
 
-test("Random post button is visible in mobile hamburger menu", async ({ page }) => {
+test("Random post link is visible in mobile hamburger menu", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   await page.locator("#menu-button").click()
   await expect(page.locator("#random-post-link")).toBeVisible()
 })
 
-test("Random post button navigates to a different page on desktop", async ({ page }) => {
+test("Random post link navigates to a different page on desktop", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const initialUrl = page.url()
@@ -423,7 +423,7 @@ test("Random post button navigates to a different page on desktop", async ({ pag
   await expect(page).not.toHaveURL(initialUrl)
 })
 
-test("Random post button navigates to a different page on mobile", async ({ page }) => {
+test("Random post link navigates to a different page on mobile", async ({ page }) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   await page.locator("#menu-button").click()

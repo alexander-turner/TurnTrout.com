@@ -74,7 +74,7 @@ describe("randomPostScript (inline)", () => {
   })
 
   beforeEach(() => {
-    document.body.innerHTML = '<button id="random-post-link">Random post</button>'
+    document.body.innerHTML = '<a href="#" id="random-post-link">Random post</a>'
     document.body.dataset.slug = "index"
     mockIndex(mockContentIndex)
     window.spaNavigate = mockSpaNavigate
