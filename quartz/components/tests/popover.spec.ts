@@ -463,6 +463,7 @@ test.describe("Footnote popovers", () => {
   test("Focus moves into pinned footnote popover on open", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
@@ -476,6 +477,7 @@ test.describe("Footnote popovers", () => {
   test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")

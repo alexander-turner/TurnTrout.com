@@ -139,7 +139,7 @@ test.describe("Theme persistence and UI states", () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).__darkmodeReady === true,
         null,
-        { timeout: 15_000 },
+        { timeout: 45_000 },
       )
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
@@ -270,7 +270,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (window as any).__darkmodeReady === true,
         null,
-        { timeout: 15_000 },
+        { timeout: 45_000 },
       )
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)

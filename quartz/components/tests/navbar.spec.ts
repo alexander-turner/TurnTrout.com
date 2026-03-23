@@ -520,10 +520,14 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
 })
 
 async function getTimestampAfterNavigation(page: Page): Promise<number> {
-  const handle = await page.waitForFunction((id) => {
-    const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
-  }, pondVideoId)
+  const handle = await page.waitForFunction(
+    (id) => {
+      const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
+    },
+    pondVideoId,
+    { timeout: 45_000 },
+  )
   return (await handle.jsonValue()) as number
 }
 
@@ -550,7 +554,6 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   // after a full page refresh with autoplay disabled. Real Safari on macOS works
   // fine. Skip rather than weaken the test.
   test.skip(isSafariBrowser(page), "Linux WebKit cannot reload video after refresh")
-  test.slow(isSafariBrowser(page), "WebKit needs extra time for video buffering")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

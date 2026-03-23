@@ -59,9 +59,9 @@ jobs:
       artifact-name: visual-testing-public-dir
       remove-safari-autoplay: true
 
-  visual-testing:
+  # Chromium + Firefox visual tests on Linux
+  visual-testing-linux:
     needs: build
-    # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     strategy:
@@ -69,17 +69,16 @@ jobs:
       matrix:
         shard:
           [
-            "1/10",
-            "2/10",
-            "3/10",
-            "4/10",
-            "5/10",
-            "6/10",
-            "7/10",
-            "8/10",
-            "9/10",
-            "10/10",
+            "1/7",
+            "2/7",
+            "3/7",
+            "4/7",
+            "5/7",
+            "6/7",
+            "7/7",
           ]
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -123,7 +122,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
+          name: visual-testing-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
@@ -132,7 +131,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
           retention-days: 1
@@ -141,7 +140,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 1
@@ -150,7 +149,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: steps.playwright.outcome == 'failure'
         with:
-          name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-linux-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           retention-days: 1
 
@@ -158,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
-          name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
+          name: lost-pixel-screenshots-linux-shard-${{ env.SANITIZED_SHARD }}
           path: ./lost-pixel
           retention-days: 1
 
@@ -166,24 +165,145 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         run: exit 1
 
+  # WebKit (Safari) visual tests on macOS for real Safari fidelity
+  visual-testing-macos:
+    needs: build
+    runs-on: macos-14
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/3",
+            "2/3",
+            "3/3",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Make folder for screenshots
+        run: mkdir -p ./lost-pixel
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: visual-testing-public-dir
+          path: public/
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Create sanitized shard
+        if: always()
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: visual-testing-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: steps.playwright.outcome == 'failure'
+        with:
+          name: playwright-traces-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          retention-days: 1
+
+      - name: Upload Lost Pixel screenshots shard
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        with:
+          name: lost-pixel-screenshots-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: ./lost-pixel
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  # Unified status check — required by branch protection
+  visual-testing:
+    name: visual-testing
+    if: always()
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.visual-testing-linux.result }}" == "failure" ]] || \
+             [[ "${{ needs.visual-testing-macos.result }}" == "failure" ]]; then
+            echo "One or more visual test jobs failed"
+            exit 1
+          fi
+
   summarize-failures:
     name: Summarize Failures
-    if: always() && needs.visual-testing.result == 'failure'
-    needs: visual-testing
+    if: always() && (needs.visual-testing-linux.result == 'failure' || needs.visual-testing-macos.result == 'failure')
+    needs: [visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
-          log-pattern: visual-testing-log-shard-*
+          log-pattern: visual-testing-log-*
           final-log-name: visual-testing-failed-logs
 
   combine-and-upload:
-    needs: visual-testing
+    needs: [visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    if: needs.visual-testing.result == 'success'
+    if: needs.visual-testing-linux.result == 'success' && needs.visual-testing-macos.result == 'success'
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

@@ -1102,10 +1102,10 @@ test.describe("Checkboxes", () => {
       await page.evaluate(() => {
         localStorage.setItem("test-page-checkbox-0", "true")
       })
-      await reloadPage(page, "domcontentloaded")
+      await reloadPage(page, "load")
 
       // Check checkbox state — MutationObserver restores before first paint, but
-      // Safari may deliver the callback slightly after domcontentloaded.
+      // Safari may deliver the callback slightly after load.
       await expect(async () => {
         const checkboxStateBeforeNav = await page.evaluate(() => {
           const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
@@ -1134,10 +1134,10 @@ test.describe("Checkboxes", () => {
           },
           { key: checkboxKey, state: savedState },
         )
-        await reloadPage(page, "domcontentloaded")
+        await reloadPage(page, "load")
 
         // Check checkbox state — MutationObserver restores before first paint, but
-        // Safari may deliver the callback slightly after domcontentloaded.
+        // Safari may deliver the callback slightly after load.
         await expect(async () => {
           const checkboxState = await page.evaluate(
             ({ idx }) => {

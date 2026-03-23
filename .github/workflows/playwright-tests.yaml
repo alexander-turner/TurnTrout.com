@@ -58,7 +58,8 @@ jobs:
     with:
       artifact-name: playwright-public-dir
 
-  playwright-tests:
+  # Chromium + Firefox tests on Linux (cheaper, faster)
+  playwright-tests-linux:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
@@ -67,37 +68,29 @@ jobs:
       matrix:
         shard:
           [
-            "1/30",
-            "2/30",
-            "3/30",
-            "4/30",
-            "5/30",
-            "6/30",
-            "7/30",
-            "8/30",
-            "9/30",
-            "10/30",
-            "11/30",
-            "12/30",
-            "13/30",
-            "14/30",
-            "15/30",
-            "16/30",
-            "17/30",
-            "18/30",
-            "19/30",
-            "20/30",
-            "21/30",
-            "22/30",
-            "23/30",
-            "24/30",
-            "25/30",
-            "26/30",
-            "27/30",
-            "28/30",
-            "29/30",
-            "30/30",
+            "1/20",
+            "2/20",
+            "3/20",
+            "4/20",
+            "5/20",
+            "6/20",
+            "7/20",
+            "8/20",
+            "9/20",
+            "10/20",
+            "11/20",
+            "12/20",
+            "13/20",
+            "14/20",
+            "15/20",
+            "16/20",
+            "17/20",
+            "18/20",
+            "19/20",
+            "20/20",
           ]
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -135,7 +128,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: playwright-log-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
@@ -144,7 +137,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
           retention-days: 1
@@ -153,7 +146,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 1
@@ -162,7 +155,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: playwright-traces-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           if-no-files-found: warn
           retention-days: 1
@@ -171,15 +164,132 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         run: exit 1
 
+  # WebKit (Safari) tests on macOS for real Safari fidelity.
+  # Linux WebKit (WPE) has known flakiness issues with timing, localStorage,
+  # and module loading that don't reproduce on real Safari.
+  playwright-tests-macos:
+    needs: build
+    runs-on: macos-14
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/10",
+            "2/10",
+            "3/10",
+            "4/10",
+            "5/10",
+            "6/10",
+            "7/10",
+            "8/10",
+            "9/10",
+            "10/10",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: playwright-public-dir
+          path: public/
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  # Unified status check — required by branch protection
+  playwright-tests:
+    name: playwright-tests
+    if: always()
+    needs: [should-run, playwright-tests-linux, playwright-tests-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.playwright-tests-linux.result }}" == "failure" ]] || \
+             [[ "${{ needs.playwright-tests-macos.result }}" == "failure" ]]; then
+            echo "One or more test jobs failed"
+            exit 1
+          fi
+
   summarize-failures:
     name: Summarize Failures
-    if: always() && needs.playwright-tests.result == 'failure'
-    needs: playwright-tests
+    if: always() && (needs.playwright-tests-linux.result == 'failure' || needs.playwright-tests-macos.result == 'failure')
+    needs: [playwright-tests-linux, playwright-tests-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
-          log-pattern: playwright-log-shard-*
+          log-pattern: playwright-log-*
           final-log-name: playwright-failed-logs

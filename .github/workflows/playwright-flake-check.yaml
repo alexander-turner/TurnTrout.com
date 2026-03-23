@@ -55,14 +55,17 @@ jobs:
     with:
       artifact-name: flake-check-public-dir
 
-  flake-check:
+  # Chromium + Firefox flake check on Linux
+  flake-check-linux:
     needs: [should-run, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        shard: ["1/10", "2/10", "3/10", "4/10", "5/10", "6/10", "7/10", "8/10", "9/10", "10/10"]
+        shard: ["1/7", "2/7", "3/7", "4/7", "5/7", "6/7", "7/7"]
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -105,7 +108,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: flake-check-log-shard-${{ env.SANITIZED_SHARD }}
+          name: flake-check-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-flake.log
           if-no-files-found: warn
           retention-days: 3
@@ -114,7 +117,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: flake-check-winston-shard-${{ env.SANITIZED_SHARD }}
+          name: flake-check-winston-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
           retention-days: 3
@@ -123,7 +126,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: flake-check-webserver-shard-${{ env.SANITIZED_SHARD }}
+          name: flake-check-webserver-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 3
@@ -132,7 +135,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: flake-check-traces-shard-${{ env.SANITIZED_SHARD }}
+          name: flake-check-traces-linux-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           if-no-files-found: warn
           retention-days: 3
@@ -141,15 +144,123 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         run: exit 1
 
+  # WebKit flake check on macOS
+  flake-check-macos:
+    needs: [should-run, build]
+    runs-on: macos-14
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ["1/3", "2/3", "3/3"]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: flake-check-public-dir
+          path: public/
+
+      - name: Run Playwright tests (repeat-each=${{ needs.should-run.outputs.repeat }})
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --grep "^(?:(?!lostpixel).)*$" \
+            --shard ${{ matrix.shard }} \
+            --repeat-each ${{ needs.should-run.outputs.repeat }} \
+            | tee playwright-flake.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload flake check logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: flake-check-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-flake.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: flake-check-winston-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: flake-check-webserver-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Upload Playwright traces
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: flake-check-traces-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if flaky tests detected
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  # Unified status check
+  flake-check:
+    name: flake-check
+    if: always()
+    needs: [should-run, flake-check-linux, flake-check-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Flake check was skipped (no label/dispatch)"
+            exit 0
+          fi
+          if [[ "${{ needs.flake-check-linux.result }}" == "failure" ]] || \
+             [[ "${{ needs.flake-check-macos.result }}" == "failure" ]]; then
+            echo "Flaky tests detected"
+            exit 1
+          fi
+
   summarize:
     name: Flake Check Summary
-    if: always() && needs.flake-check.result == 'failure'
-    needs: flake-check
+    if: always() && (needs.flake-check-linux.result == 'failure' || needs.flake-check-macos.result == 'failure')
+    needs: [flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
-          log-pattern: flake-check-log-shard-*
+          log-pattern: flake-check-log-*
           final-log-name: flake-check-failed-logs
