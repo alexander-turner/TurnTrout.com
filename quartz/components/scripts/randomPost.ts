@@ -1,4 +1,4 @@
-/** Slugs to exclude from random selection (non-post pages). */
+/** Slug patterns to exclude from random selection (non-post pages). */
 export const EXCLUDED_SLUG_PREFIXES = ["tags/"]
 export const EXCLUDED_SLUGS = new Set([
   "index",
