@@ -127,10 +127,23 @@
     if (savedState !== undefined) checkbox.checked = savedState
   }
 
-  const checkboxObserver = new MutationObserver(() => {
+  const restoreAllCheckboxes = () => {
     const checkboxes = document.querySelectorAll("input.checkbox-toggle")
     if (checkboxes.length > 0) checkboxes.forEach(restoreCheckboxState)
-  })
+  }
+
+  const checkboxObserver = new MutationObserver(restoreAllCheckboxes)
   checkboxObserver.observe(document.documentElement, { childList: true, subtree: true })
-  window.addEventListener("load", () => checkboxObserver.disconnect(), { once: true })
+
+  // WebKit may batch MutationObserver callbacks during parsing, so the observer
+  // might not fire before `load` disconnects it. DOMContentLoaded guarantees all
+  // DOM nodes exist and gives us a reliable fallback to restore any missed checkboxes.
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      restoreAllCheckboxes()
+      checkboxObserver.disconnect()
+    },
+    { once: true },
+  )
 })()
