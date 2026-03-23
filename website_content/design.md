@@ -941,19 +941,7 @@ Markdown element styling
 Print mode
 : I optimized the stylesheet to allow printing pages without distractions like sidebars.
 
-<!-- TODO: Upload print-before.avif and print-after.avif to CDN, then uncomment:
-:
-  <figure>
-    <div class="subfigure">
-      <figcaption>Normal view:</figcaption>
-      <img src="https://assets.turntrout.com/static/images/posts/print-before.avif" alt="The top of the shard theory page as normally rendered, with sidebar navigation and table of contents visible.">
-    </div>
-    <div class="subfigure">
-      <figcaption>Print view:</figcaption>
-      <img src="https://assets.turntrout.com/static/images/posts/print-after.avif" alt="The same shard theory page in print mode, with sidebars hidden and a clean single-column layout.">
-    </div>
-  </figure>
--->
+<!-- TODO: Upload print screenshots to CDN, then add subfigure images here -->
 
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
