@@ -100,9 +100,11 @@ function setupPondVideo(): void {
       videoElement.play().catch((error: Error) => {
         console.error("[setupPondVideo] Play failed:", error)
       })
-    } else if (savedTime) {
+    } else if (savedTime && parseFloat(savedTime) > 0) {
       // Safari/WebKit may not apply currentTime on paused videos reliably.
       // A brief play/pause cycle forces the seek through the video pipeline.
+      // Only do this for non-zero timestamps — seeking to 0 doesn't need the
+      // workaround and would briefly advance the video (breaking visual tests).
       videoElement
         .play()
         .then(() => videoElement.pause())
