@@ -46,6 +46,8 @@ export const {
   savedThemeKey,
   autoplayStorageKey,
   instantScrollRestoreKey,
+  scrollPositionKeyPrefix,
+  scrollPositionMinThreshold,
   cdnBaseUrl,
   popoverRemovalDelayMs,
   dropcapColors: DROPCAP_COLORS,
