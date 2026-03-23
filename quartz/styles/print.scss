@@ -1,4 +1,41 @@
+@use "./variables.scss" as *;
+
 @media print {
+  // ── Force light mode with pure-white background ─────────────────
+  // Always use light colors in print so dark-mode users don't waste
+  // ink on dark backgrounds.
+  :root {
+    --pink: #d020a3 !important;
+    --red: #be415c !important;
+    --orange: #a45c19 !important;
+    --yellow: #7d751c !important;
+    --green: #22820d !important;
+    --teal: #037e85 !important;
+    --sky: #007cb4 !important;
+    --blue: #3e6ccb !important;
+    --lavender: #4963fd !important;
+    --purple: #6f42c1 !important;
+    --gold: #9b6700 !important;
+    --background: #fff !important;
+    --midground-faint: #{$midground-faint-light} !important;
+    --midground: #{$midground-light} !important;
+    --midground-strong: #5c5f77 !important;
+    --foreground: #{$foreground-light} !important;
+    --secondary: #1e66f5 !important;
+    --tertiary: #0486b9 !important;
+    --highlight: #7c7f9324 !important;
+    --light: #fff !important;
+    --dark: #{$foreground-light} !important;
+    --dark-gray: #5c5f77 !important;
+    --maroon: color-mix(in srgb, #be415c, #{$foreground-light} 35%) !important;
+
+    color-scheme: light !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
   // ── Hide interactive / navigation UI ─────────────────────────────
   #left-sidebar,
   #right-sidebar,
