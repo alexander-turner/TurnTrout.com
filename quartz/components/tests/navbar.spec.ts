@@ -402,29 +402,33 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
 })
 
-test("Random post button is visible in navbar", async ({ page }) => {
-  const randomButton = page.locator("#random-post-link")
+test("Random post button is visible on desktop", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
 
-  if (isDesktopViewport(page)) {
-    await expect(randomButton).toBeVisible()
-  } else {
-    // On mobile, the button is inside the hamburger menu
-    const menuButton = page.locator("#menu-button")
-    await menuButton.click()
-    await expect(randomButton).toBeVisible()
-  }
+  await expect(page.locator("#random-post-link")).toBeVisible()
 })
 
-test("Random post button navigates to a different page", async ({ page }) => {
-  const randomButton = page.locator("#random-post-link")
+test("Random post button is visible in mobile hamburger menu", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
 
-  if (!isDesktopViewport(page)) {
-    const menuButton = page.locator("#menu-button")
-    await menuButton.click()
-  }
+  await page.locator("#menu-button").click()
+  await expect(page.locator("#random-post-link")).toBeVisible()
+})
+
+test("Random post button navigates to a different page on desktop", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
 
   const initialUrl = page.url()
-  await triggerAndWaitForSPANav(page, () => randomButton.click())
+  await triggerAndWaitForSPANav(page, () => page.locator("#random-post-link").click())
+  await expect(page).not.toHaveURL(initialUrl)
+})
+
+test("Random post button navigates to a different page on mobile", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  await page.locator("#menu-button").click()
+  const initialUrl = page.url()
+  await triggerAndWaitForSPANav(page, () => page.locator("#random-post-link").click())
   await expect(page).not.toHaveURL(initialUrl)
 })
 

@@ -64,22 +64,9 @@ describe("setupRandomPost", () => {
     expect(VALID_POST_SLUGS).toContain(slug)
   })
 
-  it.each([
-    {
-      name: "excludes current page when multiple posts exist",
-      index: { "post-a": cd("a"), "post-b": cd("b") } as Record<string, ContentDetails>,
-      currentSlug: "post-a",
-      expectedSlug: "/post-b",
-    },
-    {
-      name: "navigates to only post even if it is current page",
-      index: { "only-post": cd("content") } as Record<string, ContentDetails>,
-      currentSlug: "only-post",
-      expectedSlug: "/only-post",
-    },
-  ])("$name", async ({ index, currentSlug, expectedSlug }) => {
-    mockIndex(index)
-    document.body.dataset.slug = currentSlug
+  it("excludes current page when multiple posts exist", async () => {
+    mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
+    document.body.dataset.slug = "post-a"
 
     const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
@@ -90,17 +77,26 @@ describe("setupRandomPost", () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(mockSpaNavigate).toHaveBeenCalledTimes(1)
-    expect((mockSpaNavigate.mock.calls[0][0] as URL).pathname).toBe(expectedSlug)
+    expect((mockSpaNavigate.mock.calls[0][0] as URL).pathname).toBe("/post-b")
   })
 
-  it("does not navigate when no posts exist", async () => {
-    mockIndex({ index: cd("") })
+  it.each([
+    { name: "no posts", index: { index: cd("") } as Record<string, ContentDetails> },
+    { name: "only one post", index: { "only-post": cd("x") } as Record<string, ContentDetails> },
+  ])("logs error and does not navigate when $name exist", async ({ index }) => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    mockIndex(index)
 
     const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
 
     const slug = await clickRandomAndGetSlug()
     expect(slug).toBeNull()
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("[randomPost]"),
+      expect.any(Number),
+    )
+    errorSpy.mockRestore()
   })
 
   it("does nothing when link element is missing", async () => {
@@ -119,15 +115,4 @@ describe("setupRandomPost", () => {
       expect(slug).not.toBe(excludedSlug)
     },
   )
-
-  it("does not navigate when getContentIndex is not available", async () => {
-    // @ts-expect-error Intentionally removing global for test
-    delete global.getContentIndex
-
-    const { setupRandomPost } = await import("./randomPost")
-    setupRandomPost()
-
-    const slug = await clickRandomAndGetSlug()
-    expect(slug).toBeNull()
-  })
 })

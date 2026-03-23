@@ -33,15 +33,15 @@ export function setupRandomPost(): void {
 async function handleRandomPost(event: Event): Promise<void> {
   event.preventDefault()
 
-  if (typeof getContentIndex !== "function") return
-
   const data = await getContentIndex()
   const postSlugs = Object.keys(data).filter(isPost)
-  if (postSlugs.length === 0) return
+  if (postSlugs.length <= 1) {
+    console.error("[randomPost] Not enough posts to navigate randomly:", postSlugs.length)
+    return
+  }
 
   const currentSlug = getFullSlug(window)
-  // Avoid navigating to the current page
-  const candidates = postSlugs.length > 1 ? postSlugs.filter((s) => s !== currentSlug) : postSlugs
+  const candidates = postSlugs.filter((s) => s !== currentSlug)
 
   const randomSlug = candidates[Math.floor(Math.random() * candidates.length)] as FullSlug
   const targetUrl = new URL(resolveRelative(currentSlug, randomSlug), window.location.toString())
