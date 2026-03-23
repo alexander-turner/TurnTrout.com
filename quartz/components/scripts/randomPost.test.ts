@@ -30,7 +30,7 @@ const mockContentIndex: Record<string, ContentDetails> = {
 
 const VALID_POST_SLUGS = ["my-first-post", "another-post", "deep/nested-post"]
 
-const mockSpaNavigate = jest.fn<(url: URL) => Promise<void>>().mockResolvedValue(undefined)
+const mockSpaNavigate = jest.fn<(url: URL) => Promise<void>>().mockResolvedValue()
 
 const mockIndex = (index: Record<string, ContentDetails>) => {
   global.getContentIndex = jest
@@ -84,8 +84,9 @@ describe("setupRandomPost", () => {
     const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
 
-    const link = document.getElementById("random-post-link")!
-    link.click()
+    const link = document.getElementById("random-post-link")
+    expect(link).not.toBeNull()
+    link?.click()
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(mockSpaNavigate).toHaveBeenCalledTimes(1)
