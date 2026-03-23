@@ -533,10 +533,10 @@ async function getTimestampAfterNavigation(page: Page): Promise<number> {
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Linux WebKit (Playwright's Safari) cannot reliably restore video timestamps
-  // after SPA navigation — readyState drops and metadata events don't fire.
-  // Real Safari on macOS works fine.
-  test.skip(isSafariBrowser(page), "Linux WebKit cannot restore video after SPA nav")
+  // Playwright's WebKit cannot reliably restore video timestamps after SPA
+  // navigation — readyState drops and metadata events don't fire.
+  // TODO: Re-test now that WebKit runs on macOS runners and remove if passing.
+  test.skip(isSafariBrowser(page), "WebKit cannot reliably restore video after SPA nav")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -550,10 +550,10 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Linux WebKit (Playwright's Safari) cannot reliably reload video metadata
-  // after a full page refresh with autoplay disabled. Real Safari on macOS works
-  // fine. Skip rather than weaken the test.
-  test.skip(isSafariBrowser(page), "Linux WebKit cannot reload video after refresh")
+  // Playwright's WebKit cannot reliably reload video metadata after a full
+  // page refresh with autoplay disabled.
+  // TODO: Re-test now that WebKit runs on macOS runners and remove if passing.
+  test.skip(isSafariBrowser(page), "WebKit cannot reliably reload video after refresh")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

@@ -246,9 +246,9 @@ jobs:
             echo "Flake check was skipped (no label/dispatch)"
             exit 0
           fi
-          if [[ "${{ needs.flake-check-linux.result }}" == "failure" ]] || \
-             [[ "${{ needs.flake-check-macos.result }}" == "failure" ]]; then
-            echo "Flaky tests detected"
+          if [[ "${{ needs.flake-check-linux.result }}" != "success" ]] || \
+             [[ "${{ needs.flake-check-macos.result }}" != "success" ]]; then
+            echo "Flake check did not succeed (linux=${{ needs.flake-check-linux.result }}, macos=${{ needs.flake-check-macos.result }})"
             exit 1
           fi
 

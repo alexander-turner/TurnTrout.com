@@ -280,9 +280,9 @@ jobs:
             echo "Tests were skipped (no label)"
             exit 0
           fi
-          if [[ "${{ needs.visual-testing-linux.result }}" == "failure" ]] || \
-             [[ "${{ needs.visual-testing-macos.result }}" == "failure" ]]; then
-            echo "One or more visual test jobs failed"
+          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]] || \
+             [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
+            echo "One or more visual test jobs did not succeed (linux=${{ needs.visual-testing-linux.result }}, macos=${{ needs.visual-testing-macos.result }})"
             exit 1
           fi
 

@@ -275,9 +275,9 @@ jobs:
             echo "Tests were skipped (no label)"
             exit 0
           fi
-          if [[ "${{ needs.playwright-tests-linux.result }}" == "failure" ]] || \
-             [[ "${{ needs.playwright-tests-macos.result }}" == "failure" ]]; then
-            echo "One or more test jobs failed"
+          if [[ "${{ needs.playwright-tests-linux.result }}" != "success" ]] || \
+             [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
+            echo "One or more test jobs did not succeed (linux=${{ needs.playwright-tests-linux.result }}, macos=${{ needs.playwright-tests-macos.result }})"
             exit 1
           fi
 
