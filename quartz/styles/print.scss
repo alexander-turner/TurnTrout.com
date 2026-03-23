@@ -1,24 +1,19 @@
 @use "./variables.scss" as *;
+@use "./palette" as *;
+@use "sass:map";
 
 @media print {
   // ── Force light mode with pure-white background ─────────────────
   // Override dark-mode palette to light-mode values so dark-mode
-  // users don't waste ink. Palette colors come from colors.scss
-  // (Catppuccin Latte). Theme-specific variables use SCSS values.
+  // users don't waste ink. Palette sourced from _palette.scss.
   :root[data-theme="dark"] {
-    // Catppuccin Latte palette (mirrors colors.scss light-mode)
-    --pink: #d020a3 !important;
-    --red: #be415c !important;
-    --orange: #a45c19 !important;
-    --yellow: #7d751c !important;
-    --green: #22820d !important;
-    --teal: #037e85 !important;
-    --sky: #007cb4 !important;
-    --blue: #3e6ccb !important;
-    --lavender: #4963fd !important;
-    --purple: #6f42c1 !important;
-    --gold: #9b6700 !important;
-    --maroon: color-mix(in srgb, #be415c, #{$foreground-light} 35%) !important;
+    @include palette-vars($catppuccin-latte, $important: true);
+
+    --maroon: color-mix(
+      in srgb,
+      #{map.get($catppuccin-latte, "red")},
+      #{$foreground-light} 35%
+    ) !important;
   }
 
   :root {
@@ -80,6 +75,12 @@
     margin-top: 0 !important;
   }
 
+  article {
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
   // ── Page margins ─────────────────────────────────────────────────
   @page {
     margin: 2cm 2.5cm;
@@ -106,11 +107,12 @@
   }
 
   // ── Prevent breaks inside key elements ───────────────────────────
-  figure,
+  // Only avoid breaks for elements likely to be short. Large
+  // admonitions/figures can cause huge blank gaps if forced to the
+  // next page, so we don't set break-inside: avoid on them.
   blockquote,
   pre,
   table,
-  .admonition,
   img {
     break-inside: avoid;
   }
@@ -185,7 +187,9 @@
   .admonition {
     border: 1px solid #999 !important;
     background-color: #fafafa !important;
-    break-inside: avoid;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-wrap: break-word !important;
 
     &.is-collapsed > .admonition-content {
       display: block !important;
