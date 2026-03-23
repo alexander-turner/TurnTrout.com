@@ -1221,6 +1221,21 @@ describe("setFirstLetterAttribute", () => {
     expect(normalizeNbsp(processedHtml)).toBe(expected)
   })
 
+  it("replaces nbsp after single-letter first word for dropcap", () => {
+    const input = "<p>I use this page.</p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
+    // should replace it with a regular space for proper dropcap rendering
+    expect(processedHtml).not.toContain(`I${NBSP}`)
+    expect(processedHtml).toContain('data-first-letter="I"')
+  })
+
+  it("handles paragraph with no direct text node", () => {
+    const input = "<p><span>Hello world.</span></p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toContain('data-first-letter="H"')
+  })
+
   it.each([
     [
       "paragraph is not a direct child of article",
