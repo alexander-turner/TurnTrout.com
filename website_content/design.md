@@ -944,11 +944,11 @@ Print mode
   <figure>
     <div class="subfigure">
       <figcaption>Normal view:</figcaption>
-      <img src="TODO" alt="The top of the shard theory page as normally rendered, with sidebar navigation and table of contents visible.">
+      <img src="https://assets.turntrout.com/static/images/posts/print-before.avif" alt="The top of the shard theory page as normally rendered, with sidebar navigation and table of contents visible.">
     </div>
     <div class="subfigure">
       <figcaption>Print view:</figcaption>
-      <img src="TODO" alt="The same shard theory page in print mode, with sidebars hidden and a clean single-column layout.">
+      <img src="https://assets.turntrout.com/static/images/posts/print-after.avif" alt="The same shard theory page in print mode, with sidebars hidden and a clean single-column layout.">
     </div>
   </figure>
 
