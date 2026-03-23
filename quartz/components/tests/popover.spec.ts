@@ -98,8 +98,8 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   const popoverContent = await popover.locator(".popover-inner").textContent()
 
   // Check that we navigated to the right page
-  await dummyLink.click()
   const targetHref = linkHref?.replace("./", "")
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
   await page.waitForURL(`**/${targetHref}`)
 
   // Wait until the h1 changes, indicating navigation completed

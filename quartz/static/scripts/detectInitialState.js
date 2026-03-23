@@ -143,9 +143,16 @@
 
   const checkboxObserver = new MutationObserver(restoreAllCheckboxes)
   checkboxObserver.observe(document.documentElement, { childList: true, subtree: true })
-  // Safari/WebKit may batch MutationObserver callbacks and deliver them after
-  // load, causing the observer to disconnect before restoring state. Use
-  // DOMContentLoaded as a guaranteed fallback — all checkboxes exist by then.
-  document.addEventListener("DOMContentLoaded", restoreAllCheckboxes, { once: true })
-  window.addEventListener("load", () => checkboxObserver.disconnect(), { once: true })
+
+  // WebKit may batch MutationObserver callbacks during parsing, so the observer
+  // might not fire before `load` disconnects it. DOMContentLoaded guarantees all
+  // DOM nodes exist and gives us a reliable fallback to restore any missed checkboxes.
+  document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+      restoreAllCheckboxes()
+      checkboxObserver.disconnect()
+    },
+    { once: true },
+  )
 })()

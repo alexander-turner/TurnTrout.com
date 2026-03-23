@@ -39,31 +39,6 @@ test.beforeEach(async ({ page }) => {
       value: () => Promise.resolve(),
       writable: true,
     })
-
-    // Intercept video/audio elements as they're created to disable autoplay
-    // before the browser processes the attribute. This runs before any HTML
-    // is parsed, so no frames can advance before we freeze them.
-    new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLMediaElement) {
-            node.autoplay = false
-            node.preload = "metadata"
-            node.pause()
-          }
-          // Also check children of added container nodes
-          if (node instanceof Element) {
-            for (const media of node.querySelectorAll("video, audio")) {
-              if (media instanceof HTMLMediaElement) {
-                media.autoplay = false
-                media.preload = "metadata"
-                media.pause()
-              }
-            }
-          }
-        }
-      }
-    }).observe(document.documentElement, { childList: true, subtree: true })
   })
 
   page.on("pageerror", (err) => console.error(err))
@@ -72,7 +47,7 @@ test.beforeEach(async ({ page }) => {
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-  // Hide all video and audio controls (autoplay already disabled by addInitScript)
+  // Hide all video and audio controls
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
     mediaElements.forEach((media) => {
@@ -131,10 +106,7 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(
-      isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
-      "Flaky in Safari on desktop",
-    )
+    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
@@ -1123,14 +1095,16 @@ test.describe("Checkboxes", () => {
       // Verifies that checkbox state restoration happens synchronously via
       // MutationObserver in detectInitialState.js, BEFORE the nav event fires.
 
-      // Navigate first, set localStorage, then reload to simulate a returning user.
-      // This avoids addInitScript which is unreliable in WebKit.
-      await gotoPage(page, "http://localhost:8080/test-page")
-      await page.evaluate(() => localStorage.setItem("test-page-checkbox-0", "true"))
+      // Set localStorage on the live page, then reload to trigger restoration.
+      // We use evaluate+reloadPage instead of addInitScript+gotoPage because
+      // WebKit treats same-URL goto() as a soft refresh that skips init scripts.
+      await page.evaluate(() => {
+        localStorage.setItem("test-page-checkbox-0", "true")
+      })
       await reloadPage(page, "domcontentloaded")
 
-      // MutationObserver restores before first paint, but Safari may deliver
-      // the callback slightly after domcontentloaded.
+      // Check checkbox state — MutationObserver restores before first paint, but
+      // Safari may deliver the callback slightly after domcontentloaded.
       await expect(async () => {
         const checkboxChecked = await page.evaluate(() => {
           const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
@@ -1152,14 +1126,17 @@ test.describe("Checkboxes", () => {
       }) => {
         const checkboxKey = `test-page-checkbox-${index}`
 
-        // Navigate first, set localStorage, then reload to simulate a returning user.
-        await gotoPage(page, "http://localhost:8080/test-page")
+        // Set localStorage on the live page, then reload to trigger restoration.
         await page.evaluate(
-          ({ key, state }) => localStorage.setItem(key, state ? "true" : "false"),
+          ({ key, state }) => {
+            localStorage.setItem(key, state ? "true" : "false")
+          },
           { key: checkboxKey, state: savedState },
         )
         await reloadPage(page, "domcontentloaded")
 
+        // Check checkbox state — MutationObserver restores before first paint, but
+        // Safari may deliver the callback slightly after domcontentloaded.
         await expect(async () => {
           const checkboxState = await page.evaluate(
             ({ idx }) => {
