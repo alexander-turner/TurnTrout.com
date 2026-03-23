@@ -102,8 +102,8 @@
   figcaption,
   dt,
   dd {
-    orphans: 3;
-    widows: 3;
+    orphans: 2;
+    widows: 2;
   }
 
   // ── Prevent breaks inside key elements ───────────────────────────
@@ -128,7 +128,16 @@
   }
 
   // ── Links: show URLs for external links ──────────────────────────
-  article a[href^="http"]:not([href*="turntrout.com"])::after {
+  article a[href^="http"]:not([href*="turntrout.com"])::after,
+  article a[href^="mailto:"]::after {
+    content: " (" attr(href) ")";
+    font-family: monospace;
+    font-size: 0.7em;
+    word-break: break-all;
+  }
+
+  // Internal links: show /slug#section path
+  article a.internal::after {
     content: " (" attr(href) ")";
     font-family: monospace;
     font-size: 0.7em;
