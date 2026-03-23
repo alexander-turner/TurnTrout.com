@@ -7,11 +7,11 @@
   // Override dark-mode palette to light-mode values so dark-mode
   // users don't waste ink. Palette sourced from _palette.scss.
   :root[data-theme="dark"] {
-    @include palette-vars($catppuccin-latte, $important: true);
+    @include palette-vars($light-colors, $important: true);
 
     --maroon: color-mix(
       in srgb,
-      #{map.get($catppuccin-latte, "red")},
+      #{map.get($light-colors, "red")},
       #{$foreground-light} 35%
     ) !important;
   }

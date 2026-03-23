@@ -2,10 +2,10 @@
  * Captures before/after screenshots comparing screen vs print rendering.
  *
  * Usage:
- *   npx tsx scripts/print-comparison.ts [url]
+ *   npx tsx scripts/save-print-comparison.ts [url]
  *
  * Defaults to http://localhost:8080 if no URL provided.
- * Outputs: print-before.png (screen) and print-after.png (print emulation)
+ * Outputs: /tmp/print-before.png (screen) and /tmp/print-after.png (print emulation)
  */
 
 import { chromium } from "playwright"
@@ -29,13 +29,13 @@ async function main() {
   })
 
   // Screen view
-  await page.screenshot({ path: "print-before.png", fullPage: true })
-  console.log("Saved print-before.png (screen)")
+  await page.screenshot({ path: "/tmp/print-before.png", fullPage: true })
+  console.log("Saved /tmp/print-before.png (screen)")
 
   // Print emulation
   await page.emulateMedia({ media: "print" })
-  await page.screenshot({ path: "print-after.png", fullPage: true })
-  console.log("Saved print-after.png (print)")
+  await page.screenshot({ path: "/tmp/print-after.png", fullPage: true })
+  console.log("Saved /tmp/print-after.png (print)")
 
   await browser.close()
 }

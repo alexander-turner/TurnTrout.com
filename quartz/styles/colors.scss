@@ -3,8 +3,8 @@
 
 :root[data-theme="dark"],
 .dark-mode {
-  // Catppuccin Frappe
-  @include palette-vars($catppuccin-frappe);
+  // Dark colors
+  @include palette-vars($dark-colors);
 
   // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #{$background-dark};
@@ -42,10 +42,10 @@
   }
 }
 
-// Catppuccin Latte
+// Light colors
 :root[data-theme="light"],
 .light-mode {
-  @include palette-vars($catppuccin-latte);
+  @include palette-vars($light-colors);
 
   // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #{$background-light};

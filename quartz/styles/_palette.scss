@@ -1,8 +1,8 @@
-// Single source of truth for the Catppuccin palettes.
+// Single source of truth for the color palettes.
 // Used by colors.scss and print.scss.
 
-// Catppuccin Frappe (dark)
-$catppuccin-frappe: (
+// Dark colors
+$dark-colors: (
   "pink": #fba7e4,
   "red": #e88283,
   "maroon": #d586a1,
@@ -17,8 +17,8 @@ $catppuccin-frappe: (
   "gold": #db9c01,
 );
 
-// Catppuccin Latte (light)
-$catppuccin-latte: (
+// Light colors
+$light-colors: (
   "pink": #d020a3,
   "red": #be415c,
   "orange": #a45c19,
