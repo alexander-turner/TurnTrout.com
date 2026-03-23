@@ -595,7 +595,7 @@ export function setFirstLetterAttribute(tree: Root): void {
   // Replace nbsp after first letter — nbspTransform adds it after single-letter
   // words like "I", but it creates a visible extra space with dropcap float
   if (firstTextNode.value.charAt(1) === NBSP) {
-    firstTextNode.value = firstTextNode.value.charAt(0) + " " + firstTextNode.value.slice(2)
+    firstTextNode.value = `${firstTextNode.value.charAt(0)} ${firstTextNode.value.slice(2)}`
   }
 
   // If the second letter is an apostrophe, add a space before it
