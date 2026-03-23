@@ -6,6 +6,7 @@ import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
+  isSafariBrowser,
   getAllWithWait,
   isElementChecked,
   search,
@@ -475,6 +476,14 @@ test.describe("Footnote popovers", () => {
   })
 
   test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+    // WebKit doesn't support Tab navigation by default — it requires the
+    // "Press Tab to highlight each item on a webpage" Safari preference,
+    // which Playwright cannot enable. See microsoft/playwright#2114.
+    test.skip(
+      isSafariBrowser(page),
+      "WebKit does not support Tab navigation without Safari preference",
+    )
+
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
     await expect(footnoteRef).toBeInViewport()
