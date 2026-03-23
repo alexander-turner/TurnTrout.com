@@ -39,29 +39,6 @@ test.beforeEach(async ({ page }) => {
       value: () => Promise.resolve(),
       writable: true,
     })
-
-    // Intercept video/audio elements as they're created to disable autoplay
-    // before the browser processes the attribute. This runs before any HTML
-    // is parsed, so no frames can advance before we freeze them.
-    new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node instanceof HTMLMediaElement) {
-            node.autoplay = false
-            node.pause()
-          }
-          // Also check children of added container nodes
-          if (node instanceof Element) {
-            for (const media of node.querySelectorAll("video, audio")) {
-              if (media instanceof HTMLMediaElement) {
-                media.autoplay = false
-                media.pause()
-              }
-            }
-          }
-        }
-      }
-    }).observe(document.documentElement, { childList: true, subtree: true })
   })
 
   page.on("pageerror", (err) => console.error(err))
@@ -70,7 +47,7 @@ test.beforeEach(async ({ page }) => {
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
-  // Hide all video and audio controls (autoplay already disabled by addInitScript)
+  // Hide all video and audio controls
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
     mediaElements.forEach((media) => {
@@ -129,10 +106,7 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(
-      testInfo.project.use.browserName === "webkit",
-      "Flaky in WebKit — page load timeouts in CI",
-    )
+    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
 
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
