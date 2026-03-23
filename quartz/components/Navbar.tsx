@@ -171,6 +171,11 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
       <ul>
         {links}
         <li>
+          <button type="button" id="random-post-link" aria-label="Go to a random post">
+            Random post
+          </button>
+        </li>
+        <li>
           <a
             href="https://turntrout.substack.com/subscribe"
             className="external"
