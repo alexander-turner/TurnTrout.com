@@ -52,8 +52,7 @@
   footer,
   .scroll-indicator::before,
   .scroll-indicator::after,
-  .favicon,
-  .favicon-span,
+  .favicon-span svg,
   .manifold-embed,
   iframe {
     display: none !important;
@@ -121,6 +120,7 @@
   // ── Links: show URLs for external links ──────────────────────────
   article a[href^="http"]:not([href*="turntrout.com"])::after {
     content: " (" attr(href) ")";
+    font-family: monospace;
     font-size: 0.85em;
     word-break: break-all;
   }
@@ -181,6 +181,16 @@
 
   .fold-icon {
     display: none !important;
+  }
+
+  // ── Trout ornament: ensure visibility ─────────────────────────────
+  #trout-ornament-container {
+    display: flex !important;
+
+    & > img {
+      filter: none !important;
+      opacity: 1 !important;
+    }
   }
 
   // ── Disable transitions/animations ───────────────────────────────
