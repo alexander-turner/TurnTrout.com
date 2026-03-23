@@ -82,7 +82,7 @@ describe("setupRandomPost", () => {
     { name: "no posts", index: { index: cd("") } as Record<string, ContentDetails> },
     { name: "only one post", index: { "only-post": cd("x") } as Record<string, ContentDetails> },
   ])("logs error and does not navigate when $name exist", async ({ index }) => {
-    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const errorSpy = jest.spyOn(console, "error").mockReturnValue(undefined)
     mockIndex(index)
 
     setupRandomPost()
@@ -96,7 +96,7 @@ describe("setupRandomPost", () => {
     errorSpy.mockRestore()
   })
 
-  it("does nothing when link element is missing", async () => {
+  it("does nothing when link element is missing", () => {
     document.body.innerHTML = ""
     setupRandomPost()
     expect(document.getElementById("random-post-link")).toBeNull()
