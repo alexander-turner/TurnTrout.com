@@ -15,23 +15,22 @@ export function isPost(slug: string): boolean {
   return !EXCLUDED_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix))
 }
 
-/**
- * Inline script that handles random post navigation via event delegation.
- * Uses getContentIndex() (available from beforeDOMReady inline script).
- * Falls back to location.assign() if spaNavigate isn't loaded yet.
- */
-export const randomPostScript = `document.addEventListener("click",async function(e){
-var b=e.target&&e.target.closest&&e.target.closest("#random-post-link");
-if(!b)return;
-e.preventDefault();
-var d=await getContentIndex();
-if(!d)return;
-var x=new Set(["index","posts","about","research","open-source","design","404"]);
-var p=Object.keys(d).filter(function(s){return!x.has(s)&&!s.startsWith("tags/")});
-if(p.length<=1){console.error("[randomPost] Not enough posts:",p.length);return}
-var c=document.body.dataset.slug;
-var f=p.filter(function(s){return s!==c});
-var s=f[Math.floor(Math.random()*f.length)];
-var u=new URL("/"+s,location.origin);
-window.spaNavigate?window.spaNavigate(u):location.assign(u);
+/** Generate the inline script from the canonical exclusion lists. */
+export const randomPostScript = `document.addEventListener("click", async function(e) {
+  var btn = e.target.closest("#random-post-link");
+  if (!btn) return;
+  e.preventDefault();
+  var data = await getContentIndex();
+  if (!data) return;
+  var excluded = new Set(${JSON.stringify([...EXCLUDED_SLUGS])});
+  var prefixes = ${JSON.stringify(EXCLUDED_SLUG_PREFIXES)};
+  var posts = Object.keys(data).filter(function(s) {
+    return !excluded.has(s) && !prefixes.some(function(p) { return s.startsWith(p) });
+  });
+  if (posts.length <= 1) { console.error("[randomPost] Not enough posts:", posts.length); return; }
+  var current = document.body.dataset.slug;
+  var candidates = posts.filter(function(s) { return s !== current });
+  var slug = candidates[Math.floor(Math.random() * candidates.length)];
+  var url = new URL("/" + slug, location.origin);
+  window.spaNavigate ? window.spaNavigate(url) : location.assign(url);
 })`

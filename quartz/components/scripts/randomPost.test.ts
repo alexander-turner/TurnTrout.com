@@ -145,22 +145,31 @@ describe("randomPostScript (inline)", () => {
 
   it("falls back to location.assign when spaNavigate is unavailable", async () => {
     const assignMock = jest.fn()
-    Object.defineProperty(window, "location", {
-      value: { ...window.location, assign: assignMock, origin: "http://localhost" },
-      writable: true,
-    })
-    // Remove spaNavigate to test fallback
-    const saved = window.spaNavigate
-    // @ts-expect-error Testing fallback when spaNavigate is undefined
-    delete window.spaNavigate
+    const savedLocation = window.location
+    const savedSpaNavigate = window.spaNavigate
+    try {
+      Object.defineProperty(window, "location", {
+        value: { ...window.location, assign: assignMock, origin: "http://localhost" },
+        writable: true,
+        configurable: true,
+      })
+      // @ts-expect-error Testing fallback when spaNavigate is undefined
+      delete window.spaNavigate
 
-    mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
+      mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
 
-    const link = document.getElementById("random-post-link")
-    link?.click()
-    await new Promise((resolve) => setTimeout(resolve, 0))
+      const link = document.getElementById("random-post-link")
+      link?.click()
+      await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(assignMock).toHaveBeenCalledTimes(1)
-    window.spaNavigate = saved
+      expect(assignMock).toHaveBeenCalledTimes(1)
+    } finally {
+      Object.defineProperty(window, "location", {
+        value: savedLocation,
+        writable: true,
+        configurable: true,
+      })
+      window.spaNavigate = savedSpaNavigate
+    }
   })
 })
