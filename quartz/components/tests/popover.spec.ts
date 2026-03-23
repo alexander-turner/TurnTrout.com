@@ -374,11 +374,11 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   // Click the link to trigger SPA navigation while the popover fetch is held.
   await triggerAndWaitForSPANav(page, () => dummyLink.click())
 
-  // Now release the held popover fetch so it resolves on the new page.
+  // Release the held fetch and wait for the response to complete, so we know
+  // mouseEnterHandler has had a chance to process it (and should bail out).
+  const responsePromise = page.waitForResponse("**/design")
   releasePopoverFetch!()
-
-  // Give the (now-released) response time to be processed by mouseEnterHandler.
-  await page.waitForTimeout(200)
+  await responsePromise
 
   // No orphaned popover should appear on the new page.
   const popover = page.locator(".popover")
