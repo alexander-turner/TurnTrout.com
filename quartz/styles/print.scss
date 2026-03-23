@@ -136,18 +136,19 @@
     word-break: break-all;
   }
 
-  // Internal links: show /slug#section path
-  article a.internal::after {
+  // Internal links: show /slug#section path (exclude heading anchors)
+  article a.internal:not(h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a)::after {
     content: " (" attr(href) ")";
     font-family: monospace;
     font-size: 0.7em;
     word-break: break-all;
   }
 
-  // Don't append URLs to footnote backrefs or anchor links
+  // Don't append URLs to footnote backrefs, anchor links, or heading links
   a[data-footnote-backref]::after,
   a[role="anchor"]::after,
-  a[id*="fnref-"]::after {
+  a[id*="fnref-"]::after,
+  .page-header a::after {
     content: none !important;
   }
 
@@ -197,8 +198,10 @@
     border: 1px solid #999 !important;
     background-color: #fafafa !important;
     max-width: 100% !important;
+    width: 100% !important;
     box-sizing: border-box !important;
-    overflow-wrap: break-word !important;
+    overflow: hidden !important;
+    overflow-wrap: anywhere !important;
 
     &.is-collapsed > .admonition-content {
       display: block !important;
