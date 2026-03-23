@@ -360,6 +360,7 @@ figure,
 }
 
 #article-title {
+  text-wrap: auto;
   margin: calc(4 * $base-margin) 0 0;
 
   @media all and (max-width: $max-mobile-width) {
