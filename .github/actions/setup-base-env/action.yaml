@@ -91,7 +91,13 @@ runs:
 
     - name: Install Node Dependencies
       if: inputs.install-node-deps == 'true'
-      run: timeout 600 pnpm install --frozen-lockfile
+      run: |
+        # macOS doesn't have GNU timeout; use perl one-liner as a portable fallback
+        if command -v timeout &>/dev/null; then
+          timeout 600 pnpm install --frozen-lockfile
+        else
+          perl -e 'alarm 600; exec @ARGV' -- pnpm install --frozen-lockfile
+        fi
       shell: bash
       env:
         NODE_OPTIONS: "--max-old-space-size=4096"
