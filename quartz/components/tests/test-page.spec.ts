@@ -134,6 +134,21 @@ test.describe("Test page sections", () => {
     await page.emulateMedia({ media: "print" })
     await takeRegressionScreenshot(page, testInfo, "print-layout")
   })
+
+  test("Print mode renders identically in light and dark themes", async ({ page }, testInfo) => {
+    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
+
+    await setTheme(page, "light")
+    await page.emulateMedia({ media: "print" })
+    const lightScreenshot = await takeRegressionScreenshot(page, testInfo, "print-light-vs-dark")
+
+    await page.emulateMedia({ media: "screen" })
+    await setTheme(page, "dark")
+    await page.emulateMedia({ media: "print" })
+    const darkScreenshot = await page.screenshot({ fullPage: true })
+
+    expect(darkScreenshot).toEqual(lightScreenshot)
+  })
 })
 
 test.describe("Unique content around the site", () => {
