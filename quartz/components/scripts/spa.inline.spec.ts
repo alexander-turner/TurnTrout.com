@@ -292,9 +292,21 @@ test.describe("Scroll Behavior", () => {
 
       // Wait for hash scroll to complete and be saved to history
       await waitForHashScrollComplete(page)
-      await page.evaluate((scrollPos) => window.scrollTo(0, scrollPos), scrollPos)
-      await waitForScroll(page, scrollPos)
-      await waitForHistoryState(page, scrollPos)
+      // Safari/WebKit can fire delayed native hash-scrolls that override our
+      // scrollTo. Re-issue scrollTo on each poll iteration until the debounced
+      // updateScrollState saves the correct position to history.state.
+      await page.waitForFunction(
+        ({ target, tolerance }) => {
+          window.scrollTo(0, target)
+          return (
+            Math.abs(window.scrollY - target) <= tolerance &&
+            window.history.state &&
+            typeof window.history.state.scroll === "number" &&
+            Math.abs(window.history.state.scroll - target) <= tolerance
+          )
+        },
+        { target: scrollPos, tolerance: tightScrollTolerance },
+      )
       await softRefresh(page)
 
       await waitForScroll(page, scrollPos)
