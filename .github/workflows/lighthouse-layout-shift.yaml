@@ -42,6 +42,12 @@ on:
       - ".github/lighthouse-*.json"
   merge_group:
 
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+  pages: write
+
 jobs:
   # Gate: only run on PRs if ci:run-lighthouse or ci:full-tests label is present.
   should-run:
@@ -75,11 +81,6 @@ jobs:
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-      pages: write
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
