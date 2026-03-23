@@ -17,9 +17,14 @@ runs:
       with:
         install-node-deps: ${{ inputs.install-node-deps }}
         install-sharp: "true"
-        cache-playwright: "false"
-        cache-puppeteer: "false"
+        cache-playwright: "true"
+        cache-puppeteer: "true"
         install-python: ${{ inputs.install-python }}
+
+    - name: Install Chromium for Mermaid rendering and critical CSS
+      if: inputs.install-node-deps == 'true'
+      run: pnpm playwright install chromium && npx puppeteer browsers install chrome
+      shell: bash
 
     - name: Install Build Dependencies
       run: |
