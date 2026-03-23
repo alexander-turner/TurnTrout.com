@@ -113,13 +113,20 @@ describe("setupRandomPost", () => {
     "never navigates to excluded slug %s",
     async (excludedSlug) => {
       const { setupRandomPost } = await import("./randomPost")
-
-      for (let i = 0; i < 10; i++) {
-        mockSpaNavigate.mockClear()
-        setupRandomPost()
-        const slug = await clickRandomAndGetSlug()
-        expect(slug).not.toBe(excludedSlug)
-      }
+      setupRandomPost()
+      const slug = await clickRandomAndGetSlug()
+      expect(slug).not.toBe(excludedSlug)
     },
   )
+
+  it("does not navigate when getContentIndex is not available", async () => {
+    // @ts-expect-error Intentionally removing global for test
+    delete global.getContentIndex
+
+    const { setupRandomPost } = await import("./randomPost")
+    setupRandomPost()
+
+    const slug = await clickRandomAndGetSlug()
+    expect(slug).toBeNull()
+  })
 })

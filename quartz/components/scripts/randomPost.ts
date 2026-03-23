@@ -6,8 +6,16 @@ declare global {
 }
 
 /** Slugs to exclude from random selection (non-post pages). */
-const EXCLUDED_SLUG_PREFIXES = ["tags/", "404"]
-const EXCLUDED_SLUGS = new Set(["index", "posts", "about", "research", "open-source", "design"])
+const EXCLUDED_SLUG_PREFIXES = ["tags/"]
+const EXCLUDED_SLUGS = new Set([
+  "index",
+  "posts",
+  "about",
+  "research",
+  "open-source",
+  "design",
+  "404",
+])
 
 function isPost(slug: string): boolean {
   if (EXCLUDED_SLUGS.has(slug)) return false
@@ -24,6 +32,8 @@ export function setupRandomPost(): void {
 
 async function handleRandomPost(event: Event): Promise<void> {
   event.preventDefault()
+
+  if (typeof getContentIndex !== "function") return
 
   const data = await getContentIndex()
   const postSlugs = Object.keys(data).filter(isPost)

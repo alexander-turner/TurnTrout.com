@@ -402,6 +402,32 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
 })
 
+test("Random post button is visible in navbar", async ({ page }) => {
+  const randomButton = page.locator("#random-post-link")
+
+  if (isDesktopViewport(page)) {
+    await expect(randomButton).toBeVisible()
+  } else {
+    // On mobile, the button is inside the hamburger menu
+    const menuButton = page.locator("#menu-button")
+    await menuButton.click()
+    await expect(randomButton).toBeVisible()
+  }
+})
+
+test("Random post button navigates to a different page", async ({ page }) => {
+  const randomButton = page.locator("#random-post-link")
+
+  if (!isDesktopViewport(page)) {
+    const menuButton = page.locator("#menu-button")
+    await menuButton.click()
+  }
+
+  const initialUrl = page.url()
+  await triggerAndWaitForSPANav(page, () => randomButton.click())
+  await expect(page).not.toHaveURL(initialUrl)
+})
+
 test("Video toggle button is visible and functional", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
