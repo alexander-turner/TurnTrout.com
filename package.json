@@ -100,7 +100,7 @@
     "diff": "8.0.3",
     "esbuild-sass-plugin": "3.3.1",
     "escape-string-regexp": "^5.0.0",
-    "fast-xml-parser": "5.4.2",
+    "fast-xml-parser": "5.5.7",
     "find-git-root": "1.0.4",
     "flexsearch": "0.7.43",
     "github-slugger": "2.0.0",
@@ -336,8 +336,8 @@
       "@tootallnate/once": "3.0.1",
       "express-rate-limit": "8.2.2",
       "serve>ajv": "8.18.0",
-      "jsonpath": "1.2.1",
-      "flatted": "3.4.0",
+      "jsonpath": "1.3.0",
+      "flatted": "3.4.2",
       "yauzl": "3.2.1"
     },
     "patchedDependencies": {
