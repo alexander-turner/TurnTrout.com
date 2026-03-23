@@ -220,7 +220,6 @@
       // CSS masks don't render in print; show the SVG directly instead
       background-color: transparent !important;
       mask-image: none !important;
-      mask-image: none !important;
 
       &::before {
         content: var(--admonition-icon) !important;
