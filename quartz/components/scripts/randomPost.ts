@@ -1,13 +1,6 @@
-import { type ContentDetails } from "../../plugins/emitters/contentIndex"
-import { type FullSlug, resolveRelative, getFullSlug } from "../../util/path"
-
-declare global {
-  function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
-}
-
 /** Slugs to exclude from random selection (non-post pages). */
-const EXCLUDED_SLUG_PREFIXES = ["tags/"]
-const EXCLUDED_SLUGS = new Set([
+export const EXCLUDED_SLUG_PREFIXES = ["tags/"]
+export const EXCLUDED_SLUGS = new Set([
   "index",
   "posts",
   "about",
@@ -17,33 +10,28 @@ const EXCLUDED_SLUGS = new Set([
   "404",
 ])
 
-function isPost(slug: string): boolean {
+export function isPost(slug: string): boolean {
   if (EXCLUDED_SLUGS.has(slug)) return false
   return !EXCLUDED_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix))
 }
 
-export function setupRandomPost(): void {
-  const link = document.getElementById("random-post-link") as HTMLButtonElement | null
-  if (!link) return
-
-  link.removeEventListener("click", handleRandomPost)
-  link.addEventListener("click", handleRandomPost)
-}
-
-async function handleRandomPost(event: Event): Promise<void> {
-  event.preventDefault()
-
-  const data = await getContentIndex()
-  const postSlugs = Object.keys(data).filter(isPost)
-  if (postSlugs.length <= 1) {
-    console.error("[randomPost] Not enough posts to navigate randomly:", postSlugs.length)
-    return
-  }
-
-  const currentSlug = getFullSlug(window)
-  const candidates = postSlugs.filter((s) => s !== currentSlug)
-
-  const randomSlug = candidates[Math.floor(Math.random() * candidates.length)] as FullSlug
-  const targetUrl = new URL(resolveRelative(currentSlug, randomSlug), window.location.toString())
-  await window.spaNavigate(targetUrl)
-}
+/**
+ * Inline script that handles random post navigation via event delegation.
+ * Uses getContentIndex() (available from beforeDOMReady inline script).
+ * Falls back to location.assign() if spaNavigate isn't loaded yet.
+ */
+export const randomPostScript = `document.addEventListener("click",async function(e){
+var b=e.target&&e.target.closest&&e.target.closest("#random-post-link");
+if(!b)return;
+e.preventDefault();
+var d=await getContentIndex();
+if(!d)return;
+var x=new Set(["index","posts","about","research","open-source","design","404"]);
+var p=Object.keys(d).filter(function(s){return!x.has(s)&&!s.startsWith("tags/")});
+if(p.length<=1){console.error("[randomPost] Not enough posts:",p.length);return}
+var c=document.body.dataset.slug;
+var f=p.filter(function(s){return s!==c});
+var s=f[Math.floor(Math.random()*f.length)];
+var u=new URL("/"+s,location.origin);
+window.spaNavigate?window.spaNavigate(u):location.assign(u);
+})`

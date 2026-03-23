@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 
-import { jest, describe, it, beforeEach, expect } from "@jest/globals"
+import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
-import { setupRandomPost } from "./randomPost"
+import { isPost, randomPostScript, EXCLUDED_SLUGS, EXCLUDED_SLUG_PREFIXES } from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({
   title: content,
@@ -47,18 +47,41 @@ async function clickRandomAndGetSlug(): Promise<string | null> {
   return (mockSpaNavigate.mock.calls[0][0] as URL).pathname.replace(/^\//, "")
 }
 
-beforeEach(() => {
-  document.body.innerHTML = '<button id="random-post-link">Random post</button>'
-  document.body.dataset.slug = "index"
-  mockIndex(mockContentIndex)
-  window.spaNavigate = mockSpaNavigate
-  mockSpaNavigate.mockClear()
+describe("isPost", () => {
+  it.each([...EXCLUDED_SLUGS])("returns false for excluded slug %s", (slug) => {
+    expect(isPost(slug)).toBe(false)
+  })
+
+  it.each(EXCLUDED_SLUG_PREFIXES.map((p) => p + "example"))(
+    "returns false for slug with excluded prefix %s",
+    (slug) => {
+      expect(isPost(slug)).toBe(false)
+    },
+  )
+
+  it.each(["my-post", "deep/nested", "some-other-slug"])(
+    "returns true for post slug %s",
+    (slug) => {
+      expect(isPost(slug)).toBe(true)
+    },
+  )
 })
 
-describe("setupRandomPost", () => {
-  it("navigates to a valid post slug on click", async () => {
-    setupRandomPost()
+describe("randomPostScript (inline)", () => {
+  // Evaluate the inline script once — it uses event delegation on document
+  beforeAll(() => {
+    new Function(randomPostScript)()
+  })
 
+  beforeEach(() => {
+    document.body.innerHTML = '<button id="random-post-link">Random post</button>'
+    document.body.dataset.slug = "index"
+    mockIndex(mockContentIndex)
+    window.spaNavigate = mockSpaNavigate
+    mockSpaNavigate.mockClear()
+  })
+
+  it("navigates to a valid post slug on click", async () => {
     const slug = await clickRandomAndGetSlug()
     expect(VALID_POST_SLUGS).toContain(slug)
   })
@@ -66,8 +89,6 @@ describe("setupRandomPost", () => {
   it("excludes current page when multiple posts exist", async () => {
     mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
     document.body.dataset.slug = "post-a"
-
-    setupRandomPost()
 
     const link = document.getElementById("random-post-link")
     expect(link).not.toBeNull()
@@ -85,8 +106,6 @@ describe("setupRandomPost", () => {
     const errorSpy = jest.spyOn(console, "error").mockReturnValue(undefined)
     mockIndex(index)
 
-    setupRandomPost()
-
     const slug = await clickRandomAndGetSlug()
     expect(slug).toBeNull()
     expect(errorSpy).toHaveBeenCalledWith(
@@ -96,10 +115,14 @@ describe("setupRandomPost", () => {
     errorSpy.mockRestore()
   })
 
-  it("does nothing when link element is missing", () => {
+  it("does nothing when link element is missing", async () => {
     document.body.innerHTML = ""
-    setupRandomPost()
-    expect(document.getElementById("random-post-link")).toBeNull()
+    const link = document.getElementById("random-post-link")
+    expect(link).toBeNull()
+    // Click on body — handler checks closest("#random-post-link") and exits early
+    document.body.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(mockSpaNavigate).not.toHaveBeenCalled()
   })
 
   it.each(["tags/ai", "tags/math", "index", "posts", "about", "404", "design", "open-source"])(
@@ -114,10 +137,30 @@ describe("setupRandomPost", () => {
         "valid-post-b": cd("b"),
       })
       const randomSpy = jest.spyOn(Math, "random").mockReturnValue(0)
-      setupRandomPost()
       const slug = await clickRandomAndGetSlug()
       expect(slug).toBe("valid-post-a")
       randomSpy.mockRestore()
     },
   )
+
+  it("falls back to location.assign when spaNavigate is unavailable", async () => {
+    const assignMock = jest.fn()
+    Object.defineProperty(window, "location", {
+      value: { ...window.location, assign: assignMock, origin: "http://localhost" },
+      writable: true,
+    })
+    // Remove spaNavigate to test fallback
+    const saved = window.spaNavigate
+    // @ts-expect-error Testing fallback when spaNavigate is undefined
+    delete window.spaNavigate
+
+    mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
+
+    const link = document.getElementById("random-post-link")
+    link?.click()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(assignMock).toHaveBeenCalledTimes(1)
+    window.spaNavigate = saved
+  })
 })

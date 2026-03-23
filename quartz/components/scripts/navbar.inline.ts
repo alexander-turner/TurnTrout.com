@@ -1,7 +1,6 @@
 import { sessionStoragePondVideoKey, autoplayStorageKey, pondVideoId } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
-import { setupRandomPost } from "./randomPost"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
@@ -140,11 +139,9 @@ setupSearch()
 setupScrollHandler()
 setupPondVideo()
 setupAutoplayToggle()
-setupRandomPost()
 
 // Re-run setup functions after SPA navigation
 document.addEventListener("nav", () => {
   setupPondVideo()
   setupAutoplayToggle()
-  setupRandomPost()
 })
