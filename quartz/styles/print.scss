@@ -111,8 +111,11 @@
   }
 
   // ── Images & video ───────────────────────────────────────────────
-  img,
   video {
+    display: none !important;
+  }
+
+  img {
     max-width: 100% !important;
     mix-blend-mode: normal !important;
   }
@@ -121,7 +124,7 @@
   article a[href^="http"]:not([href*="turntrout.com"])::after {
     content: " (" attr(href) ")";
     font-family: monospace;
-    font-size: 0.85em;
+    font-size: 0.7em;
     word-break: break-all;
   }
 
@@ -173,6 +176,28 @@
     opacity: 1 !important;
   }
 
+  // ── Admonitions: clean print styling ─────────────────────────────
+  .admonition {
+    border: 1px solid #999 !important;
+    background-color: #fafafa !important;
+    break-inside: avoid;
+
+    &.is-collapsed > .admonition-content {
+      display: block !important;
+      max-height: none !important;
+    }
+
+    .fold-admonition-icon {
+      display: none !important;
+    }
+
+    .admonition-icon {
+      // mask-image icons render in print — keep them
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+
   // ── Collapsibles: expand in print ────────────────────────────────
   .collapsible .content {
     max-height: none !important;
@@ -189,7 +214,11 @@
 
     & > img {
       filter: none !important;
-      opacity: 1 !important;
+      opacity: 0.4 !important;
+    }
+
+    & > span {
+      opacity: 0.4 !important;
     }
   }
 
