@@ -5,6 +5,7 @@
 import { jest, describe, it, beforeEach, expect } from "@jest/globals"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
+import { setupRandomPost } from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({
   title: content,
@@ -47,7 +48,6 @@ async function clickRandomAndGetSlug(): Promise<string | null> {
 }
 
 beforeEach(() => {
-  jest.resetModules()
   document.body.innerHTML = '<button id="random-post-link">Random post</button>'
   document.body.dataset.slug = "index"
   mockIndex(mockContentIndex)
@@ -57,7 +57,6 @@ beforeEach(() => {
 
 describe("setupRandomPost", () => {
   it("navigates to a valid post slug on click", async () => {
-    const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
 
     const slug = await clickRandomAndGetSlug()
@@ -68,7 +67,6 @@ describe("setupRandomPost", () => {
     mockIndex({ "post-a": cd("a"), "post-b": cd("b") })
     document.body.dataset.slug = "post-a"
 
-    const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
 
     const link = document.getElementById("random-post-link")
@@ -87,7 +85,6 @@ describe("setupRandomPost", () => {
     const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
     mockIndex(index)
 
-    const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
 
     const slug = await clickRandomAndGetSlug()
@@ -101,7 +98,6 @@ describe("setupRandomPost", () => {
 
   it("does nothing when link element is missing", async () => {
     document.body.innerHTML = ""
-    const { setupRandomPost } = await import("./randomPost")
     setupRandomPost()
     expect(document.getElementById("random-post-link")).toBeNull()
   })
@@ -109,10 +105,16 @@ describe("setupRandomPost", () => {
   it.each(["tags/ai", "tags/math", "index", "posts", "about", "404", "design", "open-source"])(
     "never navigates to excluded slug %s",
     async (excludedSlug) => {
-      const { setupRandomPost } = await import("./randomPost")
+      // Index contains only the excluded slug + two valid posts.
+      // If filtering is broken, the excluded slug would be a candidate.
+      mockIndex({
+        [excludedSlug]: cd("excluded"),
+        "valid-post-a": cd("a"),
+        "valid-post-b": cd("b"),
+      })
       setupRandomPost()
       const slug = await clickRandomAndGetSlug()
-      expect(slug).not.toBe(excludedSlug)
+      expect(slug).toMatch(/^valid-post-/)
     },
   )
 })
