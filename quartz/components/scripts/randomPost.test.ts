@@ -105,16 +105,19 @@ describe("setupRandomPost", () => {
   it.each(["tags/ai", "tags/math", "index", "posts", "about", "404", "design", "open-source"])(
     "never navigates to excluded slug %s",
     async (excludedSlug) => {
-      // Index contains only the excluded slug + two valid posts.
-      // If filtering is broken, the excluded slug would be a candidate.
+      // Index contains the excluded slug + two valid posts.
+      // Math.random() = 0 forces index 0, which would be the excluded slug
+      // if filtering were broken (since object keys preserve insertion order).
       mockIndex({
         [excludedSlug]: cd("excluded"),
         "valid-post-a": cd("a"),
         "valid-post-b": cd("b"),
       })
+      const randomSpy = jest.spyOn(Math, "random").mockReturnValue(0)
       setupRandomPost()
       const slug = await clickRandomAndGetSlug()
-      expect(slug).toMatch(/^valid-post-/)
+      expect(slug).toBe("valid-post-a")
+      randomSpy.mockRestore()
     },
   )
 })
