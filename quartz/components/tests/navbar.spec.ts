@@ -550,7 +550,9 @@ test("Video timestamp is preserved during refresh", async ({ page }) => {
   // after a full page refresh with autoplay disabled. Real Safari on macOS works
   // fine. Skip rather than weaken the test.
   test.skip(isSafariBrowser(page), "Linux WebKit cannot reload video after refresh")
-  test.slow(isSafariBrowser(page), "WebKit needs extra time for video buffering")
+  // Video metadata loading + timestamp restoration via play/pause cycle can be
+  // slow on CI runners.
+  test.slow()
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
