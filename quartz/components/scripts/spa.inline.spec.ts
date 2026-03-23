@@ -497,7 +497,7 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
 
   test("does not save scroll position below minimum threshold", async ({ page }) => {
     // Scroll to a position below the threshold
-    const scrollPos = scrollPositionMinThreshold - 50
+    const scrollPos = scrollPositionMinThreshold - 1
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
 
@@ -522,11 +522,11 @@ test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
     await gotoPage(newPage, page.url(), "domcontentloaded")
 
     const handle = await newPage.waitForFunction(
-      (target) => {
-        if (Math.abs(window.scrollY - target) < 50) return window.scrollY
+      ({ target, tolerance }) => {
+        if (Math.abs(window.scrollY - target) <= tolerance) return window.scrollY
         return false
       },
-      scrollPos,
+      { target: scrollPos, tolerance: tightScrollTolerance },
       { timeout: 15_000 },
     )
     const finalScroll = await handle.jsonValue()
