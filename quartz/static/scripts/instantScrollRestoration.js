@@ -1,4 +1,4 @@
-/* global INSTANT_SCROLL_RESTORE_KEY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+/* global INSTANT_SCROLL_RESTORE_KEY, SCROLL_POSITION_KEY_PREFIX -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(function () {
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
@@ -25,6 +25,19 @@
         // Clear it after use to avoid stale data
         sessionStorage.removeItem(INSTANT_SCROLL_RESTORE_KEY)
       }
+    }
+  }
+
+  // Cross-session fallback: check localStorage for persisted scroll position
+  if (savedScroll === null && typeof Storage !== "undefined") {
+    const localScroll = localStorage.getItem(SCROLL_POSITION_KEY_PREFIX + location.pathname)
+    const parsed = localScroll ? parseInt(localScroll, 10) : NaN
+    if (!isNaN(parsed) && parsed > 0) {
+      savedScroll = parsed
+      console.debug(
+        "[InstantScrollRestoration] Using localStorage cross-session fallback:",
+        savedScroll,
+      )
     }
   }
 

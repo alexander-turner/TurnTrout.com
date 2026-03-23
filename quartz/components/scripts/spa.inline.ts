@@ -10,6 +10,8 @@ import {
   simpleConstants,
   debounceWaitMs,
   instantScrollRestoreKey,
+  scrollPositionKeyPrefix,
+  scrollPositionMinThreshold,
   SEARCH_MATCH_CLASS,
 } from "../constants"
 import { debounce } from "./component_script_utils"
@@ -39,6 +41,23 @@ function getScrollPosition(): number {
   return Math.round(window.scrollY)
 }
 
+/**
+ * Persists the current scroll position for the given pathname in localStorage,
+ * so readers can resume where they left off in future sessions.
+ * Positions below the minimum threshold are removed (reader is near the top).
+ */
+function saveScrollToLocalStorage(pathname: string, scrollY: number): void {
+  if (typeof Storage === "undefined") return
+
+  const key = `${scrollPositionKeyPrefix}${pathname}`
+  if (scrollY < scrollPositionMinThreshold) {
+    localStorage.removeItem(key)
+    return
+  }
+
+  localStorage.setItem(key, scrollY.toString())
+}
+
 const updateScrollState = debounce(
   (() => {
     const currentScroll = getScrollPosition()
@@ -52,6 +71,9 @@ const updateScrollState = debounce(
     if (typeof Storage !== "undefined") {
       sessionStorage.setItem(instantScrollRestoreKey, currentScroll.toString())
     }
+
+    // Persist to localStorage for cross-session restoration
+    saveScrollToLocalStorage(window.location.pathname, currentScroll)
   }) as () => void,
   debounceWaitMs,
 )
