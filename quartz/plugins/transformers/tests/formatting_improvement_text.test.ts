@@ -285,6 +285,7 @@ And some hyphens-to-be-ignored.`
         "[tweet](https://www.x.com/turntrout/status/123)",
         "[tweet](https://xcancel.com/turntrout/status/123)",
       ],
+      ["[`x.com`](https://x.com)", "[`x.com`](https://xcancel.com/)"],
       ["twitter.com", "twitter.com"],
     ])("should perform transforms for %s", (input: string, expected: string) => {
       const result = formattingImprovement(input)
