@@ -1,4 +1,4 @@
-import FlexSearch, { type ContextOptions } from "flexsearch"
+import FlexSearch, { type ContextOptions, type DefaultDocumentSearchResults } from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
@@ -23,7 +23,8 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string // Stored as comma-joined string for search indexing
+  authors: string // Stored as comma-joined string for search indexing
+  [key: string]: string | number
 }
 
 let currentSearchTerm = ""
@@ -40,7 +41,7 @@ let initializationPromise: Promise<void> | null = null
  */
 function createSearchIndex(): InstanceType<typeof documentType> {
   return new documentType({
-    charset: "latin:advanced",
+    encoder: "LatinAdvanced",
     tokenize: "strict",
     resolution: 1,
     context: {
@@ -936,10 +937,7 @@ function addListener(
  * @returns Array of IDs
  */
 /* istanbul ignore next */
-const getByField = (
-  field: string,
-  searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[],
-): number[] => {
+const getByField = (field: string, searchResults: DefaultDocumentSearchResults<Item>): number[] => {
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
@@ -1134,7 +1132,7 @@ const formatForDisplay = (
     slug,
     title: data[slug].title ?? "",
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors?.join(", "),
+    authors: data[slug].authors?.join(", ") ?? "",
   }
 }
 
@@ -1194,13 +1192,12 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
 
   mouseEventsLocked = true
-  const searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[] = await index.searchAsync({
+  const searchResults = (await index.searchAsync({
     query: currentSearchTerm,
     limit: numSearchResults,
     index: ["title", "content", "slug", "authors"],
-    bool: "or", // Appears in any of the fields
     suggest: false,
-  })
+  })) as DefaultDocumentSearchResults<Item>
 
   // Ordering affects search results, so we need to order them here
   const allIds: Set<number> = new Set([
@@ -1263,13 +1260,14 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
     if (!index) {
       throw new Error("Search index is not initialized")
     }
-    return index.addAsync(id, {
+    const doc: Item = {
       id,
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors?.join(", "),
-    })
+      authors: fileData.authors?.join(", ") ?? "",
+    }
+    return index.addAsync(id, doc)
   })
 
   await Promise.all(promises)
