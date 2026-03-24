@@ -108,10 +108,16 @@
     overflow-wrap: break-word;
   }
 
-  // Ensure links themselves can wrap
+  // Ensure links and their appended URLs respect parent width
   article a {
     overflow-wrap: break-word !important;
     word-break: break-all !important;
+    max-width: 100% !important;
+  }
+
+  // Paragraphs near floats must contain their content
+  article p {
+    overflow-wrap: break-word !important;
   }
 
   // Don't append URLs to footnote backrefs, anchor links, heading links,
@@ -168,14 +174,6 @@
     &::after {
       content: ")";
     }
-  }
-
-  // ── Float-right: disable to prevent link URL overlap ───────────
-  .float-right {
-    float: none !important;
-    max-width: 100% !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
   }
 
   // ── Admonitions: expand collapsed content ────────────────────────
@@ -244,6 +242,11 @@
   // ── Video / Audio: hide players, show placeholder with source URL ─
   .video-container,
   .audio-container {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+
     video,
     audio {
       display: none !important;
@@ -251,15 +254,18 @@
 
     &::after {
       display: block;
-      padding: 2rem;
+      padding: 1rem;
       text-align: center;
       border: 1px solid var(--midground-faint);
       border-radius: $border-radius;
       color: var(--midground);
       font-style: italic;
       font-family: monospace;
-      font-size: 0.8em;
-      word-break: break-all;
+      font-size: 0.7em;
+      overflow-wrap: break-word !important;
+      word-break: break-all !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
     }
   }
 
