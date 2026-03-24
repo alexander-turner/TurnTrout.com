@@ -94,6 +94,12 @@
     widows: 3;
   }
 
+  // The page-header contains the h1 title + author/date. break-after: avoid
+  // on that h1 can leave a full blank page when the next block doesn't fit.
+  .page-header h1 {
+    break-after: auto;
+  }
+
   p {
     orphans: 3;
     widows: 3;
