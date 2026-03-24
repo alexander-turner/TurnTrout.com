@@ -283,7 +283,7 @@ describe("markdownPlugins", () => {
     const options = { ...defaultOptions, enableVideoEmbed: true }
     const input = "![](video.mp4)"
     const output = testMarkdownPlugins(input, options)
-    expect(output).toContain('<span class="video-container">')
+    expect(output).toContain('class="video-container"')
     expect(output).toContain('<video src="video.mp4" controls>')
   })
 
@@ -295,7 +295,7 @@ describe("markdownPlugins", () => {
       wikilinks: false,
     }
     const output = testMarkdownPlugins(input, options)
-    expect(output).toContain('<span class="video-container">')
+    expect(output).toContain('class="video-container"')
     expect(output).toContain('<video src="video.webm" controls>')
   })
 
@@ -447,7 +447,7 @@ describe("processWikilink", () => {
       expected: {
         type: "html",
         value:
-          '<span class="video-container"><video src="video.mp4" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
+          '<span class="video-container" data-src="video.mp4"><video src="video.mp4" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
       },
     },
     {
@@ -455,7 +455,8 @@ describe("processWikilink", () => {
       input: ["![[audio.mp3]]", "audio.mp3", "", ""],
       expected: {
         type: "html",
-        value: '<audio src="audio.mp3" controls></audio>',
+        value:
+          '<span class="audio-container" data-src="audio.mp3"><audio src="audio.mp3" controls></audio></span>',
       },
     },
   ]
@@ -869,7 +870,7 @@ describe("Branch coverage tests", () => {
         enableVideoEmbed: true,
       }
       const output = testMarkdownPlugins(input, options)
-      expect(output).toContain('<span class="video-container">')
+      expect(output).toContain('class="video-container"')
       expect(output).toContain(`<video src="test.${extension}" controls>`)
     })
   })
@@ -891,7 +892,7 @@ describe("Branch coverage tests", () => {
       const result = processWikilink(`![[audio.${extension}]]`, `audio.${extension}`, "", "")
       expect(result).toEqual({
         type: "html",
-        value: `<audio src="audio.${extension}" controls></audio>`,
+        value: `<span class="audio-container" data-src="audio.${extension}"><audio src="audio.${extension}" controls></audio></span>`,
       })
     })
   })
@@ -901,13 +902,14 @@ describe("Branch coverage tests", () => {
     expect(result1).toEqual({
       type: "html",
       value:
-        '<span class="video-container"><video src="video.webm" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
+        '<span class="video-container" data-src="video.webm"><video src="video.webm" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
     })
 
     const result2 = processWikilink("![[video.3gp]]", "video.3gp", "", "")
     expect(result2).toEqual({
       type: "html",
-      value: '<audio src="video.3gp" controls></audio>',
+      value:
+        '<span class="audio-container" data-src="video.3gp"><audio src="video.3gp" controls></audio></span>',
     })
   })
 

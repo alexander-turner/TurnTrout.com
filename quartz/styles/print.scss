@@ -154,6 +154,30 @@
     opacity: 1 !important;
   }
 
+  // ── Elvish: show translation alongside Tengwar ──────────────────
+  // Tengwar can't be "clicked" on paper, so always show the English.
+  .elvish .elvish-translation {
+    display: inline !important;
+    font-family: inherit;
+    font-style: italic;
+
+    &::before {
+      content: " (";
+    }
+
+    &::after {
+      content: ")";
+    }
+  }
+
+  // ── Float-right: disable to prevent link URL overlap ───────────
+  .float-right {
+    float: none !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
   // ── Admonitions: expand collapsed content ────────────────────────
   .admonition {
     max-width: 99% !important;
@@ -217,16 +241,15 @@
   }
   /* stylelint-enable selector-class-pattern */
 
-  // ── Video: hide player, show placeholder ───────────────────────
-  .video-container {
-    position: relative !important;
-
-    video {
+  // ── Video / Audio: hide players, show placeholder with source URL ─
+  .video-container,
+  .audio-container {
+    video,
+    audio {
       display: none !important;
     }
 
     &::after {
-      content: "[Video]";
       display: block;
       padding: 2rem;
       text-align: center;
@@ -234,12 +257,18 @@
       border-radius: $border-radius;
       color: var(--midground);
       font-style: italic;
+      font-family: monospace;
+      font-size: 0.8em;
+      word-break: break-all;
     }
   }
 
-  // ── Audio: hide player, show placeholder ───────────────────────
-  audio {
-    display: none !important;
+  .video-container::after {
+    content: "[Video: " attr(data-src) "]";
+  }
+
+  .audio-container::after {
+    content: "[Audio: " attr(data-src) "]";
   }
 
   // ── Trout ornament: lighten for print ────────────────────────────
