@@ -3,7 +3,6 @@
 
 :root[data-theme="dark"],
 .dark-mode {
-  // Dark colors
   @include palette-vars($dark-colors);
 
   // Theme-specific colors (from quartz.config.ts darkMode)
@@ -42,7 +41,6 @@
   }
 }
 
-// Light colors
 :root[data-theme="light"],
 .light-mode {
   @include palette-vars($light-colors);
