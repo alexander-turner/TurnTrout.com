@@ -54,6 +54,10 @@
   }
 
   // ── Layout: single column, full width ────────────────────────────
+  body {
+    min-height: auto !important;
+  }
+
   .page,
   #quartz-body,
   #center-content {
@@ -92,6 +96,7 @@
     font-family: monospace;
     font-size: 0.7em;
     word-break: break-all;
+    overflow-wrap: break-word;
   }
 
   // Internal links: show /slug#section path (exclude heading anchors)
@@ -100,6 +105,13 @@
     font-family: monospace;
     font-size: 0.7em;
     word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  // Ensure links themselves can wrap
+  article a {
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
   }
 
   // Don't append URLs to footnote backrefs, anchor links, heading links,
@@ -123,6 +135,8 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
     background-color: #f0f0f0 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
   // ── Dropcap: lighten background letter for white paper ───────
@@ -149,9 +163,23 @@
       max-height: none !important;
     }
 
+    // Switch from mask-image to background-image for print — browsers
+    // don't reliably render CSS masks when printing.
     .admonition-icon {
       width: 0.75rem !important;
       height: 0.75rem !important;
+      mask-image: none !important;
+
+      /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari print */
+      -webkit-mask-image: none !important;
+      background-color: transparent !important;
+      background-image: var(--admonition-icon) !important;
+      background-size: 0.75rem 0.75rem !important;
+      background-repeat: no-repeat !important;
+      background-position: center !important;
+
+      // Tint to dark gray since we lose color via mask
+      filter: brightness(0) opacity(0.6) !important;
       print-color-adjust: exact !important;
       -webkit-print-color-adjust: exact !important;
     }
@@ -177,6 +205,41 @@
     background-color: transparent !important;
     border-top: 1px solid var(--midground-faint) !important;
     height: 0 !important;
+  }
+
+  // ── Mermaid diagrams: ensure edge label backgrounds render ───────
+  /* stylelint-disable selector-class-pattern -- mermaid-generated class */
+  .edgeLabel > div,
+  .edgeLabel > p {
+    background-color: #f0f0f0 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  /* stylelint-enable selector-class-pattern */
+
+  // ── Video: hide player, show placeholder ───────────────────────
+  .video-container {
+    position: relative !important;
+
+    video {
+      display: none !important;
+    }
+
+    &::after {
+      content: "[Video]";
+      display: block;
+      padding: 2rem;
+      text-align: center;
+      border: 1px solid var(--midground-faint);
+      border-radius: $border-radius;
+      color: var(--midground);
+      font-style: italic;
+    }
+  }
+
+  // ── Audio: hide player, show placeholder ───────────────────────
+  audio {
+    display: none !important;
   }
 
   // ── Trout ornament: lighten for print ────────────────────────────

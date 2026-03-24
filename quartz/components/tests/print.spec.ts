@@ -45,3 +45,56 @@ test("Print mode renders identically in light and dark themes", async ({ page },
 
   expect(darkScreenshot).toEqual(lightScreenshot)
 })
+
+test("Scroll handlers are gated during print mode transitions", async ({ page }) => {
+  // Scroll down so there's a non-zero scroll position to track
+  await page.evaluate(() => window.scrollTo(0, 500))
+
+  // Wait for debounced scroll state to settle
+  await expect.poll(() => page.evaluate(() => history.state?.scroll ?? 0)).toBeGreaterThan(0)
+
+  // Track replaceState calls during the print transition
+  await page.evaluate(() => {
+    const calls: number[] = []
+    const original = history.replaceState.bind(history)
+    history.replaceState = (...args: Parameters<typeof history.replaceState>) => {
+      calls.push(Date.now())
+      original(...args)
+    }
+    ;(window as unknown as Record<string, number[]>).__replaceStateCalls = calls
+  })
+
+  // Emit beforeprint, then trigger layout reflow (simulating what Ctrl+P does)
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("beforeprint"))
+    // Force a large scroll change like print CSS layout reflow would cause
+    window.scrollTo(0, 0)
+  })
+
+  // Give the debounce time to fire (100ms debounce + margin), then check
+  // that no replaceState calls were made during the print transition.
+  // We use a poll that waits 300ms total to confirm the count stays at 0.
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => (window as unknown as Record<string, number[]>).__replaceStateCalls.length,
+        ),
+      { timeout: 500 },
+    )
+    .toBe(0)
+
+  // Now emit afterprint and scroll — replaceState should resume
+  await page.evaluate(() => {
+    window.dispatchEvent(new Event("afterprint"))
+    window.scrollTo(0, 300)
+  })
+
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => (window as unknown as Record<string, number[]>).__replaceStateCalls.length,
+      ),
+    )
+    .toBeGreaterThan(0)
+})
