@@ -48,18 +48,6 @@ Don't wait for a set amount of time
 Test approximate equality for scalars
 : If you're testing the `y` position of an element, use `expect(...).toBeCloseTo` instead of `expect(...).toBe`.
 
-Avoid `page.reload()` — navigate via `about:blank` instead
-: WebKit's driver occasionally crashes with "WebKit encountered an internal error" on `page.reload()`. But a same-URL `page.goto(page.url())` can also be treated as a soft refresh in Safari/WebKit, skipping re-running init scripts. The robust approach is to navigate to `about:blank` first, then back to the original URL:
-
-  ```typescript
-  async function reloadPage(page: Page): Promise<void> {
-    const url = page.url()
-    await page.goto("about:blank")
-    await page.goto(url, { waitUntil: "commit" })
-    await page.waitForLoadState("load")
-  }
-  ```
-
 Use `fullyParallel` with sharding
 : [Parallelism](https://playwright.dev/docs/test-parallel) within a single machine originally didn't work for me due to other flakiness, but `fullyParallel: true` combined with heavy sharding on CI now works well. I run ~30 shards, each executing a few tests in parallel.
 
@@ -72,8 +60,8 @@ Create a dedicated "test page"
 [Debug failures using Playwright traces](https://playwright.dev/docs/trace-viewer)
 : Traces let you inspect every moment of the test. You can see the state of the DOM before and after every Playwright command. On CI, save the traces as artifacts and use the `retain-on-failure` option.
 
-Verify persistent state before navigating
-: WebKit on Linux can drop `localStorage` if you navigate too quickly after writing to it. Assert that stored values are present before calling `page.goto()`, and verify they survived after navigation.
+Wait for SPA navigation events, not URL changes
+: If your site uses SPA navigation, `page.waitForURL` resolves as soon as `pushState` fires — long before the DOM is ready. Instead, listen for a custom event that your SPA dispatches after the DOM morph is complete. Start listening _before_ the trigger action so you never miss the event.
 
 Beware browser-specific event ordering
 : `mousemove` may fire slightly _after_ `mouseenter` when Playwright teleports the cursor. I had a `mouseMovedSinceNav` flag that was set by `mousemove` and read by the `mouseenter` handler to decide whether to show a popover. The bug: `mouseenter` fired first and saw the flag as `false`, so the popover was suppressed even though the user had genuinely moved the mouse. The fix was to read the flag inside a `setTimeout` callback (300ms later) instead of synchronously — by then, `mousemove` had fired and set it.
@@ -122,6 +110,9 @@ Isolate the relevant DOM
 
 Mock the content
 : When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
+
+Run WebKit tests on macOS, not Linux
+: Playwright's Linux WebKit engine (WPE) is _not_ the same as real Safari. WPE is flaky. The Playwright team [recommends running WebKit on macOS](https://playwright.dev/docs/browsers#webkit) for Safari fidelity. I split my CI into Linux jobs (Chromium & Firefox) and macOS jobs (WebKit only). 
 
 Know when to give up
 : In my visual regression testing, there are five or so discrepancies between the CI screenshots and the local screenshots. I tried for at least an hour to fix each discrepancy, but ultimately gave up. After all, visual regression testing just needs to tell me when the appearance _changes_. I've just approved those screenshots and kept an explicit list of what's different.

@@ -22,10 +22,6 @@ interface VideoElements {
   pauseIcon: Locator
 }
 
-function isSafariBrowser(page: Page): boolean {
-  return page.context().browser()?.browserType().name() === "webkit"
-}
-
 function getVideoElements(page: Page): VideoElements {
   return {
     video: page.locator(`video#${pondVideoId}`),
@@ -550,19 +546,19 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
 })
 
 async function getTimestampAfterNavigation(page: Page): Promise<number> {
-  const handle = await page.waitForFunction((id) => {
-    const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
-  }, pondVideoId)
+  const handle = await page.waitForFunction(
+    (id) => {
+      const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
+    },
+    pondVideoId,
+    { timeout: 45_000 },
+  )
   return (await handle.jsonValue()) as number
 }
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Linux WebKit (Playwright's Safari) cannot reliably restore video timestamps
-  // after SPA navigation — readyState drops and metadata events don't fire.
-  // Real Safari on macOS works fine.
-  test.skip(isSafariBrowser(page), "Linux WebKit cannot restore video after SPA nav")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -576,11 +572,6 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Linux WebKit (Playwright's Safari) cannot reliably reload video metadata
-  // after a full page refresh with autoplay disabled. Real Safari on macOS works
-  // fine. Skip rather than weaken the test.
-  test.skip(isSafariBrowser(page), "Linux WebKit cannot reload video after refresh")
-  test.slow(isSafariBrowser(page), "WebKit needs extra time for video buffering")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

@@ -49,14 +49,6 @@ export async function setTheme(page: Page, theme: Theme) {
     },
     { t: theme, key: savedThemeKey },
   )
-
-  // Verify the localStorage write was committed before proceeding.
-  // Safari may not flush writes synchronously, causing detectInitialState.js
-  // to read stale data if navigation starts too quickly.
-  await page.waitForFunction(({ key, expected }) => localStorage.getItem(key) === expected, {
-    key: savedThemeKey,
-    expected: theme,
-  })
 }
 
 /** Gets the name of the screenshot file. */
@@ -631,6 +623,11 @@ export function isDesktopViewport(page: Page): boolean {
 // Detect if the current test is running in Firefox
 export function isFirefox(testInfo: TestInfo): boolean {
   return testInfo.project.name.toLowerCase().includes("firefox")
+}
+
+// Detect if the current test is running in Safari/WebKit
+export function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
 }
 
 /**

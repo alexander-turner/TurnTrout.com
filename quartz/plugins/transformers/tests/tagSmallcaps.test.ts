@@ -1218,6 +1218,6 @@ describe("data-original-text attribute", () => {
     const raw = testTagSmallcapsHTMLRaw("<p>NASA and FBI met. The 100KM trip was fine.</p>")
     const matches = [...raw.matchAll(/data-original-text="(?<text>[^"]*)"/g)]
     expect(matches).toHaveLength(3)
-    expect(matches.map((m) => m.groups!.text)).toEqual(["NASA", "FBI", "100KM"])
+    expect(matches.map((m) => m.groups?.text)).toEqual(["NASA", "FBI", "100KM"])
   })
 })

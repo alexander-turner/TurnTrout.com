@@ -73,19 +73,10 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
   }
 }
 
-async function closeSearch(page: Page) {
-  const activeContainer = page.locator("#search-container.active")
-  // Use count() instead of evaluate() — count() returns 0 safely even if
-  // the page has navigated away (e.g. after Enter-key navigation), whereas
-  // evaluate() throws "Target page, context or browser has been closed".
-  if ((await activeContainer.count()) > 0) {
-    await page.keyboard.press("Escape")
-    await expect(page.locator("#search-container")).not.toHaveClass(/active/)
-  }
-}
-
 test.afterEach(async ({ page }) => {
-  await closeSearch(page)
+  // Navigate away to flush pending network/script activity, preventing
+  // WebKit from hanging during browserContext.close() teardown.
+  await page.goto("about:blank")
 })
 
 for (const keyName of ["/", "Escape"]) {
@@ -185,9 +176,13 @@ test("Search layout restores height when tab becomes visible again", async ({ pa
   const heightCollapsed = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
   expect(heightCollapsed).toBe(0)
 
-  // Simulate returning to the tab (page becomes visible)
+  // Simulate returning to the tab (page becomes visible).
+  // Override on Document.prototype so Firefox's native getter is replaced.
   await page.evaluate(() => {
-    Object.defineProperty(document, "hidden", { value: false, writable: true })
+    Object.defineProperty(Document.prototype, "hidden", {
+      value: false,
+      configurable: true,
+    })
     // @ts-expect-error - Event types differ between Node and browser contexts
     document.dispatchEvent(new Event("visibilitychange"))
   })

@@ -1498,7 +1498,7 @@ describe("favicons.readFaviconCounts", () => {
       "JSON with invalid entries (should skip them)",
     ],
   ])("should handle %s", async (fileContent, expectedMap) => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockResolvedValue(fileContent)
 
     const result = await favicons.readFaviconCounts()
@@ -1511,7 +1511,7 @@ describe("favicons.readFaviconCounts", () => {
   })
 
   it("should return empty Map when JSON parsing fails", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("invalid json {")
 
     const result = await favicons.readFaviconCounts()
@@ -1521,7 +1521,7 @@ describe("favicons.readFaviconCounts", () => {
   })
 
   it("should return empty Map when file read fails", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("File read error"))
 
     const result = await favicons.readFaviconCounts()
@@ -1540,7 +1540,7 @@ describe("favicons.readFaviconCounts", () => {
     ])
     const jsonContent = JSON.stringify(Array.from(mockData.entries()), null, 2)
 
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockResolvedValue(jsonContent)
 
     const result = await favicons.readFaviconCounts()
