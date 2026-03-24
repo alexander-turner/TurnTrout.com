@@ -195,7 +195,7 @@ After pushing to main:
 
 - **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~30 parallel shards to complete in ~10 minutes
+- Tests run on ~67 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)

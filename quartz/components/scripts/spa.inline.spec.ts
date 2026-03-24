@@ -277,12 +277,7 @@ test.describe("Scroll Behavior", () => {
     // eslint-disable-next-line playwright/expect-expect
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
-    }, testInfo) => {
-      test.slow(
-        testInfo.project.use.browserName === "webkit",
-        "WebKit needs extra time for scroll restoration after hash navigation",
-      )
-
+    }) => {
       const anchorId = await createFinalAnchor(page)
       await gotoPage(
         page,
@@ -343,11 +338,7 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Instant Scroll Restoration", () => {
-  test("restores saved scroll position immediately on reload", async ({ page }, testInfo) => {
-    test.slow(
-      testInfo.project.name.includes("Safari"),
-      "Safari scroll restoration can be slow in CI",
-    )
+  test("restores saved scroll position immediately on reload", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -429,8 +420,7 @@ test.describe("Instant Scroll Restoration", () => {
     expect(finalScroll).toBeGreaterThan(0)
   })
 
-  test("layout stability monitoring cancels when user scrolls", async ({ page }, testInfo) => {
-    test.slow(testInfo.project.name.includes("Safari"), "WebKit frame timing is slower in CI")
+  test("layout stability monitoring cancels when user scrolls", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -763,9 +753,7 @@ test.describe("Critical CSS", () => {
     await expect(cssLocator).toHaveCount(0)
   })
 
-  test("is removed after navigation to a different page", async ({ page }, testInfo) => {
-    test.slow(testInfo.project.use.browserName === "webkit", "WebKit SPA navigation can be slow")
-
+  test("is removed after navigation to a different page", async ({ page }) => {
     const cssLocator = page.locator("style#critical-css")
     await expect(cssLocator).toHaveCount(0)
 

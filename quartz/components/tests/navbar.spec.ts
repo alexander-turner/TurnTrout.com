@@ -6,7 +6,6 @@ import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
-  isSafariBrowser,
   setTheme,
   reloadPage,
   gotoPage,
@@ -530,10 +529,6 @@ async function getTimestampAfterNavigation(page: Page): Promise<number> {
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Playwright's WebKit cannot reliably restore video timestamps after SPA
-  // navigation — readyState drops and metadata events don't fire.
-  // TODO: Re-test now that WebKit runs on macOS runners and remove if passing.
-  test.skip(isSafariBrowser(page), "WebKit cannot reliably restore video after SPA nav")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -547,10 +542,6 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // Playwright's WebKit cannot reliably reload video metadata after a full
-  // page refresh with autoplay disabled.
-  // TODO: Re-test now that WebKit runs on macOS runners and remove if passing.
-  test.skip(isSafariBrowser(page), "WebKit cannot reliably reload video after refresh")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)
