@@ -59,8 +59,12 @@ function saveScrollToLocalStorage(pathname: string, scrollY: number): void {
   localStorage.setItem(key, scrollY.toString())
 }
 
+const printQuery = typeof window !== "undefined" ? window.matchMedia("print") : null
+
 const updateScrollState = debounce(
   (() => {
+    if (printQuery?.matches) return
+
     const currentScroll = getScrollPosition()
     console.debug(
       `[updateScrollState] replaceState scroll: ${currentScroll}, current state:`,
