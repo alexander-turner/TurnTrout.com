@@ -86,6 +86,9 @@ async function closeSearch(page: Page) {
 
 test.afterEach(async ({ page }) => {
   await closeSearch(page)
+  // Navigate away to flush pending network/script activity, preventing
+  // WebKit from hanging during browserContext.close() teardown.
+  await page.goto("about:blank")
 })
 
 for (const keyName of ["/", "Escape"]) {
