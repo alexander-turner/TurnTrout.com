@@ -1,52 +1,8 @@
 @use "./variables.scss" as *;
-@use "./palette" as *;
-@use "sass:map";
 
 @media print {
-  // ── Force light mode ───────────────────────────────────────────
-  // Override dark-mode palette so dark-mode users don't waste ink.
-  :root[data-theme="dark"] {
-    @include palette-vars($light-colors, $important: true);
-
-    --maroon: color-mix(
-      in srgb,
-      #{map.get($light-colors, "red")},
-      #{$foreground-light} 35%
-    ) !important;
-
-    // Syntax highlighting: use light-theme Shiki tokens
-    code[data-theme*=" "],
-    code[data-theme*=" "] span {
-      color: var(--shiki-light) !important;
-    }
-
-    // Images/video: undo dark-mode grayscale and match light-mode behavior
-    img:not([src$=".svg"]),
-    video {
-      filter: none !important;
-      mix-blend-mode: multiply !important;
-    }
-
-    img[src$=".svg"] {
-      filter: none !important;
-    }
-
-    // Audio: undo dark-mode blend
-    audio {
-      mix-blend-mode: normal !important;
-    }
-
-    // SVG ornament: use light-mode inversion
-    .trout-ornament-svg {
-      filter: invert(35%) !important;
-    }
-
-    // Transparent images: undo dark-mode background
-    .transparent-image {
-      background-color: transparent !important;
-    }
-  }
-
+  // Light-mode is forced via beforeprint/afterprint JS in darkmode.ts,
+  // so we only need to set print-specific overrides here.
   :root {
     --background: #fff !important;
     --midground-faint: #{$midground-faint-light} !important;

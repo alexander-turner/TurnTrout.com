@@ -246,4 +246,34 @@ describe("darkmode", () => {
       expect(document.querySelector("#theme-label")?.textContent).toBe("Auto")
     })
   })
+
+  describe("print theme override", () => {
+    it("should force light theme on beforeprint and restore on afterprint", () => {
+      localStorage.setItem(savedThemeKey, "dark")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(true))
+      initializeAndDispatchNav()
+
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+
+      window.dispatchEvent(new Event("beforeprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("afterprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark")
+    })
+
+    it("should be a no-op when already in light theme", () => {
+      localStorage.setItem(savedThemeKey, "light")
+      matchMediaSpy.mockReturnValue(createMockMediaQueryList(false))
+      initializeAndDispatchNav()
+
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("beforeprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+
+      window.dispatchEvent(new Event("afterprint"))
+      expect(document.documentElement.getAttribute("data-theme")).toBe("light")
+    })
+  })
 })
