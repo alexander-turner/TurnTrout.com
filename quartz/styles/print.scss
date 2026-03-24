@@ -101,14 +101,6 @@
     display: none !important;
   }
 
-  img:not(.float-right) {
-    max-width: 100% !important;
-  }
-
-  img {
-    mix-blend-mode: normal !important;
-  }
-
   // ── Links: show URLs for external links ──────────────────────────
   article a[href^="http"]:not([href*="turntrout.com"])::after,
   article a[href^="mailto:"]::after {
