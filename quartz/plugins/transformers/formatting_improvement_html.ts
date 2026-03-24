@@ -14,6 +14,8 @@ import {
   markerChar,
   hatTipPlaceholder,
   NBSP,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -600,7 +602,7 @@ export function setFirstLetterAttribute(tree: Root): void {
 
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
-  if (["’", "’", "’"].includes(secondLetter)) {
+  if (["’", LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE].includes(secondLetter)) {
     firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
   }
 }
