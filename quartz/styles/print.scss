@@ -160,19 +160,28 @@
     opacity: 1 !important;
   }
 
-  // ── Elvish: show translation alongside Tengwar ──────────────────
-  // Tengwar can't be "clicked" on paper, so always show the English.
-  .elvish .elvish-translation {
-    display: inline !important;
-    font-family: inherit;
-    font-style: italic;
+  // ── Elvish: show both Tengwar and translation in print ──────────
+  .elvish {
+    font-family: Elvish, serif !important;
+    cursor: default !important;
+    text-decoration: none !important;
 
-    &::before {
-      content: " (";
+    .elvish-tengwar {
+      display: inline !important;
     }
 
-    &::after {
-      content: ")";
+    .elvish-translation {
+      display: inline !important;
+      font-family: var(--font-main) !important;
+      font-style: italic;
+
+      &::before {
+        content: " (";
+      }
+
+      &::after {
+        content: ")";
+      }
     }
   }
 
