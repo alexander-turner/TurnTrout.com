@@ -153,7 +153,7 @@ describe("test-utils", () => {
     it("should handle undefined statusText parameter", async () => {
       const testData = "test data"
 
-      mockFetchResolve(fetchMock, testData, 200, {}, undefined)
+      mockFetchResolve(fetchMock, testData, 200, {})
 
       const response = await fetchMock("http://test.com")
 
