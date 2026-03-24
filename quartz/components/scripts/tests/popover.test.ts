@@ -1,8 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
-import "whatwg-fetch" // This will provide the Response global
 import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals"
 
 import {
@@ -26,20 +25,12 @@ beforeEach(() => {
     const url = input.toString()
 
     if (url.includes("example.com")) {
-      return Promise.resolve({
-        ok: true,
-        status: 200, // Add the status property
-        headers: {
-          get: (header: string) => {
-            if (header === "Content-Type") return "text/html"
-            return null
-          },
-        },
-        text: () =>
-          Promise.resolve(
-            '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
-          ),
-      } as unknown as Response)
+      return Promise.resolve(
+        new Response(
+          '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
+          { status: 200, headers: { "Content-Type": "text/html" } },
+        ),
+      )
     }
 
     return Promise.reject(new Error("Network error"))

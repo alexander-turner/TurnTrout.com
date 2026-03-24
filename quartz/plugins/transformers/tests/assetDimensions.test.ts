@@ -2,11 +2,6 @@
  * @jest-environment node
  */
 import type { Element, Root } from "hast"
-import type {
-  RequestInfo as NodeFetchRequestInfo,
-  RequestInit as NodeFetchRequestInit,
-  Response as NodeFetchResponse,
-} from "node-fetch"
 
 import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
 import { type SpawnSyncReturns, type spawnSync } from "child_process"
@@ -37,11 +32,6 @@ import {
   maybeResolveAssetStagingPath,
 } from "../assetDimensions"
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
-
-type NodeFetchCompatibleSignature = (
-  input: URL | NodeFetchRequestInfo,
-  init?: NodeFetchRequestInit,
-) => Promise<NodeFetchResponse>
 
 // Create a minimal valid PNG file with IHDR chunk
 const mockImageData = Buffer.from([
@@ -88,11 +78,8 @@ jest.mock("image-size", () => ({
 jest.mock("fs/promises")
 import fs from "fs/promises"
 
-const mockedFetch = jest.fn() as jest.MockedFunction<NodeFetchCompatibleSignature>
-// Assign to global.fetch. The 'as unknown as typeof global.fetch' cast is used because
-// NodeFetchCompatibleSignature and global.fetch's type aren't identical,
-// but compatible for the subset of functionality used in assetDimensions.ts.
-global.fetch = mockedFetch as unknown as typeof global.fetch
+const mockedFetch = jest.fn() as jest.MockedFunction<typeof fetch>
+global.fetch = mockedFetch
 
 let tempDir: string
 
@@ -264,14 +251,14 @@ describe("Asset Dimensions Plugin", () => {
       // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+          new RegExp(`^${RegExp.escape(actualAssetDimensionsFilePath)}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
         ),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
       expect(renameSpy).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+          new RegExp(`^${RegExp.escape(actualAssetDimensionsFilePath)}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
         ),
         actualAssetDimensionsFilePath,
       )
@@ -476,7 +463,7 @@ describe("Asset Dimensions Plugin", () => {
         headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
         arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "", ""],
@@ -502,7 +489,7 @@ describe("Asset Dimensions Plugin", () => {
         headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
         arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+      } as unknown as Response)
       const genericError = new Error("Custom spawn error")
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
@@ -531,7 +518,7 @@ describe("Asset Dimensions Plugin", () => {
         } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
         arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "", "FFprobe execution error"],
@@ -556,7 +543,7 @@ describe("Asset Dimensions Plugin", () => {
         headers: { get: (h: string) => (h === "Content-Type" ? "video/webm" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
         arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "this:is:not:dimensions", ""],
@@ -631,7 +618,7 @@ describe("Asset Dimensions Plugin", () => {
           status: 200,
           headers: { get: (h: string) => (h === "Content-Type" ? "image/png" : null) } as Headers,
           arrayBuffer: async () => mockImageData,
-        } as unknown as NodeFetchResponse
+        } as unknown as Response
       })
 
       sizeOfMock.mockClear()
@@ -1052,7 +1039,7 @@ describe("Asset Dimensions Plugin", () => {
         status: 200,
         headers: { get: () => "image/svg+xml" },
         arrayBuffer: async () => mockSvgData,
-      } as unknown as NodeFetchResponse)
+      } as unknown as Response)
 
       sizeOfMock.mockReturnValueOnce({
         width: mockImageWidth,

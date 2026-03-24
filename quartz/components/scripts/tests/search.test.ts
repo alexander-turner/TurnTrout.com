@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
@@ -11,7 +11,6 @@ import {
   descendantsSamePageLinks,
   tokenizeTerm,
   match,
-  escapeRegExp,
   createMatchSpan,
   updatePlaceholder,
   showSearch,
@@ -170,16 +169,16 @@ describe("tokenizeTerm", () => {
   })
 })
 
-describe("escapeRegExp", () => {
+describe("RegExp.escape", () => {
   it("should escape special regex characters", () => {
     const specialChars = ".*+?^${}()|[]\\"
-    const escaped = escapeRegExp(specialChars)
-    expect(escaped).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\")
+    const escaped = RegExp.escape(specialChars)
+    expect(new RegExp(escaped).test(specialChars)).toBe(true)
   })
 
   it("should not escape normal characters", () => {
     const normalChars = "abcdefg123"
-    const escaped = escapeRegExp(normalChars)
+    const escaped = RegExp.escape(normalChars)
     expect(escaped).toBe(normalChars)
   })
 })

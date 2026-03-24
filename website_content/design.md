@@ -1157,6 +1157,9 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 
 ## Build pipeline extras
 
+Node.js 24 and build hardening
+: The site builds on Node.js 24 (LTS "Krypton"), taking advantage of V8 13.6's native `RegExp.escape()` for safe dynamic regex construction in the search highlighting system, and the stabilized `fetch` API (Undici 7) throughout — replacing the `node-fetch` and `whatwg-fetch` polyfills that earlier Node versions required. CI builds run under Node's [permission model](https://nodejs.org/api/permissions.html) (`--permission`), which restricts file system writes to the workspace directory and `/tmp`, preventing the build from touching unexpected system locations.
+
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 

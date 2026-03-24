@@ -1,7 +1,7 @@
 import type { Root } from "hast"
 
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import { jest, describe, it, expect } from "@jest/globals"
 // skipcq: JS-W1028
