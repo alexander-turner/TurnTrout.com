@@ -3,9 +3,8 @@
 @use "sass:map";
 
 @media print {
-  // ── Force light mode with pure-white background ─────────────────
-  // Override dark-mode palette to light-mode values so dark-mode
-  // users don't waste ink. Palette sourced from _palette.scss.
+  // ── Force light mode ───────────────────────────────────────────
+  // Override dark-mode palette so dark-mode users don't waste ink.
   :root[data-theme="dark"] {
     @include palette-vars($light-colors, $important: true);
 
@@ -32,7 +31,7 @@
     color-scheme: light !important;
   }
 
-  // ── Hide interactive / navigation UI ─────────────────────────────
+  // ── Hide interactive / navigation UI ───────────────────────────
   #navbar,
   #left-sidebar,
   #right-sidebar,
@@ -49,11 +48,16 @@
   footer,
   .scroll-indicator::before,
   .scroll-indicator::after,
-  .favicon-span svg {
+  .favicon-span svg,
+  .fold-icon,
+  .fold-admonition-icon,
+  .data-footnote-backref,
+  a[data-footnote-backref],
+  .spoiler-overlay {
     display: none !important;
   }
 
-  // ── Layout: single column, full width ────────────────────────────
+  // ── Layout: single column, full width ──────────────────────────
   body {
     min-height: auto !important;
   }
@@ -74,7 +78,6 @@
     margin-top: 0 !important;
   }
 
-  // ── Page margins ─────────────────────────────────────────────────
   @page {
     margin: 2cm 2.5cm;
     size: auto;
@@ -89,17 +92,9 @@
     break-after: avoid;
   }
 
-  // ── Links: show URLs for external links ──────────────────────────
+  // ── Links: show URLs after link text ───────────────────────────
   article a[href^="http"]:not([href*="turntrout.com"])::after,
-  article a[href^="mailto:"]::after {
-    content: " (" attr(href) ")";
-    font-family: monospace;
-    font-size: 0.7em;
-    word-break: break-all;
-    overflow-wrap: break-word;
-  }
-
-  // Internal links: show /slug#section path (exclude heading anchors)
+  article a[href^="mailto:"]::after,
   article a.internal:not(h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a)::after {
     content: " (" attr(href) ")";
     font-family: monospace;
@@ -108,20 +103,7 @@
     overflow-wrap: break-word;
   }
 
-  // Ensure links and their appended URLs respect parent width
-  article a {
-    overflow-wrap: break-word !important;
-    word-break: break-all !important;
-    max-width: 100% !important;
-  }
-
-  // Paragraphs near floats must contain their content
-  article p {
-    overflow-wrap: break-word !important;
-  }
-
-  // Don't append URLs to footnote backrefs, anchor links, heading links,
-  // or within-page anchors (e.g. TOC links like #formalism)
+  // Suppress URLs on footnote refs, anchors, heading links, within-page links
   a[data-footnote-backref]::after,
   a[role="anchor"]::after,
   a[id*="fnref-"]::after,
@@ -130,13 +112,17 @@
     content: none !important;
   }
 
-  // Hide backref arrows (useless in print)
-  .data-footnote-backref,
-  a[data-footnote-backref] {
-    display: none !important;
+  article a {
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    max-width: 100% !important;
   }
 
-  // ── Code blocks ──────────────────────────────────────────────────
+  article p {
+    overflow-wrap: break-word !important;
+  }
+
+  // ── Code blocks ────────────────────────────────────────────────
   pre {
     white-space: pre-wrap;
     overflow-wrap: break-word;
@@ -145,92 +131,77 @@
     -webkit-print-color-adjust: exact !important;
   }
 
-  // ── Dropcap: lighten background letter for white paper ───────
+  // ── Dropcap: lighten background letter for white paper ─────────
   article[data-use-dropcap="true"] {
     --before-color: #ccc !important;
   }
 
-  // ── Spoilers: reveal in print ────────────────────────────────────
-  .spoiler-overlay {
-    display: none !important;
-  }
-
+  // ── Spoilers: reveal hidden content ────────────────────────────
   .spoiler-content {
     filter: none !important;
     opacity: 1 !important;
   }
 
-  // ── Elvish: show both Tengwar and translation in print ──────────
+  // ── Elvish: show both Tengwar and translation ──────────────────
   .elvish {
     font-family: Elvish, serif !important;
-    cursor: default !important;
     text-decoration: none !important;
-
-    .elvish-tengwar {
-      display: inline !important;
-    }
-
-    .elvish-translation {
-      display: inline !important;
-      font-family: var(--font-main) !important;
-      font-style: italic;
-
-      &::before {
-        content: " (";
-      }
-
-      &::after {
-        content: ")";
-      }
-    }
   }
 
-  // ── Admonitions: expand collapsed content ────────────────────────
+  .elvish .elvish-tengwar {
+    display: inline !important;
+  }
+
+  .elvish .elvish-translation {
+    display: inline !important;
+    font-family: var(--font-main) !important;
+    font-style: italic;
+  }
+
+  .elvish .elvish-translation::before {
+    content: " (";
+  }
+
+  .elvish .elvish-translation::after {
+    content: ")";
+  }
+
+  // ── Admonitions: expand collapsed, fix icons for print ─────────
   .admonition {
     max-width: 99% !important;
-
-    &.is-collapsed > .admonition-content {
-      display: block !important;
-      max-height: none !important;
-    }
-
-    // Switch from mask-image to background-image for print — browsers
-    // don't reliably render CSS masks when printing.
-    .admonition-icon {
-      width: 0.75rem !important;
-      height: 0.75rem !important;
-      mask-image: none !important;
-
-      /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari print */
-      -webkit-mask-image: none !important;
-      background-color: transparent !important;
-      background-image: var(--admonition-icon) !important;
-      background-size: 0.75rem 0.75rem !important;
-      background-repeat: no-repeat !important;
-      background-position: center !important;
-
-      // Tint to dark gray since we lose color via mask
-      filter: brightness(0) opacity(0.6) !important;
-      print-color-adjust: exact !important;
-      -webkit-print-color-adjust: exact !important;
-    }
-
-    .fold-admonition-icon {
-      display: none !important;
-    }
   }
 
-  // ── Collapsibles: expand in print ────────────────────────────────
+  .admonition.is-collapsed > .admonition-content {
+    display: block !important;
+    max-height: none !important;
+  }
+
+  // Browsers don't reliably render CSS masks when printing,
+  // so switch to background-image instead.
+  .admonition .admonition-icon {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+    mask-image: none !important;
+
+    /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari print */
+    -webkit-mask-image: none !important;
+    background-color: transparent !important;
+    background-image: var(--admonition-icon) !important;
+    background-size: 0.75rem 0.75rem !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    filter: brightness(0) opacity(0.6) !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  // ── Collapsibles: expand in print ──────────────────────────────
   .collapsible .content {
     max-height: none !important;
     overflow: visible !important;
   }
 
-  .fold-icon {
-    display: none !important;
-  }
-
-  // ── Horizontal rules: use border instead of background-color ─────
+  // ── Horizontal rules ──────────────────────────────────────────
   // background-color is stripped by default in print mode.
   hr {
     background-color: transparent !important;
@@ -238,7 +209,7 @@
     height: 0 !important;
   }
 
-  // ── Mermaid diagrams: ensure edge label backgrounds render ───────
+  // ── Mermaid diagrams: ensure edge label backgrounds render ─────
   /* stylelint-disable selector-class-pattern -- mermaid-generated class */
   .edgeLabel > div,
   .edgeLabel > p {
@@ -248,34 +219,35 @@
   }
   /* stylelint-enable selector-class-pattern */
 
-  // ── Video / Audio: hide players, show placeholder with source URL ─
+  // ── Video / Audio: show placeholder with source URL ────────────
   .video-container,
   .audio-container {
     display: block !important;
     max-width: 100% !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+  }
 
-    video,
-    audio {
-      display: none !important;
-    }
+  .video-container video,
+  .audio-container audio {
+    display: none !important;
+  }
 
-    &::after {
-      display: block;
-      padding: 1rem;
-      text-align: center;
-      border: 1px solid var(--midground-faint);
-      border-radius: $border-radius;
-      color: var(--midground);
-      font-style: italic;
-      font-family: monospace;
-      font-size: 0.7em;
-      overflow-wrap: break-word !important;
-      word-break: break-all !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
+  .video-container::after,
+  .audio-container::after {
+    display: block;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--midground-faint);
+    border-radius: $border-radius;
+    color: var(--midground);
+    font-style: italic;
+    font-family: monospace;
+    font-size: 0.7em;
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .video-container::after {
@@ -286,14 +258,9 @@
     content: "[Audio: " attr(data-src) "]";
   }
 
-  // ── Trout ornament: lighten for print ────────────────────────────
-  #trout-ornament-container {
-    & > img {
-      opacity: 0.4 !important;
-    }
-
-    & > span {
-      opacity: 0.4 !important;
-    }
+  // ── Trout ornament: lighten for print ──────────────────────────
+  #trout-ornament-container > img,
+  #trout-ornament-container > span {
+    opacity: 0.4 !important;
   }
 }
