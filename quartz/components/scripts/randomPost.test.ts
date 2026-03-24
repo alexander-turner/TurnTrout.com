@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
 import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
@@ -52,7 +52,7 @@ describe("isPost", () => {
     expect(isPost(slug)).toBe(false)
   })
 
-  it.each(EXCLUDED_SLUG_PREFIXES.map((p) => p + "example"))(
+  it.each(EXCLUDED_SLUG_PREFIXES.map((p) => `${p}example`))(
     "returns false for slug with excluded prefix %s",
     (slug) => {
       expect(isPost(slug)).toBe(false)
@@ -103,7 +103,7 @@ describe("randomPostScript (inline)", () => {
     { name: "no posts", index: { index: cd("") } as Record<string, ContentDetails> },
     { name: "only one post", index: { "only-post": cd("x") } as Record<string, ContentDetails> },
   ])("logs error and does not navigate when $name exist", async ({ index }) => {
-    const errorSpy = jest.spyOn(console, "error").mockReturnValue(undefined)
+    const errorSpy = jest.spyOn(console, "error").mockReturnValue()
     mockIndex(index)
 
     const slug = await clickRandomAndGetSlug()

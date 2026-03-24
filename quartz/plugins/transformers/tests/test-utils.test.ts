@@ -1,15 +1,12 @@
-import type OriginalFetchType from "node-fetch"
-
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
-import { Response as NodeFetchResponse } from "node-fetch"
 
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
 
 describe("test-utils", () => {
-  let fetchMock: jest.MockedFunction<typeof OriginalFetchType>
+  let fetchMock: jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
-    fetchMock = jest.fn() as jest.MockedFunction<typeof OriginalFetchType>
+    fetchMock = jest.fn() as jest.MockedFunction<typeof fetch>
   })
 
   afterEach(() => {
@@ -113,7 +110,7 @@ describe("test-utils", () => {
 
       const response = await fetchMock("http://test.com")
 
-      expect(response).toBeInstanceOf(NodeFetchResponse)
+      expect(response).toBeInstanceOf(Response)
       expect(response.status).toBe(status)
       expect(response.statusText).toBe(statusText)
       expect(response.headers.get("Content-Type")).toBe("application/json")
@@ -131,15 +128,16 @@ describe("test-utils", () => {
       expect(typeof responseSignature.cancel).toBe("function")
     })
 
-    it("should not add cancel method to body when cancellableBody is false", async () => {
+    it("should not add mock cancel method to body when cancellableBody is false", async () => {
       const testData = "test data"
 
       mockFetchResolve(fetchMock, testData, 200, {}, undefined, false)
 
       const response = await fetchMock("http://test.com")
 
-      const responseSignature = response.body as unknown as { cancel: () => void }
-      expect(responseSignature.cancel).toBeUndefined()
+      // Native ReadableStream has cancel(), but it should NOT be a jest mock
+      const responseSignature = response.body as unknown as { cancel: jest.Mock }
+      expect(jest.isMockFunction(responseSignature.cancel)).toBe(false)
     })
 
     it("should handle empty statusText parameter", async () => {
@@ -155,7 +153,7 @@ describe("test-utils", () => {
     it("should handle undefined statusText parameter", async () => {
       const testData = "test data"
 
-      mockFetchResolve(fetchMock, testData, 200, {}, undefined)
+      mockFetchResolve(fetchMock, testData, 200, {})
 
       const response = await fetchMock("http://test.com")
 

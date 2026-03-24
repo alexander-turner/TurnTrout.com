@@ -557,7 +557,8 @@ describe("setupCopyButton", () => {
   })
 
   it("should pass options to addEventListener", () => {
-    const addEventSpy = jest.spyOn(button, "addEventListener")
+    // Use mockImplementation to avoid jsdom's internal AbortSignal type validation
+    const addEventSpy = jest.spyOn(button, "addEventListener").mockImplementation(jest.fn())
     const controller = new AbortController()
     setupCopyButton(button, () => "text", { signal: controller.signal })
 
