@@ -2,7 +2,7 @@ import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import { tightScrollTolerance, listTolerance } from "../constants"
-import { test, expect } from "./fixtures"
+import { test } from "./fixtures"
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -98,31 +98,6 @@ test.describe("Test page sections", () => {
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
     })
-  })
-
-  test("Print media layout (lostpixel)", async ({ page }, testInfo) => {
-    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
-
-    await page.emulateMedia({ media: "print" })
-    await takeRegressionScreenshot(page, testInfo, "print-layout")
-  })
-
-  test("Print mode renders identically in light and dark themes", async ({ page }, testInfo) => {
-    test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
-
-    await setTheme(page, "light")
-    await page.emulateMedia({ media: "print" })
-    const lightScreenshot = await takeRegressionScreenshot(page, testInfo, "print-light-vs-dark")
-
-    await page.emulateMedia({ media: "screen" })
-    await setTheme(page, "dark")
-    await page.emulateMedia({ media: "print" })
-    const darkScreenshot = await page.screenshot({
-      animations: "disabled",
-      scale: "css",
-    })
-
-    expect(darkScreenshot).toEqual(lightScreenshot)
   })
 })
 

@@ -171,6 +171,14 @@
     display: none !important;
   }
 
+  // ── Horizontal rules: use border instead of background-color ─────
+  // background-color is stripped by default in print mode.
+  hr {
+    background-color: transparent !important;
+    border-top: 1px solid var(--midground-faint) !important;
+    height: 0 !important;
+  }
+
   // ── Trout ornament: lighten for print ────────────────────────────
   #trout-ornament-container {
     & > img {
