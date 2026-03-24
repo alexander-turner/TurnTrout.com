@@ -96,27 +96,6 @@
     break-after: avoid;
   }
 
-  p,
-  li,
-  blockquote,
-  figcaption,
-  dt,
-  dd {
-    orphans: 2;
-    widows: 2;
-  }
-
-  // ── Prevent breaks inside key elements ───────────────────────────
-  // Only avoid breaks for elements likely to be short. Large
-  // admonitions/figures can cause huge blank gaps if forced to the
-  // next page, so we don't set break-inside: avoid on them.
-  blockquote,
-  pre,
-  table,
-  img {
-    break-inside: avoid;
-  }
-
   // ── Images & video ───────────────────────────────────────────────
   video {
     display: none !important;
@@ -204,7 +183,8 @@
   .admonition {
     border: 1px solid #999 !important;
     background-color: #fafafa !important;
-    max-width: 100% !important;
+    width: 95% !important;
+    max-width: 95% !important;
     box-sizing: border-box !important;
 
     &.is-collapsed > .admonition-content {
