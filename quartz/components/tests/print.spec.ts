@@ -46,6 +46,19 @@ test("Print mode renders identically in light and dark themes", async ({ page },
   expect(darkScreenshot).toEqual(lightScreenshot)
 })
 
+test("beforeprint forces light data-theme and afterprint restores it", async ({ page }) => {
+  await setTheme(page, "dark")
+  await expect(page.locator(":root")).toHaveAttribute("data-theme", "dark")
+
+  // Simulate browser print dialog opening
+  await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")))
+  await expect(page.locator(":root")).toHaveAttribute("data-theme", "light")
+
+  // Simulate browser print dialog closing
+  await page.evaluate(() => window.dispatchEvent(new Event("afterprint")))
+  await expect(page.locator(":root")).toHaveAttribute("data-theme", "dark")
+})
+
 test("Scroll handlers are gated during print mode transitions", async ({ page }) => {
   // Scroll down so there's a non-zero scroll position to track
   await page.evaluate(() => window.scrollTo(0, 500))
