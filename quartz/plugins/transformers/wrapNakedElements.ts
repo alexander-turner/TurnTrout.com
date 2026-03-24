@@ -2,7 +2,7 @@
 // If a video element is not already wrapped in a .video-container, the vsc controller will be the first child of <article>.
 // This plugin wraps all video elements in a .video-container to prevent that.
 
-import type { Element, Parent, Root } from "hast"
+import type { Element, Parent, Properties, Root } from "hast"
 import type { Plugin } from "unified"
 
 import { h } from "hastscript"
@@ -20,6 +20,7 @@ import { hasClass } from "./utils"
  * @param skipPredicate A predicate function to determine if wrapping should be skipped.
  * @param wrapperTagName The tag name of the wrapper element (e.g., "span", "figure").
  * @param wrapperClassName The class name to apply to the wrapper element (empty string for no class).
+ * @param wrapperProperties Additional properties to set on the wrapper element.
  */
 function wrapElement(
   node: Element,
@@ -27,6 +28,7 @@ function wrapElement(
   skipPredicate: (node: Element, ancestors: Parent[], wrapperClassName: string) => boolean,
   wrapperTagName: string,
   wrapperClassName: string,
+  wrapperProperties: Properties = {},
 ): void {
   /* istanbul ignore next */
   if (ancestors.length === 0) {
@@ -41,15 +43,31 @@ function wrapElement(
   const existsInParentChildren = index !== -1
   /* istanbul ignore else */
   if (existsInParentChildren) {
-    const wrapper: Element = wrapperClassName
-      ? h(wrapperTagName, { className: [wrapperClassName] }, [node])
-      : h(wrapperTagName, [node])
+    const props: Properties = { ...wrapperProperties }
+    if (wrapperClassName) {
+      props.className = [wrapperClassName]
+    }
+    const wrapper: Element = h(wrapperTagName, props, [node])
 
     ancestors[ancestors.length - 1].children.splice(index, 1, wrapper)
   } else {
     /* istanbul ignore next */
     throw new Error("Element is not actually a child of its claimed parent.")
   }
+}
+
+/**
+ * Extracts the source URL from a media element (video/audio).
+ * Checks the element's `src` attribute first, then falls back to the first `<source>` child's `src`.
+ */
+function getMediaSrc(node: Element): string {
+  const src = node.properties?.src as string | undefined
+  if (src) return src
+
+  const sourceChild = node.children.find(
+    (child) => child.type === "element" && child.tagName === "source",
+  ) as Element | undefined
+  return (sourceChild?.properties?.src as string) ?? ""
 }
 
 /**
@@ -72,9 +90,40 @@ function skipNodeForVideo(
 
 /**
  * Wraps a video node in a <span class="video-container"> if it is not already in one.
+ * Sets `data-src` on the wrapper so the print stylesheet can display the URL.
  */
 function wrapVideo(videoNode: Element, ancestors: Parent[]): void {
-  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container")
+  if (videoNode.tagName !== "video") return
+  const dataSrc = getMediaSrc(videoNode)
+  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container", {
+    "data-src": dataSrc,
+  })
+}
+
+/**
+ * Determines if an audio node should be skipped based on its tag name and parent class.
+ */
+function skipNodeForAudio(
+  audioNode: Element,
+  ancestors: Parent[],
+  wrapperClassName: string,
+): boolean {
+  const notAudio = audioNode.tagName !== "audio"
+  const directParent = ancestors[ancestors.length - 1]
+  const inAudioContainer = hasClass(directParent as Element, wrapperClassName)
+  return notAudio || inAudioContainer
+}
+
+/**
+ * Wraps an audio node in a <span class="audio-container"> if it is not already in one.
+ * Sets `data-src` on the wrapper so the print stylesheet can display the URL.
+ */
+function wrapAudio(audioNode: Element, ancestors: Parent[]): void {
+  if (audioNode.tagName !== "audio") return
+  const dataSrc = getMediaSrc(audioNode)
+  wrapElement(audioNode, ancestors, skipNodeForAudio, "span", "audio-container", {
+    "data-src": dataSrc,
+  })
 }
 
 /**
@@ -170,8 +219,9 @@ function wrapFloatRight(element: Element, ancestors: Parent[]): void {
  */
 const rehypeWrapNakedElements: Plugin<[], Root> = () => {
   return (tree: Root) => {
-    // First wrap naked videos in video-container
+    // Wrap naked videos and audio in containers with data-src for print
     visitParents(tree, "element", wrapVideo)
+    visitParents(tree, "element", wrapAudio)
     // Then wrap .float-right elements (or their parents) in figure
     visitParents(tree, "element", wrapFloatRight)
   }
