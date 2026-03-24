@@ -6,8 +6,18 @@ export function setupScrollHandler() {
 
   const printQuery = window.matchMedia("print")
 
+  // Track print state via events — printQuery.matches may lag behind the
+  // layout reflow that fires scroll events when entering/exiting print mode.
+  let isPrinting = false
+  window.addEventListener("beforeprint", () => {
+    isPrinting = true
+  })
+  window.addEventListener("afterprint", () => {
+    isPrinting = false
+  })
+
   window.addEventListener("scroll", () => {
-    if (!ticking && !printQuery.matches) {
+    if (!ticking && !isPrinting && !printQuery.matches) {
       window.requestAnimationFrame(() => {
         const navbar = document.getElementById("navbar")
         if (!navbar) return
