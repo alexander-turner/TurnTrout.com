@@ -302,7 +302,7 @@ test.describe("visual_utils functions", () => {
       // Measure inside the browser to avoid Playwright bridge latency.
       // waitForTransitionEnd calls element.evaluate internally, so we
       // bracket it with performance.now() on the same clock.
-      const duration = await element.evaluate(async (el: Element) => {
+      const duration = await element.evaluate((el: Element) => {
         const start = performance.now()
         const computedStyle = window.getComputedStyle(el)
         const transitionDurationValue = computedStyle.transitionDuration

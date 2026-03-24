@@ -15,7 +15,7 @@ async function expectStoredState(
   isCollapsed: boolean,
 ): Promise<void> {
   const id = await getCollapsibleId(admonition)
-  const stored = await page.evaluate((key) => localStorage.getItem(key!), id)
+  const stored = await page.evaluate((key) => localStorage.getItem(key ?? ""), id)
   expect(stored).toBe(isCollapsed ? "true" : "false")
 }
 

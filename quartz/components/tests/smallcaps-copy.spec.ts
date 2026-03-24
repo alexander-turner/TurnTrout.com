@@ -29,7 +29,10 @@ test.describe("Smallcaps copy behavior", () => {
           const target = Array.from(abbrs).find(
             (el) => el.getAttribute("data-original-text") === "50mV",
           ) as HTMLElement
-          if (!target) return reject(new Error("No 50mV small-caps element found"))
+          if (!target) {
+            reject(new Error("No 50mV small-caps element found"))
+            return
+          }
 
           const originalText = target.getAttribute("data-original-text") ?? ""
           const displayedText = target.textContent ?? ""
@@ -66,7 +69,10 @@ test.describe("Smallcaps copy behavior", () => {
         // Find the paragraph containing "nato" (lowercased by smallcaps transform)
         const paragraphs = document.querySelectorAll("article p")
         const target = Array.from(paragraphs).find((p) => p.textContent?.includes("nato"))
-        if (!target) return reject(new Error("No paragraph containing 'nato' found"))
+        if (!target) {
+          reject(new Error("No paragraph containing 'nato' found"))
+          return
+        }
 
         document.addEventListener(
           "copy",

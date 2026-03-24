@@ -185,9 +185,13 @@ test("Search layout restores height when tab becomes visible again", async ({ pa
   const heightCollapsed = await searchLayout.evaluate((el) => (el as HTMLElement).offsetHeight)
   expect(heightCollapsed).toBe(0)
 
-  // Simulate returning to the tab (page becomes visible)
+  // Simulate returning to the tab (page becomes visible).
+  // Override on Document.prototype so Firefox's native getter is replaced.
   await page.evaluate(() => {
-    Object.defineProperty(document, "hidden", { value: false, writable: true })
+    Object.defineProperty(Document.prototype, "hidden", {
+      value: false,
+      configurable: true,
+    })
     // @ts-expect-error - Event types differ between Node and browser contexts
     document.dispatchEvent(new Event("visibilitychange"))
   })
