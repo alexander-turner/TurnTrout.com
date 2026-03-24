@@ -32,10 +32,6 @@
     color-scheme: light !important;
   }
 
-  body {
-    background: #fff !important;
-  }
-
   // ── Hide interactive / navigation UI ─────────────────────────────
   #left-sidebar,
   #right-sidebar,
@@ -75,12 +71,6 @@
     margin-top: 0 !important;
   }
 
-  article {
-    overflow-wrap: break-word !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
   // ── Page margins ─────────────────────────────────────────────────
   @page {
     margin: 2cm 2.5cm;
@@ -94,11 +84,6 @@
   h5,
   h6 {
     break-after: avoid;
-  }
-
-  // ── Images & video ───────────────────────────────────────────────
-  video {
-    display: none !important;
   }
 
   // ── Links: show URLs for external links ──────────────────────────
@@ -128,32 +113,16 @@
     content: none !important;
   }
 
-  a {
-    background-color: transparent !important;
-  }
-
-  // ── Footnotes: clean endnotes section ────────────────────────────
-  .footnotes {
-    font-size: 0.9em;
-  }
-
   // Hide backref arrows (useless in print)
   .data-footnote-backref,
   a[data-footnote-backref] {
     display: none !important;
   }
 
-  // Footnote references: plain superscript numbers
-  a[id*="fnref-"] {
-    border: none !important;
-    padding: 0 !important;
-  }
-
   // ── Code blocks ──────────────────────────────────────────────────
   pre {
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    font-size: 0.85em;
     background-color: #f0f0f0 !important;
   }
 
@@ -172,14 +141,8 @@
     opacity: 1 !important;
   }
 
-  // ── Admonitions: clean print styling ─────────────────────────────
+  // ── Admonitions: expand collapsed content ────────────────────────
   .admonition {
-    border: 1px solid #999 !important;
-    background-color: #fafafa !important;
-    width: 99% !important;
-    max-width: 99% !important;
-    box-sizing: border-box !important;
-
     &.is-collapsed > .admonition-content {
       display: block !important;
       max-height: none !important;
@@ -200,23 +163,14 @@
     display: none !important;
   }
 
-  // ── Trout ornament: ensure visibility ─────────────────────────────
+  // ── Trout ornament: lighten for print ────────────────────────────
   #trout-ornament-container {
-    display: flex !important;
-
     & > img {
-      filter: none !important;
       opacity: 0.4 !important;
     }
 
     & > span {
       opacity: 0.4 !important;
     }
-  }
-
-  // ── Disable transitions/animations ───────────────────────────────
-  * {
-    transition: none !important;
-    animation: none !important;
   }
 }
