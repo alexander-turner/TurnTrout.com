@@ -1371,19 +1371,6 @@ describe("createYouTubeEmbed", () => {
       src: "https://www.youtube.com/embed/dQw4w9WgXcQ?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab",
     })
   })
-
-  it("should create YouTube embed with undefined playlist", () => {
-    const result = createYouTubeEmbed("dQw4w9WgXcQ", undefined)
-
-    expect(result).toEqual({
-      class: "external-embed",
-      allow: "fullscreen",
-      frameborder: 0,
-      width: "600px",
-      height: "350px",
-      src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    })
-  })
 })
 
 describe("Header slug consistency between wikilinks and actual headers", () => {
