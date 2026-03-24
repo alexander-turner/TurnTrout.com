@@ -1092,9 +1092,8 @@ test.describe("Checkboxes", () => {
     test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
       page,
     }) => {
-      // This test verifies that checkbox state restoration happens synchronously
-      // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
-      // Without this fix, users would see a flash of the wrong checkbox state.
+      // Verifies that checkbox state restoration happens synchronously via
+      // MutationObserver in detectInitialState.js, BEFORE the nav event fires.
 
       // Set localStorage on the live page, then reload to trigger restoration.
       // We use evaluate+reloadPage instead of addInitScript+gotoPage because
@@ -1107,11 +1106,11 @@ test.describe("Checkboxes", () => {
       // Check checkbox state — MutationObserver restores before first paint, but
       // Safari may deliver the callback slightly after domcontentloaded.
       await expect(async () => {
-        const checkboxStateBeforeNav = await page.evaluate(() => {
+        const checkboxChecked = await page.evaluate(() => {
           const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
           return checkbox?.checked
         })
-        expect(checkboxStateBeforeNav).toBe(true)
+        expect(checkboxChecked).toBe(true)
       }).toPass({ timeout: 10_000 })
     })
 
