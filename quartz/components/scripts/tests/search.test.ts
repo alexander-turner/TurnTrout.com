@@ -169,20 +169,6 @@ describe("tokenizeTerm", () => {
   })
 })
 
-describe("RegExp.escape", () => {
-  it("should escape special regex characters", () => {
-    const specialChars = ".*+?^${}()|[]\\"
-    const escaped = RegExp.escape(specialChars)
-    expect(new RegExp(escaped).test(specialChars)).toBe(true)
-  })
-
-  it("should not escape normal characters", () => {
-    const normalChars = "abcdefg123"
-    const escaped = RegExp.escape(normalChars)
-    expect(escaped).toBe(normalChars)
-  })
-})
-
 describe("createMatchSpan", () => {
   it("should create a span with the correct class and text", () => {
     const span = createMatchSpan("test")

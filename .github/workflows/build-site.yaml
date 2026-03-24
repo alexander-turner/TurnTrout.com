@@ -50,7 +50,7 @@ jobs:
       - name: Build site
         run: pnpm build
         env:
-          NODE_OPTIONS: "--permission --allow-fs-read=* --allow-fs-write=${{ github.workspace }}/*,/tmp/* --allow-child-process"
+          NODE_OPTIONS: "--permission --allow-fs-read=* --allow-fs-write=${{ github.workspace }}/*,/tmp/* --allow-child-process --allow-worker"
 
       - name: Upload built site
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
