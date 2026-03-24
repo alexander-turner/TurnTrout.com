@@ -11,8 +11,8 @@ if (typeof setImmediate === "undefined") {
   }
 }
 
-// Polyfill RegExp.escape for Node < 24 (native in V8 13.6+)
-// Matches the TC39 proposal: escapes all syntax characters plus / and -
+// Shim RegExp.escape for jsdom test environment
+// Native in Node 24+ (V8 13.6), but jsdom doesn't expose it
 if (typeof RegExp.escape !== "function") {
   RegExp.escape = (str) => str.replace(/[\\^$.*+?()[\]{}|/-]/g, "\\$&")
 }
