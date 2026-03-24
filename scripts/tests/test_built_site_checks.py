@@ -5841,6 +5841,39 @@ def test_check_article_dropcap_first_letter_comprehensive(
 
 
 @pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: regular space after first letter
+        (
+            '<article><p data-first-letter="I">I use this page.</p></article>',
+            [],
+        ),
+        # Valid: dropcap disabled, nbsp is fine
+        (
+            f'<article data-use-dropcap="false"><p>I{NBSP}use this.</p></article>',
+            [],
+        ),
+        # Valid: no article element
+        (
+            f"<p>I{NBSP}use this.</p>",
+            [],
+        ),
+        # Invalid: nbsp after first letter in dropcap paragraph
+        (
+            f'<article><p data-first-letter="I">I{NBSP}use this page.</p></article>',
+            [
+                "nbsp after first letter in dropcap paragraph: 'I\\xa0use this page.'"
+            ],
+        ),
+    ],
+)
+def test_check_dropcap_no_leading_nbsp(html: str, expected_issues: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_dropcap_no_leading_nbsp(soup)
+    assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
     "char",
     list(built_site_checks.VALID_PARAGRAPH_ENDING_CHARACTERS),
 )

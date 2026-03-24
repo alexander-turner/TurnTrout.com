@@ -13,6 +13,9 @@ import {
   charsToMoveIntoLinkFromRight,
   markerChar,
   hatTipPlaceholder,
+  NBSP,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -586,15 +589,21 @@ export function setFirstLetterAttribute(tree: Root): void {
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
+  const firstTextNode = firstParagraph.children.find(
+    (child): child is Text => child.type === "text",
+  )
+  if (!firstTextNode) return
+
+  // Replace nbsp after first letter — nbspTransform adds it after single-letter
+  // words like "I", but it creates a visible extra space with dropcap float
+  if (firstTextNode.value.charAt(1) === NBSP) {
+    firstTextNode.value = `${firstTextNode.value.charAt(0)} ${firstTextNode.value.slice(2)}`
+  }
+
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
-  if (["'", "’", "‘"].includes(secondLetter)) {
-    const firstTextNode = firstParagraph.children.find(
-      (child): child is Text => child.type === "text",
-    )
-    if (firstTextNode) {
-      firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
-    }
+  if (["’", LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE].includes(secondLetter)) {
+    firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
   }
 }
 
