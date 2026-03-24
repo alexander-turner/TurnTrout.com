@@ -118,12 +118,21 @@
   collapsibleObserver.observe(document.documentElement, { childList: true, subtree: true })
   window.addEventListener("load", () => collapsibleObserver.disconnect(), { once: true })
 
-  // Restore checkbox states as soon as they appear in the DOM (before first paint)
+  // Restore checkbox states as soon as they appear in the DOM (before first paint).
+  // Reads from the pre-loaded cache first, then falls back to localStorage directly
+  // (handles edge cases where the cache was populated before values were available).
   const restoreCheckboxState = (checkbox, index) => {
     const slug = document.body?.dataset?.slug
     if (!slug) return
     const checkboxId = `${slug}-checkbox-${index}`
-    const savedState = window.__quartz_checkbox_states.get(checkboxId)
+    let savedState = window.__quartz_checkbox_states.get(checkboxId)
+    if (savedState === undefined) {
+      const raw = localStorage.getItem(checkboxId)
+      if (raw !== null) {
+        savedState = raw === "true"
+        window.__quartz_checkbox_states.set(checkboxId, savedState)
+      }
+    }
     if (savedState !== undefined) checkbox.checked = savedState
   }
 

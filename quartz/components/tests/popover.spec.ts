@@ -6,6 +6,7 @@ import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
+  isSafariBrowser,
   getAllWithWait,
   isElementChecked,
   search,
@@ -342,6 +343,50 @@ test("Popover does not appear on next page after navigation", async ({ page, dum
   await expect(popover).toBeHidden()
 })
 
+test("In-flight popover fetch does not create orphaned popover after navigation", async ({
+  page,
+  dummyLink,
+}) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Delay the popover fetch so it completes *after* SPA navigation.
+  // Use a promise to signal when the fetch has been intercepted, and a
+  // second one to control when it resolves (after navigation completes).
+
+  let releasePopoverFetch = (): void => {}
+  const popoverFetchIntercepted = new Promise<void>((resolve) => {
+    const holdFetch = new Promise<void>((release) => {
+      releasePopoverFetch = release
+    })
+    let firstRequest = true
+    page.route("**/design", async (route) => {
+      if (firstRequest) {
+        firstRequest = false
+        resolve() // signal that the popover fetch has started
+        await holdFetch // hold the response until we release it
+      }
+      await route.continue()
+    })
+  })
+
+  // Hover to start the popover timer; wait until the fetch is actually in-flight.
+  await dummyLink.hover()
+  await popoverFetchIntercepted
+
+  // Click the link to trigger SPA navigation while the popover fetch is held.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+
+  // Release the held fetch and wait for the response to complete, so we know
+  // mouseEnterHandler has had a chance to process it (and should bail out).
+  const responsePromise = page.waitForResponse("**/design")
+  releasePopoverFetch()
+  await responsePromise
+
+  // No orphaned popover should appear on the new page.
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveCount(0)
+})
+
 test.describe("Footnote popovers", () => {
   test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
@@ -463,6 +508,7 @@ test.describe("Footnote popovers", () => {
   test("Focus moves into pinned footnote popover on open", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
@@ -474,8 +520,17 @@ test.describe("Footnote popovers", () => {
   })
 
   test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+    // WebKit doesn't support Tab navigation by default — it requires the
+    // "Press Tab to highlight each item on a webpage" Safari preference,
+    // which Playwright cannot enable. See microsoft/playwright#2114.
+    test.skip(
+      isSafariBrowser(page),
+      "WebKit does not support Tab navigation without Safari preference",
+    )
+
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")

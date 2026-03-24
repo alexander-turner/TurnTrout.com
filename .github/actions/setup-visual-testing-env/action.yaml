@@ -17,8 +17,8 @@ runs:
         cache-apt-playwright: ${{ inputs.install-playwright }}
         install-python: "false"
 
-    - name: Install Playwright system dependencies
-      if: inputs.install-playwright == 'true'
+    - name: Install Playwright system dependencies (Linux)
+      if: inputs.install-playwright == 'true' && runner.os == 'Linux'
       shell: bash
       run: |
         # Restore cached .deb packages so apt skips downloading them
@@ -35,6 +35,7 @@ runs:
         cp /var/cache/apt/archives/*.deb ~/apt-playwright-cache/ 2>/dev/null || true
 
     - name: Install ffmpeg from system packages
+      if: runner.os == 'Linux'
       run: |
         # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
         if command -v ffprobe &>/dev/null; then
@@ -45,5 +46,17 @@ runs:
         # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
         sudo apt-get update
         sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5
+        ffprobe -version
+      shell: bash
+
+    - name: Install ffmpeg on macOS
+      if: runner.os == 'macOS'
+      run: |
+        if command -v ffprobe &>/dev/null; then
+          echo "ffprobe already available, skipping install"
+          ffprobe -version
+          exit 0
+        fi
+        brew install ffmpeg
         ffprobe -version
       shell: bash

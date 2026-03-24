@@ -151,6 +151,28 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
+    """For dropcap-enabled articles, the first space in the first paragraph must
+    not be a non-breaking space (which creates a visible extra gap)."""
+
+    issues: list[str] = []
+    for article in soup.find_all("article"):
+        if article.get("data-use-dropcap") == "false":
+            continue
+
+        p = article.find("p", recursive=False)
+        if not isinstance(p, Tag):
+            continue
+
+        text = p.get_text()
+        if len(text) >= 2 and text[1] == NBSP:
+            issues.append(
+                f"nbsp after first letter in dropcap paragraph: {text[:20]!r}"
+            )
+
+    return issues
+
+
 VALID_PARAGRAPH_ENDING_CHARACTERS = (
     ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
 )
@@ -1834,6 +1856,7 @@ def check_file_for_issues(
         "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
             soup
         ),
+        "dropcap_leading_nbsp": check_dropcap_no_leading_nbsp(soup),
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),

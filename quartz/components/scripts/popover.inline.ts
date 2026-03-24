@@ -210,6 +210,9 @@ document.addEventListener("nav", () => {
     clearTimeout(pendingPopoverTimer)
     pendingPopoverTimer = null
   }
+  // Invalidate any in-flight async mouseEnterHandler calls so they
+  // discard their result instead of creating an orphaned popover.
+  popoverGeneration++
 
   // Mark that the mouse hasn't moved yet since this navigation.
   // Safari fires spurious mouseenter events after DOM morphing under a

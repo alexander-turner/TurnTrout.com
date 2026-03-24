@@ -570,7 +570,9 @@ describe("setupCopyButton", () => {
   it("should log error when clipboard write fails", async () => {
     const error = new Error("clipboard error")
     mockClipboard.writeText.mockReturnValue(Promise.reject(error))
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(/* suppress test output */ jest.fn())
 
     setupCopyButton(button, () => "text")
     button.click()
