@@ -126,7 +126,7 @@ jobs:
 
       - name: Install subfont
         if: github.event_name == 'push'
-        run: pnpm add -g subfont
+        run: pnpm add -g github:alexander-turner/subfont
       - name: Make script executable
         if: github.event_name == 'push'
         run: chmod +x ./scripts/subfont.sh
