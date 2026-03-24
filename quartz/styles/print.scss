@@ -152,6 +152,8 @@
     .admonition-icon {
       width: 0.75rem !important;
       height: 0.75rem !important;
+      print-color-adjust: exact !important;
+      -webkit-print-color-adjust: exact !important;
     }
 
     .fold-admonition-icon {
