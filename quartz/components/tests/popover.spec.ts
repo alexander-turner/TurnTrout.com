@@ -128,8 +128,8 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
     await expect(popover).toBeVisible()
   }
 
-  const popoverCount = await page.locator(".popover").count()
-  expect(popoverCount).toBe(1)
+  const popoverCount = page.locator(".popover")
+  await expect(popoverCount).toHaveCount(1)
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
@@ -210,6 +210,7 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   // Verify popover stays hidden after dismissal
   await expect(popover).toBeHidden()
 })
+
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
