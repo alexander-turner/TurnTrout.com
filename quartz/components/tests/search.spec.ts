@@ -73,19 +73,7 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
   }
 }
 
-async function closeSearch(page: Page) {
-  const activeContainer = page.locator("#search-container.active")
-  // Use count() instead of evaluate() — count() returns 0 safely even if
-  // the page has navigated away (e.g. after Enter-key navigation), whereas
-  // evaluate() throws "Target page, context or browser has been closed".
-  if ((await activeContainer.count()) > 0) {
-    await page.keyboard.press("Escape")
-    await expect(page.locator("#search-container")).not.toHaveClass(/active/)
-  }
-}
-
 test.afterEach(async ({ page }) => {
-  await closeSearch(page)
   // Navigate away to flush pending network/script activity, preventing
   // WebKit from hanging during browserContext.close() teardown.
   await page.goto("about:blank")
