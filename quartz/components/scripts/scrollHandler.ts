@@ -4,8 +4,10 @@ export function setupScrollHandler() {
   const scrollThreshold = 50 // Minimum scroll distance before toggle
   const topThreshold = 50 // Show navbar when within 50px of top
 
+  const printQuery = window.matchMedia("print")
+
   window.addEventListener("scroll", () => {
-    if (!ticking) {
+    if (!ticking && !printQuery.matches) {
       window.requestAnimationFrame(() => {
         const navbar = document.getElementById("navbar")
         if (!navbar) return

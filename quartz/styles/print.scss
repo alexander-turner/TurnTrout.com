@@ -33,6 +33,7 @@
   }
 
   // ── Hide interactive / navigation UI ─────────────────────────────
+  #navbar,
   #left-sidebar,
   #right-sidebar,
   #search-container,
@@ -146,6 +147,11 @@
     &.is-collapsed > .admonition-content {
       display: block !important;
       max-height: none !important;
+    }
+
+    .admonition-icon {
+      width: 0.75rem !important;
+      height: 0.75rem !important;
     }
 
     .fold-admonition-icon {
