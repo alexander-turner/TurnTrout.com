@@ -13,6 +13,38 @@
       #{map.get($light-colors, "red")},
       #{$foreground-light} 35%
     ) !important;
+
+    // Syntax highlighting: use light-theme Shiki tokens
+    code[data-theme*=" "],
+    code[data-theme*=" "] span {
+      color: var(--shiki-light) !important;
+    }
+
+    // Images/video: undo dark-mode grayscale and match light-mode behavior
+    img:not([src$=".svg"]),
+    video {
+      filter: none !important;
+      mix-blend-mode: multiply !important;
+    }
+
+    img[src$=".svg"] {
+      filter: none !important;
+    }
+
+    // Audio: undo dark-mode blend
+    audio {
+      mix-blend-mode: normal !important;
+    }
+
+    // SVG ornament: use light-mode inversion
+    .trout-ornament-svg {
+      filter: invert(35%) !important;
+    }
+
+    // Transparent images: undo dark-mode background
+    .transparent-image {
+      background-color: transparent !important;
+    }
   }
 
   :root {
@@ -137,39 +169,6 @@
     overflow-wrap: break-word !important;
   }
 
-  // ── Force light-mode appearance for dark-mode elements ────────
-  // Syntax highlighting: use light-theme Shiki tokens
-  [data-theme="dark"] code[data-theme*=" "],
-  [data-theme="dark"] code[data-theme*=" "] span {
-    color: var(--shiki-light) !important;
-  }
-
-  // Images/video: undo dark-mode grayscale and match light-mode behavior
-  :root[data-theme="dark"] img:not([src$=".svg"]),
-  :root[data-theme="dark"] video {
-    filter: none !important;
-    mix-blend-mode: multiply !important;
-  }
-
-  :root[data-theme="dark"] img[src$=".svg"] {
-    filter: none !important;
-  }
-
-  // Audio: undo dark-mode blend
-  [data-theme="dark"] audio {
-    mix-blend-mode: normal !important;
-  }
-
-  // SVG ornament: use light-mode inversion
-  :root[data-theme="dark"] .trout-ornament-svg {
-    filter: invert(35%) !important;
-  }
-
-  // Transparent images: undo dark-mode background
-  :root[data-theme="dark"] .transparent-image {
-    background-color: transparent !important;
-  }
-
   // ── Code blocks ────────────────────────────────────────────────
   pre {
     white-space: pre-wrap;
@@ -191,11 +190,6 @@
   .scroll-indicator > .katex-display > .katex {
     display: block !important;
     white-space: normal !important;
-  }
-
-  // ── Dropcap: lighten background letter for white paper ─────────
-  article[data-use-dropcap="true"] {
-    --before-color: #ccc !important;
   }
 
   // ── Spoilers: reveal hidden content ────────────────────────────
