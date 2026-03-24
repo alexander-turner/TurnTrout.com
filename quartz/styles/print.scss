@@ -90,6 +90,22 @@
   h5,
   h6 {
     break-after: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  figure,
+  pre,
+  table,
+  .katex-display,
+  .admonition,
+  img {
+    break-inside: avoid;
   }
 
   // ── Links: show URLs after link text ───────────────────────────
@@ -114,7 +130,6 @@
 
   article a {
     overflow-wrap: break-word !important;
-    word-break: break-all !important;
     max-width: 100% !important;
   }
 
@@ -129,6 +144,20 @@
     background-color: #f0f0f0 !important;
     print-color-adjust: exact !important;
     -webkit-print-color-adjust: exact !important;
+  }
+
+  // ── KaTeX: prevent horizontal overflow ─────────────────────────
+  .katex-display {
+    overflow: visible !important;
+  }
+
+  .katex {
+    overflow: visible !important;
+  }
+
+  .scroll-indicator > .katex-display > .katex {
+    display: block !important;
+    white-space: normal !important;
   }
 
   // ── Dropcap: lighten background letter for white paper ─────────

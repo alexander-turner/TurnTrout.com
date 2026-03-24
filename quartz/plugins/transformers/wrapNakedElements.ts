@@ -95,9 +95,8 @@ function skipNodeForVideo(
 function wrapVideo(videoNode: Element, ancestors: Parent[]): void {
   if (videoNode.tagName !== "video") return
   const dataSrc = getMediaSrc(videoNode)
-  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container", {
-    "data-src": dataSrc,
-  })
+  const props = dataSrc ? { "data-src": dataSrc } : {}
+  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container", props)
 }
 
 /**
@@ -121,9 +120,8 @@ function skipNodeForAudio(
 function wrapAudio(audioNode: Element, ancestors: Parent[]): void {
   if (audioNode.tagName !== "audio") return
   const dataSrc = getMediaSrc(audioNode)
-  wrapElement(audioNode, ancestors, skipNodeForAudio, "span", "audio-container", {
-    "data-src": dataSrc,
-  })
+  const props = dataSrc ? { "data-src": dataSrc } : {}
+  wrapElement(audioNode, ancestors, skipNodeForAudio, "span", "audio-container", props)
 }
 
 /**

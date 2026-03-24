@@ -24,7 +24,7 @@ async function main() {
 
   // Force light theme and white background
   await page.evaluate(() => {
-    document.documentElement.setAttribute("saved-theme", "light")
+    document.documentElement.setAttribute("data-theme", "light")
     document.body.style.backgroundColor = "white"
   })
 

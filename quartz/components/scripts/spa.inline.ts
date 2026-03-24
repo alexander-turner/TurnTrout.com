@@ -16,6 +16,7 @@ import {
   SEARCH_MATCH_CLASS,
 } from "../constants"
 import { debounce } from "./component_script_utils"
+import { isPrinting } from "./printState"
 import { matchHTML } from "./search"
 import { isLocalUrl } from "./spa_utils"
 
@@ -59,24 +60,9 @@ function saveScrollToLocalStorage(pathname: string, scrollY: number): void {
   localStorage.setItem(key, scrollY.toString())
 }
 
-const printQuery = typeof window !== "undefined" ? window.matchMedia("print") : null
-
-// Gate scroll handling during print transitions. The print dialog causes massive
-// layout reflows that trigger scroll events; if those fire history.replaceState,
-// Brave (and potentially other browsers) dismiss the print dialog.
-let isPrinting = false
-if (typeof window !== "undefined") {
-  window.addEventListener("beforeprint", () => {
-    isPrinting = true
-  })
-  window.addEventListener("afterprint", () => {
-    isPrinting = false
-  })
-}
-
 const updateScrollState = debounce(
   (() => {
-    if (isPrinting || printQuery?.matches) return
+    if (isPrinting()) return
 
     const currentScroll = getScrollPosition()
     console.debug(
@@ -706,7 +692,7 @@ function createRouter() {
     window.addEventListener(
       "scroll",
       () => {
-        if (isPrinting) return
+        if (isPrinting()) return
         console.debug("Scroll event fired")
         updateScrollState()
       },

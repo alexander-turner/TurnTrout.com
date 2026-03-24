@@ -130,6 +130,13 @@ describe("WrapNakedElements Plugin Tests", () => {
       const input = '<span class="audio-container"><audio src="test.mp3" controls></audio></span>'
       expect(testWrapNakedElementsHTML(input)).toBe(input)
     })
+
+    it("should omit data-src when audio has no src", () => {
+      const input = "<audio controls></audio>"
+      expect(testWrapNakedElementsHTML(input)).toBe(
+        '<span class="audio-container"><audio controls></audio></span>',
+      )
+    })
   })
 
   describe("No Video/Audio Elements", () => {
@@ -328,7 +335,7 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "video with no properties",
         "<video></video>",
-        '<span data-src="" class="video-container"><video></video></span>',
+        '<span class="video-container"><video></video></span>',
       ],
       [
         "video with text content",
@@ -392,7 +399,7 @@ describe("WrapNakedElements Plugin Tests", () => {
         name: "wrap video-container when video has float-right",
         input: '<video class="float-right" width="316" height="178">Content</video>',
         shouldWrap: true,
-        preservedContent: '<span data-src="" class="video-container"><video class="float-right"',
+        preservedContent: '<span class="video-container"><video class="float-right"',
       },
       {
         name: "not wrap without float-right class",
