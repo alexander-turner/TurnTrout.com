@@ -20,14 +20,14 @@
     --background: #fff !important;
     --midground-faint: #{$midground-faint-light} !important;
     --midground: #{$midground-light} !important;
-    --midground-strong: #5c5f77 !important;
+    --midground-strong: #{$midground-strong-light} !important;
     --foreground: #{$foreground-light} !important;
-    --secondary: #1e66f5 !important;
-    --tertiary: #0486b9 !important;
-    --highlight: #7c7f9324 !important;
-    --light: #fff !important;
-    --dark: #{$foreground-light} !important;
-    --dark-gray: #5c5f77 !important;
+    --secondary: #{$secondary-light} !important;
+    --tertiary: #{$tertiary-light} !important;
+    --highlight: #{$highlight-light} !important;
+    --light: var(--background) !important;
+    --dark: var(--foreground) !important;
+    --dark-gray: var(--midground-strong) !important;
 
     color-scheme: light !important;
   }

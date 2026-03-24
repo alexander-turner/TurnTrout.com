@@ -10,11 +10,11 @@
   --background: #{$background-dark};
   --midground-faint: #{$midground-faint-dark};
   --midground: #{$midground-dark};
-  --midground-strong: #c6cff0;
+  --midground-strong: #{$midground-strong-dark};
   --foreground: #{$foreground-dark};
-  --secondary: #97b0e9;
-  --tertiary: #99d1db;
-  --highlight: #949cbb30;
+  --secondary: #{$secondary-dark};
+  --tertiary: #{$tertiary-dark};
+  --highlight: #{$highlight-dark};
 
   // Always give access to light and dark colors
   --light: var(--foreground);
@@ -51,11 +51,11 @@
   --background: #{$background-light};
   --midground-faint: #{$midground-faint-light};
   --midground: #{$midground-light};
-  --midground-strong: #5c5f77;
+  --midground-strong: #{$midground-strong-light};
   --foreground: #{$foreground-light};
-  --secondary: #1e66f5;
-  --tertiary: #0486b9;
-  --highlight: #7c7f9324;
+  --secondary: #{$secondary-light};
+  --tertiary: #{$tertiary-light};
+  --highlight: #{$highlight-light};
   --light: var(--background);
   --dark: var(--foreground);
   --dark-gray: var(--midground-strong);
