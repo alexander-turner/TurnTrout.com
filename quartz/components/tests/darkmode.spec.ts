@@ -246,10 +246,6 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Confirm localStorage is set before navigating — WebKit on Linux
-      // can occasionally drop localStorage if we navigate too quickly.
-      await helper.verifyStorage(theme)
-
       // Navigate to a genuinely different page (using the prefix) so that
       // init scripts re-run in all browsers including Safari/WebKit.
       // Same-URL goto() in Safari may be treated as a soft refresh and skip

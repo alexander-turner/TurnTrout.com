@@ -134,18 +134,9 @@ function setupPondVideo(): void {
 
     // Safari/WebKit may not eagerly load video metadata after a full page reload
     // when autoplay is disabled, despite preload="auto". Explicitly kick off
-    // loading so the metadata events above will fire. Additionally, poll as a
-    // fallback since WebKit on Linux may not fire metadata events reliably after
-    // load().
+    // loading so the metadata events above will fire.
     if (savedTime && !autoplayEnabled) {
       videoElement.load()
-      const pollInterval = setInterval(() => {
-        if (videoElement.readyState >= 1) {
-          clearInterval(pollInterval)
-          restoreOnce()
-        }
-      }, 100)
-      signal.addEventListener("abort", () => clearInterval(pollInterval))
     }
   }
 

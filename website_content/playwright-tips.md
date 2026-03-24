@@ -60,6 +60,9 @@ Create a dedicated "test page"
 [Debug failures using Playwright traces](https://playwright.dev/docs/trace-viewer)
 : Traces let you inspect every moment of the test. You can see the state of the DOM before and after every Playwright command. On CI, save the traces as artifacts and use the `retain-on-failure` option.
 
+Wait for SPA navigation events, not URL changes
+: If your site uses SPA navigation, `page.waitForURL` resolves as soon as `pushState` fires — long before the DOM is ready. Instead, listen for a custom event that your SPA dispatches after the DOM morph is complete. Start listening _before_ the trigger action so you never miss the event.
+
 Beware browser-specific event ordering
 : `mousemove` may fire slightly _after_ `mouseenter` when Playwright teleports the cursor. I had a `mouseMovedSinceNav` flag that was set by `mousemove` and read by the `mouseenter` handler to decide whether to show a popover. The bug: `mouseenter` fired first and saw the flag as `false`, so the popover was suppressed even though the user had genuinely moved the mouse. The fix was to read the flag inside a `setTimeout` callback (300ms later) instead of synchronously — by then, `mousemove` had fired and set it.
 

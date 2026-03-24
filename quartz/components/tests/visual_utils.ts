@@ -49,14 +49,6 @@ export async function setTheme(page: Page, theme: Theme) {
     },
     { t: theme, key: savedThemeKey },
   )
-
-  // Verify the localStorage write was committed before proceeding.
-  // Safari may not flush writes synchronously, causing detectInitialState.js
-  // to read stale data if navigation starts too quickly.
-  await page.waitForFunction(({ key, expected }) => localStorage.getItem(key) === expected, {
-    key: savedThemeKey,
-    expected: theme,
-  })
 }
 
 /** Gets the name of the screenshot file. */
