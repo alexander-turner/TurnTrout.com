@@ -101,8 +101,11 @@
     display: none !important;
   }
 
-  img {
+  img:not(.float-right) {
     max-width: 100% !important;
+  }
+
+  img {
     mix-blend-mode: normal !important;
   }
 
@@ -159,6 +162,7 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
     font-size: 0.85em;
+    background-color: #f0f0f0 !important;
   }
 
   // ── Dropcap: lighten background letter for white paper ───────
@@ -190,11 +194,6 @@
     }
 
     .fold-admonition-icon {
-      display: none !important;
-    }
-
-    .admonition-icon {
-      // CSS masks don't render in print; hide the icon
       display: none !important;
     }
   }
