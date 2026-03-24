@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
 import { describe, it, beforeEach, afterEach, expect, jest } from "@jest/globals"

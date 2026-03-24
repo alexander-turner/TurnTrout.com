@@ -1,6 +1,3 @@
-// Re-export escape-string-regexp as escapeRegExp for consistent naming
-export { default as escapeRegExp } from "escape-string-regexp"
-
 /**
  * Escapes HTML special characters to prevent XSS and HTML injection.
  * Handles all 5 critical characters: &, <, >, ", '

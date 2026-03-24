@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  *
  * Regression test for memory leak fix in collapsible-listeners.js.
  * The bug: repeated nav events would add duplicate click handlers, causing
