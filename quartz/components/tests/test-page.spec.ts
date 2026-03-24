@@ -2,7 +2,7 @@ import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import { tightScrollTolerance, listTolerance } from "../constants"
-import { test } from "./fixtures"
+import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   setTheme,

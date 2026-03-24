@@ -4,15 +4,14 @@ import { takeRegressionScreenshot, setTheme, gotoPage } from "./visual_utils"
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */
 
-// Print tests only run on Chrome Desktop in light mode — print output is
+// Print tests only run on Chrome Desktop — print output is
 // browser-independent after emulateMedia, so one config is enough.
-test.skip(
-  ({ browserName }, workerInfo) =>
-    browserName !== "chromium" || !workerInfo.project.name.includes("Desktop"),
-  "Print tests run on Chrome Desktop only",
-)
+test.beforeEach(async ({ browserName, page }, testInfo) => {
+  test.skip(
+    browserName !== "chromium" || !testInfo.project.name.includes("Desktop"),
+    "Print tests run on Chrome Desktop only",
+  )
 
-test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => console.error(err))
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
