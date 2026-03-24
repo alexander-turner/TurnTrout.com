@@ -202,7 +202,7 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await search(page, "test")
 
   const previewContainer = page.locator("#preview-container")
-  // eslint-disable-next-line playwright/no-conditional-in-test
+
   const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
@@ -840,15 +840,15 @@ navigationMethods.forEach(({ down, up, description }) => {
     // Navigate down through results
     for (let i = 0; i < totalResults; i++) {
       await page.keyboard.press(down)
-      const focusedResults = await page.locator(".result-card.focus").count()
-      expect(focusedResults).toBe(1)
+      const focusedResults = page.locator(".result-card.focus")
+      await expect(focusedResults).toHaveCount(1)
     }
 
     // Navigate up through results
     for (let i = 0; i < totalResults; i++) {
       await page.keyboard.press(up)
-      const focusedResults = await page.locator(".result-card.focus").count()
-      expect(focusedResults).toBe(1)
+      const focusedResults = page.locator(".result-card.focus")
+      await expect(focusedResults).toHaveCount(1)
     }
   })
 })
