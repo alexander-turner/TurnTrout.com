@@ -37,6 +37,9 @@ test("Print mode renders identically in light and dark themes", async ({ page },
 
   await page.emulateMedia({ media: "screen" })
   await setTheme(page, "dark")
+  // Fire beforeprint to trigger the JS that swaps data-theme to light,
+  // matching real browser behavior (emulateMedia alone doesn't fire it).
+  await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")))
   await page.emulateMedia({ media: "print" })
   const darkScreenshot = await page.screenshot({
     animations: "disabled",
