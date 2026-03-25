@@ -29,13 +29,13 @@ runs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libxml2-utils dos2unix
+        sudo apt-get install -y --no-install-recommends libxml2-utils dos2unix
       shell: bash
 
     - name: Install ffmpeg from system packages
       if: inputs.install-node-deps == 'true'
       run: |
         # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
-        sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5
+        sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
         ffprobe -version
       shell: bash

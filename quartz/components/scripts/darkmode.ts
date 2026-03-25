@@ -124,10 +124,10 @@ function setupDarkMode() {
 
 // Force light theme when printing so dark-mode users don't waste ink.
 // Uses named functions so repeated calls replace (not duplicate) listeners.
-let themeBeforePrint: string | null = null
+let themeBeforePrint: Theme | null = null
 
 function onBeforePrint() {
-  themeBeforePrint = document.documentElement.getAttribute("data-theme")
+  themeBeforePrint = document.documentElement.getAttribute("data-theme") as Theme | null
   document.documentElement.setAttribute("data-theme", "light")
 }
 

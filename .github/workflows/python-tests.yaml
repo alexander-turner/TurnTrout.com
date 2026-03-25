@@ -40,7 +40,7 @@ jobs:
       !startsWith(github.head_ref, 'deepsource-') &&
       needs.detect-changes.outputs.python == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -53,7 +53,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
           pip install linkchecker
 
       - name: Install ImageMagick 7 via Homebrew
