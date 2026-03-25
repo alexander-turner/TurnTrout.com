@@ -31,7 +31,7 @@ date_published: 2023-06-02 00:00:00
 original_url: 
   https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
 skip_import: true
-description: RL researchers call trained policies "agents", biasing how we think about
+description: RL researchers call trained policies "agents," biasing how we think about
   their behavior. I advocate for using the term "policy" instead.
 date_updated: 2025-11-22 00:21:52.667251
 createBibtex: true
