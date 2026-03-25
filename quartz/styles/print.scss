@@ -96,6 +96,11 @@
     break-inside: avoid;
   }
 
+  // ── Dropcap: prevent page break splitting the floated dropcap ──
+  article[data-use-dropcap="true"] > p:first-of-type {
+    break-inside: avoid;
+  }
+
   // ── Links: show URLs after link text ───────────────────────────
   article a[href^="http"]:not([href*="turntrout.com"])::after,
   article a[href^="mailto:"]::after,
