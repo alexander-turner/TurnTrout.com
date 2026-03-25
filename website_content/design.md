@@ -939,7 +939,7 @@ Markdown element styling
   Table: A rebalanced table which pleases the eyes.
 
 Print mode
-: Print mode whittles away distractions like navbars and footnote "return" icons; displays URLs next to links (as paper does not permit clicking) and sources next to `<video>` and `<audio>` elements; renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
 
 <figure>
 <figure class="subfigure">
