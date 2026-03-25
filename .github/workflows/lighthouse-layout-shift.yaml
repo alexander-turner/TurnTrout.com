@@ -98,7 +98,7 @@ jobs:
           path: public/
 
       - name: Install subfont
-        run: pnpm add -g subfont
+        run: pnpm add -g github:alexander-turner/subfont
       - name: Subset fonts for Lighthouse test pages
         run: |
           subfont --root public/ \
@@ -108,7 +108,7 @@ jobs:
             public/research.html \
             public/Test-page.html \
             public/posts.html \
-            --formats woff2 --in-place --instance --inline-css --no-recursive
+            --formats woff2 --in-place --instance --inline-css --no-recursive --debug
 
       - name: Install Wrangler
         run: pnpm add -g wrangler

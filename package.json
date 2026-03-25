@@ -152,7 +152,7 @@
     "sharp": "0.34.5",
     "shiki": "1.3.0",
     "source-map-support": "0.5.21",
-    "subfont": "6.12.5",
+    "subfont": "github:alexander-turner/subfont",
     "title-case": "4.3.2",
     "to-vfile": "8.0.0",
     "toml": "3.0.0",
@@ -293,7 +293,7 @@
   },
   "pnpm": {
     "overrides": {
-      "subfont>assetgraph": "7.12.0",
+      "subfont>assetgraph": "7.13.0",
       "lost-pixel>axios": "$axios",
       "workbox-build": "7.3.0",
       "d3-color": "3.1.0",
