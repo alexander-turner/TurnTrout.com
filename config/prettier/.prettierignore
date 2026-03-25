@@ -17,3 +17,4 @@ test-results/
 .lighthouseci/
 pnpm-lock.yaml
 **/asset_queue.json
+**/img-comparison-slider.*

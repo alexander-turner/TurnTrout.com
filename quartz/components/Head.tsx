@@ -174,6 +174,7 @@ export default (() => {
         {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <link rel="stylesheet" href="/index.css" spa-preserve />
+        <link rel="stylesheet" href="/static/styles/img-comparison-slider.css" spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
@@ -198,6 +199,7 @@ export default (() => {
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
         <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
+        <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
         {/* Show Elvish translations when JavaScript is disabled */}
         <noscript>
           <style
