@@ -943,7 +943,7 @@ Print mode
 
 <figure>
 <figure class="subfigure">
- <img src="/asset_staging/design-print-before.png" alt="A cluttered print preview for the article \"Humans Provide an Untapped Wealth of Evidence About Alignment.\""/>
+ <img src="https://assets.turntrout.com/static/images/posts/design-print-before.avif" alt="A cluttered print preview for the article \"Humans Provide an Untapped Wealth of Evidence About Alignment.\""/>
   <figcaption>Before print mode, clutter reigned.</figcaption>
   </figure>
   <figure class="subfigure">
