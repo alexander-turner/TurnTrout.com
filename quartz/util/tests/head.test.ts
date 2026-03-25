@@ -375,6 +375,22 @@ describe("renderHead", () => {
       expect(result).toContain(`content="${defaultDescription}"`)
     })
 
+    it("should apply text transforms (smart quotes) to description", () => {
+      const data = createMockData({
+        description: 'He said "hello" -- goodbye',
+      })
+
+      const result = renderHead({
+        cfg: mockConfig,
+        fileData: data,
+        slug: "test-page" as FullSlug,
+      })
+
+      expect(result).toContain("\u201Chello\u201D")
+      expect(result).toContain("\u2014")
+      expect(result).not.toContain('"hello"')
+    })
+
     it("should handle empty description", () => {
       const data = createMockData({
         description: "",
