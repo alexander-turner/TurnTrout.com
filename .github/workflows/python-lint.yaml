@@ -7,7 +7,8 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-  pull_request:
+  # Removed pull_request trigger: zero failures across 50 PRs analyzed.
+  # Still runs on main/dev push and merge queue for pre-merge validation.
   merge_group:
 
 permissions:
