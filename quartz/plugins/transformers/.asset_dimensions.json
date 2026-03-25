@@ -6382,5 +6382,17 @@
   "https://assets.turntrout.com/static/images/external-favicons/fatebook_io.svg": {
     "width": 24,
     "height": 24
+  },
+  "./asset_staging/design-03252026.png": {
+    "width": 2804,
+    "height": 1852
+  },
+  "./asset_staging/design-03252026-2.png": {
+    "width": 2032,
+    "height": 1846
+  },
+  "./asset_staging/design-03252026-1.png": {
+    "width": 2038,
+    "height": 1856
   }
 }
