@@ -41,7 +41,7 @@ jobs:
       !startsWith(github.head_ref, 'deepsource-') &&
       needs.detect-changes.outputs.python == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 8
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

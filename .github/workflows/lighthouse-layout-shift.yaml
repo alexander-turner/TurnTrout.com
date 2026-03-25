@@ -85,7 +85,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 12
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
@@ -146,7 +146,7 @@ jobs:
 
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -175,7 +175,7 @@ jobs:
 
   lighthouse_mobile_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -204,7 +204,7 @@ jobs:
 
   lighthouse_full_audit:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

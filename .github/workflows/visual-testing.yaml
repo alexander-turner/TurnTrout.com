@@ -78,7 +78,7 @@ jobs:
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -181,7 +181,7 @@ jobs:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-14
-    timeout-minutes: 35
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
