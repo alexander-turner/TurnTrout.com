@@ -99,10 +99,10 @@
     break-inside: avoid;
   }
 
-  // Prevent page breaks inside containers with floated children,
-  // which would separate the float from its surrounding text.
-  article[data-use-dropcap="true"] > p:first-of-type,
-  :has(> .float-right) {
+  // Keep checkbox items together with their label text
+  li:has(> input.checkbox-toggle),
+  li:has(> p > input.checkbox-toggle),
+  li:has(> label > input.checkbox-toggle) {
     break-inside: avoid;
   }
 
