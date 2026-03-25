@@ -980,3 +980,20 @@ figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;
 }
+
+// img-comparison-slider: hide until the web component renders
+img-comparison-slider {
+  visibility: hidden;
+
+  &.rendered {
+    visibility: inherit;
+  }
+
+  [slot="second"] {
+    display: none;
+  }
+
+  &.rendered [slot="second"] {
+    display: unset;
+  }
+}

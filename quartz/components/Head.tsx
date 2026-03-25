@@ -174,7 +174,6 @@ export default (() => {
         {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <link rel="stylesheet" href="/index.css" spa-preserve />
-        <link rel="stylesheet" href="/static/styles/img-comparison-slider.css" spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
