@@ -36,8 +36,8 @@ jobs:
           filter: blob:none # Partial clone: skip historical file content (only need commit/tree objects for git diff --name-only)
           token: ${{ secrets.PUSH_TOKEN }}
 
-      - name: Setup Base Environment
-        uses: ./.github/actions/setup-base-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
 
       - name: Update article dates
         run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
@@ -128,8 +128,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
 
       - name: Install Vale
         if: needs.detect-changes.outputs.content == 'true'

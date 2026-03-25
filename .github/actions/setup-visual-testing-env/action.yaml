@@ -8,10 +8,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup base environment
-      uses: ./.github/actions/setup-base-env
+    - name: Setup site
+      uses: ./.github/actions/setup-site
       with:
         install-sharp: "false"
+        install-ffmpeg: "true"
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-apt-playwright: ${{ inputs.install-playwright }}
@@ -33,17 +34,3 @@ runs:
         # Save .deb packages for next run
         mkdir -p ~/apt-playwright-cache
         cp /var/cache/apt/archives/*.deb ~/apt-playwright-cache/ 2>/dev/null || true
-
-    - name: Install ffmpeg from system packages
-      run: |
-        # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
-        if command -v ffprobe &>/dev/null; then
-          echo "ffprobe already available, skipping install"
-          ffprobe -version
-          exit 0
-        fi
-        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
-        sudo apt-get update
-        sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5
-        ffprobe -version
-      shell: bash
