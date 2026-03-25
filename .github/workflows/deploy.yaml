@@ -39,8 +39,13 @@ jobs:
           fetch-depth: 0
           filter: blob:none
 
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-sharp: "true"
+          install-browsers: "true"
+          install-ffmpeg: "true"
+          install-system-deps: "true"
 
       - name: Build Quartz and generate critical CSS
         run: pnpm build
