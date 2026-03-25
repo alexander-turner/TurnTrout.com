@@ -38,7 +38,7 @@ date_published: 2020-05-04 00:00:00
 original_url: https://www.lesswrong.com/posts/Wpf3Gsa8A89mmjkk8/insights-from-euclid-s-elements
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/euler.jpg
-description: Euclid's "Elements," but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.
+description: Euclid's "Elements", but made beautiful. A colorful exploration of geometric proofs and the power of visual learning.
 date_updated: 2025-12-30 14:46:20.403471
 card_image_alt: A geometry proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.
 ---
