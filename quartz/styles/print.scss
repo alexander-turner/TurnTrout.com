@@ -29,7 +29,7 @@
   .popover,
   .skip-to-content,
   #menu-button,
-  .mobile-only,
+  .mobile-only:not(:has(#toc-content-mobile)),
   #subscription-and-contact,
   .sequence-links,
   .sequence-nav,
