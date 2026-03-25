@@ -91,18 +91,7 @@
     widows: 3;
   }
 
-  figure,
-  pre,
-  table,
-  .katex-display,
   img {
-    break-inside: avoid;
-  }
-
-  // Keep checkbox items together with their label text
-  li:has(> input.checkbox-toggle),
-  li:has(> p > input.checkbox-toggle),
-  li:has(> label > input.checkbox-toggle) {
     break-inside: avoid;
   }
 
