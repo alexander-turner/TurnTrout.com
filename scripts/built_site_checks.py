@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -1734,7 +1735,22 @@ def _untransform_text(label: str) -> str:
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
-    return normalized_spaces.strip()
+    # Normalize em-dashes, en-dashes, and ellipsis to ASCII equivalents
+    normalized_dashes = (
+        normalized_spaces.replace("\u2014", " - ")
+        .replace("\u2013", " - ")
+        .replace(ELLIPSIS, "...")
+    )
+    # Strip diacritics (e.g. naïve → naive, café → cafe) via Unicode decomposition
+    nfkd = unicodedata.normalize("NFKD", normalized_dashes)
+    stripped_diacritics = "".join(
+        c for c in nfkd if unicodedata.category(c) != "Mn"
+    )
+    # Normalize comma+quote ordering: "," and "," both → ",
+    normalized_quotes = stripped_diacritics.replace('",', ',"')
+    # Collapse multiple spaces from dash normalization
+    normalized_quotes = re.sub(r" +", " ", normalized_quotes)
+    return normalized_quotes.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:

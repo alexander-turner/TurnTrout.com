@@ -5033,12 +5033,31 @@ def test_check_unrendered_emoticons(html, expected):
         # All quote types in one string
         (
             "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
-            'mix of "quotes", "apostrophes", "regular", and "more"',
+            'mix of "quotes," "apostrophes," "regular," and "more"',
         ),
         # Non-breaking spaces normalized to regular spaces
         (
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
+        ),
+        # Em-dash normalization
+        ("computations\u2014do transformers", "computations - do transformers"),
+        # En-dash normalization
+        ("pages 10\u201320", "pages 10 - 20"),
+        # Diacritics stripped
+        ("na\u00efve predictions", "naive predictions"),
+        ("caf\u00e9 culture", "cafe culture"),
+        ("d\u00e9j\u00e0 vu", "deja vu"),
+        # Ellipsis normalization
+        ("wait for it\u2026", "wait for it..."),
+        # Comma-inside-quotes normalization
+        (
+            'Munkres\' "Topology", reflecting',
+            'munkres" "topology," reflecting',
+        ),
+        (
+            "\u201cTopology,\u201d reflecting",
+            '"topology," reflecting',
         ),
     ],
 )
