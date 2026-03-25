@@ -91,6 +91,9 @@
     widows: 3;
   }
 
+  pre,
+  table,
+  .katex-display,
   img {
     break-inside: avoid;
   }
