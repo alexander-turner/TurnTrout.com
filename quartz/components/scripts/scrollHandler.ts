@@ -5,6 +5,7 @@ export function setupScrollHandler() {
   let ticking = false
   const scrollThreshold = 50 // Minimum scroll distance before toggle
   const topThreshold = 50 // Show navbar when within 50px of top
+  const shadowThreshold = 5 // Show shadow once scrolled past top
 
   function updateNavbar() {
     const navbar = document.getElementById("navbar")
@@ -13,7 +14,7 @@ export function setupScrollHandler() {
     const currentScrollY = window.scrollY
     const delta = currentScrollY - lastScrollY
 
-    navbar.classList.toggle("shadow", currentScrollY > 5)
+    navbar.classList.toggle("shadow", currentScrollY > shadowThreshold)
 
     if (Math.abs(delta) > scrollThreshold) {
       navbar.classList.toggle("hide-above-screen", delta > 0)
