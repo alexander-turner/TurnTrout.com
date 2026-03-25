@@ -1,9 +1,12 @@
 @use "./variables.scss" as *;
+@use "./palette" as *;
 
 @media print {
   // Light-mode is forced via beforeprint/afterprint JS in darkmode.ts,
   // so we only need to set print-specific overrides here.
   :root {
+    @include palette-vars($light-colors, $important: true);
+
     --background: #fff !important;
     --midground-faint: #{$midground-faint-light} !important;
     --midground: #{$midground-light} !important;
