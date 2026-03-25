@@ -92,12 +92,8 @@
   pre,
   table,
   .katex-display,
-  img {
-    break-inside: avoid;
-  }
-
-  // ── Dropcap: prevent page break splitting the floated dropcap ──
-  article[data-use-dropcap="true"] > p:first-of-type {
+  img,
+  p {
     break-inside: avoid;
   }
 
