@@ -386,9 +386,9 @@ describe("renderHead", () => {
         slug: "test-page" as FullSlug,
       })
 
-      expect(result).toContain("\u201Chello\u201D")
-      expect(result).toContain("\u2014")
-      expect(result).not.toContain('"hello"')
+      const expected = "He said \u201Chello\u201D\u2014goodbye"
+      expect(result).toContain(`<meta name="description" content="${expected}">`)
+      expect(result).toContain(`<meta property="og:description" content="${expected}">`)
     })
 
     it("should handle empty description", () => {
