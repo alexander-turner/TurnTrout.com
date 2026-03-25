@@ -127,7 +127,7 @@ function setupDarkMode() {
 let themeBeforePrint: Theme | null = null
 
 function onBeforePrint() {
-  themeBeforePrint = document.documentElement.getAttribute("data-theme")
+  themeBeforePrint = document.documentElement.getAttribute("data-theme") as Theme | null
   document.documentElement.setAttribute("data-theme", "light")
 }
 
