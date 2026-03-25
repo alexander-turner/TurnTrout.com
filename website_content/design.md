@@ -1065,10 +1065,10 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
 > ![[playwright-tips#Background]]
 
-> [!money] Cost of running the Playwright tests on GitHub Actions
-> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
+> [!money] Cost of running CI on GitHub Actions
+> My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
 >
-> After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
+> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
 
 ### Validating links
 

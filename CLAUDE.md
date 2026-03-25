@@ -195,7 +195,8 @@ After pushing to main:
 
 - **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~67 parallel shards to complete in ~10 minutes
+- Tests run on ~33 parallel shards (Linux only on PRs/merge queue; macOS WebKit added on main)
+- macOS runners (10x cost of Linux) only run on pushes to main, not on PRs or merge queue
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
@@ -203,14 +204,14 @@ After pushing to main:
 ### CI Cost Optimization
 
 - **Expensive tests always run on main**: Pushes to main always trigger Playwright, visual, and Lighthouse tests. All three workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
-- **Fine-grained CI labels on PRs**: On PRs, expensive tests only run when a matching label is added. Use fine-grained labels to run specific test suites, or `ci:full-tests` to run all of them:
-  - `ci:run-playwright` — Playwright integration tests only
-  - `ci:run-visual` — Visual regression tests only
+- **Per-commit CI labels on PRs**: On PRs, expensive tests only run when a CI label is _actively added_ (one-shot per commit, not persistent). Adding a label triggers tests for the current HEAD; the next push won't re-trigger unless the label is added again. Labels:
+  - `ci:run-playwright` — Playwright integration tests only (Linux shards only on PRs)
+  - `ci:run-visual` — Visual regression tests only (Linux shards only on PRs)
   - `ci:run-lighthouse` — Lighthouse performance/CLS tests only
   - `ci:full-tests` — All of the above
   - `ci:flake-check` — Run Playwright tests with `--repeat-each 3` to detect flaky tests (also available via `workflow_dispatch` with configurable repeat count)
 
-  Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`).
+  Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`). Labels are per-commit: re-add to run again on the next push.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
 - **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.

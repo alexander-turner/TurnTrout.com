@@ -59,10 +59,15 @@ jobs:
     steps:
       - id: check
         run: |
+          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-lighthouse') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.action }}" == "labeled" ]]; then
+              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-lighthouse') }}" == "true" ]]; then
+                echo "run=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "run=false" >> "$GITHUB_OUTPUT"
+              fi
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
             fi
@@ -80,7 +85,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 12
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
@@ -141,7 +146,7 @@ jobs:
 
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -170,7 +175,7 @@ jobs:
 
   lighthouse_mobile_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -199,7 +204,7 @@ jobs:
 
   lighthouse_full_audit:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
