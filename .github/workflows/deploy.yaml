@@ -146,7 +146,8 @@ jobs:
           path: public/
 
   # Verify Lost Pixel visual changes are within bounds before deploying.
-  # Test-waiting removed: merge queue already ensures all tests pass before main.
+  # Test-waiting removed: merge queue validates Chromium tests before main.
+  # Firefox/WebKit regressions are caught on the main push itself (not pre-merge).
   verify-visual-changes:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04

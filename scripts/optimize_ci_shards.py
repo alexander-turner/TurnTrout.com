@@ -56,16 +56,6 @@ ORIGINAL_SHARDS = {
     "Visual macOS (PR)": 7,
 }
 
-# New shard counts after optimization
-NEW_SHARDS = {
-    "Playwright Linux (main)": 12,
-    "Playwright macOS (main)": 5,
-    "Visual Linux (main)": 3,
-    "Visual macOS (main)": 2,
-    "Playwright Linux (PR-new)": 12,
-    "Visual Linux (PR-new)": 3,
-}
-
 
 @dataclass
 class WorkflowConfig:

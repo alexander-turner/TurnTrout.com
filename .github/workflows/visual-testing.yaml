@@ -27,10 +27,10 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if ci:run-visual or ci:full-tests label is present.
-  # The pull_request trigger intentionally omits a branches filter so that
-  # these labels work on PRs targeting any branch (not just main/dev).
-  # Tests always run in the merge queue to enforce passing before merge.
+  # Gate: only run expensive tests on PRs when a CI label is actively added.
+  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
+  # fires on every push — the should-run gate returns run=false instantly,
+  # which is needed for the unified "visual-testing" required status check.
   should-run:
     name: visual-should-run
     runs-on: ubuntu-24.04
