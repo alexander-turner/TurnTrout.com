@@ -117,6 +117,7 @@ export function countGitCommits(options: GitCountOptions = {}): number {
 
 // skipcq: JS-D1001
 export function countJsTests(): number {
+  // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
   })

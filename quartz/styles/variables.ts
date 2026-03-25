@@ -31,6 +31,14 @@ export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
 export const midgroundLight = "#74747b"
+export const midgroundStrongLight = "#5c5f77"
+export const midgroundStrongDark = "#c6cff0"
+export const secondaryLight = "#1e66f5"
+export const secondaryDark = "#97b0e9"
+export const tertiaryLight = "#0486b9"
+export const tertiaryDark = "#99d1db"
+export const highlightLight = "#7c7f9324"
+export const highlightDark = "#949cbb30"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
 export const dropcapVerticalOffset = "0.15rem"
@@ -84,6 +92,14 @@ export const variables = {
   midgroundDark,
   midgroundFaintLight,
   midgroundLight,
+  midgroundStrongLight,
+  midgroundStrongDark,
+  secondaryLight,
+  secondaryDark,
+  tertiaryLight,
+  tertiaryDark,
+  highlightLight,
+  highlightDark,
   fontScaleFactor,
   liPaddingLeft,
   shikiRed,

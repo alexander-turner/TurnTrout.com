@@ -1,0 +1,44 @@
+// Single source of truth for the color palettes.
+// Used by colors.scss and print.scss.
+
+// Dark colors
+$dark-colors: (
+  "pink": #fba7e4,
+  "red": #e88283,
+  "maroon": #d586a1,
+  "orange": #e19b5b,
+  "yellow": #e5c890,
+  "green": #a6d189,
+  "teal": #81c8be,
+  "sky": #5bc4d7,
+  "blue": #8caaee,
+  "lavender": #9899d7,
+  "purple": #ba8be9,
+  "gold": #db9c01,
+);
+
+// Light colors
+$light-colors: (
+  "pink": #d020a3,
+  "red": #be415c,
+  "orange": #a45c19,
+  "yellow": #7d751c,
+  "green": #22820d,
+  "teal": #037e85,
+  "sky": #007cb4,
+  "blue": #3e6ccb,
+  "lavender": #4963fd,
+  "purple": #6f42c1,
+  "gold": #9b6700,
+);
+
+/// Emit --name: value for each entry in a palette map.
+@mixin palette-vars($palette, $important: false) {
+  @each $name, $value in $palette {
+    @if $important {
+      --#{$name}: #{$value} !important;
+    } @else {
+      --#{$name}: #{$value};
+    }
+  }
+}

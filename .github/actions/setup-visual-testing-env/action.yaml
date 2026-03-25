@@ -45,7 +45,7 @@ runs:
         fi
         # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
         sudo apt-get update
-        sudo apt-get install -y ffmpeg=7:6.1.1-3ubuntu5
+        sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
         ffprobe -version
       shell: bash
 
