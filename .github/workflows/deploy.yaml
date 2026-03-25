@@ -39,7 +39,7 @@ jobs:
   prepare-deploy:
     needs: deploy-build
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -145,22 +145,14 @@ jobs:
           name: public-dir
           path: public/
 
-  verify-tests:
+  # Verify Lost Pixel visual changes are within bounds before deploying.
+  # Test-waiting removed: merge queue validates Chromium tests before main.
+  # Firefox/WebKit regressions are caught on the main push itself (not pre-merge).
+  verify-visual-changes:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
-      - name: Wait for all tests
-        uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
-        with:
-          ref: ${{ github.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(playwright-should-run|playwright-build / build|visual-should-run|visual-testing-build / build|site-checks-build / build|detect-changes|visual-testing \(\d+\/\d+\)|playwright-tests \(\d+\/\d+\)|combine-and-upload|Summarize Failures|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y-build / build|a11y|deploy-build / build)$'
-          wait-interval: 10
-          allowed-conclusions: success,skipped
-          running-workflow-name: "Deploy to Cloudflare"
-          fail-on-no-checks: false
-
       - name: Wait for Lost Pixel status and verify visual changes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -242,8 +234,8 @@ jobs:
           echo "Visual differences within acceptable range (< 10)"
 
   deploy:
-    needs: [prepare-deploy, verify-tests]
-    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success') }}
+    needs: [prepare-deploy, verify-visual-changes]
+    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-visual-changes.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

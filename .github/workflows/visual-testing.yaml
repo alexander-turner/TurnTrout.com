@@ -27,27 +27,42 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if ci:run-visual or ci:full-tests label is present.
-  # The pull_request trigger intentionally omits a branches filter so that
-  # these labels work on PRs targeting any branch (not just main/dev).
-  # Tests always run in the merge queue to enforce passing before merge.
+  # Gate: only run expensive tests on PRs when a CI label is actively added.
+  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
+  # fires on every push — the should-run gate returns run=false instantly,
+  # which is needed for the unified "visual-testing" required status check.
   should-run:
     name: visual-should-run
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
+      run-macos: ${{ steps.check.outputs.run-macos }}
+      browsers: ${{ steps.check.outputs.browsers }}
     steps:
       - id: check
         run: |
+          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.action }}" == "labeled" ]]; then
+              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
+                echo "run=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "run=false" >> "$GITHUB_OUTPUT"
+              fi
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+          # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "run-macos=true" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
+          else
+            echo "run-macos=false" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium" >> "$GITHUB_OUTPUT"
           fi
 
   build:
@@ -59,34 +74,22 @@ jobs:
       artifact-name: visual-testing-public-dir
       remove-safari-autoplay: true
 
-  # Chromium + Firefox visual tests on Linux
+  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
   visual-testing-linux:
-    needs: build
+    needs: [build, should-run]
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         shard:
           [
-            "1/15",
-            "2/15",
-            "3/15",
-            "4/15",
-            "5/15",
-            "6/15",
-            "7/15",
-            "8/15",
-            "9/15",
-            "10/15",
-            "11/15",
-            "12/15",
-            "13/15",
-            "14/15",
-            "15/15",
+            "1/3",
+            "2/3",
+            "3/3",
           ]
     env:
-      PLAYWRIGHT_BROWSERS: chromium,firefox
+      PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -175,21 +178,17 @@ jobs:
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
-    needs: build
+    needs: [build, should-run]
+    if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-14
-    timeout-minutes: 35
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         shard:
           [
-            "1/7",
-            "2/7",
-            "3/7",
-            "4/7",
-            "5/7",
-            "6/7",
-            "7/7",
+            "1/2",
+            "2/2",
           ]
     env:
       PLAYWRIGHT_BROWSERS: webkit
@@ -292,9 +291,14 @@ jobs:
             echo "Tests were skipped (no label)"
             exit 0
           fi
-          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]] || \
+          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then
+            echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
+            exit 1
+          fi
+          # macOS only runs on push to main; allow skipped elsewhere
+          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
              [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
-            echo "One or more visual test jobs did not succeed (linux=${{ needs.visual-testing-linux.result }}, macos=${{ needs.visual-testing-macos.result }})"
+            echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
             exit 1
           fi
 
@@ -312,10 +316,13 @@ jobs:
           final-log-name: visual-testing-failed-logs
 
   combine-and-upload:
-    needs: [visual-testing-linux, visual-testing-macos]
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    if: needs.visual-testing-linux.result == 'success' && needs.visual-testing-macos.result == 'success'
+    if: >
+      always() && !cancelled() &&
+      needs.visual-testing-linux.result == 'success' &&
+      (needs.visual-testing-macos.result == 'success' || needs.visual-testing-macos.result == 'skipped')
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

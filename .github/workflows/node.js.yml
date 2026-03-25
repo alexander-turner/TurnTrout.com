@@ -39,7 +39,7 @@ jobs:
   build:
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     strategy:
       matrix:
