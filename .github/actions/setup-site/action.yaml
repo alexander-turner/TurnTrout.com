@@ -153,7 +153,7 @@ runs:
       shell: bash
 
     - name: Install ffmpeg from system packages
-      if: inputs.install-ffmpeg == 'true'
+      if: inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
       run: |
         # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
         if command -v ffprobe &>/dev/null; then
