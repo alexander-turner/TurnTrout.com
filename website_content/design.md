@@ -941,14 +941,14 @@ Markdown element styling
   Table: A rebalanced table which pleases the eyes.
 
 Print mode
-: Print mode whittles away distractions like navbars and footnote "return" icons; displays URLs next to links (as paper does not permit clicking) and sources next to `<video>` and `<audio>` elements; renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
 
 <figure>
 <img-comparison-slider>
   <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
   <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
 </img-comparison-slider>
-<figcaption>Drag to compare: before (left) vs. after (right) print mode.</figcaption>
+<figcaption>Drag to compare: before vs. after print mode.</figcaption>
 </figure>
 
 Video speed limits
