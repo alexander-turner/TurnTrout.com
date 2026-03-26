@@ -94,9 +94,6 @@ async function setDummyContentMeta(page: Page) {
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
-      // Many H1 screenshots + WebKit overhead can exceed 30s in CI
-      test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
-
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -106,11 +103,6 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(
-      isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
-      "Flaky in Safari on desktop",
-    )
-
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
     // Wait for the SPA router to finish initializing so a late navigation
@@ -208,7 +200,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
     await expect(bigFaviconDemo).toBeVisible()
@@ -1089,11 +1081,6 @@ test.describe("Checkboxes", () => {
       keysToRemove.forEach((key) => localStorage.removeItem(key))
     }
 
-    // Ensure clean slate before each test
-    test.beforeEach(async ({ page }) => {
-      await page.addInitScript(clearCheckboxKeys)
-    })
-
     // Clean up after each test
     test.afterEach(async ({ page }) => {
       await page.evaluate(clearCheckboxKeys)
@@ -1102,31 +1089,25 @@ test.describe("Checkboxes", () => {
     test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
       page,
     }) => {
-      // This test verifies that checkbox state restoration happens synchronously
-      // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
-      // Without this fix, users would see a flash of the wrong checkbox state.
+      // Verifies that checkbox state restoration happens synchronously via
+      // MutationObserver in detectInitialState.js, BEFORE the nav event fires.
 
-      const checkboxKey = "test-page-checkbox-0"
-
-      // Set up localStorage BEFORE page load to simulate a returning user
-      // who previously checked the first checkbox (which defaults to unchecked in HTML)
-      await page.addInitScript(
-        ({ key }) => {
-          localStorage.setItem(key, "true")
-        },
-        { key: checkboxKey },
-      )
-
-      await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+      // Set localStorage on the live page, then reload to trigger restoration.
+      // We use evaluate+reloadPage instead of addInitScript+gotoPage because
+      // WebKit treats same-URL goto() as a soft refresh that skips init scripts.
+      await page.evaluate(() => {
+        localStorage.setItem("test-page-checkbox-0", "true")
+      })
+      await reloadPage(page, "load")
 
       // Check checkbox state — MutationObserver restores before first paint, but
-      // Safari may deliver the callback slightly after domcontentloaded.
+      // Safari may deliver the callback slightly after load.
       await expect(async () => {
-        const checkboxStateBeforeNav = await page.evaluate(() => {
+        const checkboxChecked = await page.evaluate(() => {
           const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
           return checkbox?.checked
         })
-        expect(checkboxStateBeforeNav).toBe(true)
+        expect(checkboxChecked).toBe(true)
       }).toPass({ timeout: 10_000 })
     })
 
@@ -1142,18 +1123,17 @@ test.describe("Checkboxes", () => {
       }) => {
         const checkboxKey = `test-page-checkbox-${index}`
 
-        // Set up localStorage BEFORE page load
-        await page.addInitScript(
+        // Set localStorage on the live page, then reload to trigger restoration.
+        await page.evaluate(
           ({ key, state }) => {
             localStorage.setItem(key, state ? "true" : "false")
           },
           { key: checkboxKey, state: savedState },
         )
-
-        await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+        await reloadPage(page, "load")
 
         // Check checkbox state — MutationObserver restores before first paint, but
-        // Safari may deliver the callback slightly after domcontentloaded.
+        // Safari may deliver the callback slightly after load.
         await expect(async () => {
           const checkboxState = await page.evaluate(
             ({ idx }) => {

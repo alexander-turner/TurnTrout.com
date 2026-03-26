@@ -262,14 +262,16 @@ def run_non_interactive_command(
             target=stream_reader,
             args=(process.stdout, stdout_lines, last_lines, progress, task_id),
         )
-        stdout_thread.start()
-        stdout_thread.join()
-
         stderr_thread = threading.Thread(
             target=stream_reader,
             args=(process.stderr, stderr_lines, last_lines, progress, task_id),
         )
+        # Start both threads before joining either to avoid deadlock:
+        # if the subprocess fills the stderr pipe buffer while we're
+        # blocked waiting for stdout to EOF, both sides block forever.
+        stdout_thread.start()
         stderr_thread.start()
+        stdout_thread.join()
         stderr_thread.join()
 
         return_code = process.wait()
@@ -424,7 +426,12 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
 
 
 def main() -> int:
-    """Run unique pre-push checks."""
+    """
+    Run unique pre-push checks.
+
+    Note: Stashing of uncommitted changes is handled by the calling
+    pre-push hook (.hooks/pre-push), not here.
+    """
     parser = argparse.ArgumentParser(
         description="Run pre-push checks with progress bars."
     )
@@ -435,29 +442,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    stash_created = False
-    git_path = shutil.which("git") or "git"
     try:
-        # Stash any uncommitted changes
-        stash_result = subprocess.run(
-            [
-                git_path,
-                "stash",
-                "push",
-                "-u",
-                "-m",
-                "run_push_checks auto-stash",
-            ],
-            cwd=_GIT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        # Check if stash was actually created (output won't contain "No local changes")
-        if "No local changes" not in stash_result.stdout:
-            stash_created = True
-            console.log("[cyan]Stashed uncommitted changes[/cyan]")
-
         steps = get_check_steps(_GIT_ROOT)
         all_step_names = [step.name for step in steps]
 
@@ -483,17 +468,6 @@ def main() -> int:
     except KeyboardInterrupt:
         console.log("\n[yellow]Process interrupted by user.[/yellow]")
         return 130  # Standard exit code for SIGINT
-    finally:
-        # Restore stashed changes if we created a stash
-        if stash_created:
-            subprocess.run(
-                [git_path, "stash", "pop"],
-                cwd=_GIT_ROOT,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            console.log("[cyan]Restored stashed changes[/cyan]")
 
 
 if __name__ == "__main__":

@@ -42,6 +42,12 @@ on:
       - ".github/lighthouse-*.json"
   merge_group:
 
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+  pages: write
+
 jobs:
   # Gate: only run on PRs if ci:run-lighthouse or ci:full-tests label is present.
   should-run:
@@ -53,10 +59,15 @@ jobs:
     steps:
       - id: check
         run: |
+          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-lighthouse') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.action }}" == "labeled" ]]; then
+              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-lighthouse') }}" == "true" ]]; then
+                echo "run=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "run=false" >> "$GITHUB_OUTPUT"
+              fi
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
             fi
@@ -64,16 +75,17 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  build_and_deploy:
+  build:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: lighthouse-public-dir
+
+  deploy:
+    needs: build
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-      pages: write
+    timeout-minutes: 12
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
@@ -81,16 +93,16 @@ jobs:
       - name: Setup site
         uses: ./.github/actions/setup-site
         with:
-          install-sharp: "true"
-          install-browsers: "true"
-          install-ffmpeg: "true"
-          install-system-deps: "true"
+          install-python: "false"
 
-      - name: Build Quartz
-        run: pnpm build
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: lighthouse-public-dir
+          path: public/
 
       - name: Install subfont
-        run: pnpm add -g subfont
+        run: pnpm add -g github:alexander-turner/subfont
       - name: Subset fonts for Lighthouse test pages
         run: |
           subfont --root public/ \
@@ -100,7 +112,7 @@ jobs:
             public/research.html \
             public/Test-page.html \
             public/posts.html \
-            --formats woff2 --in-place --instance --inline-css --no-recursive
+            --formats woff2 --in-place --instance --inline-css --no-recursive --debug
 
       - name: Install Wrangler
         run: pnpm add -g wrangler
@@ -133,8 +145,8 @@ jobs:
 
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    needs: build_and_deploy
+    timeout-minutes: 10
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: CLS Check (Desktop)
@@ -142,12 +154,13 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config.json"
 
@@ -161,8 +174,8 @@ jobs:
 
   lighthouse_mobile_cls:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    needs: build_and_deploy
+    timeout-minutes: 10
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: CLS Check (Mobile)
@@ -170,12 +183,13 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#spoilers
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#videos
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#admonitions
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/design#footnote-label
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#spoilers
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#videos
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#admonitions
+            ${{ needs.deploy.outputs.deploy_url }}/test-page#footnotes
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-cls-only-config-mobile.json"
 
@@ -189,8 +203,8 @@ jobs:
 
   lighthouse_full_audit:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    needs: build_and_deploy
+    timeout-minutes: 10
+    needs: deploy
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
@@ -198,12 +212,12 @@ jobs:
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
         with:
           urls: |
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/design
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/about
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/research
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/test-page
-            ${{ needs.build_and_deploy.outputs.deploy_url }}/posts
+            ${{ needs.deploy.outputs.deploy_url }}/
+            ${{ needs.deploy.outputs.deploy_url }}/design
+            ${{ needs.deploy.outputs.deploy_url }}/about
+            ${{ needs.deploy.outputs.deploy_url }}/research
+            ${{ needs.deploy.outputs.deploy_url }}/test-page
+            ${{ needs.deploy.outputs.deploy_url }}/posts
           temporaryPublicStorage: true
           configPath: ".github/lighthouse-full-config.json"
 

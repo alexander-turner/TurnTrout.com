@@ -1,0 +1,77 @@
+name: Build Site
+
+# Reusable workflow that builds the Quartz site and uploads the artifact.
+# Called by workflows that need a built site (Playwright, Visual, Lighthouse, etc.).
+# Uses actions/cache to deduplicate builds across workflows for the same commit.
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        description: "Name for the uploaded artifact"
+        required: true
+        type: string
+      retention-days:
+        description: "Number of days to retain the artifact"
+        required: false
+        type: number
+        default: 1
+      fetch-depth:
+        description: "Git fetch depth (0 for full history)"
+        required: false
+        type: number
+        default: 1
+      remove-safari-autoplay:
+        description: "Remove Safari autoplay script before build (for visual testing)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: ${{ inputs.fetch-depth }}
+          filter: ${{ inputs.fetch-depth == 0 && 'blob:none' || '' }}
+
+      # Cache keyed on commit SHA + autoplay variant. First workflow to build
+      # populates the cache; subsequent workflows get a hit and skip the build.
+      - name: Restore build cache
+        id: cache
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}-autoplay-${{ inputs.remove-safari-autoplay }}
+
+      - name: Setup Build Environment
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/setup-site
+        with:
+          install-sharp: "true"
+          install-browsers: "true"
+          install-ffmpeg: "true"
+          install-system-deps: "true"
+          cache-playwright: "true"
+          cache-puppeteer: "true"
+
+      - name: Remove Safari autoplay script
+        if: inputs.remove-safari-autoplay && steps.cache.outputs.cache-hit != 'true'
+        run: rm -f ./quartz/static/scripts/safari-autoplay.js
+
+      - name: Build site
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: pnpm build
+
+      - name: Upload built site
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: public/
+          retention-days: ${{ inputs.retention-days }}

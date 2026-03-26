@@ -30,9 +30,16 @@ permissions:
   pull-requests: write
 
 jobs:
+  deploy-build:
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: deploy-public-dir
+      fetch-depth: 0
+
   prepare-deploy:
+    needs: deploy-build
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -47,8 +54,11 @@ jobs:
           install-ffmpeg: "true"
           install-system-deps: "true"
 
-      - name: Build Quartz and generate critical CSS
-        run: pnpm build
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: deploy-public-dir
+          path: public/
 
       # --- PR preview: deploy immediately without subfont ---
       - name: Deploy PR preview to Cloudflare Pages
@@ -121,7 +131,7 @@ jobs:
 
       - name: Install subfont
         if: github.event_name == 'push'
-        run: pnpm add -g subfont
+        run: pnpm add -g github:alexander-turner/subfont
       - name: Make script executable
         if: github.event_name == 'push'
         run: chmod +x ./scripts/subfont.sh
@@ -140,25 +150,97 @@ jobs:
           name: public-dir
           path: public/
 
-  verify-tests:
+  # Verify Lost Pixel visual changes are within bounds before deploying.
+  # Test-waiting removed: merge queue validates Chromium tests before main.
+  # Firefox/WebKit regressions are caught on the main push itself (not pre-merge).
+  verify-visual-changes:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
+    timeout-minutes: 30
     steps:
-      - name: Wait for all tests
-        uses: lewagon/wait-on-check-action@74049309dfeff245fe8009a0137eacf28136cb3c # v1.5.0
-        with:
-          ref: ${{ github.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          check-regexp: '^(playwright-should-run|playwright-build|visual-should-run|visual-testing-build|site-checks-build|detect-changes|visual-testing \(\d+\/\d+\)|combine-and-upload|playwright-tests \(\d+\/\d+\)|lint|DeepSource:.*|lighthouse_(desktop|mobile|accessibility)|build \(\d+\.\d+\.\d+\)|python-lint|python-tests|built-site-checks|linkchecker|a11y)$'
-          wait-interval: 10
-          allowed-conclusions: success,skipped
-          running-workflow-name: "Deploy to Cloudflare"
-          fail-on-no-checks: false
+      - name: Wait for Lost Pixel status and verify visual changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if visual testing was skipped (combine-and-upload won't produce a LP check)
+          COMBINE_STATUS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            --jq '[.check_runs[] | select(.name == "combine-and-upload")] | .[0].conclusion // "missing"' \
+            2>/dev/null || echo "missing")
+          if [ "$COMBINE_STATUS" = "skipped" ] || [ "$COMBINE_STATUS" = "missing" ]; then
+            echo "combine-and-upload was skipped or not found — no Lost Pixel check expected"
+            exit 0
+          fi
+
+          # Poll for the Lost Pixel check (created by LP platform ~10 min after upload)
+          MAX_ATTEMPTS=40  # 40 × 30s = 20 min max wait
+          ATTEMPT=0
+          SUMMARY=""
+
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+
+            # Check runs (GitHub App check)
+            SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+              --paginate \
+              --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0].output.summary // empty' \
+              2>/dev/null || true)
+
+            if [ -z "$SUMMARY" ]; then
+              # Also check commit statuses (Lost Pixel may use status API)
+              SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
+                --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
+                2>/dev/null || true)
+            fi
+
+            if [ -n "$SUMMARY" ]; then
+              echo "Lost Pixel check found on attempt $ATTEMPT"
+              break
+            fi
+
+            # Log available check-run names to aid debugging
+            if [ $((ATTEMPT % 5)) -eq 0 ]; then
+              echo "Available check runs:"
+              gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+                --jq '.check_runs[].name' 2>/dev/null || true
+            fi
+            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Lost Pixel check not yet available, waiting 30s..."
+            sleep 30
+          done
+
+          if [ -z "$SUMMARY" ]; then
+            echo "::error::Lost Pixel check never appeared after $MAX_ATTEMPTS attempts"
+            exit 1
+          fi
+
+          echo "Lost Pixel result: $SUMMARY"
+
+          # Extract counts for changed, added, and deleted images
+          CHANGED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
+          ADDED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
+          DELETED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
+
+          # If none of the patterns matched, fail — the LP summary format may have changed
+          if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
+            echo "::error::Could not parse any counts from Lost Pixel summary. Format may have changed."
+            echo "Raw summary: $SUMMARY"
+            exit 1
+          fi
+
+          CHANGED=${CHANGED:-0}
+          ADDED=${ADDED:-0}
+          DELETED=${DELETED:-0}
+          TOTAL=$((CHANGED + ADDED + DELETED))
+
+          echo "Visual changes: $CHANGED changed, $ADDED added, $DELETED deleted (total: $TOTAL)"
+          if [ "$TOTAL" -ge 10 ]; then
+            echo "::error::Too many visual differences ($TOTAL). Maximum allowed: 9. Breakdown: $CHANGED changed, $ADDED added, $DELETED deleted"
+            exit 1
+          fi
+          echo "Visual differences within acceptable range (< 10)"
 
   deploy:
-    needs: [prepare-deploy, verify-tests]
-    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-tests.result == 'success') }}
+    needs: [prepare-deploy, verify-visual-changes]
+    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-visual-changes.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

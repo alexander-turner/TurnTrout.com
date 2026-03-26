@@ -1,8 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
-import "whatwg-fetch" // This will provide the Response global
 import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals"
 
 import {
@@ -26,20 +25,12 @@ beforeEach(() => {
     const url = input.toString()
 
     if (url.includes("example.com")) {
-      return Promise.resolve({
-        ok: true,
-        status: 200, // Add the status property
-        headers: {
-          get: (header: string) => {
-            if (header === "Content-Type") return "text/html"
-            return null
-          },
-        },
-        text: () =>
-          Promise.resolve(
-            '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
-          ),
-      } as unknown as Response)
+      return Promise.resolve(
+        new Response(
+          '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
+          { status: 200, headers: { "Content-Type": "text/html" } },
+        ),
+      )
     }
 
     return Promise.reject(new Error("Network error"))
@@ -652,7 +643,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle a simple request with no redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/plain" }),
@@ -666,7 +657,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should follow meta refresh redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -682,7 +673,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should follow relative meta refresh redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -697,7 +688,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle non-HTML responses", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "image/jpeg" }),
@@ -714,7 +705,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle failed responses", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: false,
       status: 404,
       statusText: "Not Found",
@@ -729,7 +720,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle malformed meta refresh tags", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -743,7 +734,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should preserve response properties after redirect", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -759,7 +750,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should throw error when maximum redirects exceeded", async () => {
-    ;(window.fetch as jest.Mock).mockImplementation(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementation(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -775,7 +766,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should use default fetch when no customFetch is provided", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/plain" }),

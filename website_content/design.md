@@ -33,11 +33,13 @@ createBibtex: true
 
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
-![A basic rendition of the article "Think carefully before calling RL policies 'agents'". The website looks bare and amateurish.](https://assets.turntrout.com/static/images/posts/original_site.avif)
-Figure: The beginning of my journey, rendered under my third commit ([`6e687609`](https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e)) on April 1, 2024.
-
-![A pleasing rendition of the article "Think carefully before calling RL policies 'agents'".](https://assets.turntrout.com/static/images/posts/new_site.avif)
-Figure: Content rendered approximately when this article was first published ([`31bba104`](https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c)).
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. approximately when this article was first published (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c"><code>31bba104</code></a>).</figcaption>
+</figure>
 
 > [!warning] My stance on AI-written content
 > For text meant to be in my voice, I always review and edit AI generations I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
@@ -295,9 +297,9 @@ Before the client to loads the main CSS stylesheet, the site looks like garbage.
 
 Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
 
-## Non-blocking KaTeX CSS
+## Non-blocking CSS loading
 
-Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path.
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path. The same technique applies to any stylesheet that isn't needed for the initial paint.
 
 ## Preloading the first image
 
@@ -344,24 +346,26 @@ As a result of this finagling, while you're hanging out by The Pond, you never l
 
 This website contains many design elements. To maintain a regular, assured style and to avoid patchwork chaos, I made two important design choices.
 
-Exponential font sizing
-: I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
+### Exponential font sizing
 
-  After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
+I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
 
-  <div class="h1">Header 1</div>
-  <div class="h2">Header 2</div>
-  <div class="h3">Header 3</div>
-  <div class="h4">Header 4</div>
-  <div class="h5">Header 5</div>
+After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-  <div>Normal text</div>
-  <div style="font-size:var(--font-size-minus-1)">Smaller text</div>
-  <div style="font-size:var(--font-size-minus-2)">Smaller text</div>
-  <div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+<div class="h1">Header 1</div>
+<div class="h2">Header 2</div>
+<div class="h3">Header 3</div>
+<div class="h4">Header 4</div>
+<div class="h5">Header 5</div>
 
-All spacing is a simple multiple of a base measurement
-: If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
+<div>Normal text</div>
+<div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+
+### All spacing is a simple multiple of a base measurement
+
+If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
 [^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
 
@@ -936,8 +940,22 @@ Markdown element styling
 
   Table: A rebalanced table which pleases the eyes.
 
+Print mode
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URLs next to links (as paper does not permit clicking) and sources next to `<video>` and `<audio>` elements; renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before (left) vs. after (right) print mode.</figcaption>
+</figure>
+
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
+
+Before/after image sliders
+: Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
 
 Automatic BibTeX citations
 : I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
@@ -1063,10 +1081,10 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
 > ![[playwright-tips#Background]]
 
-> [!money] Cost of running the Playwright tests on GitHub Actions
-> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
+> [!money] Cost of running CI on GitHub Actions
+> My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
 >
-> After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
+> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
 
 ### Validating links
 

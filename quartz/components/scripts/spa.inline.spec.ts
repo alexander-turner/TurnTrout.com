@@ -9,7 +9,13 @@
 
 import type { Page } from "@playwright/test"
 
-import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
+import {
+  simpleConstants,
+  tightScrollTolerance,
+  testPageSlug,
+  scrollPositionKeyPrefix,
+  scrollPositionMinThreshold,
+} from "../constants"
 import { test, expect } from "../tests/fixtures"
 import {
   isDesktopViewport,
@@ -271,12 +277,7 @@ test.describe("Scroll Behavior", () => {
     // eslint-disable-next-line playwright/expect-expect
     test(`after navigating to a hash and scrolling further, a refresh restores the later scroll position to ${scrollPos}`, async ({
       page,
-    }, testInfo) => {
-      test.skip(
-        testInfo.project.use.browserName === "webkit",
-        "WebKit has unreliable scroll restoration after hash navigation",
-      )
-
+    }) => {
       const anchorId = await createFinalAnchor(page)
       await gotoPage(
         page,
@@ -337,11 +338,7 @@ test.describe("Scroll Behavior", () => {
 })
 
 test.describe("Instant Scroll Restoration", () => {
-  test("restores saved scroll position immediately on reload", async ({ page }, testInfo) => {
-    test.slow(
-      testInfo.project.name.includes("Safari"),
-      "Safari scroll restoration can be slow in CI",
-    )
+  test("restores saved scroll position immediately on reload", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -423,8 +420,7 @@ test.describe("Instant Scroll Restoration", () => {
     expect(finalScroll).toBeGreaterThan(0)
   })
 
-  test("layout stability monitoring cancels when user scrolls", async ({ page }, testInfo) => {
-    test.slow(testInfo.project.name.includes("Safari"), "WebKit frame timing is slower in CI")
+  test("layout stability monitoring cancels when user scrolls", async ({ page }) => {
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -474,6 +470,76 @@ test.describe("Instant Scroll Restoration", () => {
         timeout: 10_000,
       })
       .toBeDefined()
+  })
+})
+
+test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
+  test("saves scroll position to localStorage when scrolled past threshold", async ({ page }) => {
+    const scrollPos = 600
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    const key = `${scrollPositionKeyPrefix}${new URL(page.url()).pathname}`
+    const stored = await page.evaluate((k) => localStorage.getItem(k), key)
+    expect(stored).not.toBeNull()
+    expect(Number(stored)).toBeCloseTo(scrollPos, -1)
+  })
+
+  test("does not save scroll position below minimum threshold", async ({ page }) => {
+    // Scroll to a position below the threshold
+    const scrollPos = scrollPositionMinThreshold - 1
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    const key = `${scrollPositionKeyPrefix}${new URL(page.url()).pathname}`
+    const stored = await page.evaluate((k) => localStorage.getItem(k), key)
+    expect(stored).toBeNull()
+  })
+
+  test("restores scroll from localStorage in a new session", async ({ page, context }) => {
+    const scrollPos = 800
+    const pathname = new URL(page.url()).pathname
+    const key = `${scrollPositionKeyPrefix}${pathname}`
+
+    // Simulate a persisted localStorage entry from a previous session
+    await page.evaluate(({ k, v }) => localStorage.setItem(k, v), {
+      k: key,
+      v: scrollPos.toString(),
+    })
+
+    // Open a fresh page in the same context (has localStorage but no history.state)
+    const newPage = await context.newPage()
+    await gotoPage(newPage, page.url(), "domcontentloaded")
+
+    const handle = await newPage.waitForFunction(
+      ({ target, tolerance }) => {
+        if (Math.abs(window.scrollY - target) <= tolerance) return window.scrollY
+        return false
+      },
+      { target: scrollPos, tolerance: tightScrollTolerance },
+      { timeout: 15_000 },
+    )
+    const finalScroll = await handle.jsonValue()
+    expect(finalScroll).toBeCloseTo(scrollPos, -1)
+
+    await newPage.close()
+  })
+
+  test("cleans up localStorage entry when user scrolls back to top", async ({ page }) => {
+    const scrollPos = 600
+    const key = `${scrollPositionKeyPrefix}${new URL(page.url()).pathname}`
+
+    // First scroll down past threshold to save
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+    expect(await page.evaluate((k) => localStorage.getItem(k), key)).not.toBeNull()
+
+    // Scroll back to top (below threshold)
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await waitForHistoryState(page, 0)
+
+    const stored = await page.evaluate((k) => localStorage.getItem(k), key)
+    expect(stored).toBeNull()
   })
 })
 
@@ -691,7 +757,7 @@ test.describe("Critical CSS", () => {
     const cssLocator = page.locator("style#critical-css")
     await expect(cssLocator).toHaveCount(0)
 
-    // Create a link to another page
+    // Create a link to another page and navigate via SPA
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "/design"
@@ -700,8 +766,7 @@ test.describe("Critical CSS", () => {
       document.body.appendChild(link)
     })
 
-    await page.click("#design-link")
-    await page.waitForURL("**/design")
+    await triggerAndWaitForSPANav(page, () => page.click("#design-link"))
 
     await expect(cssLocator).toHaveCount(0)
   })

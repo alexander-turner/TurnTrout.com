@@ -1,7 +1,7 @@
 import type { Root, RootContent } from "hast"
 
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import { describe, it, expect } from "@jest/globals"
 import { h } from "hastscript"

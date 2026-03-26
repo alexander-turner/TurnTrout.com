@@ -49,14 +49,6 @@ export async function setTheme(page: Page, theme: Theme) {
     },
     { t: theme, key: savedThemeKey },
   )
-
-  // Verify the localStorage write was committed before proceeding.
-  // Safari may not flush writes synchronously, causing detectInitialState.js
-  // to read stale data if navigation starts too quickly.
-  await page.waitForFunction(({ key, expected }) => localStorage.getItem(key) === expected, {
-    key: savedThemeKey,
-    expected: theme,
-  })
 }
 
 /** Gets the name of the screenshot file. */
@@ -141,8 +133,6 @@ async function performDOMIsolation(
  * @returns A promise that resolves once the DOM restoration is complete.
  */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
-  // WebKit may crash during screenshots; if the page is already closed there's nothing to restore
-  if (page.isClosed()) return
   await page.evaluate(() => {
     const hiddenElements = window.__elementsToRestoreData
     if (hiddenElements) {
@@ -185,6 +175,27 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
+
+    // Wait for every video to be paused at time 0. Re-seeks if the initial
+    // seek timed out (e.g. slow CI).
+    const mediaScope = options?.elementToScreenshot ?? page
+    const videos = await mediaScope.locator("video").all()
+    for (const video of videos) {
+      const handle = await video.elementHandle()
+      if (!handle) throw new Error("Could not get element handle for video")
+      await page.waitForFunction(
+        (el) => {
+          const videoEl = el as HTMLVideoElement
+          if (videoEl.currentTime !== 0) {
+            videoEl.pause()
+            videoEl.currentTime = 0
+          }
+          return videoEl.paused && videoEl.currentTime === 0
+        },
+        handle,
+        { timeout: 5000 },
+      )
+    }
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -217,19 +228,6 @@ export async function takeRegressionScreenshot(
       await restoreDOM()
     }
   } else {
-    // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
-    if (!options?.clip) {
-      const viewportSize = page.viewportSize()
-      if (!viewportSize) throw new Error("Could not get viewport size for clipping")
-      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
-      screenshotOptions.clip = {
-        x: 0,
-        y: 0,
-        width: clientWidth,
-        height: viewportSize.height,
-      }
-    }
-
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
@@ -459,6 +457,25 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
         media.pause()
 
+        // Seek to target time, wait for "seeked" event, then wait for a double
+        // requestAnimationFrame to ensure the compositor has actually painted
+        // the target frame (Safari fires "seeked" before the frame is rendered).
+        const seekAndWait = (time: number): Promise<void> => {
+          media.currentTime = time
+          return Promise.race([
+            new Promise<void>((resolve) => {
+              media.addEventListener(
+                "seeked",
+                () => {
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+                },
+                { once: true },
+              )
+            }),
+            new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+          ])
+        }
+
         const targetTime = target === "start" ? 0 : media.duration
 
         // Per HTML spec: when readyState is HAVE_NOTHING (0), setting currentTime updates
@@ -466,20 +483,21 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
-          media.currentTime = targetTime
-          return Promise.resolve()
+          return seekAndWait(targetTime)
         }
 
         // Wait for metadata with timeout fallback
-
         return Promise.race([
           new Promise<void>((resolve) => {
             media.addEventListener(
               "loadedmetadata",
               () => {
                 const time = target === "start" ? 0 : media.duration
-                if (Number.isFinite(time)) media.currentTime = time
-                resolve()
+                if (Number.isFinite(time)) {
+                  seekAndWait(time).then(resolve)
+                } else {
+                  resolve()
+                }
               },
               { once: true },
             )
@@ -489,7 +507,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 500)),
+          new Promise<void>((resolve) => setTimeout(resolve, 1000)),
         ])
       }, seekTo),
     )
@@ -577,14 +595,23 @@ export async function gotoPage(
  *  Avoids page.reload() which can trigger "WebKit encountered an internal
  *  error" crashes in the Safari driver.  A same-URL goto() in Safari/WebKit
  *  may be treated as a soft refresh that skips re-running init scripts, so we
- *  navigate to about:blank first to force a full page load. */
+ *  bounce through a minimal same-origin page first to force a full page load.
+ *  Using a same-origin page (not about:blank) preserves sessionStorage, and
+ *  returning empty HTML avoids loading the SPA framework which could intercept
+ *  the subsequent navigation. */
 export async function reloadPage(
   page: Page,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
-  const url = page.url()
-  await page.goto("about:blank")
-  await gotoPage(page, url, loadState)
+  const url = new URL(page.url())
+  // Serve a minimal same-origin page: preserves sessionStorage, no SPA interference
+  const bounceUrl = `${url.origin}/__reload_bounce__`
+  await page.route(bounceUrl, (route) =>
+    route.fulfill({ body: "<html></html>", contentType: "text/html" }),
+  )
+  await page.goto(bounceUrl, { waitUntil: "commit" })
+  await page.unroute(bounceUrl)
+  await gotoPage(page, url.href, loadState)
 }
 
 // skipcq: JS-0098
@@ -596,6 +623,11 @@ export function isDesktopViewport(page: Page): boolean {
 // Detect if the current test is running in Firefox
 export function isFirefox(testInfo: TestInfo): boolean {
   return testInfo.project.name.toLowerCase().includes("firefox")
+}
+
+// Detect if the current test is running in Safari/WebKit
+export function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
 }
 
 /**

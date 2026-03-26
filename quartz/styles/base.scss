@@ -297,7 +297,7 @@ h5,
 h6,
 thead {
   position: relative; // For anchor links
-  text-wrap: balance;
+  text-wrap: auto;
 
   article & > a[role="anchor"] {
     color: var(--midground-faint);

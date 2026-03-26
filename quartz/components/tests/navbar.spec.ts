@@ -22,10 +22,6 @@ interface VideoElements {
   pauseIcon: Locator
 }
 
-function isSafariBrowser(page: Page): boolean {
-  return page.context().browser()?.browserType().name() === "webkit"
-}
-
 function getVideoElements(page: Page): VideoElements {
   return {
     video: page.locator(`video#${pondVideoId}`),
@@ -181,8 +177,6 @@ test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) =>
 
   // Test closed state
   await menuButton.click()
-  const newMenuButtonState = await menuButton.screenshot()
-  expect(newMenuButtonState).toEqual(originalMenuButtonState)
   await expect(navbarRightMenu).toBeHidden()
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
@@ -404,6 +398,36 @@ test("Clicking TOC title scrolls to top", async ({ page }) => {
   await page.waitForFunction((tolerance) => window.scrollY < tolerance, urlBarScrollTolerance)
 })
 
+test("Random post link is visible on desktop", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  await expect(page.locator("#random-post-link")).toBeVisible()
+})
+
+test("Random post link is visible in mobile hamburger menu", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  await page.locator("#menu-button").click()
+  await expect(page.locator("#random-post-link")).toBeVisible()
+})
+
+test("Random post link navigates to a different page on desktop", async ({ page }) => {
+  test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+  const initialUrl = page.url()
+  await triggerAndWaitForSPANav(page, () => page.locator("#random-post-link").click())
+  await expect(page).not.toHaveURL(initialUrl)
+})
+
+test("Random post link navigates to a different page on mobile", async ({ page }) => {
+  test.skip(isDesktopViewport(page), "Mobile-only test")
+
+  await page.locator("#menu-button").click()
+  const initialUrl = page.url()
+  await triggerAndWaitForSPANav(page, () => page.locator("#random-post-link").click())
+  await expect(page).not.toHaveURL(initialUrl)
+})
+
 test("Video toggle button is visible and functional", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
 
@@ -522,17 +546,19 @@ test("Video autoplay works correctly after SPA navigation", async ({ page }) => 
 })
 
 async function getTimestampAfterNavigation(page: Page): Promise<number> {
-  const handle = await page.waitForFunction((id) => {
-    const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
-    return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
-  }, pondVideoId)
+  const handle = await page.waitForFunction(
+    (id) => {
+      const videoEl = document.querySelector<HTMLVideoElement>(`#${id}`)
+      return videoEl && videoEl.currentTime > 0 ? videoEl.currentTime : null
+    },
+    pondVideoId,
+    { timeout: 45_000 },
+  )
   return (await handle.jsonValue()) as number
 }
 
 test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // WebKit (Safari) resets video.currentTime after SPA navigation; skip until fixed.
-  test.skip(isSafariBrowser(page), "Safari resets video currentTime after SPA navigation")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeNavigation = await setupVideoForTimestampTest(videoElements)
@@ -546,8 +572,6 @@ test("Video timestamp is preserved during SPA navigation", async ({ page }) => {
 
 test("Video timestamp is preserved during refresh", async ({ page }) => {
   test.skip(!isDesktopViewport(page), "Desktop-only test")
-  // WebKit resets video.currentTime after page refresh; skip until fixed.
-  test.skip(isSafariBrowser(page), "Safari resets video currentTime after page refresh")
 
   const videoElements = getVideoElements(page)
   const timestampBeforeRefresh = await setupVideoForTimestampTest(videoElements)

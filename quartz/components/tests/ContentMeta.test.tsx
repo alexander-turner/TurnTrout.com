@@ -1,7 +1,7 @@
 import type { Root } from "hast"
 
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import { jest, describe, it, expect } from "@jest/globals"
 // skipcq: JS-W1028
@@ -588,7 +588,7 @@ describe("ContentMetadata", () => {
     expect(result).not.toBeNull()
     expect(result?.type).toBe("div")
     expect(result?.props.id).toBe("content-meta")
-    expect(result?.props.children).toBe(undefined)
+    expect(result?.props.children).toBeUndefined()
   })
 
   it("should render an empty content-meta div when no metadata is present and text is empty", () => {

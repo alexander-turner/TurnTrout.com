@@ -1,30 +1,19 @@
 @use "./variables" as *;
+@use "./palette" as *;
 
 :root[data-theme="dark"],
 .dark-mode {
-  // Catppuccin Frappe
-  --pink: #fba7e4;
-  --red: #e88283;
-  --maroon: #d586a1;
-  --orange: #e19b5b;
-  --yellow: #e5c890;
-  --green: #a6d189;
-  --teal: #81c8be;
-  --sky: #5bc4d7;
-  --blue: #8caaee;
-  --lavender: #9899d7;
-  --purple: #ba8be9;
-  --gold: #db9c01; /* Gold */
+  @include palette-vars($dark-colors);
 
   // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #{$background-dark};
   --midground-faint: #{$midground-faint-dark};
   --midground: #{$midground-dark};
-  --midground-strong: #c6cff0;
+  --midground-strong: #{$midground-strong-dark};
   --foreground: #{$foreground-dark};
-  --secondary: #97b0e9;
-  --tertiary: #99d1db;
-  --highlight: #949cbb30;
+  --secondary: #{$secondary-dark};
+  --tertiary: #{$tertiary-dark};
+  --highlight: #{$highlight-dark};
 
   // Always give access to light and dark colors
   --light: var(--foreground);
@@ -52,30 +41,19 @@
   }
 }
 
-// Catppuccin Latte
 :root[data-theme="light"],
 .light-mode {
-  --pink: #d020a3;
-  --red: #be415c;
-  --orange: #a45c19;
-  --yellow: #7d751c;
-  --green: #22820d;
-  --teal: #037e85;
-  --sky: #007cb4;
-  --blue: #3e6ccb;
-  --lavender: #4963fd;
-  --purple: #6f42c1;
-  --gold: #9b6700;
+  @include palette-vars($light-colors);
 
   // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #{$background-light};
   --midground-faint: #{$midground-faint-light};
   --midground: #{$midground-light};
-  --midground-strong: #5c5f77;
+  --midground-strong: #{$midground-strong-light};
   --foreground: #{$foreground-light};
-  --secondary: #1e66f5;
-  --tertiary: #0486b9;
-  --highlight: #7c7f9324;
+  --secondary: #{$secondary-light};
+  --tertiary: #{$tertiary-light};
+  --highlight: #{$highlight-light};
   --light: var(--background);
   --dark: var(--foreground);
   --dark-gray: var(--midground-strong);

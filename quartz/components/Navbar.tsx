@@ -8,6 +8,7 @@ import { defaultTitle, pondVideoId } from "./constants"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
 import script from "./scripts/navbar.inline"
+import { randomPostScript } from "./scripts/randomPost"
 import navbarStyle from "./styles/navbar.scss"
 import {
   type QuartzComponent,
@@ -166,10 +167,25 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
   const title = cfg?.pageTitle ?? defaultTitle
   const baseDir = pathToRoot(fileData.slug || ("" as FullSlug))
 
+  const randomPostItem = (
+    <li key="random-post">
+      <a href="/posts" id="random-post-link">
+        Random post
+      </a>
+    </li>
+  )
+
+  // Insert "Random post" before "All posts" (/posts slug) in the nav links
+  const postsIndex = pages.findIndex((p: Page) => p.slug === "/posts")
+  const orderedLinks =
+    postsIndex >= 0
+      ? [...links.slice(0, postsIndex), randomPostItem, ...links.slice(postsIndex)]
+      : [randomPostItem, ...links]
+
   const pageLinks = (
     <nav className="menu" id="nav-menu">
       <ul>
-        {links}
+        {orderedLinks}
         <li>
           <a
             href="https://turntrout.substack.com/subscribe"
@@ -181,6 +197,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           </a>
         </li>
       </ul>
+      <script dangerouslySetInnerHTML={{ __html: randomPostScript }} />
     </nav>
   )
   return (
