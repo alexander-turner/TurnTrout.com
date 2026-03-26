@@ -15,8 +15,9 @@ aliases:
   - visual-regression
   - lostpixel
 date_published: 2025-08-12 07:48:13.242307
-date_updated: 2026-03-08 23:44:38.062842
+date_updated: 2026-03-26 04:03:48.327812
 ---
+
 
 
 
@@ -112,7 +113,7 @@ Mock the content
 : When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
 
 Run WebKit tests on macOS, not Linux
-: Playwright's Linux WebKit engine (WPE) is _not_ the same as real Safari. WPE is flaky. The Playwright team [recommends running WebKit on macOS](https://playwright.dev/docs/browsers#webkit) for Safari fidelity. I split my CI into Linux jobs (Chromium & Firefox) and macOS jobs (WebKit only). 
+: Playwright's Linux WebKit engine (WPE) is _not_ the same as real Safari. WPE is flaky. The Playwright team [recommends running WebKit on macOS](https://playwright.dev/docs/browsers#webkit) for Safari fidelity. I split my CI into Linux jobs (Chromium & Firefox) and macOS jobs (WebKit only).
 
 Know when to give up
 : In my visual regression testing, there are five or so discrepancies between the CI screenshots and the local screenshots. I tried for at least an hour to fix each discrepancy, but ultimately gave up. After all, visual regression testing just needs to tell me when the appearance _changes_. I've just approved those screenshots and kept an explicit list of what's different.

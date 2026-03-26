@@ -198,11 +198,16 @@ export default (() => {
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
         <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
-        {/* Show Elvish translations when JavaScript is disabled */}
+        <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
+        {/* Show Elvish translations and stack before/after images when JavaScript is disabled */}
         <noscript>
           <style
             // skipcq: JS-0440 - Safe: static CSS string, not user input
-            dangerouslySetInnerHTML={{ __html: ELVISH_NOSCRIPT_CSS }}
+            dangerouslySetInnerHTML={{
+              __html: `${ELVISH_NOSCRIPT_CSS}
+img-comparison-slider { visibility: visible; }
+img-comparison-slider [slot="second"] { display: block; }`,
+            }}
           />
         </noscript>
         {analyticsScript}
