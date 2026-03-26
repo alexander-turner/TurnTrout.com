@@ -1,4 +1,8 @@
-import FlexSearch, { type ContextOptions, type SimpleDocumentSearchResultSetUnit } from "flexsearch"
+import FlexSearch, {
+  type ContextOptions,
+  type DefaultDocumentSearchResults,
+  type DocumentData,
+} from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
@@ -28,7 +32,8 @@ interface Item {
 let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
-const documentType = FlexSearch.Document<Item>
+// Item satisfies DocumentData at runtime but uses stricter types; cast to satisfy the generic constraint
+const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
 let searchInitializing = false
@@ -39,7 +44,7 @@ let initializationPromise: Promise<void> | null = null
  */
 function createSearchIndex(): InstanceType<typeof documentType> {
   return new documentType({
-    encode: "advanced",
+    encoder: "LatinAdvanced",
     tokenize: "strict",
     resolution: 1,
     context: {
@@ -932,10 +937,7 @@ function addListener(
  * @returns Array of IDs
  */
 /* istanbul ignore next */
-const getByField = (
-  field: string,
-  searchResults: SimpleDocumentSearchResultSetUnit[],
-): number[] => {
+const getByField = (field: string, searchResults: DefaultDocumentSearchResults): number[] => {
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
@@ -1195,7 +1197,7 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
     limit: numSearchResults,
     index: ["title", "content", "slug", "authors"],
     suggest: false,
-  })) as SimpleDocumentSearchResultSetUnit[]
+  })) as DefaultDocumentSearchResults
 
   // Ordering affects search results, so we need to order them here
   const allIds: Set<number> = new Set([
@@ -1265,7 +1267,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       content: fileData.content,
       authors: fileData.authors?.join(", ") ?? "",
     }
-    return index.addAsync(id, doc as unknown as Item)
+    return index.addAsync(id, doc as unknown as DocumentData)
   })
 
   await Promise.all(promises)
