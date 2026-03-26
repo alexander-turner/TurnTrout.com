@@ -25,10 +25,10 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if ci:run-playwright or ci:full-tests label is present.
-  # The pull_request trigger intentionally omits a branches filter so that
-  # these labels work on PRs targeting any branch (not just main/dev).
-  # Tests always run in the merge queue to enforce passing before merge.
+  # Gate: only run expensive tests on PRs when a CI label is actively added.
+  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
+  # fires on every push — the should-run gate returns run=false instantly,
+  # which is needed for the unified "playwright-tests" required status check.
   # Skip entirely for bot actors (dependabot, renovate, etc.).
   should-run:
     name: playwright-should-run
@@ -36,49 +36,46 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
+      run-macos: ${{ steps.check.outputs.run-macos }}
+      browsers: ${{ steps.check.outputs.browsers }}
     steps:
       - id: check
         run: |
+          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-               [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-playwright') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.action }}" == "labeled" ]]; then
+              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-playwright') }}" == "true" ]]; then
+                echo "run=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "run=false" >> "$GITHUB_OUTPUT"
+              fi
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
+          # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "run-macos=true" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
+          else
+            echo "run-macos=false" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
     name: playwright-build
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      artifact-name: playwright-public-dir
 
-      - name: Setup site
-        uses: ./.github/actions/setup-site
-        with:
-          install-sharp: "true"
-          install-browsers: "true"
-          install-ffmpeg: "true"
-          install-system-deps: "true"
-
-      - name: Build site
-        run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: playwright-public-dir
-          path: public/
-          retention-days: 1
-
-  playwright-tests:
-    needs: build
+  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  playwright-tests-linux:
+    needs: [build, should-run]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     strategy:
@@ -86,37 +83,21 @@ jobs:
       matrix:
         shard:
           [
-            "1/30",
-            "2/30",
-            "3/30",
-            "4/30",
-            "5/30",
-            "6/30",
-            "7/30",
-            "8/30",
-            "9/30",
-            "10/30",
-            "11/30",
-            "12/30",
-            "13/30",
-            "14/30",
-            "15/30",
-            "16/30",
-            "17/30",
-            "18/30",
-            "19/30",
-            "20/30",
-            "21/30",
-            "22/30",
-            "23/30",
-            "24/30",
-            "25/30",
-            "26/30",
-            "27/30",
-            "28/30",
-            "29/30",
-            "30/30",
+            "1/12",
+            "2/12",
+            "3/12",
+            "4/12",
+            "5/12",
+            "6/12",
+            "7/12",
+            "8/12",
+            "9/12",
+            "10/12",
+            "11/12",
+            "12/12",
           ]
+    env:
+      PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -128,8 +109,8 @@ jobs:
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
-      - name: Install Puppeteer Chrome
-        run: pnpm exec puppeteer browsers install chrome
+      - name: Install browsers
+        run: pnpm run install-browsers
 
       - name: Download built site
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
@@ -154,7 +135,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: playwright-log-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
@@ -163,7 +144,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
           retention-days: 1
@@ -172,7 +153,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 1
@@ -181,7 +162,7 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: playwright-traces-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           if-no-files-found: warn
           retention-days: 1
@@ -190,15 +171,133 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         run: exit 1
 
+  # WebKit (Safari) tests on macOS for real Safari fidelity.
+  # Linux WebKit (WPE) has known flakiness issues with timing, localStorage,
+  # and module loading that don't reproduce on real Safari.
+  playwright-tests-macos:
+    needs: [build, should-run]
+    if: needs.should-run.outputs.run-macos == 'true'
+    runs-on: macos-14
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/5",
+            "2/5",
+            "3/5",
+            "4/5",
+            "5/5",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Download built site
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: playwright-public-dir
+          path: public/
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+
+      - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        if: always()
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  # Unified status check — required by branch protection
+  playwright-tests:
+    name: playwright-tests
+    if: always()
+    needs: [should-run, playwright-tests-linux, playwright-tests-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.playwright-tests-linux.result }}" != "success" ]]; then
+            echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
+            exit 1
+          fi
+          # macOS only runs on push to main; allow skipped elsewhere
+          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
+             [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
+            echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"
+            exit 1
+          fi
+
   summarize-failures:
     name: Summarize Failures
-    if: always() && needs.playwright-tests.result == 'failure'
-    needs: playwright-tests
+    if: always() && (needs.playwright-tests-linux.result == 'failure' || needs.playwright-tests-macos.result == 'failure')
+    needs: [playwright-tests-linux, playwright-tests-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
-          log-pattern: playwright-log-shard-*
+          log-pattern: playwright-log-*
           final-log-name: playwright-failed-logs

@@ -158,7 +158,7 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   activePopoverRemover = popoverCleanup
 
   window.addEventListener("resize", updatePosition)
-  window.addEventListener("scroll", handleScroll)
+  window.addEventListener("scroll", handleScroll, { passive: true })
 
   // skipcq: JS-0098 - Force reflow to ensure CSS transition
   void popoverElement.offsetWidth
@@ -210,6 +210,9 @@ document.addEventListener("nav", () => {
     clearTimeout(pendingPopoverTimer)
     pendingPopoverTimer = null
   }
+  // Invalidate any in-flight async mouseEnterHandler calls so they
+  // discard their result instead of creating an orphaned popover.
+  popoverGeneration++
 
   // Mark that the mouse hasn't moved yet since this navigation.
   // Safari fires spurious mouseenter events after DOM morphing under a

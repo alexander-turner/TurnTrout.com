@@ -91,6 +91,7 @@
     "\u2019",
     "s"
   ],
+  "footnoteHeadingId": "footnotes",
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
@@ -102,6 +103,8 @@
   "savedThemeKey": "saved-theme",
   "autoplayStorageKey": "pond-video-autoplay",
   "instantScrollRestoreKey": "instantScrollRestore",
+  "scrollPositionKeyPrefix": "scroll:",
+  "scrollPositionMinThreshold": 150,
   "cdnBaseUrl": "https://assets.turntrout.com",
   "spaFetchTimeoutMs": 10000,
   "popoverRemovalDelayMs": 300,

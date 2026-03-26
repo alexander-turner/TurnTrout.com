@@ -1222,6 +1222,37 @@ describe("setFirstLetterAttribute", () => {
   })
 
   it.each([
+    ["LEFT_SINGLE_QUOTE (U+2018)", LEFT_SINGLE_QUOTE],
+    ["RIGHT_SINGLE_QUOTE (U+2019)", RIGHT_SINGLE_QUOTE],
+    ["straight apostrophe (U+0027)", "'"],
+  ])(
+    "adds space before %s when it is the second character in dropcap paragraph",
+    (_description, quote) => {
+      const input = `<p>X${quote}s story</p>`
+      const processedHtml = testHtmlFormattingImprovement(input, false)
+      // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
+      // so check for a space after X followed by any apostrophe variant
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(processedHtml).toContain('data-first-letter="X"')
+    },
+  )
+
+  it("replaces nbsp after single-letter first word for dropcap", () => {
+    const input = "<p>I use this page.</p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
+    // should replace it with a regular space for proper dropcap rendering
+    expect(processedHtml).not.toContain(`I${NBSP}`)
+    expect(processedHtml).toContain('data-first-letter="I"')
+  })
+
+  it("handles paragraph with no direct text node", () => {
+    const input = "<p><span>Hello world.</span></p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toContain('data-first-letter="H"')
+  })
+
+  it.each([
     [
       "paragraph is not a direct child of article",
       `

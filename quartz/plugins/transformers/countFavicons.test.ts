@@ -429,7 +429,7 @@ describe("getFaviconCounts", () => {
 
   it("should read from file when in-memory map is empty", async () => {
     // Mock file system to return valid favicon counts as JSON
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     const jsonData = JSON.stringify([
       ["quartz/static/images/external-favicons/example_com", 10],
       ["mail", 5],
@@ -452,7 +452,7 @@ describe("getFaviconCounts", () => {
   })
 
   it("should handle invalid JSON content gracefully", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("invalid json {]")
 
     const counts = await getFaviconCounts()
@@ -461,7 +461,7 @@ describe("getFaviconCounts", () => {
   })
 
   it("should handle read errors gracefully", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(new Error("Read error"))
 
     const counts = await getFaviconCounts()
@@ -470,7 +470,7 @@ describe("getFaviconCounts", () => {
   })
 
   it("should return empty map when file is empty", async () => {
-    jest.spyOn(fs.promises, "access").mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, "access").mockImplementation(() => Promise.resolve())
     jest.spyOn(fs.promises, "readFile").mockResolvedValue("")
 
     const counts = await getFaviconCounts()

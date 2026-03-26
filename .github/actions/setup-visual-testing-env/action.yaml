@@ -18,8 +18,8 @@ runs:
         cache-apt-playwright: ${{ inputs.install-playwright }}
         install-python: "false"
 
-    - name: Install Playwright system dependencies
-      if: inputs.install-playwright == 'true'
+    - name: Install Playwright system dependencies (Linux)
+      if: inputs.install-playwright == 'true' && runner.os == 'Linux'
       shell: bash
       run: |
         # Restore cached .deb packages so apt skips downloading them
@@ -34,3 +34,15 @@ runs:
         # Save .deb packages for next run
         mkdir -p ~/apt-playwright-cache
         cp /var/cache/apt/archives/*.deb ~/apt-playwright-cache/ 2>/dev/null || true
+
+    - name: Install ffmpeg on macOS
+      if: runner.os == 'macOS'
+      run: |
+        if command -v ffprobe &>/dev/null; then
+          echo "ffprobe already available, skipping install"
+          ffprobe -version
+          exit 0
+        fi
+        brew install ffmpeg
+        ffprobe -version
+      shell: bash

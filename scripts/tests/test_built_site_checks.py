@@ -5033,12 +5033,31 @@ def test_check_unrendered_emoticons(html, expected):
         # All quote types in one string
         (
             "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
-            'mix of "quotes", "apostrophes", "regular", and "more"',
+            'mix of "quotes," "apostrophes," "regular," and "more"',
         ),
         # Non-breaking spaces normalized to regular spaces
         (
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
+        ),
+        # Em-dash normalization
+        ("computations\u2014do transformers", "computations - do transformers"),
+        # En-dash normalization
+        ("pages 10\u201320", "pages 10 - 20"),
+        # Diacritics stripped
+        ("na\u00efve predictions", "naive predictions"),
+        ("caf\u00e9 culture", "cafe culture"),
+        ("d\u00e9j\u00e0 vu", "deja vu"),
+        # Ellipsis normalization
+        ("wait for it\u2026", "wait for it..."),
+        # Comma-inside-quotes normalization
+        (
+            'Munkres\' "Topology", reflecting',
+            'munkres" "topology," reflecting',
+        ),
+        (
+            "\u201cTopology,\u201d reflecting",
+            '"topology," reflecting',
         ),
     ],
 )
@@ -5837,6 +5856,39 @@ def test_check_article_dropcap_first_letter_comprehensive(
     built_site_checks.py:109)."""
     soup = BeautifulSoup(html, "html.parser")
     issues = built_site_checks.check_article_dropcap_first_letter(soup)
+    assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: regular space after first letter
+        (
+            '<article><p data-first-letter="I">I use this page.</p></article>',
+            [],
+        ),
+        # Valid: dropcap disabled, nbsp is fine
+        (
+            f'<article data-use-dropcap="false"><p>I{NBSP}use this.</p></article>',
+            [],
+        ),
+        # Valid: no article element
+        (
+            f"<p>I{NBSP}use this.</p>",
+            [],
+        ),
+        # Invalid: nbsp after first letter in dropcap paragraph
+        (
+            f'<article><p data-first-letter="I">I{NBSP}use this page.</p></article>',
+            [
+                "nbsp after first letter in dropcap paragraph: 'I\\xa0use this page.'"
+            ],
+        ),
+    ],
+)
+def test_check_dropcap_no_leading_nbsp(html: str, expected_issues: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_dropcap_no_leading_nbsp(soup)
     assert issues == expected_issues
 
 

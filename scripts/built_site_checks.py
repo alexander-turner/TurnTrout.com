@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -147,6 +148,28 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
             continue
         if not first[0].isalnum():
             issues.append(f"non-alphanumeric data-first-letter: {first!r}")
+
+    return issues
+
+
+def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
+    """For dropcap-enabled articles, the first space in the first paragraph must
+    not be a non-breaking space (which creates a visible extra gap)."""
+
+    issues: list[str] = []
+    for article in soup.find_all("article"):
+        if article.get("data-use-dropcap") == "false":
+            continue
+
+        p = article.find("p", recursive=False)
+        if not isinstance(p, Tag):
+            continue
+
+        text = p.get_text()
+        if len(text) >= 2 and text[1] == NBSP:
+            issues.append(
+                f"nbsp after first letter in dropcap paragraph: {text[:20]!r}"
+            )
 
     return issues
 
@@ -1712,7 +1735,22 @@ def _untransform_text(label: str) -> str:
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
-    return normalized_spaces.strip()
+    # Normalize em-dashes, en-dashes, and ellipsis to ASCII equivalents
+    normalized_dashes = (
+        normalized_spaces.replace("\u2014", " - ")
+        .replace("\u2013", " - ")
+        .replace(ELLIPSIS, "...")
+    )
+    # Strip diacritics (e.g. naïve → naive, café → cafe) via Unicode decomposition
+    nfkd = unicodedata.normalize("NFKD", normalized_dashes)
+    stripped_diacritics = "".join(
+        c for c in nfkd if unicodedata.category(c) != "Mn"
+    )
+    # Normalize comma+quote ordering: "," and "," both → ",
+    normalized_quotes = stripped_diacritics.replace('",', ',"')
+    # Collapse multiple spaces from dash normalization
+    normalized_quotes = re.sub(r" +", " ", normalized_quotes)
+    return normalized_quotes.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
@@ -1834,6 +1872,7 @@ def check_file_for_issues(
         "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
             soup
         ),
+        "dropcap_leading_nbsp": check_dropcap_no_leading_nbsp(soup),
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),

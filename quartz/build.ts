@@ -1,4 +1,5 @@
 import { Mutex } from "async-mutex"
+
 const beep = await import("beepbeep")
 
 import chalk from "chalk"
@@ -456,7 +457,12 @@ async function rebuildFromEntrypoint(
     console.log(chalk.green(`Done rebuilding in ${perf.timeSince()}`))
   } catch (err) {
     console.log(chalk.yellow("Rebuild failed. Waiting on a change to fix the error..."))
-    if (argv.verbose) {
+    if (err instanceof Error) {
+      console.log(chalk.red(err.message))
+      if (argv.verbose && err.stack) {
+        console.log(chalk.red(err.stack))
+      }
+    } else if (argv.verbose) {
       console.log(chalk.red(err))
     }
   }

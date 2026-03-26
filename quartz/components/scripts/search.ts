@@ -7,7 +7,6 @@ import FlexSearch, {
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint } from "../../styles/variables"
-import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
@@ -160,7 +159,7 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
       // see if this tok is prefixed by any search terms
       for (const searchTok of tokenizedTerms) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
-          const sanitizedSearchTok = escapeRegExp(searchTok)
+          const sanitizedSearchTok = RegExp.escape(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
           return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
@@ -179,9 +178,6 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
   }
   return `${beginning}${slice}${end}`
 }
-
-// Re-export escapeRegExp from centralized escape utilities
-export { escapeRegExp } from "../../util/escape"
 
 /**
  * Creates a span element with the class "match" and the given text
@@ -230,7 +226,7 @@ export const matchTextNodes = (node: Node, term: string) => {
     // Normalize NBSP (U+00A0) to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
     const normalizedText = nodeText.replace(/\u00A0/gu, " ")
-    const sanitizedTerm = escapeRegExp(term)
+    const sanitizedTerm = RegExp.escape(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation

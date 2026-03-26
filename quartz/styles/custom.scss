@@ -4,6 +4,7 @@
 @use "colors";
 @use "favicon";
 @use "scroll-indicator";
+@use "print";
 @use "../components/styles/punctilioDemo";
 
 body {
@@ -978,4 +979,43 @@ pre,
 figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;
+}
+
+// img-comparison-slider: hide until the web component renders
+img-comparison-slider {
+  display: block;
+  visibility: hidden;
+  margin: calc(2 * $base-margin) 0;
+
+  // Reset inherited img styles on images inside the slider
+  > img {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  &.rendered {
+    visibility: inherit;
+  }
+
+  [slot="second"] {
+    display: none;
+  }
+
+  &.rendered [slot="second"] {
+    display: unset;
+  }
+
+  // Customize handle visibility
+  --divider-width: 1px;
+  --divider-color: var(--foreground);
+  --divider-shadow: 0 0 8px var(--background);
+  --default-handle-color: var(--foreground);
+  --default-handle-shadow: 0 0 1px var(--background);
+
+  // Remove blue focus outline
+  &:focus {
+    outline: none;
+  }
 }

@@ -39,11 +39,17 @@ const deviceList: DeviceConfig[] = [
   },
 ]
 
-const browsers: Browser[] = [
+const allBrowsers: Browser[] = [
   { name: "Chrome", engine: "chromium" },
   { name: "Firefox", engine: "firefox" },
   { name: "Safari", engine: "webkit" },
 ]
+
+// CI workflows set PLAYWRIGHT_BROWSERS to run specific engines per OS
+// (e.g. "chromium,firefox" on Linux, "webkit" on macOS).
+const browsers: Browser[] = process.env.PLAYWRIGHT_BROWSERS
+  ? allBrowsers.filter((b) => process.env.PLAYWRIGHT_BROWSERS!.split(",").includes(b.engine))
+  : allBrowsers
 
 /**
  * Remove or adjust device options that are not supported by a given browser engine.

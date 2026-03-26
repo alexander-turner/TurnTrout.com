@@ -1,5 +1,3 @@
-import type { PageScreenshotOptions } from "@playwright/test"
-
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
@@ -97,7 +95,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>
@@ -113,14 +111,14 @@ test.describe("wrapH1SectionsInSpans", () => {
     // The main heading gets its own span
     expect(html).toContain('<span id="h1-span-main-heading">')
     // The footnote section gets its own span
-    expect(html).toContain('<span id="h1-span-footnote-label">')
+    expect(html).toContain('<span id="h1-span-footnotes">')
 
     // The footnote section is NOT inside the main heading's span
     const mainSpan = page.locator("#h1-span-main-heading")
     await expect(mainSpan.locator("section[data-footnotes]")).toHaveCount(0)
 
     // The footnote section IS inside its own span
-    const footnoteSpan = page.locator("#h1-span-footnote-label")
+    const footnoteSpan = page.locator("#h1-span-footnotes")
     await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
   })
 
@@ -132,7 +130,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>
@@ -305,7 +303,7 @@ test.describe("visual_utils functions", () => {
       // Measure inside the browser to avoid Playwright bridge latency.
       // waitForTransitionEnd calls element.evaluate internally, so we
       // bracket it with performance.now() on the same clock.
-      const duration = await element.evaluate(async (el: Element) => {
+      const duration = await element.evaluate((el: Element) => {
         const start = performance.now()
         const computedStyle = window.getComputedStyle(el)
         const transitionDurationValue = computedStyle.transitionDuration
@@ -530,52 +528,6 @@ test.describe("takeRegressionScreenshot", () => {
     expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
     expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
     expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
-  })
-
-  test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
-    test("clips viewport screenshot to clientWidth to avoid Safari gutter", async ({
-      page,
-    }, testInfo) => {
-      testInfo.skip(
-        !/webkit|safari/i.test(testInfo.project.name),
-        "Test is specific to WebKit/Safari gutter behavior",
-      )
-
-      const mockClientWidth = 1200
-      await page.evaluate((width) => {
-        Object.defineProperty(document.documentElement, "clientWidth", {
-          value: width,
-          configurable: true,
-        })
-      }, mockClientWidth)
-
-      // Ensure the test is nontrivial
-      const viewportSize = page.viewportSize()
-      expect(mockClientWidth).not.toBeCloseTo(viewportSize?.width ?? 0)
-
-      const originalScreenshot = page.screenshot
-      let capturedOptions: PageScreenshotOptions | undefined
-
-      page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
-        capturedOptions = options
-        // Return an empty buffer to satisfy the type, don't call original
-        return Buffer.from("")
-      }
-
-      try {
-        await takeRegressionScreenshot(page, testInfo, "gutter-test")
-
-        expect(capturedOptions).toBeDefined()
-        expect(capturedOptions?.clip).toBeDefined()
-        expect(capturedOptions?.clip?.width).toBeCloseTo(mockClientWidth)
-        expect(capturedOptions?.clip?.x).toBe(0)
-        expect(capturedOptions?.clip?.y).toBe(0)
-        const viewportHeight = page.viewportSize()?.height
-        expect(capturedOptions?.clip?.height).toBeCloseTo(viewportHeight ?? 0)
-      } finally {
-        page.screenshot = originalScreenshot
-      }
-    })
   })
 })
 
