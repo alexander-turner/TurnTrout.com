@@ -270,14 +270,17 @@ describe("PopulateContainers", () => {
       await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow("ENOENT")
     })
 
-    it("should throw when required static image is missing", async () => {
+    it("should throw when a local image reference points to a missing file", async () => {
+      jest
+        .spyOn(fs, "readFileSync")
+        .mockReturnValue('<html><body><img src="/static/images/missing.avif" /></body></html>')
       jest.spyOn(fs, "existsSync").mockImplementation((path: unknown) => {
-        return !String(path).includes("new_site.avif")
+        return !String(path).includes("missing.avif")
       })
 
       const emitter = PopulateContainersEmitter()
       await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow(
-        "Required static image missing",
+        "Local image not found: /static/images/missing.avif",
       )
     })
 
@@ -1085,6 +1088,36 @@ describe("PopulateContainers", () => {
         const stats = await populateModule.computeRepoStats()
 
         expect(stats).toEqual(MOCK_STATS)
+      })
+    })
+
+    describe("verifyLocalImages", () => {
+      it.each([
+        ["skips external src", '<img src="https://cdn.example.com/pic.avif" />'],
+        ["skips data URI src", '<img src="data:image/png;base64,abc" />'],
+        ["skips images with no src", "<img />"],
+      ])("%s", (_label, html) => {
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        jest.spyOn(fs, "existsSync").mockReturnValue(false)
+        expect(() =>
+          populateModule.verifyLocalImages("/mock/file.html", "/mock/output"),
+        ).not.toThrow()
+      })
+
+      it("throws when a local image is missing", () => {
+        jest.spyOn(fs, "readFileSync").mockReturnValue('<img src="/static/images/missing.avif" />')
+        jest.spyOn(fs, "existsSync").mockReturnValue(false)
+        expect(() => populateModule.verifyLocalImages("/mock/file.html", "/mock/output")).toThrow(
+          "Local image not found: /static/images/missing.avif",
+        )
+      })
+
+      it("passes when a local image exists", () => {
+        jest.spyOn(fs, "readFileSync").mockReturnValue('<img src="/static/images/exists.avif" />')
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        expect(() =>
+          populateModule.verifyLocalImages("/mock/file.html", "/mock/output"),
+        ).not.toThrow()
       })
     })
 

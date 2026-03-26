@@ -12,7 +12,7 @@ import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../componen
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
-import { joinSegments, QUARTZ, type FilePath } from "../../util/path"
+import { joinSegments, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
@@ -35,8 +35,27 @@ const {
 
 const logger = createWinstonLogger("populateContainers")
 
-/** Static images that must exist in quartz/static/ for the build to succeed. */
-export const REQUIRED_STATIC_IMAGES = ["images/new_site.avif"] as const
+/**
+ * Scans an HTML file for `<img>` elements with local `src` paths (starting with `/`)
+ * and verifies each referenced file exists in the output directory.
+ */
+export function verifyLocalImages(htmlPath: string, outputDir: string): void {
+  const html = fs.readFileSync(htmlPath, "utf-8")
+  const root = fromHtml(html, { fragment: true })
+
+  visit(root, "element", (node) => {
+    if (node.tagName !== "img") return
+    const src = node.properties?.src
+    if (typeof src !== "string" || !src.startsWith("/")) return
+
+    const filePath = joinSegments(outputDir, src)
+    if (!fs.existsSync(filePath)) {
+      throw new Error(
+        `Local image not found: ${src} (expected at ${filePath}, referenced in ${htmlPath})`,
+      )
+    }
+  })
+}
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
@@ -514,14 +533,6 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       return []
     },
     async emit(ctx) {
-      // Verify required static images exist
-      for (const image of REQUIRED_STATIC_IMAGES) {
-        const imagePath = joinSegments(QUARTZ, "static", image)
-        if (!fs.existsSync(imagePath)) {
-          throw new Error(`Required static image missing: ${imagePath}`)
-        }
-      }
-
       const stats = await computeRepoStats()
       const populatorMap = createPopulatorMap(stats)
 
@@ -571,6 +582,13 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       }
 
       logger.info(`Populated ${modifiedFiles.length} HTML files`)
+
+      // Verify all local image references in built HTML files resolve to real files
+      for (const htmlFile of htmlFiles) {
+        const htmlPath = joinSegments(ctx.argv.output, htmlFile as FilePath)
+        verifyLocalImages(htmlPath, ctx.argv.output)
+      }
+
       return modifiedFiles
     },
   }
