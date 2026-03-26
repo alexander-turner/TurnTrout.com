@@ -270,6 +270,17 @@ describe("PopulateContainers", () => {
       await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow("ENOENT")
     })
 
+    it("should throw when required static image is missing", async () => {
+      jest.spyOn(fs, "existsSync").mockImplementation((path: unknown) => {
+        return !String(path).includes("new_site.avif")
+      })
+
+      const emitter = PopulateContainersEmitter()
+      await expect(emitter.emit(mockCtx, [], mockStaticResources)).rejects.toThrow(
+        "Required static image missing",
+      )
+    })
+
     it("should replace existing container children", async () => {
       setFaviconCounts([["/static/images/external-favicons/example_com", minFaviconCount + 1]])
       jest

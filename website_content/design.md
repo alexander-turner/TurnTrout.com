@@ -36,8 +36,8 @@ When I decided to design my own website, I had no experience with web developmen
 ![A basic rendition of the article "Think carefully before calling RL policies 'agents'". The website looks bare and amateurish.](https://assets.turntrout.com/static/images/posts/original_site.avif)
 Figure: The beginning of my journey, rendered under my third commit ([`6e687609`](https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e)) on April 1, 2024.
 
-![A pleasing rendition of the article "Think carefully before calling RL policies 'agents'".](https://assets.turntrout.com/static/images/posts/new_site.avif)
-Figure: Content rendered approximately when this article was first published ([`31bba104`](https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c)).
+![A pleasing rendition of the article "Think carefully before calling RL policies 'agents'".](/static/images/new_site.avif)
+Figure: Content rendered under commit [`2531d435`](https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3) on March 26, 2026.
 
 > [!warning] My stance on AI-written content
 > For text meant to be in my voice, I always review and edit AI generations I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).

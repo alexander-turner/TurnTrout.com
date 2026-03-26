@@ -12,7 +12,7 @@ import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../componen
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
-import { joinSegments, type FilePath } from "../../util/path"
+import { joinSegments, QUARTZ, type FilePath } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
@@ -34,6 +34,9 @@ const {
 } = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
+
+/** Static images that must exist in quartz/static/ for the build to succeed. */
+export const REQUIRED_STATIC_IMAGES = ["images/new_site.avif"] as const
 
 /**
  * Finds an element in the HAST tree by its ID attribute.
@@ -511,6 +514,14 @@ export const PopulateContainers: QuartzEmitterPlugin = () => {
       return []
     },
     async emit(ctx) {
+      // Verify required static images exist
+      for (const image of REQUIRED_STATIC_IMAGES) {
+        const imagePath = joinSegments(QUARTZ, "static", image)
+        if (!fs.existsSync(imagePath)) {
+          throw new Error(`Required static image missing: ${imagePath}`)
+        }
+      }
+
       const stats = await computeRepoStats()
       const populatorMap = createPopulatorMap(stats)
 
