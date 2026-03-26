@@ -178,7 +178,10 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   }
                 }
 
-                if (!isAbsoluteUrl(node.properties.src)) {
+                if (
+                  !isAbsoluteUrl(node.properties.src) &&
+                  !(node.properties.src as string).startsWith("/static/")
+                ) {
                   let dest = node.properties.src as RelativeURL
                   dest = node.properties.src = transformLink(
                     file.data.slug as FullSlug,
