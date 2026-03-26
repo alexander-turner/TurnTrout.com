@@ -455,8 +455,8 @@ Figure: This image should be transparent in light mode and have a light backgrou
 
 <figure>
 <img-comparison-slider>
-  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies agents'. The website looks bare and amateurish."/>
-  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies agents'."/>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
 </img-comparison-slider>
 <figcaption>Drag to compare: before vs. after site redesign.</figcaption>
 </figure>
