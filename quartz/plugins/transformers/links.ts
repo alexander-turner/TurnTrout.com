@@ -1,6 +1,15 @@
 import type { Root } from "hast"
 
 import isAbsoluteUrl from "is-absolute-url"
+
+/**
+ * Whether a URL is a relative content path that should be rewritten by
+ * `transformLink`. Returns false for scheme-based URLs (`https:`, `data:`),
+ * protocol-relative URLs (`//`), root-relative paths (`/`), and anchors (`#`).
+ */
+export function isRelativeContentUrl(url: string): boolean {
+  return !isAbsoluteUrl(url) && !url.startsWith("/") && !url.startsWith("#")
+}
 import path from "path"
 import { visit } from "unist-util-visit"
 
@@ -121,8 +130,8 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   node.properties.rel = EXTERNAL_LINK_REL
                 }
 
-                // don't process external links or intra-document anchors
-                const isInternal = !(isAbsoluteUrl(dest) || dest.startsWith("#") || isExternal)
+                // don't process external links, anchors, or root-relative paths
+                const isInternal = isRelativeContentUrl(dest) && !isExternal
 
                 if (isInternal) {
                   dest = node.properties.href = transformLink(
@@ -178,10 +187,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   }
                 }
 
-                if (
-                  !isAbsoluteUrl(node.properties.src) &&
-                  !(node.properties.src as string).startsWith("/")
-                ) {
+                if (isRelativeContentUrl(node.properties.src as string)) {
                   let dest = node.properties.src as RelativeURL
                   dest = node.properties.src = transformLink(
                     file.data.slug as FullSlug,
