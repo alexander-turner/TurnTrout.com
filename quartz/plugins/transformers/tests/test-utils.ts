@@ -21,8 +21,12 @@ export function mockFetchResolve(
   statusText?: string,
   cancellableBody = false,
 ): void {
-  const body = data instanceof Buffer ? new Blob([data]) : data
-  const response = new Response(body, { status, headers, statusText: statusText ?? "" })
+  const body = data instanceof Buffer ? new Blob([data as unknown as BlobPart]) : data
+  const response = new Response(body as BodyInit | null, {
+    status,
+    headers,
+    statusText: statusText ?? "",
+  })
 
   if (cancellableBody) {
     const originalBody = response.body
