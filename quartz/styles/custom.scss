@@ -987,9 +987,11 @@ img-comparison-slider {
   visibility: hidden;
 
   // Prevent CLS: reserve space using first image before JS loads
-  > img:first-child {
+  > img {
     width: 100%;
     height: auto;
+    margin: 0;
+    border-radius: 0;
   }
 
   &.rendered {
