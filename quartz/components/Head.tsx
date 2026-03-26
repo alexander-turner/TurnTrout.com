@@ -199,7 +199,7 @@ export default (() => {
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
         <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
         <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
-        {/* Show Elvish translations and image sliders when JavaScript is disabled */}
+        {/* Show Elvish translations and stack before/after images when JavaScript is disabled */}
         <noscript>
           <style
             // skipcq: JS-0440 - Safe: static CSS string, not user input
