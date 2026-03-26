@@ -983,7 +983,14 @@ figure#goose-terminal {
 
 // img-comparison-slider: hide until the web component renders
 img-comparison-slider {
+  display: block;
   visibility: hidden;
+
+  // Prevent CLS: reserve space using first image before JS loads
+  > img:first-child {
+    width: 100%;
+    height: auto;
+  }
 
   &.rendered {
     visibility: inherit;
@@ -995,5 +1002,18 @@ img-comparison-slider {
 
   &.rendered [slot="second"] {
     display: unset;
+  }
+
+  // Customize handle visibility
+  --divider-width: 2px;
+  --divider-color: var(--darkgray);
+  --divider-shadow: 0 0 4px rgb(0 0 0 / 50%);
+  --default-handle-color: var(--darkgray);
+  --default-handle-width: 56px;
+  --default-handle-shadow: 0 0 4px rgb(0 0 0 / 50%);
+
+  // Remove blue focus outline
+  &:focus {
+    outline: none;
   }
 }
