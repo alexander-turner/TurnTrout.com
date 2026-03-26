@@ -985,8 +985,9 @@ figure#goose-terminal {
 img-comparison-slider {
   display: block;
   visibility: hidden;
+  margin: calc(2 * $base-margin) 0;
 
-  // Prevent CLS: reserve space using first image before JS loads
+  // Reset inherited img styles on images inside the slider
   > img {
     width: 100%;
     height: auto;
