@@ -139,6 +139,9 @@ importers:
       hastscript:
         specifier: 9.0.1
         version: 9.0.1
+      img-comparison-slider:
+        specifier: ^8.0.7
+        version: 8.0.7
       is-absolute-url:
         specifier: 4.0.1
         version: 4.0.1
@@ -5356,6 +5359,9 @@ packages:
   imageinfo@1.0.4:
     resolution: {integrity: sha512-BJml4q/QCO2187F4UcO/b6hTYIhbq4nnd1XNs65jyCED9em4m6XmeGWDxjewjfJoC7VJABhOdmqb64KA24rLZw==}
     engines: {node: '>=0.4'}
+
+  img-comparison-slider@8.0.7:
+    resolution: {integrity: sha512-BALViPtL2FgcCa9K8KkrmhWuyeDkVu6XVwBoRm9pU8Y6P1rjw31zujuEMBWTz2w6W30zzdQZNTccvg7J9Gf/LQ==}
 
   immutable@5.1.5:
     resolution: {integrity: sha512-t7xcm2siw+hlUM68I+UEOK+z84RzmN59as9DZ7P1l0994DKUWV7UXBMQZVxaoMSRQ+PBZbHCOoBt7a2wxOMt+A==}
@@ -15533,6 +15539,8 @@ snapshots:
   image-size@2.0.2: {}
 
   imageinfo@1.0.4: {}
+
+  img-comparison-slider@8.0.7: {}
 
   immutable@5.1.5: {}
 
