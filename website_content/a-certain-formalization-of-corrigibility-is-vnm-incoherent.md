@@ -61,7 +61,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 Surprisingly, I wasn't able to find any formal analysis of this situation. I did the analysis, and it turned out to be straightforward and fruitful.
 
-To analyze the situation, I consider [corrigibility to be an agent's willingness to let us modify its policy, without being incentivized to manipulate us.](/non-obstruction-motivates-corrigibility#Nomenclature)
+To analyze the situation, I consider [corrigibility to be an agent's willingness to let us modify its policy, without being incentivized to manipulate us.](/non-obstruction-motivates-corrigibility#nomenclature)
 
 # The convergent instrumentality of avoiding correction & manipulating humans
 
