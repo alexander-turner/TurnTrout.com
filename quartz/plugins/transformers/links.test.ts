@@ -82,38 +82,25 @@ describe("CrawlLinks anchor processing", () => {
     expect(result.html).toContain("same-page-link")
   })
 
-  it("prepends https:// to bare external domains", async () => {
-    const result = await processHtml('<a href="example.com">Example</a>')
-    expect(result.html).toContain('href="https://example.com"')
+  it.each([
+    ["bare domain", "example.com", 'href="https://example.com"'],
+    ["mailto", "mailto:test@example.com", 'href="mailto:test@example.com"'],
+    ["https", "https://example.com", 'href="https://example.com"'],
+  ])("normalizes %s href correctly", async (_desc, href, expected) => {
+    const result = await processHtml(`<a href="${href}">Link</a>`)
+    expect(result.html).toContain(expected)
   })
 
-  it("does not modify mailto links", async () => {
-    const result = await processHtml('<a href="mailto:test@example.com">Email</a>')
-    expect(result.html).toContain('href="mailto:test@example.com"')
-  })
+  it("sets target=_blank and rel on external links, respects openLinksInNewTab", async () => {
+    const withNewTab = await processHtml('<a href="https://example.com">Example</a>')
+    expect(withNewTab.html).toContain('target="_blank"')
+    expect(withNewTab.html).toContain(`rel="${EXTERNAL_LINK_REL}"`)
 
-  it("does not modify links that already have https", async () => {
-    const result = await processHtml('<a href="https://example.com">Example</a>')
-    expect(result.html).toContain('href="https://example.com"')
-  })
-
-  it("sets target=_blank for external links when openLinksInNewTab is true", async () => {
-    const result = await processHtml('<a href="https://example.com">Example</a>', {
-      openLinksInNewTab: true,
-    })
-    expect(result.html).toContain('target="_blank"')
-  })
-
-  it("does not set target=_blank when openLinksInNewTab is false", async () => {
-    const result = await processHtml('<a href="https://example.com">Example</a>', {
+    const withoutNewTab = await processHtml('<a href="https://example.com">Example</a>', {
       openLinksInNewTab: false,
     })
-    expect(result.html).not.toContain("target=")
-  })
-
-  it("sets rel attribute on external links", async () => {
-    const result = await processHtml('<a href="https://example.com">Example</a>')
-    expect(result.html).toContain(`rel="${EXTERNAL_LINK_REL}"`)
+    expect(withoutNewTab.html).not.toContain("target=")
+    expect(withoutNewTab.html).toContain(`rel="${EXTERNAL_LINK_REL}"`)
   })
 
   it("does not set rel on internal links", async () => {
@@ -141,13 +128,11 @@ describe("CrawlLinks anchor processing", () => {
     expect(result.links.length).toBeGreaterThan(0)
   })
 
-  it("does not track external links as outgoing", async () => {
-    const result = await processHtml('<a href="https://example.com">Example</a>')
-    expect(result.links).toEqual([])
-  })
-
-  it("does not track anchor-only links as outgoing", async () => {
-    const result = await processHtml('<a href="#section">Section</a>')
+  it.each([
+    ["external", '<a href="https://example.com">Example</a>'],
+    ["anchor-only", '<a href="#section">Section</a>'],
+  ])("does not track %s links as outgoing", async (_desc, html) => {
+    const result = await processHtml(html)
     expect(result.links).toEqual([])
   })
 
@@ -181,23 +166,14 @@ describe("CrawlLinks anchor processing", () => {
 })
 
 describe("CrawlLinks media processing", () => {
-  it("marks first image as eager with high fetchpriority", async () => {
-    const result = await processHtml('<img src="https://example.com/img.avif" alt="test">')
-    expect(result.html).toContain('loading="eager"')
-    expect(result.html).toContain('fetchpriority="high"')
-  })
-
-  it("stores first image URL in file data", async () => {
-    const result = await processHtml('<img src="https://example.com/img.avif" alt="test">')
-    expect(result.firstImageUrl).toBe("https://example.com/img.avif")
-  })
-
-  it("marks second image as lazy", async () => {
+  it("marks first image as eager LCP candidate, second as lazy", async () => {
     const result = await processHtml(
       '<img src="https://example.com/1.avif" alt="first"><img src="https://example.com/2.avif" alt="second">',
     )
     expect(result.html).toContain('loading="eager"')
+    expect(result.html).toContain('fetchpriority="high"')
     expect(result.html).toContain('loading="lazy"')
+    expect(result.firstImageUrl).toBe("https://example.com/1.avif")
   })
 
   it.each(["video", "audio", "iframe"])("marks <%s> as lazy-loaded", async (tag) => {
