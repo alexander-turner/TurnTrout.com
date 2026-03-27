@@ -55,21 +55,21 @@ test.describe("wrapH1SectionsInSpans", () => {
     await page.setContent("<html><body><p>No H1s here</p></body></html>")
     await wrapH1SectionsInSpans(page)
 
-    const spans = await page.locator("span[id^='h1-span-']").count()
-    expect(spans).toBe(0)
+    const spans = page.locator("span[id^='h1-span-']")
+    await expect(spans).toHaveCount(0)
   })
 
   test("is idempotent and does not re-wrap already wrapped sections", async ({ page }) => {
     // First call
     await wrapH1SectionsInSpans(page)
-    const initialSpans = await page.locator("span[id^='h1-span-']").all()
-    expect(initialSpans.length).toBe(4)
+    const initialSpans = page.locator("span[id^='h1-span-']")
+    await expect(initialSpans).toHaveCount(4)
     const initialHtml = await page.innerHTML("body")
 
     // Second call
     await wrapH1SectionsInSpans(page)
-    const finalSpans = await page.locator("span[id^='h1-span-']").all()
-    expect(finalSpans.length).toBe(4)
+    const finalSpans = page.locator("span[id^='h1-span-']")
+    await expect(finalSpans).toHaveCount(4)
     const finalHtml = await page.innerHTML("body")
 
     // The DOM should not have changed
@@ -80,8 +80,8 @@ test.describe("wrapH1SectionsInSpans", () => {
     const contentLocator = page.locator("#content")
     await wrapH1SectionsInSpans(contentLocator)
 
-    const spans = await contentLocator.locator("span[id^='h1-span-']").all()
-    expect(spans.length).toBe(4)
+    const spans = contentLocator.locator("span[id^='h1-span-']")
+    await expect(spans).toHaveCount(4)
 
     const section0 = contentLocator.locator("#h1-span-first-h1")
     await expect(section0.locator("h1").first()).toHaveText("First H1")
@@ -147,7 +147,7 @@ test.describe("wrapH1SectionsInSpans", () => {
     const finalHtml = await page.innerHTML("body")
 
     expect(finalHtml).toEqual(initialHtml)
-    expect(await page.locator("span[id^='h1-span-']").count()).toBe(2)
+    await expect(page.locator("span[id^='h1-span-']")).toHaveCount(2)
   })
 })
 
@@ -158,6 +158,7 @@ async function getImageDimensions(buffer: Buffer): Promise<{ width: number; heig
     height: metadata.height ?? 0,
   }
 }
+
 test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 

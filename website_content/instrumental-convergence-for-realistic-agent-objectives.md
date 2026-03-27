@@ -195,7 +195,7 @@ The general result highlights how $\mathfrak{D} := \{ \text{plausible objective 
 >
 > |                                                  Setting | Strength of instrumental convergence                                                                                                  |
 > | -------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------ |
-> |                                          u<sub>AOH</sub> | [Nonexistent](/power-seeking-beyond-MDPs#Instrumental-Convergence-Disappears-For-Utility-Functions-Over-Action-Observation-Histories) |
+> |                                          u<sub>AOH</sub> | [Nonexistent](/power-seeking-beyond-MDPs#instrumental-convergence-disappears-for-utility-functions-over-action-observation-histories) |
 > |                                           u<sub>OH</sub> | [Strong](/power-seeking-beyond-MDPs#formal-justification)                                                                             |
 > | State-based objectives<br/>(e.g. state-based reward in MDPs) | [Moderate](/quantitative-strength-of-instrumental-convergence)                                                                        |
 >

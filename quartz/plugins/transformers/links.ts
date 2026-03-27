@@ -1,6 +1,15 @@
 import type { Root } from "hast"
 
 import isAbsoluteUrl from "is-absolute-url"
+
+/**
+ * Whether a URL should be left as-is (not rewritten by `transformLink`).
+ * True for scheme-based URLs (`https:`, `data:`), anchors (`#`),
+ * and protocol-relative URLs (`//`).
+ */
+export function isNonRewritableUrl(url: string): boolean {
+  return isAbsoluteUrl(url) || url.startsWith("#")
+}
 import path from "path"
 import { visit } from "unist-util-visit"
 
@@ -121,8 +130,8 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   node.properties.rel = EXTERNAL_LINK_REL
                 }
 
-                // don't process external links or intra-document anchors
-                const isInternal = !(isAbsoluteUrl(dest) || dest.startsWith("#") || isExternal)
+                // don't process external links or non-rewritable URLs
+                const isInternal = !isNonRewritableUrl(dest) && !isExternal
 
                 if (isInternal) {
                   dest = node.properties.href = transformLink(
@@ -178,7 +187,8 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   }
                 }
 
-                if (!isAbsoluteUrl(node.properties.src)) {
+                const src = node.properties.src as string
+                if (!isNonRewritableUrl(src) && !src.startsWith("/")) {
                   let dest = node.properties.src as RelativeURL
                   dest = node.properties.src = transformLink(
                     file.data.slug as FullSlug,

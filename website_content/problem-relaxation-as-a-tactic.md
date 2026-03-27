@@ -164,7 +164,7 @@ Just relax.
 [^4]:
     At first, I wasn't excited about AUP – I was new to alignment, and it took a lot of evidence to overcome the prior improbability of my having actually found something to be excited about. It took several weeks before I stopped thinking it likely that my idea was probably secretly and horribly bad.
 
-    However, I kept staring at the strange equation. I kept trying to break it, to find some obvious loophole. I never found it. Looking back over a year later, [AUP does presently have loopholes](/attainable-utility-preservation-scaling-to-superhuman#Appendix-Remaining-Problems), but they're not obvious.
+    However, I kept staring at the strange equation. I kept trying to break it, to find some obvious loophole. I never found it. Looking back over a year later, [AUP does presently have loopholes](/attainable-utility-preservation-scaling-to-superhuman#appendix-remaining-problems), but they're not obvious.
 
     I started to get excited about the idea. Two weeks later, my workday was wrapping up and I left the library.
 
