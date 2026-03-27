@@ -6,7 +6,7 @@ import { unified } from "unified"
 import type { FullSlug } from "../../util/path"
 
 import { EXTERNAL_LINK_REL, CAN_TRIGGER_POPOVER_CLASS } from "../../components/constants"
-import { CrawlLinks, isExternalLink } from "./links"
+import { CrawlLinks, isExternalLink, isNonRewritableUrl } from "./links"
 
 function processHtml(
   html: string,
@@ -62,6 +62,22 @@ describe("isExternalLink", () => {
     ["/", false],
   ])("isExternalLink(%j) returns %s", (href, expected) => {
     expect(isExternalLink(href)).toBe(expected)
+  })
+})
+
+describe("isNonRewritableUrl", () => {
+  it.each([
+    ["https://example.com", true],
+    ["http://example.com", true],
+    ["data:image/png;base64,abc", true],
+    ["//cdn.example.com/img.avif", false],
+    ["#anchor", true],
+    ["./relative", false],
+    ["../parent", false],
+    ["/absolute", false],
+    ["example.com", false],
+  ])("isNonRewritableUrl(%j) returns %s", (url, expected) => {
+    expect(isNonRewritableUrl(url)).toBe(expected)
   })
 })
 

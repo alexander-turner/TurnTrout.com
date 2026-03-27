@@ -137,6 +137,7 @@ test.describe("Unique content around the site", () => {
   // Mock the data to prevent needless updating of the screenshots
   DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
+
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
       await gotoPage(page, url)
       await page.locator("body").waitFor({ state: "visible" })
@@ -743,6 +744,7 @@ test.describe("Video Speed Controller visibility", () => {
     const vscController = page.locator(".vsc-controller")
     await expect(vscController).toBeHidden()
   })
+
   test("hides VSC controller for no-vsc videos", async ({ page }) => {
     await page.evaluate(() => {
       document.body.innerHTML = `

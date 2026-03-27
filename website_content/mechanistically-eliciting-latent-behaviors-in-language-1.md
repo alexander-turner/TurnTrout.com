@@ -895,7 +895,7 @@ Nevertheless, this task provides a natural quantitative metric for measuring the
 
 In principle, it seems likely that some latent behaviors cannot be activated by a single residual stream direction applied to all token positions, but rather that one might need to apply different steering vectors at different token positions. The appropriate vector to apply might be a function of both positional and semantic information. In fact, it's plausible that the information needed to determine the "correct" direction to use is already encoded linearly in the activations of the model. This motivates learning steering vectors which depend linearly on the activations of the model. If we use the MLP hidden layer activations as the basis for determining the steering directions, then mathematically this is simply adding some perturbation to the weight matrix of the MLP output layer.
 
-Thus, it seems natural to try to learn an adapter using the same optimization objective used above to train steering vectors. This yields the "unsupervised steering adapter" method I [defined](/mechanistically-eliciting-latent-behaviors#Unsupervised-Steering-Adapters) earlier.
+Thus, it seems natural to try to learn an adapter using the same optimization objective used above to train steering vectors. This yields the "unsupervised steering adapter" method I [defined](/mechanistically-eliciting-latent-behaviors#unsupervised-steering-adapters) earlier.
 
 Similarly to unsupervised steering vectors, I've found that for unsupervised steering adapters there is often a Goldilocks value of $R$ which leads to interesting and interpretable adapters.
 

@@ -52,7 +52,14 @@ jobs:
 
       - name: Setup Build Environment
         if: steps.cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/setup-build-env
+        uses: ./.github/actions/setup-site
+        with:
+          install-sharp: "true"
+          install-browsers: "true"
+          install-ffmpeg: "true"
+          install-system-deps: "true"
+          cache-playwright: "true"
+          cache-puppeteer: "true"
 
       - name: Remove Safari autoplay script
         if: inputs.remove-safari-autoplay && steps.cache.outputs.cache-hit != 'true'

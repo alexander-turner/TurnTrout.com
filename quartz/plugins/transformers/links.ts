@@ -38,14 +38,22 @@ const defaultOptions: Options = {
 const HEADER_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 const MEDIA_TAGS = new Set(["img", "video", "audio", "iframe"])
 
+/**
+ * Whether a URL should be left as-is (not rewritten by `transformLink`).
+ * True for scheme-based URLs (`https:`, `data:`) and anchors (`#`).
+ */
+export function isNonRewritableUrl(url: string): boolean {
+  return isAbsoluteUrl(url) || url.startsWith("#")
+}
+
 /** A link is external if it doesn't start with #, ., or / */
 export function isExternalLink(href: string): boolean {
   return !/^[#./]/.test(href)
 }
 
-/** Whether a link points to a resolvable internal page (not external, not an anchor, not absolute URL) */
+/** Whether a link points to a resolvable internal page (not external, not non-rewritable) */
 function isResolvableInternalLink(href: string, isExternal: boolean): boolean {
-  return !isExternal && !isAbsoluteUrl(href) && !href.startsWith("#")
+  return !isExternal && !isNonRewritableUrl(href)
 }
 
 /** Resolve an internal link's destination and track it as an outgoing link. */
@@ -170,7 +178,8 @@ function processMedia(
     }
   }
 
-  if (!isAbsoluteUrl(node.properties.src)) {
+  const src = node.properties.src as string
+  if (!isNonRewritableUrl(src) && !src.startsWith("/")) {
     node.properties.src = transformLink(
       file.data.slug as FullSlug,
       node.properties.src as RelativeURL,
