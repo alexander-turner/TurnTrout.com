@@ -59,6 +59,7 @@ function resolveInternalLink(
 ): RelativeURL {
   dest = node.properties.href = transformLink(file.data.slug as FullSlug, dest, transformOptions)
 
+  // Dummy hostname required by WHATWG URL constructor; only the pathname is used
   const url = new URL(dest, `https://base.com/${stripSlashes(curSlug, true)}`)
   let canonicalPath = splitAnchor(url.pathname)[0]
   if (canonicalPath.endsWith("/")) {
