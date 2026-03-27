@@ -74,6 +74,13 @@ function resolveInternalLink(
   return dest
 }
 
+/**
+ * Classify and rewrite an `<a>` element:
+ *  1. Tag it as "external" or "internal" (+ popover class for non-header internals).
+ *  2. Normalize bare external domains to https:// and set target/rel attributes.
+ *  3. Resolve internal links via `transformLink` and record them as outgoing.
+ *  4. Apply prettyLinks (strip folder prefix from display text).
+ */
 function processAnchor(
   node: Element,
   parent: Element | null,
@@ -96,6 +103,7 @@ function processAnchor(
   if (isExternal) {
     classes.push("external")
 
+    // Ensure bare domains like "example.com" get a protocol
     if (!dest.startsWith("http") && !dest.startsWith("mailto:")) {
       dest = `https://${dest}` as RelativeURL
       node.properties.href = dest
@@ -107,6 +115,7 @@ function processAnchor(
   } else {
     classes.push("internal")
 
+    // Header links (e.g. clickable section titles) shouldn't trigger popovers
     const isLinkInsideHeader = parent?.type === "element" && HEADER_TAGS.has(parent.tagName)
     if (!isLinkInsideHeader) {
       classes.push(CAN_TRIGGER_POPOVER_CLASS)
@@ -115,6 +124,7 @@ function processAnchor(
 
   node.properties.className = classes
 
+  // "Resolvable internal" excludes anchors (#foo) and absolute URLs that happen to be internal
   const isInternal = isResolvableInternalLink(dest, isExternal)
   if (isInternal) {
     dest = resolveInternalLink(dest, node, file, curSlug, transformOptions, outgoing)
