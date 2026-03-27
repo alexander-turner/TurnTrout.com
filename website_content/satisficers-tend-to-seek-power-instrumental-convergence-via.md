@@ -82,7 +82,7 @@ Lastly: The unholy grail of "instrumental convergence for policies trained via r
 
 To understand a range of retargetable procedures, let's first orient towards the picture I've painted of power-seeking thus far. In short:
 
-> Since power-seeking tends to lead to larger sets of possible outcomes—staying alive lets you do more than dying—the agent must seek power to reach most outcomes. The power-seeking theorems say that [for the vast, vast, vast majority](/quantitative-strength-of-instrumental-convergence) [of](/power-seeking-beyond-MDPs#instrumental-convergence-can-get-really-really-strong) variants of every utility function over outcomes, the max of a larger[^sim] set of possible outcomes is greater than the max of a smaller set of possible outcomes. Thus, optimal agents will tend to seek power.
+> Since power-seeking tends to lead to larger sets of possible outcomes—staying alive lets you do more than dying—the agent must seek power to reach most outcomes. The power-seeking theorems say that [for the vast, vast, vast majority](/quantitative-strength-of-instrumental-convergence) [of](/power-seeking-beyond-MDPs#Instrumental-convergence-can-get-really-really-strong) variants of every utility function over outcomes, the max of a larger[^sim] set of possible outcomes is greater than the max of a smaller set of possible outcomes. Thus, optimal agents will tend to seek power.
 
 I want to step back. What I call "the power-seeking theorems", they aren't really about optimal choice. They're about two facts.
 
@@ -190,7 +190,7 @@ If (1) and (2) hold for a function, then that function will obey the orbit tende
 That's not all. If the agent makes decisions _only based on the expected utility of different plans_,[^eu] then the power-seeking theorems apply. And I'm not just talking about EU maximizers. I'm talking about _any_ function which only depends on expected utility: EU minimizers, agents which choose plans if and only if their EU is equal to 1, agents which grade plans based on how close their EU is to some threshold value. _No_ clever EU-based scheme avoids orbit-level power-seeking incentives.
 
 > [!warning] EU-based decision-making tends to seek power
-> Suppose $n$ is large, and that most outcomes in $B$ are bad, and that the agent makes decisions according to expected utility. Then alignment is hard because for every way things could go right, there are at least $n$ ways things could go wrong! And $n$ can be **huge**. In a [previous toy example](/power-seeking-beyond-MDPs#beyond-survival-seeking), $n$ equaled $10^{182}$\.
+> Suppose $n$ is large, and that most outcomes in $B$ are bad, and that the agent makes decisions according to expected utility. Then alignment is hard because for every way things could go right, there are at least $n$ ways things could go wrong! And $n$ can be **huge**. In a [previous toy example](/power-seeking-beyond-MDPs#Beyond-survival-seeking), $n$ equaled $10^{182}$\.
 
 It doesn't matter if the decision-making procedure $f$ is rational, or anti-rational, or Boltzmann-rational, or satisficing, or randomly choosing outcomes, or only choosing outcome lotteries with expected utility equal to 1: There are more ways to choose elements of $B$ than there are ways to choose elements of $A$.
 
@@ -345,7 +345,7 @@ Since these theorems are crisply stated, I want to more closely inspect the ways
 
 # Appendix: Tracking key limitations of the power-seeking theorems
 
-From [last time](/power-seeking-beyond-MDPs#appendix-tracking-key-limitations-of-the-power-seeking-theorems):
+From [last time](/power-seeking-beyond-MDPs#Appendix-Tracking-key-limitations-of-the-power-seeking-theorems):
 
 > [!quote]
 >

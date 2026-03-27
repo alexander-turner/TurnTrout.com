@@ -57,7 +57,7 @@ Here are some quotes with which I disagree, considering the points I made in [In
 > “Humans don't explicitly pursue inclusive genetic fitness; outer optimization even on a very exact, very simple loss function doesn't produce inner optimization in that direction. This happens _in practice in real life,_ **it is what happened in** _**the only case we know about**_, and it seems to me that there are deep theoretical reasons to expect it to happen again”
 <!-- vale on -->
 
-(Evolution) → (human values) _is not the only case of inner alignment failure which we know about._ I have argued that [human values themselves are inner alignment failures on _the human reward system_](/against-inner-outer-alignment#inner-alignment-seems-anti-natural). This has happened billions of times in slightly different learning setups.
+(Evolution) → (human values) _is not the only case of inner alignment failure which we know about._ I have argued that [human values themselves are inner alignment failures on _the human reward system_](/against-inner-outer-alignment#Inner-alignment-seems-anti-natural). This has happened billions of times in slightly different learning setups.
 
 <hr/>
 
@@ -179,7 +179,7 @@ Because loss functions don't natively represent goals, and because of these empi
 > [!quote] Evan Hubinger
 > [Terms like base objective or inner/outer alignment are still great terms for talking about training stories that are trying to train a model to optimize for some specified objective.](https://www.lesswrong.com/posts/Nq58w4SiZMjHdAPaX/what-exactly-is-gpt-3-s-base-objective?commentId=xQkL8kLoRpsMgvp4T#uj8xjqsPtiHqyRRi4)
 
-Sometimes, inner/outer alignment ideas can be appropriate (e.g. chess). For aligning real-world agents in partially observable environments, I think it’s not that appropriate. (See [this more detailed discussion](/against-inner-outer-alignment#evan-s-definitions) of what I eventually realized Evan meant.)
+Sometimes, inner/outer alignment ideas can be appropriate (e.g. chess). For aligning real-world agents in partially observable environments, I think it’s not that appropriate. (See [this more detailed discussion](/against-inner-outer-alignment#Evan-s-definitions) of what I eventually realized Evan meant.)
 
 ## Paul Christiano
 
@@ -210,7 +210,7 @@ Why do we need new learning algorithms? The point of reward, on a mechanistic ba
 >
 > **Reinforcement learning:** A range of different methods can be used to solve “reinforcement-learning problems,” but they typically involve creating a system that seeks to maximize a reward signal. This has an inherent tendency to produce the wireheading failure mode when the system becomes more intelligent. Reinforcement learning therefore looks unpromising.
 
-Historical reasoning about RL seems quite bad. This excerpt is a prime example. In one fell swoop, in several pages of mistaken exposition, Superintelligence rules out [the single known method](/against-inner-outer-alignment#iii-outer-inner-just-isn-t-how-alignment-works-in-people) for producing human-compatible values. _We should forewarn new alignment researchers of these deep confusions before recommending this book._
+Historical reasoning about RL seems quite bad. This excerpt is a prime example. In one fell swoop, in several pages of mistaken exposition, Superintelligence rules out [the single known method](/against-inner-outer-alignment#III-Outer-inner-just-isn-t-how-alignment-works-in-people) for producing human-compatible values. _We should forewarn new alignment researchers of these deep confusions before recommending this book._
 
 > [!thanks]
 > Thanks to Drake Thomas, ChatGPT, Ulisse Mini, and Peli Grietzer for feedback on this post.

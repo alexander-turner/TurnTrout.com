@@ -247,7 +247,7 @@ That said, I think this pattern is extremely unwise, and [alternative patterns A
 
 # Conclusion
 
-I strongly hope that this essay clarifies my thoughts around grader-optimization and its attendant unwisdom. The design patterns of "care about evaluations of plans" and "optimize a utility function over all possible futures" seem unnatural and lead to [enormous, apparently avoidable difficulties](/dont-design-agents-which-exploit-adversarial-inputs#the-parable-of-evaluation-child). I think there are enormous benefits to be reaped by considering a wider, [more realistic](/humans-provide-alignment-evidence) range of possible minds.
+I strongly hope that this essay clarifies my thoughts around grader-optimization and its attendant unwisdom. The design patterns of "care about evaluations of plans" and "optimize a utility function over all possible futures" seem unnatural and lead to [enormous, apparently avoidable difficulties](/dont-design-agents-which-exploit-adversarial-inputs#The-parable-of-evaluation-child). I think there are enormous benefits to be reaped by considering a wider, [more realistic](/humans-provide-alignment-evidence) range of possible minds.
 
 While this essay detailed how value-child might think, I haven't yet focused on why I think value-child does better, or what the general principles may be. I'll speculate on that in the next essay.
 
@@ -322,7 +322,7 @@ Furthermore, I think that, in systems with multiple optimizers (e.g. shards), so
 
 A rough guess at what this looks like: [A luxury-good-shard proposes a golden-laptop buying plan](https://www.readthesequences.com/Fake-Justification), while emphasizing how this purchase stimulates the economy and so helps people. This plan was optimized to positively activate e.g. the altruism-shard, so as to increase the plan's execution probability. In humans, I think this is more commonly known as _motivated reasoning_.
 
-So, even in value-child, adversarial inputs can still crop up, but via a different mechanism. I think this mechanism should disappear once the agent gets smart enough to e.g. [do an internal values handshake](/a-shot-at-the-diamond-alignment-problem#the-values-handshake). As I [said](https://www.lesswrong.com/posts/jFCK9JRLwkoJX4aJA/don-t-design-agents-which-exploit-adversarial-inputs?commentId=exS9tLiWt5feXMnvz) to Wei Dai:
+So, even in value-child, adversarial inputs can still crop up, but via a different mechanism. I think this mechanism should disappear once the agent gets smart enough to e.g. [do an internal values handshake](/a-shot-at-the-diamond-alignment-problem#The-values-handshake). As I [said](https://www.lesswrong.com/posts/jFCK9JRLwkoJX4aJA/don-t-design-agents-which-exploit-adversarial-inputs?commentId=exS9tLiWt5feXMnvz) to Wei Dai:
 
 > [!quote]
 >

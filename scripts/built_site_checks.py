@@ -335,6 +335,15 @@ def check_invalid_internal_links(soup: BeautifulSoup) -> list[Tag]:
     return invalid_internal_links
 
 
+def _find_by_id_case_insensitive(soup: BeautifulSoup, target_id: str) -> bool:
+    """Check if an element with the given ID exists, case-insensitively."""
+    target_lower = target_id.lower()
+    return (
+        soup.find(id=lambda x: x is not None and x.lower() == target_lower)
+        is not None
+    )
+
+
 def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     """Check for invalid internal anchor links in the HTML."""
     invalid_anchors: list[str] = []
@@ -347,7 +356,7 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
         if href.startswith("#"):
             # Check anchor in current page
             anchor_id = href[1:]
-            if not soup.find(id=anchor_id):
+            if not _find_by_id_case_insensitive(soup, anchor_id):
                 _append_to_list(
                     invalid_anchors,
                     href,
@@ -369,7 +378,7 @@ def check_invalid_anchors(soup: BeautifulSoup, base_dir: Path) -> list[str]:
             if full_path.is_file():
                 with open(full_path, encoding="utf-8") as f:
                     page_soup = BeautifulSoup(f.read(), "html.parser")
-                if not page_soup.find(id=anchor):
+                if not _find_by_id_case_insensitive(page_soup, anchor):
                     _append_to_list(
                         invalid_anchors,
                         href,

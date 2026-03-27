@@ -384,7 +384,14 @@ def test_check_invalid_anchors(sample_soup, temp_site_root):
             {},
             ["Invalid anchor: /missing#anchor"],
         ),
-        # Case 9: Multiple links, some valid, some invalid
+        # Case 9: Case-insensitive anchor match
+        (
+            '<a href="/target.html#Valid-Anchor">Link</a>',
+            '<div id="valid-anchor"></div>',
+            {},
+            [],
+        ),
+        # Case 10: Multiple links, some valid, some invalid
         (
             """
             <a href="/target.html#valid-anchor">Valid 1</a>
