@@ -141,6 +141,15 @@ function processAnchor(
   }
 }
 
+/**
+ * Set loading strategy and resolve src for media elements (img, video, audio, iframe).
+ *
+ * The first `<img>` is marked eager (likely LCP element) and its URL stored
+ * for `<link rel="preload">` in `<head>`. All other media get `loading="lazy"`.
+ * Relative `src` URLs are resolved via `transformLink`.
+ *
+ * @returns Updated `seenFirstContentImage` flag.
+ */
 function processMedia(
   node: Element,
   opts: Options,
