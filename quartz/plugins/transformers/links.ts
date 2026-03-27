@@ -26,7 +26,6 @@ interface Options {
   prettyLinks: boolean
   openLinksInNewTab: boolean
   lazyLoad: boolean
-  externalLinkIcon: boolean
 }
 
 const defaultOptions: Options = {
@@ -34,7 +33,6 @@ const defaultOptions: Options = {
   prettyLinks: true,
   openLinksInNewTab: true,
   lazyLoad: true,
-  externalLinkIcon: false,
 }
 
 const HEADER_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
@@ -48,28 +46,6 @@ export function isExternalLink(href: string): boolean {
 /** Whether a link points to a resolvable internal page (not external, not an anchor, not absolute URL) */
 function isResolvableInternalLink(href: string, isExternal: boolean): boolean {
   return !isExternal && !isAbsoluteUrl(href) && !href.startsWith("#")
-}
-
-function addExternalLinkIcon(node: Element): void {
-  node.children.push({
-    type: "element",
-    tagName: "svg",
-    properties: {
-      class: "external-icon",
-      viewBox: "0 0 512 512",
-      ariaHidden: "true",
-    },
-    children: [
-      {
-        type: "element",
-        tagName: "path",
-        properties: {
-          d: "M320 0H288V64h32 82.7L201.4 265.4 178.7 288 224 333.3l22.6-22.6L448 109.3V192v32h64V192 32 0H480 320zM32 32H0V64 480v32H32 456h32V480 352 320H424v32 96H64V96h96 32V32H160 32z",
-        },
-        children: [],
-      },
-    ],
-  })
 }
 
 /** Resolve an internal link's destination and track it as an outgoing link. */
@@ -122,9 +98,6 @@ function processAnchor(
     if (!dest.startsWith("http") && !dest.startsWith("mailto:")) {
       dest = `https://${dest}` as RelativeURL
       node.properties.href = dest
-    }
-    if (opts.externalLinkIcon) {
-      addExternalLinkIcon(node)
     }
     if (opts.openLinksInNewTab) {
       node.properties.target = "_blank"
