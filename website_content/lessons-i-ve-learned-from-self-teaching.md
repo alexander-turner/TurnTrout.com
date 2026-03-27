@@ -88,13 +88,13 @@ I explicitly noticed this problem in late 2020 and thought:
 
 > is there any way I know of to better retain content?
 >
-> ... gee, what about [that thing I did in college that let me learn how to read 2,136 standard-use Japanese characters in 90 days](/insights-from-euclids-elements#Commemoration)? you know, Anki spaced repetition, that thing I _never tried_ for math because once I tried and failed to memorize dozens of lines of MergeSort pseudocode with it?
+> ... gee, what about [that thing I did in college that let me learn how to read 2,136 standard-use Japanese characters in 90 days](/insights-from-euclids-elements#commemoration)? you know, Anki spaced repetition, that thing I _never tried_ for math because once I tried and failed to memorize dozens of lines of MergeSort pseudocode with it?
 >
 > hm...
 
 This was the moment I started feeling extremely silly (the exact thought was "there's no possible way that my hand is big enough for how facepalm this moment is", IIRC), but also extremely excited. _I could fix my problem!_
 
-And a problem this was. In early 2020, I had an interview where I was asked to compute $\int x \log x\, dx$ . I was stumped, even though this was simple high school calculus (just integrate by parts!). I failed the interview and then went back to learning [algebraic topology](/topology-textbook-review#You-only-lift-once) and [functional analysis](/functional-analysis-textbook-review) and representation theory. You know, nothing difficult like high school calculus.
+And a problem this was. In early 2020, I had an interview where I was asked to compute $\int x \log x\, dx$ . I was stumped, even though this was simple high school calculus (just integrate by parts!). I failed the interview and then went back to learning [algebraic topology](/topology-textbook-review#you-only-lift-once) and [functional analysis](/functional-analysis-textbook-review) and representation theory. You know, nothing difficult like high school calculus.
 
 I was pretty frustrated with myself.
 
