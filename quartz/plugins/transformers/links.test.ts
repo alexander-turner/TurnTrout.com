@@ -31,7 +31,8 @@ function processHtml(
   const ctx = { allSlugs } as Parameters<
     NonNullable<ReturnType<typeof CrawlLinks>["htmlPlugins"]>
   >[0]
-  const htmlPlugins = plugin.htmlPlugins!(ctx)
+  const htmlPlugins = plugin.htmlPlugins?.(ctx)
+  if (!htmlPlugins) throw new Error("CrawlLinks did not return htmlPlugins")
 
   const processor = unified()
     .use(rehypeParse, { fragment: true })
