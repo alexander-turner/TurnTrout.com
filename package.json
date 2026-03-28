@@ -216,7 +216,7 @@
     "@babel/preset-typescript": "7.28.5",
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0",
-    "@eslint/js": "9.21.0",
+    "@eslint/js": "9.39.4",
     "@jest/globals": "29.7.0",
     "@playwright/test": "1.55.1",
     "@testing-library/jest-dom": "6.9.1",
