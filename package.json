@@ -245,7 +245,7 @@
     "baseline-browser-mapping": "^2.10.9",
     "cheerio": "1.2.0",
     "critical": "7.2.1",
-    "domhandler": "5.0.3",
+    "domhandler": "6.0.1",
     "esbuild": "0.27.4",
     "eslint": "9.26.0",
     "eslint-config-prettier": "9.1.2",
