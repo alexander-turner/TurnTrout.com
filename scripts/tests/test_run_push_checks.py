@@ -543,12 +543,44 @@ def test_get_check_steps():
         eslint_step.command
     )
 
-    # Verify asset step uses bash shell
+    # Verify asset step uses bash shell and requires rclone
     # skipcq: PTC-W0063 (step existence already asserted via step_names above)
     asset_step = next(
         s for s in steps if s.name == "Compressing and uploading local assets"
     )
     assert asset_step.shell is True
+    assert asset_step.requires == "rclone"
+
+    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
+    alt_step = next(
+        s for s in steps if s.name == "Scanning for images without alt text"
+    )
+    assert alt_step.requires == "alt-text-llm"
+
+
+def test_run_checks_skips_missing_requires(temp_state_dir, capsys):
+    """Test that steps with missing required tools are skipped with a
+    warning."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="Needs foo", command=["foo"], requires="nonexistent-tool-xyz"
+        ),
+        run_push_checks.CheckStep(name="Always runs", command=["echo", "hi"]),
+    ]
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+
+        # Only the second step should have run
+        assert mock_run.call_count == 1
+
+    captured = capsys.readouterr().out
+    assert "nonexistent-tool-xyz not installed" in captured
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):
