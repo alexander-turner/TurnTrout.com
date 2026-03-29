@@ -194,6 +194,11 @@ uv_install_if_missing ots opentimestamps-client
 
 if [ -f "$PROJECT_DIR/package.json" ]; then
 	# Always run install (git hooks are configured in package.json postinstall)
+	# Skip Puppeteer's Chrome download — sandboxed environments can't reach
+	# storage.googleapis.com, and we use Playwright's browsers instead.
+	# Without this, subfont's nested `pnpm install` fails on puppeteer's
+	# postinstall, aborting the entire install and leaving node_modules incomplete.
+	export PUPPETEER_SKIP_DOWNLOAD=true
 	if command -v pnpm &>/dev/null; then
 		pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
