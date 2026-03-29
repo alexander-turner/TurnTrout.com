@@ -108,6 +108,9 @@ class CheckStep:
     shell: bool = False
     cwd: str | None = None
     interactive: bool = False
+    requires: str | None = None
+    """External tool that must be on PATH; step is skipped with a warning if
+    missing."""
 
 
 class CheckFailedError(Exception):
@@ -145,6 +148,13 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                 console.log(f"[grey]Skipping step: {step.name}[/grey]")
                 if step.name == last_step:
                     should_skip = False
+                continue
+
+            if step.requires and not shutil.which(step.requires):
+                console.print(
+                    f"[yellow]⚠ Skipping {step.name}: "
+                    f"{step.requires} not installed[/yellow]"
+                )
                 continue
 
             name_task = progress.add_task(f"[cyan]{step.name}...", total=None)
@@ -364,7 +374,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
-    steps = [
+    return [
         CheckStep(
             name="Linting Python",
             command=["uv", "run", "ruff", "check", str(git_root_path)],
@@ -407,42 +417,24 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
-    ]
-
-    if shutil.which("rclone"):
         # skipcq: BAN-B604
-        steps.append(
-            CheckStep(
-                name="Compressing and uploading local assets",
-                command=[
-                    "bash",
-                    f"{git_root_path}/scripts/handle_assets.sh",
-                ],
-                # skipcq: BAN-B604 (a local command, assume safe)
-                shell=True,
-            )
-        )
-    else:
-        console.print(
-            "[yellow]⚠ Skipping asset compression/upload: "
-            "rclone not installed[/yellow]"
-        )
-
-    if shutil.which("alt-text-llm"):
-        steps.append(
-            CheckStep(
-                name="Scanning for images without alt text",
-                command=["alt-text-llm", "scan"],
-                shell=True,  # skipcq: BAN-B604
-            )
-        )
-    else:
-        console.print(
-            "[yellow]⚠ Skipping alt-text scan: "
-            "alt-text-llm not installed[/yellow]"
-        )
-
-    return steps
+        CheckStep(
+            name="Compressing and uploading local assets",
+            command=[
+                "bash",
+                f"{git_root_path}/scripts/handle_assets.sh",
+            ],
+            # skipcq: BAN-B604 (a local command, assume safe)
+            shell=True,
+            requires="rclone",
+        ),
+        CheckStep(
+            name="Scanning for images without alt text",
+            command=["alt-text-llm", "scan"],
+            shell=True,  # skipcq: BAN-B604
+            requires="alt-text-llm",
+        ),
+    ]
 
 
 def main() -> int:
