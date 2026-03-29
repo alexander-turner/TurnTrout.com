@@ -38,10 +38,11 @@ original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-29 17:13:24.103427
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
+
 
 
 
