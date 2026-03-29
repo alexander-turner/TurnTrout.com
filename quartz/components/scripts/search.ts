@@ -384,15 +384,7 @@ export class PreviewManager {
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
 
-    // Use offsetTop/offsetParent chain — more reliable than getBoundingClientRect
-    // for elements inside scrollable containers with position: relative
-    let offsetTop = 0
-    let el: HTMLElement | null = firstMatch
-    while (el && el !== this.container) {
-      offsetTop += el.offsetTop
-      el = el.offsetParent as HTMLElement | null
-    }
-    this.container.scrollTop = offsetTop - this.container.clientHeight * 0.5
+    firstMatch.scrollIntoView({ block: "center", behavior: "instant" })
   }
 }
 

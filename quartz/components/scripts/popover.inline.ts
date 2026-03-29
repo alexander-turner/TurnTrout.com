@@ -160,7 +160,8 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   window.addEventListener("resize", updatePosition)
   window.addEventListener("scroll", handleScroll, { passive: true })
 
-  // skipcq: JS-0098 - Force reflow to ensure CSS transition
+  // skipcq: JS-0098 - Force reflow to ensure the browser commits the
+  // initial hidden state before the dropin animation class is added.
   void popoverElement.offsetWidth
 
   popoverElement.classList.add("popover-visible")
