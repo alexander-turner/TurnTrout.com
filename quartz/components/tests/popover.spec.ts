@@ -354,6 +354,7 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   // Use a promise to signal when the fetch has been intercepted, and a
   // second one to control when it resolves (after navigation completes).
 
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise
   let releasePopoverFetch = (): void => {}
   const popoverFetchIntercepted = new Promise<void>((resolve) => {
     const holdFetch = new Promise<void>((release) => {

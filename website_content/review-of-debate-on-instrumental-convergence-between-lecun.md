@@ -43,7 +43,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 
 
-In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#Formalizing-Instrumental-Convergence): proving the existence of instrumental convergence.
+In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#formalizing-instrumental-convergence): proving the existence of instrumental convergence.
 
 Somehow.
 

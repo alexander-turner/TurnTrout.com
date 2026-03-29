@@ -349,8 +349,8 @@ figure,
   }
 
   // IDK why but there can be an empty p between the figure and the next element
-  & + figure,
-  & + p:empty + figure {
+  & + figure:not(.subfigure),
+  & + p:empty + figure:not(.subfigure) {
     margin-top: calc(3 * $base-margin);
   }
 }

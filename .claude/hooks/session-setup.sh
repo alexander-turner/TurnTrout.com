@@ -70,6 +70,39 @@ if is_root; then
 fi
 
 #######################################
+# rclone (needed for R2 asset uploads in pre-push hook)
+#######################################
+
+if ! command -v rclone &>/dev/null; then
+	if is_root; then
+		{ apt-get update -qq && apt-get install -y -qq rclone; } 2>/dev/null ||
+			warn "Failed to install rclone via apt"
+	else
+		curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
+			warn "Failed to install rclone"
+	fi
+fi
+
+# Configure rclone R2 remote from environment variables
+if command -v rclone &>/dev/null && \
+   [ -n "${ACCESS_KEY_ID_TURNTROUT_MEDIA:-}" ] && \
+   [ -n "${SECRET_ACCESS_TURNTROUT_MEDIA:-}" ] && \
+   [ -n "${S3_ENDPOINT_ID_TURNTROUT_MEDIA:-}" ]; then
+	RCLONE_CONFIG_DIR="${HOME}/.config/rclone"
+	mkdir -p "$RCLONE_CONFIG_DIR"
+	cat > "$RCLONE_CONFIG_DIR/rclone.conf" <<RCLONE_EOF
+[r2]
+type = s3
+provider = Cloudflare
+access_key_id = ${ACCESS_KEY_ID_TURNTROUT_MEDIA}
+secret_access_key = ${SECRET_ACCESS_TURNTROUT_MEDIA}
+endpoint = https://${S3_ENDPOINT_ID_TURNTROUT_MEDIA}.r2.cloudflarestorage.com
+no_check_bucket = true
+RCLONE_EOF
+	chmod 600 "$RCLONE_CONFIG_DIR/rclone.conf"
+fi
+
+#######################################
 # Clean up stale state from previous sessions
 #######################################
 

@@ -451,6 +451,16 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 Figure: This image should be transparent in light mode and have a light background in dark mode.
 
+## Before/after image slider
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before vs. after site redesign.</figcaption>
+</figure>
+
 ## Floating image right
 
 <!-- vale off -->
