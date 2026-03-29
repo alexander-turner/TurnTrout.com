@@ -486,7 +486,7 @@ video {
 }
 
 select {
-  padding: calc(0.5 * $base-margin) calc(0.75 * $base-margin) calc(0.5 * $base-margin)
+  padding: calc(0.25 * $base-margin) calc(0.75 * $base-margin) calc(0.25 * $base-margin)
     calc(0.25 * $base-margin);
   border: 1px solid var(--midground-faint);
   border-radius: 5px;
