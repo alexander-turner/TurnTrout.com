@@ -520,10 +520,11 @@ def test_invalid_step(temp_state_dir):
     assert run_push_checks.get_last_step() == "Invalid Step"
 
 
-def test_get_check_steps():
-    """Test that check steps are properly configured."""
+def test_get_check_steps_all_tools_available():
+    """Test that all check steps are included when tools are available."""
     test_root = Path("/test/root")
-    steps = run_push_checks.get_check_steps(test_root)
+    with patch("shutil.which", return_value="/usr/bin/fake"):
+        steps = run_push_checks.get_check_steps(test_root)
 
     assert len(steps) == 6
 
@@ -549,6 +550,23 @@ def test_get_check_steps():
         s for s in steps if s.name == "Compressing and uploading local assets"
     )
     assert asset_step.shell is True
+
+
+def test_get_check_steps_missing_tools(capsys):
+    """Test that steps are skipped with warnings when tools are missing."""
+    test_root = Path("/test/root")
+    with patch("shutil.which", return_value=None):
+        steps = run_push_checks.get_check_steps(test_root)
+
+    assert len(steps) == 4
+    step_names = [s.name for s in steps]
+    assert "Compressing and uploading local assets" not in step_names
+    assert "Scanning for images without alt text" not in step_names
+
+    # Verify warnings were printed
+    captured = capsys.readouterr().out
+    assert "rclone not installed" in captured
+    assert "alt-text-llm not installed" in captured
 
 
 def test_main_resume_with_invalid_step(temp_state_dir):

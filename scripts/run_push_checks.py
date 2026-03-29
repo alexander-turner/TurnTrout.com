@@ -364,7 +364,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
-    return [
+    steps = [
         CheckStep(
             name="Linting Python",
             command=["uv", "run", "ruff", "check", str(git_root_path)],
@@ -407,22 +407,42 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
-        # skipcq: BAN-B604
-        CheckStep(
-            name="Compressing and uploading local assets",
-            command=[
-                "bash",
-                f"{git_root_path}/scripts/handle_assets.sh",
-            ],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-        ),
-        CheckStep(
-            name="Scanning for images without alt text",
-            command=["alt-text-llm", "scan"],
-            shell=True,  # skipcq: BAN-B604
-        ),
     ]
+
+    if shutil.which("rclone"):
+        # skipcq: BAN-B604
+        steps.append(
+            CheckStep(
+                name="Compressing and uploading local assets",
+                command=[
+                    "bash",
+                    f"{git_root_path}/scripts/handle_assets.sh",
+                ],
+                # skipcq: BAN-B604 (a local command, assume safe)
+                shell=True,
+            )
+        )
+    else:
+        console.print(
+            "[yellow]⚠ Skipping asset compression/upload: "
+            "rclone not installed[/yellow]"
+        )
+
+    if shutil.which("alt-text-llm"):
+        steps.append(
+            CheckStep(
+                name="Scanning for images without alt text",
+                command=["alt-text-llm", "scan"],
+                shell=True,  # skipcq: BAN-B604
+            )
+        )
+    else:
+        console.print(
+            "[yellow]⚠ Skipping alt-text scan: "
+            "alt-text-llm not installed[/yellow]"
+        )
+
+    return steps
 
 
 def main() -> int:
