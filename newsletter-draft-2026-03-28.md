@@ -35,6 +35,14 @@ turntrout.com now prints beautifully. Comprehensive print stylesheet that forces
 
 The site swaps to light theme via `beforeprint`/`afterprint` events, tested with Playwright.
 
+Before:
+
+![A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'](https://assets.turntrout.com/static/images/posts/design-03252026-1.avif)
+
+After:
+
+![A clean print preview for the same article, without clutter.](https://assets.turntrout.com/static/images/posts/design-03252026-2.avif)
+
 # Before/after image comparison slider
 
 Interactive image comparison slider using `img-comparison-slider`. Drag to compare before and after — useful for showing site evolution. Includes a `<noscript>` fallback and deferred asset loading. You can see it on [the design page](https://turntrout.com/design).
