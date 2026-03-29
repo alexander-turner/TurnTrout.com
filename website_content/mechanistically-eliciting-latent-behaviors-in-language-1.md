@@ -38,10 +38,11 @@ original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-29 17:13:24.103427
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
+
 
 
 
@@ -895,7 +896,7 @@ Nevertheless, this task provides a natural quantitative metric for measuring the
 
 In principle, it seems likely that some latent behaviors cannot be activated by a single residual stream direction applied to all token positions, but rather that one might need to apply different steering vectors at different token positions. The appropriate vector to apply might be a function of both positional and semantic information. In fact, it's plausible that the information needed to determine the "correct" direction to use is already encoded linearly in the activations of the model. This motivates learning steering vectors which depend linearly on the activations of the model. If we use the MLP hidden layer activations as the basis for determining the steering directions, then mathematically this is simply adding some perturbation to the weight matrix of the MLP output layer.
 
-Thus, it seems natural to try to learn an adapter using the same optimization objective used above to train steering vectors. This yields the "unsupervised steering adapter" method I [defined](/mechanistically-eliciting-latent-behaviors#Unsupervised-Steering-Adapters) earlier.
+Thus, it seems natural to try to learn an adapter using the same optimization objective used above to train steering vectors. This yields the "unsupervised steering adapter" method I [defined](/mechanistically-eliciting-latent-behaviors#unsupervised-steering-adapters) earlier.
 
 Similarly to unsupervised steering vectors, I've found that for unsupervised steering adapters there is often a Goldilocks value of $R$ which leads to interesting and interpretable adapters.
 

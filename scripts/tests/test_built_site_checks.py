@@ -604,6 +604,11 @@ def test_check_local_media_files(sample_soup, temp_site_root):
             [],
         ),
         ('<svg src="icon.svg"></svg>', ["icon.svg (resolved to {})"], []),
+        (
+            '<audio src="clip.mp3"></audio>',
+            ["clip.mp3 (resolved to {})"],
+            [],
+        ),
         ('<img src="existing.png">', [], ["existing.png"]),
     ],
 )
