@@ -160,10 +160,11 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   window.addEventListener("resize", updatePosition)
   window.addEventListener("scroll", handleScroll, { passive: true })
 
-  // Defer adding the visible class until the next frame so the browser
-  // has painted the initial hidden state and the CSS animation triggers
-  // correctly — without forcing a synchronous reflow via offsetWidth.
-  requestAnimationFrame(() => popoverElement.classList.add("popover-visible"))
+  // skipcq: JS-0098 - Force reflow to ensure the browser commits the
+  // initial hidden state before the dropin animation class is added.
+  void popoverElement.offsetWidth
+
+  popoverElement.classList.add("popover-visible")
 
   // Wire up close button for footnote popovers
   const closeBtn = popoverElement.querySelector(".popover-close")
