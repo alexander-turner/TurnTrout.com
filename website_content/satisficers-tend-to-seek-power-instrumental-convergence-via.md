@@ -3,8 +3,7 @@ permalink: satisficers-tend-to-seek-power
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
+lw-page-url: https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
 lw-linkpost-url: https://www.overleaf.com/read/kmjjqwdfhkvy
 lw-is-question: 'false'
 lw-posted-at: 2021-11-18T01:54:33.589000Z
@@ -31,20 +30,18 @@ lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: instrumental-convergence-via-vnm-preferences
-prev-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental
-  Incentives
+prev-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 next-post-slug: instrumental-convergence-for-realistic-agent-objectives
 next-post-title: Instrumental Convergence For Realistic Agent Objectives
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-11-18 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
+original_url: https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
 skip_import: true
-description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making
-  processes, including satisficers. This is a problem for AI alignment.
-date_updated: 2025-11-22 00:21:52.667251
+description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 

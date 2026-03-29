@@ -3,8 +3,7 @@ permalink: quantitative-strength-of-instrumental-convergence
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+lw-page-url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 lw-is-question: 'false'
 lw-posted-at: 2021-07-11T17:36:24.208000Z
 lw-last-modification: 2023-05-16T20:26:01.242000Z
@@ -17,8 +16,7 @@ lw-base-score: 45
 lw-vote-count: 13
 af-base-score: 29
 af-num-comments-on-upload: 1
-title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal
-  Policies
+title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies
 lw-latest-edit: 2023-05-16T20:26:02.342000Z
 lw-is-linkpost: 'false'
 tags:
@@ -37,14 +35,13 @@ next-post-title: Seeking Power is Convergently Instrumental in a Broad Class of 
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-07-11 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+original_url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 skip_import: true
 card_image:
-description: Instrumental convergence strengthens proportional to the ratio of an
-  agent's control if it survives to its control if it dies.
-date_updated: 2025-11-22 00:21:52.667251
+description: Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 

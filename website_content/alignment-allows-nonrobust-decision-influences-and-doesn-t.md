@@ -3,8 +3,7 @@ permalink: alignment-without-total-robustness
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+lw-page-url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 lw-is-question: 'false'
 lw-posted-at: 2022-11-29T06:23:00.394000Z
 lw-last-modification: 2023-02-15T10:24:57.232000Z
@@ -17,8 +16,7 @@ lw-base-score: 60
 lw-vote-count: 17
 af-base-score: 28
 af-num-comments-on-upload: 31
-title: Alignment allows 'non-robust' decision-influences and doesn't require robust
-  grading
+title: Alignment allows 'non-robust' decision-influences and doesn't require robust grading
 lw-latest-edit: 2022-11-30T16:37:57.412000Z
 lw-is-linkpost: 'false'
 tags:
@@ -32,19 +30,17 @@ lw-sequence-title: Shard Theory
 prev-post-slug: dont-align-agents-to-evaluations-of-plans
 prev-post-title: Don’t Align Agents to Evaluations of Plans
 next-post-slug: against-inner-outer-alignment
-next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely
-  Hard Problems
+next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely Hard Problems
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-11-29 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+original_url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 skip_import: true
-description: Values steer optimization, they are not optimized against. Values don't
-  have to be robustly "correct", because they are not the thing being optimized.
-date_updated: 2025-11-22 00:21:52.667251
+description: Values steer optimization, they are not optimized against. Values don't have to be robustly "correct", because they are not the thing being optimized.
+date_updated: 2026-03-29 17:13:24.103427
 createBibtex: true
 ---
+
 
 
 
