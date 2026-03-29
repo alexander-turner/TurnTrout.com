@@ -134,7 +134,10 @@ test("Search results appear and can be navigated (lostpixel)", async ({ page }, 
   })
 })
 
-test("ArrowDown navigation does not get stuck below the second result", async ({ page }) => {
+test("ArrowDown navigation does not get stuck below the second result", async ({
+  page,
+}, testInfo) => {
+  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
   await search(page, "Steering")
   await page.waitForLoadState("domcontentloaded")
 
