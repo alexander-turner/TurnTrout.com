@@ -51,6 +51,10 @@ The site remembers your scroll position per-article in localStorage. Navigate aw
 
 Punctuation marks `() [] {} " ' "" ''` now render upright even inside italic text, following typographic convention (cf. Bringhurst). I created custom font variants of EB Garamond for this.
 
+# Non-breaking spaces
+
+The punctilio library's nbsp transform now runs across the site. It prevents line breaks between initials and surnames, after single-letter words, and in other typographically awkward positions. Supports full Unicode Latin alphabet.
+
 # Safari / WebKit fixes
 
 Fixed a cluster of Safari-specific SPA bugs: video seek, scroll restoration, checkbox state, orphaned popovers, and popover suppression timing. WebKit tests now run on macOS runners instead of Linux WPE, eliminating a whole class of false failures and letting me remove all `test.skip` / `test.slow` WebKit annotations.
