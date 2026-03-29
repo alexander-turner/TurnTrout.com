@@ -51,33 +51,9 @@ The site remembers your scroll position per-article in localStorage. Navigate aw
 
 Punctuation marks `() [] {} " ' "" ''` now render upright even inside italic text, following typographic convention (cf. Bringhurst). I created custom font variants of EB Garamond for this.
 
-# Tengwar font upgrade
-
-Switched the Elvish Tengwar script to the Tengwar Artano font with click-to-translate. In print mode, both the Tengwar and the translation are shown.
-
-# Non-breaking spaces
-
-The punctilio library's nbsp transform now runs across the site. It prevents line breaks between initials and surnames, after single-letter words, and in other typographically awkward positions. Supports full Unicode Latin alphabet.
-
-# Collapsible admonition persistence
-
-Collapsible admonitions now remember their open/closed state in localStorage. Collapse a section, navigate away, come back — it's still collapsed.
-
 # Safari / WebKit fixes
 
-Fixed a cluster of Safari-specific SPA bugs:
-
-- Video seek via play/pause cycle workaround when autoplay is off
-- Scroll restoration using `requestAnimationFrame` re-apply with `loadeddata` fallback
-- Checkbox state restoration polling fallback
-- Popovers no longer orphan after SPA navigation
-- Mouse-movement tracking replaces time-based buffer for popover suppression
-
-WebKit tests now run on macOS runners instead of Linux WPE, eliminating a whole class of false failures and letting me remove all `test.skip` / `test.slow` WebKit annotations.
-
-# Checkbox cascading
-
-Checking a parent checkbox now cascades down to all nested children. State is persisted in localStorage.
+Fixed a cluster of Safari-specific SPA bugs: video seek, scroll restoration, checkbox state, orphaned popovers, and popover suppression timing. WebKit tests now run on macOS runners instead of Linux WPE, eliminating a whole class of false failures and letting me remove all `test.skip` / `test.slow` WebKit annotations.
 
 # CI cost reduction (~74%)
 
@@ -101,29 +77,13 @@ Estimated monthly savings: ~$3,400 → ~$880. I wrote a Python script to compute
 - CI failure notification workflow that comments on PRs when checks fail.
 - Template sync workflow — fixes to [claude-automation-template](https://github.com/alexander-turner/claude-automation-template) propagate downstream automatically.
 
-# Node.js 24 upgrade
-
-Upgraded from Node 22 to 24:
-
-- Native `RegExp.escape()` (V8 13.6) replaces `escape-string-regexp`
-- Native fetch replaces `node-fetch` and `whatwg-fetch` polyfills
-- `jest-fixed-jsdom` replaces `jest-environment-jsdom`
-
 # Other site updates
 
-- **Smart quotes in meta tags.** `<meta description>` now gets smart quote treatment.
-
-- **TOC threshold.** Table of contents only appears on pages with 3+ headings.
+- **Node.js 24 upgrade.** Native `RegExp.escape()` and fetch replace polyfills.
 
 - **Homepage "Start here."** Added a curated entry point section to the landing page.
 
-- **Build-time constants injection.** Magic numbers like dropcap probability are injected into client scripts at build time via esbuild `define`, not shipped as runtime imports.
-
-- **Subfont fork.** Switched to a [custom fork](https://github.com/alexander-turner/subfont) with debug timing for font subsetting.
-
-- **Built-site validation.** New checks for balanced delimiters, missing favicons, invalid CSS class names, LCP image optimization, and post-rendered typos.
-
-- Removed full-project type checks from lint-staged for faster pre-commit hooks.
+- **Built-site validation.** New checks for balanced delimiters, missing favicons, LCP image optimization, and post-rendered typos.
 
 - Updated [Lessons from my 428-day battle against flaky Playwright screenshots](https://turntrout.com/playwright-tips) with macOS runner advice and current best practices.
 
