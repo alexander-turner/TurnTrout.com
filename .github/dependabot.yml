@@ -7,8 +7,9 @@ updates:
       interval: "weekly"
     versioning-strategy: auto
     groups:
-      npm-minor-patch:
+      npm-all:
         update-types:
+          - "major"
           - "minor"
           - "patch"
 
@@ -19,8 +20,9 @@ updates:
       interval: "weekly"
     versioning-strategy: auto
     groups:
-      uv-minor-patch:
+      uv-all:
         update-types:
+          - "major"
           - "minor"
           - "patch"
 
@@ -30,7 +32,8 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      actions-minor-patch:
+      actions-all:
         update-types:
+          - "major"
           - "minor"
           - "patch"
