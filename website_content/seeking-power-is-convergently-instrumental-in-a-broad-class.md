@@ -3,8 +3,7 @@ permalink: power-seeking-beyond-MDPs
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+lw-page-url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 lw-is-question: 'false'
 lw-posted-at: 2021-08-08T02:02:18.975000Z
 lw-last-modification: 2023-05-16T20:31:52.646000Z
@@ -30,21 +29,18 @@ lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: quantitative-strength-of-instrumental-convergence
-prev-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets
-  For Optimal Policies
+prev-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies
 next-post-slug: instrumental-convergence-via-vnm-preferences
-next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental
-  Incentives
+next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-08-08 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
-description: "Power-seeking is instrumentally convergent for agents maximizing over
-  possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -81,7 +77,7 @@ If the agent flips the first bit, it's locked into a single trajectory. None of 
 
 Suppose the agent flips the second bit. This action may be _suboptimal_ for a utility function, but the agent still has lots of choices remaining. In fact, it still can induce $(n×n)^{T-1}$ observation histories. If $n=100$ and $T=50$, then that's $(100×100)^{49} = 10^{196}$ observation histories. Probably at least one of these yields greater utility than the shutdown-history utility.
 
-And indeed, we can apply the [scaling law for instrumental convergence](/quantitative-strength-of-instrumental-convergence) to conclude that for _every u<sub>OH</sub>, at least_ $\frac{10^{196}}{10^{196}+1}$ _of its_ [_permuted variants_](/environmental-structure-can-cause-instrumental-convergence#Orbits-of-goals) _(weakly) prefer flipping the second pixel at_ $t=1$_, over flipping the first pixel at_ $t=1$\.
+And indeed, we can apply the [scaling law for instrumental convergence](/quantitative-strength-of-instrumental-convergence) to conclude that for _every u<sub>OH</sub>, at least_ $\frac{10^{196}}{10^{196}+1}$ _of its_ [_permuted variants_](/environmental-structure-can-cause-instrumental-convergence#orbits-of-goals) _(weakly) prefer flipping the second pixel at_ $t=1$_, over flipping the first pixel at_ $t=1$\.
 
 $$
 \dfrac{10^{196}}{10^{196}+1}.
@@ -180,7 +176,7 @@ Structural assumptions on utility really do matter when it comes to instrumental
 
 |Setting|Strength of instrumental convergence|
 |--:|:--|
-| u<sub>AOH</sub>| [Nonexistent](/power-seeking-beyond-MDPs#Instrumental-Convergence-Disappears-For-Utility-Functions-Over-Action-Observation-Histories)|
+| u<sub>AOH</sub>| [Nonexistent](/power-seeking-beyond-MDPs#instrumental-convergence-disappears-for-utility-functions-over-action-observation-histories)|
 |u<sub>OH</sub>| [Strong](/power-seeking-beyond-MDPs#formal-justification)|
 |State-based objectives<br/>(e.g. state-based reward in MDPs)| [Moderate](/quantitative-strength-of-instrumental-convergence)|
 
@@ -209,7 +205,7 @@ Structural assumptions on utility really do matter when it comes to instrumental
 
 ## Appendix: Tracking key limitations of the power-seeking theorems
 
-Time to cross another item off of [the list from last time](/quantitative-strength-of-instrumental-convergence#Note-of-caution-redux); the theorems:
+Time to cross another item off of [the list from last time](/quantitative-strength-of-instrumental-convergence#note-of-caution-redux); the theorems:
 
 > [!quote]
 >

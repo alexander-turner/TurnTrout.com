@@ -640,6 +640,10 @@ _MEDIA_EXTENSIONS = list(compress.ALLOWED_EXTENSIONS) + [
     ".svg",
     ".avif",
     ".ico",
+    ".mp3",
+    ".ogg",
+    ".wav",
+    ".flac",
 ]
 
 
@@ -678,7 +682,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
         list of asset URLs that are not from allowed sources
     """
     invalid_sources = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = tag.get("src") or tag.get("href")
@@ -700,7 +704,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
 def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     """Verify the existence of local media files (images, videos, SVGs)."""
     missing_files = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = str(tag.get("src") or tag.get("href"))
