@@ -11,9 +11,10 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-03-09 05:20:38.167342
+date_updated: 2026-03-29 17:13:24.103427
 createBibtex: true
 ---
+
 
 
 
@@ -450,6 +451,16 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
 
 Figure: This image should be transparent in light mode and have a light background in dark mode.
+
+## Before/after image slider
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before vs. after site redesign.</figcaption>
+</figure>
 
 ## Floating image right
 

@@ -13,10 +13,11 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-03-26 04:03:48.327812
+date_updated: 2026-03-29 17:13:24.103427
 no_dropcap: false
 createBibtex: true
 ---
+
 
 
 
@@ -37,9 +38,9 @@ When I decided to design my own website, I had no experience with web developmen
 <figure>
 <img-comparison-slider>
   <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
-  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
 </img-comparison-slider>
-<figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. approximately when this article was first published (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c"><code>31bba104</code></a>).</figcaption>
+<figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
 </figure>
 
 > [!warning] My stance on AI-written content
@@ -942,14 +943,14 @@ Markdown element styling
   Table: A rebalanced table which pleases the eyes.
 
 Print mode
-: Print mode whittles away distractions like navbars and footnote "return" icons; displays URLs next to links (as paper does not permit clicking) and sources next to `<video>` and `<audio>` elements; renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
 
 <figure>
 <img-comparison-slider>
   <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
   <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
 </img-comparison-slider>
-<figcaption>Drag to compare: before (left) vs. after (right) print mode.</figcaption>
+<figcaption>Drag to compare: before vs. after print mode.</figcaption>
 </figure>
 
 Video speed limits

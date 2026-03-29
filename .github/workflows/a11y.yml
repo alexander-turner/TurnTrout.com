@@ -61,17 +61,23 @@ jobs:
             sleep 1
           done
 
-          # Retry up to 3 times — Chrome intermittently hangs on
-          # certain pages under CI memory pressure.
+          # Retry up to 3 times only for Chrome crashes (exit code 1).
+          # pa11y-ci exits 2 for a11y violations — don't retry those.
           for attempt in 1 2 3; do
-            if pnpm test:a11y; then
+            exit_code=0
+            pnpm test:a11y || exit_code=$?
+            if [ "$exit_code" -eq 0 ]; then
               break
-            elif [ "$attempt" -lt 3 ]; then
-              echo "Attempt $attempt failed, retrying..."
-            else
-              echo "All 3 attempts failed"
+            elif [ "$exit_code" -eq 2 ]; then
+              echo "pa11y-ci found accessibility violations (exit code 2)"
               kill $SERVER_PID 2>/dev/null || true
-              exit 1
+              exit 2
+            elif [ "$attempt" -lt 3 ]; then
+              echo "Attempt $attempt failed with exit code $exit_code (likely Chrome crash), retrying..."
+            else
+              echo "All 3 attempts failed with exit code $exit_code"
+              kill $SERVER_PID 2>/dev/null || true
+              exit "$exit_code"
             fi
           done
 
