@@ -26,7 +26,6 @@ Search results on mobile and tablet now show inline HTML preview snippets instea
 
 - Automated WCAG AA accessibility checks run in CI via pa11y.
 - Lighthouse now audits all four categories (Performance, Accessibility, Best Practices, SEO) — not just CLS. Upgraded to v12 with color-contrast re-enabled.
-- KaTeX patches add ARIA attributes and keyboard navigation for screen readers.
 - Smallcaps text now copies to clipboard correctly (as uppercase) instead of copying the visually-small lowercase letters.
 
 # Print stylesheet
