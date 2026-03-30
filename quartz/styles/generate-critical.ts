@@ -86,22 +86,22 @@ em {
   font-family: var(--font-italic-situational);
 }
 
-:root[saved-theme="dark"],
+:root[data-theme="dark"],
 .dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
-  --green: #a6d189;
-  --blue: #8caaee;
+  --background: #{$background-dark};
+  --foreground: #{$foreground-dark};
+  --red: #{$red-dark};
+  --green: #{$green-dark};
+  --blue: #{$blue-dark};
 }
 
-:root[saved-theme="light"],
+:root[data-theme="light"],
 .light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --red: #be415c;
-  --green: #22820d;
-  --blue: #3e6ccb;
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
+  --red: #{$red-light};
+  --green: #{$green-light};
+  --blue: #{$blue-light};
 }
 
 .float-right {

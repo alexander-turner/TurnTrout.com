@@ -39,6 +39,14 @@ export const tertiaryLight = "#0486b9"
 export const tertiaryDark = "#99d1db"
 export const highlightLight = "#7c7f9324"
 export const highlightDark = "#949cbb30"
+
+// Palette colors used in critical CSS (must match _palette.scss)
+export const redDark = "#e88283"
+export const greenDark = "#a6d189"
+export const blueDark = "#8caaee"
+export const redLight = "#be415c"
+export const greenLight = "#22820d"
+export const blueLight = "#3e6ccb"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
 export const dropcapVerticalOffset = "0.15rem"
@@ -116,6 +124,12 @@ export const variables = {
   transitionDurationMedium,
   transitionDurationSlow,
   fauxBoldOffset,
+  redDark,
+  greenDark,
+  blueDark,
+  redLight,
+  greenLight,
+  blueLight,
 } as const
 
 export type Variables = typeof variables

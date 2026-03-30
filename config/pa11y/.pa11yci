@@ -23,6 +23,6 @@
     "ignore": [
       "frame-tested"
     ],
-    "concurrency": 5
+    "concurrency": 2
   }
 }

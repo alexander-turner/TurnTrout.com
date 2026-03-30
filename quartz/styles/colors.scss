@@ -1,6 +1,63 @@
 @use "./variables" as *;
 @use "./palette" as *;
 
+// Default to light-mode colors so CSS custom properties are always defined,
+// even before detectInitialState.js sets the data-theme attribute.
+// Without this, color-mix() expressions that depend on --background etc. fail,
+// causing axe/pa11y color-contrast false positives.
+// data-theme="dark" overrides these; data-theme="light" is a no-op since
+// these defaults are already light.
+:root {
+  @include palette-vars($light-colors);
+
+  --background: #{$background-light};
+  --midground-faint: #{$midground-faint-light};
+  --midground: #{$midground-light};
+  --midground-strong: #{$midground-strong-light};
+  --foreground: #{$foreground-light};
+  --secondary: #{$secondary-light};
+  --tertiary: #{$tertiary-light};
+  --highlight: #{$highlight-light};
+  --light: var(--background);
+  --dark: var(--foreground);
+  --dark-gray: var(--midground-strong);
+  --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
+
+  // Dropcap background colors
+  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
+  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
+  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
+  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
+  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
+  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+
+  // Derived color variables
+  --midground-fainter: color-mix(in srgb, var(--background) 70%, var(--midground-faint));
+  --midground-faintest: color-mix(in srgb, var(--background) 90%, var(--midground-faint));
+  --color-link: light-dark(
+    color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
+    var(--secondary)
+  );
+  --color-link-visited: light-dark(
+    color-mix(in srgb, var(--purple) 40%, var(--color-link)),
+    color-mix(in srgb, var(--purple) 25%, var(--color-link))
+  );
+  --color-link-hover: light-dark(
+    color-mix(in srgb, var(--sky) 50%, var(--color-link)),
+    color-mix(in srgb, var(--sky) 35%, var(--color-link))
+  );
+
+  @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
+    --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
+    --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--background));
+  }
+}
+
 :root[data-theme="dark"],
 .dark-mode {
   @include palette-vars($dark-colors);
@@ -41,11 +98,10 @@
   }
 }
 
-:root[data-theme="light"],
+// Scoped light-mode class for inline demos (e.g. design.md color swatches)
 .light-mode {
   @include palette-vars($light-colors);
 
-  // Theme-specific colors (from quartz.config.ts lightMode)
   --background: #{$background-light};
   --midground-faint: #{$midground-faint-light};
   --midground: #{$midground-light};
@@ -80,28 +136,6 @@
 
   & #pond-video {
     filter: saturate(85%);
-  }
-}
-
-:root {
-  --midground-fainter: color-mix(in srgb, var(--background) 70%, var(--midground-faint));
-  --midground-faintest: color-mix(in srgb, var(--background) 90%, var(--midground-faint));
-  --color-link: light-dark(
-    color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
-    var(--secondary)
-  );
-  --color-link-visited: light-dark(
-    color-mix(in srgb, var(--purple) 40%, var(--color-link)),
-    color-mix(in srgb, var(--purple) 25%, var(--color-link))
-  );
-  --color-link-hover: light-dark(
-    color-mix(in srgb, var(--sky) 50%, var(--color-link)),
-    color-mix(in srgb, var(--sky) 35%, var(--color-link))
-  );
-
-  @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
-    --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
-    --border-#{$color}: color-mix(in srgb, var(--#{$color}) 50%, var(--background));
   }
 }
 
