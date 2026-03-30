@@ -8,21 +8,6 @@ on:
   workflow_dispatch:
   push:
     branches: ["main", "dev", "no-layout-shift"]
-    paths:
-      - "quartz/**/*.scss"
-      - "quartz/**/*.tsx"
-      - "!quartz/**/*.test.tsx"
-      - "quartz/**/*.ts"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/tests/**"
-      - "quartz/static/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
   pull_request:
     types: [labeled, synchronize, opened, reopened]
     paths:

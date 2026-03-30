@@ -39,7 +39,7 @@ jobs:
   prepare-deploy:
     needs: deploy-build
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -156,7 +156,7 @@ jobs:
   verify-visual-changes:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 240
     steps:
       - name: Wait for Lost Pixel status and verify visual changes
         env:
