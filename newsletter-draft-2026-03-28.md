@@ -1,6 +1,6 @@
 # 'Trout roundup: turntrout.com reaches v1.5
 
-2,509 commits since the last roundup. This is the most infrastructure-heavy newsletter I've sent — almost entirely site improvements, with one new page. I've been using [Claude Code](https://claude.ai/code) to help build features, fix bugs, and maintain CI. My [claude-automation-template](https://github.com/alexander-turner/claude-automation-template) packages the automation infrastructure into a reusable starting point for any project.
+~2,500 commits since the last roundup. This is the most infrastructure-heavy newsletter I've sent — almost entirely site improvements, with one new page. I've been using [Claude Code](https://claude.ai/code) to help build features, fix bugs, and maintain CI. My [claude-automation-template](https://github.com/alexander-turner/claude-automation-template) packages the automation infrastructure into a reusable starting point for any project.
 
 # New page
 
@@ -12,11 +12,11 @@ Clicking a footnote reference now opens a popover instead of scrolling to the bo
 
 # Automatic BibTeX citations
 
-Articles with `createBibtex: true` in their frontmatter now auto-generate a BibTeX citation block using citation.js. Enabled across the shard theory sequence and other highly-cited posts.
+Articles with `createBibtex: true` in their frontmatter now auto-generate a BibTeX citation block. Enabled across the shard theory sequence and other highly-cited posts.
 
 # Colorful dropcaps
 
-There's now a 5% chance the dropcap letter at the start of each article renders in a color from the pond palette. The color re-rolls on every SPA navigation — keep clicking around and you'll spot one eventually.
+There's now a ~7% chance the dropcap letter at the start of each article renders in a color from the pond palette. The color re-rolls on every SPA navigation — keep clicking around and you'll spot one eventually.
 
 # Mobile search improvements
 
@@ -26,7 +26,7 @@ Search results on mobile and tablet now show inline HTML preview snippets instea
 
 - Automated WCAG AA accessibility checks run in CI via pa11y.
 - Lighthouse now audits all four categories (Performance, Accessibility, Best Practices, SEO) — not just CLS. Upgraded to v12 with color-contrast re-enabled.
-- KaTeX patches strip unnecessary CSS classes and add ARIA attributes for screen readers.
+- KaTeX patches add ARIA attributes and keyboard navigation for screen readers.
 - Smallcaps text now copies to clipboard correctly (as uppercase) instead of copying the visually-small lowercase letters.
 
 # Print stylesheet
@@ -84,18 +84,18 @@ Estimated monthly savings: ~$3,400 → ~$880. I wrote a Python script to compute
 - Auto-create GitHub issues when deploys fail on main, so Claude Code can self-fix.
 - PR preview deployments to Cloudflare Pages.
 - Blobless partial clones for faster CI git operations.
-- Weekly security vulnerability scanning with Claude — drafts fix PRs automatically. Already patched 31 of 34 flagged vulnerabilities.
+- Weekly security vulnerability scanning with Claude — drafts fix PRs automatically.
 - Monthly newsletter draft generation workflow using Claude API.
 - CI failure notification workflow that comments on PRs when checks fail.
 - Template sync workflow — fixes to [claude-automation-template](https://github.com/alexander-turner/claude-automation-template) propagate downstream automatically.
 
 # Other site updates
 
-- **Node.js 24 upgrade.** Native `RegExp.escape()` and fetch replace polyfills.
+- **Node.js 24 upgrade.** Code now uses native `RegExp.escape()` and fetch instead of polyfill libraries.
 
 - **Homepage "Start here."** Added a curated entry point section to the landing page.
 
-- **Built-site validation.** New checks for balanced delimiters, missing favicons, LCP image optimization, and post-rendered typos.
+- **Built-site validation.** New checks for missing favicons, LCP image optimization, and post-rendered typos.
 
 - Updated [Lessons from my 428-day battle against flaky Playwright screenshots](https://turntrout.com/playwright-tips) with macOS runner advice and current best practices.
 
