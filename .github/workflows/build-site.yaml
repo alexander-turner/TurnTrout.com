@@ -1,21 +1,13 @@
 name: Build Site
 
-# Reusable workflow that builds the Quartz site and uploads the artifact.
+# Reusable workflow that builds the Quartz site and caches the result.
 # Called by workflows that need a built site (Playwright, Visual, Lighthouse, etc.).
 # Uses actions/cache to deduplicate builds across workflows for the same commit.
+# Consumer workflows restore the cache directly via actions/cache/restore.
 
 on:
   workflow_call:
     inputs:
-      artifact-name:
-        description: "Name for the uploaded artifact"
-        required: true
-        type: string
-      retention-days:
-        description: "Number of days to retain the artifact"
-        required: false
-        type: number
-        default: 1
       fetch-depth:
         description: "Git fetch depth (0 for full history)"
         required: false
@@ -59,10 +51,3 @@ jobs:
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'
         run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: ${{ inputs.artifact-name }}
-          path: public/
-          retention-days: ${{ inputs.retention-days }}
