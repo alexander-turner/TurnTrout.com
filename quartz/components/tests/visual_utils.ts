@@ -515,6 +515,13 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   }
 
   await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
+
+  // Remove the autoplay attribute so the Safari autoplay script
+  // (safari-autoplay.js) won't restart videos on user-interaction events.
+  const videoScope = scope ?? page
+  for (const video of await videoScope.locator("video[autoplay]").all()) {
+    await video.evaluate((el) => el.removeAttribute("autoplay"))
+  }
 }
 
 /**
