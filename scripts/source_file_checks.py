@@ -20,6 +20,8 @@ from scripts import utils as script_utils  # noqa: E402
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
 
+_http_session = script_utils.http_session()
+
 
 class ForbiddenPatternConfig(TypedDict):
     """Configuration for a forbidden pattern check."""
@@ -114,9 +116,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
-        # Use 30s timeout to accommodate Cloudflare CDN latency. The 10s default
-        # caused intermittent failures in CI when the CDN was slow to respond.
-        response = requests.head(
+        response = _http_session.head(
             card_url, timeout=30, allow_redirects=True, headers=headers
         )
 
