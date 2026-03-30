@@ -40,14 +40,37 @@ export const tertiaryDark = "#99d1db"
 export const highlightLight = "#7c7f9324"
 export const highlightDark = "#949cbb30"
 
-// Palette colors used in critical CSS (must match _palette.scss)
-export const redDark = "#e88283"
-export const greenDark = "#a6d189"
-export const blueDark = "#8caaee"
-export const redLight = "#be415c"
-export const greenLight = "#22820d"
-export const blueLight = "#3e6ccb"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
+
+// Palette colors — single source of truth for _palette.scss (generated) and critical CSS
+export const darkPalette: Record<string, string> = {
+  pink: "#fba7e4",
+  red: "#e88283",
+  maroon: "#d586a1",
+  orange: "#e19b5b",
+  yellow: "#e5c890",
+  green: "#a6d189",
+  teal: "#81c8be",
+  sky: "#5bc4d7",
+  blue: "#8caaee",
+  lavender: "#9899d7",
+  purple: "#ba8be9",
+  gold: "#db9c01",
+}
+
+export const lightPalette: Record<string, string> = {
+  pink: "#d020a3",
+  red: "#be415c",
+  orange: "#a45c19",
+  yellow: "#7d751c",
+  green: "#22820d",
+  teal: "#037e85",
+  sky: "#007cb4",
+  blue: "#3e6ccb",
+  lavender: "#4963fd",
+  purple: "#6f42c1",
+  gold: "#9b6700",
+}
 
 export const dropcapVerticalOffset = "0.15rem"
 export const dropcapFontSize = "3.95rem"
@@ -124,12 +147,6 @@ export const variables = {
   transitionDurationMedium,
   transitionDurationSlow,
   fauxBoldOffset,
-  redDark,
-  greenDark,
-  blueDark,
-  redLight,
-  greenLight,
-  blueLight,
 } as const
 
 export type Variables = typeof variables

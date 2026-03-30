@@ -79,18 +79,18 @@ em {
 .dark-mode {
   --background: #{$background-dark};
   --foreground: #{$foreground-dark};
-  --red: #{$red-dark};
-  --green: #{$green-dark};
-  --blue: #{$blue-dark};
+  --red: #e88283;
+  --green: #a6d189;
+  --blue: #8caaee;
 }
 
 :root[data-theme="light"],
 .light-mode {
   --background: #{$background-light};
   --foreground: #{$foreground-light};
-  --red: #{$red-light};
-  --green: #{$green-light};
-  --blue: #{$blue-light};
+  --red: #be415c;
+  --green: #22820d;
+  --blue: #3e6ccb;
 }
 
 .float-right {
