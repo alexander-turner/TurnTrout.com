@@ -6,8 +6,8 @@ jest.mock("fs")
 import fs from "fs"
 import path from "path"
 
-import { generateScss, generateScssRecord } from "../generate-variables"
-import { variables as styleVars } from "../variables"
+import { generateScss, generateScssRecord, generatePalette } from "../generate-variables"
+import { variables as styleVars, darkPalette, lightPalette } from "../variables"
 
 describe("SCSS Variable Generation", () => {
   beforeEach(() => {
@@ -96,6 +96,45 @@ describe("SCSS Variable Generation", () => {
       // These should have px units added
       expect(records["base-margin"]).toBe("8px")
       expect(records["page-width"]).toBe("720px")
+    })
+  })
+
+  describe("generatePalette()", () => {
+    it("should write _palette.scss with dark and light color maps", () => {
+      const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
+
+      generatePalette()
+
+      expect(writeSpy).toHaveBeenCalledTimes(1)
+
+      const [filePath, fileContent] = writeSpy.mock.calls[0]
+      expect(path.basename(filePath as string)).toBe("_palette.scss")
+
+      const content = fileContent as string
+      expect(content).toContain("$dark-colors:")
+      expect(content).toContain("$light-colors:")
+      expect(content).toContain("@mixin palette-vars")
+
+      // Verify all palette colors are included
+      for (const [name, value] of Object.entries(darkPalette)) {
+        expect(content).toContain(`"${name}": ${value}`)
+      }
+      for (const [name, value] of Object.entries(lightPalette)) {
+        expect(content).toContain(`"${name}": ${value}`)
+      }
+    })
+
+    it("should throw an error if file writing fails", () => {
+      const testError = new Error("Disk full")
+      jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
+        throw testError
+      })
+
+      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {
+        /* quiet the output */
+      })
+      expect(() => generatePalette()).toThrow(testError)
+      errorSpy.mockRestore()
     })
   })
 

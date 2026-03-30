@@ -75,19 +75,19 @@ em {
   font-family: var(--font-italic-situational);
 }
 
-:root[saved-theme="dark"],
+:root[data-theme="dark"],
 .dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
+  --background: #{$background-dark};
+  --foreground: #{$foreground-dark};
+  --red: #e88283;
   --green: #a6d189;
   --blue: #8caaee;
 }
 
-:root[saved-theme="light"],
+:root[data-theme="light"],
 .light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
   --red: #be415c;
   --green: #22820d;
   --blue: #3e6ccb;
