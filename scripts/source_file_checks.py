@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Dict, List, Literal, Set, TypedDict
 
@@ -114,13 +115,31 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
-        # Use 30s timeout to accommodate Cloudflare CDN latency. The 10s default
-        # caused intermittent failures in CI when the CDN was slow to respond.
-        response = requests.head(
-            card_url, timeout=30, allow_redirects=True, headers=headers
-        )
+        # Retry transient network errors (timeouts, connection resets).
+        last_exception = None
+        response = None
+        for attempt in range(3):
+            try:
+                response = requests.head(
+                    card_url,
+                    timeout=30,
+                    allow_redirects=True,
+                    headers=headers,
+                )
+                break
+            except (
+                requests.ConnectionError,
+                requests.Timeout,
+            ) as e:
+                last_exception = e
+                if attempt < 2:
+                    time.sleep(2**attempt)
 
-        if not response.ok:
+        if response is None:
+            errors.append(
+                f"Failed to load card image URL '{card_url}': {str(last_exception)}"
+            )
+        elif not response.ok:
             errors.append(
                 f"Card image URL '{card_url}' returned "
                 f"status {response.status_code}"
