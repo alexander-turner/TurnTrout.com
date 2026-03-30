@@ -228,7 +228,9 @@ uv_install_if_missing ots opentimestamps-client
 if [ -f "$PROJECT_DIR/package.json" ]; then
 	# Always run install (git hooks are configured in package.json postinstall)
 	if command -v pnpm &>/dev/null; then
-		pnpm install --silent || warn "Failed to install Node dependencies"
+		# Skip Puppeteer browser download — sandboxed environments can't reach
+		# storage.googleapis.com and Playwright browsers are used instead.
+		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
 	fi
