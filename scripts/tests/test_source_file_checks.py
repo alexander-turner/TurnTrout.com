@@ -183,7 +183,9 @@ def test_check_card_image_valid(metadata: Dict[str, str]):
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(metadata)
         assert errors == []
 
@@ -216,7 +218,9 @@ def test_check_card_image_invalid(
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(metadata)
         assert len(errors) > 0
         assert any(expected_error_text in error for error in errors)
@@ -243,7 +247,9 @@ def test_check_card_image_size(
         {"Content-Length": str(content_length)} if content_length else {}
     )
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(
             {"card_image": "https://example.com/image.jpg"}
         )
@@ -1182,7 +1188,7 @@ def test_check_card_image(
     expected_error_contains: List[str],
 ):
     """Test checking card image URLs in metadata."""
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         if mock_response is not None:
             mock_head.return_value = mock_response
 
@@ -1204,7 +1210,7 @@ def test_check_card_image_request_exception():
     """Test handling of request exceptions when checking card image URLs."""
     metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
 
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         mock_head.side_effect = requests.RequestException("Connection error")
 
         errors = source_file_checks.check_card_image(metadata)
@@ -1215,7 +1221,7 @@ def test_check_card_image_request_exception():
 def test_check_card_image_sends_user_agent():
     """Test that check_card_image sends a User-Agent header."""
     metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         mock_head.return_value = mock.Mock(
             ok=True, headers={"Content-Length": str(200 * 1024)}
         )

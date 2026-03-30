@@ -6,7 +6,6 @@ import re
 import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
 from typing import Dict, List, Literal, Set, TypedDict
 
@@ -20,6 +19,8 @@ from scripts import utils as script_utils  # noqa: E402
 
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
+
+_http_session = script_utils.http_session()
 
 
 class ForbiddenPatternConfig(TypedDict):
@@ -115,31 +116,11 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
-        # Retry transient network errors (timeouts, connection resets).
-        last_exception = None
-        response = None
-        for attempt in range(3):
-            try:
-                response = requests.head(
-                    card_url,
-                    timeout=30,
-                    allow_redirects=True,
-                    headers=headers,
-                )
-                break
-            except (
-                requests.ConnectionError,
-                requests.Timeout,
-            ) as e:
-                last_exception = e
-                if attempt < 2:
-                    time.sleep(2**attempt)
+        response = _http_session.head(
+            card_url, timeout=30, allow_redirects=True, headers=headers
+        )
 
-        if response is None:
-            errors.append(
-                f"Failed to load card image URL '{card_url}': {str(last_exception)}"
-            )
-        elif not response.ok:
+        if not response.ok:
             errors.append(
                 f"Card image URL '{card_url}' returned "
                 f"status {response.status_code}"

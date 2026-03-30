@@ -2304,63 +2304,24 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     assert result == Counter(expected_counts)
 
 
-def test_head_with_retry_succeeds_after_timeout(monkeypatch):
-    """Retry succeeds on second attempt after initial timeout."""
-    calls = []
-
-    def mock_head(url, timeout) -> object:
-        calls.append(timeout)
-        if len(calls) == 1:
-            raise requests.Timeout("timed out")
-        return type("MockResponse", (), {"ok": True, "status_code": 200})
-
-    monkeypatch.setattr(requests, "head", mock_head)
-    resp = built_site_checks._head_with_retry("https://example.com")
-    assert resp.ok
-    assert calls == [10, 20]  # timeout doubles on retry
-
-
-def test_head_with_retry_retries_on_5xx(monkeypatch):
-    """Retry on 5xx server errors, return last response if still failing."""
-    calls = []
-
-    def mock_head(url, timeout) -> object:
-        calls.append(timeout)
-        if len(calls) < 3:
-            return type("MockResponse", (), {"ok": False, "status_code": 520})
-        return type("MockResponse", (), {"ok": True, "status_code": 200})
-
-    monkeypatch.setattr(requests, "head", mock_head)
-    resp = built_site_checks._head_with_retry("https://example.com")
-    assert resp.ok
-    assert len(calls) == 3
-
-
-def test_head_with_retry_returns_last_5xx_after_exhausting_retries(
-    monkeypatch,
-):
-    """All retries get 5xx — returns last response."""
-    mock_resp = requests.Response()
-    mock_resp.status_code = 502
-
+def test_head_with_retry_delegates_to_session(monkeypatch):
+    """_head_with_retry delegates to the shared session (retry handled by
+    urllib3)."""
+    mock_resp = type("MockResponse", (), {"ok": True, "status_code": 200})
     monkeypatch.setattr(
-        requests,
-        "head",
-        lambda url, timeout: mock_resp,
+        built_site_checks._http_session, "head", lambda url, timeout: mock_resp
     )
     resp = built_site_checks._head_with_retry("https://example.com")
-    assert resp.status_code == 502
+    assert resp.ok
 
 
-def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
-    """All retries fail — re-raises the last exception."""
-    monkeypatch.setattr(
-        requests,
-        "head",
-        lambda url, timeout: (_ for _ in ()).throw(
-            requests.ConnectionError("fail")
-        ),
-    )
+def test_head_with_retry_propagates_exceptions(monkeypatch):
+    """Exceptions from the session propagate to callers."""
+
+    def raise_error(url, timeout):
+        raise requests.ConnectionError("fail")
+
+    monkeypatch.setattr(built_site_checks._http_session, "head", raise_error)
     with pytest.raises(requests.ConnectionError, match="fail"):
         built_site_checks._head_with_retry("https://example.com")
 
@@ -2458,7 +2419,7 @@ def test_check_iframe_sources(
         return mock_response
 
     # Patch the requests.head function
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     result = built_site_checks.check_iframe_sources(soup)
     assert sorted(result) == sorted(expected)
@@ -2528,7 +2489,7 @@ def test_check_iframe_embeds(
         ok, status = response
         return type("MockResponse", (), {"ok": ok, "status_code": status})
 
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     issues = built_site_checks.check_iframe_embeds(soup)
 
