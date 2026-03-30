@@ -21,11 +21,6 @@ on:
         required: false
         type: number
         default: 1
-      remove-safari-autoplay:
-        description: "Remove Safari autoplay script before build (for visual testing)"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   actions: read
@@ -41,14 +36,14 @@ jobs:
           fetch-depth: ${{ inputs.fetch-depth }}
           filter: ${{ inputs.fetch-depth == 0 && 'blob:none' || '' }}
 
-      # Cache keyed on commit SHA + autoplay variant. First workflow to build
+      # Cache keyed on commit SHA. First workflow to build
       # populates the cache; subsequent workflows get a hit and skip the build.
       - name: Restore build cache
         id: cache
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}-autoplay-${{ inputs.remove-safari-autoplay }}
+          key: site-build-${{ github.sha }}
 
       - name: Setup Build Environment
         if: steps.cache.outputs.cache-hit != 'true'
@@ -60,10 +55,6 @@ jobs:
           install-system-deps: "true"
           cache-playwright: "true"
           cache-puppeteer: "true"
-
-      - name: Remove Safari autoplay script
-        if: inputs.remove-safari-autoplay && steps.cache.outputs.cache-hit != 'true'
-        run: rm -f ./quartz/static/scripts/safari-autoplay.js
 
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'

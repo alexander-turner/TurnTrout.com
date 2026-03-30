@@ -72,7 +72,6 @@ jobs:
     uses: ./.github/workflows/build-site.yaml
     with:
       artifact-name: visual-testing-public-dir
-      remove-safari-autoplay: true
 
   # Chromium + Firefox on main; Chromium-only on PRs/merge queue
   visual-testing-linux:
