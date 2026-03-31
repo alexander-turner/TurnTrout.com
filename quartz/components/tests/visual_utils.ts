@@ -661,6 +661,11 @@ export async function moveMouseToSafePosition(page: Page): Promise<void> {
  * scroll/search-highlight are all finished.  `page.waitForURL` resolves
  * as soon as `pushState` fires — long before the DOM is ready — so tests
  * that need post-navigation DOM state must use this helper instead.
+ *
+ * If the SPA's fetch times out or fails, it falls back to a full page
+ * navigation (`window.location.href = ...`) without dispatching "nav".
+ * In that case the `page.evaluate` promise is rejected (execution context
+ * destroyed), so we catch that and wait for the new page to finish loading.
  */
 export async function triggerAndWaitForSPANav(
   page: Page,
@@ -676,5 +681,11 @@ export async function triggerAndWaitForSPANav(
   )
 
   await trigger()
-  await navPromise
+  try {
+    await navPromise
+  } catch {
+    // Execution context was destroyed — the SPA fell back to a full page
+    // navigation. Wait for the new page to finish loading.
+    await page.waitForLoadState("load")
+  }
 }
