@@ -9,10 +9,10 @@ on:
   workflow_call:
     inputs:
       fetch-depth:
-        description: "Git fetch depth (0 for full history)"
+        description: "Git fetch depth (0 for full history, required for commit-count population)"
         required: false
         type: number
-        default: 1
+        default: 0
 
 permissions:
   actions: read
