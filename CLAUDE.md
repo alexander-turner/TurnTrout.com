@@ -204,11 +204,11 @@ After pushing to main:
 ### CI Cost Optimization
 
 - **Expensive tests always run on main**: Pushes to main always trigger Playwright, visual, and Lighthouse tests. All three workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
+- **Cheap checks always run on PRs**: Accessibility (pa11y) and Lighthouse run on every PR push (with path filters). No label required.
 - **Per-commit CI labels on PRs**: On PRs, expensive tests only run when a CI label is _actively added_ (one-shot per commit, not persistent). Adding a label triggers tests for the current HEAD; the next push won't re-trigger unless the label is added again. Labels:
   - `ci:run-playwright` — Playwright integration tests only (Linux shards only on PRs)
   - `ci:run-visual` — Visual regression tests only (Linux shards only on PRs)
-  - `ci:run-lighthouse` — Lighthouse performance/CLS tests only
-  - `ci:full-tests` — All of the above
+  - `ci:full-tests` — All of the above (Playwright + visual)
   - `ci:flake-check` — Run Playwright tests with `--repeat-each 3` to detect flaky tests (also available via `workflow_dispatch` with configurable repeat count)
 
   Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`). Labels are per-commit: re-add to run again on the next push.
