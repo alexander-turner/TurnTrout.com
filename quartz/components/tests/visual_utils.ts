@@ -582,19 +582,24 @@ export async function gotoPage(
   url: string,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
+  // Pass the caller's loadState directly as waitUntil so Playwright manages
+  // the full navigation lifecycle in one call.  The previous approach used
+  // waitUntil:"commit" (resolves when the server starts sending bytes) then a
+  // separate waitForLoadState(), but WebKit/Safari can destroy the execution
+  // context between those two steps, causing "Execution context was destroyed"
+  // errors on page.evaluate / page.waitForFunction calls.
   try {
-    await page.goto(url, { waitUntil: "commit" })
+    await page.goto(url, { waitUntil: loadState })
   } catch (error: unknown) {
     // WebKit on Linux occasionally crashes with "internal error" on page.goto.
     // Retry once — the second attempt typically succeeds.
     if (error instanceof Error && error.message.includes("internal error")) {
       console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
-      await page.goto(url, { waitUntil: "commit" })
+      await page.goto(url, { waitUntil: loadState })
     } else {
       throw error
     }
   }
-  await page.waitForLoadState(loadState)
 }
 
 /** Reload the current page by navigating away and back to the original URL.
