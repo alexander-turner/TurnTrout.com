@@ -352,7 +352,8 @@
       "patch-package>yaml": "2.8.3"
     },
     "patchedDependencies": {
-      "pa11y@9.0.1": "patches/pa11y@9.0.1.patch"
+      "pa11y@9.0.1": "patches/pa11y@9.0.1.patch",
+      "pa11y@9.1.1": "patches/pa11y@9.1.1.patch"
     }
   }
 }
