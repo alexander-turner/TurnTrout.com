@@ -162,10 +162,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           for WORKFLOW in visual-testing.yaml playwright-tests.yaml; do
-            RUN_ID=$(gh run list --workflow "$WORKFLOW" --commit ${{ github.sha }} \
+            RUN_ID=$(gh run list --repo "${{ github.repository }}" --workflow "$WORKFLOW" --commit ${{ github.sha }} \
               --json databaseId --jq '.[0].databaseId')
             echo "Waiting for $WORKFLOW (run $RUN_ID)..."
-            gh run watch "$RUN_ID" --exit-status
+            gh run watch --repo "${{ github.repository }}" "$RUN_ID" --exit-status
           done
 
       - name: Verify Lost Pixel visual changes
