@@ -18,27 +18,12 @@ no_dropcap: false
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
 <figure>
 <img-comparison-slider>
-  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
-  <img slot="second" src="https://assets.turntrout.com/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents'. The website looks bare and amateurish."/>
+  <img slot="second" src="/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
 </img-comparison-slider>
 <figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
 </figure>
@@ -333,10 +318,15 @@ This inline script executes immediately, checking multiple possible storage loca
 A complication: how does the script know whether a scroll event came from the user or from a late-loading image shifting the layout? Get this wrong, and the page annoyingly fights the user. I decided to cancel the adjustment period given user movement indicated by certain events:
 
 ```javascript
-let userInteracted = false
-const markInteraction = () => { userInteracted = true }
+let userInteracted = false;
+const markInteraction = () => {
+  userInteracted = true;
+};
 for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
-  window.addEventListener(event, markInteraction, { passive: true, once: true })
+  window.addEventListener(event, markInteraction, {
+    passive: true,
+    once: true,
+  });
 }
 ```
 
@@ -428,7 +418,6 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 >
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
->
 
 <span class="float-right" style="margin-top: 2rem; ">
 <div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
@@ -658,14 +647,14 @@ Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to a
 
 I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
 
-| Character | Original | With upright punctuation |
-| --: | :--: | :--: |
-| Parentheses | <span class="italic-old">_(Hello world)_</span> | _(Hello world)_ |
-| Brackets | <span class="italic-old">_[Hello world]_</span> | _[Hello world]_ |
-| Braces | <span class="italic-old">_\{Hello world\}_</span> | _\{Hello world\}_ |
-| Double quotes | <span class="italic-old">_“Hello world”_</span> | _“Hello world”_ |
-| Single quotes | <span class="italic-old">_‘Hello world’_</span> | _‘Hello world’_ |
-| Apostrophe | <span class="italic-old">_don’t_</span> | _don’t_ |
+|     Character |                     Original                      | With upright punctuation |
+| ------------: | :-----------------------------------------------: | :----------------------: |
+|   Parentheses |  <span class="italic-old">_(Hello world)_</span>  |     _(Hello world)_      |
+|      Brackets |  <span class="italic-old">_[Hello world]_</span>  |     _[Hello world]_      |
+|        Braces | <span class="italic-old">_\{Hello world\}_</span> |    _\{Hello world\}_     |
+| Double quotes |  <span class="italic-old">_“Hello world”_</span>  |     _“Hello world”_      |
+| Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
+|    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
 # Website features
 
@@ -848,10 +837,10 @@ I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enfo
 Asset accessibility
 : I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
-  > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
-  > ![[/open-source#automatic-alt-text-generation]]
+> [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
+> ![[/open-source#automatic-alt-text-generation]]
 
-  I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
 
 Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
@@ -880,14 +869,14 @@ I also run dedicated layout-shift-only Lighthouse checks on both desktop and mob
 
 To keep documentation up-to-date, the build process computes e.g. the number of commits I've made. The number is injected into special `<span>` elements with a `class` or `id` like `populate-commit-count`. The build process validates that all `populate-*` spans are properly filled, failing the build if any are left empty.
 
-| Metric                       | Count                                                |
+|                       Metric | Count                                                |
 | ---------------------------: | :--------------------------------------------------- |
-| Total commits                | <span class="populate-commit-count"></span>          |
-| Human-authored commits       | <span class="populate-human-commit-count"></span>    |
-| TypeScript unit tests        | <span class="populate-js-test-count"></span>         |
-| Python unit tests            | <span class="populate-pytest-count"></span>          |
+|                Total commits | <span class="populate-commit-count"></span>          |
+|       Human-authored commits | <span class="populate-human-commit-count"></span>    |
+|        TypeScript unit tests | <span class="populate-js-test-count"></span>         |
+|            Python unit tests | <span class="populate-pytest-count"></span>          |
 | Playwright integration tests | <span class="populate-playwright-test-count"></span> |
-| Lines of code                | <span class="populate-lines-of-code"></span>         |
+|                Lines of code | <span class="populate-lines-of-code"></span>         |
 
 ## Smaller features
 
@@ -897,11 +886,11 @@ Popovers
 Search
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
 
-  ![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
-  Figure: Mobile previews.
+![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+Figure: Mobile previews.
 
-  ![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
-  Figure: Desktop previews.
+![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+Figure: Desktop previews.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
@@ -911,7 +900,7 @@ Metadata
 Spoilers hide text until clicked
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
 
-  >! Have you heard? Snape kills Dumbledore.
+> ! Have you heard? Snape kills Dumbledore.
 
 Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
@@ -919,28 +908,28 @@ Server-side math rendering via $\KaTeX$
 Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
-  For example:
+For example:
 
-  $$
-  e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
-  $$
+$$
+e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+$$
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
-  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-  Table: A table with unbalanced columns.
+Table: A table with unbalanced columns.
 
-  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-  {.full-width .center-table-headings}
+{.full-width .center-table-headings}
 
-  Table: A rebalanced table which pleases the eyes.
+Table: A rebalanced table which pleases the eyes.
 
 Print mode
 : Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
@@ -954,7 +943,7 @@ Print mode
 </figure>
 
 Video speed limits
-: I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
+: I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
 
 Before/after image sliders
 : Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
@@ -1035,6 +1024,7 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 
 > [!info]- Markdown and source file checks
 > **Metadata and structure:**
+>
 > 1. Each article's metadata has required fields filled in (like `title` and `description`).
 > 2. No pages attempt to share a URL.
 > 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
@@ -1042,10 +1032,12 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 > 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
 >
 > **Math and LaTeX:**
+>
 > 1. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
 > 2. I don't leave stray $\KaTeX$ commands outside of math blocks.
 >
 > **Markdown syntax:**
+>
 > 1. Markdown tables specify column alignment to make their appearance robust to CSS changes.
 > 2. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
 > 3. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
@@ -1055,9 +1047,11 @@ I lint my Markdown links for probable errors. I found that I might mangle a Mark
 > 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
 >
 > **Typography:**
+>
 > 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
 >
 > **CSS validation:**
+>
 > 1. CSS defines `@font-face`s using fonts which actually exist in the filesystem.
 > 2. CSS does not refer to undeclared font families.
 > 3. CSS only references valid CSS variables.
@@ -1105,10 +1099,12 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > I check to avoid a smattering of possible mishaps.
 >
 > **Development artifacts:**
+>
 > 1. Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
 > 2. I might have disabled [favicon rendering](#inline-favicons) to increase build speed;
 >
 > **Asset management:**
+>
 > 1. Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
 > 2. Local media files referenced but not present on disk;
 > 3. Assets present in the Markdown file but which are not present in the HTML DOM;
@@ -1116,14 +1112,17 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
 >
 > **CSS and styling:**
+>
 > 1. Inline styles which invoke nonexistent CSS variables;
 > 2. Failure to inline critical CSS;
 >
 > **Favicon validation:**
+>
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
 > 2. Each favicon is wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
+>
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
 > 2. Incorrectly terminated blockquotes (e.g. ending with `>`);
 > 3. Unrendered emphasis markers (often indicated by a trailing `*` or `_`);
@@ -1135,6 +1134,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 9. Unrendered image alt text declarations;
 >
 > **Link validation:**
+>
 > 1. Anchor links which don't exist (both same-page and cross-page);
 > 2. Same-page anchor links missing required CSS classes (`internal`, `same-page-link`);
 > 3. Internal links incorrectly marked or formatted;
@@ -1143,6 +1143,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 6. `git`-hosted assets, stylesheets, or scripts which don't exist;
 >
 > **Typography and text formatting:**
+>
 > 1. Non-smart quotation marks (e.g. `'` or `"`);
 > 2. Multiple dashes in a row (should be em dashes);
 > 3. Consecutive periods (potential typos);
@@ -1151,26 +1152,32 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 6. Missing whitespace around inline elements produced by HTML transformations, including smallcaps abbreviations, ordinals, fractions, and arrows;
 >
 > **Math rendering:**
+>
 > 1. $\KaTeX$ rendering errors (indicated by error styling);
 > 2. $\KaTeX$ display elements that should be in blockquotes;
 > 3. Paragraphs containing only a $\KaTeX$ span (should be display math);
 > 4. HTML tags incorrectly inserted into $\KaTeX$ elements;
 >
 > **Iframe validation:**
+>
 > 1. Iframes missing `src` attributes;
 > 2. Iframe sources returning error status codes;
 >
 > **Metadata and SEO:**
+>
 > 1. Page descriptions missing, too short, or too long for social media previews (recommended 10-155 characters);
 > 2. Metadata mismatches between HTML and Markdown source files;
 >
 > **Dynamic content:**
+>
 > 1. Elements with IDs or classes starting with `populate-` that are empty;
 >
 > **Font preloading:**
+>
 > 1. Missing preload links for EBGaramond `subfont` files;
 >
 > **RSS validation:**
+>
 > 1. RSS file generation failure or schema validation errors.
 
 ## Build pipeline extras
@@ -1178,14 +1185,14 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 
-  [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+[Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
 
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
 : Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
 
-  The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
 : I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.
@@ -1193,13 +1200,13 @@ Python dependency management
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-  To verify that a commit `ABC012` was indeed committed by a given date, run
+To verify that a commit `ABC012` was indeed committed by a given date, run
 
-  ```shell
-  git clone https://github.com/alexander-turner/.timestamps
-  cd .timestamps
-  ots --no-bitcoin verify "files/ABC012.txt.ots"
-  ```
+```shell
+git clone https://github.com/alexander-turner/.timestamps
+cd .timestamps
+ots --no-bitcoin verify "files/ABC012.txt.ots"
+```
 
 # Github Actions
 
@@ -1208,7 +1215,7 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-  I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
 : I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
