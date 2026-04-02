@@ -18,9 +18,10 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23 00:16:38.244546
-date_updated: 2026-01-10 10:26:40.099417
+date_updated: 2026-04-02 22:03:05.921808
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
+
 
 
 
