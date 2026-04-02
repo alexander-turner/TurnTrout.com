@@ -1187,17 +1187,18 @@ def _get_favicons_to_check(soup: BeautifulSoup) -> list[Tag]:
     ]
 
 
-def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
+def check_favicon_span(soup: BeautifulSoup) -> list[str]:
     """
-    Check that all favicons are inside a word joiner span element.
+    Check that all favicons are inside a favicon-span element.
 
-    The word joiner (U+2060) wrapped in a <span class="word-joiner"> with
-    white-space: nowrap prevents the favicon from orphaning onto a new line.
+    The <span class="favicon-span"> with white-space: nowrap wraps the last
+    few characters of text together with the favicon to prevent the favicon
+    from orphaning onto a new line.
     Every favicon should be a child of this span, unless it's inside a
     .no-favicon-span container (used for demo/decorative favicons).
 
     Returns:
-        list of strings describing favicons missing word joiner spans.
+        list of strings describing favicons missing favicon-span parents.
     """
     issues: list[str] = []
 
@@ -1205,7 +1206,7 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
         parent = favicon.parent
         if isinstance(
             parent, Tag
-        ) and "word-joiner" in script_utils.get_classes(parent):
+        ) and "favicon-span" in script_utils.get_classes(parent):
             continue
 
         # Identify the favicon for the error message
@@ -1216,7 +1217,7 @@ def check_favicon_word_joiner(soup: BeautifulSoup) -> list[str]:
 
         _append_to_list(
             issues,
-            f"Favicon ({context}) missing word-joiner span as parent",
+            f"Favicon ({context}) missing favicon-span as parent",
         )
 
     return issues
@@ -1594,7 +1595,7 @@ def check_file_for_issues(
         "problematic_iframes": check_iframe_sources(soup),
         "consecutive_periods": check_consecutive_periods(soup),
         "non_svg_favicons": check_favicons_are_svgs(soup),
-        "missing_word_joiner": check_favicon_word_joiner(soup),
+        "missing_favicon_span": check_favicon_span(soup),
         "katex_span_only_par_child": check_katex_span_only_paragraph_child(
             soup
         ),

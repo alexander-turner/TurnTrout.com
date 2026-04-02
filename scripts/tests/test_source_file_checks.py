@@ -695,10 +695,12 @@ def test_integration_with_main(
 def test_compile_scss(tmp_path: Path) -> None:
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
-    scss_file.write_text("""
+    scss_file.write_text(
+        """
         $color: red;
         body { color: $color; }
-    """)
+    """
+    )
 
     css = source_file_checks.compile_scss(scss_file)
     assert "body" in css
@@ -2418,13 +2420,15 @@ def test_main_publication_dates_flag(
     content_dir = quartz_project_structure["content"]
     tmp_path = git_repo_setup["root"]
 
-    (content_dir / "test.md").write_text("""---
+    (content_dir / "test.md").write_text(
+        """---
 title: Test Post
 description: Test Description
 permalink: /test
 tags: [test]
 ---
-""")
+"""
+    )
     monkeypatch.setattr(
         script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
     )

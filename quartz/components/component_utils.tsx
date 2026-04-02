@@ -10,7 +10,7 @@ export function formatTitle(title: string): string {
   // Replace single quotes with double quotes for consistency
   title = title.replace(/(?<prefix> |^)'/g, '$<prefix>"')
   title = title.replace(/'(?<suffix>[ ?!.]|$)/g, '"$<suffix>')
-  title = applyTextTransforms(title)
+  title = applyTextTransforms(title, { useNbsp: false })
 
   // Convert title to title case
   title = titleCase(title, { locale })

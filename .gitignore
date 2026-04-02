@@ -27,6 +27,7 @@ lost-pixel/*
 /blob-report/
 /playwright-report/
 /playwright/.cache/
+quartz/**snapshots*
 
 # Temporary & Backup Files
 *~

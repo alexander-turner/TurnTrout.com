@@ -1,7 +1,6 @@
 import type { Element, Root, Text } from "hast"
 
-import { describe, expect, it, jest } from "@jest/globals"
-import fs from "fs"
+import { describe, expect, it } from "@jest/globals"
 import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -31,13 +30,31 @@ series:
   it("parses a minimal valid chart spec", () => {
     const spec = parseChartSpec(MINIMAL_YAML)
     expect(spec.type).toBe("line")
-    expect(spec.x).toEqual({ label: "X", scale: "linear" })
-    expect(spec.y).toEqual({ label: "Y", scale: "linear" })
+    expect(spec.x).toEqual({ label: "X", scale: "linear", min: undefined })
+    expect(spec.y).toEqual({ label: "Y", scale: "linear", min: undefined })
     expect(spec.series).toHaveLength(1)
     expect(spec.series[0].data).toEqual([[1, 2]])
     expect(spec.annotations).toBeUndefined()
     expect(spec.title).toBeUndefined()
     expect(spec.series[0].color).toBeUndefined()
+  })
+
+  it("parses axis min override", () => {
+    const yaml = `
+type: line
+x:
+  label: X
+y:
+  label: Y
+  min: 3
+series:
+  - name: S
+    data:
+      - [1, 5]
+`
+    const spec = parseChartSpec(yaml)
+    expect(spec.y.min).toBe(3)
+    expect(spec.x.min).toBeUndefined()
   })
 
   it("parses title, colors, scale, and annotations", () => {
@@ -179,6 +196,11 @@ annotations:
       'annotations[0] style must be "solid" or "dashed"',
     ],
     [
+      "non-numeric axis min",
+      'type: line\nx:\n  label: X\n  min: "three"\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
+      'Chart "x" axis min must be a number',
+    ],
+    [
       "log scale with zero x value",
       "type: line\nx:\n  label: X\n  scale: log\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [0, 2]",
       'Log scale on "x" axis requires positive values',
@@ -218,7 +240,7 @@ describe("renderLineChart", () => {
   it("produces an SVG root element with correct attributes", () => {
     const svg = renderLineChart(BASIC_SPEC)
     expect(svg.tagName).toBe("svg")
-    expect(svg.properties?.viewBox).toBe("0 0 600 350")
+    expect(svg.properties?.viewBox).toBe("0 0 600 370")
     expect(svg.properties?.class).toBe("smart-chart")
     expect(svg.properties?.role).toBe("img")
     expect(svg.properties?.["aria-label"]).toBe("Test Chart")
@@ -245,17 +267,35 @@ describe("renderLineChart", () => {
     expect(texts).toContain("Y Axis")
   })
 
-  it("renders data points with data attributes", () => {
+  it("renders data points with data attributes and instant CSS tooltips", () => {
     const svg = renderLineChart(BASIC_SPEC)
-    const points: Element[] = []
+    const pointGroups: Element[] = []
     visit(svg, "element", (node: Element) => {
-      if (node.tagName === "circle" && node.properties?.class === "smart-chart-point") {
-        points.push(node)
+      if (node.properties?.class === "smart-chart-point-group") {
+        pointGroups.push(node)
       }
     })
-    expect(points).toHaveLength(3)
-    // Points should have data-x, data-y, data-series attributes
-    expect(points[0].properties?.["data-series"]).toBe("Series1")
+    expect(pointGroups).toHaveLength(3)
+    const circle = pointGroups[0].children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "circle",
+    )
+    expect(circle?.properties?.["data-series"]).toBe("Series1")
+    // No native <title> (has ~500ms browser delay)
+    expect(
+      circle?.children.find((c) => c.type === "element" && c.tagName === "title"),
+    ).toBeUndefined()
+    // Tooltip <text> with two <tspan> children (X line, Y line)
+    const tooltip = pointGroups[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
+    )
+    expect(tooltip).toBeDefined()
+    const tspans = (tooltip as Element).children.filter(
+      (c): c is Element => c.type === "element" && c.tagName === "tspan",
+    )
+    expect(tspans).toHaveLength(2)
+    // First point is (0, 0) after sorting
+    expect((tspans[0].children[0] as Text).value).toBe("X Axis: 0")
+    expect((tspans[1].children[0] as Text).value).toBe("Y Axis: 0")
   })
 
   it("renders a line path", () => {
@@ -271,7 +311,7 @@ describe("renderLineChart", () => {
     expect(paths[0].properties?.d).toBeTruthy()
   })
 
-  it("renders annotations", () => {
+  it("renders annotations with instant CSS tooltips", () => {
     const svg = renderLineChart(BASIC_SPEC)
     const annotations: Element[] = []
     visit(svg, "element", (node: Element) => {
@@ -280,40 +320,57 @@ describe("renderLineChart", () => {
       }
     })
     expect(annotations).toHaveLength(1)
-    // Find dashed annotation line
+    // Find dashed annotation line (no native <title>)
     const annotLine = annotations[0].children.find(
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(annotLine?.properties?.["stroke-dasharray"]).toBe("6,4")
-    // Find annotation label
-    const annotText = annotations[0].children.find(
-      (c): c is Element => c.type === "element" && c.tagName === "text",
+    expect(
+      annotLine?.children.find((c) => c.type === "element" && c.tagName === "title"),
+    ).toBeUndefined()
+    // Tooltip <text> with a single <tspan>
+    const tooltip = annotations[0].children.find(
+      (c): c is Element => c.type === "element" && c.properties?.class === "smart-chart-tooltip",
     )
-    const labelNode = annotText?.children[0]
+    expect(tooltip).toBeDefined()
+    const tspan = (tooltip as Element).children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "tspan",
+    )
+    expect((tspan?.children[0] as Text).value).toBe("Target: 75")
+    // Find annotation label (separate visible text, not a tooltip)
+    const annotLabel = annotations[0].children.find(
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class !== "smart-chart-tooltip",
+    )
+    const labelNode = annotLabel?.children[0]
     expect(labelNode?.type === "text" && labelNode.value).toBe("Target")
   })
 
-  it("includes accessible SVG title element", () => {
+  it("includes accessible <desc> with data summary instead of root <title>", () => {
     const svg = renderLineChart(BASIC_SPEC)
-    const titleElements: Element[] = []
+    const descElements: Element[] = []
     visit(svg, "element", (node: Element) => {
-      if (node.tagName === "title") titleElements.push(node)
+      if (node.tagName === "desc") descElements.push(node)
     })
-    expect(titleElements).toHaveLength(1)
-    const titleChild = titleElements[0].children[0]
-    expect(titleChild.type === "text" && titleChild.value).toBe("Test Chart")
+    // No root-level <title> (would cause whole-chart hover tooltip)
+    const rootTitles = svg.children.filter((c) => c.type === "element" && c.tagName === "title")
+    expect(rootTitles).toHaveLength(0)
+    // <desc> with data summary
+    expect(descElements).toHaveLength(1)
+    expect(descElements[0].properties?.id).toBe("chart-desc-Series1")
+    expect(svg.properties?.["aria-describedby"]).toBe("chart-desc-Series1")
+    const descText = descElements[0].children[0]
+    expect(descText.type === "text" && descText.value).toContain("X Axis:")
+    expect(descText.type === "text" && descText.value).toContain("Series1: 3 points")
+    expect(descText.type === "text" && descText.value).toContain("Target at y = 75")
   })
 
-  it("uses default accessible title when no title provided", () => {
+  it("uses default aria-label when no title provided", () => {
     const spec: ChartSpec = { ...BASIC_SPEC, title: undefined }
     const svg = renderLineChart(spec)
-    const titleElements: Element[] = []
-    visit(svg, "element", (node: Element) => {
-      if (node.tagName === "title") titleElements.push(node)
-    })
-    expect(titleElements).toHaveLength(1)
-    const titleChild = titleElements[0].children[0]
-    expect(titleChild.type === "text" && titleChild.value).toBe("Line chart")
+    expect(svg.properties?.["aria-label"]).toBe("Line chart")
   })
 
   it("renders without title when not provided", () => {
@@ -450,11 +507,14 @@ describe("renderLineChart", () => {
       (c): c is Element => c.type === "element" && c.tagName === "line",
     )
     expect(line?.properties?.["stroke-dasharray"]).toBe("none")
-    // No text child for label
-    const texts = annotations[0].children.filter(
-      (c) => c.type === "element" && c.tagName === "text",
+    // Only the tooltip text, no visible label text
+    const visibleLabels = annotations[0].children.filter(
+      (c): c is Element =>
+        c.type === "element" &&
+        c.tagName === "text" &&
+        c.properties?.class !== "smart-chart-tooltip",
     )
-    expect(texts).toHaveLength(0)
+    expect(visibleLabels).toHaveLength(0)
   })
 
   it("extends y domain to include annotation values", () => {
@@ -481,6 +541,28 @@ describe("renderLineChart", () => {
       if (node.properties?.class === "smart-chart-annotation") annotations.push(node)
     })
     expect(annotations).toHaveLength(1)
+  })
+
+  it("applies axis min overrides to domains", () => {
+    const spec: ChartSpec = {
+      type: "line",
+      x: { label: "X", min: -5 },
+      y: { label: "Y", min: 0 },
+      series: [
+        {
+          name: "S",
+          data: [
+            [1, 50],
+            [10, 100],
+          ],
+        },
+      ],
+    }
+    const svg = renderLineChart(spec)
+    // The y-axis should show ticks starting from 0 (not 50, the data min)
+    const texts: string[] = []
+    visit(svg, "text", (node: Text) => texts.push(node.value))
+    expect(texts).toContain("0")
   })
 
   it("formats integer ticks without decimals", () => {
@@ -786,24 +868,6 @@ series:
   it("has the correct plugin name", () => {
     const plugin = Charts()
     expect(plugin.name).toBe("Charts")
-  })
-
-  it("provides tooltip script via externalResources", () => {
-    jest.spyOn(fs, "readFileSync").mockReturnValue("// smart-chart-tooltip script")
-    try {
-      const plugin = Charts()
-      const resources = plugin.externalResources?.(mockCtx) ?? {}
-      const jsResources = resources.js ?? []
-      expect(jsResources).toHaveLength(1)
-      expect(jsResources[0]).toMatchObject({
-        loadTime: "afterDOMReady",
-        contentType: "inline",
-      })
-      const scriptResource = jsResources[0] as { script: string }
-      expect(scriptResource.script).toContain("smart-chart-tooltip")
-    } finally {
-      jest.restoreAllMocks()
-    }
   })
 
   it("handles className as non-array", () => {

@@ -2650,17 +2650,17 @@ def test_check_tengwar_characters(html, expected):
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Favicon inside word-joiner span (valid)
+        # Favicon inside favicon-span (valid)
         (
-            '<a>text<span class="word-joiner" aria-hidden="true">\u2060'
+            '<a>te<span class="favicon-span">xt'
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></span></a>',
             [],
         ),
-        # Favicon without word-joiner span parent (invalid)
+        # Favicon without favicon-span parent (invalid)
         (
             '<a>text<svg class="favicon" data-domain="example_com"'
             ' style="--mask-url: url(test.svg);"></svg></a>',
-            ["Favicon (example_com) missing word-joiner span as parent"],
+            ["Favicon (example_com) missing favicon-span as parent"],
         ),
         # Favicon inside .no-favicon-span (should be ignored)
         (
@@ -2668,23 +2668,23 @@ def test_check_tengwar_characters(html, expected):
             '<svg class="favicon" style="--mask-url: url(test.svg);"></svg></div>',
             [],
         ),
-        # img.favicon without word-joiner parent (invalid)
+        # img.favicon without favicon-span parent (invalid)
         (
             '<a>text<img class="favicon" src="test.ico"></a>',
-            ["Favicon (test.ico) missing word-joiner span as parent"],
+            ["Favicon (test.ico) missing favicon-span as parent"],
         ),
         # No favicons at all (valid)
         ("<div><p>No favicons</p></div>", []),
-        # Mixed: one with, one without word-joiner parent
+        # Mixed: one with, one without favicon-span parent
         (
             "<div>"
-            '<a>ok<span class="word-joiner">\u2060'
+            '<a>o<span class="favicon-span">k'
             '<svg class="favicon" data-domain="ok_com"'
             ' style="--mask-url: url(ok.svg);"></svg></span></a>'
             '<a>bad<svg class="favicon" data-domain="bad_com"'
             ' style="--mask-url: url(bad.svg);"></svg></a>'
             "</div>",
-            ["Favicon (bad_com) missing word-joiner span as parent"],
+            ["Favicon (bad_com) missing favicon-span as parent"],
         ),
         # Nested .no-favicon-span (should be ignored)
         (
@@ -2694,10 +2694,10 @@ def test_check_tengwar_characters(html, expected):
         ),
     ],
 )
-def test_check_favicon_word_joiner(html, expected):
-    """Test the check_favicon_word_joiner function."""
+def test_check_favicon_span(html, expected):
+    """Test the check_favicon_span function."""
     soup = BeautifulSoup(html, "html.parser")
-    assert built_site_checks.check_favicon_word_joiner(soup) == expected
+    assert built_site_checks.check_favicon_span(soup) == expected
 
 
 @pytest.mark.parametrize(

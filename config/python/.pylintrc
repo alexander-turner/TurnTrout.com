@@ -82,7 +82,7 @@ ignore-long-lines = ^\s*(# )?<?https?://\S+>?$
 indent-after-paren = 4
 indent-string = '    '
 max-line-length = 80
-max-module-lines = 1000
+max-module-lines = 1100
 single-line-class-stmt = no
 single-line-if-stmt = no
 

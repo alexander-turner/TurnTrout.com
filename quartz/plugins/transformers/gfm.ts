@@ -11,7 +11,7 @@ import smartypants from "remark-smartypants"
 import { visit } from "unist-util-visit"
 
 import { QuartzTransformerPlugin } from "../types"
-import { createWordJoinerSpan } from "./utils"
+import { spliceAndWrapLastChars } from "./utils"
 
 export interface Options {
   enableSmartyPants: boolean
@@ -49,7 +49,7 @@ export function findFootnoteBackArrow(footnoteNode: Element): Element | null {
     return null
   }
 
-  const lastParagraph = footnoteNode.children.find(
+  const lastParagraph = footnoteNode.children.findLast(
     (child) => child.type === "element" && child.tagName === "p",
   ) as Element | undefined
 
@@ -514,33 +514,30 @@ export function removeBackArrowFromChildren(footnoteParent: Element): void {
 
 /**
  * Add a back arrow to the footnote. Modifies the footnote node in place.
+ *
+ * Splices the last few characters from the final text node and wraps them
+ * with the back arrow in a nowrap span (`white-space: nowrap`), using the
+ * same approach as favicon link icons.
  */
 export function maybeSpliceAndAppendBackArrow(node: Element, backArrow: Element): void {
-  const lastParagraph = node.children[node.children.length - 1] as Element | undefined
-  if (!lastParagraph || lastParagraph.tagName !== "p") {
+  const lastParagraph = node.children.findLast(
+    (child) => child.type === "element" && (child as Element).tagName === "p",
+  ) as Element | undefined
+  if (!lastParagraph) {
     return
   }
 
   removeBackArrowFromChildren(lastParagraph)
 
-  // Handle empty paragraph case
-  if (lastParagraph.children.length === 0) {
-    lastParagraph.children = [backArrow]
-    return
-  }
+  // Find the last text node in the paragraph
+  const children = [...lastParagraph.children]
+  const lastTextNode = children.reverse().find((child) => child.type === "text") as Text | undefined
 
-  // Get the last text node without modifying the original array
-  const children2 = [...lastParagraph.children]
-  const lastTextNode = children2.reverse().find((child) => child.type === "text") as Text
-
-  // Handle whitespace-only case
+  // Handle whitespace-only or no text case
   if (!lastTextNode || lastTextNode.value.trim() === "") {
-    lastParagraph.children = [lastTextNode, backArrow].filter(Boolean)
+    lastParagraph.children.push(backArrow)
     return
   }
 
-  // Wrap back arrow inside word-joiner span to prevent line-break orphaning
-  const wordJoiner = createWordJoinerSpan()
-  wordJoiner.children.push(backArrow)
-  lastParagraph.children.push(wordJoiner)
+  lastParagraph.children.push(spliceAndWrapLastChars(lastTextNode, lastParagraph, backArrow))
 }

@@ -18,7 +18,7 @@ import {
   normalizePathForCounting,
   normalizeUrl,
   readFaviconCounts,
-} from "./linkfavicons"
+} from "./favicons"
 
 const logger = createWinstonLogger("countlinks")
 
@@ -41,13 +41,13 @@ export function getFaviconCounts(): Map<string, number> {
   // Otherwise, read from persisted file (cross-process usage, e.g., during Playwright tests)
   logger.info(`In-memory favicon counter is empty, attempting to read from ${faviconCountsFile}`)
 
-  // Use the centralized reading function from linkfavicons.ts
+  // Use the centralized reading function from favicons.ts
   return readFaviconCounts()
 }
 
 /**
  * Determines what favicon path a link would get based on its URL.
- * Uses the same logic as linkfavicons.ts to predict favicon paths.
+ * Uses the same logic as favicons.ts to predict favicon paths.
  * Returns format-agnostic path (without extension) for counting.
  */
 function getFaviconPathForLink(url: string): string | null {
@@ -63,13 +63,13 @@ function getFaviconPathForLink(url: string): string | null {
     return specialFaviconPaths.rss
   }
 
-  // Skip asset links (reuse centralized check from linkfavicons.ts)
+  // Skip asset links (reuse centralized check from favicons.ts)
   if (isAssetLink(url)) {
     return null
   }
 
   try {
-    // Normalize relative URLs to absolute (reuse from linkfavicons.ts)
+    // Normalize relative URLs to absolute (reuse from favicons.ts)
     const normalizedUrl = normalizeUrl(url)
     const urlObj = new URL(normalizedUrl)
     const hostname = urlObj.hostname

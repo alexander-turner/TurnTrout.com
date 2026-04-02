@@ -313,7 +313,8 @@ test.describe("Table of contents", () => {
     const headerLocator = page.locator("h1").last()
     await headerLocator.scrollIntoViewIfNeeded()
     const tocHighlightLocator = page.locator("#table-of-contents .active").first()
-    await expect(tocHighlightLocator).toBeVisible()
+    // TOC highlight updates via IntersectionObserver after scroll; allow extra time on Firefox/Safari
+    await expect(tocHighlightLocator).toBeVisible({ timeout: 10_000 })
 
     const initialHighlightText = await tocHighlightLocator.textContent()
     expect(initialHighlightText).not.toBeNull()

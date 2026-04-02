@@ -25,7 +25,7 @@ import type { FilePath } from "../../util/path"
 import { specialFaviconPaths } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
 import { countAllFavicons, faviconCounter, getFaviconCounts } from "./countFavicons"
-import { getQuartzPath } from "./linkfavicons"
+import { getQuartzPath } from "./favicons"
 
 let tempDir: string
 let mockCtx: BuildCtx

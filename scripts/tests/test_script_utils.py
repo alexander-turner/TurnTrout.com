@@ -278,11 +278,13 @@ def test_get_files_ignore_dirs(tmp_path):
     [
         # Basic permalink
         (
-            {"test1.md": """---
+            {
+                "test1.md": """---
 permalink: /test-page
 title: Test Page
 ---
-# Content"""},
+# Content"""
+            },
             {"test-page": "test1.md"},
         ),
         # Multiple files with permalinks
@@ -303,10 +305,12 @@ title: Other Page
         ),
         # File without permalink should be skipped
         (
-            {"test3.md": """---
+            {
+                "test3.md": """---
 title: No Permalink
 ---
-# Content"""},
+# Content"""
+            },
             {},
         ),
         # Files in drafts directory
@@ -328,18 +332,22 @@ permalink: /draft
         ),
         # Invalid YAML should be skipped
         (
-            {"invalid.md": """---
+            {
+                "invalid.md": """---
 permalink: /test
 title: "Unclosed quote
 ---
-# Content"""},
+# Content"""
+            },
             {},
         ),
         # Empty front matter should be skipped
         (
-            {"empty.md": """---
+            {
+                "empty.md": """---
 ---
-# Content"""},
+# Content"""
+            },
             {},
         ),
         # Mixed valid and invalid files
@@ -355,32 +363,38 @@ permalink: /valid-page
         ),
         # Test permalink appearing in aliases
         (
-            {"test1.md": """---
+            {
+                "test1.md": """---
 permalink: /test-page
 aliases: [/test-page, /other-alias]
 title: Test Page
 ---
-# Content"""},
+# Content"""
+            },
             {"test-page": "test1.md"},
         ),
         # Test permalink as only alias
         (
-            {"test2.md": """---
+            {
+                "test2.md": """---
 permalink: /test-page
 aliases: /test-page
 title: Test Page
 ---
-# Content"""},
+# Content"""
+            },
             {"test-page": "test2.md"},
         ),
         # Test permalink in list of aliases
         (
-            {"test3.md": """---
+            {
+                "test3.md": """---
 permalink: /test-page
 aliases: [/first-alias, /test-page, /last-alias]
 title: Test Page
 ---
-# Content"""},
+# Content"""
+            },
             {"test-page": "test3.md"},
         ),
     ],
@@ -421,13 +435,15 @@ def test_build_permalink_map_nested_directories(tmp_path: Path) -> None:
 
     # Create markdown files
     md_files = {
-        tmp_path / "post1.md": """---
+        tmp_path
+        / "post1.md": """---
 permalink: /posts/post1/
 title: "Post 1"
 ---
 # Content of Post 1.
 """,
-        drafts_dir / "draft1.md": """---
+        drafts_dir
+        / "draft1.md": """---
 permalink: /drafts/draft1/
 title: "Draft 1"
 ---
@@ -894,12 +910,14 @@ def test_get_non_code_text_with_placeholder(
     [
         # Basic cases
         (
-            {"test.md": """---
+            {
+                "test.md": """---
 title: Test
 aliases: [/alias1, /alias2]
 ---
 # Content
-"""},
+"""
+            },
             {"/alias1", "/alias2"},
         ),
         (
@@ -921,32 +939,38 @@ aliases: [/alias3, /alias4]
         ),
         # No aliases
         (
-            {"test.md": """---
+            {
+                "test.md": """---
 title: Test
 ---
 # Content
-"""},
+"""
+            },
             set(),
         ),
         # Permalink removal
         (
-            {"test.md": """---
+            {
+                "test.md": """---
 title: Test
 permalink: /test
 aliases: [/alias1, /test, /alias2]
 ---
 # Content
-"""},
+"""
+            },
             {"/alias1", "/alias2"},
         ),
         # String alias (ignored)
         (
-            {"test.md": """---
+            {
+                "test.md": """---
 title: Test
 aliases: /single-alias
 ---
 # Content
-"""},
+"""
+            },
             set(),
         ),
         # Mixed files
@@ -968,12 +992,14 @@ title: Without Aliases
         ),
         # Invalid YAML (skipped)
         (
-            {"invalid.md": """---
+            {
+                "invalid.md": """---
 title: "Unclosed quote
 aliases: [/alias1, /alias2]
 ---
 # Content
-"""},
+"""
+            },
             set(),
         ),
         # Nested directories
@@ -1001,16 +1027,20 @@ aliases: [/nested-alias1, /nested-alias2]
         ),
         # Empty front matter
         (
-            {"empty.md": """---
+            {
+                "empty.md": """---
 ---
 # Content
-"""},
+"""
+            },
             set(),
         ),
         # No front matter
         (
-            {"no_front_matter.md": """# Content without front matter
-"""},
+            {
+                "no_front_matter.md": """# Content without front matter
+"""
+            },
             set(),
         ),
     ],

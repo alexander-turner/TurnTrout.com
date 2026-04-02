@@ -66,14 +66,15 @@ To measure the importance of sublayer contributions originating much earlier in 
 >
 > ```chart
 > type: line
-> title: "Layer Horizon vs Loss of GPT2-XL (48 layers)"
+> title: "Layer Horizon vs Loss for GPT2-XL (48 layers)"
 > x:
->   label: Layer Horizon
+>   label: Layer horizon
 > y:
 >   label: Loss
+>   min: 3
 > series:
 >   - name: Loss
->     color: "var(--darkblue)"
+>     color: "var(--blue)"
 >     data:
 >       - [0, 8.92]
 >       - [2, 7.85]
@@ -103,7 +104,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 > annotations:
 >   - type: horizontal-line
 >     value: 3.1418
->     label: Baseline
+>     label: Baseline loss
 >     style: dashed
 > ```
 >
