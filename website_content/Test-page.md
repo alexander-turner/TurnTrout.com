@@ -88,7 +88,7 @@ Unordered list inside a description list
   - Roam / note-taking
 
 Code block in a `<dl>`
-: To verify that a commit `ABC012` was indeed committed by a given date, run
+: To verify that a commit `ABC012` was indeed committed by a given date, run:
 
   ```shell
   git clone https://github.com/alexander-turner/.timestamps
