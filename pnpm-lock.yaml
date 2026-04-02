@@ -61,10 +61,10 @@ overrides:
 
 patchedDependencies:
   pa11y@9.0.1:
-    hash: 0162466acdfc91c360d4c16a966ab4867a7243e9697033ba3f19c1f5554c9ed2
+    hash: 53c3bfb372c741997f7b6d75518c4f3ed1a5be9b3ccf3ae16904feb90bb8c5ae
     path: patches/pa11y@9.0.1.patch
   pa11y@9.1.1:
-    hash: f2267f0a5db00bf1ba58fdad0bc2b3b66158deec45c337c991f36dd19a056c1d
+    hash: 91649c642a6fbdcea14e61453f3ae4b1bcb36d2c874b392a6cd3bb16424cbaef
     path: patches/pa11y@9.1.1.patch
 
 importers:
@@ -506,7 +506,7 @@ importers:
         version: 3.3.2
       pa11y:
         specifier: 9.0.1
-        version: 9.0.1(patch_hash=0162466acdfc91c360d4c16a966ab4867a7243e9697033ba3f19c1f5554c9ed2)(typescript@5.9.3)
+        version: 9.0.1(patch_hash=53c3bfb372c741997f7b6d75518c4f3ed1a5be9b3ccf3ae16904feb90bb8c5ae)(typescript@5.9.3)
       pa11y-ci:
         specifier: 4.1.0
         version: 4.1.0(typescript@5.9.3)
@@ -18040,7 +18040,7 @@ snapshots:
       kleur: 4.1.5
       lodash: 4.17.23
       node-fetch: 2.7.0
-      pa11y: 9.1.1(patch_hash=f2267f0a5db00bf1ba58fdad0bc2b3b66158deec45c337c991f36dd19a056c1d)(typescript@5.9.3)
+      pa11y: 9.1.1(patch_hash=91649c642a6fbdcea14e61453f3ae4b1bcb36d2c874b392a6cd3bb16424cbaef)(typescript@5.9.3)
       protocolify: 3.0.0
       puppeteer: 24.40.0(typescript@5.9.3)
       wordwrap: 1.0.0
@@ -18054,7 +18054,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  pa11y@9.0.1(patch_hash=0162466acdfc91c360d4c16a966ab4867a7243e9697033ba3f19c1f5554c9ed2)(typescript@5.9.3):
+  pa11y@9.0.1(patch_hash=53c3bfb372c741997f7b6d75518c4f3ed1a5be9b3ccf3ae16904feb90bb8c5ae)(typescript@5.9.3):
     dependencies:
       axe-core: 4.10.3
       bfj: 9.1.2
@@ -18075,7 +18075,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  pa11y@9.1.1(patch_hash=f2267f0a5db00bf1ba58fdad0bc2b3b66158deec45c337c991f36dd19a056c1d)(typescript@5.9.3):
+  pa11y@9.1.1(patch_hash=91649c642a6fbdcea14e61453f3ae4b1bcb36d2c874b392a6cd3bb16424cbaef)(typescript@5.9.3):
     dependencies:
       '@pa11y/html_codesniffer': 2.6.0
       axe-core: 4.11.1

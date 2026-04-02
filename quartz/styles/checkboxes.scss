@@ -97,10 +97,10 @@ input.checkbox-toggle {
 // text-decoration on ancestors compound/render through all descendants
 // and cannot be overridden by children.
 :is(
-    li:has(> input.checkbox-toggle:checked),
-    li:has(> * > input.checkbox-toggle:checked),
-    li:has(> label > input.checkbox-toggle:checked)
-  ):not(#punctilio-demo *) {
+  li:has(> input.checkbox-toggle:checked),
+  li:has(> * > input.checkbox-toggle:checked),
+  li:has(> label > input.checkbox-toggle:checked)
+):not(#punctilio-demo *) {
   > label,
   > p {
     opacity: 0.75;

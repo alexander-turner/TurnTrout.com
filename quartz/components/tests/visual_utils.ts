@@ -518,8 +518,15 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
 
   // Remove the autoplay attribute so the Safari autoplay script
   // (safari-autoplay.js) won't restart videos on user-interaction events.
+  // Use elementHandle to avoid Locator auto-waiting: in search previews,
+  // video elements may become detached during re-renders, causing
+  // locator.evaluate() to hang indefinitely (no timeout).
   for (const video of await mediaScope.locator("video[autoplay]").all()) {
-    await video.evaluate((el) => el.removeAttribute("autoplay"))
+    const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
+    if (handle) {
+      await handle.evaluate((el) => el.removeAttribute("autoplay"))
+      await handle.dispose()
+    }
   }
 }
 
