@@ -47,6 +47,10 @@ test.beforeEach(async ({ page }) => {
   // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
   await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
+  // Wait for the SPA router to finish initializing so a late navigation
+  // doesn't destroy the execution context during evaluate (Safari).
+  await page.waitForFunction(() => window.__routerInitialized === true)
+
   // Hide all video and audio controls
   await page.evaluate(() => {
     const mediaElements = document.querySelectorAll("video, audio")
