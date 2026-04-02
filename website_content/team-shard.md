@@ -52,9 +52,11 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 
 Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout holds a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch and sporadic meetings with Alex Cloud.
 
-Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
+Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, Team Shard lifted together every Wednesday and Thursday in MATS 8.0.
 
-![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-1.avif|Four smiling people flexing for the camera.]]
+![[team-shard-04022026.png|]]
+
+Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day). :)
 
 # Testimonials
 
