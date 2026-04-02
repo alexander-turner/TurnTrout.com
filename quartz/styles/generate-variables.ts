@@ -77,11 +77,9 @@ const formatScssMap = (palette: Record<string, string>): string =>
  */
 const generatePaletteContent = (): string => {
   return `// This file is auto-generated from variables.ts. Do not edit directly.
-
 $dark-colors: (
 ${formatScssMap(darkPalette)},
 );
-
 $light-colors: (
 ${formatScssMap(lightPalette)},
 );

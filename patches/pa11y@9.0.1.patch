@@ -2,14 +2,15 @@ diff --git a/lib/pa11y.js b/lib/pa11y.js
 index 1234567..abcdefg 100644
 --- a/lib/pa11y.js
 +++ b/lib/pa11y.js
-@@ -243,7 +243,10 @@ async function gotoUrl(url, options, state) {
+@@ -243,7 +243,11 @@ async function gotoUrl(url, options, state) {
  	// Navigate to the URL we're going to test
  	if (!options.ignoreUrl) {
  		await state.page.goto(url, {
 -			waitUntil: 'networkidle2',
-+			// Use 'load' instead of 'networkidle2' so that pages with
-+			// long-lived external asset requests (CDN images, font files)
-+			// don't time out. The DOM is fully rendered at 'load'.
++			// Use 'load' instead of 'networkidle2'. networkidle2 hangs on
++			// pages with long-lived connections (analytics, CDN prefetch).
++			// 'load' fires once HTML parsing + local resources finish,
++			// which is sufficient for a11y checks on locally-served sites.
 +			waitUntil: 'load',
  			timeout: options.timeout
  		});

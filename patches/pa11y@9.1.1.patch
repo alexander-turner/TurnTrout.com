@@ -1,15 +1,16 @@
 diff --git a/lib/pa11y.js b/lib/pa11y.js
-index 1d7fc59aca5e2f0b39d59d340f8aa983437492e6..8996168e78cc4c4a7c2854fac21ffe6e8414aac2 100644
+index 1d7fc59aca5e2f0b39d59d340f8aa983437492e6..7ba8b9eb43468c2d6bb5347e687be47b0170e085 100644
 --- a/lib/pa11y.js
 +++ b/lib/pa11y.js
-@@ -264,7 +264,10 @@ async function gotoUrl(url, options, state) {
+@@ -264,7 +264,11 @@ async function gotoUrl(url, options, state) {
  	if (!options.ignoreUrl) {
  		options.log.debug(`Navigating to ${url}`);
  		await state.page.goto(url, {
 -			waitUntil: 'networkidle2',
-+			// Use 'load' instead of 'networkidle2' so that pages with
-+			// long-lived external asset requests (CDN images, font files)
-+			// don't time out. The DOM is fully rendered at 'load'.
++			// Use 'load' instead of 'networkidle2'. networkidle2 hangs on
++			// pages with long-lived connections (analytics, CDN prefetch).
++			// 'load' fires once HTML parsing + local resources finish,
++			// which is sufficient for a11y checks on locally-served sites.
 +			waitUntil: 'load',
  			timeout: options.timeout
  		});
