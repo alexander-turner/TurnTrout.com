@@ -1138,6 +1138,20 @@ describe("deduplicateSvgIds", () => {
     expect((style.children[0] as { type: "text"; value: string }).value).toBe(cssExpected)
   })
 
+  it("skips mermaid SVGs (mermaid ≥11.14.0 handles its own ID prefixing)", () => {
+    const marker = h("marker", { id: "flowchart-pointEnd" })
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-1234" },
+      children: [marker],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    deduplicateSvgIds(tree)
+
+    expect(marker.properties?.id).toBe("flowchart-pointEnd")
+  })
+
   it("skips SVGs without any IDs", () => {
     const rect = h("rect", { width: 100, height: 50 })
     const svg = h("svg", [rect])

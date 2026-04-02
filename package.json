@@ -312,7 +312,8 @@
       "diff": "7.0.0",
       "tmp": "0.2.4",
       "@eslint/plugin-kit": "0.3.4",
-      "qs": "6.14.1"
+      "qs": "6.14.1",
+      "mermaid": "11.14.0"
     },
     "patchedDependencies": {
       "pa11y@9.0.1": "patches/pa11y@9.0.1.patch"

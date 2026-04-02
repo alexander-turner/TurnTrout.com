@@ -361,14 +361,18 @@ function updateStyleReferences(svg: Element, idMap: Map<string, string>): void {
 
 /**
  * Makes SVG internal IDs unique by adding a per-SVG prefix.
- * When multiple SVGs are inlined (e.g., Mermaid diagrams), their internal IDs
- * (markers, clipPaths, etc.) can collide. This function prefixes each SVG's IDs
- * with a unique identifier based on its position in the document.
+ * When multiple SVGs are inlined, their internal IDs (markers, clipPaths, etc.)
+ * can collide. This function prefixes each SVG's IDs with a unique identifier
+ * based on its position in the document.
+ *
+ * Mermaid SVGs (id starting with "mermaid") are skipped because mermaid ≥11.14.0
+ * prefixes its own internal IDs with the diagram's SVG container ID.
  */
 export function deduplicateSvgIds(tree: Root): void {
   let svgIndex = 0
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "svg") return
+    if (node.properties?.id?.toString().startsWith("mermaid")) return
 
     const idMap = collectAndPrefixIds(node, `svg-${svgIndex++}-`)
     if (idMap.size === 0) return
