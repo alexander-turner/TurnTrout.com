@@ -607,6 +607,11 @@ export async function gotoPage(
       throw error
     }
   }
+
+  // Wait for the SPA router to finish initializing so a late client-side
+  // navigation doesn't destroy the execution context before callers can
+  // run page.evaluate() (Safari/WebKit is especially prone to this).
+  await page.waitForFunction(() => window.__routerInitialized === true)
 }
 
 /** Reload the current page by navigating away and back to the original URL.
