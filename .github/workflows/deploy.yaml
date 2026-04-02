@@ -161,53 +161,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Poll for required check runs to complete
-          REQUIRED_CHECKS="visual-testing playwright-tests"
-          MAX_ATTEMPTS=80  # 80 × 30s = 40 min max wait
-          ATTEMPT=0
-
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            ATTEMPT=$((ATTEMPT + 1))
-            ALL_DONE=true
-
-            for CHECK_NAME in $REQUIRED_CHECKS; do
-              # Single API call to avoid TOCTOU race between status and conclusion
-              RESULT=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-                --jq "[.check_runs[] | select(.name == \"$CHECK_NAME\")] | .[0] | \"\(.status // \"missing\") \(.conclusion // \"pending\")\"" \
-                2>/dev/null || echo "missing pending")
-              STATUS="${RESULT%% *}"
-              CONCLUSION="${RESULT#* }"
-
-              if [ "$STATUS" = "missing" ]; then
-                echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: $CHECK_NAME not yet available"
-                ALL_DONE=false
-                break
-              elif [ "$STATUS" != "completed" ]; then
-                echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: $CHECK_NAME still running ($STATUS)"
-                ALL_DONE=false
-                break
-              else
-                # Completed — check conclusion
-                if [ "$CONCLUSION" != "success" ]; then
-                  echo "::error::$CHECK_NAME finished with conclusion: $CONCLUSION"
-                  exit 1
-                fi
-                echo "$CHECK_NAME: success"
-              fi
-            done
-
-            if [ "$ALL_DONE" = true ]; then
-              echo "All required test checks passed"
-              break
-            fi
-
-            sleep 30
+          for WORKFLOW in visual-testing.yaml playwright-tests.yaml; do
+            RUN_ID=$(gh run list --workflow "$WORKFLOW" --commit ${{ github.sha }} \
+              --json databaseId --jq '.[0].databaseId')
+            echo "Waiting for $WORKFLOW (run $RUN_ID)..."
+            gh run watch "$RUN_ID" --exit-status
           done
-
-          if [ "$ALL_DONE" != true ]; then
-            echo "::error::Required checks did not complete within timeout"
-            exit 1
-          fi
 
       - name: Verify Lost Pixel visual changes
         env:
