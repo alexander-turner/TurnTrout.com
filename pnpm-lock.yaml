@@ -289,7 +289,7 @@ importers:
         version: 0.5.21
       subfont:
         specifier: github:alexander-turner/subfont
-        version: https://codeload.github.com/alexander-turner/subfont/tar.gz/88e80af5ac5c31d8aca8968dcc464b642bf07c1b(@types/babel__core@7.20.5)
+        version: https://codeload.github.com/alexander-turner/subfont/tar.gz/5f5435b998b555608de0af3209c49d79ca8ad683(@types/babel__core@7.20.5)
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -8887,8 +8887,8 @@ packages:
   subarg@1.0.0:
     resolution: {integrity: sha512-RIrIdRY0X1xojthNcVtgT9sjpOGagEUKpZdgBUi054OEPFo282yg+zE+t1Rj3+RqKq2xStL7uUHhY+AjbC4BXg==}
 
-  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/88e80af5ac5c31d8aca8968dcc464b642bf07c1b:
-    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/88e80af5ac5c31d8aca8968dcc464b642bf07c1b}
+  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/5f5435b998b555608de0af3209c49d79ca8ad683:
+    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/5f5435b998b555608de0af3209c49d79ca8ad683}
     version: 8.0.0
     engines: {node: '>=18.0.0'}
     hasBin: true
@@ -20184,7 +20184,7 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/88e80af5ac5c31d8aca8968dcc464b642bf07c1b(@types/babel__core@7.20.5):
+  subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/5f5435b998b555608de0af3209c49d79ca8ad683(@types/babel__core@7.20.5):
     dependencies:
       '@gustavnikolaj/async-main-wrap': 3.0.1
       '@hookun/parse-animation-shorthand': 0.1.5
