@@ -150,19 +150,29 @@ jobs:
           name: public-dir
           path: public/
 
-  # Verify Lost Pixel visual changes are within bounds before deploying.
-  # Test-waiting removed: merge queue validates Chromium tests before main.
-  # Firefox/WebKit regressions are caught on the main push itself (not pre-merge).
-  verify-visual-changes:
+  # Wait for test workflows to pass before deploying to production.
+  # Checks visual-testing, playwright-tests, and Lost Pixel results.
+  verify-test-results:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 240
+    timeout-minutes: 90
     steps:
-      - name: Wait for Lost Pixel status and verify visual changes
+      - name: Wait for test workflows to succeed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Check if visual testing was skipped (combine-and-upload won't produce a LP check)
+          for WORKFLOW in visual-testing.yaml playwright-tests.yaml; do
+            RUN_ID=$(gh run list --workflow "$WORKFLOW" --commit ${{ github.sha }} \
+              --json databaseId --jq '.[0].databaseId')
+            echo "Waiting for $WORKFLOW (run $RUN_ID)..."
+            gh run watch "$RUN_ID" --exit-status
+          done
+
+      - name: Verify Lost Pixel visual changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if combine-and-upload ran (it produces the LP check)
           COMBINE_STATUS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
             --jq '[.check_runs[] | select(.name == "combine-and-upload")] | .[0].conclusion // "missing"' \
             2>/dev/null || echo "missing")
@@ -239,8 +249,8 @@ jobs:
           echo "Visual differences within acceptable range (< 10)"
 
   deploy:
-    needs: [prepare-deploy, verify-visual-changes]
-    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-visual-changes.result == 'success') }}
+    needs: [prepare-deploy, verify-test-results]
+    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-test-results.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
