@@ -214,15 +214,14 @@ def print_table(
         total_current_cost += cur_cost
         total_optimal_cost += opt_cost
 
-        cur_str = str(cfg.current_shards) if cfg.current_shards > 0 else "n/a"
-        cur_wm_str = f"{cur_wm:.1f}" if cfg.current_shards > 0 else "n/a"
-        cur_cost_str = f"${cur_cost:.3f}" if cfg.current_shards > 0 else "n/a"
-        saved_str = f"${saved:.3f}" if cfg.current_shards > 0 else "n/a"
-
+        has_current = cfg.current_shards > 0
         print(
-            f"{cfg.name:<28} {cur_str:>4} {opt:>4} "
-            f"{cur_wm_str:>8} {opt_wm:>8.1f} {wc:>5.1f}m "
-            f"{cur_cost_str:>8} ${opt_cost:.3f} {saved_str:>8}"
+            f"{cfg.name:<28} "
+            f"{str(cfg.current_shards) if has_current else 'n/a':>4} {opt:>4} "
+            f"{f'{cur_wm:.1f}' if has_current else 'n/a':>8} {opt_wm:>8.1f} {wc:>5.1f}m "
+            f"{f'${cur_cost:.3f}' if has_current else 'n/a':>8} "
+            f"${opt_cost:.3f} "
+            f"{f'${saved:.3f}' if has_current else 'n/a':>8}"
         )
 
     print("-" * 90)
@@ -236,6 +235,7 @@ def print_table(
 
 
 def main() -> None:
+    """Print optimized shard counts and cost comparisons."""
     print("Optimal CI Shard Calculator")
     print(
         f"\nInputs: {PLAYWRIGHT_TESTS} Playwright tests, {VISUAL_TESTS} visual tests, "

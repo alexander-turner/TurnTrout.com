@@ -3,8 +3,7 @@ permalink: power-seeking-beyond-MDPs
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+lw-page-url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 lw-is-question: 'false'
 lw-posted-at: 2021-08-08T02:02:18.975000Z
 lw-last-modification: 2023-05-16T20:31:52.646000Z
@@ -30,21 +29,18 @@ lw-sequence-image-grid: sequencesgrid/hawnw9czray8awc74rnl
 lw-sequence-image-banner: sequences/qb8zq6qeizk7inc3gk2e
 sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: quantitative-strength-of-instrumental-convergence
-prev-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets
-  For Optimal Policies
+prev-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies
 next-post-slug: instrumental-convergence-via-vnm-preferences
-next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental
-  Incentives
+next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-08-08 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
+original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
-description: "Power-seeking is instrumentally convergent for agents maximizing over
-  possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 

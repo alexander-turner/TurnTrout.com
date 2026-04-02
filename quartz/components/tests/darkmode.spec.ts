@@ -17,6 +17,15 @@ const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, "http://localhost:8080/test-page")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
+  // Wait for setupDarkMode() to finish (fires on initial "nav" event).
+  // Without this, WebKit/Safari can destroy the execution context before
+  // the first page.evaluate in the test body.
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__darkmodeReady === true,
+    null,
+    { timeout: 15_000 },
+  )
 })
 
 class DarkModeHelper {

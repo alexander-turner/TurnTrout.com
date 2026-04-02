@@ -3,8 +3,7 @@ permalink: review-of-debate-on-instrumental-convergence
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
+lw-page-url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 lw-is-question: 'false'
 lw-posted-at: 2021-01-12T03:57:06.655000Z
 lw-last-modification: 2021-01-12T17:05:55.320000Z
@@ -17,8 +16,7 @@ lw-base-score: 40
 lw-vote-count: 13
 af-base-score: 16
 af-num-comments-on-upload: 1
-title: Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio,
-  Zador, and More'
+title: Review of 'Debate on Instrumental Convergence between LeCun, Russell, Bengio, Zador, and More'
 lw-latest-edit: 2021-01-12T17:05:56.148000Z
 lw-is-linkpost: 'false'
 tags:
@@ -29,14 +27,13 @@ aliases:
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-01-12 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
+original_url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 skip_import: true
 card_image:
-description: Experts clash on the dangers of "instrumental convergence" in AI, but
-  clear definitions and formal thought are sorely needed.
-date_updated: 2025-11-22 00:21:52.667251
+description: Experts clash on the dangers of "instrumental convergence" in AI, but clear definitions and formal thought are sorely needed.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 

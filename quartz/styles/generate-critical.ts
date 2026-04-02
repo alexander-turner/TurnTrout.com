@@ -2,6 +2,8 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 
+import { darkPalette, lightPalette } from "./variables"
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -86,22 +88,22 @@ em {
   font-family: var(--font-italic-situational);
 }
 
-:root[saved-theme="dark"],
+:root[data-theme="dark"],
 .dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
-  --green: #a6d189;
-  --blue: #8caaee;
+  --background: #{$background-dark};
+  --foreground: #{$foreground-dark};
+  --red: ${darkPalette.red};
+  --green: ${darkPalette.green};
+  --blue: ${darkPalette.blue};
 }
 
-:root[saved-theme="light"],
+:root[data-theme="light"],
 .light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --red: #be415c;
-  --green: #22820d;
-  --blue: #3e6ccb;
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
+  --red: ${lightPalette.red};
+  --green: ${lightPalette.green};
+  --blue: ${lightPalette.blue};
 }
 
 .float-right {

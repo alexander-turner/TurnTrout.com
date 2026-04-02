@@ -515,6 +515,12 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   }
 
   await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
+
+  // Remove the autoplay attribute so the Safari autoplay script
+  // (safari-autoplay.js) won't restart videos on user-interaction events.
+  for (const video of await mediaScope.locator("video[autoplay]").all()) {
+    await video.evaluate((el) => el.removeAttribute("autoplay"))
+  }
 }
 
 /**
@@ -576,19 +582,24 @@ export async function gotoPage(
   url: string,
   loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
 ): Promise<void> {
+  // Pass the caller's loadState directly as waitUntil so Playwright manages
+  // the full navigation lifecycle in one call.  The previous approach used
+  // waitUntil:"commit" (resolves when the server starts sending bytes) then a
+  // separate waitForLoadState(), but WebKit/Safari can destroy the execution
+  // context between those two steps, causing "Execution context was destroyed"
+  // errors on page.evaluate / page.waitForFunction calls.
   try {
-    await page.goto(url, { waitUntil: "commit" })
+    await page.goto(url, { waitUntil: loadState })
   } catch (error: unknown) {
     // WebKit on Linux occasionally crashes with "internal error" on page.goto.
     // Retry once — the second attempt typically succeeds.
     if (error instanceof Error && error.message.includes("internal error")) {
       console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
-      await page.goto(url, { waitUntil: "commit" })
+      await page.goto(url, { waitUntil: loadState })
     } else {
       throw error
     }
   }
-  await page.waitForLoadState(loadState)
 }
 
 /** Reload the current page by navigating away and back to the original URL.
@@ -650,6 +661,11 @@ export async function moveMouseToSafePosition(page: Page): Promise<void> {
  * scroll/search-highlight are all finished.  `page.waitForURL` resolves
  * as soon as `pushState` fires — long before the DOM is ready — so tests
  * that need post-navigation DOM state must use this helper instead.
+ *
+ * If the SPA's fetch times out or fails, it falls back to a full page
+ * navigation (`window.location.href = ...`) without dispatching "nav".
+ * In that case the `page.evaluate` promise is rejected (execution context
+ * destroyed), so we catch that and wait for the new page to finish loading.
  */
 export async function triggerAndWaitForSPANav(
   page: Page,
@@ -665,5 +681,11 @@ export async function triggerAndWaitForSPANav(
   )
 
   await trigger()
-  await navPromise
+  try {
+    await navPromise
+  } catch {
+    // Execution context was destroyed — the SPA fell back to a full page
+    // navigation. Wait for the new page to finish loading.
+    await page.waitForLoadState("load")
+  }
 }

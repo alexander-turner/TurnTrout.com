@@ -19,7 +19,7 @@ import serveHandler from "serve-handler"
 import { WebSocketServer, type WebSocket } from "ws"
 
 import { generateCritical } from "../styles/generate-critical"
-import { generateScss, generateScssRecord } from "../styles/generate-variables"
+import { generateScss, generateScssRecord, generatePalette } from "../styles/generate-variables"
 import {
   fp,
   cacheFile, // @ts-expect-error Importing from a JS file, no types
@@ -79,6 +79,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
   // Generate SCSS files before building
   generateScss()
+  generatePalette()
   generateCritical()
   console.log("SCSS files generated successfully!")
 

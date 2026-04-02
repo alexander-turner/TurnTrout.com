@@ -70,8 +70,6 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
-    with:
-      artifact-name: playwright-public-dir
 
   # Chromium + Firefox on main; Chromium-only on PRs/merge queue
   playwright-tests-linux:
@@ -112,11 +110,12 @@ jobs:
       - name: Install browsers
         run: pnpm run install-browsers
 
-      - name: Download built site
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
-          name: playwright-public-dir
           path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run Playwright tests
         id: playwright
@@ -206,11 +205,12 @@ jobs:
       - name: Install Playwright WebKit browser
         run: pnpm exec playwright install webkit
 
-      - name: Download built site
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
-          name: playwright-public-dir
           path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run Playwright tests
         id: playwright

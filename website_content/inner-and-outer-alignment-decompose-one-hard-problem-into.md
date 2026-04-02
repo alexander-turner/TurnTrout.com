@@ -3,8 +3,7 @@ permalink: against-inner-outer-alignment
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
+lw-page-url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 lw-is-question: "false"
 lw-posted-at: 2022-12-02T02:43:20.915000Z
 lw-last-modification: 2024-03-02T01:18:37.238000Z
@@ -17,8 +16,7 @@ lw-base-score: 141
 lw-vote-count: 73
 af-base-score: 45
 af-num-comments-on-upload: 14
-title: "Inner and outer alignment decompose one hard problem into two extremely hard
-  problems"
+title: "Inner and outer alignment decompose one hard problem into two extremely hard problems"
 lw-latest-edit: 2023-01-24T00:43:58.097000Z
 lw-is-linkpost: "false"
 tags:
@@ -30,19 +28,17 @@ aliases:
 sequence-link: posts#shard-theory
 lw-sequence-title: Shard Theory
 prev-post-slug: alignment-without-total-robustness
-prev-post-title: "Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require
-  Robust Grading"
+prev-post-title: "Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
 date_published: 2022-12-02 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
+original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
-description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural,
-  and extremely hard. Better alignment strategies exist.
-date_updated: 2025-11-22 00:21:52.667251
+description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
+date_updated: 2026-03-29 17:13:24.103427
 createBibtex: true
 ---
+
 
 
 

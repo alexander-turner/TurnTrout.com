@@ -17,10 +17,13 @@ test.describe("Random dropcap color", () => {
     await page.addInitScript(mockRandom, [0.5])
     await gotoPage(page, DROPCAP_URL)
 
-    const color = await page.evaluate(() =>
-      document.documentElement.style.getPropertyValue("--random-dropcap-color"),
-    )
-    expect(color).toBe("")
+    // Retry: WebKit/Safari can destroy the execution context briefly after load
+    await expect(async () => {
+      const color = await page.evaluate(() =>
+        document.documentElement.style.getPropertyValue("--random-dropcap-color"),
+      )
+      expect(color).toBe("")
+    }).toPass({ timeout: 10_000 })
   })
 
   for (const [i, color] of DROPCAP_COLORS.entries()) {
@@ -29,10 +32,13 @@ test.describe("Random dropcap color", () => {
       await page.addInitScript(mockRandom, [0.01, colorFraction])
       await gotoPage(page, DROPCAP_URL)
 
-      const value = await page.evaluate(() =>
-        document.documentElement.style.getPropertyValue("--random-dropcap-color"),
-      )
-      expect(value).toBe(`var(--dropcap-background-${color})`)
+      // Retry: WebKit/Safari can destroy the execution context briefly after load
+      await expect(async () => {
+        const value = await page.evaluate(() =>
+          document.documentElement.style.getPropertyValue("--random-dropcap-color"),
+        )
+        expect(value).toBe(`var(--dropcap-background-${color})`)
+      }).toPass({ timeout: 10_000 })
     })
   }
 

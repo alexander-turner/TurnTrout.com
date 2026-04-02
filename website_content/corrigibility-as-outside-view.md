@@ -37,10 +37,10 @@ use-full-width-images: 'false'
 date_published: 2020-05-08 00:00:00
 original_url: https://www.lesswrong.com/posts/BMj6uMuyBidrdZkiD/corrigibility-as-outside-view
 skip_import: true
-description: Corrigibility may emerge when AI recognizes its flaws by simulating its
-  own decision-making and defers to human judgment when appropriate.
-date_updated: 2025-11-22 00:21:52.667251
+description: Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
