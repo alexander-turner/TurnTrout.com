@@ -18,7 +18,7 @@ import {
   appendArrowToFootnoteListItemVisitor,
   htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
-  stripUnusedMermaidNeoStyles,
+  optimizeMermaidSvgs,
   isValidDlStructure,
   ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
@@ -1038,7 +1038,7 @@ describe("htmlAccessibilityPlugin (integration)", () => {
   })
 })
 
-describe("stripUnusedMermaidNeoStyles", () => {
+describe("optimizeMermaidSvgs", () => {
   it("ignores non-text children in style elements", () => {
     const style: Element = {
       type: "element",
@@ -1053,7 +1053,7 @@ describe("stripUnusedMermaidNeoStyles", () => {
       children: [style],
     }
     const tree: Root = { type: "root", children: [svg] }
-    expect(() => stripUnusedMermaidNeoStyles(tree)).not.toThrow()
+    expect(() => optimizeMermaidSvgs(tree)).not.toThrow()
   })
 
   it("removes [data-look='neo'] CSS rules from mermaid SVG styles", () => {
@@ -1072,12 +1072,57 @@ describe("stripUnusedMermaidNeoStyles", () => {
       children: [style],
     }
     const tree: Root = { type: "root", children: [svg] }
-    stripUnusedMermaidNeoStyles(tree)
+    optimizeMermaidSvgs(tree)
 
     const result = (style.children[0] as { type: "text"; value: string }).value
     expect(result).not.toContain("data-look")
     expect(result).toContain("#mermaid-0 .node{fill:red;}")
     expect(result).toContain("#mermaid-0 .label{color:blue;}")
+  })
+
+  it("handles elements without properties", () => {
+    const noProps = { type: "element" as const, tagName: "g", children: [] } as unknown as Element
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [noProps],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    expect(() => optimizeMermaidSvgs(tree)).not.toThrow()
+  })
+
+  it("strips unnecessary data-* attributes from mermaid SVG elements", () => {
+    const path: Element = {
+      type: "element",
+      tagName: "path",
+      properties: {
+        d: "M 0 0 L 10 5",
+        dataPoints: "W3sieCI...",
+        dataId: "L_EV_H_0",
+        dataEt: "edge",
+        dataEdge: "true",
+        dataLook: "classic",
+        className: "edge-thickness-normal",
+      },
+      children: [],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [path],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    optimizeMermaidSvgs(tree)
+
+    expect(path.properties?.d).toBe("M 0 0 L 10 5")
+    expect(path.properties?.className).toBe("edge-thickness-normal")
+    expect(path.properties?.dataPoints).toBeUndefined()
+    expect(path.properties?.dataId).toBeUndefined()
+    expect(path.properties?.dataEt).toBeUndefined()
+    expect(path.properties?.dataEdge).toBeUndefined()
+    expect(path.properties?.dataLook).toBeUndefined()
   })
 
   it("skips non-mermaid SVGs", () => {
@@ -1095,7 +1140,7 @@ describe("stripUnusedMermaidNeoStyles", () => {
       children: [style],
     }
     const tree: Root = { type: "root", children: [svg] }
-    stripUnusedMermaidNeoStyles(tree)
+    optimizeMermaidSvgs(tree)
 
     expect((style.children[0] as { type: "text"; value: string }).value).toBe(css)
   })

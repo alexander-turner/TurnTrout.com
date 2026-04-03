@@ -294,25 +294,34 @@ export function htmlAccessibilityPlugin() {
 
     makePreElementsKeyboardAccessible(tree)
     makeMermaidSvgsAccessible(tree)
-    stripUnusedMermaidNeoStyles(tree)
+    optimizeMermaidSvgs(tree)
     ensureVideoCaptionTracks(tree)
   }
 }
 
-/** Strips unused `[data-look="neo"]` CSS rules from mermaid SVG inline styles.
- * Mermaid ≥11.14.0 always emits neo look selectors in its theme CSS even when
- * using classic look, adding ~1KB of unused CSS per diagram. */
-export function stripUnusedMermaidNeoStyles(tree: Root): void {
+/** Strips unused CSS and unnecessary attributes from mermaid SVG output.
+ * Mermaid ≥11.14.0 emits neo look CSS selectors and verbose data-* attributes
+ * that aren't needed for static server-rendered SVGs. */
+export function optimizeMermaidSvgs(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "svg") return
     if (!node.properties?.id?.toString().startsWith("mermaid")) return
 
+    // Strip unused [data-look="neo"] CSS rules from inline <style>
     visit(node, "element", (child: Element) => {
       if (child.tagName !== "style") return
       for (const textChild of child.children) {
         if (textChild.type !== "text") continue
-        // Remove CSS rule blocks that target [data-look="neo"]
         textChild.value = textChild.value.replace(/[^{}]*\[data-look="neo"\][^{]*\{[^}]*\}/g, "")
+      }
+    })
+
+    // Strip runtime data-* attributes not needed for static rendering
+    const unnecessaryAttrs = ["dataPoints", "dataId", "dataEt", "dataEdge", "dataLook"]
+    visit(node, "element", (child: Element) => {
+      if (!child.properties) return
+      for (const attr of unnecessaryAttrs) {
+        delete child.properties[attr]
       }
     })
   })
