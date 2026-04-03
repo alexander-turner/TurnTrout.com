@@ -37,11 +37,13 @@ original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/3LocEy9.jpg
 description: A foundational examination of "impact" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-04-02 02:48:16.361446
 card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.'
 no_dropcap: "true"
 createBibtex: true
 ---
+
+
 
 
 
@@ -61,7 +63,6 @@ createBibtex: true
 ![Desired impact measure properties: "1) Be easy to specify, 2) Put catastrophes far away, 3) Put reasonable plans nearby." An example map for a paperclip-making AI shows reasonable plans like "build a factory" nearby, while the catastrophic plan to "cover the planet with factories" is far away.](https://assets.turntrout.com/static/images/posts/ZppOEZJ.avif)
 ​![A graph plots events on a vertical "Goodness" axis and a horizontal "Intuitive impact" axis. The top-left quadrant (low impact, high goodness) shows a stick figure finding a dollar. The bottom-left (low impact, low goodness) shows a frustrated stick figure with a crashed computer. The top-right (high impact, high goodness) shows a peace sign over the Earth. The bottom-right (high impact, low goodness) shows a nuclear explosion. Text at the top: "These catastrophes seem like big deals. We're going to figure out why we intuit some things are big deals, develop an understanding of the relevant parts of reality, and then design an impact measure." Text on the right: "To me, the impactful things feel fundamentally different than the non-impactful things. I find this difference fascinating and beautiful, and look forward to exploring it with you."](https://assets.turntrout.com/static/images/posts/knzoLGJ.avif)
 ![Handwritten text argues that while "impact measurement" may not seem like a key problem for AI alignment, it is a new way of understanding how agents interact. It promises "spoils" like new frameworks and milestones, illustrated by a glowing treasure chest. The text concludes: "Here's one exciting milestone we're shooting for:"](https://assets.turntrout.com/static/images/posts/kIT2ULN.avif)
-![Studying impact measurement for AI provides "spoils: new conceptual frameworks, fresh lines of inquiry, and important theoretical milestones." An open treasure chest filled with glowing gold illustrates these "spoils". The text concludes by teasing an "exciting milestone."](https://assets.turntrout.com/static/images/posts/iSqriuT.avif)
 ​![Text overlay: "An impact measure would be the first proposed safeguard which maybe actually stops a powerful agent with an imperfect objective from ruining things – without assuming anything about the objective. This is a rare property among approaches." The text lurks above an illustration paying homage to the iconic Gandalf-vs-Balrog scene in Moria. The demon's whip ends in a giant paperclip, a metaphor for a misaligned artificial intelligence.](https://assets.turntrout.com/static/images/posts/p4OkxJ1.avif)
 ![Handwritten: "We have our bearing. Let us set out together."](https://assets.turntrout.com/static/images/posts/nFoDRoL.avif)
 ![The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.](https://assets.turntrout.com/static/images/posts/e6vNG2D.avif)
@@ -103,7 +104,7 @@ So what about:
   3. How might we build agents without these incentives?
 
 - The first part of this sequence focuses on foundational concepts crucial for understanding the deeper nature of impact. We will not yet be discussing what to implement.
-- I strongly encourage completing the exercises. At times you shall be given a time limit; it’s important to learn not only to reason correctly, but [with](https://www.readthesequences.com/The-Failures-Of-Eld-Science)[speed:](https://www.readthesequences.com/Einsteins-Speed)
+- I strongly encourage completing the exercises. At times you shall be given a time limit; it’s important to learn not only to reason correctly, but [with](https://www.readthesequences.com/The-Failures-Of-Eld-Science) [speed:](https://www.readthesequences.com/Einsteins-Speed)
 
 > [!quote] [Thinking Physics](https://www.amazon.com/Thinking-Physics-Understandable-Practical-Reality/dp/0935218084)
 >

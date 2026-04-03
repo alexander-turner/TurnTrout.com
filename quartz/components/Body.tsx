@@ -9,6 +9,9 @@ import clipboardScript from "./scripts/clipboard.inline"
 import elvishToggleScript from "./scripts/elvish-toggle.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
+import punctilioDemoScript from "./scripts/punctilio-demo.inline"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
 import scrollIndicatorScript from "./scripts/scroll-indicator.inline"
 // @ts-expect-error Not a module but a script
 // skipcq: JS-W1028
@@ -29,7 +32,11 @@ const searchInterface = (
           id="search-bar"
           name="search"
           type="text"
+          role="combobox"
           aria-label="Search"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="results-container"
           placeholder="Search"
         />
         <div id="search-layout" data-preview />
@@ -53,6 +60,7 @@ Body.afterDOMLoaded = [
   elvishToggleScript,
   smallCapsCopyScript,
   scrollIndicatorScript,
+  punctilioDemoScript,
 ]
 Body.css = clipboardStyle
 

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import type { Root } from "hast"
 
@@ -278,6 +278,31 @@ describe("Head Component", () => {
 
       expect(html).not.toContain('name="robots"')
     })
+
+    it.each([
+      ["https://assets.turntrout.com/static/images/posts/hero.avif", true],
+      [undefined, false],
+    ])(
+      "should preload first content image when firstImageUrl is %s",
+      (firstImageUrl, shouldPreload) => {
+        const propsWithImage = {
+          ...mockProps,
+          fileData: {
+            ...mockFileData,
+            firstImageUrl,
+          } as QuartzPluginData,
+        }
+
+        const html = render(h(Head, propsWithImage))
+
+        if (shouldPreload) {
+          expect(html).toContain(`href="${firstImageUrl}"`)
+          expect(html).toMatch(/rel="preload"[^>]*as="image"/)
+        } else {
+          expect(html).not.toContain("posts/hero.avif")
+        }
+      },
+    )
   })
 
   describe("error handling", () => {

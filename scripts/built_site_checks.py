@@ -4,12 +4,18 @@
 import argparse
 import copy
 import html
+import json
+import mimetypes
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
+import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, Literal, NamedTuple, Set
 from urllib.parse import urlparse
@@ -29,10 +35,13 @@ from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
+    GERMAN_OPEN_QUOTE,
     LEFT_DOUBLE_QUOTE,
+    LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_DOUBLE_QUOTE,
+    RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -143,13 +152,45 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-VALID_PARAGRAPH_ENDING_CHARACTERS = ".!?:;)]}’”…—"
+def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
+    """For dropcap-enabled articles, the first space in the first paragraph must
+    not be a non-breaking space (which creates a visible extra gap)."""
+
+    issues: list[str] = []
+    for article in soup.find_all("article"):
+        if article.get("data-use-dropcap") == "false":
+            continue
+
+        p = article.find("p", recursive=False)
+        if not isinstance(p, Tag):
+            continue
+
+        text = p.get_text()
+        if len(text) >= 2 and text[1] == NBSP:
+            issues.append(
+                f"nbsp after first letter in dropcap paragraph: {text[:20]!r}"
+            )
+
+    return issues
+
+
+VALID_PARAGRAPH_ENDING_CHARACTERS = (
+    ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
+)
 TRIM_CHARACTERS_FROM_END_OF_PARAGRAPH = "↗✓∎"
 PRESENTATIONAL_TAGS = ("span", "br")
+CENTER_DOT = "\u00b7"
+# Minimum number of center dots for a paragraph to be considered a
+# separator-delimited list (e.g. "Smart quotes\u00B7Em dashes\u00B7Ellipses")
+_CENTER_DOT_LIST_THRESHOLD = 2
 
 
 def _should_skip_paragraph(p: Tag) -> bool:
     """Check if a paragraph should be skipped for punctuation checking."""
+    # Skip paragraphs inside quote callouts (quoted external content)
+    if p.find_parent("blockquote", {"data-callout": "quote"}):
+        return True
+
     classes = script_utils.get_classes(p)
     if (
         "subtitle" in classes
@@ -180,6 +221,8 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     characters.
     """
     p_copy = copy.copy(p)
+    for select in p_copy.find_all("select"):
+        select.decompose()
     for link in p_copy.find_all("a", id=True):
         link_id = link.get("id", "")
         if isinstance(link_id, str) and link_id.startswith(
@@ -212,6 +255,10 @@ def check_top_level_paragraphs_end_with_punctuation(
 
             text = _get_paragraph_text_for_punctuation_check(p)
             if not text:
+                continue
+
+            # Skip separator-delimited lists (e.g. "A·B·C·D")
+            if text.count(CENTER_DOT) >= _CENTER_DOT_LIST_THRESHOLD:
                 continue
 
             if text[-1] not in VALID_PARAGRAPH_ENDING_CHARACTERS:
@@ -593,6 +640,10 @@ _MEDIA_EXTENSIONS = list(compress.ALLOWED_EXTENSIONS) + [
     ".svg",
     ".avif",
     ".ico",
+    ".mp3",
+    ".ogg",
+    ".wav",
+    ".flac",
 ]
 
 
@@ -631,7 +682,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
         list of asset URLs that are not from allowed sources
     """
     invalid_sources = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = tag.get("src") or tag.get("href")
@@ -653,7 +704,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
 def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     """Verify the existence of local media files (images, videos, SVGs)."""
     missing_files = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = str(tag.get("src") or tag.get("href"))
@@ -736,6 +787,65 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
                 missing.append("height")
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
+def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that the first content image is optimized for LCP.
+
+    The first non-favicon <img> should have loading="eager" and
+    fetchpriority="high", and a matching <link rel="preload" as="image"> should
+    exist in <head>.
+    """
+    issues: list[str] = []
+
+    # Find the first non-favicon content image
+    article = soup.find("article")
+    if not article or not isinstance(article, Tag):
+        return issues
+
+    first_img = None
+    for img in _tags_only(article.find_all("img")):
+        raw_classes = img.get("class")
+        classes = raw_classes if isinstance(raw_classes, list) else []
+        # Skip favicons and images not processed by the links transformer
+        # (TSX-rendered images won't have a loading attribute)
+        if "favicon" not in classes and img.has_attr("loading"):
+            first_img = img
+            break
+
+    if not first_img:
+        return issues
+
+    src = first_img.get("src", "")
+    loading = first_img.get("loading", "")
+    fetchpriority = first_img.get("fetchpriority", "")
+
+    if loading != "eager":
+        issues.append(
+            f"First content image should have loading='eager', "
+            f"got '{loading}': {src}"
+        )
+    if fetchpriority != "high":
+        issues.append(
+            f"First content image should have fetchpriority='high', "
+            f"got '{fetchpriority}': {src}"
+        )
+
+    # Check for matching preload link in head
+    head = soup.find("head")
+    if head and isinstance(head, Tag) and src:
+        preload_links = head.find_all(
+            "link", attrs={"rel": "preload", "as": "image"}
+        )
+        preload_hrefs = [link.get("href") for link in _tags_only(preload_links)]
+        if str(src) not in preload_hrefs:
+            issues.append(
+                f"Missing <link rel='preload' as='image'> in <head> "
+                f"for first content image: {src}"
+            )
 
     return issues
 
@@ -1058,6 +1168,14 @@ def meta_tags_early(file_path: Path) -> list[str]:
     return issues
 
 
+_http_session = script_utils.http_session()
+
+
+def _head_with_retry(url: str, timeout: int = 10) -> requests.Response:
+    """HEAD request with automatic retry on transient failures."""
+    return _http_session.head(url, timeout=timeout)
+
+
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
     """Check that all iframe sources are responding with a successful status
     code."""
@@ -1078,7 +1196,7 @@ def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
         alt: str = str(iframe.get("alt", ""))
         description: str = f"{title=} ({alt=})"
         try:
-            response = requests.head(src, timeout=10)
+            response = _head_with_retry(src)
             if not response.ok:
                 problematic_iframes.append(
                     f"Iframe source {src} returned status "
@@ -1111,7 +1229,7 @@ def check_iframe_embeds(soup: BeautifulSoup) -> list[str]:
         # Validate external endpoints when possible
         if validators.url(normalized_src):
             try:
-                response = requests.head(normalized_src, timeout=10)
+                response = _head_with_retry(normalized_src)
                 if not response.ok:
                     problematic_embeds.append(
                         f"Iframe embed returned status {response.status_code}"
@@ -1300,6 +1418,87 @@ def check_favicons_are_svgs(soup: BeautifulSoup) -> list[str]:
             non_svg_favicons.append(f"Non-SVG mask favicon found: {mask_url}")
 
     return non_svg_favicons
+
+
+def _build_included_favicon_domains(
+    git_root: Path,
+) -> frozenset[str]:
+    """
+    Compute the set of domain entries whose favicons should appear in the built
+    site, by calling the shared TS module which runs the same
+    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold) as
+    the Quartz transformer.
+
+    Returns a frozenset of underscore-separated domain strings (e.g.
+    ``{"apple_com", "openai_com", "scholar_google_com"}``).
+    """
+    script = str(git_root / "scripts" / "compute_favicon_lists.ts")
+    result = subprocess.run(  # skipcq: BAN-B607
+        ["pnpm", "exec", "tsx", script],
+        capture_output=True,
+        text=True,
+        cwd=str(git_root),
+        check=True,
+    )
+    data = json.loads(result.stdout.strip())
+    return frozenset(data["includedDomains"])
+
+
+def _is_asset_href(href: str) -> bool:
+    """Check if an href points to an asset file (image/video/audio/pdf)."""
+    path = href.split("?")[0].split("#")[0]
+    mime_type, _ = mimetypes.guess_type(path)
+    if not mime_type:
+        return False
+    return (
+        mime_type.startswith(("image/", "video/", "audio/"))
+        or mime_type == "application/pdf"
+    )
+
+
+def _domain_matches(normalised: str, domain: str) -> bool:
+    """Boundary-aware domain matching (avoids e.g. 'x_com' matching
+    'vox_com')."""
+    return normalised == domain or normalised.endswith(f"_{domain}")
+
+
+def check_external_links_have_favicons(
+    soup: BeautifulSoup,
+    included_domains: frozenset[str],
+) -> list[str]:
+    """
+    Check that external links to included domains have favicons.
+
+    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
+    transformer (whitelist + blacklist + count threshold), pre-computed
+    by ``scripts/compute_favicon_lists.ts``.
+
+    Only checks ``<a class="external">`` links inside ``<article>``;
+    component-generated links (nav, aside) never pass through the
+    favicon transformer.
+    """
+    issues: list[str] = []
+
+    for link in soup.select("article a.external[href]"):
+        href = str(link.get("href", ""))
+        if not href.startswith(("http://", "https://")) or _is_asset_href(href):
+            continue
+
+        hostname = urlparse(href).hostname or ""
+        if not hostname:
+            continue
+
+        normalised = hostname.removeprefix("www.").replace(".", "_")
+        if not any(_domain_matches(normalised, d) for d in included_domains):
+            continue
+
+        if not link.select_one("svg.favicon, img.favicon"):
+            _append_to_list(
+                issues,
+                f"Link missing favicon: {hostname} ({href})",
+            )
+
+    return issues
 
 
 def _check_populate_commit_count(
@@ -1530,7 +1729,22 @@ def _untransform_text(label: str) -> str:
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
-    return normalized_spaces.strip()
+    # Normalize em-dashes, en-dashes, and ellipsis to ASCII equivalents
+    normalized_dashes = (
+        normalized_spaces.replace("\u2014", " - ")
+        .replace("\u2013", " - ")
+        .replace(ELLIPSIS, "...")
+    )
+    # Strip diacritics (e.g. naïve → naive, café → cafe) via Unicode decomposition
+    nfkd = unicodedata.normalize("NFKD", normalized_dashes)
+    stripped_diacritics = "".join(
+        c for c in nfkd if unicodedata.category(c) != "Mn"
+    )
+    # Normalize comma+quote ordering: "," and "," both → ",
+    normalized_quotes = stripped_diacritics.replace('",', ',"')
+    # Collapse multiple spaces from dash normalization
+    normalized_quotes = re.sub(r" +", " ", normalized_quotes)
+    return normalized_quotes.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
@@ -1568,12 +1782,20 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
     return problematic_metadata
 
 
+@dataclass(frozen=True)
+class CheckOptions:
+    """Configuration options shared across all file checks."""
+
+    should_check_fonts: bool = False
+    defined_css_variables: Set[str] | None = None
+    favicon_included_domains: frozenset[str] | None = None
+
+
 def check_file_for_issues(
     file_path: Path,
     base_dir: Path,
     md_path: Path | None,
-    should_check_fonts: bool,
-    defined_css_variables: Set[str] | None = None,
+    opts: CheckOptions,
 ) -> _IssuesDict:
     """
     Check a single HTML file for various issues.
@@ -1582,8 +1804,7 @@ def check_file_for_issues(
         file_path: Path to the HTML file to check
         base_dir: Path to the base directory of the site
         md_path: Path to the markdown file that generated the HTML file
-        should_check_fonts: Whether to check for preloaded fonts
-        defined_css_variables: Set of defined CSS variables
+        opts: Shared configuration for all file checks.
 
     Returns:
         Dictionary of issues found in the HTML file
@@ -1618,6 +1839,7 @@ def check_file_for_issues(
         "unrendered_html": check_unrendered_html(soup),
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
+        "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -1632,17 +1854,19 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
         "inline_style_variables": check_inline_style_variables(
-            soup, defined_css_variables
+            soup, opts.defined_css_variables
         ),
         "problematic_iframe_embeds": check_iframe_embeds(soup),
         "empty_populate_elements": check_populate_elements_nonempty(soup),
         "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
             soup
         ),
+        "dropcap_leading_nbsp": check_dropcap_no_leading_nbsp(soup),
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),
@@ -1651,7 +1875,12 @@ def check_file_for_issues(
         "orphaned_subfigures": check_orphaned_subfigures(soup),
     }
 
-    if should_check_fonts:
+    if opts.favicon_included_domains is not None:
+        issues["missing_favicons"] = check_external_links_have_favicons(
+            soup, opts.favicon_included_domains
+        )
+
+    if opts.should_check_fonts:
         issues["missing_preloaded_font"] = not check_preloaded_fonts(soup)
 
     if md_path and md_path.is_file():
@@ -1820,12 +2049,22 @@ def check_spacing(
 
 
 ALLOWED_ELT_PRECEDING_CHARS = (
-    "[({-—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r" + NBSP
+    "[({-–—~×"
+    + LEFT_DOUBLE_QUOTE
+    + LEFT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
+    + GERMAN_OPEN_QUOTE
+    + "=+' \n\t\r−"
+    + NBSP
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
-    "])}.,;!?:-—~×+"
+    "])}.,;!?:-–—~×(+"
+    + LEFT_DOUBLE_QUOTE
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
@@ -1877,6 +2116,85 @@ def check_link_spacing(soup: BeautifulSoup) -> list[str]:
         )
 
     return problematic_links
+
+
+_INLINE_FORMATTING_SELECTORS = (
+    "abbr.small-caps",
+    "span.ordinal-num",
+    "sup.ordinal-suffix",
+    "span.fraction",
+    "span.monospace-arrow",
+    "span.right-arrow",
+)
+
+
+_DIGITS = "0123456789"
+_LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_ABBR_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+# Arrows can appear adjacent to letters in transformation examples
+# (e.g. "Text→text", "HTML→html")
+_ARROW_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS + _LETTERS
+_ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS + _LETTERS
+_ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
+
+# Per-selector overrides for allowed preceding/following characters
+_SELECTOR_PRECEDING_CHARS: dict[str, str] = {
+    "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
+    "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+    "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
+    "span.right-arrow": _ARROW_PRECEDING_CHARS,
+}
+_SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
+    "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
+    "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
+    "span.right-arrow": _ARROW_FOLLOWING_CHARS,
+}
+
+
+def _abbr_starts_with_digit(element: Tag) -> bool:
+    """Check if an abbreviation element's text starts with a digit."""
+    text = element.get_text()
+    return bool(text) and text[0].isdigit()
+
+
+def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
+    """
+    Check spacing around transform-produced inline elements.
+
+    Catches whitespace-eating bugs from HAST transformers that wrap text in
+    inline elements (e.g. "9combinations" from a missing space before a
+    smallcaps ``<abbr>``).
+
+    Abbreviations allow a trailing "s" for plurals (e.g. "LLMs" renders as
+    ``<abbr>llm</abbr>s``). Arrows allow digits after them (e.g. reversed
+    numbers like "↗563"). Abbreviations starting with a digit skip the
+    preceding-space check (e.g. "3Blue1Brown" → ``3Blue<abbr>1brown</abbr>``).
+    """
+    issues: list[str] = []
+    for selector in _INLINE_FORMATTING_SELECTORS:
+        preceding = _SELECTOR_PRECEDING_CHARS.get(
+            selector, ALLOWED_ELT_PRECEDING_CHARS
+        )
+        following = _SELECTOR_FOLLOWING_CHARS.get(
+            selector, ALLOWED_ELT_FOLLOWING_CHARS
+        )
+        for element in _tags_only(soup.select(selector)):
+            # Skip elements inside no-formatting zones (e.g. punctilio
+            # README examples like "hello" → "hello")
+            if should_skip(element):
+                continue
+
+            # Skip preceding-space check for abbrs starting with a digit,
+            # since they're part of proper nouns (e.g. "3Blue1Brown")
+            if selector == "abbr.small-caps" and _abbr_starts_with_digit(
+                element
+            ):
+                issues.extend(check_spacing(element, following, "after"))
+            else:
+                issues.extend(
+                    _check_element_spacing(element, preceding, following)
+                )
+    return issues
 
 
 # Whitelisted emphasis patterns that should be ignored
@@ -2215,6 +2533,282 @@ def check_root_files_location(base_dir: Path) -> list[str]:
     return issues
 
 
+_SKIP_PARENT_CLASSES = (
+    "sequence-links",
+    "page-listing",
+    "authors",
+    "admonition-metadata",
+    "backlinks",
+    "tag-container",
+    "all-tags",
+)
+
+# Block-level elements that should never appear inside <p>. When they
+# do (e.g. transclusion wrapping tables in <span> inside <p>),
+# get_text() concatenates child text without spaces, producing garbage.
+_BLOCK_LEVEL_TAGS = frozenset(
+    ["table", "div", "blockquote", "figure", "pre", "ul", "ol"]
+    + [f"h{n}" for n in range(1, 7)]
+)
+
+
+def _normalize_smallcaps(el_copy: Tag) -> None:
+    """
+    Replace ``<abbr class="small-caps">`` with its original text.
+
+    Each smallcaps ``<abbr>`` carries a ``data-original-text``
+    attribute holding the pre-transform text (e.g. ``ReLU``,
+    ``14B``).  This function substitutes the element with that
+    original text so the spellchecker sees source-faithful tokens.
+    """
+    for abbr in el_copy.select("abbr.small-caps"):
+        original = abbr.get("data-original-text")
+        if original:
+            abbr.replace_with(NavigableString(str(original)))
+        else:
+            # Fallback for legacy HTML without the attribute
+            abbr.string = abbr.get_text().upper()
+
+
+def _should_skip_spellcheck_paragraph(element: Tag) -> bool:
+    """Check whether a ``<p>`` element should be excluded from spell-
+    checking."""
+    in_skip_container = bool(
+        any(element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES)
+        or element.find_parent(id="content-meta")
+    )
+    return bool(
+        should_skip(element)
+        or element.find_parent(["nav", "footer", "header"])
+        or in_skip_container
+        or "page-listing-title" in script_utils.get_classes(element)
+        # Skip <p> with block-level children (invalid HTML from
+        # e.g. transclusion): get_text() concatenates without spaces.
+        or element.find(_BLOCK_LEVEL_TAGS)
+    )
+
+
+def _normalize_paragraph_text(element: Tag) -> str:
+    """Normalize a ``<p>`` element into spellchecker-friendly plain text."""
+    el_copy = copy.copy(element)
+
+    _normalize_smallcaps(el_copy)
+
+    # Fix inline element word boundaries:
+    # - <br> → space (prevents "state<br>while" → "statewhile")
+    # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
+    # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
+    for br in el_copy.find_all("br"):
+        br.replace_with(" ")
+    for sub in el_copy.find_all("sub"):
+        sub.insert_before(" ")
+    for sup in el_copy.find_all("sup"):
+        sup.unwrap()
+
+    # Remove footnote ref links to avoid "word1" concatenation
+    for link in el_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            parent = link.parent
+            if isinstance(parent, Tag) and parent.name == "sup":
+                parent.decompose()
+            else:
+                link.decompose()
+
+    text = script_utils.get_non_code_text(el_copy).strip()
+    # Normalize smart quotes to ASCII so spellchecker treats
+    # contractions like "I've" as single words instead of "I"+"ve"
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    # Rejoin dropcap-split contractions: the dropcap transformer
+    # inserts a space before apostrophes ("I've" → "I 've") for
+    # CSS rendering, which makes the spellchecker see "ve" as a
+    # standalone word. Rejoin them here.
+    text = re.sub(r"\b(\w) '", r"\1'", text)
+    # Pad sentence-ending punctuation with a trailing space so
+    # the spellchecker doesn't glue it to the preceding word
+    # (e.g. "submodules." → "submodules .")
+    return re.sub(r"(\w)([.!?])$", r"\1 \2", text)
+
+
+def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
+    """
+    Extract flattened visible text from ``<p>`` elements.
+
+    Strips code, KaTeX, script, and style content, replaces
+    smallcaps abbreviation elements with their original text
+    (via ``data-original-text``), and inserts spaces around
+    ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
+    for each paragraph.
+    """
+    paragraphs: list[str] = []
+    # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
+    for article in _tags_only(soup.find_all("article")):
+        for element in _tags_only(article.find_all("p")):
+            if _should_skip_spellcheck_paragraph(element):
+                continue
+            text = _normalize_paragraph_text(element)
+            if text:
+                paragraphs.append(text)
+    return paragraphs
+
+
+def _write_paragraphs_to_tempfile(
+    paragraph_map: dict[str, list[str]],
+) -> tuple[Path, dict[int, str]]:
+    """Write paragraph texts to a temp file and return path + line mapping."""
+    line_to_source: dict[int, str] = {}
+    line_num = 1
+
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        dir=_GIT_ROOT,
+        prefix=".spellcheck-rendered-",
+        delete=False,
+        encoding="utf-8",
+    ) as tmp:
+        for file_path, paragraphs in paragraph_map.items():
+            for para in paragraphs:
+                tmp.write(f"{para}\n")
+                line_to_source[line_num] = file_path
+                line_num += 1
+        return Path(tmp.name), line_to_source
+
+
+# Patterns passed to spellchecker-cli --ignore to suppress false positives
+# at the tool level. Each regex is anchored with ^ and $ by spellchecker-cli.
+_SPELLCHECK_IGNORE_PATTERNS: list[str] = [
+    r"\d.*",  # starts with digit: model sizes ("0.7B"), measurements ("3.7M")
+    r"\.?\d.*",  # optional dot then digit: ".0118mg"
+    r".*[³²¹⁰].*",  # Unicode superscripts: "m³"
+    r".*=.*",  # contains equals sign: "11=10.34mg"
+    r".{1,2}",  # 1-2 char tokens: "ve", "al"
+]
+
+
+def _parse_spellcheck_output(
+    stdout: str, line_to_source: dict[int, str]
+) -> list[str]:
+    """Parse spellchecker-cli output into issue strings with source
+    annotations."""
+    issues: list[str] = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line or "warning" not in line or line.startswith("\u26a0"):
+            continue
+
+        # spellchecker-cli format: "- LINE:COL-LINE:COL  warning ..."
+        match = re.match(r".*?(\d+):\d+-\d+:\d+", line)
+        if not match:
+            issues.append(line)
+            continue
+        ln = int(match.group(1))
+        source = line_to_source.get(ln, "unknown")
+        issues.append(f"[{source}] {line}")
+    return issues
+
+
+def _spellcheck_flattened_paragraphs(
+    paragraph_map: dict[str, list[str]],
+) -> list[str]:
+    """
+    Run ``spellchecker-cli`` on flattened paragraph text.
+
+    Writes all paragraphs to a temp ``.txt`` file (one per line) and
+    invokes the same spellchecker used for source markdown.  Returns a
+    list of human-readable issue strings.
+
+    The wordlist is passed directly — ``data-original-text`` on
+    smallcaps elements means the extracted text already uses
+    source-faithful casing, so case-insensitive expansion is
+    unnecessary.
+    """
+    if not paragraph_map:
+        return []
+
+    pnpm = shutil.which("pnpm")
+    if pnpm is None:
+        return ["pnpm not found — skipping rendered-text spellcheck"]
+
+    wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
+
+    dict_args = ["--dictionaries", str(wordlist)] if wordlist.exists() else []
+    ignore_args: list[str] = []
+    if _SPELLCHECK_IGNORE_PATTERNS:
+        ignore_args = ["--ignore", *_SPELLCHECK_IGNORE_PATTERNS]
+    try:
+        result = subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
+            [
+                pnpm,
+                "exec",
+                "spellchecker",
+                "--no-suggestions",
+                "--quiet",
+                "--files",
+                str(tmp_path),
+                "--plugins",
+                "spell",
+                *dict_args,
+                *ignore_args,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(_GIT_ROOT),
+        )
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+    if result.returncode == 0 or not result.stdout:
+        return []
+
+    return _parse_spellcheck_output(result.stdout, line_to_source)
+
+
+def _resolve_md_path(
+    file: str,
+    root_path: Path,
+    public_dir: Path,
+    file_path: Path,
+    permalink_to_md_path_map: dict,
+) -> Path | None:
+    """Resolve the Markdown source path for an HTML file at the public root."""
+    if root_path != public_dir:
+        return None
+    stem = Path(file).stem
+    md_path = permalink_to_md_path_map.get(
+        stem
+    ) or permalink_to_md_path_map.get(stem.lower())
+    if not md_path and script_utils.should_have_md(file_path):
+        raise FileNotFoundError(f"Markdown file for {stem} not found")
+    return md_path
+
+
+def _collect_paragraphs_for_spellcheck(
+    file: str,
+    file_path: Path,
+    public_dir: Path,
+    paragraph_map: dict[str, list[str]],
+) -> None:
+    """Collect flattened paragraph text for spellcheck, skipping test pages."""
+    if Path(file).stem == "test-page":
+        return
+    # skipcq: PTC-W6004
+    with open(file_path, encoding="utf-8") as f:
+        soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+    if script_utils.is_redirect(soup_for_paras) or soup_for_paras.find(
+        "div", class_="page-listing"
+    ):
+        return
+    paras = _extract_flat_paragraph_texts(soup_for_paras)
+    if paras:
+        rel = str(file_path.relative_to(public_dir))
+        paragraph_map[rel] = paras
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2227,37 +2821,30 @@ def _process_html_files(  # pylint: disable=too-many-locals
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
     files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
     citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    paragraph_map: dict[str, list[str]] = {}
 
+    included_domains = _build_included_favicon_domains(public_dir.parent)
+    check_opts = CheckOptions(
+        should_check_fonts=check_fonts,
+        defined_css_variables=defined_css_vars,
+        favicon_included_domains=included_domains,
+    )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            is_valid_file = (
-                file.endswith(".html") and Path(file).stem not in files_to_skip
-            )
-            if not is_valid_file:
+            if not file.endswith(".html") or Path(file).stem in files_to_skip:
                 continue
 
             file_path = root_path / file
-            md_path = None
-            if root_path == public_dir:
-                md_path = permalink_to_md_path_map.get(
-                    Path(file).stem
-                ) or permalink_to_md_path_map.get(Path(file).stem.lower())
-                if not md_path and script_utils.should_have_md(file_path):
-                    raise FileNotFoundError(
-                        f"Markdown file for {Path(file).stem} not found"
-                    )
-
-            issues = check_file_for_issues(
-                file_path,
-                public_dir,
-                md_path,
-                should_check_fonts=check_fonts,
-                defined_css_variables=defined_css_vars,
+            md_path = _resolve_md_path(
+                file, root_path, public_dir, file_path, permalink_to_md_path_map
             )
 
+            issues = check_file_for_issues(
+                file_path, public_dir, md_path, check_opts
+            )
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
@@ -2265,11 +2852,23 @@ def _process_html_files(  # pylint: disable=too-many-locals
             _maybe_collect_citation_keys(
                 file_path, public_dir, citation_to_files
             )
+            _collect_paragraphs_for_spellcheck(
+                file, file_path, public_dir, paragraph_map
+            )
 
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)
     if citation_issues:
         _print_issues(public_dir, {"duplicate_citations": citation_issues})
+        issues_found_in_html = True
+
+    # Spellcheck flattened paragraph text across all pages
+    spelling_issues = _spellcheck_flattened_paragraphs(paragraph_map)
+    if spelling_issues:
+        _print_issues(
+            public_dir,
+            {"rendered_text_spelling": spelling_issues},
+        )
         issues_found_in_html = True
 
     return issues_found_in_html

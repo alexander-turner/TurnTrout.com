@@ -3,8 +3,7 @@ permalink: review-of-but-exactly-how-complex-and-fragile
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/r6p5cqT6aWYGCYHJx/review-of-but-exactly-how-complex-and-fragile
+lw-page-url: https://www.lesswrong.com/posts/r6p5cqT6aWYGCYHJx/review-of-but-exactly-how-complex-and-fragile
 lw-is-question: 'false'
 lw-posted-at: 2021-01-06T18:39:03.521000Z
 lw-last-modification: 2021-02-17T04:22:11.674000Z
@@ -27,12 +26,10 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-01-06 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/r6p5cqT6aWYGCYHJx/review-of-but-exactly-how-complex-and-fragile
+original_url: https://www.lesswrong.com/posts/r6p5cqT6aWYGCYHJx/review-of-but-exactly-how-complex-and-fragile
 skip_import: true
-description: A review of Katja Grace's post questioning the "value is fragile" argument,
-  arguing it sparked valuable but confused debate.
-date_updated: 2025-11-22 00:21:52.667251
+description: A review of Katja Grace's post questioning the "value is fragile" argument, arguing it sparked valuable but confused debate.
+date_updated: 2026-03-29 17:13:24.103427
 ---
 
 
@@ -42,7 +39,8 @@ date_updated: 2025-11-22 00:21:52.667251
 
 
 
-I've thought about (concepts related to) the fragility of value [quite](/the-catastrophic-convergence-conjecture#Objective-vs-value-specific-catastrophes) [a bit](/non-obstruction-motivates-corrigibility) over the last year, and so I returned to Katja Grace's [_But exactly how complex and fragile?_](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile) with renewed appreciation (I'd previously commented only [a brief microcosm](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=GAxppfoKhiFRrWHgK) of this review). I'm glad that Katja wrote this post and I'm glad that everyone commented. I often see [private Google docs full of nuanced discussion which will never see the light of day](https://www.lesswrong.com/posts/hnvPCZ4Cx35miHkw3/why-is-so-much-discussion-happening-in-private-google-docs), and that makes me sad, and I'm happy that people discussed this publicly.
+
+I've thought about (concepts related to) the fragility of value [quite](/the-catastrophic-convergence-conjecture#objective-vs-value-specific-catastrophes) [a bit](/non-obstruction-motivates-corrigibility) over the last year, and so I returned to Katja Grace's [_But exactly how complex and fragile?_](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile) with renewed appreciation (I'd previously commented only [a brief microcosm](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=GAxppfoKhiFRrWHgK) of this review). I'm glad that Katja wrote this post and I'm glad that everyone commented. I often see [private Google docs full of nuanced discussion which will never see the light of day](https://www.lesswrong.com/posts/hnvPCZ4Cx35miHkw3/why-is-so-much-discussion-happening-in-private-google-docs), and that makes me sad, and I'm happy that people discussed this publicly.
 
 I'll split this review into two parts, since [the nominations called for](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=upiLXPNDbKWoudatP) review of both the post and the comments:
 
@@ -148,7 +146,6 @@ If no such decomposition takes place, I think debate is just too hard and opaque
 
 To concretely point out something I consider somewhat confused:
 
-<!-- vale off -->
 > [!quote] `johnswentworth`'s [the top-rated comment](https://www.lesswrong.com/posts/xzFQp7bmkoKfnae9R/but-exactly-how-complex-and-fragile?commentId=36Zaej9ppdApxcmFc)
 >
 > I think \[Katja's summary\] is an oversimplification of the fragility argument, which people tend to use in discussion because there's some nontrivial conceptual distance on the way to a more rigorous fragility argument.
@@ -156,7 +153,6 @@ To concretely point out something I consider somewhat confused:
 > The main conceptual gap is the idea that "distance" is not a pre-defined concept. Two points which are close together in human-concept-space may be far apart in a neural network's learned representation space or in an AGI's world-representation-space. It may be that value is not very fragile in human-concept-space; points close together in human-concept-space may usually have similar value. But that will definitely not be true in all possible representations of the world, and we don't know how to reliably formalize/automate human-concept-space.
 >
 > The key point is not "if there is any distance between your description and what is truly good, you will lose everything", but rather, "we don't even know what the relevant distance metric is or how to formalize it". And it is definitely the case, at least, that many mathematically simple distance metrics _do_ display value fragility.
-<!-- vale on -->
 
 John makes good points. But what exactly _happens_ between "we write down something too distant from the 'truth'" and the result? The AI happens. But this part, the dynamics, it's kept invisible.
 

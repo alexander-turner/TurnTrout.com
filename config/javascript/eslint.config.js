@@ -1,10 +1,12 @@
 import pluginJs from "@eslint/js"
 import eslintConfigPrettier from "eslint-config-prettier"
 import jestPlugin from "eslint-plugin-jest"
+import jsxA11y from "eslint-plugin-jsx-a11y"
 import perfectionist from "eslint-plugin-perfectionist"
 import playwright from "eslint-plugin-playwright"
 import pluginReact from "eslint-plugin-react"
-import * as regexpPlugin from "eslint-plugin-regexp"
+import reactHooks from "eslint-plugin-react-hooks"
+import regexpPlugin from "eslint-plugin-regexp"
 import globals from "globals"
 import { configs as tseslintConfigs } from "typescript-eslint"
 
@@ -33,6 +35,42 @@ export default [
   pluginJs.configs.recommended,
   ...tseslintConfigs.recommended,
   pluginReact.configs.flat.recommended,
+  jsxA11y.flatConfigs.recommended,
+
+  // React Hooks rules
+  {
+    plugins: {
+      "react-hooks": reactHooks,
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+
+  // Async/await correctness
+  {
+    rules: {
+      "require-await": "error",
+    },
+  },
+
+  // Disable rules for test/spec files:
+  // - react-hooks: Playwright's `use()` triggers false positives
+  // - require-await: mock methods often need async signatures
+  {
+    files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "require-await": "off",
+    },
+  },
+  {
+    files: ["**/tests/fixtures.ts"],
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+    },
+  },
 
   // Playwright specific config for test files
   {
@@ -75,6 +113,7 @@ export default [
       "**/*.min.js",
       "**/*.min.ts",
       "quartz/i18n/",
+      "quartz/static/scripts/img-comparison-slider.js",
       ".venv/",
     ],
   },

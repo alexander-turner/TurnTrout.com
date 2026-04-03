@@ -1,5 +1,3 @@
-import type { PageScreenshotOptions } from "@playwright/test"
-
 import { promises as fs } from "fs"
 import sharp from "sharp"
 
@@ -16,6 +14,7 @@ import {
   getScreenshotName,
   wrapH1SectionsInSpans,
   getAllWithWait,
+  gotoPage,
 } from "./visual_utils"
 
 test.describe("wrapH1SectionsInSpans", () => {
@@ -56,21 +55,21 @@ test.describe("wrapH1SectionsInSpans", () => {
     await page.setContent("<html><body><p>No H1s here</p></body></html>")
     await wrapH1SectionsInSpans(page)
 
-    const spans = await page.locator("span[id^='h1-span-']").count()
-    expect(spans).toBe(0)
+    const spans = page.locator("span[id^='h1-span-']")
+    await expect(spans).toHaveCount(0)
   })
 
   test("is idempotent and does not re-wrap already wrapped sections", async ({ page }) => {
     // First call
     await wrapH1SectionsInSpans(page)
-    const initialSpans = await page.locator("span[id^='h1-span-']").all()
-    expect(initialSpans.length).toBe(4)
+    const initialSpans = page.locator("span[id^='h1-span-']")
+    await expect(initialSpans).toHaveCount(4)
     const initialHtml = await page.innerHTML("body")
 
     // Second call
     await wrapH1SectionsInSpans(page)
-    const finalSpans = await page.locator("span[id^='h1-span-']").all()
-    expect(finalSpans.length).toBe(4)
+    const finalSpans = page.locator("span[id^='h1-span-']")
+    await expect(finalSpans).toHaveCount(4)
     const finalHtml = await page.innerHTML("body")
 
     // The DOM should not have changed
@@ -81,8 +80,8 @@ test.describe("wrapH1SectionsInSpans", () => {
     const contentLocator = page.locator("#content")
     await wrapH1SectionsInSpans(contentLocator)
 
-    const spans = await contentLocator.locator("span[id^='h1-span-']").all()
-    expect(spans.length).toBe(4)
+    const spans = contentLocator.locator("span[id^='h1-span-']")
+    await expect(spans).toHaveCount(4)
 
     const section0 = contentLocator.locator("#h1-span-first-h1")
     await expect(section0.locator("h1").first()).toHaveText("First H1")
@@ -96,7 +95,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>
@@ -112,14 +111,14 @@ test.describe("wrapH1SectionsInSpans", () => {
     // The main heading gets its own span
     expect(html).toContain('<span id="h1-span-main-heading">')
     // The footnote section gets its own span
-    expect(html).toContain('<span id="h1-span-footnote-label">')
+    expect(html).toContain('<span id="h1-span-footnotes">')
 
     // The footnote section is NOT inside the main heading's span
     const mainSpan = page.locator("#h1-span-main-heading")
     await expect(mainSpan.locator("section[data-footnotes]")).toHaveCount(0)
 
     // The footnote section IS inside its own span
-    const footnoteSpan = page.locator("#h1-span-footnote-label")
+    const footnoteSpan = page.locator("#h1-span-footnotes")
     await expect(footnoteSpan.locator("section[data-footnotes]")).toHaveCount(1)
   })
 
@@ -131,7 +130,7 @@ test.describe("wrapH1SectionsInSpans", () => {
             <h1 id="main-heading">Main Content</h1>
             <p>Some content</p>
             <section data-footnotes class="footnotes">
-              <h1 id="footnote-label" class="sr-only">Footnotes</h1>
+              <h1 id="footnotes" class="sr-only">Footnotes</h1>
               <ol>
                 <li id="user-content-fn-1">Footnote 1</li>
               </ol>
@@ -148,7 +147,7 @@ test.describe("wrapH1SectionsInSpans", () => {
     const finalHtml = await page.innerHTML("body")
 
     expect(finalHtml).toEqual(initialHtml)
-    expect(await page.locator("span[id^='h1-span-']").count()).toBe(2)
+    await expect(page.locator("span[id^='h1-span-']")).toHaveCount(2)
   })
 })
 
@@ -159,11 +158,12 @@ async function getImageDimensions(buffer: Buffer): Promise<{ width: number; heig
     height: metadata.height ?? 0,
   }
 }
+
 test.describe("visual_utils functions", () => {
   const preferredTheme = "light"
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
     await page.emulateMedia({ colorScheme: preferredTheme })
   })
 
@@ -303,7 +303,7 @@ test.describe("visual_utils functions", () => {
       // Measure inside the browser to avoid Playwright bridge latency.
       // waitForTransitionEnd calls element.evaluate internally, so we
       // bracket it with performance.now() on the same clock.
-      const duration = await element.evaluate(async (el: Element) => {
+      const duration = await element.evaluate((el: Element) => {
         const start = performance.now()
         const computedStyle = window.getComputedStyle(el)
         const transitionDurationValue = computedStyle.transitionDuration
@@ -488,10 +488,15 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
+    // Allow ±1px tolerance for DPR rounding across device presets
     // skipcq: JS-0339
-    expect(dimensions.width).toBeCloseTo(elementBox!.width)
+    expect(dimensions.width).toBeGreaterThanOrEqual(elementBox!.width - 1)
     // skipcq: JS-0339
-    expect(dimensions.height).toBeCloseTo(elementBox!.height)
+    expect(dimensions.width).toBeLessThanOrEqual(elementBox!.width + 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeGreaterThanOrEqual(elementBox!.height - 1)
+    // skipcq: JS-0339
+    expect(dimensions.height).toBeLessThanOrEqual(elementBox!.height + 1)
   })
 
   test("clip option respects specified dimensions", async ({ page }, testInfo) => {
@@ -502,8 +507,11 @@ test.describe("takeRegressionScreenshot", () => {
     })
     const dimensions = await getImageDimensions(screenshot)
 
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 
   test("clip option takes precedence over element screenshot", async ({ page }, testInfo) => {
@@ -515,54 +523,11 @@ test.describe("takeRegressionScreenshot", () => {
     const dimensions = await getImageDimensions(screenshot)
 
     // The dimensions should match the clip, not the element's bounding box
-    expect(dimensions.width).toBeCloseTo(clip.width)
-    expect(dimensions.height).toBeCloseTo(clip.height)
-  })
-
-  test.describe("takeRegressionScreenshot Default Viewport Clipping", () => {
-    test("clips viewport screenshot to clientWidth to avoid Safari gutter", async ({
-      page,
-    }, testInfo) => {
-      testInfo.skip(
-        !/webkit|safari/i.test(testInfo.project.name),
-        "Test is specific to WebKit/Safari gutter behavior",
-      )
-
-      const mockClientWidth = 1200
-      await page.evaluate((width) => {
-        Object.defineProperty(document.documentElement, "clientWidth", {
-          value: width,
-          configurable: true,
-        })
-      }, mockClientWidth)
-
-      // Ensure the test is nontrivial
-      const viewportSize = page.viewportSize()
-      expect(mockClientWidth).not.toBeCloseTo(viewportSize?.width ?? 0)
-
-      const originalScreenshot = page.screenshot
-      let capturedOptions: PageScreenshotOptions | undefined
-
-      page.screenshot = async (options?: PageScreenshotOptions): Promise<Buffer> => {
-        capturedOptions = options
-        // Return an empty buffer to satisfy the type, don't call original
-        return Buffer.from("")
-      }
-
-      try {
-        await takeRegressionScreenshot(page, testInfo, "gutter-test")
-
-        expect(capturedOptions).toBeDefined()
-        expect(capturedOptions?.clip).toBeDefined()
-        expect(capturedOptions?.clip?.width).toBeCloseTo(mockClientWidth)
-        expect(capturedOptions?.clip?.x).toBe(0)
-        expect(capturedOptions?.clip?.y).toBe(0)
-        const viewportHeight = page.viewportSize()?.height
-        expect(capturedOptions?.clip?.height).toBeCloseTo(viewportHeight ?? 0)
-      } finally {
-        page.screenshot = originalScreenshot
-      }
-    })
+    // Allow ±1px tolerance for DPR rounding across device presets
+    expect(dimensions.width).toBeGreaterThanOrEqual(clip.width - 1)
+    expect(dimensions.width).toBeLessThanOrEqual(clip.width + 1)
+    expect(dimensions.height).toBeGreaterThanOrEqual(clip.height - 1)
+    expect(dimensions.height).toBeLessThanOrEqual(clip.height + 1)
   })
 })
 
@@ -765,14 +730,14 @@ test.describe("getAllWithWait", () => {
       </html>
     `)
 
-    // Show elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule showing elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         document.querySelectorAll(".delayed").forEach((el) => {
           ;(el as HTMLElement).style.display = "block"
         })
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".delayed"))
     expect(items).toHaveLength(2)
@@ -784,9 +749,9 @@ test.describe("getAllWithWait", () => {
   test("handles dynamically added elements", async ({ page }) => {
     await page.setContent("<html><body></body></html>")
 
-    // Add elements after a delay
-    setTimeout(async () => {
-      await page.evaluate(() => {
+    // Schedule adding elements after a delay inside the browser context
+    await page.evaluate(() => {
+      setTimeout(() => {
         const body = document.body
         for (let i = 1; i <= 3; i++) {
           const div = document.createElement("div")
@@ -794,8 +759,8 @@ test.describe("getAllWithWait", () => {
           div.textContent = `Dynamic ${i}`
           body.appendChild(div)
         }
-      })
-    }, 100)
+      }, 100)
+    })
 
     const items = await getAllWithWait(page.locator(".dynamic"))
     expect(items).toHaveLength(3)

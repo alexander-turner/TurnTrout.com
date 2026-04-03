@@ -6,7 +6,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { normalizeNbsp } from "../../components/constants"
+import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
 import { slugify, resetSlugger } from "./gfm"
@@ -119,7 +119,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
 
                 if (node.type === "heading" && (node as Heading).depth <= opts.maxDepth) {
                   const heading = node as Heading
-                  const text = applyTextTransforms(customToString(heading))
+                  const text = applyTextTransforms(customToString(heading), { useNbsp: false })
                   const plainText = stripHtmlTagsFromString(text)
                   highestDepth = Math.min(highestDepth, heading.depth)
 
@@ -142,7 +142,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 toc.push({
                   depth: 1,
                   text: "Footnotes",
-                  slug: "footnote-label",
+                  slug: footnoteHeadingId,
                 })
                 logger.debug("Added Footnotes to TOC")
               }

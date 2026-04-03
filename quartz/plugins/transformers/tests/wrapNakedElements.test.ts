@@ -34,17 +34,17 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "naked video element",
         '<video src="test.mp4"></video>',
-        '<span class="video-container"><video src="test.mp4"></video></span>',
+        '<span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span>',
       ],
       [
         "video element with attributes",
         '<video src="test.mp4" controls width="100%"></video>',
-        '<span class="video-container"><video src="test.mp4" controls width="100%"></video></span>',
+        '<span data-src="test.mp4" class="video-container"><video src="test.mp4" controls width="100%"></video></span>',
       ],
       [
         "video element with child source tags",
         '<video controls><source src="test.mp4" type="video/mp4"><source src="test.webm" type="video/webm"></video>',
-        '<span class="video-container"><video controls><source src="test.mp4" type="video/mp4"><source src="test.webm" type="video/webm"></video></span>',
+        '<span data-src="test.mp4" class="video-container"><video controls><source src="test.mp4" type="video/mp4"><source src="test.webm" type="video/webm"></video></span>',
       ],
     ])("should wrap %s in span.video-container", (_, input, expected) => {
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
@@ -75,9 +75,9 @@ describe("WrapNakedElements Plugin Tests", () => {
         '<p><video src="naked2.mp4" controls></video></p>' +
         '<div class="video-container"><video src="wrapped2.mp4" controls></video></div>'
       const expected =
-        '<span class="video-container"><video src="naked1.mp4"></video></span>' +
+        '<span data-src="naked1.mp4" class="video-container"><video src="naked1.mp4"></video></span>' +
         '<span class="video-container"><video src="wrapped1.mp4"></video></span>' +
-        '<p><span class="video-container"><video src="naked2.mp4" controls></video></span></p>' +
+        '<p><span data-src="naked2.mp4" class="video-container"><video src="naked2.mp4" controls></video></span></p>' +
         '<div class="video-container"><video src="wrapped2.mp4" controls></video></div>'
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
     })
@@ -88,25 +88,59 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "video as child of paragraph",
         '<p><video src="test.mp4"></video></p>',
-        '<p><span class="video-container"><video src="test.mp4"></video></span></p>',
+        '<p><span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span></p>',
       ],
       [
         "video with text siblings",
         '<p>Some text <video src="test.mp4"></video> More text</p>',
-        '<p>Some text <span class="video-container"><video src="test.mp4"></video></span> More text</p>',
+        '<p>Some text <span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span> More text</p>',
       ],
       [
         "deeply nested video",
         '<div><section><article><p><video src="deep.mp4"></video></p></article></section></div>',
-        '<div><section><article><p><span class="video-container"><video src="deep.mp4"></video></span></p></article></section></div>',
+        '<div><section><article><p><span data-src="deep.mp4" class="video-container"><video src="deep.mp4"></video></span></p></article></section></div>',
       ],
     ])("should wrap %s", (_, input, expected) => {
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
     })
   })
 
-  describe("No Video Elements", () => {
-    it("should do nothing if there are no video elements", () => {
+  describe("Audio Wrapping", () => {
+    it.each([
+      [
+        "naked audio with src",
+        '<audio src="test.mp3" controls></audio>',
+        '<span data-src="test.mp3" class="audio-container"><audio src="test.mp3" controls></audio></span>',
+      ],
+      [
+        "naked audio with source child",
+        '<audio controls><source src="test.ogg" type="audio/ogg"></audio>',
+        '<span data-src="test.ogg" class="audio-container"><audio controls><source src="test.ogg" type="audio/ogg"></audio></span>',
+      ],
+      [
+        "audio in div wrapper",
+        '<div class="centered"><audio src="test.mp3" controls></audio></div>',
+        '<div class="centered"><span data-src="test.mp3" class="audio-container"><audio src="test.mp3" controls></audio></span></div>',
+      ],
+    ])("should wrap %s in span.audio-container", (_, input, expected) => {
+      expect(testWrapNakedElementsHTML(input)).toBe(expected)
+    })
+
+    it("should not wrap audio already in audio-container", () => {
+      const input = '<span class="audio-container"><audio src="test.mp3" controls></audio></span>'
+      expect(testWrapNakedElementsHTML(input)).toBe(input)
+    })
+
+    it("should omit data-src when audio has no src", () => {
+      const input = "<audio controls></audio>"
+      expect(testWrapNakedElementsHTML(input)).toBe(
+        '<span class="audio-container"><audio controls></audio></span>',
+      )
+    })
+  })
+
+  describe("No Video/Audio Elements", () => {
+    it("should do nothing if there are no video or audio elements", () => {
       const input = '<p>Some text without videos.</p><div><img src="image.png"></div>'
       expect(testWrapNakedElementsHTML(input)).toBe(input)
     })
@@ -165,10 +199,7 @@ describe("WrapNakedElements Plugin Tests", () => {
 
   describe("Edge Cases", () => {
     it.each([
-      [
-        "non-video elements",
-        '<img src="test.jpg"><audio src="test.mp3"></audio><div>content</div>',
-      ],
+      ["non-video/audio elements", '<img src="test.jpg"><div>content</div>'],
       ["empty HTML", ""],
     ])("should handle %s without throwing", (_, input) => {
       expect(() => testWrapNakedElementsHTML(input)).not.toThrow()
@@ -185,7 +216,7 @@ describe("WrapNakedElements Plugin Tests", () => {
       const input =
         '<div class="not-video-container-but-similar"><video src="test.mp4"></video></div>'
       const expected =
-        '<div class="not-video-container-but-similar"><span class="video-container"><video src="test.mp4"></video></span></div>'
+        '<div class="not-video-container-but-similar"><span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span></div>'
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
     })
   })
@@ -218,7 +249,7 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "wraps when video needs wrapping",
         '<div><video src="test.mp4"></video></div>',
-        '<div><span class="video-container"><video src="test.mp4"></video></span></div>',
+        '<div><span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span></div>',
       ],
       [
         "skips when already wrapped",
@@ -228,7 +259,7 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "wraps in paragraph context",
         '<p><video src="test.mp4"></video></p>',
-        '<p><span class="video-container"><video src="test.mp4"></video></span></p>',
+        '<p><span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span></p>',
       ],
     ])("should handle wrapping logic: %s", (_, input, expected) => {
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
@@ -258,7 +289,7 @@ describe("WrapNakedElements Plugin Tests", () => {
     it("should maintain normal processing functionality", () => {
       const normalResult = testWrapNakedElementsHTML('<div><video src="test.mp4"></video></div>')
       expect(normalResult).toBe(
-        '<div><span class="video-container"><video src="test.mp4"></video></span></div>',
+        '<div><span data-src="test.mp4" class="video-container"><video src="test.mp4"></video></span></div>',
       )
     })
 
@@ -294,7 +325,7 @@ describe("WrapNakedElements Plugin Tests", () => {
       const complexInput =
         '<main><section><article><div class="content"><div class="media-section"><video src="deep-nested.mp4" controls><source src="video.webm" type="video/webm"><source src="video.mp4" type="video/mp4"><p>Your browser doesn\'t support HTML5 video.</p></video></div></div></article></section></main>'
       const expectedOutput =
-        '<main><section><article><div class="content"><div class="media-section"><span class="video-container"><video src="deep-nested.mp4" controls><source src="video.webm" type="video/webm"><source src="video.mp4" type="video/mp4"><p>Your browser doesn\'t support HTML5 video.</p></video></span></div></div></article></section></main>'
+        '<main><section><article><div class="content"><div class="media-section"><span data-src="deep-nested.mp4" class="video-container"><video src="deep-nested.mp4" controls><source src="video.webm" type="video/webm"><source src="video.mp4" type="video/mp4"><p>Your browser doesn\'t support HTML5 video.</p></video></span></div></div></article></section></main>'
       expect(testWrapNakedElementsHTML(complexInput)).toBe(expectedOutput)
     })
   })
@@ -309,12 +340,12 @@ describe("WrapNakedElements Plugin Tests", () => {
       [
         "video with text content",
         '<div><p>Text before<video src="test.mp4">Your browser does not support video.</video>Text after</p></div>',
-        '<div><p>Text before<span class="video-container"><video src="test.mp4">Your browser does not support video.</video></span>Text after</p></div>',
+        '<div><p>Text before<span data-src="test.mp4" class="video-container"><video src="test.mp4">Your browser does not support video.</video></span>Text after</p></div>',
       ],
       [
         "video at root level",
         '<video src="root.mp4"></video>',
-        '<span class="video-container"><video src="root.mp4"></video></span>',
+        '<span data-src="root.mp4" class="video-container"><video src="root.mp4"></video></span>',
       ],
     ])("should handle %s", (_, input, expected) => {
       expect(testWrapNakedElementsHTML(input)).toBe(expected)
@@ -332,8 +363,8 @@ describe("WrapNakedElements Plugin Tests", () => {
 
       const expected = `
         <article>
-          <span class="video-container"><video src="naked1.mp4"></video></span>
-          <p><span class="video-container"><video src="naked2.mp4"></video></span></p>
+          <span data-src="naked1.mp4" class="video-container"><video src="naked1.mp4"></video></span>
+          <p><span data-src="naked2.mp4" class="video-container"><video src="naked2.mp4"></video></span></p>
           <span class="video-container"><video src="wrapped1.mp4"></video></span>
           <div class="video-container"><video src="wrapped2.mp4"></video></div>
         </article>

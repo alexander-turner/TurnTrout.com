@@ -1,12 +1,12 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
 import { describe, it, beforeEach, afterEach, expect, jest } from "@jest/globals"
 
 import {
-  uppercaseSmallCapsInHtml,
-  uppercaseSmallCapsInSelection,
+  restoreSmallCapsInHtml,
+  restoreSmallCapsInSelection,
   handleSmallCapsCopy,
   initSmallCapsCopy,
 } from "./smallcaps-copy"
@@ -62,53 +62,66 @@ describe("smallcaps-copy", () => {
     document.body.innerHTML = ""
   })
 
-  describe("uppercaseSmallCapsInHtml", () => {
+  describe("restoreSmallCapsInHtml", () => {
     it.each([
       [
-        "single element",
+        "uses data-original-text when available",
+        '<abbr class="small-caps" data-original-text="NASA">nasa</abbr>',
+        '<abbr class="small-caps" data-original-text="NASA">NASA</abbr>',
+      ],
+      [
+        "uses data-original-text for mixed case",
+        '<abbr class="small-caps" data-original-text="50mV">50mv</abbr>',
+        '<abbr class="small-caps" data-original-text="50mV">50mV</abbr>',
+      ],
+      [
+        "falls back to uppercasing without data-original-text",
         '<abbr class="small-caps">nasa</abbr>',
         '<abbr class="small-caps">NASA</abbr>',
       ],
       [
         "preserves non-small-caps",
-        '<span>hello</span> <abbr class="small-caps">api</abbr> world',
-        '<span>hello</span> <abbr class="small-caps">API</abbr> world',
+        '<span>hello</span> <abbr class="small-caps" data-original-text="API">api</abbr> world',
+        '<span>hello</span> <abbr class="small-caps" data-original-text="API">API</abbr> world',
       ],
       [
-        "multiple elements",
-        '<abbr class="small-caps">html</abbr> and <abbr class="small-caps">css</abbr>',
-        '<abbr class="small-caps">HTML</abbr> and <abbr class="small-caps">CSS</abbr>',
-      ],
-      [
-        "nested elements",
-        '<abbr class="small-caps"><em>api</em> docs</abbr>',
-        '<abbr class="small-caps"><em>API</em> DOCS</abbr>',
+        "handles multiple elements with data-original-text",
+        '<abbr class="small-caps" data-original-text="HTML">html</abbr> and <abbr class="small-caps" data-original-text="CSS">css</abbr>',
+        '<abbr class="small-caps" data-original-text="HTML">HTML</abbr> and <abbr class="small-caps" data-original-text="CSS">CSS</abbr>',
       ],
       ["no small-caps", "<span>hello world</span>", "<span>hello world</span>"],
     ])("%s", (_, input, expected) => {
-      expect(uppercaseSmallCapsInHtml(input)).toBe(expected)
+      expect(restoreSmallCapsInHtml(input)).toBe(expected)
     })
   })
 
-  describe("uppercaseSmallCapsInSelection", () => {
+  describe("restoreSmallCapsInSelection", () => {
     it("returns empty string for empty selection", () => {
       getSelection().removeAllRanges()
-      expect(uppercaseSmallCapsInSelection(getSelection(), false)).toBe("")
+      expect(restoreSmallCapsInSelection(getSelection())).toBe("")
     })
 
     it.each([
       [
-        "uppercases small-caps in selection",
-        '<p>Hello <abbr class="small-caps">api</abbr> world</p>',
-        false,
+        "restores original text from data-original-text",
+        '<p>Hello <abbr class="small-caps" data-original-text="API">api</abbr> world</p>',
         "Hello API world",
       ],
-      ["preserves non-small-caps text", "<p>Normal text here</p>", false, "Normal text here"],
-      ["uppercases everything when isEntirelyInSmallCaps", "<p>some text</p>", true, "SOME TEXT"],
-    ])("%s", (_, html, isEntirelyInSmallCaps, expected) => {
+      [
+        "restores mixed-case from data-original-text",
+        '<p>Signal: <abbr class="small-caps" data-original-text="50mV">50mv</abbr> measured</p>',
+        "Signal: 50mV measured",
+      ],
+      [
+        "falls back to uppercase without data-original-text",
+        '<p>Hello <abbr class="small-caps">api</abbr> world</p>',
+        "Hello API world",
+      ],
+      ["preserves non-small-caps text", "<p>Normal text here</p>", "Normal text here"],
+    ])("%s", (_, html, expected) => {
       document.body.innerHTML = html
       selectContents("body")
-      expect(uppercaseSmallCapsInSelection(getSelection(), isEntirelyInSmallCaps)).toBe(expected)
+      expect(restoreSmallCapsInSelection(getSelection())).toBe(expected)
     })
   })
 
@@ -130,13 +143,23 @@ describe("smallcaps-copy", () => {
 
     it.each([
       [
-        "intercepts copy with small-caps",
+        "restores original text with data-original-text",
+        '<p>Hello <abbr class="small-caps" data-original-text="API">api</abbr> world</p>',
+        "Hello API world",
+      ],
+      [
+        "restores mixed-case with data-original-text",
+        '<p>Hello <abbr class="small-caps" data-original-text="50mV">50mv</abbr> world</p>',
+        "Hello 50mV world",
+      ],
+      [
+        "falls back to uppercase without data-original-text",
         '<p>Hello <abbr class="small-caps">api</abbr> world</p>',
         "Hello API world",
       ],
       [
         "selection starts inside small-caps",
-        '<p><abbr class="small-caps">nasa</abbr> rocks</p>',
+        '<p><abbr class="small-caps" data-original-text="NASA">nasa</abbr> rocks</p>',
         "NASA rocks",
       ],
     ])("%s", (_, html, expectedText) => {
@@ -146,10 +169,29 @@ describe("smallcaps-copy", () => {
       handleSmallCapsCopy(event as unknown as ClipboardEvent)
       expect(event.defaultPrevented).toBe(true)
       expect(event.clipboardData.data["text/plain"]).toBe(expectedText)
-      expect(event.clipboardData.data["text/html"]).toContain(expectedText.match(/[A-Z]{2,}/)?.[0])
     })
 
-    it("handles partial selection within small-caps element", () => {
+    it("uses data-original-text when entirely in small-caps", () => {
+      document.body.innerHTML =
+        '<p><abbr class="small-caps" data-original-text="NASA">nasa</abbr></p>'
+      selectContents("abbr")
+      const event = createClipboardEvent()
+      handleSmallCapsCopy(event as unknown as ClipboardEvent)
+      expect(event.defaultPrevented).toBe(true)
+      expect(event.clipboardData.data["text/plain"]).toBe("NASA")
+    })
+
+    it("uses data-original-text for mixed-case when entirely in small-caps", () => {
+      document.body.innerHTML =
+        '<p><abbr class="small-caps" data-original-text="50mV">50mv</abbr></p>'
+      selectContents("abbr")
+      const event = createClipboardEvent()
+      handleSmallCapsCopy(event as unknown as ClipboardEvent)
+      expect(event.defaultPrevented).toBe(true)
+      expect(event.clipboardData.data["text/plain"]).toBe("50mV")
+    })
+
+    it("handles partial selection without data-original-text (falls back to uppercasing)", () => {
       document.body.innerHTML = '<p><abbr class="small-caps">nasa program</abbr></p>'
       const abbr = querySelector("abbr")
       const textNode = abbr.firstChild
@@ -166,10 +208,30 @@ describe("smallcaps-copy", () => {
       expect(event.clipboardData.data["text/plain"]).toBe("NASA")
     })
 
+    it("restores partial selection using data-original-text", () => {
+      document.body.innerHTML =
+        '<p><abbr class="small-caps" data-original-text="50mV">50mv</abbr></p>'
+      const abbr = querySelector("abbr")
+      const textNode = abbr.firstChild
+      if (!textNode) throw new Error("No text node")
+      const range = document.createRange()
+      range.setStart(textNode, 2) // Select "mv" (chars 2-3)
+      range.setEnd(textNode, 4)
+      getSelection().removeAllRanges()
+      getSelection().addRange(range)
+
+      const event = createClipboardEvent()
+      handleSmallCapsCopy(event as unknown as ClipboardEvent)
+      expect(event.defaultPrevented).toBe(true)
+      // Should restore "mV" from original, not blind-uppercase to "MV"
+      expect(event.clipboardData.data["text/plain"]).toBe("mV")
+    })
+
     it("does nothing when ancestor has small-caps but selection doesn't include them", () => {
-      document.body.innerHTML = '<p>Normal text <abbr class="small-caps">api</abbr> more text</p>'
-      const p = querySelector("p")
-      const textNode = p.firstChild
+      document.body.innerHTML =
+        '<p>Normal text <abbr class="small-caps" data-original-text="API">api</abbr> more text</p>'
+      const paragraph = querySelector("p")
+      const textNode = paragraph.firstChild
       if (!textNode) throw new Error("No text node")
       const range = document.createRange()
       range.setStart(textNode, 0)
@@ -183,7 +245,8 @@ describe("smallcaps-copy", () => {
     })
 
     it("handles cut events the same as copy", () => {
-      document.body.innerHTML = '<p>Hello <abbr class="small-caps">api</abbr> world</p>'
+      document.body.innerHTML =
+        '<p>Hello <abbr class="small-caps" data-original-text="API">api</abbr> world</p>'
       selectContents("p")
       const event = createClipboardEvent("cut")
       handleSmallCapsCopy(event as unknown as ClipboardEvent)

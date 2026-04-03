@@ -19,7 +19,7 @@ import serveHandler from "serve-handler"
 import { WebSocketServer, type WebSocket } from "ws"
 
 import { generateCritical } from "../styles/generate-critical"
-import { generateScss, generateScssRecord } from "../styles/generate-variables"
+import { generateScss, generateScssRecord, generatePalette } from "../styles/generate-variables"
 import {
   fp,
   cacheFile, // @ts-expect-error Importing from a JS file, no types
@@ -79,6 +79,7 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
   // Generate SCSS files before building
   generateScss()
+  generatePalette()
   generateCritical()
   console.log("SCSS files generated successfully!")
 
@@ -391,7 +392,7 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       const { css } = await generate({
         inline: false,
         base: outputDir,
-        src: "index.html",
+        src: "test-page.html",
         width: 1700,
         height: 900,
         css: [
@@ -471,6 +472,14 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const isLink = (_i: number, el: CheerioElement): boolean =>
     el.type === "tag" && el.tagName === "link"
   const allLinks = headChildren.filter(isLink)
+
+  // Preloads and preconnects must come before sync scripts so the browser
+  // starts downloading CSS/fonts and establishing connections while the
+  // parser-blocking scripts execute.
+  const isPreloadOrPreconnect = (_i: number, el: CheerioElement): boolean =>
+    el.attribs.rel === "preload" || el.attribs.rel === "preconnect"
+  const preloadAndPreconnect = allLinks.filter(isPreloadOrPreconnect)
+
   // Check if an element is a favicon
   const isFavicon = (_i: number, el: CheerioElement): boolean => {
     if (el.type !== "tag" || el.tagName !== "link") return false
@@ -478,7 +487,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
     return rel === "icon" || rel === "apple-touch-icon"
   }
   const faviconLinks = allLinks.filter(isFavicon)
-  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el))
+  const otherLinks = allLinks.filter((i, el) => !isFavicon(i, el) && !isPreloadOrPreconnect(i, el))
 
   // Anything else (scripts, etc.)
   const elementsSoFar = new Set([
@@ -493,8 +502,9 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
 
   head
     .empty()
-    .append(scriptsToPutAtTop)
     .append(metaAndTitle)
+    .append(preloadAndPreconnect)
+    .append(scriptsToPutAtTop)
     .append(faviconLinks)
     .append(criticalCSS)
     .append(otherLinks)

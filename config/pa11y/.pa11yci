@@ -1,10 +1,13 @@
 {
   "defaults": {
-    "timeout": 30000,
+    "timeout": 120000,
     "chromeLaunchConfig": {
       "args": [
         "--no-sandbox",
-        "--disable-setuid-sandbox"
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--blink-settings=imagesEnabled=false",
+        "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE localhost"
       ]
     },
     "standard": "WCAG2AA",
@@ -14,13 +17,15 @@
     ],
     "hideElements": [
       ".ignore-pa11y",
-      ".katex",
+      "svg[id^=\"mermaid\"]",
+      ".spoiler-content",
       "#trout-ornament-container",
-      ".spoiler-content"
+      ".katex-html"
     ],
     "ignore": [
       "frame-tested"
     ],
-    "concurrency": 1
+    "concurrency": 1,
+    "useIncognitoBrowserContext": true
   }
 }

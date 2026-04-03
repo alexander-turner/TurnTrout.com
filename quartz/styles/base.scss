@@ -13,7 +13,11 @@ html {
 
 .skip-to-content {
   position: absolute;
-  left: -9999px;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+  width: 1px;
+  height: 1px;
   z-index: 9999;
   padding: 0.5em 1em;
   background: var(--background);
@@ -26,6 +30,11 @@ html {
   }
 
   &:focus {
+    clip-path: none;
+    overflow: visible;
+    white-space: normal;
+    width: auto;
+    height: auto;
     left: 50%;
     transform: translateX(-50%);
     top: 0;
@@ -69,6 +78,7 @@ ol,
 .math {
   overflow-wrap: anywhere;
   hyphens: none;
+  text-wrap: pretty;
 }
 
 .math {
@@ -287,6 +297,7 @@ h5,
 h6,
 thead {
   position: relative; // For anchor links
+  text-wrap: auto;
 
   article & > a[role="anchor"] {
     color: var(--midground-faint);
@@ -472,6 +483,21 @@ audio,
 video {
   width: 100%;
   border-radius: $border-radius;
+}
+
+select {
+  padding: calc(0.25 * $base-margin) calc(0.75 * $base-margin) calc(0.25 * $base-margin)
+    calc(0.25 * $base-margin);
+  border: 1px solid var(--midground-faint);
+  border-radius: 5px;
+  background: inherit;
+  color: var(--foreground);
+  font-family: inherit;
+  font-size: inherit;
+
+  &:focus {
+    outline: 1px solid var(--midground);
+  }
 }
 
 .spacer {

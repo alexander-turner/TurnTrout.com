@@ -3,6 +3,7 @@ public
 **.min.*
 node_modules
 .quartz-cache
+.quartz_checks
 **/.github/workflows/*.yaml
 .github/
 coverage/
@@ -10,6 +11,10 @@ htmlcov/
 .venv/
 .vale-styles
 .logs/
-test-results/
-pnpm-lock.yaml
+.mypy_cache/
 .dmypy.json
+test-results/
+.lighthouseci/
+pnpm-lock.yaml
+**/asset_queue.json
+**/img-comparison-slider.js

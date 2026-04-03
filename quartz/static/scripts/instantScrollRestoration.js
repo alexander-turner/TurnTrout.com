@@ -1,4 +1,4 @@
-/* global INSTANT_SCROLL_RESTORE_KEY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
+/* global INSTANT_SCROLL_RESTORE_KEY, SCROLL_POSITION_KEY_PREFIX -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(function () {
   // Force manual scroll restoration across all browsers
   if ("scrollRestoration" in window.history) {
@@ -28,10 +28,29 @@
     }
   }
 
+  // Cross-session fallback: check localStorage for persisted scroll position
+  if (savedScroll === null && typeof Storage !== "undefined") {
+    const localScroll = localStorage.getItem(SCROLL_POSITION_KEY_PREFIX + location.pathname)
+    const parsed = localScroll ? parseInt(localScroll, 10) : NaN
+    if (!isNaN(parsed) && parsed > 0) {
+      savedScroll = parsed
+      console.debug(
+        "[InstantScrollRestoration] Using localStorage cross-session fallback:",
+        savedScroll,
+      )
+    }
+  }
+
   console.debug("[InstantScrollRestoration] savedScroll:", savedScroll, "hash:", location.hash)
 
   // Don't restore hash if we have a saved scroll position - user manually scrolled away
   const shouldRestoreHash = !savedScroll && location.hash.length > 1
+
+  // When we have a saved scroll AND a hash, the browser will try to hash-scroll
+  // after our restoration (WebKit fires this especially late). We extend monitoring
+  // to win the race via RAF re-application rather than mutating the URL.
+  const expectHashConflict = savedScroll !== null && location.hash.length > 1
+
   /**
    * Returns the computed scroll-margin-top (in px) for a given element.
    * Falls back to 0 if the property is unavailable or unparsable.
@@ -123,9 +142,11 @@
   }
 
   function waitForLayoutStability(targetPos) {
-    // Monitor for a few frames to catch Firefox layout drift
+    // Monitor for a few frames to catch Firefox layout drift.
+    // When a hash conflict is expected (saved scroll + URL hash), WebKit's native
+    // hash-scroll can fire much later, so we monitor for longer.
     let frameCount = 0
-    const MAX_MONITOR_FRAMES = 15 // A few more frames to catch late drift
+    const MAX_MONITOR_FRAMES = expectHashConflict ? 60 : 15
     let userHasScrolled = false
 
     // Track explicit user interaction separate from scroll events, since some browsers
@@ -180,6 +201,13 @@
       }
 
       if (delta > LARGE_DELTA_THRESHOLD) {
+        // When we expect the browser to hash-scroll (saved scroll + URL hash),
+        // forgive all large drifts that aren't preceded by user interaction —
+        // they come from the browser's native hash-scroll, not the user.
+        if (expectHashConflict) {
+          return
+        }
+
         const elapsed = performance.now() - monitoringStart
         const withinForgivenessWindow = !largeDriftForgiven && frameCount < 3 && elapsed < 150
 
@@ -208,6 +236,16 @@
 
       // Correct if we've drifted more than 2px from target
       if (Math.abs(currentScroll - targetPos) > 2) {
+        // If a user interaction event (wheel/touch/pointer/key) has been detected,
+        // this "drift" is actually user-initiated scroll. Scroll events fire
+        // asynchronously after rAF callbacks, so the scrollHandler may not have
+        // run yet—but the interaction flag is set synchronously and is reliable.
+        if (userInteracted) {
+          userHasScrolled = true
+          window.removeEventListener("scroll", scrollHandler, { passive: true })
+          console.log("[InstantScrollRestoration] Monitoring canceled due to user input")
+          return
+        }
         console.debug(
           `[InstantScrollRestoration] Drift detected on frame ${frameCount}, correcting: ${currentScroll} → ${targetPos}`,
         )

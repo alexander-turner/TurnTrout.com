@@ -12,6 +12,8 @@ public
 prof
 tsconfig.tsbuildinfo
 .quartz-cache
+.dmypy.json
+.mypy_cache
 .quartz_checks
 .timestamps
 *variables.scss
@@ -23,6 +25,7 @@ tsconfig.tsbuildinfo
 coverage
 lost-pixel/*
 .lostpixel
+.lighthouseci
 /test-results/
 /blob-report/
 /playwright-report/
@@ -48,6 +51,7 @@ quartz/static/images/posts
 *.avif_original
 *.mp4_original
 website_content/asset_staging
+scripts/asset_queue.json
 
 # Content
 website_content/drafts
@@ -56,6 +60,7 @@ website_content/drafts
 # Linting & Formatting
 hint-report
 prettierrc
+.stripped_quotes
 
 # Private & Generated Files
 private/
@@ -68,3 +73,4 @@ scripts/*.json
 .aider*
 .beads
 AGENTS.md
+.gh-resolved

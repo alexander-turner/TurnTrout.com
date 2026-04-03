@@ -125,7 +125,7 @@ function makePreElementsKeyboardAccessible(tree: Root): void {
 function makeMermaidSvgsAccessible(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "svg") return
-    if (!node.properties?.id?.toString().startsWith("mermaid")) return
+    if (!node.properties?.id?.toString().includes("mermaid")) return
 
     node.properties.tabIndex = 0
     node.properties.role = "img"

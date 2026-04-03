@@ -9,6 +9,11 @@ import {
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
+// After SPA navigation, Safari fires spurious mouseenter events because the
+// DOM morphs under a stationary cursor. We suppress these by tracking whether
+// the mouse has actually moved since the last navigation.
+let mouseMovedSinceNav = true
+
 const focusableSelector =
   'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
 
@@ -22,7 +27,10 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 
     const focusableElements = [
       ...popoverElement.querySelectorAll<HTMLElement>(focusableSelector),
-    ].filter((el) => el.offsetParent !== null) // only visible elements
+    ].filter((el) => {
+      if (el.offsetParent === null) return false // fast path: handles display:none
+      return getComputedStyle(el).visibility !== "hidden"
+    })
 
     if (focusableElements.length === 0) return
 
@@ -50,6 +58,8 @@ function trapFocusInPopover(popoverElement: HTMLElement): () => void {
 let activePopoverRemover: (() => void) | null = null
 let pendingPopoverTimer: number | null = null
 let linkListenerController: AbortController | null = null
+// Timestamp of last SPA navigation. Used to suppress spurious mouseenter
+// events that Safari fires immediately after DOM morphing.
 // When true, the next popover created by mouseEnterHandler will be pinned
 // (persist until explicitly closed via X or Escape). Set by click handlers.
 let nextPopoverPinned = false
@@ -148,9 +158,10 @@ async function mouseEnterHandler(this: HTMLLinkElement) {
   activePopoverRemover = popoverCleanup
 
   window.addEventListener("resize", updatePosition)
-  window.addEventListener("scroll", handleScroll)
+  window.addEventListener("scroll", handleScroll, { passive: true })
 
-  // skipcq: JS-0098 - Force reflow to ensure CSS transition
+  // skipcq: JS-0098 - Force reflow to ensure the browser commits the
+  // initial hidden state before the dropin animation class is added.
   void popoverElement.offsetWidth
 
   popoverElement.classList.add("popover-visible")
@@ -200,6 +211,21 @@ document.addEventListener("nav", () => {
     clearTimeout(pendingPopoverTimer)
     pendingPopoverTimer = null
   }
+  // Invalidate any in-flight async mouseEnterHandler calls so they
+  // discard their result instead of creating an orphaned popover.
+  popoverGeneration++
+
+  // Mark that the mouse hasn't moved yet since this navigation.
+  // Safari fires spurious mouseenter events after DOM morphing under a
+  // stationary cursor; we suppress those until a real mousemove occurs.
+  mouseMovedSinceNav = false
+  document.addEventListener(
+    "mousemove",
+    () => {
+      mouseMovedSinceNav = true
+    },
+    { once: true },
+  )
 
   // Abort previous link listeners to prevent accumulation on morphed-in-place elements
   if (linkListenerController) {
@@ -259,6 +285,16 @@ document.addEventListener("nav", () => {
         }
 
         pendingPopoverTimer = window.setTimeout(() => {
+          // Suppress popovers triggered by spurious mouseenter events that
+          // Safari fires after SPA navigation morphs the DOM under a
+          // stationary cursor. We check at timer-fire time (not at mouseenter
+          // time) because mousemove may fire slightly after mouseenter when
+          // the pointer teleports to an element.
+          if (!mouseMovedSinceNav) {
+            pendingPopoverTimer = null
+            return
+          }
+
           // Don't let hover replace a pinned (click-triggered) popover
           const currentPopover = document.querySelector(".popover") as HTMLElement | null
           if (currentPopover?.dataset.pinned) {

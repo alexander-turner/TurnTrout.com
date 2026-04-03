@@ -43,13 +43,11 @@ date_updated: 2025-11-22 00:21:52.667251
 
 
 
-<!-- vale off -->
 > [!quote] [Oliver Habryka](https://www.lesswrong.com/posts/t3t9osBsmwkajWz5Y/long-term-future-fund-april-2019-grant-decisions) (emphasis mine)
 >
 > My inside views on AI Alignment make me think that work on impact measures is _very unlikely_ to result in much concrete progress on what I perceive to be core AI Alignment problems, _and I have talked to a variety of other researchers in the field who share that assessment_. I think it’s important that this grant not be viewed as an endorsement of the concrete research direction that Alex is pursuing, but only as an endorsement of the higher-level process that he has been using while doing that research.  
 >
 > As such, I think it was a necessary component of this grant that I have talked to other people in AI Alignment whose judgment I trust, who do seem excited about Alex’s work on impact measures. I think I would not have recommended this grant, or at least this large of a grant amount, without their endorsement. I think in that case I would have been worried about a risk of diverting attention from what I think are more promising approaches to AI Alignment, and a potential dilution of the field by introducing a set of (to me) somewhat dubious philosophical assumptions.
-<!-- vale on -->
 
 I'm interested in learning about the intuitions, experience, and facts which inform this pessimism. As such, I'm not interested in making any arguments to the contrary in this post; any pushback I provide in the comments will be with clarification in mind.
 

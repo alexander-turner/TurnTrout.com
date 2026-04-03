@@ -87,7 +87,7 @@ const subtitlePattern = /^(?<quote>(?:> *)*)(?<subtitle>Subtitle:[\S ]+\n)(?!\k<
 const subtitleReplacement = "$<quote>$<subtitle>$<quote>\n"
 
 // Replace x.com and twitter.com links with xcancel.com
-const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\//gi
+const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\/?/gi
 
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block

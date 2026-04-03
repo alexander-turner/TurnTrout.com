@@ -40,7 +40,7 @@ Do **NOT** use this skill for:
 ## Prerequisites
 
 - GitHub CLI (`gh`) must be authenticated
-- All changes must be committed to a feature branch (not `main`/`master`)
+- All changes must be committed to a feature branch (not `$CLAUDE_CODE_BASE_REF`/`master`)
 
 ## Updating an Existing PR
 
@@ -56,14 +56,14 @@ Before updating an existing PR (pushing new commits, editing the description, et
 
 ### Step 1: Gather Context
 
-1. Identify the base branch (typically `main` or `master`)
+1. The base branch is in the env variable `$CLAUDE_CODE_BASE_REF`
 2. Run `git diff <base-branch>...HEAD` to see all changes
 3. Run `git log <base-branch>..HEAD --oneline` to see all commits
 4. Review the changed files to understand the scope
 
-### Step 2: Self-Critique (Required)
+### Step 2: Self-Critique
 
-**Before creating the PR**, you MUST read [critique-prompt.md](critique-prompt.md) and launch a critique sub-agent using the Task tool:
+**Before creating the PR**, you MUST read the critique prompt at `.claude/skills/pr-creation/critique-prompt.md` and launch a critique sub-agent using the Task tool:
 
 - `subagent_type`: "general-purpose"
 - `description`: "Critique code changes"
@@ -93,11 +93,11 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatt
    ```
 
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
-3. Create the PR using `gh pr create` with the template from the resource file
+3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 After creating the PR, and after any subsequent fix commits, update the PR description with `gh pr edit --body "..."` to reflect the current state of all changes.
 
-### Step 6: Wait for CI Checks
+### Step 6: Wait for CI Checks (MANDATORY)
 
 1. Run `gh pr checks <pr-number> --watch` to monitor
 2. If any checks fail, investigate and fix the issues
@@ -116,8 +116,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
-2. Runs `git log main..HEAD --oneline` — sees 2 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes in `src/auth/login.ts` and `tests/auth/login.test.ts`
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 2 commits
 3. Launches critique sub-agent with the diff
 4. Critique returns: "Looks good, minor suggestion to add null check on line 42"
 5. Fixes the null check, commits: `fix: add null check for empty session token`
@@ -129,8 +129,7 @@ Provide the PR URL and confirm all CI checks have passed.
    ```
 
 8. Watches CI with `gh pr checks 47 --watch` — all green
-9. Runs `deepsource issues list --commit $(git rev-parse HEAD)` — no issues found
-10. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
+9. Reports: "PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
 
 ### Example 2: Multi-Commit Feature
 
@@ -138,8 +137,8 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **Claude's actions:**
 
-1. Runs `git diff main...HEAD` — sees changes across 8 files including new components, tests, and API routes
-2. Runs `git log main..HEAD --oneline` — sees 5 commits
+1. Runs `git diff $CLAUDE_CODE_BASE_REF...HEAD` — sees changes across 8 files including new components, tests, and API routes
+2. Runs `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` — sees 5 commits
 3. Launches critique sub-agent with the full diff
 4. Critique returns 4 issues: unused import, missing error boundary, test not covering edge case, over-engineered helper
 5. Fixes all 4 issues across 2 additional commits
@@ -154,7 +153,7 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **User says:** "Push this up"
 
-**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `main`, or just push the branch without creating a PR?"
+**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `$CLAUDE_CODE_BASE_REF`, or just push the branch without creating a PR?"
 
 ## Error Handling
 

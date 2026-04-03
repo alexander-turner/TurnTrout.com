@@ -17,6 +17,8 @@ jest.unstable_mockModule("child_process", () => ({
 import fs from "fs"
 import { type Element } from "hast"
 import { fromHtml } from "hast-util-from-html"
+import { toHtml } from "hast-util-to-html"
+import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
@@ -64,16 +66,18 @@ describe("PopulateContainers", () => {
 
   beforeEach(() => {
     faviconCounter.clear()
+    // skipcq: JS-0116 -- mock must match async interface
     mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
       const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
       if (patternStr.includes(".html")) {
-        return ["test-page.html", "design.html"]
+        return Promise.resolve(["test-page.html", "design.html"])
       }
-      return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+      return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
     })
 
     // Provide default outputs for all repo-stat commands invoked during emitter.emit
     mockExecSync.mockImplementation((command: string) => {
+      if (command.includes("git rev-parse --is-shallow-repository")) return "false\n"
       if (command.includes("git rev-list")) return `${DEFAULT_MOCK_STATS.commitCount}\n`
       if (command.includes('git log --all --oneline --grep="claude.ai/code/session"'))
         return `${DEFAULT_MOCK_STATS.aiCommitCount}\n`
@@ -96,7 +100,7 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-container"></div></body></html>'
       }
       if (pathStr.includes("design.html")) {
-        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><div id="populate-dropcap-probability"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
       return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
@@ -434,12 +438,13 @@ describe("PopulateContainers", () => {
         return !pathStr.includes("nonexistent.html")
       })
 
+      // skipcq: JS-0116 -- mock must match async interface
       mockGlobbyFn.mockImplementation(async (pattern: string | string[]) => {
         const patternStr = Array.isArray(pattern) ? pattern[0] : pattern
         if (patternStr.includes(".html")) {
-          return ["test-page.html", "nonexistent.html", "design.html"]
+          return Promise.resolve(["test-page.html", "nonexistent.html", "design.html"])
         }
-        return ["file1.test.ts", "file2.test.tsx", "file3.test.ts"]
+        return Promise.resolve(["file1.test.ts", "file2.test.tsx", "file3.test.ts"])
       })
 
       const emitter = PopulateContainersEmitter()
@@ -540,7 +545,7 @@ describe("PopulateContainers", () => {
       it.each([
         ["turntrout", specialFaviconPaths.turntrout],
         ["anchor", specialFaviconPaths.anchor],
-      ])("should generate %s favicon element inside favicon-span", async (_name, faviconPath) => {
+      ])("should generate %s favicon inside favicon-span", async (_name, faviconPath) => {
         const generator = populateModule.generateSpecialFaviconContent(faviconPath)
         const elements = await generator()
         expect(elements).toHaveLength(1)
@@ -559,7 +564,7 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should generate accessible favicon element when alt text provided", async () => {
+      it("should make favicon accessible when alt text is provided", async () => {
         const altText = "A trout jumping to the left."
         const generator = populateModule.generateSpecialFaviconContent(
           specialFaviconPaths.turntrout,
@@ -567,22 +572,17 @@ describe("PopulateContainers", () => {
         )
         const elements = await generator()
         expect(elements).toHaveLength(1)
-
         const faviconElement = elements[0].children[1] as Element
-        expect(faviconElement).toMatchObject({
-          tagName: "svg",
-          properties: {
-            role: "img",
-            "aria-label": altText,
-          },
+        expect(faviconElement.properties).toMatchObject({
+          role: "img",
+          "aria-label": altText,
         })
-        // Should not have hidden properties when accessible
         expect(faviconElement.properties["aria-hidden"]).toBeUndefined()
       })
     })
 
     describe("generateMetadataAdmonition", () => {
-      it("should generate a metadata admonition using renderPostStatistics", async () => {
+      it("should generate admonition with no post-statistics ID", async () => {
         const generator = populateModule.generateMetadataAdmonition()
         const elements = await generator()
 
@@ -593,14 +593,47 @@ describe("PopulateContainers", () => {
           expect.arrayContaining(["admonition", "admonition-metadata"]),
         )
         expect(blockquote.properties?.dataAdmonition).toBe("info")
+        expect(blockquote.properties?.id).toBeUndefined()
+      })
+    })
+
+    describe("addFaviconsToLinks", () => {
+      const countsFaviconElements = (html: string): number => {
+        const root = fromHtml(html)
+        let count = 0
+        visit(root, "element", (node) => {
+          const cls = String(node.properties?.class ?? node.properties?.className ?? "")
+          if (cls.includes("favicon")) count++
+        })
+        return count
+      }
+
+      it("should add favicons to external links using ModifyNode", async () => {
+        // Set up counts so github.com meets the threshold
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        // Pre-populate urlCache so MaybeSaveFavicon resolves without network
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Link</a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBeGreaterThan(0)
       })
 
-      it("should strip the post-statistics ID to avoid duplicates", async () => {
-        const generator = populateModule.generateMetadataAdmonition()
-        const elements = await generator()
+      it("should not duplicate favicons on links that already have them", async () => {
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
 
-        const blockquote = elements[0]
-        expect(blockquote.properties?.id).toBeUndefined()
+        const html =
+          '<html><body><a class="external" href="https://github.com/foo">Li<span class="favicon-span">nk<img class="favicon" src="test.png" /></span></a></body></html>'
+        const root = fromHtml(html)
+        await populateModule.addFaviconsToLinks(root)
+
+        expect(countsFaviconElements(toHtml(root))).toBe(2) // favicon-span + favicon img
       })
     })
 
@@ -770,6 +803,73 @@ describe("PopulateContainers", () => {
         existsSpy.mockRestore()
         readSpy.mockRestore()
       })
+
+      it("should only add favicons to links inside populated containers, not the whole page", async () => {
+        // Set up favicon data so github.com links would get favicons
+        setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
+        urlCache.set(
+          "/static/images/external-favicons/github_com.png",
+          "/static/images/external-favicons/github_com.svg",
+        )
+
+        // Page has an external link OUTSIDE the populated container and the
+        // populated container will inject one INSIDE
+        const html = [
+          "<html><body>",
+          '<a class="external" href="https://github.com/outside">Outside</a>',
+          '<div id="populate-me"></div>',
+          "</body></html>",
+        ].join("")
+
+        jest.spyOn(fs, "existsSync").mockReturnValue(true)
+        jest.spyOn(fs, "readFileSync").mockReturnValue(html)
+        let writtenContent = ""
+        jest.spyOn(fs, "writeFileSync").mockImplementation((_path, data) => {
+          writtenContent = data as string
+        })
+
+        await populateModule.populateElements("/tmp/test.html", [
+          {
+            id: "populate-me",
+            generator: () => {
+              const fragment = fromHtml(
+                '<a class="external" href="https://github.com/inside">Inside</a>',
+                { fragment: true },
+              )
+              return fragment.children as Element[]
+            },
+          },
+        ])
+
+        const root = fromHtml(writtenContent)
+
+        const countFaviconsInSubtree = (subtree: Element): number => {
+          let count = 0
+          visit(subtree, "element", (child) => {
+            const cls = String(child.properties?.class ?? child.properties?.className ?? "")
+            if (cls.includes("favicon")) count++
+          })
+          return count
+        }
+
+        // The link outside the populated container should NOT have a favicon
+        let outsideLinkFavicons = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "a") return
+          if (String(node.properties?.href) !== "https://github.com/outside") return
+          outsideLinkFavicons = countFaviconsInSubtree(node)
+        })
+        expect(outsideLinkFavicons).toBe(0)
+
+        // The link inside the populated container SHOULD have a favicon
+        let insideFaviconCount = 0
+        visit(root, "element", (node) => {
+          if (node.tagName !== "div") return
+          if (node.properties?.id !== "populate-me") return
+          insideFaviconCount = countFaviconsInSubtree(node)
+        })
+        expect(insideFaviconCount).toBe(2) // favicon-span + favicon img
+      })
     })
   })
 
@@ -779,11 +879,34 @@ describe("PopulateContainers", () => {
       mockGlobbyFn.mockClear()
     })
 
-    describe("countGitCommits", () => {
-      it("should count commits for a specific author", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.commitCount}\n`)
+    describe("isShallowClone", () => {
+      it("should return true for shallow repositories", () => {
+        mockExecSync.mockReturnValue("true\n")
+        expect(populateModule.isShallowClone()).toBe(true)
+      })
 
-        const count = await populateModule.countGitCommits({ author: "Alex Turner" })
+      it("should return false for full clones", () => {
+        mockExecSync.mockReturnValue("false\n")
+        expect(populateModule.isShallowClone()).toBe(false)
+      })
+    })
+
+    describe("countGitCommits", () => {
+      it("should return 0 for shallow clones", () => {
+        mockExecSync.mockReturnValueOnce("true\n") // isShallowClone
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
+
+        expect(count).toBe(0)
+        expect(mockExecSync).toHaveBeenCalledTimes(1)
+      })
+
+      it("should count commits for a specific author", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+
+        const count = populateModule.countGitCommits({ author: "Alex Turner" })
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -792,10 +915,12 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should count commits matching a grep pattern", async () => {
-        mockExecSync.mockReturnValue(`${MOCK_STATS.aiCommitCount}\n`)
+      it("should count commits matching a grep pattern", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
 
-        const count = await populateModule.countGitCommits({ grep: "claude.ai/code/session" })
+        const count = populateModule.countGitCommits({ grep: "claude.ai/code/session" })
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -804,18 +929,22 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle whitespace in output", async () => {
-        mockExecSync.mockReturnValue(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
+      it("should handle whitespace in output", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce(`\n\n  ${MOCK_STATS.jsTestCount}  \n\n`)
 
-        const count = await populateModule.countGitCommits({ author: "Test Author" })
+        const count = populateModule.countGitCommits({ author: "Test Author" })
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
       })
 
-      it("should count all commits when no options provided", async () => {
-        mockExecSync.mockReturnValue("1000\n")
+      it("should count all commits when no options provided", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("1000\n")
 
-        const count = await populateModule.countGitCommits()
+        const count = populateModule.countGitCommits()
 
         expect(count).toBe(1000)
         expect(mockExecSync).toHaveBeenCalledWith("git rev-list --all --count", {
@@ -825,12 +954,12 @@ describe("PopulateContainers", () => {
     })
 
     describe("countJsTestFiles", () => {
-      it("should count JS/TS tests from pnpm test output", async () => {
+      it("should count JS/TS tests from pnpm test output", () => {
         mockExecSync.mockReturnValue(
           `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,
         )
 
-        const count = await populateModule.countJsTests()
+        const count = populateModule.countJsTests()
 
         expect(count).toBe(MOCK_STATS.jsTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -839,28 +968,28 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should throw when no tests found", async () => {
+      it("should throw when no tests found", () => {
         mockExecSync.mockReturnValue("")
 
-        await expect(populateModule.countJsTests()).rejects.toThrow(
+        expect(() => populateModule.countJsTests()).toThrow(
           "Failed to parse test count from output",
         )
       })
 
-      it("should handle different test output formats", async () => {
+      it("should handle different test output formats", () => {
         mockExecSync.mockReturnValue("Tests:       42 passed, 50 total\n")
 
-        const count = await populateModule.countJsTests()
+        const count = populateModule.countJsTests()
 
         expect(count).toBe(42)
       })
     })
 
     describe("countPlaywrightTests", () => {
-      it("should count Playwright test cases", async () => {
+      it("should count Playwright test cases", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.playwrightTestCount}\n`)
 
-        const count = await populateModule.countPlaywrightTests()
+        const count = populateModule.countPlaywrightTests()
 
         expect(count).toBe(MOCK_STATS.playwrightTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
@@ -869,20 +998,20 @@ describe("PopulateContainers", () => {
         )
       })
 
-      it("should handle zero test cases", async () => {
+      it("should handle zero test cases", () => {
         mockExecSync.mockReturnValue("0\n")
 
-        const count = await populateModule.countPlaywrightTests()
+        const count = populateModule.countPlaywrightTests()
 
         expect(count).toBe(0)
       })
     })
 
     describe("countPytestTests", () => {
-      it("should count pytest tests via pytest --collect-only", async () => {
+      it("should count pytest tests via pytest --collect-only", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.pytestCount} tests collected in 0.50s\n`)
 
-        const count = await populateModule.countPythonTests()
+        const count = populateModule.countPythonTests()
 
         expect(count).toBe(MOCK_STATS.pytestCount)
         expect(mockExecSync).toHaveBeenCalledWith(populateModule.PYTEST_COUNT_CMD, {
@@ -890,28 +1019,28 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should throw when pytest output doesn't match", async () => {
+      it("should throw when pytest output doesn't match", () => {
         mockExecSync.mockReturnValue("some weird output\n")
 
-        await expect(populateModule.countPythonTests()).rejects.toThrow(
+        expect(() => populateModule.countPythonTests()).toThrow(
           "Failed to parse pytest test count from output",
         )
       })
 
-      it("should handle large numbers", async () => {
+      it("should handle large numbers", () => {
         mockExecSync.mockReturnValue("10000 tests collected in 0.50s\n")
 
-        const count = await populateModule.countPythonTests()
+        const count = populateModule.countPythonTests()
 
         expect(count).toBe(10000)
       })
     })
 
     describe("countLinesOfCode", () => {
-      it("should count total lines of code", async () => {
+      it("should count total lines of code", () => {
         mockExecSync.mockReturnValue(`${MOCK_STATS.linesOfCode}\n`)
 
-        const count = await populateModule.countLinesOfCode()
+        const count = populateModule.countLinesOfCode()
 
         expect(count).toBe(MOCK_STATS.linesOfCode)
         expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining("find . -type f"), {
@@ -919,10 +1048,10 @@ describe("PopulateContainers", () => {
         })
       })
 
-      it("should handle very large codebases", async () => {
+      it("should handle very large codebases", () => {
         mockExecSync.mockReturnValue("1000000\n")
 
-        const count = await populateModule.countLinesOfCode()
+        const count = populateModule.countLinesOfCode()
 
         expect(count).toBe(1000000)
       })
@@ -931,7 +1060,9 @@ describe("PopulateContainers", () => {
     describe("computeRepoStats", () => {
       it("should compute all statistics in parallel", async () => {
         mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone for commitCount
           .mockReturnValueOnce(`${MOCK_STATS.commitCount}\n`)
+          .mockReturnValueOnce("false\n") // isShallowClone for aiCommitCount
           .mockReturnValueOnce(`${MOCK_STATS.aiCommitCount}\n`)
           .mockReturnValueOnce(
             `Tests:       ${MOCK_STATS.jsTestCount} passed, ${MOCK_STATS.jsTestCount} total\n`,

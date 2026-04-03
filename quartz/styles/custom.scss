@@ -4,6 +4,8 @@
 @use "colors";
 @use "favicon";
 @use "scroll-indicator";
+@use "print";
+@use "../components/styles/punctilioDemo";
 
 body {
   min-height: 100vh;
@@ -203,6 +205,15 @@ ol {
       display: inline-block;
       vertical-align: top;
     }
+
+    // Constrain footnote content on mobile so tables/admonitions don't overflow
+    @media all and (max-width: $max-mobile-width) {
+      & .table-container,
+      & .scroll-indicator {
+        display: block;
+        max-width: 100%;
+      }
+    }
   }
 }
 
@@ -315,6 +326,7 @@ figure:has(> .subfigure) {
 
   > figcaption {
     flex: 0 0 100%;
+    max-width: 100%;
   }
 }
 
@@ -337,8 +349,8 @@ figure,
   }
 
   // IDK why but there can be an empty p between the figure and the next element
-  & + figure,
-  & + p:empty + figure {
+  & + figure:not(.subfigure),
+  & + p:empty + figure:not(.subfigure) {
     margin-top: calc(3 * $base-margin);
   }
 }
@@ -376,6 +388,7 @@ p:has(+ .subtitle),
   color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
+  text-wrap: balance;
 
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));
@@ -404,6 +417,7 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
+  text-wrap: balance;
 }
 
 img,
@@ -712,6 +726,8 @@ img.emoji {
 }
 
 .spoiler-overlay {
+  --spoiler-bg: var(--bg, var(--background));
+
   position: absolute;
   height: 90%; // Visually center the overlay
   width: 100%;
@@ -722,12 +738,13 @@ img.emoji {
 
   &::after {
     content: "Click to show";
+    text-shadow: 0 0 16px var(--spoiler-bg);
   }
 }
 
 .spoiler-content {
   filter: blur(4px);
-  opacity: 0.5;
+  opacity: 0.65;
 
   // Safari needs this
   & > * {
@@ -793,6 +810,21 @@ img.emoji {
   &:has(.edgeLabel:empty) {
     display: none !important;
     background-color: transparent !important;
+  }
+}
+
+// Ensure all mermaid diagram text has sufficient contrast
+svg[id*="mermaid"] {
+  font-size: 14px !important;
+  fill: var(--midground-faint) !important; // Ensure arrowheads are visible
+
+  & span,
+  & p,
+  & .label,
+  & .nodeLabel,
+  & .edgeLabel {
+    color: var(--foreground) !important;
+    fill: var(--foreground) !important;
   }
 }
 
@@ -947,4 +979,43 @@ pre,
 figure#goose-terminal {
   // Ligatures can mess up spacing, esp in Firefox for "===" in FiraCode VF
   font-variant-ligatures: none;
+}
+
+// img-comparison-slider: hide until the web component renders
+img-comparison-slider {
+  display: block;
+  visibility: hidden;
+  margin: calc(2 * $base-margin) 0;
+
+  // Reset inherited img styles on images inside the slider
+  > img {
+    width: 100%;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  &.rendered {
+    visibility: inherit;
+  }
+
+  [slot="second"] {
+    display: none;
+  }
+
+  &.rendered [slot="second"] {
+    display: unset;
+  }
+
+  // Customize handle visibility
+  --divider-width: 1px;
+  --divider-color: var(--foreground);
+  --divider-shadow: 0 0 8px var(--background);
+  --default-handle-color: var(--foreground);
+  --default-handle-shadow: 0 0 1px var(--background);
+
+  // Remove blue focus outline
+  &:focus {
+    outline: none;
+  }
 }

@@ -2,11 +2,6 @@
  * @jest-environment node
  */
 import type { Element, Root } from "hast"
-import type {
-  RequestInfo as NodeFetchRequestInfo,
-  RequestInit as NodeFetchRequestInit,
-  Response as NodeFetchResponse,
-} from "node-fetch"
 
 import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
 import { type SpawnSyncReturns, type spawnSync } from "child_process"
@@ -37,11 +32,6 @@ import {
   maybeResolveAssetStagingPath,
 } from "../assetDimensions"
 import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
-
-type NodeFetchCompatibleSignature = (
-  input: URL | NodeFetchRequestInfo,
-  init?: NodeFetchRequestInit,
-) => Promise<NodeFetchResponse>
 
 // Create a minimal valid PNG file with IHDR chunk
 const mockImageData = Buffer.from([
@@ -88,11 +78,8 @@ jest.mock("image-size", () => ({
 jest.mock("fs/promises")
 import fs from "fs/promises"
 
-const mockedFetch = jest.fn() as jest.MockedFunction<NodeFetchCompatibleSignature>
-// Assign to global.fetch. The 'as unknown as typeof global.fetch' cast is used because
-// NodeFetchCompatibleSignature and global.fetch's type aren't identical,
-// but compatible for the subset of functionality used in assetDimensions.ts.
-global.fetch = mockedFetch as unknown as typeof global.fetch
+const mockedFetch = jest.fn() as jest.MockedFunction<typeof fetch>
+global.fetch = mockedFetch
 
 let tempDir: string
 
@@ -264,14 +251,14 @@ describe("Asset Dimensions Plugin", () => {
       // Temp file includes process.pid and timestamp for uniqueness
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+          new RegExp(`^${RegExp.escape(actualAssetDimensionsFilePath)}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
         ),
         JSON.stringify(cacheData, null, 2),
         "utf-8",
       )
       expect(renameSpy).toHaveBeenCalledWith(
         expect.stringMatching(
-          new RegExp(`^${actualAssetDimensionsFilePath}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
+          new RegExp(`^${RegExp.escape(actualAssetDimensionsFilePath)}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
         ),
         actualAssetDimensionsFilePath,
       )
@@ -475,8 +462,8 @@ describe("Asset Dimensions Plugin", () => {
         status: 200,
         headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
-        arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+        arrayBuffer: () => Promise.resolve(mockVideoData),
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "", ""],
@@ -501,8 +488,8 @@ describe("Asset Dimensions Plugin", () => {
         status: 200,
         headers: { get: (h: string) => (h === "Content-Type" ? "video/mpeg" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
-        arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+        arrayBuffer: () => Promise.resolve(mockVideoData),
+      } as unknown as Response)
       const genericError = new Error("Custom spawn error")
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
@@ -530,8 +517,8 @@ describe("Asset Dimensions Plugin", () => {
           get: (h: string) => (h === "Content-Type" ? "video/quicktime" : null),
         } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
-        arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+        arrayBuffer: () => Promise.resolve(mockVideoData),
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "", "FFprobe execution error"],
@@ -555,8 +542,8 @@ describe("Asset Dimensions Plugin", () => {
         status: 200,
         headers: { get: (h: string) => (h === "Content-Type" ? "video/webm" : null) } as Headers,
         body: { cancel } as unknown as ReadableStream<Uint8Array>,
-        arrayBuffer: async () => mockVideoData,
-      } as unknown as NodeFetchResponse)
+        arrayBuffer: () => Promise.resolve(mockVideoData),
+      } as unknown as Response)
       mockSpawnSync.mockReturnValueOnce({
         pid: 1,
         output: ["", "this:is:not:dimensions", ""],
@@ -630,8 +617,8 @@ describe("Asset Dimensions Plugin", () => {
           ok: true,
           status: 200,
           headers: { get: (h: string) => (h === "Content-Type" ? "image/png" : null) } as Headers,
-          arrayBuffer: async () => mockImageData,
-        } as unknown as NodeFetchResponse
+          arrayBuffer: () => Promise.resolve(mockImageData),
+        } as unknown as Response
       })
 
       sizeOfMock.mockClear()
@@ -668,7 +655,7 @@ describe("Asset Dimensions Plugin", () => {
     it("should throw after zero retry attempts", async () => {
       const neverFetchedUrl = "https://assets.turntrout.com/never.png"
       // fetch should never be called when retries=0, but guard anyway
-      const fetchSpy = mockedFetch.mockImplementation(async () => {
+      const fetchSpy = mockedFetch.mockImplementation(() => {
         throw new Error("Should not be called")
       })
       await expect(assetProcessor.fetchAndParseAssetDimensions(neverFetchedUrl, 0)).rejects.toThrow(
@@ -1030,11 +1017,13 @@ describe("Asset Dimensions Plugin", () => {
         ],
       }
       const preCachedDims = { width: 10, height: 20 }
-      const readFileMock = jest.spyOn(fs, "readFile").mockImplementation(async (p) => {
+      const readFileMock = jest.spyOn(fs, "readFile").mockImplementation((p) => {
         if (p === actualAssetDimensionsFilePath) {
-          return JSON.stringify({ [cdnImg2Src]: preCachedDims })
+          return Promise.resolve(JSON.stringify({ [cdnImg2Src]: preCachedDims }))
         }
-        throw Object.assign(new Error("ENOENT for other files"), { code: "ENOENT" })
+        return Promise.reject(
+          Object.assign(new Error("ENOENT for other files"), { code: "ENOENT" }),
+        )
       })
       assetProcessor.resetDirectCacheAndDirtyFlag()
       assetProcessor.setDirectCache(null)
@@ -1051,8 +1040,8 @@ describe("Asset Dimensions Plugin", () => {
         ok: true,
         status: 200,
         headers: { get: () => "image/svg+xml" },
-        arrayBuffer: async () => mockSvgData,
-      } as unknown as NodeFetchResponse)
+        arrayBuffer: () => Promise.resolve(mockSvgData),
+      } as unknown as Response)
 
       sizeOfMock.mockReturnValueOnce({
         width: mockImageWidth,
@@ -1236,7 +1225,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("reads dimensions for local asset with root-relative path", async () => {
       const expectedPath = path.join(paths.projectRoot, "quartz", "static", imageFileName)
-      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
       const dims = await assetProcessor.fetchAndParseAssetDimensions(`/static/${imageFileName}`, 1)
@@ -1260,7 +1249,7 @@ describe("Asset Dimensions Plugin", () => {
     it("reads dimensions for relative path inside website_content", async () => {
       const relImageName = "relimage.png"
       const expectedPath = path.join(paths.projectRoot, "website_content", relImageName)
-      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
       const dims = await assetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
@@ -1281,7 +1270,7 @@ describe("Asset Dimensions Plugin", () => {
         "asset_staging",
         imageFileName,
       )
-      jest.spyOn(fs, "access").mockResolvedValueOnce(undefined)
+      jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
       const dims = await assetProcessor.fetchAndParseAssetDimensions(inputPath, 1)

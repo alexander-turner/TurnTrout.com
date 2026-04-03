@@ -207,13 +207,13 @@ const createAdmonitionContent = (contentChildren: ElementContent[]): Element | n
 /** Creates a video element for embedding. */
 const createVideoElement = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<span class="video-container"><video src="${url}" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>`,
+  value: `<span class="video-container" data-src="${url}"><video src="${url}" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>`,
 })
 
 /** Creates an audio element for embedding. */
 const createAudioElement = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<audio src="${url}" controls></audio>`,
+  value: `<span class="audio-container" data-src="${url}"><audio src="${url}" controls></audio></span>`,
 })
 
 /** Creates a PDF embed iframe. */

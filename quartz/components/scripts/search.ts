@@ -1,13 +1,17 @@
-import FlexSearch, { type ContextOptions } from "flexsearch"
+import FlexSearch, {
+  type ContextOptions,
+  type DefaultDocumentSearchResults,
+  type DocumentData,
+} from "flexsearch"
 
 import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint } from "../../styles/variables"
-import { escapeRegExp } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
+import { wrapScrollables } from "./scroll-indicator-utils"
 
 // Global function injected by renderPage.tsx to lazy-load content index
 declare global {
@@ -22,13 +26,14 @@ interface Item {
   slug: FullSlug
   title: string
   content: string
-  authors?: string // Stored as comma-joined string for search indexing
+  authors: string // Stored as comma-joined string for search indexing
 }
 
 let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
-const documentType = FlexSearch.Document<Item>
+// Item satisfies DocumentData at runtime but uses stricter types; cast to satisfy the generic constraint
+const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
 let searchInitializing = false
@@ -39,7 +44,7 @@ let initializationPromise: Promise<void> | null = null
  */
 function createSearchIndex(): InstanceType<typeof documentType> {
   return new documentType({
-    charset: "latin:advanced",
+    encoder: "LatinAdvanced",
     tokenize: "strict",
     resolution: 1,
     context: {
@@ -86,7 +91,7 @@ function createSearchIndex(): InstanceType<typeof documentType> {
 
 interface FetchResult {
   content: Element[]
-  frontmatter: Element
+  frontmatter: Record<string, unknown>
 }
 
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
@@ -154,7 +159,7 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
       // see if this tok is prefixed by any search terms
       for (const searchTok of tokenizedTerms) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
-          const sanitizedSearchTok = escapeRegExp(searchTok)
+          const sanitizedSearchTok = RegExp.escape(searchTok)
           const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
           return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
@@ -173,9 +178,6 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
   }
   return `${beginning}${slice}${end}`
 }
-
-// Re-export escapeRegExp from centralized escape utilities
-export { escapeRegExp } from "../../util/escape"
 
 /**
  * Creates a span element with the class "match" and the given text
@@ -224,7 +226,7 @@ export const matchTextNodes = (node: Node, term: string) => {
     // Normalize NBSP (U+00A0) to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
     const normalizedText = nodeText.replace(/\u00A0/gu, " ")
-    const sanitizedTerm = escapeRegExp(term)
+    const sanitizedTerm = RegExp.escape(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
     // Use a single split operation
@@ -324,6 +326,9 @@ export class PreviewManager {
       this.inner.innerHTML = ""
       this.inner.appendChild(fragment)
 
+      // Wrap scrollable tables/equations so they get fade-gradient indicators
+      wrapScrollables(this.inner)
+
       // Set click handler
       this.inner.onclick = () => {
         const targetUrl = resolveSlug(slug, baseSlug)
@@ -333,9 +338,8 @@ export class PreviewManager {
         navigateWithSearchTerm(targetUrl.toString(), currentSearchTerm)
       }
 
-      // Let images and other resources load naturally
-      // Browser will handle loading these in the background
-      this.scrollToFirstmatch()
+      // Wait for layout before scrolling to first match
+      requestAnimationFrame(() => this.scrollToFirstmatch())
     } catch (error) {
       console.error("Error loading preview:", error)
       if (this.currentSlug === slug) {
@@ -376,12 +380,11 @@ export class PreviewManager {
    * Scroll the preview container to properly orient the first match in the viewport.
    */
   /* istanbul ignore next */
-  private scrollToFirstmatch(): void {
-    // Get only the first matching search-match without sorting
+  public scrollToFirstmatch(): void {
     const firstMatch = this.container.querySelector(".search-match") as HTMLElement
     if (!firstMatch) return
 
-    this.container.scrollTop = getSearchMatchScrollPosition(firstMatch, this.container, 0.5)
+    firstMatch.scrollIntoView({ block: "center", behavior: "instant" })
   }
 }
 
@@ -426,6 +429,7 @@ async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInpu
   }
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
   searchBar.focus()
 
   await initializeSearch()
@@ -458,6 +462,7 @@ export async function showSearch(
 
   container.classList.add("active")
   document.body.classList.add("no-mix-blend-mode")
+  document.body.style.overflow = "hidden"
 
   searchBar.focus()
   searchBar.select() // Needed for firefox
@@ -478,12 +483,20 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
 
   container?.classList.remove("active")
   document.body.classList.remove("no-mix-blend-mode")
+  document.body.style.overflow = ""
   if (searchBar) {
     searchBar.value = ""
+    searchBar.setAttribute("aria-expanded", "false")
+    searchBar.removeAttribute("aria-activedescendant")
   }
   if (results) {
     removeAllChildren(results)
   }
+
+  // Clear display-results so the search helper doesn't see stale state
+  // when search is reopened after Escape.
+  const layout = document.getElementById("search-layout")
+  layout?.classList.remove("display-results")
 
   // Clean up preview
   if (previewManagerArg) {
@@ -504,6 +517,10 @@ let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
 let currentSlug: FullSlug
 let mouseEventsLocked = false
+// Tracks whether currentHover was set by keyboard navigation. When true,
+// onMouseLeave should not clear currentHover (mobile Safari's .focus() on
+// <a> elements can fire spurious mouseleave events).
+let hoverSetByKeyboard = false
 
 /* istanbul ignore next */
 const appendLayout = (el: HTMLElement) => {
@@ -542,11 +559,11 @@ async function handleSearchToggle(
  * already open.
  */
 /* istanbul ignore next */
-async function handleResultNavigation(
+function handleResultNavigation(
   e: KeyboardEvent,
   container: HTMLElement | null,
   searchBar: HTMLInputElement | null,
-): Promise<void> {
+): void {
   // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
@@ -558,7 +575,10 @@ async function handleResultNavigation(
   const nextSibling = (el: HTMLElement): HTMLElement | null =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : null
 
-  const canNavigate = document.activeElement === searchBar || currentHover !== null
+  const canNavigate =
+    document.activeElement === searchBar ||
+    document.activeElement?.classList.contains("result-card") ||
+    currentHover !== null
 
   /**
    * Focus a target result element and update the preview, if present.
@@ -566,13 +586,14 @@ async function handleResultNavigation(
    *
    * @param target - The result card to focus and preview
    */
-  const focusAndPreview = async (target: HTMLElement | null) => {
+  const focusAndPreview = (target: HTMLElement | null) => {
     if (!target) return
 
     // Lock mouse events during keyboard navigation
     mouseEventsLocked = true
+    hoverSetByKeyboard = true
 
-    await displayPreview(target)
+    displayPreview(target)
 
     // Unlock mouse events after a short delay
     setTimeout(() => {
@@ -590,7 +611,12 @@ async function handleResultNavigation(
     if (currentHover) {
       return getTarget(currentHover)
     }
-    // If no current hover, start from the first result
+    // If focus is on a result card (e.g., after keyboard navigation moved focus
+    // away from the search bar), use that as the navigation anchor
+    if (document.activeElement?.classList.contains("result-card")) {
+      return getTarget(document.activeElement as HTMLElement)
+    }
+    // If no current hover or focused card, start from the first result
     return document.getElementsByClassName("result-card")[0] as HTMLElement | null
   }
 
@@ -611,7 +637,7 @@ async function handleResultNavigation(
 
       const first = document.getElementsByClassName("result-card")[0] as HTMLElement | null
       if (first && !first.classList.contains("no-match")) {
-        await focusAndPreview(first)
+        focusAndPreview(first)
         first.click()
       }
       break
@@ -622,7 +648,7 @@ async function handleResultNavigation(
       if (canNavigate && currentHover) {
         const toShow = prevSibling(currentHover)
         if (toShow) {
-          await focusAndPreview(toShow)
+          focusAndPreview(toShow)
         }
       }
       break
@@ -633,7 +659,7 @@ async function handleResultNavigation(
       if (canNavigate) {
         const toShow = getNavigationTarget(nextSibling)
         if (toShow) {
-          await focusAndPreview(toShow)
+          focusAndPreview(toShow)
         }
       }
       break
@@ -644,7 +670,7 @@ async function handleResultNavigation(
       if (!canNavigate) break
       const toShow = getNavigationTarget(e.shiftKey ? prevSibling : nextSibling)
       if (toShow) {
-        await focusAndPreview(toShow)
+        focusAndPreview(toShow)
       }
       break
     }
@@ -669,7 +695,7 @@ async function shortcutHandler(
   if (await handleSearchToggle(e, container, searchBar)) return
 
   // Otherwise, handle navigation within an already open search UI.
-  await handleResultNavigation(e, container, searchBar)
+  handleResultNavigation(e, container, searchBar)
 }
 
 let cleanupListeners: (() => void) | undefined
@@ -678,7 +704,11 @@ let cleanupListeners: (() => void) | undefined
  * @param e - Navigation event
  */
 /* istanbul ignore next */
-async function onNav(e: CustomEventMap["nav"]) {
+function onNav(e: CustomEventMap["nav"]) {
+  // Reset ready flag so tests wait for re-registration after SPA navigation.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = false
+
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
     cleanupListeners()
@@ -688,6 +718,9 @@ async function onNav(e: CustomEventMap["nav"]) {
     previewManager = null
   }
 
+  // Ensure body scroll is restored if search was open during navigation
+  document.body.style.overflow = ""
+
   currentSlug = e.detail.url
 
   // Verify getContentIndex was injected by renderPage.tsx
@@ -695,8 +728,11 @@ async function onNav(e: CustomEventMap["nav"]) {
     throw new Error("getContentIndex not initialized - check script injection order")
   }
 
-  data = await getContentIndex()
-  if (!data) return
+  // Start fetching content index in the background (cached for later use
+  // by initializeSearch). Don't block handler registration on the fetch —
+  // data is only needed when the user actually performs a search.
+  getContentIndex()
+
   results = document.createElement("div")
   const container = document.getElementById("search-container")
   const searchIcon = document.getElementById("search-icon")
@@ -705,6 +741,8 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   const enablePreview = searchLayout?.dataset?.preview === "true"
   results.id = "results-container"
+  results.setAttribute("role", "listbox")
+  results.setAttribute("aria-label", "Search results")
   appendLayout(results)
 
   if (enablePreview) {
@@ -750,8 +788,19 @@ async function onNav(e: CustomEventMap["nav"]) {
 
   addListener(document, "visibilitychange", syncSearchLayoutState, listeners)
 
-  // Re-render card previews when viewport crosses the tablet breakpoint
-  const debouncedResizeHandler = debounce(handleResizeForCardPreviews, 150, false)
+  // Re-render card previews when viewport crosses the tablet breakpoint,
+  // and re-scroll the preview to the first match (content reflows on width change)
+  const debouncedResizeHandler = debounce(
+    () => {
+      handleResizeForCardPreviews()
+      // No rAF needed — debounce already fires from within a rAF callback,
+      // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
+      previewManager?.scrollToFirstmatch()
+      rescrollCardPreviews()
+    },
+    150,
+    false,
+  )
   window.addEventListener("resize", debouncedResizeHandler)
   listeners.add(() => window.removeEventListener("resize", debouncedResizeHandler))
 
@@ -762,6 +811,10 @@ async function onNav(e: CustomEventMap["nav"]) {
     listeners.forEach((cleanup) => cleanup())
     listeners.clear()
   }
+
+  // Signal that search event handlers are fully registered for this page.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).__searchHandlersReady = true
 }
 
 /**
@@ -780,7 +833,14 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
 
       // Extract frontmatter
       const frontmatterScript = html.querySelector('script[type="application/json"]')
-      const frontmatter = frontmatterScript ? JSON.parse(frontmatterScript.textContent || "{}") : {}
+      let frontmatter: Record<string, unknown> = {}
+      if (frontmatterScript) {
+        try {
+          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+        } catch {
+          console.error(`Failed to parse frontmatter JSON for ${slug}`)
+        }
+      }
 
       // Extract previewable elements and restore checkbox states in one operation
       const contentElements = processPreviewables(html, targetUrl)
@@ -800,18 +860,25 @@ async function fetchContent(slug: FullSlug): Promise<FetchResult> {
  * @param keyboardFocus - Whether to call focus() on the element
  */
 /* istanbul ignore next */
-async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
+function focusCard(el: HTMLElement | null, keyboardFocus = true) {
   document.querySelectorAll(".result-card").forEach((card) => {
     card.classList.remove("focus")
+    card.setAttribute("aria-selected", "false")
   })
 
+  const searchBar = document.getElementById("search-bar")
   if (el) {
     el.classList.add("focus")
+    el.setAttribute("aria-selected", "true")
     currentHover = el
+
+    searchBar?.setAttribute("aria-activedescendant", el.id)
 
     if (keyboardFocus) {
       el.focus()
     }
+  } else {
+    searchBar?.removeAttribute("aria-activedescendant")
   }
 }
 
@@ -821,7 +888,7 @@ async function focusCard(el: HTMLElement | null, keyboardFocus = true) {
  * @param keyboardFocus - Whether to focus the element using the keyboard
  */
 /* istanbul ignore next */
-async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
+function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!searchLayout || !enablePreview || !preview) return
 
@@ -830,7 +897,7 @@ async function displayPreview(el: HTMLElement | null, keyboardFocus = true) {
     previewManager = new PreviewManager(preview)
   }
 
-  await focusCard(el, keyboardFocus)
+  focusCard(el, keyboardFocus)
 
   // Update preview content
   previewManager?.update(el, currentSearchTerm, currentSlug)
@@ -862,10 +929,7 @@ function addListener(
  * @returns Array of IDs
  */
 /* istanbul ignore next */
-const getByField = (
-  field: string,
-  searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[],
-): number[] => {
+const getByField = (field: string, searchResults: DefaultDocumentSearchResults): number[] => {
   const results = searchResults.filter((x) => x.field === field)
   return results.length === 0 ? [] : ([...results[0].result] as number[])
 }
@@ -894,14 +958,14 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
     })
     cardPreview.appendChild(article)
 
+    // Wrap scrollable tables/equations so they get fade-gradient indicators
+    wrapScrollables(cardPreview)
+
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
-      const firstMatch = cardPreview.querySelector(".search-match")
+      const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
       if (firstMatch) {
-        const matchRect = firstMatch.getBoundingClientRect()
-        const containerRect = cardPreview.getBoundingClientRect()
-        const relativeTop = matchRect.top - containerRect.top + cardPreview.scrollTop
-        cardPreview.scrollTop = Math.max(0, relativeTop - cardPreview.clientHeight / 3)
+        scrollContainerToMatch(cardPreview, firstMatch, 1 / 3)
       }
     })
   })
@@ -933,6 +997,20 @@ function handleResizeForCardPreviews(): void {
 }
 
 /**
+ * Re-scroll all visible card previews to center on the first search match.
+ * Called on resize since content reflows can shift match positions.
+ */
+/* istanbul ignore next */
+function rescrollCardPreviews(): void {
+  document.querySelectorAll(".card-preview").forEach((cardPreview) => {
+    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
+    if (firstMatch) {
+      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    }
+  })
+}
+
+/**
  * Create the DOM element representing a single search result.
  *
  * @param slug - The result slug
@@ -946,15 +1024,27 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   const itemTile = document.createElement("a")
   itemTile.classList.add("result-card")
   itemTile.id = slug
+  itemTile.setAttribute("role", "option")
   itemTile.href = resolveSlug(slug, currentSlug).toString()
 
   content = replaceEmojiConvertArrows(content)
 
-  let suffixHTML = ""
-  if (!enablePreview) {
-    suffixHTML = `<p>${content}</p>`
+  // Build the title using DOM methods + matchTextNodes to avoid innerHTML
+  // with raw HTML strings (which can render as visible tags in some cases)
+  const titleSpan = document.createElement("span")
+  titleSpan.className = "h4"
+  titleSpan.textContent = title
+  for (const term of tokenizeTerm(currentSearchTerm)) {
+    matchTextNodes(titleSpan, term)
   }
-  itemTile.innerHTML = `<span class="h4">${title}</span><br/>${suffixHTML}`
+  itemTile.appendChild(titleSpan)
+  itemTile.appendChild(document.createElement("br"))
+
+  if (!enablePreview) {
+    const contentPreview = document.createElement("p")
+    contentPreview.innerHTML = content
+    itemTile.appendChild(contentPreview)
+  }
 
   // On mobile/tablet, embed a small card preview slice in each card.
   // CSS hides .card-preview above the tablet breakpoint, so we always
@@ -966,16 +1056,21 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
   }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
-  async function onMouseEnter(ev: MouseEvent) {
+  function onMouseEnter(ev: MouseEvent) {
     if (mouseEventsLocked) return
     if (!ev.currentTarget) return
+    hoverSetByKeyboard = false
     const target = ev.currentTarget as HTMLElement
-    await displayPreview(target, false)
+    displayPreview(target, false)
   }
 
   // Add mouse leave handler to maintain focus state
   function onMouseLeave() {
     if (mouseEventsLocked) return
+    // Don't clear currentHover if it was set by keyboard navigation.
+    // Mobile browsers (especially Safari) fire spurious mouseleave events
+    // when .focus() is called on an <a> element during keyboard navigation.
+    if (hoverSetByKeyboard) return
     if (currentHover === itemTile) {
       currentHover = null
     }
@@ -1027,9 +1122,9 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: match(term, data[slug].title ?? ""),
+    title: data[slug].title ?? "",
     content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors?.join(", "),
+    authors: data[slug].authors?.join(", ") ?? "",
   }
 }
 
@@ -1040,14 +1135,12 @@ const formatForDisplay = (
  * @param enablePreview - Whether preview is enabled
  */
 /* istanbul ignore next */
-async function displayResults(
-  finalResults: Item[],
-  results: HTMLElement,
-  enablePreview: boolean,
-): Promise<void> {
+function displayResults(finalResults: Item[], results: HTMLElement, enablePreview: boolean): void {
   if (!results) return
 
   removeAllChildren(results)
+  const searchBar = document.getElementById("search-bar")
+  searchBar?.setAttribute("aria-expanded", finalResults.length > 0 ? "true" : "false")
   if (finalResults.length === 0) {
     results.innerHTML = `<a class="result-card no-match">
         <h3>No results</h3>
@@ -1063,12 +1156,13 @@ async function displayResults(
   } else {
     results.append(...finalResults.map((result) => resultToHTML(result, enablePreview)))
 
-    // focus on first result and update preview
+    // Focus on the first result and update preview.
+    // Call focusCard directly to ensure aria-selected is always set,
+    // even when displayPreview returns early (preview disabled).
     const firstChild = results.firstElementChild as HTMLElement
-    firstChild.classList.add("focus")
-    currentHover = firstChild as HTMLInputElement
+    focusCard(firstChild, false)
 
-    await displayPreview(firstChild, false)
+    displayPreview(firstChild, false)
   }
 }
 
@@ -1090,13 +1184,12 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   searchLayout.classList.toggle("display-results", currentSearchTerm !== "")
 
   mouseEventsLocked = true
-  const searchResults: FlexSearch.SimpleDocumentSearchResultSetUnit[] = await index.searchAsync({
+  const searchResults = (await index.searchAsync({
     query: currentSearchTerm,
     limit: numSearchResults,
     index: ["title", "content", "slug", "authors"],
-    bool: "or", // Appears in any of the fields
     suggest: false,
-  })
+  })) as DefaultDocumentSearchResults
 
   // Ordering affects search results, so we need to order them here
   const allIds: Set<number> = new Set([
@@ -1119,7 +1212,7 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
     void results.offsetHeight
   }
 
-  await displayResults(finalResults, results, enablePreview)
+  displayResults(finalResults, results, enablePreview)
 
   // Re-enable mouse after a short delay to prevent immediate hover selection
   setTimeout(() => {
@@ -1159,13 +1252,14 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
     if (!index) {
       throw new Error("Search index is not initialized")
     }
-    return index.addAsync(id, {
+    const doc: Item = {
       id,
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors?.join(", "),
-    })
+      authors: fileData.authors?.join(", ") ?? "",
+    }
+    return index.addAsync(id, doc as unknown as DocumentData)
   })
 
   await Promise.all(promises)
@@ -1203,12 +1297,21 @@ async function initializeSearch(): Promise<void> {
       // Create the index
       index = createSearchIndex()
 
-      // Fetch and fill the index with data
+      // Ensure content index is available (fetch started by onNav, cached).
+      // getContentIndex is injected by renderPage.tsx and may not exist in unit tests.
+      if (!data && typeof getContentIndex === "function") {
+        data = await getContentIndex()
+      }
       if (data) {
         await fillDocument(data)
       }
 
       searchInitialized = true
+      // Signal to tests that the index is ready. Unlike __searchHandlersReady,
+      // this is never reset — the index persists across SPA navigations.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).__searchIndexReady = true
+      document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
     } catch (error) {
       console.error("Error initializing search:", error)
       searchBar.placeholder = "Search failed to load."
@@ -1255,40 +1358,17 @@ export function descendantsSamePageLinks(rootNode: Element): HTMLAnchorElement[]
 }
 
 /**
- * Compute the vertical offset of an element relative to a scrollable container.
- *
- * @param element - The element whose offset to compute
- * @param container - The container element used as the reference
- * @returns The offsetTop in pixels relative to the container
+ * Scroll a container so that a match element is positioned at the given fraction
+ * of the container's visible height. Uses getBoundingClientRect for reliable
+ * positioning with inline elements and intermediate positioned ancestors.
  */
-export function getOffsetTopRelativeToContainer(
-  element: HTMLElement,
+export function scrollContainerToMatch(
   container: HTMLElement,
-): number {
-  let offsetTop = 0
-  let currentElement: HTMLElement | null = element
-
-  // Traverse up the DOM tree until we reach the container
-  while (currentElement && currentElement !== container) {
-    offsetTop += currentElement.offsetTop
-    currentElement = currentElement.offsetParent as HTMLElement | null
-  }
-
-  return offsetTop
-}
-
-/**
- * Calculate scroll position to properly orient an element within its container
- * @param element - The element to position
- * @param container - The container to scroll
- * @param scrollFraction - Fraction (0-1) of container height from top where element should be positioned
- * @returns The scroll position for optimal element visibility
- */
-export function getSearchMatchScrollPosition(
-  element: HTMLElement,
-  container: HTMLElement,
+  match: HTMLElement,
   scrollFraction: number,
-): number {
-  const offsetTop = getOffsetTopRelativeToContainer(element, container)
-  return offsetTop - container.clientHeight * scrollFraction
+): void {
+  const matchRect = match.getBoundingClientRect()
+  const containerRect = container.getBoundingClientRect()
+  const relativeTop = matchRect.top - containerRect.top + container.scrollTop
+  container.scrollTop = Math.max(0, relativeTop - container.clientHeight * scrollFraction)
 }

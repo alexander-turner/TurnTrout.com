@@ -12,8 +12,10 @@ tags:
   - website
   - personal
 date_published: 2024-10-30 18:09:31.133945
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2026-03-13 20:17:18.991022
 ---
+
+
 
 For months, I have built a new home for my online content: [`www.turntrout.com`](/). I brooked no compromises. Over [2,220 commits later](https://github.com/alexander-turner/TurnTrout.com/commits/main/),[^commits] I'm ready to publicize.
 
@@ -38,7 +40,7 @@ I am pleased to present the _initial release_ of `www.turntrout.com` - I have ma
 ![A screenshot of the "Shard Theory of Human Values" post on the turntrout.com website, showcasing the desktop design. The three-column layout features a left sidebar with a pixel art pond logo, a central article with a serif font and large dropcap, and a right sidebar with a table of contents.](https://assets.turntrout.com/static/images/posts/site_desktop.avif)
 Figure: The site is most beautiful on the desktop. For example, the desktop enables hover previews for internal links.
 
-Many folks see the first <span class="dropcap" data-first-letter="D">d</span>ropcap and think of [`gwern.net`](https://gwern.net). Some of my site's features were inspired by `gwern`'s site, but some others were convergent design choices. For example, I forked the [Quartz static site generator](https://quartz.jzhao.xyz/) , which already included [hover previews for internal links.](/design#smaller-features) However, `gwern`'s site inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), and [cryptographic timestamping](/design#finishing-touches).
+Many folks see the first <span class="dropcap" data-first-letter="D">d</span>ropcap and think of [`gwern.net`](https://gwern.net). Some of my site's features were inspired by `gwern`'s site, but some others were convergent design choices. For example, I forked the [Quartz static site generator](https://quartz.jzhao.xyz/) , which already included [hover previews for internal links.](/design#smaller-features) However, `gwern`'s site inspired [inline link icons](/design#inline-favicons), [dropcaps](/design#dropcaps), [`linkchecker`](/design#validating-links), and [cryptographic timestamping](/design#build-pipeline-extras).
 
 The serif font is the open-source [EB Garamond](https://github.com/georgd/EB-Garamond) - that choice inspired by the beautiful Garamond of [`ReadTheSequences.com`](https://readthesequences.com). However, most of [this website's design](/design) was by my own taste.
 
@@ -78,14 +80,10 @@ Like any good trout seeking a mate, I've prepared my nesting grounds with care. 
 
 I've [criticized the loose analogical reasoning which permeates the rationalist community's AI risk arguments](/danger-of-suggestive-terminology). But criticism is cheap. I want to hold myself to my own high standards.
 
-<!-- vale off -->
-
 > [!quote] Theodore Roosevelt
 > Subtitle: ["Citizenship In A Republic"; delivered at the Sorbonne on 23 April, 1910](https://en.wikipedia.org/wiki/Citizenship_in_a_Republic)
 >
 > The poorest way to face life is to face it with a sneer. There are many men who feel a kind of twister pride in cynicism; there are many who confine themselves to criticism of the way others do what they themselves dare not even attempt. There is no more unhealthy being, no man less worthy of respect, than he who either really holds, or feigns to hold, an attitude of sneering disbelief toward all that is great and lofty, whether in achievement or in that noble effort which, even if it fails, comes to second achievement. A cynical habit of thought and speech, a readiness to criticize work which the critic himself never tries to perform, an intellectual aloofness which will not accept contact with life's realities - all these are marks, not as the possessor would fain to think, of superiority but of weakness. They mark the men unfit to bear their part painfully in the stern strife of living, who seek, in the affection of contempt for the achievements of others, to hide from others and from themselves in their own weakness. The rôle is easy; there is none easier, save only the rôle of the man who sneers alike at both criticism and performance.
-
-<!-- vale on -->
 
 I hope to speak loudly and carry a small ego. I want to enjoy my wins and honorably acknowledge my mispredictions.
 

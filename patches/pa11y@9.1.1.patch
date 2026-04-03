@@ -1,0 +1,44 @@
+diff --git a/lib/pa11y.js b/lib/pa11y.js
+index 1d7fc59aca5e2f0b39d59d340f8aa983437492e6..7ba8b9eb43468c2d6bb5347e687be47b0170e085 100644
+--- a/lib/pa11y.js
++++ b/lib/pa11y.js
+@@ -264,7 +264,11 @@ async function gotoUrl(url, options, state) {
+ 	if (!options.ignoreUrl) {
+ 		options.log.debug(`Navigating to ${url}`);
+ 		await state.page.goto(url, {
+-			waitUntil: 'networkidle2',
++			// Use 'load' instead of 'networkidle2'. networkidle2 hangs on
++			// pages with long-lived connections (analytics, CDN prefetch).
++			// 'load' fires once HTML parsing + local resources finish,
++			// which is sufficient for a11y checks on locally-served sites.
++			waitUntil: 'load',
+ 			timeout: options.timeout
+ 		});
+ 	}
+diff --git a/lib/runners/axe.js b/lib/runners/axe.js
+index 73cb70c91c38734646988a4f774a50c66ea8dab1..7e93af74a55ab1e34b901e18f2c195d38f8cd7f4 100644
+--- a/lib/runners/axe.js
++++ b/lib/runners/axe.js
+@@ -185,7 +185,6 @@ const run = async options => {
+ 	async function runAxeCore({standard, rules, ignore, rootElement, levelCapWhenNeedsReview}) {
+ 		const {
+ 			violations = [],
+-			incomplete = []
+ 		} =
+ 			await getBrowserAxe()
+ 				.run(
+@@ -197,9 +196,12 @@ const run = async options => {
+ 					})
+ 				);
+ 
++		// Only report definitive violations. Axe "incomplete" results are items
++		// that need manual review (e.g. non-text characters, SVG foreignObject
++		// backgrounds, overlapping floats). Including them produces false
++		// positives that can't be resolved via CSS.
+ 		return [
+-			...violations.flatMap(issue => processIssue(issue, false, levelCapWhenNeedsReview)),
+-			...incomplete.flatMap(issue => processIssue(issue, true, levelCapWhenNeedsReview))
++			...violations.flatMap(issue => processIssue(issue, false, levelCapWhenNeedsReview))
+ 		];
+ 	}
+ 

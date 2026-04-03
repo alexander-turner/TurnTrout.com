@@ -43,7 +43,7 @@ describe("reorderHead", () => {
       .toArray()
       .map((el) => (el as CheerioElement).tagName)
 
-  it("should place the scroll restoration script at the very top", () => {
+  it("should place meta/title first, then sync scripts before other scripts", () => {
     const querier = createHtml(`
       <script id="detect-initial-state">/* dark mode */</script>
       <meta charset="utf-8">
@@ -52,7 +52,9 @@ describe("reorderHead", () => {
     `)
     const result = reorderHead(querier)
     const children = result("head").children()
-    expect(children.first().attr("id")).toBe("detect-initial-state")
+    expect(getTagNames(result)).toEqual(["meta", "title", "script", "script"])
+    // detect-initial-state should come before other scripts
+    expect(children.eq(2).attr("id")).toBe("detect-initial-state")
     expect(children.length).toBe(4)
   })
 
@@ -67,7 +69,7 @@ describe("reorderHead", () => {
         <title>Test</title>
         <script id="detect-initial-state">/* initial state */</script>
       `,
-      expectedOrder: ["script", "meta", "title", "style", "link", "script"],
+      expectedOrder: ["meta", "title", "script", "style", "link", "script"],
     },
     {
       name: "minimal elements",
@@ -83,6 +85,18 @@ describe("reorderHead", () => {
         <link href="style2.css">
       `,
       expectedOrder: ["meta", "meta", "link", "link"],
+    },
+    {
+      name: "preloads before sync scripts",
+      input: `
+        <script id="detect-initial-state">/* initial */</script>
+        <link rel="preload" href="/index.css" as="style">
+        <link rel="preconnect" href="https://cdn.example.com">
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="/index.css">
+        <script>console.log('other')</script>
+      `,
+      expectedOrder: ["meta", "link", "link", "script", "link", "script"],
     },
   ])("should maintain element order: $name", ({ input, expectedOrder }) => {
     const querier = createHtml(input)
@@ -188,14 +202,12 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     await fsExtra.writeFile(path.join(katexDir, "katex.min.css"), "/* katex */")
 
     const realReadFile = fs.promises.readFile
-    const readFileSpy = jest
-      .spyOn(fs.promises, "readFile")
-      .mockImplementation(async (fp, ...args) => {
-        if (fp === criticalScssPath) {
-          return manualCriticalCss
-        }
-        return realReadFile(fp, ...args)
-      })
+    const readFileSpy = jest.spyOn(fs.promises, "readFile").mockImplementation((fp, ...args) => {
+      if (fp === criticalScssPath) {
+        return Promise.resolve(manualCriticalCss)
+      }
+      return realReadFile(fp, ...args)
+    })
 
     const writeSpy = jest.spyOn(fs.promises, "writeFile").mockResolvedValue()
 

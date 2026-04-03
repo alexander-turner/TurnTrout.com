@@ -7,7 +7,8 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-  pull_request:
+  # Removed pull_request trigger: zero failures across 50 PRs analyzed.
+  # Still runs on main/dev push and merge queue for pre-merge validation.
   merge_group:
 
 permissions:
@@ -20,9 +21,9 @@ jobs:
     outputs:
       python: ${{ steps.changes.outputs.python }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: changes
         with:
           filters: |
@@ -40,20 +41,21 @@ jobs:
       !startsWith(github.head_ref, 'deepsource-') &&
       needs.detect-changes.outputs.python == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 12
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Setup build environment
-        uses: ./.github/actions/setup-build-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
         with:
           install-node-deps: "false"
+          install-system-deps: "true"
 
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
           pip install linkchecker
 
       - name: Install ImageMagick 7 via Homebrew

@@ -11,9 +11,14 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-01-01 20:00:17.441157
+date_updated: 2026-04-03 00:30:36.502652
 createBibtex: true
 ---
+
+
+
+
+
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
@@ -84,7 +89,7 @@ Unordered list inside a description list
   - Roam / note-taking
 
 Code block in a `<dl>`
-: To verify that a commit `ABC012` was indeed committed by a given date, run
+: To verify that a commit `ABC012` was indeed committed by a given date, run:
 
   ```shell
   git clone https://github.com/alexander-turner/.timestamps
@@ -140,7 +145,7 @@ Admonition in a description list
 - [ ] First-level not checked off
   - [ ] Not checked off. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines. This list item has multiple lines.
   - [x] Checked off
-    - [ ] Nested checked off should still be crossed out and same (diminished) opacity
+    - [ ] Nested unchecked item under checked parent
       - [ ] Third nested with a <a id="checkboxes-link" href="#checkboxes">test link</a>.
   - [ ] Not checked off
 - Normal bullet
@@ -158,6 +163,16 @@ Admonition in a description list
 - [x] Install [the mobile app](https://www.privacy.com/mobile-app).
   - [ ] Nested
   - [x] Not even more transparent
+
+# Select boxes
+
+<label for="select-basic">Basic select:</label>
+<select id="select-basic">
+  <option value="">Choose an option</option>
+  <option value="1">Option 1</option>
+  <option value="2">Option 2</option>
+  <option value="3">Option 3</option>
+</select>
 
 # Transclusion
 
@@ -438,6 +453,16 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 Figure: This image should be transparent in light mode and have a light background in dark mode.
 
+## Before/after image slider
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents''. The website looks bare and amateurish."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents''."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before vs. after site redesign.</figcaption>
+</figure>
+
 ## Floating image right
 
 <!-- vale off -->
@@ -515,7 +540,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Numbers and units
 
-This computer has 16GB of RAM and runs at 3.2GHz.
+This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
 
 ## Smart quotes
 
@@ -539,7 +564,7 @@ He came in 1st but I came in 5,300,251st. :( _Emphasized "21st"._ October 5th, 1
 <span id="single-letter-dropcap" class="dropcap" data-first-letter="T">T</span>his paragraph demonstrates a dropcap.
 
 <div style="font-size:4rem;line-height:1.4 !important;" class="centered ignore-pa11y">
-<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);">A</span>
+<span class="dropcap ignore-pa11y" style="font-family: var(--font-dropcap-background); color: var(--midground-faint);" aria-hidden="true">A</span>
 <span class="dropcap" data-first-letter="" style="color: var(--foreground);">A</span>
 <div class="dropcap" data-first-letter="A" style="color: var(--foreground);--before-color:var(--foreground);">A</div>
 </div>
@@ -709,9 +734,7 @@ This is a plain code block without a language specified.
 <!-- spellchecker-disable -->
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-
-  <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
-
+: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 
 <!-- spellchecker-enable -->
@@ -720,13 +743,50 @@ Scrawled handwriting
 : <span class="bad-handwriting"><b>TERROR</b></span>
 
 Gold script
-: _<span class="gold-script">Tips hat</span>_
+: _<span class=”gold-script”>Tips hat</span>_
 
 Corrupted text
-: <span class="corrupted">The corruption creeps ever closer...</span>
+: <span class=”corrupted”>The corruption creeps ever closer...</span>
+
+## Italic punctuation
+
+Enclosing punctuation should render upright (roman) while letter forms remain italic. Apostrophes in contractions should stay italic.
+
+### 8pt italic
+
+| Character | Old (slanted) | New (upright) |
+| :-- | :-- | :-- |
+| Parentheses | <span class="italic-old">(quickly)</span> | _(quickly)_ |
+| Brackets | <span class="italic-old">[briefly]</span> | _[briefly]_ |
+| Braces | <span class="italic-old">\{gently\}</span> | _\{gently\}_ |
+| Double quotes | <span class="italic-old">“softly”</span> | _“softly”_ |
+| Single quotes | <span class="italic-old">‘lightly’</span> | _‘lightly’_ |
+| Apostrophe | <span class="italic-old">don’t</span> | _don’t_ |
+| Mixed | <span class="italic-old">(it’s “fine," he said)</span> | _(it’s “fine," he said)_ |
+| f-ligatures | <span class="italic-old">(fifty officials)</span> | _(fifty officials)_ |
+
+### 12pt italic
+
+| Character | Old (slanted) | New (upright) |
+| :-- | :-- | :-- |
+| Parentheses | <span class="italic-12-old">(quickly)</span> | <span class="italic-12">(quickly)</span> |
+| Brackets | <span class="italic-12-old">[briefly]</span> | <span class="italic-12">[briefly]</span> |
+| Braces | <span class="italic-12-old">\{gently\}</span> | <span class="italic-12">\{gently\}</span> |
+| Double quotes | <span class="italic-12-old">"softly"</span> | <span class="italic-12">"softly"</span> |
+| Single quotes | <span class="italic-12-old">‘lightly’</span> | <span class="italic-12">‘lightly’</span> |
+| Apostrophe | <span class="italic-12-old">don’t</span> | <span class="italic-12">don’t</span> |
+| Mixed | <span class="italic-12-old">(it’s “fine," he said)</span> | <span class="italic-12">(it’s “fine," he said)</span> |
+| f-ligatures | <span class="italic-12-old">(fifty officials)</span> | <span class="italic-12">(fifty officials)</span> |
+  
+- _The Elements of Typographic Style (Hartley & Marks, 2004)_ is a good book.
+- _Parentheses (like these), brackets [like these], and braces \{like these\} should all be upright._
+- _**Bold italic (parentheses) and [brackets]**_
+- _**We need a <span>deep (nesting)</span> test.**_
+- _Here's `code(not_wrapped)` but (these are wrapped)._
 
 # What are your timelines?
 
+<!--spellchecker-disable-->
 <div class="timeline">
     <div class="timeline-card">
       <div class="timeline-info">
@@ -765,6 +825,7 @@ Corrupted text
     </div>
   </div>
 </div>
+<!--spellchecker-enable-->
 
 <figcaption>Credit to <a href="https://codepen.io/alvarotrigo/pen/BawBzjM">this Codepen</a>.</figcaption>
 

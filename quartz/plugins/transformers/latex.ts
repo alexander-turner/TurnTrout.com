@@ -1,14 +1,11 @@
-import { type Element, type Root } from "hast"
+import type { Element, Root } from "hast"
+
 import rehypeKatex from "rehype-katex"
-import rehypeMathjax from "rehype-mathjax/svg"
 import remarkMath from "remark-math"
 import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-interface Options {
-  renderEngine: "katex" | "mathjax"
-}
 const macros = {
   "\\abs": "\\left|#1\\right|",
   "\\prn": "\\left(#1\\right)",
@@ -41,49 +38,37 @@ const macros = {
   "꙳": "$\\star$",
 }
 
-/** Adds `tabindex="0"` and `role="math"` to `.katex-display` spans for keyboard scrollability. */
-export function makeKatexDisplayAccessible() {
-  return (tree: Root) => {
-    visit(tree, "element", (node: Element) => {
-      if (
-        node.tagName === "span" &&
-        Array.isArray(node.properties?.className) &&
-        (node.properties.className as string[]).includes("katex-display")
-      ) {
-        node.properties.tabIndex = 0
-        node.properties.role = "math"
-      }
-    })
-  }
-}
-
-export const Latex: QuartzTransformerPlugin<Options> = (opts?: Options) => {
-  const engine = opts?.renderEngine ?? "katex"
+export const Latex: QuartzTransformerPlugin = () => {
   return {
     name: "Latex",
     markdownPlugins() {
       return [remarkMath]
     },
     htmlPlugins() {
-      if (engine === "katex") {
-        return [
-          [
-            rehypeKatex,
-            { output: "html", strict: false, trust: true, macros, colorIsTextColor: true },
-          ],
-          makeKatexDisplayAccessible,
-        ]
-      } else {
-        return [rehypeMathjax]
-      }
+      return [
+        [
+          rehypeKatex,
+          { output: "htmlAndMathml", strict: false, trust: true, macros, colorIsTextColor: true },
+        ],
+        () => (tree: Root) => {
+          // Add tabindex="0" to .katex-display spans so they satisfy the axe
+          // scrollable-region-focusable rule in static HTML (before JS runs).
+          // CSS gives .katex-display `overflow: auto hidden`, making it scrollable.
+          // The client-side katex-a11y-tabindex.js refines this at runtime,
+          // removing tabindex from elements that don't actually overflow.
+          visit(tree, "element", (node: Element) => {
+            const classes = node.properties?.className
+            if (Array.isArray(classes) && classes.includes("katex-display")) {
+              node.properties.tabIndex = 0
+              node.properties.role = "group"
+            }
+          })
+        },
+      ]
     },
     externalResources() {
-      if (engine === "katex") {
-        return {
-          css: ["/static/styles/katex.min.css"],
-        }
-      } else {
-        return {}
+      return {
+        css: ["/static/styles/katex.min.css"],
       }
     },
   }

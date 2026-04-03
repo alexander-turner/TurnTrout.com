@@ -1,13 +1,16 @@
+import json
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
 import requests  # type: ignore[import]
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
+from bs4.element import AttributeValueList
 
 from .. import utils as script_utils
 from ..utils import (
@@ -28,7 +31,9 @@ else:
 
 
 @pytest.fixture
-def mock_environment(quartz_project_structure, monkeypatch):
+def mock_environment(
+    quartz_project_structure, monkeypatch
+) -> dict[str, object]:
     """Set up common mocks and environment variables."""
     public_dir = quartz_project_structure["public"]
     content_dir = quartz_project_structure["content"]
@@ -42,11 +47,16 @@ def mock_environment(quartz_project_structure, monkeypatch):
     # Mock common utility functions
     monkeypatch.setattr(script_utils, "collect_aliases", lambda md_dir: set())
 
-    # Mock check_rss_file_for_issues to prevent actual subprocess call in main tests
+    # Mock subprocess-dependent helpers to avoid npx/tsx calls in tests
     monkeypatch.setattr(
         built_site_checks,
         "check_rss_file_for_issues",
         lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        built_site_checks,
+        "_build_included_favicon_domains",
+        lambda _git_root: frozenset(),
     )
 
     return {
@@ -57,7 +67,7 @@ def mock_environment(quartz_project_structure, monkeypatch):
 
 
 @pytest.fixture
-def html_file_in_drafts(mock_environment):
+def html_file_in_drafts(mock_environment) -> Path:
     """Create a test HTML file inside a drafts directory."""
     public_dir = mock_environment["public_dir"]
     drafts_dir = public_dir / "drafts"
@@ -68,7 +78,7 @@ def html_file_in_drafts(mock_environment):
 
 
 @pytest.fixture
-def valid_css_file(mock_environment):
+def valid_css_file(mock_environment) -> Path:
     """Create a valid CSS file."""
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
@@ -79,7 +89,7 @@ def valid_css_file(mock_environment):
 
 
 @pytest.fixture
-def invalid_css_file(mock_environment):
+def invalid_css_file(mock_environment) -> Path:
     """Create an invalid CSS file (missing @supports)."""
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
@@ -88,7 +98,7 @@ def invalid_css_file(mock_environment):
 
 
 @pytest.fixture
-def robots_txt_file(mock_environment):
+def robots_txt_file(mock_environment) -> Path:
     """Create a robots.txt file."""
     public_dir = mock_environment["public_dir"]
     robots_txt = public_dir / "robots.txt"
@@ -97,7 +107,7 @@ def robots_txt_file(mock_environment):
 
 
 @pytest.fixture
-def root_files(mock_environment):
+def root_files(mock_environment) -> list[Path]:
     """Create required root files: robots.txt, favicon.svg, and favicon.ico."""
     public_dir = mock_environment["public_dir"]
     files = []
@@ -108,7 +118,7 @@ def root_files(mock_environment):
 
 
 @pytest.fixture
-def html_file(mock_environment):
+def html_file(mock_environment) -> Path:
     """Create a test HTML file."""
     public_dir = mock_environment["public_dir"]
     html_file = public_dir / "test.html"
@@ -117,7 +127,7 @@ def html_file(mock_environment):
 
 
 @pytest.fixture
-def md_file(mock_environment):
+def md_file(mock_environment) -> None:
     """Create a markdown file corresponding to the test HTML file."""
     content_dir = mock_environment["content_dir"]
     md_file = content_dir / "test.md"
@@ -126,7 +136,7 @@ def md_file(mock_environment):
 
 
 @pytest.fixture
-def disable_md_requirement(monkeypatch):
+def disable_md_requirement(monkeypatch) -> None:
     monkeypatch.setattr(script_utils, "should_have_md", lambda file_path: False)
 
 
@@ -145,7 +155,7 @@ def disable_md_requirement(monkeypatch):
         ("path.to/file.txt", "path.to/file.txt"),
     ],
 )
-def test_strip_path(input_path: str, expected: str) -> None:
+def test_strip_path(input_path: str, expected: str):
     """Test the _strip_path function with various input paths."""
     assert built_site_checks._strip_path(input_path) == expected
 
@@ -223,7 +233,7 @@ def sample_soup_with_assets(sample_html_with_assets: str) -> BeautifulSoup:
     "preview_chars",
     [0, -1],
 )
-def test_add_to_list_exceptions(preview_chars: int) -> None:
+def test_add_to_list_exceptions(preview_chars: int):
     """Test that _add_to_list raises ValueError for non-positive
     preview_chars."""
     lst: list[str] = []
@@ -246,7 +256,7 @@ def test_add_to_list_exceptions(preview_chars: int) -> None:
 )
 def test_add_to_list_no_truncation(
     input_text: str, prefix: str, expected_output: list[str]
-) -> None:
+):
     """Test _add_to_list when text length <= preview_chars."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -266,9 +276,7 @@ PREVIEW_CHARS = 10
         ("Prefix: ", ["Prefix: This is a "]),
     ],
 )
-def test_add_to_list_truncate_start(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_add_to_list_truncate_start(prefix: str, expected_output: list[str]):
     """Test _add_to_list truncation with show_end=False."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -288,9 +296,7 @@ def test_add_to_list_truncate_start(
         ("Prefix: ", ["Prefix: truncated...."]),
     ],
 )
-def test_append_to_list_truncate_end(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_append_to_list_truncate_end(prefix: str, expected_output: list[str]):
     """Test _append_to_list truncation with show_end=True."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -598,6 +604,11 @@ def test_check_local_media_files(sample_soup, temp_site_root):
             [],
         ),
         ('<svg src="icon.svg"></svg>', ["icon.svg (resolved to {})"], []),
+        (
+            '<audio src="clip.mp3"></audio>',
+            ["clip.mp3 (resolved to {})"],
+            [],
+        ),
         ('<img src="existing.png">', [], ["existing.png"]),
     ],
 )
@@ -651,7 +662,7 @@ def test_check_file_for_issues(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["localhost_links"] == ["https://localhost:8000"]
@@ -687,7 +698,7 @@ def test_complicated_blockquote(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues["trailing_blockquotes"] == [
@@ -708,7 +719,7 @@ def test_check_file_for_issues_with_redirect(tmp_path):
             file_path,
             tmp_path / "public",
             tmp_path / "website_content",
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_parse_html_file.assert_called_once_with(file_path)
     assert issues == {}
@@ -1905,6 +1916,7 @@ def test_check_spacing_after_branch():
     soup = BeautifulSoup(html, "html.parser")
 
     link_element = soup.find("a")
+    assert isinstance(link_element, Tag)
 
     # Test the "after" branch specifically
     result = built_site_checks.check_spacing(
@@ -1982,7 +1994,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
         ),
     ],
 )
-def test_check_description_length(html: str, expected: list[str]) -> None:
+def test_check_description_length(html: str, expected: list[str]):
     """Test the check_description_length function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_description_length(soup)
@@ -2189,9 +2201,11 @@ def test_check_invalid_internal_links(html, expected_count):
     result = built_site_checks.check_invalid_internal_links(soup)
     assert len(result) == expected_count
     for link in result:
-        assert "internal" in link.get("class", [])
+        assert "internal" in cast(list[str], link.get("class") or [])
         # Verify the link is actually invalid
-        assert not link.has_attr("href") or link["href"].startswith("https://")
+        assert not link.has_attr("href") or cast(str, link["href"]).startswith(
+            "https://"
+        )
 
 
 @pytest.mark.parametrize(
@@ -2290,6 +2304,28 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     assert result == Counter(expected_counts)
 
 
+def test_head_with_retry_delegates_to_session(monkeypatch):
+    """_head_with_retry delegates to the shared session (retry handled by
+    urllib3)."""
+    mock_resp = type("MockResponse", (), {"ok": True, "status_code": 200})
+    monkeypatch.setattr(
+        built_site_checks._http_session, "head", lambda url, timeout: mock_resp
+    )
+    resp = built_site_checks._head_with_retry("https://example.com")
+    assert resp.ok
+
+
+def test_head_with_retry_propagates_exceptions(monkeypatch):
+    """Exceptions from the session propagate to callers."""
+
+    def raise_error(url, timeout):
+        raise requests.ConnectionError("fail")
+
+    monkeypatch.setattr(built_site_checks._http_session, "head", raise_error)
+    with pytest.raises(requests.ConnectionError, match="fail"):
+        built_site_checks._head_with_retry("https://example.com")
+
+
 @pytest.mark.parametrize(
     "html,expected,mock_responses",
     [
@@ -2383,7 +2419,7 @@ def test_check_iframe_sources(
         return mock_response
 
     # Patch the requests.head function
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     result = built_site_checks.check_iframe_sources(soup)
     assert sorted(result) == sorted(expected)
@@ -2400,7 +2436,7 @@ def test_check_iframe_sources(
         ),
         (
             '<iframe src="https://bad.example/embed"></iframe>',
-            [(False, 500)],
+            [(False, 500), (False, 500), (False, 500)],
             [
                 "Iframe embed returned status 500: https://bad.example/embed",
             ],
@@ -2438,7 +2474,7 @@ def test_check_iframe_embeds(
     mock_responses: list,
     expected_issues: list[str],
     expected_urls: list[str],
-) -> None:
+):
     soup = BeautifulSoup(html, "html.parser")
     requested_urls: list[str] = []
     responses = list(mock_responses)
@@ -2453,12 +2489,12 @@ def test_check_iframe_embeds(
         ok, status = response
         return type("MockResponse", (), {"ok": ok, "status_code": status})
 
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     issues = built_site_checks.check_iframe_embeds(soup)
 
     assert sorted(issues) == sorted(expected_issues)
-    assert requested_urls == expected_urls
+    assert set(requested_urls) == set(expected_urls)
 
 
 @pytest.mark.parametrize(
@@ -2525,6 +2561,422 @@ def test_check_link_spacing(html, expected):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_link_spacing(soup)
     assert sorted(result) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    "html,expected",
+    [
+        # The original bug: "9combinations" from transform eating whitespace
+        (
+            '<p>9<abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            ["Missing space before: 9<abbr>Combinations</abbr>"],
+        ),
+        # Properly spaced smallcaps
+        (
+            '<p>9 <abbr class="small-caps">Combinations</abbr> of strategies</p>',
+            [],
+        ),
+        # Missing space after smallcaps
+        (
+            '<p>The <abbr class="small-caps">Nasa</abbr>launched a rocket</p>',
+            ["Missing space after: <abbr>Nasa</abbr>launched a rocket"],
+        ),
+        # Plural abbreviation: "LLMs" → <abbr>llm</abbr>s
+        (
+            '<p>Using <abbr class="small-caps">llm</abbr>s for research.</p>',
+            [],
+        ),
+        # Allowed punctuation after smallcaps
+        *[
+            (
+                f'<p>The <abbr class="small-caps">Nasa</abbr>{char}s</p>',
+                [],
+            )
+            for char in ("\u2019", ".", ",", "!", "?", ")", "]", ";", ":")
+        ],
+        # Allowed chars before smallcaps
+        *[
+            (
+                f'<p>text{char}<abbr class="small-caps">Nasa</abbr> rocks</p>',
+                [],
+            )
+            for char in ("(", "[", " ", "-", "\u2014", "\u2013", "\u2212")
+        ],
+        # Digit before smallcaps (e.g. "3Blue1Brown")
+        (
+            '<p>3Blue<abbr class="small-caps">1brown</abbr> videos</p>',
+            [],
+        ),
+        # Arrow followed by digits (reversed numbers like "↗563")
+        (
+            '<p><span class="monospace-arrow">\u2197</span>563 is a number</p>',
+            [],
+        ),
+        # En-dash after ordinal suffix
+        (
+            '<p>the 20<sup class="ordinal-suffix">th</sup>\u2013century</p>',
+            [],
+        ),
+        # Minus sign before fraction
+        (
+            '<p>about \u2212<span class="fraction">1/3</span> of the total</p>',
+            [],
+        ),
+        # En-dash before fraction
+        (
+            '<p>about \u2013<span class="fraction">1/3</span> of the total</p>',
+            [],
+        ),
+        # Opening paren after abbreviation (e.g. "AIXI(-tl)")
+        (
+            '<p>The <abbr class="small-caps">aixi</abbr>(-tl) agent</p>',
+            [],
+        ),
+        # Properly spaced ordinal (realistic transform output)
+        (
+            '<p>the <span class="ordinal-num">1</span><sup class="ordinal-suffix">st</sup> place</p>',
+            [],
+        ),
+        # Regular abbr/span without formatting classes — not checked
+        (
+            "<p>9<abbr>combinations</abbr> test</p>",
+            [],
+        ),
+        # Elements inside no-formatting spans should be skipped
+        (
+            '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
+            [],
+        ),
+        # Right guillemet after abbreviation (French closing quote)
+        (
+            '<p>\u00ab<abbr class="small-caps">bonjour</abbr>\u00a0\u00bb monde</p>',
+            [],
+        ),
+        # Left guillemet before abbreviation (French opening quote)
+        (
+            '<p>\u00ab\u00a0<abbr class="small-caps">bonjour</abbr>\u00bb</p>',
+            [],
+        ),
+        # German open quote before abbreviation
+        (
+            '<p>\u201e<abbr class="small-caps">hallo</abbr>\u201c welt</p>',
+            [],
+        ),
+    ],
+)
+def test_check_inline_formatting_spacing(html, expected):
+    """Test spacing checks around transform-produced inline elements."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_formatting_spacing(soup)
+    assert sorted(result) == sorted(expected)
+
+
+def test_extract_flat_paragraph_texts():
+    """Test flattened paragraph text extraction with data-original-text."""
+    html = """<article>
+    <p>9<abbr class="small-caps" data-original-text="9Combinations">9combinations</abbr> of strategies.</p>
+    <p><code>skip_this</code> Normal text.</p>
+    <p class="no-formatting">Skip this whole element.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    # data-original-text restores the source form;
+    # trailing punctuation is padded with a space for spellchecker tokenization
+    assert "9Combinations of strategies ." in result[0]
+    assert "Normal text ." in result[1]
+    assert "skip_this" not in result[1]
+
+
+def test_extract_flat_paragraph_texts_standalone_abbr_with_data_attr():
+    """Abbreviations with data-original-text are replaced with original text."""
+    html = """<article>
+    <p><abbr class="small-caps" data-original-text="RELU">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function ." in result[0]
+
+
+def test_extract_flat_paragraph_texts_partial_word_abbr():
+    """Embedded abbreviations with data-original-text restore the original."""
+    html = """<article>
+    <p>3Blue<abbr class="small-caps" data-original-text="1Brown">1brown</abbr>'s videos</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "3Blue1Brown's" in result[0]
+
+
+def test_extract_flat_paragraph_texts_embedded_abbr_next_sibling():
+    """Embedded abbreviation with data-original-text restores original
+    casing."""
+    html = """<article>
+    <p>Qwen-<abbr class="small-caps" data-original-text="14B">14b</abbr>-Chat is a model.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "Qwen-14B-Chat" in result[0]
+
+
+def test_extract_flat_paragraph_texts_fallback_without_data_attr():
+    """Without data-original-text, falls back to uppercasing."""
+    html = """<article>
+    <p><abbr class="small-caps">Relu</abbr> is an activation function.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert "RELU is an activation function ." in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_non_article():
+    """Paragraphs outside <article> are skipped entirely."""
+    html = """
+    <p>Outside article.</p>
+    <article><p>Inside article.</p></article>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Inside article ." in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_nav_footer():
+    """Paragraphs inside nav/footer/header/sequence-links/page-listing and other
+    metadata containers are skipped."""
+    html = """<article>
+    <nav><p>PreviousLessons</p></nav>
+    <footer><p>2025Apply</p></footer>
+    <header><p>Site header text</p></header>
+    <div class="sequence-links"><p><em>Previous</em>Reward is enough</p></div>
+    <div class="page-listing"><p>ListingTitle tags dates</p></div>
+    <div class="authors"><p>AlexJanuary 2025</p></div>
+    <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
+    <div class="backlinks"><p>BacklinkTitle</p></div>
+    <div class="tag-container"><p>Tag text</p></div>
+    <div class="all-tags"><p>All tags</p></div>
+    <div id="content-meta"><p>Metadata</p></div>
+    <p class="page-listing-title">Page title</p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "Normal paragraph ." in result[0]
+
+
+def test_extract_flat_paragraph_texts_spaces_sub_br():
+    """Subscript gets space, <br> gets space, <sup> is unwrapped."""
+    html = """<article>
+    <p>bounds<sub>reasonable</sub> and state<br>while and 2<sup>nd</sup></p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "bounds reasonable" in result[0]
+    assert "state while" in result[0]
+    # <sup> is unwrapped (not spaced), preserving "2nd" as one word
+    assert "2nd" in result[0]
+
+
+def test_extract_flat_paragraph_texts_strips_footnote_refs():
+    """Footnote reference links are removed to avoid 'word1' concatenation."""
+    html = """<article>
+    <p>A couple<sup><a id="user-content-fnref-1" href="#fn1">1</a></sup> of things.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "couple" in result[0]
+    assert "1" not in result[0]
+
+
+def test_extract_flat_paragraph_texts_footnote_ref_without_sup():
+    """Footnote ref link without <sup> parent is also removed."""
+    html = """<article>
+    <p>A word<a id="user-content-fnref-2" href="#fn2">2</a> here.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "2" not in result[0]
+    assert "word" in result[0]
+
+
+def test_extract_flat_paragraph_texts_normalizes_smart_quotes():
+    """Smart quotes are replaced with ASCII apostrophes so contractions like
+    "I\u2019ve" are kept as single words for the spellchecker."""
+    html = """<article>
+    <p>I\u2019ve found the opposite.</p>
+    <p>You\u2019re not \u2018wrong\u2019 about this.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert "I've" in result[0]
+    assert "You're" in result[1]
+    # No Unicode smart quotes remain
+    assert "\u2019" not in result[0]
+    assert "\u2018" not in result[1]
+    assert "\u2019" not in result[1]
+
+
+def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
+    """
+    Dropcap-split contractions (I 've → I've) are rejoined.
+
+    The dropcap transformer inserts a space before apostrophes for CSS
+    rendering, which breaks contractions. The extraction should rejoin them.
+    """
+    html = """<article>
+    <p>I \u2019ve found the opposite.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "I've" in result[0]
+    assert "I 've" not in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
+    """
+    A <p> containing block-level elements (e.g. from transclusion wrapping
+    tables inside <span> inside <p>) is skipped because get_text() would
+    concatenate child text without spaces.
+
+    Inner <p> elements are still extracted.
+    """
+    html = """<article>
+    <p><span class="transclude" data-url="other-page">
+    <table><tr><th>Feature</th><th>Example</th></tr></table>
+    <p>Nested paragraph inside transclude.</p>
+    </span></p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert any("Nested paragraph inside transclude ." in r for r in result)
+    assert any("Normal paragraph ." in r for r in result)
+
+
+@pytest.mark.parametrize(
+    "stdout,line_to_source,expected",
+    [
+        # Normal warning with line number (leading whitespace is stripped)
+        (
+            "    - 1:7-1:12  warning  `wrold` is misspelt  retext-spell\n",
+            {1: "page.html"},
+            [
+                "[page.html] - 1:7-1:12  warning  `wrold` is misspelt  retext-spell"
+            ],
+        ),
+        # Warning without line number format
+        ("some warning text", {}, ["some warning text"]),
+        # Non-warning lines are skipped
+        ("Checking files...\n", {}, []),
+        # Empty/blank lines are skipped
+        ("  \n\n", {}, []),
+        # Unknown line number maps to "unknown"
+        (
+            "    - 99:1-99:5  warning  `xyz`  retext-spell\n",
+            {1: "page.html"},
+            ["[unknown] - 99:1-99:5  warning  `xyz`  retext-spell"],
+        ),
+        # Summary line ("⚠ 19 warnings") is skipped
+        (
+            "\u26a0 19 warnings\n",
+            {},
+            [],
+        ),
+    ],
+)
+def test_parse_spellcheck_output(stdout, line_to_source, expected):
+    """Test parsing of spellchecker-cli output."""
+    assert (
+        built_site_checks._parse_spellcheck_output(stdout, line_to_source)
+        == expected
+    )
+
+
+def test_spellcheck_flattened_paragraphs_empty():
+    """Empty input returns empty output."""
+    assert built_site_checks._spellcheck_flattened_paragraphs({}) == []
+
+
+def test_spellcheck_flattened_paragraphs_no_pnpm():
+    """Returns a skip message when pnpm is not found."""
+    with patch("shutil.which", return_value=None):
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"test.html": ["Hello world."]}
+        )
+    assert len(result) == 1
+    assert "pnpm not found" in result[0]
+
+
+def test_spellcheck_flattened_paragraphs_clean(tmp_path, monkeypatch):
+    """No issues returned when spellchecker exits cleanly."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+    wordlist.write_text("hello\n")
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["Hello world."]}
+        )
+    assert result == []
+
+
+def test_spellcheck_flattened_paragraphs_with_errors(tmp_path, monkeypatch):
+    """Misspelled words produce issues with source file annotations."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+    wordlist.write_text("hello\n")
+
+    # spellchecker-cli output format: "- LINE:COL-LINE:COL  warning  `word` ..."
+    stdout = (
+        "Checking files...\n"
+        "    - 1:7-1:12  warning  `wrold` is misspelt  retext-spell\n"
+    )
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout=stdout, stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["Hello wrold."]}
+        )
+    assert len(result) == 1
+    assert "[page.html]" in result[0]
+    assert "wrold" in result[0]
+
+
+def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
+    """Warning lines without line numbers are still captured."""
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run") as mock_run,
+    ):
+        mock_run.return_value = subprocess.CompletedProcess(
+            args=[], returncode=1, stdout="some warning text", stderr=""
+        )
+        result = built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["test"]}
+        )
+    assert len(result) == 1
+    assert "some warning text" in result[0]
 
 
 @pytest.mark.parametrize(
@@ -3020,7 +3472,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=True
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(should_check_fonts=True),
         )
 
     # Verify that missing_preloaded_font is in the issues
@@ -3033,7 +3488,10 @@ def test_check_file_for_issues_with_fonts(tmp_path):
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, tmp_path / "public", None, should_check_fonts=False
+            file_path,
+            tmp_path / "public",
+            None,
+            built_site_checks.CheckOptions(),
         )
 
     # Verify that missing_preloaded_font is not in the issues
@@ -3207,7 +3665,7 @@ def test_check_asset_references(
     html_content: str,
     existing_files: list[str],
     expected_missing: list[str],
-) -> None:
+):
     """Test the check_asset_references function."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
@@ -3239,7 +3697,9 @@ def test_check_asset_references(
     assert sorted(missing_assets) == expected_missing_resolved
 
 
-def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
+def test_check_file_for_issues_markdown_check_called_with_valid_md(
+    tmp_path,
+):
     """Test that check_markdown_assets_in_html is called when md_path is
     valid."""
     base_dir = tmp_path / "public"
@@ -3250,11 +3710,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text("""---
+    md_file_path.write_text(
+        """---
 title: Test Title
 description: Test Description
 ---
-# Content here""")
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (
@@ -3270,7 +3732,10 @@ description: Test Description
         ),
     ):
         issues = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, md_file_path, should_check_fonts=False
+            html_file_path,
+            base_dir,
+            md_file_path,
+            built_site_checks.CheckOptions(),
         )
 
     mock_check.assert_called_once_with(
@@ -3308,7 +3773,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
         ),
     ):
         issues_none = built_site_checks.check_file_for_issues(
-            html_file_path, base_dir, None, should_check_fonts=False
+            html_file_path, base_dir, None, built_site_checks.CheckOptions()
         )
     mock_check_none.assert_not_called()
     assert "missing_markdown_assets" not in issues_none
@@ -3329,7 +3794,7 @@ def test_check_file_for_issues_markdown_check_not_called_with_invalid_md(
             html_file_path,
             base_dir,
             non_existent_md_path,
-            should_check_fonts=False,
+            built_site_checks.CheckOptions(),
         )
     mock_check_non_existent.assert_not_called()
     assert "missing_markdown_assets" not in issues_non_existent
@@ -3359,7 +3824,7 @@ def test_check_file_for_issues_favicon_check_called(
         return_value=BeautifulSoup(html_content, "html.parser"),
     ):
         issues = built_site_checks.check_file_for_issues(
-            file_path, base_dir, None, should_check_fonts=False
+            file_path, base_dir, None, built_site_checks.CheckOptions()
         )
 
     if should_check_favicon:
@@ -3524,8 +3989,11 @@ def test_main_handles_markdown_mapping(
             html_file,
             mock_environment["public_dir"],
             md_file,
-            should_check_fonts=False,
-            defined_css_variables={"--color-primary", "--color-secondary"},
+            built_site_checks.CheckOptions(
+                should_check_fonts=False,
+                defined_css_variables={"--color-primary", "--color-secondary"},
+                favicon_included_domains=frozenset(),
+            ),
         )
 
 
@@ -3539,7 +4007,7 @@ def test_main_markdown_not_found_error(
     """Test that main() raises ValueError when a required markdown file is
     missing."""
     # Set up empty md map (missing the mapping)
-    md_map = {}
+    md_map: dict[str, object] = {}
 
     # Mock mapping functions
     monkeypatch.setattr(
@@ -3582,8 +4050,11 @@ def test_main_command_line_args(
         html_file,
         mock_environment["public_dir"],
         None,
-        should_check_fonts=True,
-        defined_css_variables={"--color-primary", "--color-secondary"},
+        built_site_checks.CheckOptions(
+            should_check_fonts=True,
+            defined_css_variables={"--color-primary", "--color-secondary"},
+            favicon_included_domains=frozenset(),
+        ),
     )
 
 
@@ -3873,7 +4344,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
 )
 def test_check_video_source_order_and_match(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Test the check_video_source_order_and_match function."""
     soup = BeautifulSoup(html, "html.parser")
     # Ensure the function being tested is correctly referenced
@@ -4164,7 +4635,7 @@ def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
 )
 def test_get_defined_css_variables(
     tmp_path: Path, css_content: str, expected_vars: set[str]
-) -> None:
+):
     """Test the _get_defined_css_variables function."""
     css_file_path = tmp_path / "test.css"
     css_file_path.write_text(css_content, encoding="utf-8")
@@ -4334,7 +4805,9 @@ def test_check_katex_span_only_paragraph_child(
 
 
 @pytest.fixture
-def soup_check_setup(mock_environment, monkeypatch):
+def soup_check_setup(
+    mock_environment, monkeypatch
+) -> tuple[dict[str, object], Path]:
     public_dir = mock_environment["public_dir"]
     html_file_path = public_dir / "test_soup_interaction.html"
     html_content = "<html><body><p>Original content</p></body></html>"
@@ -4348,8 +4821,7 @@ def soup_check_setup(mock_environment, monkeypatch):
         "file_path": html_file_path,
         "base_dir": public_dir,
         "md_path": None,
-        "should_check_fonts": False,
-        "defined_css_variables": None,
+        "opts": built_site_checks.CheckOptions(),
     }
     return common_args, html_file_path
 
@@ -4396,7 +4868,9 @@ def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
 
     try:
         issues = built_site_checks.check_file_for_issues(**common_check_args)
-        assert "benign_issue" in issues.get("localhost_links", [])
+        assert "benign_issue" in cast(
+            list[str], issues.get("localhost_links", [])
+        )
         assert html_file_path.read_text(encoding="utf-8") == initial_content
 
     except RuntimeError as e:
@@ -4527,12 +5001,31 @@ def test_check_unrendered_emoticons(html, expected):
         # All quote types in one string
         (
             "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
-            'mix of "quotes", "apostrophes", "regular", and "more"',
+            'mix of "quotes," "apostrophes," "regular," and "more"',
         ),
         # Non-breaking spaces normalized to regular spaces
         (
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
+        ),
+        # Em-dash normalization
+        ("computations\u2014do transformers", "computations - do transformers"),
+        # En-dash normalization
+        ("pages 10\u201320", "pages 10 - 20"),
+        # Diacritics stripped
+        ("na\u00efve predictions", "naive predictions"),
+        ("caf\u00e9 culture", "cafe culture"),
+        ("d\u00e9j\u00e0 vu", "deja vu"),
+        # Ellipsis normalization
+        ("wait for it\u2026", "wait for it..."),
+        # Comma-inside-quotes normalization
+        (
+            'Munkres\' "Topology", reflecting',
+            'munkres" "topology," reflecting',
+        ),
+        (
+            "\u201cTopology,\u201d reflecting",
+            '"topology," reflecting',
         ),
     ],
 )
@@ -5109,7 +5602,7 @@ def test_check_populate_elements_nonempty_non_string_id():
     element = soup.find(id="populate-test")
     if element:
         # Manually set id to a list to test the type guard
-        element["id"] = ["populate-test"]
+        element["id"] = cast(AttributeValueList, ["populate-test"])
     result = built_site_checks.check_populate_elements_nonempty(soup)
     # Should skip the element with non-string id, so no errors
     assert result == []
@@ -5335,10 +5828,45 @@ def test_check_article_dropcap_first_letter_comprehensive(
 
 
 @pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: regular space after first letter
+        (
+            '<article><p data-first-letter="I">I use this page.</p></article>',
+            [],
+        ),
+        # Valid: dropcap disabled, nbsp is fine
+        (
+            f'<article data-use-dropcap="false"><p>I{NBSP}use this.</p></article>',
+            [],
+        ),
+        # Valid: no article element
+        (
+            f"<p>I{NBSP}use this.</p>",
+            [],
+        ),
+        # Invalid: nbsp after first letter in dropcap paragraph
+        (
+            f'<article><p data-first-letter="I">I{NBSP}use this page.</p></article>',
+            [
+                "nbsp after first letter in dropcap paragraph: 'I\\xa0use this page.'"
+            ],
+        ),
+    ],
+)
+def test_check_dropcap_no_leading_nbsp(html: str, expected_issues: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_dropcap_no_leading_nbsp(soup)
+    assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
     "char",
     list(built_site_checks.VALID_PARAGRAPH_ENDING_CHARACTERS),
 )
-def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(char: str):
+def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(
+    char: str,
+):
     """Test that all valid ending characters are accepted."""
     html = f"<article><p>Test text{char}</p></article>"
     soup = BeautifulSoup(html, "html.parser")
@@ -5532,6 +6060,30 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             "<article><p><strong>Bold feature</strong> · <strong>Another</strong></p></article>",
             [],
         ),
+        # Center-dot separated lists should be skipped (any · causes skip)
+        (
+            "<article><p>Smart quotes\u00b7Em dashes\u00b7Ellipses\u00b7Fractions</p></article>",
+            [],
+        ),
+        (
+            "<article><p>One\u00b7two</p></article>",
+            [],
+        ),
+        # Quote callout content should be skipped
+        (
+            '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
+            [],
+        ),
+        # Select elements should be stripped from text before checking punctuation
+        (
+            '<article><p>Basic select<select id="s"><option value="">Choose</option><option value="1">Option 1</option></select></p></article>',
+            ["Paragraph ends with invalid character 't' Basic select"],
+        ),
+        # Paragraph with select that ends with valid punctuation should pass
+        (
+            "<article><p>Pick one.<select><option>A</option></select></p></article>",
+            [],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
@@ -5544,6 +6096,15 @@ def test_check_top_level_paragraphs_end_with_punctuation(
         soup
     )
     assert issues == expected_issues
+
+
+def test_should_skip_paragraph_inside_quote_callout():
+    """Paragraphs inside quote callouts should be skipped."""
+    html = '<blockquote data-callout="quote"><p>Content without punct</p></blockquote>'
+    soup = BeautifulSoup(html, "html.parser")
+    p = soup.find("p")
+    assert isinstance(p, Tag)
+    assert built_site_checks._should_skip_paragraph(p) is True
 
 
 @pytest.mark.parametrize(
@@ -5622,6 +6183,60 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     """Test the check_images_have_dimensions function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_images_have_dimensions(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
+# LCP image optimization tests
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Correctly optimized: eager loading + preload
+        (
+            '<html><head><link rel="preload" as="image" href="img.avif"></head>'
+            '<body><article><img src="img.avif" loading="eager" fetchpriority="high">'
+            '<img src="img2.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+        # Missing eager loading
+        (
+            "<html><head></head><body><article>"
+            '<img src="img.avif" loading="lazy"></article></body></html>',
+            [
+                "First content image should have loading='eager', got 'lazy': img.avif",
+                "First content image should have fetchpriority='high', got '': img.avif",
+                "Missing <link rel='preload' as='image'> in <head> for first content image: img.avif",
+            ],
+        ),
+        # Favicon is skipped, second image is first content image
+        (
+            '<html><head><link rel="preload" as="image" href="hero.avif"></head>'
+            '<body><article><img class="favicon" src="fav.avif" loading="lazy">'
+            '<img src="hero.avif" loading="eager" fetchpriority="high"></article></body></html>',
+            [],
+        ),
+        # No article — no issues
+        (
+            "<html><head></head><body><div>No article</div></body></html>",
+            [],
+        ),
+        # No content images (only favicons) — no issues
+        (
+            "<html><head></head><body><article>"
+            '<img class="favicon" src="fav.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+        # Image without loading attr (TSX component, not from transformer) — skip
+        (
+            "<html><head></head><body><article>"
+            '<img src="logo.avif"></article></body></html>',
+            [],
+        ),
+    ],
+)
+def test_check_lcp_image_optimized(html: str, expected_issues: list[str]):
+    """Test the check_lcp_image_optimized function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_lcp_image_optimized(soup)
     assert sorted(result) == sorted(expected_issues)
 
 
@@ -5749,6 +6364,283 @@ def test_find_duplicate_citations_multiple_duplicates():
 
 
 @pytest.mark.parametrize(
+    "href,expected",
+    [
+        ("https://example.com/image.png", True),
+        ("https://example.com/image.jpg", True),
+        ("https://example.com/image.avif", True),
+        ("https://example.com/video.mp4", True),
+        ("https://example.com/audio.mp3", True),
+        ("https://example.com/doc.pdf", True),
+        ("https://example.com/image.png?w=100", True),
+        ("https://example.com/image.png#section", True),
+        ("https://example.com/page", False),
+        ("https://example.com/page.html", False),
+        ("https://example.com/", False),
+        ("https://example.com/path/to/resource", False),
+    ],
+)
+def test_is_asset_href(href, expected):
+    assert built_site_checks._is_asset_href(href) == expected
+
+
+@pytest.mark.parametrize(
+    "html,domains,expected",
+    [
+        # No external links
+        ("<article><p>No links here</p></article>", {"apple_com"}, []),
+        # Included domain WITH favicon (valid)
+        (
+            '<article><a class="external" href="https://apple.com/products">'
+            'Apple<span class="favicon-span">'
+            '<svg class="favicon" style="--mask-url: url(apple.svg);"></svg>'
+            "</span></a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Included domain WITHOUT favicon (invalid)
+        (
+            '<article><a class="external" href="https://apple.com/products">'
+            "Apple</a></article>",
+            {"apple_com"},
+            ["Link missing favicon: apple.com" " (https://apple.com/products)"],
+        ),
+        # Non-included domain without favicon (valid — not expected)
+        (
+            '<article><a class="external" href="https://example.com">'
+            "Example</a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Subdomain of included domain without favicon (invalid)
+        (
+            '<article><a class="external" href="https://blog.apple.com/news">'
+            "Blog</a></article>",
+            {"apple_com"},
+            [
+                "Link missing favicon: blog.apple.com"
+                " (https://blog.apple.com/news)"
+            ],
+        ),
+        # www. prefix stripped correctly
+        (
+            '<article><a class="external" href="https://www.apple.com">'
+            "Apple</a></article>",
+            {"apple_com"},
+            ["Link missing favicon: www.apple.com" " (https://www.apple.com)"],
+        ),
+        # Asset link to included domain (should be skipped)
+        (
+            '<article><a class="external" href="https://apple.com/image.png">'
+            "Img</a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Internal link (no class="external") to included domain (skip)
+        (
+            '<article><a href="https://apple.com/products">'
+            "Apple</a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Multiple links: one valid, one missing favicon
+        (
+            "<article>"
+            '<a class="external" href="https://apple.com">'
+            'ok<svg class="favicon" style="--mask-url: url(a.svg);"></svg></a>'
+            '<a class="external" href="https://discord.gg/abc">bad</a>'
+            "</article>",
+            {"apple_com", "discord_gg"},
+            ["Link missing favicon: discord.gg" " (https://discord.gg/abc)"],
+        ),
+        # Google subdomain included entry
+        (
+            '<article><a class="external"'
+            ' href="https://scholar.google.com/citations">'
+            "Scholar</a></article>",
+            {"scholar_google_com"},
+            [
+                "Link missing favicon: scholar.google.com"
+                " (https://scholar.google.com/citations)"
+            ],
+        ),
+        # Non-http link with external class (should be skipped)
+        (
+            '<article><a class="external" href="ftp://apple.com/file">'
+            "FTP</a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Link with img.favicon (also valid)
+        (
+            '<article><a class="external" href="https://apple.com">'
+            'Apple<img class="favicon" src="apple.png"></a></article>',
+            {"apple_com"},
+            [],
+        ),
+        # Empty included domains set - nothing flagged
+        (
+            '<article><a class="external" href="https://apple.com">'
+            "Apple</a></article>",
+            set(),
+            [],
+        ),
+        # Malformed URL with no hostname (should be skipped gracefully)
+        (
+            '<article><a class="external" href="https://">'
+            "Bad URL</a></article>",
+            {"apple_com"},
+            [],
+        ),
+        # Link outside <article> (nav/aside) - should be skipped
+        (
+            '<nav><a class="external" href="https://apple.com">'
+            "Apple</a></nav>",
+            {"apple_com"},
+            [],
+        ),
+    ],
+)
+def test_check_external_links_have_favicons(html, domains, expected):
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_external_links_have_favicons(
+        soup, frozenset(domains)
+    )
+    assert result == expected
+
+
+def test_boundary_aware_domain_matching():
+    """Boundary-aware matching prevents 'x_com' from matching 'vox_com'."""
+    html = (
+        '<article><a class="external" href="https://www.vox.com/article">'
+        "Vox</a></article>"
+    )
+    soup = BeautifulSoup(html, "html.parser")
+    # "x_com" should NOT match "vox_com" due to boundary-aware matching
+    result = built_site_checks.check_external_links_have_favicons(
+        soup, frozenset({"x_com"})
+    )
+    assert result == []
+
+
+def test_domain_matches_helper():
+    """Unit tests for the _domain_matches helper."""
+    assert built_site_checks._domain_matches("apple_com", "apple_com")
+    assert built_site_checks._domain_matches("blog_apple_com", "apple_com")
+    assert not built_site_checks._domain_matches("vox_com", "x_com")
+    assert not built_site_checks._domain_matches("foxnews_com", "x_com")
+    assert built_site_checks._domain_matches(
+        "scholar_google_com", "scholar_google_com"
+    )
+
+
+@mock.patch("built_site_checks.subprocess.run")
+def test_build_included_favicon_domains(mock_run):
+    """Test _build_included_favicon_domains calls TS script and parses
+    output."""
+    mock_run.return_value = subprocess.CompletedProcess(
+        args=[],
+        returncode=0,
+        stdout=json.dumps(
+            {"includedDomains": ["apple_com", "openai_com", "x_com"]}
+        ),
+    )
+    result = built_site_checks._build_included_favicon_domains(Path("/fake"))
+    assert result == frozenset({"apple_com", "openai_com", "x_com"})
+    mock_run.assert_called_once()
+
+
+def test_check_file_for_issues_with_included_domains(tmp_path):
+    """Test that check_file_for_issues passes favicon_included_domains
+    through."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path,
+            base_dir,
+            None,
+            built_site_checks.CheckOptions(
+                favicon_included_domains=frozenset({"apple_com"})
+            ),
+        )
+
+    assert "missing_favicons" in issues
+    assert any(
+        "apple.com" in s for s in cast(list[str], issues["missing_favicons"])
+    )
+
+
+def test_check_file_for_issues_without_included_domains(tmp_path):
+    """Test that check_file_for_issues skips favicon check when
+    favicon_included_domains is None."""
+    base_dir = tmp_path / "public"
+    base_dir.mkdir()
+    file_path = base_dir / "test.html"
+    html = (
+        "<html><body><article><p>"
+        '<a class="external" href="https://apple.com">Apple</a>'
+        "</p></article></body></html>"
+    )
+    file_path.write_text(html)
+
+    with patch(
+        "scripts.utils.parse_html_file",
+        return_value=BeautifulSoup(html, "html.parser"),
+    ):
+        issues = built_site_checks.check_file_for_issues(
+            file_path, base_dir, None, built_site_checks.CheckOptions()
+        )
+
+    assert "missing_favicons" not in issues
+
+
+def test_maybe_collect_citation_keys_redirect(tmp_path):
+    """Redirect pages should be skipped during citation key collection."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    redirect_html = (
+        '<html><head><meta http-equiv="refresh" content="0;url=/new-page">'
+        "</head><body><code>@misc{SomeKey,</code></body></html>"
+    )
+    file_path = public_dir / "redirect.html"
+    file_path.write_text(redirect_html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert len(citation_to_files) == 0
+
+
+def test_maybe_collect_citation_keys_collects(tmp_path):
+    """Non-redirect pages should have their citation keys collected."""
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+    html = "<html><body><code>@misc{Turner2024Design,</code></body></html>"
+    file_path = public_dir / "page.html"
+    file_path.write_text(html)
+
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        file_path, public_dir, citation_to_files
+    )
+    assert "Turner2024Design" in citation_to_files
+    assert citation_to_files["Turner2024Design"] == ["page.html"]
+
+
+@pytest.mark.parametrize(
     "html,expected",
     [
         # Subfigures correctly inside <figure> (valid)
@@ -5792,3 +6684,71 @@ def test_check_orphaned_subfigures(html: str, expected: list[str]):
     assert len(result) == len(expected)
     for issue, exp in zip(result, expected):
         assert issue.startswith(exp)
+
+
+@pytest.mark.parametrize(
+    "html_content,expected_keys",
+    [
+        # Redirect pages should be skipped
+        (
+            '<html><head><meta http-equiv="refresh" content="0; url=/other"></head></html>',
+            [],
+        ),
+        # Citation keys should be collected from non-redirect pages
+        (
+            "<html><body><code>@misc{TestKey2024,\n}</code></body></html>",
+            ["TestKey2024"],
+        ),
+    ],
+)
+def test_maybe_collect_citation_keys(
+    tmp_path: Path, html_content: str, expected_keys: list[str]
+):
+    html_file = tmp_path / "page.html"
+    html_file.write_text(html_content, encoding="utf-8")
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
+    built_site_checks._maybe_collect_citation_keys(
+        html_file, tmp_path, citation_to_files
+    )
+    assert sorted(citation_to_files.keys()) == sorted(expected_keys)
+    for key in expected_keys:
+        assert citation_to_files[key] == ["page.html"]
+
+
+def test_process_html_files_duplicate_citations(tmp_path: Path):
+    """Duplicate citation keys across files should be reported."""
+    content_dir = tmp_path / "content"
+    content_dir.mkdir()
+    public_dir = tmp_path / "public"
+    public_dir.mkdir()
+
+    # Create two HTML files with the same citation key
+    for name in ("page1.html", "page2.html"):
+        (public_dir / name).write_text(
+            "<html><head><title>T</title></head><body>"
+            "<article><p>Text.</p></article>"
+            "<code>@misc{DuplicateKey2024,\n}</code>"
+            "</body></html>",
+            encoding="utf-8",
+        )
+
+    # Mock functions that validate paths against git root or produce output.
+    # We're testing the citation collection + duplicate detection path.
+    with (
+        patch.object(
+            built_site_checks, "check_file_for_issues", return_value={}
+        ),
+        patch.object(built_site_checks, "_print_issues"),
+        patch.object(script_utils, "build_html_to_md_map", return_value={}),
+        patch.object(script_utils, "collect_aliases", return_value=set()),
+        patch.object(script_utils, "should_have_md", return_value=False),
+        patch.object(
+            built_site_checks,
+            "_build_included_favicon_domains",
+            return_value=frozenset(),
+        ),
+    ):
+        result = built_site_checks._process_html_files(
+            public_dir, content_dir, check_fonts=False
+        )
+    assert result is True

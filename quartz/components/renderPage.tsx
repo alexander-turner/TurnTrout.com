@@ -241,7 +241,7 @@ export function pageResources(
 let fetchData = null;
 function getContentIndex() {
   if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json());
+    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
   }
   return fetchData;
 }`
@@ -333,7 +333,7 @@ export function addVirtualFileForSpecialTransclude(
  * Process:
  * 1. Clones the component tree to avoid modifying cached content
  * 2. Processes all transclusions (blocks, headers, full pages)
- * 3. Applies formatting improvements through normalizeHastElement
+ * 3. Rebases links in transcluded content via normalizeHastElement
  * 4. Renders the full page structure with headers, sidebars, and content
  *
  * @param cfg - Global site configuration
@@ -343,8 +343,7 @@ export function addVirtualFileForSpecialTransclude(
  * @param pageResources - Static resources (CSS/JS) for the page
  * @returns Rendered HTML string
  *
- * @see {@link normalizeHastElement} for transclusion formatting
- * @see {@link quartz/plugins/transformers/formatting_improvement_html.ts} for text formatting rules
+ * @see {@link normalizeHastElement} for transclusion link rebasing
  */
 export function renderPage(
   cfg: GlobalConfiguration,

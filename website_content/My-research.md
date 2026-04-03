@@ -4,11 +4,12 @@ permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
 date_published: 2024-10-27 19:14:04.653922
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-26 04:03:48.327812
 tags:
   - AI
 title: My research
 ---
+
 
 
 
@@ -34,7 +35,7 @@ Over the years, I've worked on lots of research problems. Every time, I felt inv
 
 As of November 2023, I am a research scientist on Google DeepMind's scalable alignment team in the Bay area.[^disclaim] I lead [a MATS mentorship team called "Team Shard". If you want to break into the alignment field, consider applying to work with me](/team-shard). My [Google Scholar is here.](https://scholar.google.com/citations?user=thAHiVcAAAAJ)
 
-This page is chronological. For my most recent work, [navigate to the end of the page!](#footnote-label)
+This page is chronological. For my most recent work, [navigate to the end of the page!](#footnotes)
 
 [^disclaim]: Of course, all of my hot takes are my own, not Google's.
 
@@ -302,12 +303,10 @@ Subtitle: Written in October 2024
 
 A few colleagues I respect were skeptical of steering vectors at first. I feel proud of how I generated the technique:
 
-<!-- vale off -->
 > [!quote] [Retrospective comment I wrote](https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network?view=postCommentsTop&postId=cAC4AXiNC5ig6jQnc&commentId=jZ9v8yJHp43FEXJkp)
 > In light of Anthropic's viral "Golden Gate Claude" activation engineering, I want to come back and claim the points I earned \[in this post\].
   >
   > I was extremely prescient in predicting the importance and power of activation engineering (then called "AVEC"). **In** _**January**_ **2023, right after running the cheese vector as my** _**first**_ **idea for what to do to interpret the network, and well before anyone ran LLM steering vectors...** **I had only seen the cheese-hiding vector work on a few mazes. Given that (seemingly) tiny amount of evidence, I** **immediately wrote down 60% credence that the technique would be a big deal for LLMs...**
-<!-- vale on -->
 
 [^steering]: "Steering vector" was originally coined by [Subramani et al. (2022)](https://arxiv.org/abs/2205.05124).
 

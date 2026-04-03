@@ -9,7 +9,7 @@ import pytest
 
 
 @pytest.fixture()
-def timestamps_repo_setup(git_initialized_dir):
+def timestamps_repo_setup(git_initialized_dir) -> dict[str, object]:
     main_repo = git_initialized_dir["repo"]
     main_root = git_initialized_dir["root"]
 
@@ -38,7 +38,7 @@ def timestamps_repo_setup(git_initialized_dir):
 
 
 class TestTimestampsDirectory:
-    def test_timestamps_setup(self, timestamps_repo_setup):
+    def test_timestamps_setup(self, timestamps_repo_setup) -> None:
         """Test .timestamps directory is properly configured."""
         main_root = timestamps_repo_setup["main_root"]
         timestamps_root = timestamps_repo_setup["timestamps_root"]
@@ -56,7 +56,7 @@ class TestTimestampsDirectory:
 
 
 class TestPostCommitHook:
-    def test_creates_timestamp_files(self, timestamps_repo_setup):
+    def test_creates_timestamp_files(self, timestamps_repo_setup) -> None:
         main_repo = timestamps_repo_setup["main_repo"]
         main_root = timestamps_repo_setup["main_root"]
         timestamps_root = timestamps_repo_setup["timestamps_root"]
@@ -73,7 +73,7 @@ class TestPostCommitHook:
         assert txt_file.read_text() == commit.hexsha
 
     @patch("subprocess.run")
-    def test_ots_stamp_called(self, mock_run, timestamps_repo_setup):
+    def test_ots_stamp_called(self, mock_run, timestamps_repo_setup) -> None:
         timestamps_root = timestamps_repo_setup["timestamps_root"]
         mock_run.return_value = MagicMock(returncode=0)
 
@@ -86,7 +86,7 @@ class TestPostCommitHook:
         mock_run.assert_called_once()
         assert "ots" in str(mock_run.call_args)
 
-    def test_timestamp_files_committed(self, timestamps_repo_setup):
+    def test_timestamp_files_committed(self, timestamps_repo_setup) -> None:
         timestamps_repo = timestamps_repo_setup["timestamps_repo"]
         timestamps_root = timestamps_repo_setup["timestamps_root"]
 
@@ -105,7 +105,9 @@ class TestPostCommitHook:
         assert "files/test123.txt.ots" in committed_files
 
     @patch("subprocess.run")
-    def test_ots_file_creation_wait(self, mock_run, timestamps_repo_setup):
+    def test_ots_file_creation_wait(
+        self, mock_run, timestamps_repo_setup
+    ) -> None:
         """Test that the hook waits for .ots file creation."""
 
         timestamps_root = timestamps_repo_setup["timestamps_root"]
@@ -115,7 +117,7 @@ class TestPostCommitHook:
         txt_file.write_text("delayed123")
 
         # Simulate ots stamp creating the file after a delay
-        def delayed_ots_creation(*args, **kwargs):
+        def delayed_ots_creation(*args, **kwargs) -> MagicMock:
             time.sleep(0.2)  # Simulate async file creation
             ots_file.write_text("mock ots data")
             return MagicMock(returncode=0)
@@ -137,15 +139,15 @@ class TestPostCommitHook:
 
 
 class TestPreCommitCheck:
-    def test_requires_timestamps_directory(self, git_initialized_dir):
+    def test_requires_timestamps_directory(self, git_initialized_dir) -> None:
         assert not (git_initialized_dir["root"] / ".timestamps").exists()
 
-    def test_validates_timestamps_exists(self, timestamps_repo_setup):
+    def test_validates_timestamps_exists(self, timestamps_repo_setup) -> None:
         assert (timestamps_repo_setup["main_root"] / ".timestamps").is_dir()
 
 
 class TestTimestampFileFormat:
-    def test_file_naming_convention(self, timestamps_repo_setup):
+    def test_file_naming_convention(self, timestamps_repo_setup) -> None:
         timestamps_root = timestamps_repo_setup["timestamps_root"]
 
         txt_file = timestamps_root / "files" / "abc123.txt"

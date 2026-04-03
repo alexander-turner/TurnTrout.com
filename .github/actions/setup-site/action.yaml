@@ -1,0 +1,168 @@
+name: "Setup Site"
+description: "Sets up Node.js, pnpm, Python with uv, caches, and optionally browsers/system deps."
+inputs:
+  install-node-deps:
+    description: "Whether to install Node.js and dependencies"
+    required: false
+    default: "true"
+  install-python:
+    description: "Whether to install Python and Python dependencies"
+    required: false
+    default: "true"
+  install-sharp:
+    description: "Whether to install sharp for Linux"
+    required: false
+    default: "false"
+  install-browsers:
+    description: "Whether to install Chromium (Playwright) and Chrome (Puppeteer)"
+    required: false
+    default: "false"
+  install-ffmpeg:
+    description: "Whether to install ffmpeg from system packages"
+    required: false
+    default: "false"
+  install-system-deps:
+    description: "Whether to install system build deps (libxml2-utils, dos2unix)"
+    required: false
+    default: "false"
+  cache-playwright:
+    description: "Whether to cache Playwright browsers"
+    required: false
+    default: "false"
+  cache-puppeteer:
+    description: "Whether to cache Puppeteer browsers"
+    required: false
+    default: "false"
+  cache-apt-playwright:
+    description: "Whether to cache apt packages for Playwright system deps"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    # ── Node.js ──────────────────────────────────────────────────────
+    - name: Set up Node.js
+      if: inputs.install-node-deps == 'true'
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      with:
+        node-version: "22.22.0"
+
+    - name: Install pnpm
+      if: inputs.install-node-deps == 'true'
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+    - name: Get pnpm store directory
+      if: inputs.install-node-deps == 'true'
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Restore pnpm cache
+      if: inputs.install-node-deps == 'true'
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Restore asset dimensions cache
+      id: asset-dimensions-cache
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: quartz/plugins/transformers/.asset_dimensions.json
+        key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
+        restore-keys: |
+          ${{ runner.os }}-asset-dimensions-refs/heads/main
+
+    - name: Install Node Dependencies
+      if: inputs.install-node-deps == 'true'
+      run: |
+        # macOS doesn't have GNU timeout; use perl one-liner as a portable fallback
+        if command -v timeout &>/dev/null; then
+          timeout 600 pnpm install --frozen-lockfile
+        else
+          perl -e 'alarm 600; exec @ARGV' -- pnpm install --frozen-lockfile
+        fi
+      shell: bash
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+
+    - name: Install sharp
+      if: inputs.install-sharp == 'true' && inputs.install-node-deps == 'true'
+      run: pnpm install --os=linux --cpu=x64 sharp
+      shell: bash
+
+    # ── Python ───────────────────────────────────────────────────────
+    - name: Set up uv
+      if: inputs.install-python == 'true'
+      uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      if: inputs.install-python == 'true'
+      run: uv python install 3.11
+      shell: bash
+
+    - name: Install Python Dependencies
+      if: inputs.install-python == 'true'
+      run: uv sync --frozen
+      shell: bash
+
+    # ── Browsers ─────────────────────────────────────────────────────
+    - name: Cache Playwright browsers
+      if: inputs.cache-playwright == 'true'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
+
+    - name: Cache Puppeteer browsers
+      if: inputs.cache-puppeteer == 'true'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/.cache/puppeteer
+        key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          puppeteer-${{ runner.os }}-
+
+    - name: Cache apt packages for Playwright system deps
+      if: inputs.cache-apt-playwright == 'true'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/apt-playwright-cache
+        key: apt-playwright-${{ runner.os }}-24.04-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          apt-playwright-${{ runner.os }}-24.04-
+
+    - name: Install Chromium and Chrome for Mermaid rendering and critical CSS
+      if: inputs.install-browsers == 'true' && inputs.install-node-deps == 'true'
+      run: pnpm playwright install chromium && npx puppeteer browsers install chrome
+      shell: bash
+
+    # ── System packages ──────────────────────────────────────────────
+    - name: Install system build dependencies
+      if: inputs.install-system-deps == 'true'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends libxml2-utils dos2unix
+      shell: bash
+
+    - name: Install ffmpeg from system packages
+      if: inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
+      run: |
+        # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
+        if command -v ffprobe &>/dev/null; then
+          echo "ffprobe already available, skipping install"
+          ffprobe -version
+          exit 0
+        fi
+        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
+        sudo apt-get update || true
+        sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
+        ffprobe -version
+      shell: bash

@@ -1,30 +1,25 @@
 name: Visual Testing
 
 concurrency:
-  group: visual-testing-${{ github.event_name }}-${{ github.ref_name }}
+  group: visual-testing-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main"]
-    paths:
-      - "quartz/**"
-      - "website_content/**"
-      - "config/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
   pull_request:
-    branches: ["main", "dev"]
     types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "website_content/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/playwright/**"
+      - "config/lostpixel/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  # Tests always run in the merge queue — this is the primary gate for dev
   merge_group:
 
 permissions:
@@ -32,76 +27,68 @@ permissions:
   contents: read
 
 jobs:
-  # Gate: only run on PRs if the ci:full-tests label is present.
-  # Tests always run in the merge queue to enforce passing before merge.
+  # Gate: only run expensive tests on PRs when a CI label is actively added.
+  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
+  # fires on every push — the should-run gate returns run=false instantly,
+  # which is needed for the unified "visual-testing" required status check.
   should-run:
     name: visual-should-run
     runs-on: ubuntu-24.04
     outputs:
       run: ${{ steps.check.outputs.run }}
+      run-macos: ${{ steps.check.outputs.run-macos }}
+      browsers: ${{ steps.check.outputs.browsers }}
     steps:
       - id: check
         run: |
+          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]]; then
-              echo "run=true" >> "$GITHUB_OUTPUT"
+            if [[ "${{ github.event.action }}" == "labeled" ]]; then
+              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
+                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
+                echo "run=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "run=false" >> "$GITHUB_OUTPUT"
+              fi
             else
               echo "run=false" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
+          # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
+            echo "run-macos=true" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
+          else
+            echo "run-macos=false" >> "$GITHUB_OUTPUT"
+            echo "browsers=chromium" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
     name: visual-testing-build
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+
+  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  visual-testing-linux:
+    needs: [build, should-run]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
-
-      - name: Remove Safari autoplay script
-        run: rm -f ./quartz/static/scripts/safari-autoplay.js
-
-      - name: Build site
-        run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: visual-testing-public-dir
-          path: public/
-          retention-days: 1
-
-  visual-testing:
-    needs: build
-    # Using Ubuntu 24.04 (pinned) for stability - ubuntu-latest can break when GitHub updates it
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
         shard:
           [
-            "1/10",
-            "2/10",
-            "3/10",
-            "4/10",
-            "5/10",
-            "6/10",
-            "7/10",
-            "8/10",
-            "9/10",
-            "10/10",
+            "1/3",
+            "2/3",
+            "3/3",
           ]
+    env:
+      PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -114,21 +101,22 @@ jobs:
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
-      - name: Install Puppeteer Chrome
-        run: pnpm exec puppeteer browsers install chrome
+      - name: Install browsers
+        run: pnpm run install-browsers
 
-      - name: Download built site
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
-          name: visual-testing-public-dir
           path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -141,44 +129,44 @@ jobs:
 
       - name: Upload Playwright logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: visual-testing-log-shard-${{ env.SANITIZED_SHARD }}
+          name: visual-testing-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
           if-no-files-found: warn
           retention-days: 1
 
       - name: Upload Winston logs
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: winston-logs-shard-${{ env.SANITIZED_SHARD }}
+          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
           if-no-files-found: warn
           retention-days: 1
 
       - name: Upload webServer build logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: webserver-build-log-shard-${{ env.SANITIZED_SHARD }}
+          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
           if-no-files-found: warn
           retention-days: 1
 
       - name: Upload Playwright traces
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: steps.playwright.outcome == 'failure'
         with:
-          name: playwright-traces-shard-${{ env.SANITIZED_SHARD }}
+          name: playwright-traces-linux-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           retention-days: 1
 
       - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         if: always()
         with:
-          name: lost-pixel-screenshots-shard-${{ env.SANITIZED_SHARD }}
+          name: lost-pixel-screenshots-linux-shard-${{ env.SANITIZED_SHARD }}
           path: ./lost-pixel
           retention-days: 1
 
@@ -186,35 +174,163 @@ jobs:
         if: steps.playwright.outcome == 'failure'
         run: exit 1
 
+  # WebKit (Safari) visual tests on macOS for real Safari fidelity
+  visual-testing-macos:
+    needs: [build, should-run]
+    if: needs.should-run.outputs.run-macos == 'true'
+    runs-on: macos-14
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          [
+            "1/2",
+            "2/2",
+          ]
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Make folder for screenshots
+        run: mkdir -p ./lost-pixel
+
+      - name: Create Winston logs directory
+        run: mkdir -p .logs
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run Playwright tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Create sanitized shard
+        if: always()
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
+
+      - name: Upload Playwright logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: visual-testing-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: playwright-run.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Winston logs
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: .logs/
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload webServer build logs
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: /tmp/webserver.log
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Upload Playwright traces
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: steps.playwright.outcome == 'failure'
+        with:
+          name: playwright-traces-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: test-results/
+          retention-days: 1
+
+      - name: Upload Lost Pixel screenshots shard
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        with:
+          name: lost-pixel-screenshots-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: ./lost-pixel
+          retention-days: 1
+
+      - name: Fail if playwright tests failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1
+
+  # Unified status check — required by branch protection
+  visual-testing:
+    name: visual-testing
+    if: always()
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then
+            echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
+            exit 1
+          fi
+          # macOS only runs on push to main; allow skipped elsewhere
+          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
+             [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
+            echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
+            exit 1
+          fi
+
   summarize-failures:
     name: Summarize Failures
-    if: always() && needs.visual-testing.result == 'failure'
-    needs: visual-testing
+    if: always() && (needs.visual-testing-linux.result == 'failure' || needs.visual-testing-macos.result == 'failure')
+    needs: [visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/summarize-failed-shards
         with:
-          log-pattern: visual-testing-log-shard-*
+          log-pattern: visual-testing-log-*
           final-log-name: visual-testing-failed-logs
 
   combine-and-upload:
-    needs: visual-testing
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    if: needs.visual-testing.result == 'success'
+    if: >
+      always() && !cancelled() &&
+      needs.visual-testing-linux.result == 'success' &&
+      (needs.visual-testing-macos.result == 'success' || needs.visual-testing-macos.result == 'skipped')
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
       - name: Download all Lost Pixel screenshot shards
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: lost-pixel-screenshots-*
           path: ./all-lost-pixel-shards
@@ -242,7 +358,7 @@ jobs:
 
       - name: Run LostPixel on combined screenshots
         if: steps.combine.outputs.screenshots_found == 'true'
-        uses: lost-pixel/lost-pixel@6db31948aef97f10ea9c7b1a8fa8dd3a0ce2dd49 # v3.16.0
+        uses: lost-pixel/lost-pixel@41055d71dea42eb5fa5c27dabd2a90722f376e33 # v3.22.0
         env:
           LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
           LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}

@@ -73,7 +73,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p><a>"How steering vectors impact GPT-2’s capabilities"</a>.</p>',
-        "<p><a>“How steering vectors impact GPT-2’s capabilities.”</a></p>",
+        "<p><a>\u201CHow steering vectors impact GPT-2\u2019s capabilities.\u201D</a></p>",
       ],
       [
         '<p>"<span class="katex"></span> alignment metric</p>',
@@ -344,6 +344,9 @@ describe("HTMLFormattingImprovement", () => {
       ["I AM A TEST", "I AM A TEST"],
       ["I saw him in the PM", "I saw him in the PM"],
       ["I saw him at 4 PM.", "I saw him at 4 p.m."], // Sentence end
+      ["19 ambiguous questions", "19 ambiguous questions"], // Don't match "am" inside words
+      ["5 amps of current", "5 amps of current"], // Don't match "am" at start of "amps"
+      ["3 améliorer le processus", "3 améliorer le processus"], // Don't match accented Latin chars
     ]
     it.each(timeCases)("should handle time in %s, end-to-end", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(`<p>${input}</p>`)
@@ -1216,6 +1219,37 @@ describe("setFirstLetterAttribute", () => {
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
+  })
+
+  it.each([
+    ["LEFT_SINGLE_QUOTE (U+2018)", LEFT_SINGLE_QUOTE],
+    ["RIGHT_SINGLE_QUOTE (U+2019)", RIGHT_SINGLE_QUOTE],
+    ["straight apostrophe (U+0027)", "'"],
+  ])(
+    "adds space before %s when it is the second character in dropcap paragraph",
+    (_description, quote) => {
+      const input = `<p>X${quote}s story</p>`
+      const processedHtml = testHtmlFormattingImprovement(input, false)
+      // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
+      // so check for a space after X followed by any apostrophe variant
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(processedHtml).toContain('data-first-letter="X"')
+    },
+  )
+
+  it("replaces nbsp after single-letter first word for dropcap", () => {
+    const input = "<p>I use this page.</p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
+    // should replace it with a regular space for proper dropcap rendering
+    expect(processedHtml).not.toContain(`I${NBSP}`)
+    expect(processedHtml).toContain('data-first-letter="I"')
+  })
+
+  it("handles paragraph with no direct text node", () => {
+    const input = "<p><span>Hello world.</span></p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toContain('data-first-letter="H"')
   })
 
   it.each([
@@ -2094,6 +2128,15 @@ describe("Non-breaking space insertion", () => {
     const input = "<pre><code>I love this</code></pre>"
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).not.toContain(NBSP)
+  })
+
+  it.each([
+    "<h1>I love this</h1>",
+    "<h2>Hello world</h2>",
+    "<h3>A cat sat on a mat</h3>",
+    "<h2><em>I love this</em></h2>",
+  ])("does not insert nbsp in headings: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {

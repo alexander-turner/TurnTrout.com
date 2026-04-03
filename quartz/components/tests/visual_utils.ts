@@ -49,13 +49,6 @@ export async function setTheme(page: Page, theme: Theme) {
     },
     { t: theme, key: savedThemeKey },
   )
-
-  // Wait a frame for theme to apply
-  await page.evaluate(() => {
-    return new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve())
-    })
-  })
 }
 
 /** Gets the name of the screenshot file. */
@@ -182,6 +175,27 @@ export async function takeRegressionScreenshot(
 ): Promise<Buffer> {
   if (!options?.skipMediaPause) {
     await pauseMediaElements(page, options?.elementToScreenshot)
+
+    // Wait for every video to be paused at time 0. Re-seeks if the initial
+    // seek timed out (e.g. slow CI).
+    const mediaScope = options?.elementToScreenshot ?? page
+    const videos = await mediaScope.locator("video").all()
+    for (const video of videos) {
+      const handle = await video.elementHandle()
+      if (!handle) throw new Error("Could not get element handle for video")
+      await page.waitForFunction(
+        (el) => {
+          const videoEl = el as HTMLVideoElement
+          if (videoEl.currentTime !== 0) {
+            videoEl.pause()
+            videoEl.currentTime = 0
+          }
+          return videoEl.paused && videoEl.currentTime === 0
+        },
+        handle,
+        { timeout: 5000 },
+      )
+    }
   }
 
   // Separate out the element option so we don't pass it to the screenshot API
@@ -214,19 +228,6 @@ export async function takeRegressionScreenshot(
       await restoreDOM()
     }
   } else {
-    // If no explicit clip was provided, clip to clientWidth to avoid Safari/WebKit gutter
-    if (!options?.clip) {
-      const viewportSize = page.viewportSize()
-      if (!viewportSize) throw new Error("Could not get viewport size for clipping")
-      const clientWidth = await page.evaluate(() => document.documentElement.clientWidth)
-      screenshotOptions.clip = {
-        x: 0,
-        y: 0,
-        width: clientWidth,
-        height: viewportSize.height,
-      }
-    }
-
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
@@ -303,8 +304,14 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
+  // Pause all media once upfront so individual screenshots can skip it.
+  // This avoids paying the per-element fallback timeout N times in the loop.
+  await pauseMediaElements(page)
+
   for (const h1Span of h1Spans) {
-    await h1Span.scrollIntoViewIfNeeded()
+    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
+    // which can time out in WebKit when the element never becomes "stable".
+    await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
     const h1Id = await h1Header.getAttribute("id")
@@ -313,6 +320,7 @@ export async function getH1Screenshots(
 
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
+      skipMediaPause: true,
     })
   }
 }
@@ -346,29 +354,50 @@ export async function getNextElementMatchingSelector(
 }
 
 /** Open the search UI by clicking the search icon.
- *  Waits for the search handlers to be fully initialized (onNav completes
- *  its async getContentIndex() call) before clicking, by checking for the
- *  dynamically-created #results-container element. */
+ *
+ *  Waits for search event handlers to be fully registered (signalled by
+ *  `onNav` in search.ts setting `window.__searchHandlersReady`) before
+ *  clicking, avoiding the race where the click handler isn't attached yet
+ *  after SPA navigation.
+ *
+ *  The click itself can still race with DOM updates (e.g. the SPA morphing
+ *  the page after goBack), so if the first click doesn't activate search
+ *  within 3 s we retry once. This is bounded to exactly 2 attempts — not a
+ *  polling loop. */
 export async function openSearch(page: Page) {
-  // #results-container is created by onNav after the async getContentIndex()
-  // resolves and just before the click handlers are registered. Waiting for
-  // it ensures the search icon's click handler is ready.
-  await expect(page.locator("#results-container")).toBeAttached({ timeout: 10_000 })
-  await page.locator("#search-icon").click()
-  await expect(page.locator("#search-container")).toHaveClass(/active/)
-  await expect(page.locator("#search-bar")).toBeVisible()
+  // After SPA navigation (e.g. goBack), onNav() re-registers all search
+  // event handlers asynchronously. Wait for the flag it sets at completion.
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchHandlersReady === true,
+    null,
+    { timeout: 15_000 },
+  )
+
+  const searchContainer = page.locator("#search-container")
+  const searchBar = page.locator("#search-bar")
+
+  // Click the search icon if search isn't already open. If the first click
+  // doesn't activate search (e.g. DOM morphed between click and class check),
+  // retry once — bounded to exactly 2 attempts.
+  if (!(await searchBar.isVisible())) {
+    await page.locator("#search-icon").click()
+  }
+  const isActive = await searchContainer.evaluate((el) => el.classList.contains("active"))
+  if (!isActive) {
+    // Retry: re-click in case the first was swallowed by a DOM update
+    await page.locator("#search-icon").click()
+  }
+  await expect(searchContainer).toHaveClass(/active/, { timeout: 5_000 })
+  await expect(searchBar).toBeVisible({ timeout: 5_000 })
 }
 
 export async function waitForSearchBar(page: Page): Promise<Locator> {
-  // Wait for search container to be in the DOM and interactive
-  const searchContainer = page.locator("#search-container")
-  // Ensure search is opened
-  await expect(searchContainer).toBeAttached()
-  await expect(searchContainer).toHaveClass(/active/)
-  await expect(searchContainer).toBeVisible()
+  // Ensure search is open (re-opens if DOM was reset by SPA navigation)
+  await openSearch(page)
 
   const searchBar = page.locator("#search-bar")
-  await expect(searchBar).toBeVisible()
+  await expect(searchBar).toBeEnabled()
   return searchBar
 }
 
@@ -376,17 +405,43 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 // skipcq: JS-0098
 export async function search(page: Page, term: string) {
   const searchBar = await waitForSearchBar(page)
-  await searchBar.fill(term)
-
-  // Wait for search layout to be visible with results (longer timeout for Safari/WebKit)
   const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toBeAttached({ timeout: 10_000 })
-  await expect(searchLayout).toBeVisible({ timeout: 10_000 })
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
 
-  // Wait for results to appear
+  // Wait for the search index to load before filling (avoids resetting
+  // the 400ms debounce timer with repeated fill() retries).
+  await page.waitForFunction(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => (window as any).__searchIndexReady === true,
+    null,
+    { timeout: 30_000 },
+  )
+
+  // If results are already displayed from a previous search, clear them
+  // directly via the DOM. We can't rely on the app's debounced input handler
+  // because it creates a "No results" .result-card element even for empty
+  // queries, so waiting for .result-card to detach would never succeed.
+  const hasExistingResults = (await page.locator(".result-card").count()) > 0
+  if (hasExistingResults) {
+    await page.evaluate(() => {
+      const results = document.getElementById("results-container")
+      if (results) results.innerHTML = ""
+      const layout = document.getElementById("search-layout")
+      layout?.classList.remove("display-results")
+    })
+  }
+
+  await searchBar.fill(term)
+  // Explicitly dispatch input event — Playwright's fill() should do this,
+  // but Firefox on tablet viewports sometimes fails to trigger the handler.
+  await searchBar.dispatchEvent("input")
+  await expect(searchLayout).toBeVisible({ timeout: 15_000 })
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 15_000 })
+
+  // Wait for results to appear — the display-results class is set before
+  // searchAsync completes, so also wait for actual result cards to render.
   const resultsContainer = page.locator("#results-container")
   await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
+  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 10_000 })
 }
 
 // skipcq: JS-0098
@@ -402,6 +457,25 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
       el.evaluate((media: HTMLVideoElement | HTMLAudioElement, target: "start" | "end") => {
         media.pause()
 
+        // Seek to target time, wait for "seeked" event, then wait for a double
+        // requestAnimationFrame to ensure the compositor has actually painted
+        // the target frame (Safari fires "seeked" before the frame is rendered).
+        const seekAndWait = (time: number): Promise<void> => {
+          media.currentTime = time
+          return Promise.race([
+            new Promise<void>((resolve) => {
+              media.addEventListener(
+                "seeked",
+                () => {
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+                },
+                { once: true },
+              )
+            }),
+            new Promise<void>((resolve) => setTimeout(resolve, 1000)),
+          ])
+        }
+
         const targetTime = target === "start" ? 0 : media.duration
 
         // Per HTML spec: when readyState is HAVE_NOTHING (0), setting currentTime updates
@@ -409,20 +483,21 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
         // We need readyState >= HAVE_METADATA (1) for currentTime assignment to take effect.
         // See: https://html.spec.whatwg.org/multipage/media.html#dom-media-currenttime
         if (Number.isFinite(targetTime) && media.readyState >= 1) {
-          media.currentTime = targetTime
-          return Promise.resolve()
+          return seekAndWait(targetTime)
         }
 
         // Wait for metadata with timeout fallback
-
         return Promise.race([
           new Promise<void>((resolve) => {
             media.addEventListener(
               "loadedmetadata",
               () => {
                 const time = target === "start" ? 0 : media.duration
-                if (Number.isFinite(time)) media.currentTime = time
-                resolve()
+                if (Number.isFinite(time)) {
+                  seekAndWait(time).then(resolve)
+                } else {
+                  resolve()
+                }
               },
               { once: true },
             )
@@ -432,7 +507,7 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
               console.warn("Media readyState < 1, loading")
             }
           }),
-          new Promise<void>((resolve) => setTimeout(resolve, 3000)),
+          new Promise<void>((resolve) => setTimeout(resolve, 1000)),
         ])
       }, seekTo),
     )
@@ -440,6 +515,19 @@ export async function pauseMediaElements(page: Page, scope?: Locator): Promise<v
   }
 
   await Promise.all([pauseMedia("video", "start"), pauseMedia("audio", "end")])
+
+  // Remove the autoplay attribute so the Safari autoplay script
+  // (safari-autoplay.js) won't restart videos on user-interaction events.
+  // Use elementHandle to avoid Locator auto-waiting: in search previews,
+  // video elements may become detached during re-renders, causing
+  // locator.evaluate() to hang indefinitely (no timeout).
+  for (const video of await mediaScope.locator("video[autoplay]").all()) {
+    const handle = await video.elementHandle({ timeout: 2000 }).catch(() => null)
+    if (handle) {
+      await handle.evaluate((el) => el.removeAttribute("autoplay"))
+      await handle.dispose()
+    }
+  }
 }
 
 /**
@@ -496,6 +584,55 @@ export async function waitForTransitionEnd(element: Locator): Promise<void> {
 }
 
 // skipcq: JS-0098
+export async function gotoPage(
+  page: Page,
+  url: string,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  // Pass the caller's loadState directly as waitUntil so Playwright manages
+  // the full navigation lifecycle in one call.  The previous approach used
+  // waitUntil:"commit" (resolves when the server starts sending bytes) then a
+  // separate waitForLoadState(), but WebKit/Safari can destroy the execution
+  // context between those two steps, causing "Execution context was destroyed"
+  // errors on page.evaluate / page.waitForFunction calls.
+  try {
+    await page.goto(url, { waitUntil: loadState })
+  } catch (error: unknown) {
+    // WebKit on Linux occasionally crashes with "internal error" on page.goto.
+    // Retry once — the second attempt typically succeeds.
+    if (error instanceof Error && error.message.includes("internal error")) {
+      console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
+      await page.goto(url, { waitUntil: loadState })
+    } else {
+      throw error
+    }
+  }
+}
+
+/** Reload the current page by navigating away and back to the original URL.
+ *  Avoids page.reload() which can trigger "WebKit encountered an internal
+ *  error" crashes in the Safari driver.  A same-URL goto() in Safari/WebKit
+ *  may be treated as a soft refresh that skips re-running init scripts, so we
+ *  bounce through a minimal same-origin page first to force a full page load.
+ *  Using a same-origin page (not about:blank) preserves sessionStorage, and
+ *  returning empty HTML avoids loading the SPA framework which could intercept
+ *  the subsequent navigation. */
+export async function reloadPage(
+  page: Page,
+  loadState: Parameters<Page["waitForLoadState"]>[0] = "load",
+): Promise<void> {
+  const url = new URL(page.url())
+  // Serve a minimal same-origin page: preserves sessionStorage, no SPA interference
+  const bounceUrl = `${url.origin}/__reload_bounce__`
+  await page.route(bounceUrl, (route) =>
+    route.fulfill({ body: "<html></html>", contentType: "text/html" }),
+  )
+  await page.goto(bounceUrl, { waitUntil: "commit" })
+  await page.unroute(bounceUrl)
+  await gotoPage(page, url.href, loadState)
+}
+
+// skipcq: JS-0098
 export function isDesktopViewport(page: Page): boolean {
   const viewportSize = page.viewportSize()
   return viewportSize ? viewportSize.width >= minDesktopWidth : false
@@ -504,4 +641,58 @@ export function isDesktopViewport(page: Page): boolean {
 // Detect if the current test is running in Firefox
 export function isFirefox(testInfo: TestInfo): boolean {
   return testInfo.project.name.toLowerCase().includes("firefox")
+}
+
+// Detect if the current test is running in Safari/WebKit
+export function isSafariBrowser(page: Page): boolean {
+  return page.context().browser()?.browserType().name() === "webkit"
+}
+
+/**
+ * Move the mouse to a position guaranteed not to overlap any UI elements.
+ * Using (0, 0) can overlap with navbar/menu on certain viewports (especially
+ * iPad Pro), triggering spurious mouseenter events that interfere with tests.
+ */
+export async function moveMouseToSafePosition(page: Page): Promise<void> {
+  const viewport = page.viewportSize()
+  // Bottom-right corner is safe: no navbar, no sidebar, no popovers
+  const x = viewport ? viewport.width - 1 : 1200
+  const y = viewport ? viewport.height - 1 : 800
+  await page.mouse.move(x, y)
+}
+
+/**
+ * Trigger an action and wait for the SPA to complete navigation.
+ *
+ * The SPA dispatches a custom `"nav"` event after fetch → DOM morph →
+ * scroll/search-highlight are all finished.  `page.waitForURL` resolves
+ * as soon as `pushState` fires — long before the DOM is ready — so tests
+ * that need post-navigation DOM state must use this helper instead.
+ *
+ * If the SPA's fetch times out or fails, it falls back to a full page
+ * navigation (`window.location.href = ...`) without dispatching "nav".
+ * In that case the `page.evaluate` promise is rejected (execution context
+ * destroyed), so we catch that and wait for the new page to finish loading.
+ */
+export async function triggerAndWaitForSPANav(
+  page: Page,
+  trigger: () => Promise<unknown>,
+): Promise<void> {
+  // Start listening *before* the action so we never miss the event.
+  // page.evaluate returns a Promise that resolves when the browser-side Promise resolves.
+  const navPromise = page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        document.addEventListener("nav", () => resolve(), { once: true }),
+      ),
+  )
+
+  await trigger()
+  try {
+    await navPromise
+  } catch {
+    // Execution context was destroyed — the SPA fell back to a full page
+    // navigation. Wait for the new page to finish loading.
+    await page.waitForLoadState("load")
+  }
 }

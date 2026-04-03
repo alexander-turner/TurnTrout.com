@@ -13,23 +13,22 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-01-20 10:53:02.330875
+date_updated: 2026-04-03 00:30:36.502652
 no_dropcap: false
 createBibtex: true
 ---
 
 
 
-
-
-
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
-![A basic rendition of the article "Think carefully before calling RL policies 'agents'". The website looks bare and amateurish.](https://assets.turntrout.com/static/images/posts/original_site.avif)
-Figure: The beginning of my journey, rendered under my third commit ([`6e687609`](https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e)) on April 1, 2024.
-
-![A pleasing rendition of the article "Think carefully before calling RL policies 'agents'".](https://assets.turntrout.com/static/images/posts/new_site.avif)
-Figure: Content rendered approximately when this article was first published ([`31bba104`](https://github.com/alexander-turner/TurnTrout.com/commit/31bba1043391e055138a07ab5da624e70bab562c)).
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents'. The website looks bare and amateurish."/>
+  <img slot="second" src="/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
+</figure>
 
 > [!warning] My stance on AI-written content
 > For text meant to be in my voice, I always review and edit AI generations I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
@@ -119,11 +118,6 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 # Color scheme
 
-The color scheme derives from the [Catppuccin](https://catppuccin.com) "latte" (light mode) and "frappe" (dark mode) [palettes](https://github.com/catppuccin/catppuccin/tree/main?tab=readme-ov-file#-palette).
-
-![The four Catppuccin color palettes demonstrated in overlapping code editor windows. The themes include one light mode (Latte) and three dark modes (Frappé, Macchiato, Mocha), set against a soft landscape background with the word "CATPPUCCIN".](https://assets.turntrout.com/static/images/posts/catppuccin.avif)
-Figure: The four Catppuccin palettes.
-
 <figure>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.5rem; margin-bottom: 1rem;">
   <span id="light-demo" class="light-mode" style="border-radius: 5px; padding: 1rem 2rem; border: 2px var(--midground) solid;">
@@ -190,6 +184,8 @@ EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB unde
 
 I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website, taking the font footprint from 609KB to 113KB - a reduction of over 5x! Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
 
+For fonts that only appear on a few pages — like the [old italic comparison fonts](#upright-punctuation-in-italic-text) — I manually subset to just the characters used in those comparisons. This shrank the old italic fonts from 187KB to 36KB and the old regular font from 82KB to 3KB.
+
 ### Images
 
 Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. For compatibility reasons, I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.
@@ -250,8 +246,6 @@ By using [`micromorph`](https://github.com/natemoo-re/micromorph) to preserve th
 
 Previously, I followed `gwern`'s suggestion and arranged the video to only play on hover. However, that prevented looping the video throughout the reading experience—a feature which several others missed.
 
-<!-- spellchecker-disable -->
-
 > [!quote]- [`gwern`](https://www.lesswrong.com/posts/Nq2BtFidsnhfLuNAx/announcing-turntrout-com-my-new-digital-home?commentId=vJAsuKGLMmuWCb45h) advocated for "loop on hover"
 >
 > In fact, why not make 'fun on hover' a core design principle? "If not friend, why friend-shaped?" Make everything on the site a little friend you can play with. (This would be a good time to try to write down a few catchphrases or design principles to sum up your goals here. Why dropcaps or the animated pond logo? etc) When I look at your pond, I feel like it would be wonderful if the pond was animated on hover - if when I hovered, _then_ it was animated.
@@ -261,8 +255,6 @@ Previously, I followed `gwern`'s suggestion and arranged the video to only play 
 > I also still think that the logo should probably not play by default, and for animations like this, it's better to take an Apple-like attitude about them being enhancements, opted into by user actions, to 'spark joy', but not to be used by default. What do the worst websites do? They animate tons of stuff gratuitously. How much more delightful it is to discover a website with taste & restraint, where there are easter eggs and features to discover as you surf, where, say, the animated logo plays only when you hover over it... Truly an oasis or quiet little pond amidst the howling desert of the contemporary Internet.
 >
 > I'm reminded of a _Family Guy_ meme I re-ran into recently: why does Peter Griffin dislike _The Godfather_? Because ["It insists upon itself."](https://x.com/SethMacFarlane/status/1881825910040702979) A website animating the logo unasked for insists upon itself. And this helps instill a design feature: you the reader are in control, and you express this control in part because you can hover over _everything_ to learn more or focus on some things.
-
-<!-- spellchecker-enable -->
 
 ### Caching improves load times
 
@@ -294,6 +286,14 @@ Before the client to loads the main CSS stylesheet, the site looks like garbage.
 
 Instead, I hooked [the `critical` package](https://github.com/addyosmani/critical) into the end of the production build process. After emitting the webpages, the process computes which "critical" styles are necessary to display the first glimpse of the page. These critical styles are inlined so that they load immediately, without waiting for the entire stylesheet to load. When the page loads, it quickly notes the status of light vs dark mode and immediately applies the relevant theme. Once the main stylesheet loads, I delete the inlined styles (as they are superfluous at best).
 
+## Non-blocking CSS loading
+
+Since $\KaTeX$ math is rendered server-side, the client only needs the stylesheet for styling. I load `katex.min.css` with `media="print"` and swap it to `media="all"` on load, keeping it off the critical rendering path. The same technique applies to any stylesheet that isn't needed for the initial paint.
+
+## Preloading the first image
+
+The first content image on each page is typically the [Largest Contentful Paint](https://web.dev/articles/lcp) element. By default, Quartz lazy-loads all images, which delays LCP because the browser won't fetch the image until it scrolls into view. I override this for the first `<img>`: it gets `loading="eager"` and `fetchpriority="high"`, while all subsequent images remain lazy.
+
 ## Deduplicating HTML requests
 
 When loading a new page, the [`micromorph` package](https://github.com/natemoo-re/micromorph) selectively loads the new elements in the page. The shared elements are not updated, cutting load times.
@@ -320,10 +320,15 @@ This inline script executes immediately, checking multiple possible storage loca
 A complication: how does the script know whether a scroll event came from the user or from a late-loading image shifting the layout? Get this wrong, and the page annoyingly fights the user. I decided to cancel the adjustment period given user movement indicated by certain events:
 
 ```javascript
-let userInteracted = false
-const markInteraction = () => { userInteracted = true }
+let userInteracted = false;
+const markInteraction = () => {
+  userInteracted = true;
+};
 for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
-  window.addEventListener(event, markInteraction, { passive: true, once: true })
+  window.addEventListener(event, markInteraction, {
+    passive: true,
+    once: true,
+  });
 }
 ```
 
@@ -335,24 +340,26 @@ As a result of this finagling, while you're hanging out by The Pond, you never l
 
 This website contains many design elements. To maintain a regular, assured style and to avoid patchwork chaos, I made two important design choices.
 
-Exponential font sizing
-: I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
+### Exponential font sizing
 
-  After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
+I fixed a base font size -- 20px on mobile, to 22px on tablets, to 24px on full displays. I read up on [how many characters should be on a single line in order to maximize readability](https://baymard.com/blog/line-length-readability) - apparently between 50 and 60. On desktop, I set the center column to 750PX (yielding about 75 characters per line).[^characters] I decided not to indent paragraphs because that made the left margin boundary too ragged.
 
-  <span class="h1">Header 1</span>
-  <span class="h2">Header 2</span>
-  <span class="h3">Header 3</span>
-  <span class="h4">Header 4</span>
-  <span class="h5">Header 5</span>
+After consulting [TypeScale](https://typescale.com/), I scaled the font by $1.2^n$, with $n=0$ for body text and $n\geq 1$ for headers:
 
-  <span>Normal text</span>
-  <span style="font-size:var(--font-size-minus-1)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-2)">Smaller text</span>
-  <span style="font-size:var(--font-size-minus-3)">Smaller text</span>
+<div class="h1">Header 1</div>
+<div class="h2">Header 2</div>
+<div class="h3">Header 3</div>
+<div class="h4">Header 4</div>
+<div class="h5">Header 5</div>
 
-All spacing is a simple multiple of a base measurement
-: If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
+<div>Normal text</div>
+<div style="font-size:var(--font-size-minus-1)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-2)">Smaller text</div>
+<div style="font-size:var(--font-size-minus-3)">Smaller text</div>
+
+### All spacing is a simple multiple of a base measurement
+
+If - for example - paragraphs were separated by 3.14 lines of space but headings had 2.53 lines of margin beneath them, that would look chaotic. Instead, I fixed a "base margin" variable and then made all margin and padding calculations be simple fractional multiples (e.g. 1.5x, 2x) of that base margin.
 
 [^characters]: 60 characters per line seemed awkwardly narrow to me, so I went for 75 per line.
 
@@ -367,8 +374,6 @@ Figure: _Ligatures_ transform sequences of characters (like "<span style="font-v
 Figure: I love sweating the small stuff. :) Notice how aligned "`FlTl`" is!
 
 My site contains a range of fun fonts which I rarely use. For example, the _Lord of the Rings_ font "Tengwar Artano" renders Elvish glyphs in proper Quenya mode.
-
-<!-- spellchecker-disable -->
 
 > [!quote]- [_Namárië_: Galadriel's Lament in Lórien](https://www.youtube.com/watch?v=re5_lzlFS9M)
 >
@@ -415,9 +420,6 @@ My site contains a range of fun fonts which I rarely use. For example, the _Lord
 >
 > <br>
 > <span class="elvish"><span class="elvish-tengwar" lang="qya">  : </span><span class="elvish-translation">Maybe even thou shalt find it. Farewell!</span></span>
->
-
-<!-- spellchecker-enable -->
 
 <span class="float-right" style="margin-top: 2rem; ">
 <div class="dropcap" data-first-letter="A" style="font-size: 4rem; color: var(--foreground);--before-color:var(--foreground);">A</div>
@@ -463,7 +465,7 @@ However, text [blocks](https://developer.mozilla.org/en-US/docs/Web/CSS/display)
 
 ### Rare dropcap coloring
 
-Every time you navigate to a new page, there's a 10% chance to get a random dropcap color. :)
+Every time you navigate to a new page, there's a <span id="populate-dropcap-probability"></span> chance to get a random dropcap color. :)
 
 <div id="the-pond-dropcaps" class="centered" style="font-size:min(4rem, 15vw); line-height: 1;">
 <span class="dropcap" data-first-letter="T" style="--before-color: var(--dropcap-background-red);">T</span>
@@ -590,7 +592,9 @@ How do the following sentences feel to read?
 1. <abbr>Signed in the 1990's, NAFTA was a trade deal.</abbr>
 2. Signed in the 1990's, NAFTA was a trade deal.
 
-Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI. Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct.
+Typographically, capital letters are designed to be used one or two at a time - not five in a row. <abbr> "NAFTA"</abbr> draws far too much attention to itself. I use regular expressions to detect at least three consecutive capital letters, excluding Roman numerals like XVI.
+
+Since smallcaps are rendered by lowercasing text and applying CSS `font-variant-caps`, I intercept clipboard events to ensure the copied text is correct. Further, many smallcaps uses (like "500km") actually render from lowercase text. I track `data-original-text` and ensure the clipboard copies the original text exactly.
 
 Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so that the letters have the same height as the numerals. For similar reasons as smallcaps, most of the site's numerals are [oldstyle](https://www.myfonts.com/pages/fontscom-learning-fontology-level-3-numbers-oldstyle-figures) ("100") rather than lining ("<span style="font-variant-numeric: lining-nums;">100</span>"). I also uppercase the first letter of smallcaps if it begins a sentence or a paragraph element.
 
@@ -613,6 +617,9 @@ Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="
 No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
+Balanced text wrapping
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s [non-breaking spaces](#non-breaking-spaces) set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
 
@@ -633,6 +640,23 @@ Superscripting ordinal suffixes
 While EB Garamond is a nice font, it has a few problems. As of April 2024, EB Garamond did not support slashed zeroes (the `zero` feature). The result: zero looked too similar to "o." Here's a number rendered in the original font: <span style="font-family: 'EBGaramondOriginal'">"100"</span>; in my tweaked font it shows as "100." Furthermore, the italicized font did not support the `cv11` OpenType feature for oldstyle numerals. This meant that the italicized 1 looked like a slanted "<span style="font-family: var(--font-main); font-feature-settings: normal;">1</span>" - too similar to the smallcaps capital I ("<span class="small-caps">I</span>").
 
 Therefore, I paid [Hisham Karim](https://www.fiverr.com/hishamhkarim) \$121 to add these features. I have also notified the maintainer of the EB Garamond font.
+
+### Upright punctuation in italic text
+
+> [!quote] [Bringhurst’s rule 5.3.2](https://typographyforlawyers.com/a-brief-guide-to-bringhursts-elements.html)
+>
+> Use upright (roman) rather than sloped parentheses, brackets and braces, even if the context is italic.
+
+I modified the italic fonts to replace sloped punctuation glyphs with their upright counterparts. Over 3,000 kerning pairs per font compensate the resulting spacing, with special handling for f-ligatures and descender glyphs. A contextual glyph rule slopes apostrophes in contractions but keeps them upright as single closing quotes.
+
+|     Character |                     Original                      | With upright punctuation |
+| ------------: | :-----------------------------------------------: | :----------------------: |
+|   Parentheses |  <span class="italic-old">_(Hello world)_</span>  |     _(Hello world)_      |
+|      Brackets |  <span class="italic-old">_[Hello world]_</span>  |     _[Hello world]_      |
+|        Braces | <span class="italic-old">_\{Hello world\}_</span> |    _\{Hello world\}_     |
+| Double quotes |  <span class="italic-old">_“Hello world”_</span>  |     _“Hello world”_      |
+| Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
+|    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
 # Website features
 
@@ -810,25 +834,51 @@ Code: A diagram from my [Eliciting Latent Knowledge proposal](/elk-proposal-thin
 
 ## Accessibility
 
-I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
+I want everyone to be able to use my site. I target WCAG 2.1 AA compliance, enforced by [`pa11y`](https://pa11y.org/) against every page in CI. I also enforce strict [Lighthouse](#lighthouse) scores across all four audit categories. Here are some highlights from my accessibility pipeline.
+
+Asset accessibility
+: I include alt text for all images. I automatically generated, manually approved, and automatically applied each alt text instance using an open-source tool I developed: `alt-text-llm`.
 
 > [!quote]- [Automatic alt text generation](/open-source#automatic-alt-text-generation)
 > ![[/open-source#automatic-alt-text-generation]]
 
-To meet accessibility standards, I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+I also subtitled the 22-minute [AI Presidents Discuss AI Alignment Agendas](/alignment-tier-list).
+
+Color contrast
+: I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
+
+ID uniqueness
+: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410).
+
+Skip-to-content link
+: A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
+
+Scrollable content regions
+: Overflowing tables and code blocks are wrapped in ARIA regions with descriptive labels and `tabIndex`, so screen reader users know the content is scrollable and keyboard users can scroll it.
+
+Miscellaneous improvements
+: Every interactive element is keyboard-navigable. Spoiler blocks, footnote popovers, and the mobile site menu all manage focus properly. I took extra care to ensure that screen readers do not blurt out unrevealed spoiler text. A route announcer announces new pages for screen readers, even though my site is a single-page application. Decorative elements are hidden from assistive technology; meaningful ones carry appropriate labels. A `prefers-reduced-motion` media query disables animations site-wide. I worked hard to ensure my HTML is [semantically correct.](https://developer.mozilla.org/en-US/docs/Glossary/Semantics#semantics_in_html)
+
+## Lighthouse
+
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, _and_ SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71; the median performance score is 31.
+
+[^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
+
+I also run dedicated layout-shift-only Lighthouse checks on both desktop and mobile, requiring cumulative layout shift below 0.05 across several content-heavy pages.
 
 ## Auto-generated repository statistics
 
 To keep documentation up-to-date, the build process computes e.g. the number of commits I've made. The number is injected into special `<span>` elements with a `class` or `id` like `populate-commit-count`. The build process validates that all `populate-*` spans are properly filled, failing the build if any are left empty.
 
-| Metric                       | Count                                                |
+|                       Metric | Count                                                |
 | ---------------------------: | :--------------------------------------------------- |
-| Total commits                | <span class="populate-commit-count"></span>          |
-| Human-authored commits       | <span class="populate-human-commit-count"></span>    |
-| TypeScript unit tests        | <span class="populate-js-test-count"></span>         |
-| Python unit tests            | <span class="populate-pytest-count"></span>          |
+|                Total commits | <span class="populate-commit-count"></span>          |
+|       Human-authored commits | <span class="populate-human-commit-count"></span>    |
+|        TypeScript unit tests | <span class="populate-js-test-count"></span>         |
+|            Python unit tests | <span class="populate-pytest-count"></span>          |
 | Playwright integration tests | <span class="populate-playwright-test-count"></span> |
-| Lines of code                | <span class="populate-lines-of-code"></span>         |
+|                Lines of code | <span class="populate-lines-of-code"></span>         |
 
 ## Smaller features
 
@@ -838,21 +888,21 @@ Popovers
 Search
 : Pressing `/` toggles the search modal. Navigating to a result temporarily highlights the query and scrolls to the first match.
 
-  ![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
-  Figure: Mobile previews.
+![Searching for 'Shrek' on mobile. Each result card shows a content preview with highlighted matches. The preview fades in at the top and out at the bottom.](https://assets.turntrout.com/static/images/posts/design-02152026-1.avif)
+Figure: Mobile previews.
 
-  ![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
-  Figure: Desktop previews.
+![Searching for 'Shrek' on desktop. surfacing the GPT-3 Gems article. A preview pane to the right shows the surrounding page.](https://assets.turntrout.com/static/images/posts/design-02152026.avif)
+Figure: Desktop previews.
 
 Metadata
 : Every page has an HTML description and [tags](/all-tags) (if appropriate), along with a table of contents which (on desktop) highlights the current section. I track original publication date and display when each was page was last modified by a `git push` to the `main` branch. I also support "sequences" of blog posts:
 
   <div class="sequence-links" style="border: 2px var(--midground-faint) solid; padding-right: .5rem; padding-top: 1rem; border-radius: 5px;"><div class="sequence-title" style="text-align:center;"><div class="admonition-title-inner"><b>Sequence:</b> <a href="/posts#shard-theory" class="internal">Shard Theory</a></div></div><div class="sequence-nav" style="display:flex;justify-content:center;"><div class="prev-post sequence-links-postNavigation" style="text-align:right;"><p><b>Previous</b><br><a href="/reward-is-not-the-optimization-target" class="internal">Reward Is Not the Optimization Target</a></p></div><div class="sequence-links-divider"></div><div class="next-post sequence-links-postNavigation" style="text-align:left;"><p><b>Next</b><br><a href="/understanding-and-avoiding-value-drift" class="internal">Understanding and Avoiding Value Drift</a></p></div></div></div> <figcaption>The sequence metadata for my post on <a href="./shard-theory" class="internal alias" data-slug="shard-theory">shard theory.</a></figcaption>
 
-Spoilers hide text until hovered
+Spoilers hide text until clicked
 : I made a Markdown plugin which lets me specify spoilers by starting the line with `>!`. The results are unobtrusive but pleasant:
 
-  >! Have you heard? Snape kills Dumbledore.
+> ! Have you heard? Snape kills Dumbledore.
 
 Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
@@ -860,31 +910,45 @@ Server-side math rendering via $\KaTeX$
 Scroll indicators for overflowing content
 : When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
 
-  For example:
+For example:
 
-  $$
-  e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
-  $$
+$$
+e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \frac{x^6}{6!} + \frac{x^7}{7!} + \frac{x^8}{8!} + \frac{x^9}{9!} + \frac{x^{10}}{10!} + \frac{x^{11}}{11!} + \frac{x^{12}}{12!} + \frac{x^{13}}{13!} + \frac{x^{14}}{14!} + \frac{x^{15}}{15!} + \cdots
+$$
 
 Markdown element styling
 : Most of my tables are specified in Markdown. However, some tables need special styling. I don't want to write the full HTML for each table. 💀 Instead, I use [`remark-attributes`](https://github.com/manuelmeister/remark-attributes) to specify CSS classes in Markdown for such tables:
 
-  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-  Table: A table with unbalanced columns.
+Table: A table with unbalanced columns.
 
-  | **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
-  | :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
+| **Unsteered completions**                                                                                                         | **Steered completions**                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961. | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012 |
 
-  {.full-width .center-table-headings}
+{.full-width .center-table-headings}
 
-  Table: A rebalanced table which pleases the eyes.
+Table: A rebalanced table which pleases the eyes.
+
+Print mode
+: Print mode whittles away distractions like navbars and footnote "return" icons; displays URL sources next to `<video>` and `<audio>` elements and next to links (as paper does not permit clicking); renders in light mode with a white background (to reduce ink usage); and props open all collapsible admonitions.
+
+<figure>
+<img-comparison-slider>
+  <img slot="first" src="https://assets.turntrout.com/static/images/posts/design-03252026-1.avif" alt="A cluttered print preview for the article 'Humans Provide an Untapped Wealth of Evidence About Alignment.'"/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/posts/design-03252026-2.avif" alt="A print preview for the same article, without clutter."/>
+</img-comparison-slider>
+<figcaption>Drag to compare: before vs. after print mode.</figcaption>
+</figure>
 
 Video speed limits
-: I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their  `playbackRate` attribute.
+: I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
+
+Before/after image sliders
+: Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
 
 Automatic BibTeX citations
 : I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
@@ -903,79 +967,66 @@ I automatically merge test-passing pull requests from `dependabot`, reducing sec
 
 [`lint-staged`](https://www.npmjs.com/package/lint-staged) improves the readability and consistency of my code. While I format some filetypes on save, there are a lot of files and a lot of types. Therefore, my `package.json` specifies what linting & formatting tools to run on what filetypes:
 
-```json
-  "lint-staged": {
-    "*.{css,scss,json}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": [
-      "npx eslint --fix",
-      "prettier --write"
-    ],
-    "*.fish": "fish_indent",
-    "*.sh": [
-      "shfmt -i 2 -w",
-      "shellcheck"
-    ],
-    "*.py": [
-      "ruff check --fix",
-      "pyupgrade",
-      "autoflake --in-place",
-      "isort",
-      "autopep8 --in-place",
-      "black"
-    ],
-    "!(*.vale-styles)/**/*.md": [
-      "prettier --write",
-      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
-    ]
-```
+<span class="populate-markdown-lint-staged"></span>
 
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
-## `pre-push`: the quality assurance gauntlet
+## `pre-push`: local checks and auto-fixes
 
-Whenever I find a bug, I attempt to automatically detect it in the future. The result is a long pipeline of checks, designed to surface errors which would take a long time to notice manually. The `push` operation is aborted if any of this section's checks[^gauntlet] fail.
+The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters that commit source-file changes, and operations requiring local credentials. The `push` operation is aborted if any check fails.
 
 ```plaintext
 ╰─ git push
-✓ Typechecking Python with mypy
-✓ ESLinting TypeScript
-✓ Cleaning up SCSS
-✓ Linting Python
-✓ Spellchecking
-✓ Checking source files
-✓ Linting prose using Vale
-✓ Running Javascript unit tests
-⠹ Running Python unit tests...
-   scripts/tests/test_built_site_checks.py
-   .................. [  7%]
-   .................. [ 23%]
-   .................. [ 39%]
-   .................. [ 45%]
+✓ Linting Python (ruff)
+✓ Linting TypeScript (ESLint --fix)
+✓ Formatting Python docstrings (docformatter --in-place)
+✓ Cleaning up SCSS (stylelint --fix)
+✓ Compressing and uploading local assets
+⠹ Scanning for images without alt text...
 ```
 
-Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed tests and allows resuming the `push` from the last point of failure.
+Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my `pre-push` pipeline elegantly displays progress. The pipeline saves the last-passed step and allows resuming from the last point of failure.
 
-[^gauntlet]: For clarity, I don't present the `pre-push` hook operations in their true order.
+### Cheap checks
 
-### Static code analysis
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. CI also runs this for reliability, but having it locally means errors are caught and fixed before the push completes.
 
-I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and ensure that [`pylint`](https://www.pylint.org/) rates my code health at 10/10. I lint my _prose_ using [`vale`](https://vale.sh/) - checking, for example, that I don't use clichés, unnecessary superlatives, or adverbs followed by hyphens.
+### Auto-fixing formatters
 
-I use `mypy` to statically type-check my Python code and `tsc` to type-check my TypeScript.
+I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
 
-Lastly, I use [DeepSource](https://deepsource.io/) to [analyze and lint the repository.](https://app.deepsource.com/gh/alexander-turner/TurnTrout.com) DeepSource surfaces a huge range of antipatterns. For example, in Python, DeepSource points out variables which are redeclared from an outer scope.
+These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
 
-Unfortunately, DeepSource only runs as a GitHub action on `main` and on PRs. I can't naively access the issues [from the command line](https://github.com/DeepSourceCorp/cli), as the CLI tool only reports stale issues for `main`. I wrote a pre-push script ([`run_deepsource_cli.fish`](https://github.com/alexander-turner/TurnTrout.com/blob/main/scripts/run_deepsource_cli.fish)) that creates a temporary PR, waits for DeepSource analysis to complete, reports any failures, closes the PR, and then returns an error code if so.
+### Alt-text scanning
+
+I use [`alt-text-llm`](https://pypi.org/project/alt-text-llm/) to scan for images missing alt text, using an LLM to generate descriptions. This requires an API key and runs locally.
+
+### Compressing and uploading assets
+
+I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
+
+I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
+
+1. Move any assets from `asset_staging/` to a slightly more permanent `static/` asset directory, updating any filepath references in the Markdown articles;
+2. [Compress](#asset-compression) all relevant assets within `static/`, updating filepath references appropriately;
+3. Run [`exiftool`](https://stackoverflow.com/questions/66192531/exiftool-how-to-remove-all-metadata-from-all-files-possible-inside-a-folder-an) to strip [Exif](https://en.wikipedia.org/wiki/Exif) metadata from images, preventing unintended information leakage;
+4. Upload the assets to `assets.turntrout.com`, again updating references in the Markdown files;[^upload]
+5. Copy the assets to my local mirror of my R2 asset bucket (in case something happens to Cloudflare).
+
+While this pipeline took several weeks of part-time coding to iron out, I'm glad I took the time.
+
+[^upload]: When I upload assets to Cloudflare R2, I have to be careful. By default, the upload will overwrite existing assets. If I have a namespace collision and accidentally overwrite an older asset which happened to have the same name, there's no way for me to know without simply realizing that an older page no longer shows the older asset. For example, links to the older asset would still validate [under `linkchecker`](#validating-links). Therefore, I disable overwrites by default and instead print a warning that an overwrite was attempted.
+
+## Testing and validation
 
 ### Static validation of Markdown and source files
 
-I run [a multi-purpose spellchecking tool](https://github.com/tbroadley/spellchecker-cli). The tool maintains a whitelist dictionary which grows over time. Potential mistakes are presented to the user, who indicates which ones are real. The false positives are ignored next time. The spellchecker also surfaces common hiccups like "the the."
-
-I then lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
+I lint my Markdown links for probable errors. I found that I might mangle a Markdown link as `[here's my post on shard theory](shard-theory)`. However, the link URL should start with a slash: `/shard-theory`. My script catches these.
 
 > [!info]- Markdown and source file checks
 > **Metadata and structure:**
+>
 > 1. Each article's metadata has required fields filled in (like `title` and `description`).
 > 2. No pages attempt to share a URL.
 > 3. [Sequences](/posts#sequences) are well-defined. Post $n$ should link backwards to a post $n-1$ which marks post $n$ as its successor. Similar logic should hold for posts $n$ and $n-1$.
@@ -983,10 +1034,12 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 > 5. Preview card image URLs are valid, end with `.jpg`, are hosted on my CDN, and are at most <span id="populate-max-size-card"></span>KB.
 >
 > **Math and LaTeX:**
+>
 > 1. $\KaTeX$ expressions avoid using `\tag{...}`, as that command wrecks the formatting in the rendered HTML.
 > 2. I don't leave stray $\KaTeX$ commands outside of math blocks.
 >
 > **Markdown syntax:**
+>
 > 1. Markdown tables specify column alignment to make their appearance robust to CSS changes.
 > 2. Markdown files do not use unescaped braces `{}` outside of code or math blocks. In my posts, I sometimes use braces for \{set notation\}. Without escaping the braces, the enclosed text is _not rendered in the HTML DOM_.
 > 3. Video tags cannot use `src` or `type` attributes --- they should use nested `<source>` tags instead.
@@ -996,9 +1049,11 @@ I then lint my Markdown links for probable errors. I found that I might mangle a
 > 7. After a definition title in a definition list, continuation paragraphs should be indented properly.
 >
 > **Typography:**
+>
 > 1. No forbidden typography patterns, like a closing quote followed by a space and then a period.
 >
 > **CSS validation:**
+>
 > 1. CSS defines `@font-face`s using fonts which actually exist in the filesystem.
 > 2. CSS does not refer to undeclared font families.
 > 3. CSS only references valid CSS variables.
@@ -1024,26 +1079,10 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
 > ![[playwright-tips#Background]]
 
-> [!money] Cost of running the Playwright tests on GitHub Actions
-> As of May 2nd, 2025, my GitHub Pro subscription allows 3,000 free minutes each month. Each run's Playwright tests take 310 minutes of Linux machine time. GitHub [prices Linux 2-core systems at \$0.008 per minute.](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners)
+> [!money] Cost of running CI on GitHub Actions
+> My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
 >
-> After using up my free minutes, I'm spending a bit over \$2.48 every time I push to `main`.
-
-### Compressing and uploading assets
-
-I want a zero-hassle process for adding assets to my website. [In order to increase resilience](#archiving-and-dependencies), I use [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/) to host assets which otherwise would bloat the size of my `git` repository.
-
-I edit my Markdown articles in [Obsidian](https://obsidian.md/). When I paste an asset into the document, the asset is saved in a special `asset_staging/` directory. Later, when I move to `push` changes to my site, the following algorithm runs:
-
-1. Move any assets from `asset_staging/` to a slightly more permanent `static/` asset directory, updating any filepath references in the Markdown articles;
-2. [Compress](#asset-compression) all relevant assets within `static/`, updating filepath references appropriately;
-3. Run [`exiftool`](https://stackoverflow.com/questions/66192531/exiftool-how-to-remove-all-metadata-from-all-files-possible-inside-a-folder-an) to strip [Exif](https://en.wikipedia.org/wiki/Exif) metadata from images, preventing unintended information leakage;
-4. Upload the assets to `assets.turntrout.com`, again updating references in the Markdown files;[^upload]
-5. Copy the assets to my local mirror of my R2 asset bucket (in case something happens to Cloudflare).
-
-While this pipeline took several weeks of part-time coding to iron out, I'm glad I took the time.
-
-[^upload]: When I upload assets to Cloudflare R2, I have to be careful. By default, the upload will overwrite existing assets. If I have a namespace collision and accidentally overwrite an older asset which happened to have the same name, there's no way for me to know without simply realizing that an older page no longer shows the older asset. For example, links to the older asset would still validate [under `linkchecker`](#validating-links). Therefore, I disable overwrites by default and instead print a warning that an overwrite was attempted.
+> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
 
 ### Validating links
 
@@ -1062,10 +1101,12 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > I check to avoid a smattering of possible mishaps.
 >
 > **Development artifacts:**
+>
 > 1. Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
 > 2. I might have disabled [favicon rendering](#inline-favicons) to increase build speed;
 >
 > **Asset management:**
+>
 > 1. Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
 > 2. Local media files referenced but not present on disk;
 > 3. Assets present in the Markdown file but which are not present in the HTML DOM;
@@ -1073,14 +1114,17 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
 >
 > **CSS and styling:**
+>
 > 1. Inline styles which invoke nonexistent CSS variables;
 > 2. Failure to inline critical CSS;
 >
 > **Favicon validation:**
+>
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
 > 2. Each favicon is wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
+>
 > 1. Footnotes may be unmatched (e.g. I deleted the reference to a footnote without deleting its content, leaving the content exposed in the text);
 > 2. Incorrectly terminated blockquotes (e.g. ending with `>`);
 > 3. Unrendered emphasis markers (often indicated by a trailing `*` or `_`);
@@ -1092,6 +1136,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 9. Unrendered image alt text declarations;
 >
 > **Link validation:**
+>
 > 1. Anchor links which don't exist (both same-page and cross-page);
 > 2. Same-page anchor links missing required CSS classes (`internal`, `same-page-link`);
 > 3. Internal links incorrectly marked or formatted;
@@ -1100,48 +1145,56 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 6. `git`-hosted assets, stylesheets, or scripts which don't exist;
 >
 > **Typography and text formatting:**
+>
 > 1. Non-smart quotation marks (e.g. `'` or `"`);
 > 2. Multiple dashes in a row (should be em dashes);
 > 3. Consecutive periods (potential typos);
 > 4. Missing spaces before or after links and emphasis elements;
 > 5. Top-level paragraphs lacking end punctuation;
+> 6. Missing whitespace around inline elements produced by HTML transformations, including smallcaps abbreviations, ordinals, fractions, and arrows;
 >
 > **Math rendering:**
+>
 > 1. $\KaTeX$ rendering errors (indicated by error styling);
 > 2. $\KaTeX$ display elements that should be in blockquotes;
 > 3. Paragraphs containing only a $\KaTeX$ span (should be display math);
 > 4. HTML tags incorrectly inserted into $\KaTeX$ elements;
 >
 > **Iframe validation:**
+>
 > 1. Iframes missing `src` attributes;
 > 2. Iframe sources returning error status codes;
 >
 > **Metadata and SEO:**
+>
 > 1. Page descriptions missing, too short, or too long for social media previews (recommended 10-155 characters);
 > 2. Metadata mismatches between HTML and Markdown source files;
 >
 > **Dynamic content:**
+>
 > 1. Elements with IDs or classes starting with `populate-` that are empty;
 >
 > **Font preloading:**
+>
 > 1. Missing preload links for EBGaramond `subfont` files;
 >
 > **RSS validation:**
+>
 > 1. RSS file generation failure or schema validation errors.
 
-### Finishing touches
+## Build pipeline extras
 
 Reordering elements in `<head>` to ensure social media previews
 : I want nice previews for my site. Unfortunately, the behavior was flaky - working on Facebook, not on Twitter, not on Slack, working on Discord... Why? I had filled out all of the [OpenGraph](https://ogp.me/) fields.
 
-  [Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
+[Apparently](https://forums.slackcommunity.com/s/question/0D53a00008bbu4SCAQ/i-cant-understand-why-my-websites-url-does-not-unfurl-on-slack?language=en_US), Slack only reads the metadata from the first portion of the `<head>`. However, my OpenGraph `<meta>` tags were further back, so they weren't getting read in. Different sites read different lengths of the `<head>`, explaining the flakiness.
 
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
 : Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
 
-  The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
+The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
 : I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.
@@ -1149,13 +1202,13 @@ Python dependency management
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-  To verify that a commit `ABC012` was indeed committed by a given date, run
+To verify that a commit `ABC012` was indeed committed by a given date, run:
 
-  ```shell
-  git clone https://github.com/alexander-turner/.timestamps
-  cd .timestamps
-  ots --no-bitcoin verify "files/ABC012.txt.ots"
-  ```
+```shell
+git clone https://github.com/alexander-turner/.timestamps
+cd .timestamps
+ots --no-bitcoin verify "files/ABC012.txt.ots"
+```
 
 # Github Actions
 
@@ -1164,10 +1217,32 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-  I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
-Minimal layout shift
-: I run [Lighthouse](https://github.com/GoogleChrome/lighthouse) to check that the test page's layout doesn't shift while loading.
+Lighthouse audits
+: I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
 
 Quality gates
-: Many pre-push checks also run as GitHub Actions for redundancy and to catch environmental inconsistencies. These include Python linting (`mypy`, `pylint`, `docformatter`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the pre-push hook was bypassed.
+: CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+
+## Automated workflows
+
+Several GitHub workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](/open-source#claude-code-automation-template).
+
+Monthly newsletter
+: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/monthly-newsletter.yml) collects commits since the last newsletter, feeds them to the Claude API with a [prompt template](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/prompts/newsletter-prompt.md), and emails me the draft via [Resend](https://resend.com/).
+
+Weekly security scan
+: A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/security-vulnerability-scan.yaml) aggregates Dependabot alerts, code scanning alerts, secret scanning alerts, and `pnpm audit` results. [`claude-code-action`](https://github.com/anthropics/claude-code-action) triages the findings, applies fixes, and opens a PR.
+
+Template sync
+: A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
+
+Dependency auto-merge
+: [Dependabot](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/dependabot.yml) proposes weekly updates for `npm`, Python, and GitHub Actions dependencies. Non-major bumps are [auto-approved and -merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-dependabot.yml), while major bumps require manual review. [DeepSource](https://deepsource.com/) style-fix PRs are also [auto-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-deepsource.yml).
+
+CI failure notifications
+: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow). The pings keep Claude Code going without my involvement.
+
+Self-improving tooling
+: When Claude merges a PR, it includes a "Lessons Learned" section documenting what worked and what didn't. A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) detects these sections and files corresponding issues on the [template repo](https://github.com/alexander-turner/claude-automation-template), propagating improvements upstream to all projects using the template.

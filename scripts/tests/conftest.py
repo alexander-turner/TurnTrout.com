@@ -1,5 +1,6 @@
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -10,14 +11,14 @@ from .. import utils as script_utils
 
 
 @pytest.fixture()
-def temp_dir():
+def temp_dir() -> Iterator[Path]:
     """Creates a temporary directory and cleans up afterwards."""
     with tempfile.TemporaryDirectory() as dir_path:
         yield Path(dir_path)
 
 
 @pytest.fixture()
-def git_repo_setup(tmp_path: Path):
+def git_repo_setup(tmp_path: Path) -> dict[str, object]:
     """
     Initialize a temporary git repository and return its root Path.
 
@@ -29,7 +30,7 @@ def git_repo_setup(tmp_path: Path):
 
 
 @pytest.fixture()
-def quartz_project_structure(tmp_path: Path):
+def quartz_project_structure(tmp_path: Path) -> dict[str, Path]:
     """
     Create a minimal Quartz directory layout under *tmp_path*.
 
@@ -78,6 +79,16 @@ def mock_git_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     project_root = tmp_path / "turntrout.com"
     project_root.mkdir(parents=True, exist_ok=True)
 
+    # Copy config/constants.json so load_shared_constants() works
+    real_constants = (
+        Path(__file__).resolve().parents[2] / "config" / "constants.json"
+    )
+    config_dir = project_root / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    (config_dir / "constants.json").write_text(
+        real_constants.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+
     # Mock the git.Repo to return our fake repository
     mock_repo = MagicMock()
     mock_repo.working_tree_dir = str(project_root)
@@ -116,7 +127,7 @@ def git_initialized_dir(tmp_path: Path) -> dict[str, git.Repo | Path | dict]:
 
 
 @pytest.fixture()
-def mock_r2_upload_module():
+def mock_r2_upload_module() -> Iterator[None]:
     """
     Mock the r2_upload module for tests that don't need real R2 operations.
 
@@ -128,7 +139,7 @@ def mock_r2_upload_module():
 
 
 @pytest.fixture()
-def mock_subprocess_run():
+def mock_subprocess_run() -> Iterator[MagicMock]:
     """
     Mock subprocess.run for tests that don't need real command execution.
 
@@ -141,7 +152,7 @@ def mock_subprocess_run():
 
 
 @pytest.fixture()
-def mock_rclone():
+def mock_rclone() -> Iterator[MagicMock]:
     """
     Mock rclone subprocess calls with successful return codes.
 
@@ -199,7 +210,9 @@ def _is_blocked_git_operation(cmd: list) -> tuple[bool, str]:
 
 
 @pytest.fixture(autouse=True)
-def prevent_real_git_operations(monkeypatch: pytest.MonkeyPatch, request):
+def prevent_real_git_operations(
+    monkeypatch: pytest.MonkeyPatch, request
+) -> None:
     """
     Automatically prevent real git operations in all tests.
 
@@ -209,7 +222,7 @@ def prevent_real_git_operations(monkeypatch: pytest.MonkeyPatch, request):
 
     Usage to opt out:
         @pytest.mark.allow_git_operations
-        def test_that_needs_real_git():
+        def test_that_needs_real_git() -> None:
             ...
     """
     if "allow_git_operations" in request.keywords:
@@ -217,7 +230,7 @@ def prevent_real_git_operations(monkeypatch: pytest.MonkeyPatch, request):
 
     original_run = subprocess.run
 
-    def guarded_run(*args, **kwargs):
+    def guarded_run(*args, **kwargs):  # type: ignore[return]
         """Wrapper that fails if real git write operations are attempted."""
         cmd = args[0] if args else kwargs.get("args", [])
         is_blocked, subcommand = _is_blocked_git_operation(cmd)

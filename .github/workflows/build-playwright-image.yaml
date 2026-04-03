@@ -1,0 +1,48 @@
+name: Build Playwright Docker Image
+
+concurrency:
+  group: build-playwright-image-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - pnpm-lock.yaml
+      - .github/docker/playwright/Dockerfile
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - pnpm-lock.yaml
+      - .github/docker/playwright/Dockerfile
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute lowercase image name
+        id: img
+        run: echo "prefix=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')/playwright" >> $GITHUB_OUTPUT
+
+      - name: Build and push Playwright image
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+        with:
+          context: .github/docker/playwright
+          push: true
+          tags: |
+            ${{ steps.img.outputs.prefix }}:latest
+            ${{ steps.img.outputs.prefix }}:v1.55.1

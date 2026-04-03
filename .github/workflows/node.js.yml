@@ -12,18 +12,22 @@ on:
     branches: ["main", "dev"]
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
   pull_request:
     paths:
       - "quartz/**"
-      - "config/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "config/javascript/**"
+      - "config/typescript/**"
       - "package.json"
       - "pnpm-lock.yaml"
-      - "jest.config.js"
       - ".github/actions/**"
   merge_group:
 
@@ -35,16 +39,16 @@ jobs:
   build:
     if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 10
 
     strategy:
       matrix:
-        node-version: ["22.12.0"]
+        node-version: ["22.22.0"]
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup site
+        uses: ./.github/actions/setup-site
         with:
           install-python: "false"
       - run: pnpm test

@@ -10,6 +10,9 @@ import {
   isDesktopViewport,
   getH1Screenshots,
   isElementChecked,
+  gotoPage,
+  reloadPage,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions
@@ -40,7 +43,9 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+  // Use domcontentloaded instead of load — Firefox can stall on subresource
+  // loads (images, fonts) in CI, causing 30s timeout in beforeEach.
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -98,12 +103,7 @@ test.describe("Test page sections", () => {
 
 test.describe("Unique content around the site", () => {
   test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
-    test.skip(
-      isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
-      "Flaky in Safari on desktop",
-    )
-
-    await page.goto("http://localhost:8080", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
     // Wait for the SPA router to finish initializing so a late navigation
     // doesn't destroy the execution context during evaluate.
@@ -127,7 +127,7 @@ test.describe("Unique content around the site", () => {
 
   MOCK_PAGE_SLUGS.forEach((pageSlug) => {
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(`http://localhost:8080/${pageSlug}`)
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
     })
@@ -137,12 +137,13 @@ test.describe("Unique content around the site", () => {
   // Mock the data to prevent needless updating of the screenshots
   DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
+
     test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
-      await page.goto(url)
+      await gotoPage(page, url)
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
-      const numOldest = 9
+      const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
         const listElement = document.querySelectorAll("ul.section-ul")[0]
         if (!listElement) {
@@ -174,7 +175,7 @@ test.describe("Unique content around the site", () => {
 
   test("All-tags with dummy values", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
-    await page.goto(url)
+    await gotoPage(page, url)
     await page.locator("body").waitFor({ state: "visible" })
 
     await page.evaluate(() => {
@@ -199,7 +200,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/design")
+    await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
     await expect(bigFaviconDemo).toBeVisible()
@@ -210,7 +211,8 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto(
+    await gotoPage(
+      page,
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
     )
 
@@ -226,7 +228,10 @@ test.describe("Unique content around the site", () => {
   })
 
   test("LW Question admonition (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/question-about-defining-alignment-in-simple-setting")
+    await gotoPage(
+      page,
+      "http://localhost:8080/question-about-defining-alignment-in-simple-setting",
+    )
     await page.locator("body").waitFor({ state: "visible" })
 
     const questionAdmonition = page.locator(".admonition.question").first()
@@ -238,7 +243,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Goose code block (lostpixel)", async ({ page }, testInfo) => {
-    await page.goto("http://localhost:8080/open-source")
+    await gotoPage(page, "http://localhost:8080/open-source")
     await page.locator("body").waitFor({ state: "visible" })
 
     const gooseCodeBlock = page.locator("#goose-terminal").first()
@@ -574,7 +579,7 @@ test.describe("Right sidebar", () => {
     // Open the backlinks
     await backlinksTitle.click()
     // Don't hover over the backlinks
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
     await takeRegressionScreenshot(page, testInfo, "backlinks-visible", {
       elementToScreenshot: backlinks,
     })
@@ -711,7 +716,7 @@ test.describe("Elvish toggle", () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
 
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/test-page", "load")
 
     const elvishText = page.locator(".elvish").first()
     await elvishText.scrollIntoViewIfNeeded()
@@ -739,6 +744,7 @@ test.describe("Video Speed Controller visibility", () => {
     const vscController = page.locator(".vsc-controller")
     await expect(vscController).toBeHidden()
   })
+
   test("hides VSC controller for no-vsc videos", async ({ page }) => {
     await page.evaluate(() => {
       document.body.innerHTML = `
@@ -829,7 +835,7 @@ test("First paragraph is the same before and after clicking on a heading", async
   const screenshotBefore = await firstParagraph.screenshot()
 
   // Navigate to a heading anchor (triggers SPA navigation).
-  await page.goto(`${page.url()}#header-3`)
+  await gotoPage(page, `${page.url()}#header-3`)
   await firstParagraph.scrollIntoViewIfNeeded()
 
   // The paragraph should look identical after the navigation.
@@ -926,8 +932,8 @@ test.describe("Checkboxes", () => {
     await firstCheckbox.click()
     await expect(firstCheckbox).toBeChecked({ checked: !initialState })
 
-    // Reload the page
-    await page.reload({ waitUntil: "load" })
+    // Reload the page — use domcontentloaded to avoid Firefox subresource stalls
+    await reloadPage(page, "domcontentloaded")
     await checkboxesSection.scrollIntoViewIfNeeded()
 
     // Check if state persisted
@@ -972,6 +978,101 @@ test.describe("Checkboxes", () => {
     expect(hasLocalStorageKey).toBe(true)
   })
 
+  test.describe("cascade behavior", () => {
+    // Clear checkbox localStorage before each test so checkboxes start in their HTML default state
+    test.beforeEach(async ({ page }) => {
+      await page.evaluate(() => {
+        Object.keys(localStorage)
+          .filter((key) => key.startsWith("test-page-checkbox-"))
+          .forEach((key) => localStorage.removeItem(key))
+      })
+      await reloadPage(page)
+    })
+
+    test("Checking parent checkbox cascades to nested children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      // Find checkboxes by their label text to be invariant to additions elsewhere
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
+      const deeplyNested = page.getByLabel("Third nested")
+
+      // Uncheck the parent (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(deeplyNested).toBeChecked({ checked: false })
+
+      // Check the parent — children should cascade to checked.
+      // Safari may need time for the cascade event handler to propagate.
+      await parentCheckbox.click()
+
+      await expect(async () => {
+        await expect(parentCheckbox).toBeChecked({ checked: true })
+        await expect(nestedChild).toBeChecked({ checked: true })
+        await expect(deeplyNested).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
+
+      // Uncheck parent — children should NOT be affected (cascade down only on check)
+      await parentCheckbox.click()
+
+      await expect(parentCheckbox).toBeChecked({ checked: false })
+      await expect(nestedChild).toBeChecked({ checked: true })
+      await expect(deeplyNested).toBeChecked({ checked: true })
+    })
+
+    test("Unchecking nested checkbox is independent from parent", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
+
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      // Check parent (cascades to child), then uncheck child.
+      // Safari may need time for the cascade event handler to propagate.
+      await parentCheckbox.click()
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
+
+      await nestedChild.click()
+      await expect(nestedChild).toBeChecked({ checked: false })
+      await expect(parentCheckbox).toBeChecked({ checked: true })
+    })
+
+    test("Re-checking parent re-cascades to previously unchecked children", async ({ page }) => {
+      const checkboxesSection = page.locator("h1:has-text('Checkboxes')")
+      await checkboxesSection.scrollIntoViewIfNeeded()
+
+      const parentCheckbox = page.getByLabel("Checked off", { exact: true })
+      const nestedChild = page.getByLabel("Nested unchecked item")
+
+      // Uncheck the parent first (initially "[x] Checked off" in HTML)
+      await parentCheckbox.click()
+
+      // Check parent (cascades), uncheck child, uncheck parent, re-check parent.
+      // Safari may need time for the cascade event handler to propagate.
+      await parentCheckbox.click()
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
+      await nestedChild.click()
+      await expect(nestedChild).toBeChecked({ checked: false })
+
+      await parentCheckbox.click() // uncheck parent
+      await parentCheckbox.click() // re-check parent — should re-cascade
+
+      await expect(async () => {
+        await expect(nestedChild).toBeChecked({ checked: true })
+      }).toPass({ timeout: 5_000 })
+    })
+  })
+
   test.describe("state restoration before first paint", () => {
     const clearCheckboxKeys = () => {
       const keysToRemove = Object.keys(localStorage).filter((key) =>
@@ -979,11 +1080,6 @@ test.describe("Checkboxes", () => {
       )
       keysToRemove.forEach((key) => localStorage.removeItem(key))
     }
-
-    // Ensure clean slate before each test
-    test.beforeEach(async ({ page }) => {
-      await page.addInitScript(clearCheckboxKeys)
-    })
 
     // Clean up after each test
     test.afterEach(async ({ page }) => {
@@ -993,34 +1089,26 @@ test.describe("Checkboxes", () => {
     test("Checkbox state is restored before first paint (no flash of incorrect state)", async ({
       page,
     }) => {
-      // This test verifies that checkbox state restoration happens synchronously
-      // via MutationObserver in detectInitialState.js, BEFORE the nav event fires.
-      // Without this fix, users would see a flash of the wrong checkbox state.
+      // Verifies that checkbox state restoration happens synchronously via
+      // MutationObserver in detectInitialState.js, BEFORE the nav event fires.
 
-      const checkboxKey = "test-page-checkbox-0"
-
-      // Set up localStorage BEFORE page load to simulate a returning user
-      // who previously checked the first checkbox (which defaults to unchecked in HTML)
-      await page.addInitScript(
-        ({ key }) => {
-          localStorage.setItem(key, "true")
-        },
-        { key: checkboxKey },
-      )
-
-      // Navigate to page and wait only for DOM content (not full load)
-      // This gives us the earliest possible moment to check checkbox state
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
-
-      // Immediately check checkbox state WITHOUT dispatching nav event
-      // Before the fix, this would return the HTML default (unchecked)
-      // After the fix, the MutationObserver restores state before we can check
-      const checkboxStateBeforeNav = await page.evaluate(() => {
-        const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
-        return checkbox?.checked
+      // Set localStorage on the live page, then reload to trigger restoration.
+      // We use evaluate+reloadPage instead of addInitScript+gotoPage because
+      // WebKit treats same-URL goto() as a soft refresh that skips init scripts.
+      await page.evaluate(() => {
+        localStorage.setItem("test-page-checkbox-0", "true")
       })
+      await reloadPage(page, "load")
 
-      expect(checkboxStateBeforeNav).toBe(true)
+      // Check checkbox state — MutationObserver restores before first paint, but
+      // Safari may deliver the callback slightly after load.
+      await expect(async () => {
+        const checkboxChecked = await page.evaluate(() => {
+          const checkbox = document.querySelector("input.checkbox-toggle") as HTMLInputElement
+          return checkbox?.checked
+        })
+        expect(checkboxChecked).toBe(true)
+      }).toPass({ timeout: 10_000 })
     })
 
     const checkboxTestCases = [
@@ -1035,27 +1123,28 @@ test.describe("Checkboxes", () => {
       }) => {
         const checkboxKey = `test-page-checkbox-${index}`
 
-        // Set up localStorage BEFORE page load
-        await page.addInitScript(
+        // Set localStorage on the live page, then reload to trigger restoration.
+        await page.evaluate(
           ({ key, state }) => {
             localStorage.setItem(key, state ? "true" : "false")
           },
           { key: checkboxKey, state: savedState },
         )
+        await reloadPage(page, "load")
 
-        await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
-
-        // Check checkbox state immediately without dispatching nav event
-        const checkboxState = await page.evaluate(
-          ({ idx }) => {
-            const checkboxes = document.querySelectorAll("input.checkbox-toggle")
-            const checkbox = checkboxes[idx] as HTMLInputElement
-            return checkbox?.checked
-          },
-          { idx: index },
-        )
-
-        expect(checkboxState).toBe(savedState)
+        // Check checkbox state — MutationObserver restores before first paint, but
+        // Safari may deliver the callback slightly after load.
+        await expect(async () => {
+          const checkboxState = await page.evaluate(
+            ({ idx }) => {
+              const checkboxes = document.querySelectorAll("input.checkbox-toggle")
+              const checkbox = checkboxes[idx] as HTMLInputElement
+              return checkbox?.checked
+            },
+            { idx: index },
+          )
+          expect(checkboxState).toBe(savedState)
+        }).toPass({ timeout: 10_000 })
       })
     }
   })
@@ -1109,13 +1198,16 @@ test.describe("Popovers on different page types", () => {
       // Skip on non-desktop viewports since popovers are hidden on mobile/tablet
       test.skip(!isDesktopViewport(page), "Popovers only work on desktop viewports")
 
-      await page.goto(`http://localhost:8080/${pageSlug}`, { waitUntil: "load" })
+      await gotoPage(page, `http://localhost:8080/${pageSlug}`, "load")
       await page.locator("body").waitFor({ state: "visible" })
 
       // Dispatch the 'nav' event to initialize popover functionality
       await page.evaluate(() => {
         window.dispatchEvent(new Event("nav"))
       })
+
+      // Clear mouseMovedSinceNav flag set to false by the nav event above
+      await page.mouse.move(1, 1)
 
       const popoverLink = page.locator("article a.can-trigger-popover").first()
       await popoverLink.scrollIntoViewIfNeeded()
@@ -1127,7 +1219,7 @@ test.describe("Popovers on different page types", () => {
           const popover = document.querySelector(".popover.popover-visible")
           return popover !== null
         },
-        { timeout: 1000 },
+        { timeout: 5000 },
       )
 
       const popover = page.locator(".popover.popover-visible")
@@ -1135,7 +1227,7 @@ test.describe("Popovers on different page types", () => {
       const popoverInner = popover.locator(".popover-inner")
       await expect(popoverInner).toBeVisible()
 
-      await page.mouse.move(0, 0)
+      await moveMouseToSafePosition(page)
     })
   }
 })

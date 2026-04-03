@@ -1,39 +1,26 @@
 #!/bin/bash
-# Pre-push/PR hook: Runs configured checks before pushing or creating PRs
-# Only runs scripts that exist and are properly configured in package.json
+# Pre-push/PR hook: Runs unique pre-push checks not covered by CI.
+# These auto-fix code (ESLint --fix, docformatter --in-place, stylelint --fix)
+# and handle local-only tasks (asset compression/upload, alt-text scanning).
+# Also checks DeepSource for issues when CLI and auth are available.
 
 set -uo pipefail
 
-HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
-# shellcheck source=lib-checks.sh
-source "$HOOK_DIR/lib-checks.sh"
+GIT_ROOT=$(git rev-parse --show-toplevel)
+uv run python "$GIT_ROOT/scripts/run_push_checks.py"
 
-FAILED=0
-
-run_check() {
-  local name="$1" cmd="$2"
-  local output
-  if ! output=$($cmd 2>&1); then
-    echo "=== $name FAILED ===" >&2
-    echo "$output" >&2
-    FAILED=1
+# Check DeepSource for all issues on the default branch
+if command -v deepsource &>/dev/null && [ -n "${DEEPSOURCE_PAT:-}" ]; then
+  echo "Checking DeepSource for issues..."
+  issues_json=$(deepsource issues --default-branch --output json 2>/dev/null) || true
+  if [ -n "$issues_json" ]; then
+    issue_count=$(echo "$issues_json" | jq 'length' 2>/dev/null || echo "0")
+    if [ "$issue_count" -gt 0 ]; then
+      echo "DeepSource reports $issue_count issue(s) on the default branch:"
+      deepsource issues --default-branch 2>/dev/null || true
+      exit 1
+    else
+      echo "✓ No DeepSource issues"
+    fi
   fi
-}
-
-# Node.js checks (tests intentionally omitted — they run in CI and the stop hook)
-has_script build && run_check "build" "pnpm build"
-has_script lint && run_check "lint" "pnpm lint"
-has_script check && run_check "typecheck" "pnpm check"
-
-# Python checks
-if [[ -f pyproject.toml ]] || [[ -f uv.lock ]]; then
-  PREFIX=""
-  [[ -f uv.lock ]] && exists uv && PREFIX="uv run "
-
-  { exists ruff || [[ -n "$PREFIX" ]]; } && run_check "ruff" "${PREFIX}ruff check ."
 fi
-
-if [ "$FAILED" -ne 0 ]; then
-  echo "Pre-push checks failed — see errors above" >&2
-fi
-exit $FAILED

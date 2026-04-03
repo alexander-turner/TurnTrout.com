@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import { describe, it, expect } from "@jest/globals"
 import { type Root, type Element } from "hast"

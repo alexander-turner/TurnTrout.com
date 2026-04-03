@@ -17,9 +17,10 @@ aliases:
   - pretrained-misalignment
   - filter-misalignment-data
 date_published: 2025-03-01 17:42:48.379662
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-02-23 17:58:50.463964
 card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
 ---
+
 
 
 
@@ -131,7 +132,7 @@ Figure: Figure 17 from [Alignment faking in LLMs](https://arxiv.org/abs/2412.140
 However, I don't know how much alignment faking results will generalize. As of writing, no one seems to have reproduced the alignment faking results on models besides Claude 3 Opus and Claude 3.5 Sonnet. Even [Claude 3.7 Sonnet doesn't really alignment fake](https://assets.anthropic.com/m/785e231869ea8b3b/original/claude-3-7-sonnet-system-card.pdf#page=21.16): "Claude 3.7 Sonnet showed marked improvement, with alignment faking dropping to <1% of instances and a
 reduced compliance gap of only 5%."
 
-Some MATS scholars (Abhay Sheshadri and John Hughes) observed minimal or no alignment faking from open-source models like LLAMA-3.1-70B and LLAMA-3.1-405B. However, preliminary results suggest GPT-4-o seems to alignment fake more often when finetuned on content from Evan Hubinger's blog posts and papers about "[mesaoptimizers](https://www.alignmentforum.org/w/mesa-optimization)."
+Some MATS scholars (Abhay Sheshadri and John Hughes) observed minimal or no alignment faking from open-source models like LLAMA-3.1-70B and LLAMA-3.1-405B. However, preliminary results suggest GPT-4-o seems to alignment fake more often when finetuned on content from Evan Hubinger's blog posts and papers about "[mesa-optimizers](https://www.alignmentforum.org/w/mesa-optimization)."
 
 # Testing for self-fulfilling misalignment
 

@@ -114,6 +114,32 @@ function setupDarkMode() {
     setThemeClassOnRoot(currentTheme as Theme)
     updateThemeLabel(currentTheme as Theme)
   })
+
+  setupPrintThemeOverride()
 }
 
-export { setupDarkMode }
+// Force light theme when printing so dark-mode users don't waste ink.
+// Uses named functions so repeated calls replace (not duplicate) listeners.
+let themeBeforePrint: Theme | null = null
+
+function onBeforePrint() {
+  themeBeforePrint = document.documentElement.getAttribute("data-theme") as Theme | null
+  document.documentElement.setAttribute("data-theme", "light")
+}
+
+function onAfterPrint() {
+  if (themeBeforePrint) {
+    document.documentElement.setAttribute("data-theme", themeBeforePrint)
+  }
+}
+
+/* istanbul ignore next: DOM manipulation, tested in darkmode.test.ts */
+function setupPrintThemeOverride() {
+  // Remove first to avoid duplicate listeners from repeated setupDarkMode calls
+  window.removeEventListener("beforeprint", onBeforePrint)
+  window.removeEventListener("afterprint", onAfterPrint)
+  window.addEventListener("beforeprint", onBeforePrint)
+  window.addEventListener("afterprint", onAfterPrint)
+}
+
+export { setupDarkMode, setupPrintThemeOverride }

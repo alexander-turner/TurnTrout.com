@@ -40,10 +40,11 @@ original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-29 17:13:24.103427
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 createBibtex: true
 ---
+
 
 
 
@@ -92,7 +93,7 @@ Similarly, the world is being optimized to facilitate achievement of certain goa
 >
 > > ! Two approaches immediately come to mind for me. Both rely on the agent [focusing on the AU landscape rather than the world state](/world-state-is-the-wrong-abstraction-for-impact).
 > >
-> > ! **First: Value learning without a prespecified ontology or human model**. [I have previously criticized](/thoughts-on-human-compatible#Where-in-the-world-is-the-human) value learning for needing to locate the human within some kind of prespecified ontology (this criticism is not new). By taking only the agent itself as primitive, perhaps we could get around this (we don't need any fancy engineering or arbitrary choices to figure out AUs/optimal value from _the agent's_ perspective).
+> > ! **First: Value learning without a prespecified ontology or human model**. [I have previously criticized](/thoughts-on-human-compatible#where-in-the-world-is-the-human) value learning for needing to locate the human within some kind of prespecified ontology (this criticism is not new). By taking only the agent itself as primitive, perhaps we could get around this (we don't need any fancy engineering or arbitrary choices to figure out AUs/optimal value from _the agent's_ perspective).
 > >
 > > ! **Second: Force-multiplying AI**. Have the AI observe which of its AUs most increase during some initial period of time, after which it pushes the most-increased-AU even further.
 > >

@@ -3,8 +3,7 @@ permalink: alignment-without-total-robustness
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+lw-page-url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 lw-is-question: 'false'
 lw-posted-at: 2022-11-29T06:23:00.394000Z
 lw-last-modification: 2023-02-15T10:24:57.232000Z
@@ -17,8 +16,7 @@ lw-base-score: 60
 lw-vote-count: 17
 af-base-score: 28
 af-num-comments-on-upload: 31
-title: Alignment allows 'non-robust' decision-influences and doesn't require robust
-  grading
+title: Alignment allows 'non-robust' decision-influences and doesn't require robust grading
 lw-latest-edit: 2022-11-30T16:37:57.412000Z
 lw-is-linkpost: 'false'
 tags:
@@ -32,19 +30,17 @@ lw-sequence-title: Shard Theory
 prev-post-slug: dont-align-agents-to-evaluations-of-plans
 prev-post-title: Don’t Align Agents to Evaluations of Plans
 next-post-slug: against-inner-outer-alignment
-next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely
-  Hard Problems
+next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely Hard Problems
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-11-29 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
+original_url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 skip_import: true
-description: Values steer optimization, they are not optimized against. Values don't
-  have to be robustly "correct", because they are not the thing being optimized.
-date_updated: 2025-11-22 00:21:52.667251
+description: Values steer optimization, they are not optimized against. Values don't have to be robustly "correct", because they are not the thing being optimized.
+date_updated: 2026-03-29 17:13:24.103427
 createBibtex: true
 ---
+
 
 
 
@@ -154,15 +150,15 @@ When I talk about shard theory, [people](https://www.lesswrong.com/posts/dqSwccG
 
 To make evaluation-child work hard, we have to somehow specify a grader which can adequately grade all plans which evaluation-child can imagine. The highest-rated imaginable plan must involve working hard. [This requirement is extreme](/dont-design-agents-which-exploit-adversarial-inputs).
 
-Value-child doesn't suffer this crippling "robustly grade exponentially many plans" alignment requirement. I later wrote [a detailed speculative account](/dont-align-agents-to-evaluations-of-plans#And-people-aren-t-grader-optimizers-either) of how value-child's cognition might work—what it _means_ to say that he "cares about working hard." But, at a higher level, what are the main differences between evaluation- and value-child?
+Value-child doesn't suffer this crippling "robustly grade exponentially many plans" alignment requirement. I later wrote [a detailed speculative account](/dont-align-agents-to-evaluations-of-plans#and-people-aren-t-grader-optimizers-either) of how value-child's cognition might work—what it _means_ to say that he "cares about working hard." But, at a higher level, what are the main differences between evaluation- and value-child?
 
-This may sound obvious, but I think that the main difference is that **value-child actually cares about working hard.** Evaluation-child cares about evaluations. (See [my detailed speculative account](/dont-align-agents-to-evaluations-of-plans#And-people-aren-t-grader-optimizers-either) if confused on the distinction.) To make evaluation-child work hard in the limit of intelligence, you have to _robustly ensure that max evaluations only come from working hard_. This sure sounds like a slippery and ridiculous kind of thing to try, like wrestling a frictionless pig. It should be no surprise you'll hit issues like [nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/) in that paradigm.
+This may sound obvious, but I think that the main difference is that **value-child actually cares about working hard.** Evaluation-child cares about evaluations. (See [my detailed speculative account](/dont-align-agents-to-evaluations-of-plans#and-people-aren-t-grader-optimizers-either) if confused on the distinction.) To make evaluation-child work hard in the limit of intelligence, you have to _robustly ensure that max evaluations only come from working hard_. This sure sounds like a slippery and ridiculous kind of thing to try, like wrestling a frictionless pig. It should be no surprise you'll hit issues like [nearest unblocked strategy](https://arbital.com/p/nearest_unblocked/) in that paradigm.
 
 An agent which _does_ care about working hard will want to not think thoughts which lead to not working hard. In particular, reflective shard-agents can think about what to think, and thereby are convergently (across values) incentivized to steer clear of adversarial inputs to their own values.
 
 ## Reflectively avoiding adversarial inputs to your thinking
 
-Reflective agents can think about their own thought process (e.g. "should I spend another five minutes thinking about what to write for this section?"). I [think they do this via their world-model predicting internal observables](/a-shot-at-the-diamond-alignment-problem#The-agent-becomes-reflective) (e.g. future neuron activations) and thus high-level statistics like "If I think for 5 more minutes, will that lead to a better post or not?".
+Reflective agents can think about their own thought process (e.g. "should I spend another five minutes thinking about what to write for this section?"). I [think they do this via their world-model predicting internal observables](/a-shot-at-the-diamond-alignment-problem#the-agent-becomes-reflective) (e.g. future neuron activations) and thus high-level statistics like "If I think for 5 more minutes, will that lead to a better post or not?".
 
 Thoughts about future thinking are a kind of decision. Decisions are steered by values. Therefore, thoughts about future thinking are steered by whatever value shards activate in that mental context. For example, a self-care value might activate, and a learning-shard, and a social value might activate as well. They control your reflective thoughts, just like other shards would control your ("normal") actions (like crossing the room).
 
@@ -285,7 +281,6 @@ def plan(self):
 
 I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning). I liked the comment in the context of e.g. caring about your family and locally evaluating plans on that basis, but also knowing that your evaluation ability itself is compromised and will mis-rate some plans:
 
-<!-- vale off -->
 > [!quote] Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans?commentId=Kq39F8HLJixAyQMZF#Grader_optimization____planning)
 >
 > My attempt at a framework where "improving one's own evaluator" and "believing in adversarial examples to one's own evaluator" make sense:
@@ -294,7 +289,6 @@ I liked Vivek Hebbar's recent [comment](https://www.lesswrong.com/posts/fopZesxL
 > - "Improving `Eval`" makes sense because Eval will gladly replace itself with `Eval_2` if it believes that `Eval_2` is a better approximation for $U_{ideal}$ (and hence replacing itself will cause the outcome to score better on $U_{ideal}$)
 >
 > Are there other distinct frameworks which make sense here?
-<!-- vale on -->
 
 (I'm not sure whether Vivek meant to imply "and this is how I think people work, mechanistically." I'm going to respond to a _hypothetical other person_ who did in fact mean that.)
 
@@ -360,7 +354,7 @@ On my understanding: Your values are steering the optimization. They are not, in
     > But also this isn't true, at least not without further argumentation. If my kid likes mocha and I like latte, is my child searching for positive upwards differences between their values and mine? I think there are some situations like that. For example, suppose the AI values paperclips while the humans value love. In this situation, the AI is searching for paperclippish plans which will systematically be bad plans by human lights. That seems more like instrumental convergence → disempower humans → not much love left for us if we're dead.
     <!-- vale on -->
 
-[^7]: I do think that e.g. a diamond-shard can [get fed](/dont-align-agents-to-evaluations-of-plans#Value-child-is-still-vulnerable-to-adversarial-inputs) an adversarial input, but the diamond-shard won't bid for a plan where it fools _itself_.
+[^7]: I do think that e.g. a diamond-shard can [get fed](/dont-align-agents-to-evaluations-of-plans#value-child-is-still-vulnerable-to-adversarial-inputs) an adversarial input, but the diamond-shard won't bid for a plan where it fools _itself_.
 [^8]: It's at this point that my model of Nate Soares wants to chime in.
 
     <!-- vale off -->
@@ -370,11 +364,11 @@ On my understanding: Your values are steering the optimization. They are not, in
     >
     > **Alex's model of Nate:** Suppose we achieved your dream of forming a diamond-shard in an AI, and that that shard holds significant power over the AI's decisions. Now the AI keeps improving itself. Doesn't "get smarter" look a lot like "implicitly consider more options", which brings the curse back?
     >
-    > **Alex:** If the agent is diamond-aligned at this point in time, I expect it stays that way for the reasons given in the "[agent prevents value drift](/a-shot-at-the-diamond-alignment-problem#The-agent-prevents-value-drift)" section, along with [this footnote](/a-shot-at-the-diamond-alignment-problem#user-content-fn-11) and the [appendix](/a-shot-at-the-diamond-alignment-problem#Appendix-The-AI-s-advantages-in-solving-successor-alignment). As a specific answer, though: If the agent does care about diamonds at that point it time, then it doesn't **want** to get so "smart" that it deludes itself by seriously intensifying the optimizer's curse. It doesn't want to do so for the reason **we** don't want it to do so (in the hypothetical where we just want to achieve diamond-alignment). If the reflective agent can predict that outcome of the plan, it won't execute the plan, _because that plan leads to fewer diamonds_.
+    > **Alex:** If the agent is diamond-aligned at this point in time, I expect it stays that way for the reasons given in the "[agent prevents value drift](/a-shot-at-the-diamond-alignment-problem#the-agent-prevents-value-drift)" section, along with [this footnote](/a-shot-at-the-diamond-alignment-problem#user-content-fn-11) and the [appendix](/a-shot-at-the-diamond-alignment-problem#appendix-the-ai-s-advantages-in-solving-successor-alignment). As a specific answer, though: If the agent does care about diamonds at that point it time, then it doesn't **want** to get so "smart" that it deludes itself by seriously intensifying the optimizer's curse. It doesn't want to do so for the reason **we** don't want it to do so (in the hypothetical where we just want to achieve diamond-alignment). If the reflective agent can predict that outcome of the plan, it won't execute the plan, _because that plan leads to fewer diamonds_.
     >
     > **Alex's model of Nate:** So the AI still has to solve the AI alignment problem, except with its successors.
     >
-    > **Alex:** Not all things which can be called an "AI alignment problem" are created equal. [The AI has a range of advantages](/a-shot-at-the-diamond-alignment-problem#Appendix-The-AI-s-advantages-in-solving-successor-alignment), and I [detailed one way it could use those advantages](/a-shot-at-the-diamond-alignment-problem#user-content-fn-11). I do expect that kind of plan to actually work.
+    > **Alex:** Not all things which can be called an "AI alignment problem" are created equal. [The AI has a range of advantages](/a-shot-at-the-diamond-alignment-problem#appendix-the-ai-s-advantages-in-solving-successor-alignment), and I [detailed one way it could use those advantages](/a-shot-at-the-diamond-alignment-problem#user-content-fn-11). I do expect that kind of plan to actually work.
     <!-- vale on -->
 
 [^10]: When working out [shard theory](/shard-theory) with Quintin Pope, one of my favorite moments was the _click_ where I stopped viewing myself as some black-box optimizing "some complicated objective." Instead, this hypothesis reduced my own values to [mere reality](https://www.lesswrong.com/tag/mere-reality). Every aspiration, every unit of caring, every desire for how I want the future to be bright and fun—subroutines, subshards, contextual bits of decision-making influence, all traceable to historical reinforcement and update events.

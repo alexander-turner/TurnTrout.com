@@ -4,7 +4,6 @@ import type { ReadableStream } from "stream/web"
 import fs from "fs"
 import mime from "mime-types"
 import path from "path"
-import { parse as parseDomain } from "psl"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
@@ -15,21 +14,18 @@ import {
   simpleConstants,
   specialFaviconPaths,
   defaultPath,
-  specialDomainMappings,
   cdnBaseUrl,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
+import {
+  normalizeHostname,
+  faviconCountWhitelistComputed,
+  faviconSubstringBlacklistComputed,
+} from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { hasClass, spliceAndWrapLastChars } from "./utils"
+import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
-const {
-  minFaviconCount,
-  googleSubdomainWhitelist,
-  faviconCountWhitelist,
-  faviconSubstringBlacklist,
-  quartzFolder,
-  faviconFolder,
-} = simpleConstants
+const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
 
 const logger = createWinstonLogger("linkFavicons")
 
@@ -117,76 +113,6 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
 }
 
 /**
- * Special hostname mappings that deviate from simple subdomain removal.
- * These map one domain to a different canonical domain, or preserve specific subdomains.
- * Imported from constants.ts which computes them from config.
- */
-const specialDomainMappingsComputed = specialDomainMappings
-
-/**
- * Normalizes a hostname by removing subdomains and extracting the root domain.
- * Converts subdomains like "blog.openai.com" to their root domain "openai.com".
- * Properly handles multi-part TLDs like "co.uk" (e.g., "blog.example.co.uk" -> "example.co.uk").
- *
- * Special cases:
- * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
- * - Preserves whitelisted Google subdomains (scholar.google.com, play.google.com, etc.)
- * - Preserves all StackExchange subdomains (math.stackexchange.com, gaming.stackexchange.com, etc.)
- *
- * @param hostname - The hostname to normalize
- * @returns The root domain or mapped domain, or the original hostname if parsing fails
- */
-function normalizeHostname(hostname: string): string {
-  // Preserve StackExchange subdomains
-  if (/^[^.]+\.stackexchange\.com$/.test(hostname)) {
-    return hostname
-  }
-
-  for (const mapping of specialDomainMappingsComputed) {
-    if (mapping.pattern.test(hostname)) {
-      return mapping.to
-    }
-  }
-
-  // Use psl library to extract root domain (handles multi-part TLDs correctly)
-  const parsed = parseDomain(hostname)
-  // Return the registered domain if valid, otherwise return original hostname
-  if (parsed.error !== undefined || !parsed.domain) {
-    return hostname
-  }
-  return parsed.domain
-}
-
-/**
- * Normalize an underscore-separated hostname entry through the same PSL pipeline
- * used for real hostnames, so entries like "playpen_icomtek_csir_co_za" are
- * automatically reduced to "csir_co_za" — matching what getQuartzPath produces.
- */
-export function normalizeFaviconListEntry(entry: string): string {
-  const hostname = entry.replaceAll("_", ".")
-  const normalized = normalizeHostname(hostname)
-  return normalized.replaceAll(".", "_")
-}
-
-/**
- * Whitelist uses substring matching, so raw entries work fine (e.g., "apple_com"
- * matches any path containing that substring). No PSL normalization needed.
- */
-const faviconCountWhitelistComputed = [
-  ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
-/**
- * Blacklist entries are normalized through the same PSL pipeline as hostnames,
- * so entries with full subdomains (e.g., "playpen_icomtek_csir_co_za") are
- * reduced to their registered domain form (e.g., "csir_co_za") to match
- * what getQuartzPath produces.
- */
-const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeFaviconListEntry)
-
-/**
  * Normalizes a favicon path for counting by removing format-specific extensions.
  * Counts are format-agnostic (domain-based), so we store paths without extensions.
  *
@@ -263,8 +189,10 @@ export function writeCacheToFile(): void {
  *
  * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
-export function readFaviconCounts(): Map<string, number> {
-  if (!fs.existsSync(faviconCountsFile)) {
+export async function readFaviconCounts(): Promise<Map<string, number>> {
+  try {
+    await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
+  } catch {
     logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
     return new Map<string, number>()
   }
@@ -272,7 +200,7 @@ export function readFaviconCounts(): Map<string, number> {
   const countMap = new Map<string, number>()
 
   try {
-    const data = fs.readFileSync(faviconCountsFile, "utf8")
+    const data = await fs.promises.readFile(faviconCountsFile, "utf8")
     // Parse JSON array of [path, count] pairs
     const countsArray = JSON.parse(data) as Array<[string, number]>
     for (const [faviconPath, count] of countsArray) {
@@ -350,7 +278,8 @@ export function getFaviconUrl(faviconPath: string): string {
   const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
-    // SVG exists locally, return SVG CDN URL
+    // SVG exists locally, cache and return SVG CDN URL
+    urlCache.set(pngPath, svgPath)
     return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
@@ -712,10 +641,10 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     .reverse()
     .find((child) => child.type === "element" || !isEmpty(child as Element | Text))
 
-  // If no valid last child found, just append the favicon
+  // If no valid last child found, wrap favicon in a favicon-span
   if (!lastChild) {
-    logger.debug("No valid last child found, appending favicon directly")
-    return imgNodeToAppend
+    logger.debug("No valid last child found, wrapping favicon in favicon-span")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   // If the last child is a span.favicon-span, append the favicon directly to it
@@ -739,10 +668,10 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     return null
   }
 
-  // If last child is not a text node or has no value, just append the favicon
+  // If last child is not a text node or has no value, wrap favicon in a favicon-span
   if (lastChild.type !== "text" || !lastChild.value) {
-    logger.debug("Appending favicon directly to node")
-    return imgNodeToAppend
+    logger.debug("Wrapping favicon in favicon-span (no text to splice)")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   const lastChildText = lastChild as Text
@@ -804,6 +733,11 @@ export function isAssetLink(href: string): boolean {
   const extension = urlWithoutParams.split(".").pop()?.toLowerCase()
 
   if (!extension) {
+    return false
+  }
+
+  // .ts/.mts are TypeScript, not MPEG transport stream (video/mp2t)
+  if (extension === "ts" || extension === "mts") {
     return false
   }
 
@@ -1042,7 +976,7 @@ export const AddFavicons = () => {
         () => {
           return async (tree: Root) => {
             logger.debug("Starting favicon processing")
-            const faviconCounts = readFaviconCounts()
+            const faviconCounts = await readFaviconCounts()
             logger.debug(`Loaded ${faviconCounts.size} favicon counts`)
 
             const nodesToProcess: [Element, Parent][] = []

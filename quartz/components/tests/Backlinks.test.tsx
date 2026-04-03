@@ -1,7 +1,7 @@
 import type { Root, RootContent } from "hast"
 
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 import { describe, it, expect } from "@jest/globals"
 import { h } from "hastscript"
@@ -301,6 +301,20 @@ describe("Backlinks", () => {
     // A blockquote should still be rendered (backlinkFiles length > 0), but there should be no <li> entries
     expect(html).toContain("<blockquote")
     expect(html.match(/<li/g)).toBeNull()
+  })
+
+  it("handles abbr elements with no children gracefully", () => {
+    const abbrNode = {
+      type: "element",
+      tagName: "abbr",
+      properties: { className: ["small-caps"] },
+      children: [],
+    } as unknown as RootContent
+
+    const jsx = elementToJsx(abbrNode)
+    const html = render(jsx)
+
+    expect(html).toMatch(/<abbr[^>]*class="small-caps"[^>]*><\/abbr>/)
   })
 
   // Test unsupported RootContent type triggers default branch returning empty fragment

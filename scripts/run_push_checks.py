@@ -2,6 +2,9 @@
 """
 Pretty-print progress bars for all pre-push checks.
 
+Runs only tasks unique to local execution — auto-fixing formatters and
+tasks that require local credentials or tools not available in CI.
+
 Expected environment variables (used by scripts this orchestrates):
     - ACCESS_KEY_ID_TURNTROUT_MEDIA (for R2 upload via handle_local_assets.sh)
     - SECRET_ACCESS_TURNTROUT_MEDIA (for R2 upload via handle_local_assets.sh)
@@ -13,23 +16,18 @@ import glob
 import json
 import os
 import shutil
-import signal
-import socket
 import subprocess
 import sys
 import threading
-import time
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Collection, Deque, Sequence, TextIO
 
-import psutil
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TaskID, TextColumn
 
 console = Console()
-SERVER_START_WAIT_TIME: int = 90
 
 # Compute git root once at module load time
 _GIT_ROOT = Path(
@@ -43,13 +41,6 @@ _GIT_ROOT = Path(
 STATE_DIR = _GIT_ROOT / ".quartz_checks"
 os.makedirs(STATE_DIR, exist_ok=True)
 STATE_FILE_PATH = STATE_DIR / "progress.json"
-
-
-# pylint: disable=missing-class-docstring
-@dataclass(slots=True, frozen=True)
-class ServerInfo:
-    pid: int
-    created_by_script: bool
 
 
 def save_state(step_name: str) -> None:
@@ -108,155 +99,6 @@ def reset_saved_progress() -> None:
         STATE_FILE_PATH.unlink()
 
 
-class ServerManager:
-    """Manages the quartz server process and handles cleanup on interrupts."""
-
-    _server_pid: int | None = None
-    _is_server_created_by_script: bool = False
-
-    def __init__(self):
-        # Set up signal handlers
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-
-    def _signal_handler(self, _: int, __: object) -> None:
-        """Handle interrupt signals by cleaning up server and exiting."""
-        console.log("\n[yellow]Received interrupt signal.[/yellow]")
-        self.cleanup()
-        sys.exit(1)
-
-    def handle_signal(self, sig: int) -> None:
-        """Public method to handle signals (for testing)."""
-        self._signal_handler(sig, None)
-
-    def set_server_pid(self, pid: int, created_by_script: bool = False) -> None:
-        """
-        Set the server PID to track for cleanup.
-
-        Args:
-            pid: The PID of the server
-            created_by_script: Whether the server was created by this script
-        """
-        self._server_pid = pid
-        self._is_server_created_by_script = created_by_script
-
-    def cleanup(self) -> None:
-        """Clean up the server if it exists and was created by this script."""
-        if self._server_pid is not None and self._is_server_created_by_script:
-            console.log("[yellow]Cleaning up quartz server...[/yellow]")
-            kill_process(self._server_pid)
-        self._server_pid = None
-        self._is_server_created_by_script = False
-
-
-def is_port_in_use(port: int) -> bool:
-    """Check if a port is in use."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("localhost", port)) == 0
-
-
-def find_quartz_process() -> int | None:
-    """
-    Find the PID of any running quartz server.
-
-    Returns None if no quartz process is found.
-    """
-    for proc in psutil.process_iter(["pid", "name", "cmdline"]):
-        try:
-            cmdline = proc.info.get("cmdline")
-            if cmdline is None or len(cmdline) < 2:
-                continue
-
-            # Check if this is a "pnpm dev" process (how quartz is started)
-            if cmdline[0] == "pnpm" and cmdline[1] == "dev":
-                return proc.pid
-        except (psutil.NoSuchProcess, psutil.AccessDenied):  # pragma: no cover
-            continue
-    return None
-
-
-def kill_process(pid: int) -> None:
-    """Safely terminate a process and its children."""
-    try:
-        process = psutil.Process(pid)
-        try:
-            process.terminate()
-            process.wait(timeout=3)
-        except psutil.TimeoutExpired:
-            process.kill()  # Force kill if still alive
-    except psutil.NoSuchProcess:
-        # Process already terminated, nothing to do
-        pass
-
-
-def create_server(git_root_path: Path) -> ServerInfo:
-    """
-    Create a quartz server or use an existing one.
-
-    Returns:
-        ServerInfo with:
-            - pid: The PID of the server to use
-            - created_by_script: True if the server was created by this script
-    """
-    # First check if there's already a quartz process running
-    existing_pid = find_quartz_process()
-    if existing_pid:
-        msg = (
-            f"[green]Using existing quartz server (PID: {existing_pid})[/green]"
-        )
-        console.log(msg)
-        return ServerInfo(existing_pid, False)
-
-    # If no existing process found, check if the port is in use
-    if is_port_in_use(8080):
-        console.log(
-            "[yellow]Port 8080 is in use but no quartz process "
-            "found. Starting new server...[/yellow]"
-        )
-
-    # Start new server
-    console.log("Starting new quartz server...")
-    pnpm_path = shutil.which("pnpm") or "pnpm"
-    with Progress(
-        SpinnerColumn(),
-        TextColumn(" {task.description}"),
-        console=console,
-        expand=True,
-    ) as progress:
-        # pylint: disable=consider-using-with
-        new_server = subprocess.Popen(
-            [pnpm_path, "dev"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            cwd=git_root_path,
-            start_new_session=True,
-        )
-        server_pid = new_server.pid
-        task_id = progress.add_task("", total=None)
-
-        # Poll until the server is ready
-        for i in range(SERVER_START_WAIT_TIME):
-            if is_port_in_use(8080):
-                progress.remove_task(task_id)
-                progress.stop()
-                console.log("[green]Quartz server successfully started[/green]")
-                return ServerInfo(server_pid, True)
-            progress.update(
-                task_id,
-                description=(
-                    f"Waiting for server to start... "
-                    f"({i + 1}/{SERVER_START_WAIT_TIME})"
-                ),
-                visible=True,
-            )
-            time.sleep(1)
-
-        kill_process(server_pid)
-        raise RuntimeError(
-            f"Server failed to start after {SERVER_START_WAIT_TIME} seconds"
-        )
-
-
 @dataclass
 class CheckStep:
     """A step in the pre-push check process."""
@@ -266,10 +108,17 @@ class CheckStep:
     shell: bool = False
     cwd: str | None = None
     interactive: bool = False
+    requires: str | None = None
+    """External tool that must be on PATH; step is skipped with a warning if
+    missing."""
 
 
 class CheckFailedError(Exception):
-    def __init__(self, step_name: str, stdout: str = "", stderr: str = ""):
+    """Raised when a check step fails during pre-push validation."""
+
+    def __init__(
+        self, step_name: str, stdout: str = "", stderr: str = ""
+    ) -> None:
         self.step_name = step_name
         self.stdout = stdout
         self.stderr = stderr
@@ -301,6 +150,13 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                     should_skip = False
                 continue
 
+            if step.requires and not shutil.which(step.requires):
+                console.print(
+                    f"[yellow]⚠ Skipping {step.name}: "
+                    f"{step.requires} not installed[/yellow]"
+                )
+                continue
+
             name_task = progress.add_task(f"[cyan]{step.name}...", total=None)
             output_task = progress.add_task("", total=None, visible=False)
 
@@ -317,15 +173,6 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                 if result.stderr:
                     console.print("[yellow]stderr:[/yellow]")
                     console.print(result.stderr, markup=False, highlight=False)
-
-                # Special message for alt-text scan failures
-                if "alt text" in step.name:  # pragma: no cover
-                    console.print(
-                        "\n[yellow]Please add alt text to all images before pushing.[/yellow]"
-                    )
-                    console.print(
-                        f"[cyan]Run:[/cyan] fish {_GIT_ROOT}/scripts/label_alt_text.fish\n"
-                    )
 
                 raise CheckFailedError(step.name, result.stdout, result.stderr)
             console.log(f"[green]✓[/green] {step.name}")
@@ -362,6 +209,8 @@ def stream_reader(
 
 @dataclass(slots=True, frozen=True)
 class CommandResult:
+    """Result of running a check command."""
+
     success: bool
     stdout: str
     stderr: str
@@ -423,14 +272,16 @@ def run_non_interactive_command(
             target=stream_reader,
             args=(process.stdout, stdout_lines, last_lines, progress, task_id),
         )
-        stdout_thread.start()
-        stdout_thread.join()
-
         stderr_thread = threading.Thread(
             target=stream_reader,
             args=(process.stderr, stderr_lines, last_lines, progress, task_id),
         )
+        # Start both threads before joining either to avoid deadlock:
+        # if the subprocess fills the stderr pipe buffer while we're
+        # blocked waiting for stdout to EOF, both sides block forever.
+        stdout_thread.start()
         stderr_thread.start()
+        stdout_thread.join()
         stderr_thread.join()
 
         return_code = process.wait()
@@ -512,40 +363,21 @@ def run_command(
         return CommandResult(success=False, stdout=stdout, stderr=stderr)
 
 
-def get_check_steps(
-    git_root_path: Path,
-) -> tuple[list[CheckStep], list[CheckStep]]:
+def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     """
-    Get the check steps for pre-server and post-server phases.
+    Get the pre-push check steps to run locally.
 
-    Isolating this allows for better testing and configuration management.
+    Includes cheap checks for fast feedback (type-checking, linting) and
+    tasks unique to local execution: auto-fixing formatters, asset
+    compression/upload, and alt-text scanning.
+
+    Args:
+        git_root_path: Path to the git repository root.
     """
-    script_files = glob.glob(f"{git_root_path}/scripts/*.py")
-
-    steps_before_server = [
+    return [
         CheckStep(
-            name="Typechecking Python",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "mypy",
-                "--config-file",
-                f"{git_root_path}/config/python/mypy.ini",
-            ]
-            + script_files,
-        ),
-        CheckStep(
-            name="Typechecking TypeScript",
-            command=[
-                "pnpm",
-                "exec",
-                "tsc",
-                "--noEmit",
-                "-p",
-                "config/typescript/tsconfig.json",
-            ],
+            name="Linting Python",
+            command=["uv", "run", "ruff", "check", str(git_root_path)],
         ),
         CheckStep(
             name="Linting TypeScript",
@@ -559,7 +391,7 @@ def get_check_steps(
                 f"{git_root_path}/config/javascript/eslint.config.js",
             ],
         ),
-        CheckStep(  # Reduce chance of pylint errors by formatting docstrings
+        CheckStep(
             name="Formatting Python docstrings",
             command=[
                 "uv",
@@ -574,29 +406,6 @@ def get_check_steps(
             ],
         ),
         CheckStep(
-            name="Linting Python",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "pylint",
-                str(git_root_path),
-                "--rcfile",
-                f"{git_root_path}/config/python/.pylintrc",
-            ],
-        ),
-        CheckStep(
-            name="Linting prose",
-            command=[
-                "vale",
-                "--config",
-                f"{git_root_path}/config/vale/.vale.ini",
-                f"{git_root_path}/website_content",
-            ],
-            interactive=True,
-        ),
-        CheckStep(
             name="Cleaning up SCSS",
             command=[
                 "pnpm",
@@ -608,31 +417,6 @@ def get_check_steps(
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
-        CheckStep(
-            name="DeepSource CLI",
-            command=[
-                "fish",
-                f"{git_root_path}/scripts/run_deepsource_cli.fish",
-            ],
-        ),
-        CheckStep(
-            name="Running Javascript unit tests",
-            command=["pnpm", "test"],
-        ),
-        CheckStep(
-            name="Running Python unit tests",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "pytest",
-                f"{git_root_path}/scripts",
-                "--cov-fail-under=100",
-                "--config-file",
-                f"{git_root_path}/config/python/pyproject.toml",
-            ],
-        ),
         # skipcq: BAN-B604
         CheckStep(
             name="Compressing and uploading local assets",
@@ -642,102 +426,24 @@ def get_check_steps(
             ],
             # skipcq: BAN-B604 (a local command, assume safe)
             shell=True,
-        ),
-        CheckStep(
-            name="Checking source files",
-            command=[
-                "uv",
-                "run",
-                "python",
-                f"{git_root_path}/scripts/source_file_checks.py",
-            ],
+            requires="rclone",
         ),
         CheckStep(
             name="Scanning for images without alt text",
             command=["alt-text-llm", "scan"],
             shell=True,  # skipcq: BAN-B604
+            requires="alt-text-llm",
         ),
     ]
-
-    steps_after_server = [
-        # skipcq: BAN-B604
-        CheckStep(
-            name="Checking built CSS for unknown CSS variables",
-            command=[
-                "fish",
-                f"{git_root_path}/scripts/check_css_vars.fish",
-            ],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-        ),
-        CheckStep(
-            name="Checking HTML files",
-            command=[
-                "uv",
-                "run",
-                "python",
-                f"{git_root_path}/scripts/built_site_checks.py",
-            ],
-        ),
-        # skipcq: BAN-B604
-        CheckStep(
-            name="Spellchecking",  # Goes late in case we modify spelling earlier
-            command=["fish", f"{git_root_path}/scripts/spellchecker.fish"],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-            interactive=True,
-        ),
-        # skipcq: BAN-B604
-        CheckStep(
-            name="Checking link validity",
-            command=["fish", f"{git_root_path}/scripts/linkchecker.fish"],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
-            interactive=True,
-        ),
-    ]
-
-    return steps_before_server, steps_after_server
-
-
-def _validate_and_run_pre_server_checks(
-    resume: bool,
-    all_step_names: list[str],
-    steps_before_server: list[CheckStep],
-) -> bool:
-    """
-    Validate resume state and run pre-server checks.
-
-    Returns the (possibly updated) resume flag.
-    """
-    if resume:
-        last_step = get_last_step(all_step_names)
-        if last_step is None:
-            console.log(
-                "[yellow]No valid resume point found. "
-                "Starting from beginning.[/yellow]"
-            )
-            resume = False
-
-    if not resume:
-        run_checks(steps_before_server, resume)
-        return resume
-
-    # Resume mode: check if we need to run pre-server checks
-    last_step = get_last_step(all_step_names)
-    pre_server_names = {step.name for step in steps_before_server}
-
-    if last_step and last_step in pre_server_names:
-        run_checks(steps_before_server, resume)
-    else:
-        for step in steps_before_server:
-            console.log(f"[grey]Skipping step: {step.name}[/grey]")
-
-    return resume
 
 
 def main() -> int:
-    """Run all checks before pushing."""
+    """
+    Run unique pre-push checks.
+
+    Note: Stashing of uncommitted changes is handled by the calling
+    pre-push hook (.hooks/pre-push), not here.
+    """
     parser = argparse.ArgumentParser(
         description="Run pre-push checks with progress bars."
     )
@@ -748,45 +454,21 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    server_manager = ServerManager()
-    stash_created = False
-
-    git_path = shutil.which("git") or "git"
     try:
-        # Stash any uncommitted changes
-        stash_result = subprocess.run(
-            [
-                git_path,
-                "stash",
-                "push",
-                "-u",
-                "-m",
-                "run_push_checks auto-stash",
-            ],
-            cwd=_GIT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        # Check if stash was actually created (output won't contain "No local changes")
-        if "No local changes" not in stash_result.stdout:
-            stash_created = True
-            console.log("[cyan]Stashed uncommitted changes[/cyan]")
+        steps = get_check_steps(_GIT_ROOT)
+        all_step_names = [step.name for step in steps]
 
-        steps_before_server, steps_after_server = get_check_steps(_GIT_ROOT)
-        all_steps = steps_before_server + steps_after_server
-        all_step_names = [step.name for step in all_steps]
+        resume = args.resume
+        if resume:
+            last_step = get_last_step(all_step_names)
+            if last_step is None:
+                console.log(
+                    "[yellow]No valid resume point found. "
+                    "Starting from beginning.[/yellow]"
+                )
+                resume = False
 
-        # Validate resume state and run pre-server checks
-        resume = _validate_and_run_pre_server_checks(
-            args.resume, all_step_names, steps_before_server
-        )
-
-        server_info = create_server(_GIT_ROOT)
-        server_manager.set_server_pid(
-            server_info.pid, server_info.created_by_script
-        )
-        run_checks(steps_after_server, resume)
+        run_checks(steps, resume)
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
         reset_saved_progress()
@@ -798,18 +480,6 @@ def main() -> int:
     except KeyboardInterrupt:
         console.log("\n[yellow]Process interrupted by user.[/yellow]")
         return 130  # Standard exit code for SIGINT
-    finally:
-        server_manager.cleanup()
-        # Restore stashed changes if we created a stash
-        if stash_created:
-            subprocess.run(
-                [git_path, "stash", "pop"],
-                cwd=_GIT_ROOT,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            console.log("[cyan]Restored stashed changes[/cyan]")
 
 
 if __name__ == "__main__":

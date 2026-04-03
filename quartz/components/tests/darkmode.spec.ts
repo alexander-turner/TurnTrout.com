@@ -3,7 +3,7 @@ import type { Page } from "@playwright/test"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 import { test, expect } from "./fixtures"
-import { setTheme as utilsSetTheme } from "./visual_utils"
+import { gotoPage, setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect
 /* eslint-disable playwright/expect-expect */
@@ -13,9 +13,24 @@ const AUTO_THEME: Theme = "light"
 const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
+const POSTSCRIPT_TIMEOUT_MS = 15_000
+
+/**
+ * Wait for the postscript module to finish executing.  setupDarkMode() runs
+ * earlier in the same module, so once spaNavigate is defined, darkmode init
+ * is guaranteed complete.  Replaces the old __darkmodeReady flag which was
+ * unreliable on Safari/WebKit.
+ */
+async function waitForPostscriptModule(page: Page): Promise<void> {
+  await page.waitForFunction(() => typeof window.spaNavigate === "function", null, {
+    timeout: POSTSCRIPT_TIMEOUT_MS,
+  })
+}
+
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
+  await waitForPostscriptModule(page)
 })
 
 class DarkModeHelper {
@@ -44,14 +59,23 @@ class DarkModeHelper {
           )
         : expectedTheme
 
-    await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme)
+    // Safari/WebKit can be slow to initialize the dark mode script after SPA
+    // navigation, so allow extra time for the attribute to be set.
+    await expect(this.page.locator(":root")).toHaveAttribute("data-theme", actualTheme, {
+      timeout: 10_000,
+    })
     await expect(this.page.locator("#day-icon")).toBeVisible({ visible: actualTheme === "light" })
     await expect(this.page.locator("#night-icon")).toBeVisible({ visible: actualTheme === "dark" })
   }
 
   async verifyStorage(expectedTheme: Theme): Promise<void> {
-    const storedTheme = await this.page.evaluate((key) => localStorage.getItem(key), savedThemeKey)
-    expect(storedTheme).toBe(expectedTheme)
+    // Wait inside the browser context for setupDarkMode() to write to
+    // localStorage after a reload (avoids Safari timing flake).
+    await this.page.waitForFunction(
+      ({ key, expected }) => localStorage.getItem(key) === expected,
+      { key: savedThemeKey, expected: expectedTheme },
+      { timeout: 15_000 },
+    )
   }
 
   async clickToggle(): Promise<void> {
@@ -61,11 +85,15 @@ class DarkModeHelper {
   async verifyThemeLabel(expectedTheme: Theme): Promise<void> {
     const expectedLabel = expectedTheme.charAt(0).toUpperCase() + expectedTheme.slice(1)
 
-    // The theme label text is displayed via CSS ::after pseudo-element
-    // We need to read the CSS custom property value instead of textContent
+    // Read inline style directly — getComputedStyle can return "" for custom
+    // properties on WebKit/Safari even after the property is set via
+    // element.style.setProperty, especially right after navigation.
     const labelContent = await this.page.evaluate(() => {
-      const computedStyle = getComputedStyle(document.documentElement)
-      return computedStyle.getPropertyValue("--theme-label-content").replace(/"/g, "")
+      const el = document.documentElement
+      const raw =
+        el.style.getPropertyValue("--theme-label-content") ||
+        getComputedStyle(el).getPropertyValue("--theme-label-content")
+      return raw.replace(/"/g, "").trim()
     })
 
     expect(labelContent).toBe(expectedLabel)
@@ -106,7 +134,13 @@ test.describe("Theme persistence and UI states", () => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      await page.reload()
+      // Navigate to a genuinely different page so that init scripts re-run
+      // in all browsers including Safari/WebKit.  Same-URL goto() in Safari
+      // may be treated as a soft refresh and skip re-running JS init scripts,
+      // leaving data-theme unset.
+      await gotoPage(page, "http://localhost:8080/about")
+
+      await waitForPostscriptModule(page)
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
@@ -180,8 +214,6 @@ test("No flash of unstyled content on page load", async ({ page }) => {
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })
 
-    // Load the minimal page first
-    await page.reload()
     await page.setContent(minimalHtml, { waitUntil: "domcontentloaded" })
 
     // Take first screenshot immediately after script injection
@@ -219,18 +251,16 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      // Ensure the page is fully loaded before navigating again so WebKit
-      // doesn't crash from overlapping navigations (beforeEach uses domcontentloaded).
-      await page.waitForLoadState("load")
+      // Navigate to a genuinely different page (using the prefix) so that
+      // init scripts re-run in all browsers including Safari/WebKit.
+      // Same-URL goto() in Safari may be treated as a soft refresh and skip
+      // re-running JS init scripts, leaving --theme-label-content unset.
+      const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
+      await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
-      // Navigate to a different internal page
-      // NOTE I think it should be fine to not click
-      await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-      // CSS custom property may not be set synchronously after navigation
-      await expect(async () => {
-        await helper.verifyThemeLabel(theme)
-      }).toPass({ timeout: 5_000 })
+      await waitForPostscriptModule(page)
+      await helper.verifyStorage(theme)
+      await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)
     })
   })

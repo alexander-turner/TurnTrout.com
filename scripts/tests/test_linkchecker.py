@@ -4,6 +4,7 @@ import socketserver
 import subprocess
 import threading
 import time
+from collections.abc import Iterator
 
 import pytest
 
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.xdist_group(name="linkchecker_serial")
 
 
 @pytest.fixture
-def test_html_content():
+def test_html_content() -> str:
     """HTML content with both internal and external link errors."""
     return """<!doctype html>
 <html lang="en">
@@ -29,7 +30,9 @@ def test_html_content():
 
 
 @pytest.fixture
-def test_server_and_files(tmp_path, test_html_content):
+def test_server_and_files(
+    tmp_path, test_html_content
+) -> Iterator[dict[str, object]]:
     """Set up a local HTTP server and create test HTML files in public
     directory."""
     # Create a temporary directory structure with mock git repo
@@ -61,7 +64,7 @@ def test_server_and_files(tmp_path, test_html_content):
     class ReuseTCPServer(socketserver.TCPServer):
         allow_reuse_address = True
 
-        def server_close(self):
+        def server_close(self) -> None:
             """Ensure socket is properly closed."""
             super().server_close()
 
@@ -89,7 +92,7 @@ def test_server_and_files(tmp_path, test_html_content):
 
 
 @pytest.fixture
-def html_linkchecker_result(test_server_and_files):
+def html_linkchecker_result(test_server_and_files) -> object:
     """Run the linkchecker script with the test setup."""
     tmp_dir = test_server_and_files["tmp_dir"]
     port = test_server_and_files["port"]
@@ -135,7 +138,7 @@ def html_linkchecker_result(test_server_and_files):
 
     # Create a mock result that matches what the fish script would return
     class MockResult:
-        def __init__(self):
+        def __init__(self) -> None:
             self.returncode = (
                 1
                 if (

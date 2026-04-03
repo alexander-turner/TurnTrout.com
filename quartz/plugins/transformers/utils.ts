@@ -28,6 +28,8 @@ export interface ReplaceFnResult {
   before: string
   replacedMatch: string | Element | Element[]
   after: string
+  /** Original (pre-transform) text, stored as `data-original-text` on the wrapper element. */
+  originalText?: string
 }
 
 /**
@@ -58,7 +60,7 @@ export const replaceRegex = (
   }
 
   let lastIndex = 0
-  const matchIndexes: number[] = []
+  const matches: RegExpExecArray[] = []
   let lastMatchEnd = 0
   let match: RegExpExecArray | null = null
 
@@ -66,18 +68,19 @@ export const replaceRegex = (
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
   while ((match = regex.exec(node.value)) !== null) {
     if (match.index >= lastMatchEnd) {
-      matchIndexes.push(match.index)
+      matches.push(match)
       lastMatchEnd = match.index + match[0]?.length
     }
   }
 
   // If no matches found or node has no value, return early
-  if (!matchIndexes?.length || !node.value) return
+  if (!matches?.length || !node.value) return
 
   const fragment: RootContent[] = []
   lastIndex = 0
 
-  for (const index of matchIndexes) {
+  for (const match of matches) {
+    const index = match.index
     // Add any text before the match to the fragment
     if (index > lastIndex) {
       fragment.push({
@@ -86,13 +89,8 @@ export const replaceRegex = (
       })
     }
 
-    // Use exec() instead of match() to get capture groups
-    regex.lastIndex = index
-    const match = regex.exec(node.value)
-    // istanbul ignore if
-    if (!match) continue
-
-    const { before, replacedMatch, after } = replaceFn(match)
+    const result = replaceFn(match)
+    const { before, replacedMatch, after } = result
     if (before) {
       fragment.push({ type: "text", value: before })
     }
@@ -101,7 +99,8 @@ export const replaceRegex = (
         // For each element in the array, ensure it has text content
         fragment.push(...replacedMatch)
       } else if (typeof replacedMatch === "string") {
-        fragment.push(h(newNodeStyle, replacedMatch))
+        const props = result.originalText ? { "data-original-text": result.originalText } : {}
+        fragment.push(h(newNodeStyle, props, replacedMatch))
       } else {
         fragment.push(replacedMatch)
       }

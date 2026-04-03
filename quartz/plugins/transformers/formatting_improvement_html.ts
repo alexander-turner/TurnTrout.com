@@ -13,6 +13,9 @@ import {
   charsToMoveIntoLinkFromRight,
   markerChar,
   hatTipPlaceholder,
+  NBSP,
+  LEFT_SINGLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -22,6 +25,7 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  * Content inside these elements won't have formatting improvements applied.
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
+export const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 
 /**
  * Tags that should be skipped during fraction replacement.
@@ -257,6 +261,10 @@ export function formatArrows(tree: Root): void {
       "span.right-arrow",
     )
   })
+}
+
+function isHeading(node: Element): boolean {
+  return HEADING_TAGS.has(node.tagName)
 }
 
 // skipcq: JS-0098
@@ -495,7 +503,10 @@ export function plusToAmpersand(text: string): string {
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
 // At the end, watch out for double periods
 // Marker-aware: allow optional marker between digit and space, e.g., "15<marker> Am"
-const amPmRegex = new RegExp(`(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?`, "gi")
+const amPmRegex = new RegExp(
+  `(?<=\\d(?:${markerChar})? ?)(?<time>[AP])(?:\\.M\\.|M)\\.?(?!\\p{L})`,
+  "giu",
+)
 export function timeTransform(text: string): string {
   const matchFunction = (_: string, ...args: unknown[]) => {
     const groups = args[args.length - 1] as { time: string }
@@ -578,15 +589,21 @@ export function setFirstLetterAttribute(tree: Root): void {
   firstParagraph.properties = firstParagraph.properties || /* istanbul ignore next */ {}
   firstParagraph.properties["data-first-letter"] = firstLetter
 
+  const firstTextNode = firstParagraph.children.find(
+    (child): child is Text => child.type === "text",
+  )
+  if (!firstTextNode) return
+
+  // Replace nbsp after first letter — nbspTransform adds it after single-letter
+  // words like "I", but it creates a visible extra space with dropcap float
+  if (firstTextNode.value.charAt(1) === NBSP) {
+    firstTextNode.value = `${firstTextNode.value.charAt(0)} ${firstTextNode.value.slice(2)}`
+  }
+
   // If the second letter is an apostrophe, add a space before it
   const secondLetter = paragraphText.charAt(1)
-  if (["'", "’", "‘"].includes(secondLetter)) {
-    const firstTextNode = firstParagraph.children.find(
-      (child): child is Text => child.type === "text",
-    )
-    if (firstTextNode) {
-      firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
-    }
+  if (["’", LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE].includes(secondLetter)) {
+    firstTextNode.value = `${firstLetter} ${firstTextNode.value.slice(1)}`
   }
 }
 
@@ -672,13 +689,20 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
       if (node.type === "element") {
+        // Skip nbsp in headings — it prevents natural line-breaking and looks bad
+        const inHeading =
+          isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
+        const activeUncheckedTransformers = inHeading
+          ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+          : uncheckedTextTransformers
+
         const eltsToTransform = collectTransformableElements(node as Element, toSkip)
         eltsToTransform.forEach((elt) => {
           for (const transform of checkedTextTransformers) {
             transformElement(elt, transform, toSkip, markerChar, true)
           }
 
-          for (const transform of uncheckedTextTransformers) {
+          for (const transform of activeUncheckedTransformers) {
             transformElement(elt, transform, toSkip, markerChar, false)
           }
 

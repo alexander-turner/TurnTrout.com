@@ -484,7 +484,7 @@ describe("TableOfContents Plugin", () => {
       expect(mockFile.data.toc?.[3]?.slug).toBe("complex-code-title")
     })
 
-    it("normalizes NBSP in heading slugs", () => {
+    it("does not insert NBSP in heading slugs", () => {
       const plugin = TableOfContents()
       const mockCtx = {} as BuildCtx
       const plugins = plugin.markdownPlugins?.(mockCtx) ?? []
@@ -495,7 +495,7 @@ describe("TableOfContents Plugin", () => {
         data: { frontmatter: {} },
       }
 
-      // "I love this" gets NBSP inserted by applyTextTransforms (orphan prevention)
+      // nbsp is skipped for headings (would cause bad line-breaking)
       const mockTree: Root = createRoot([createHeading(2, [createText("I love this")])])
 
       processor(mockTree, mockFile)

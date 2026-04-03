@@ -1,7 +1,7 @@
 import { execSync } from "child_process"
 import fs from "fs"
 import { globby } from "globby"
-import { type Element, type Root } from "hast"
+import { type Element, type Parent, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
@@ -17,6 +17,7 @@ import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
   getFaviconUrl,
+  ModifyNode,
   transformUrl,
   urlCache,
   shouldIncludeFavicon,
@@ -24,7 +25,13 @@ import {
 import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"
 
-const { minFaviconCount, defaultPath, maxCardImageSizeKb, playwrightConfigs } = simpleConstants
+const {
+  minFaviconCount,
+  defaultPath,
+  maxCardImageSizeKb,
+  playwrightConfigs,
+  colorDropcapProbability,
+} = simpleConstants
 
 const logger = createWinstonLogger("populateContainers")
 
@@ -63,13 +70,13 @@ export const findElementsByClass = (root: Root, className: string): Element[] =>
 /**
  * Type for content generators that produce HAST elements to populate containers.
  */
-export type ContentGenerator = () => Promise<Element[]>
+export type ContentGenerator = () => Promise<Element[]> | Element[]
 
 /**
  * Generates content from a constant value (string or number).
  */
 export const generateConstantContent = (value: string | number): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     return [h("span", String(value))]
   }
 }
@@ -93,7 +100,14 @@ interface GitCountOptions {
 }
 
 // skipcq: JS-D1001
-export async function countGitCommits(options: GitCountOptions = {}): Promise<number> {
+export function isShallowClone(): boolean {
+  return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
+}
+
+// skipcq: JS-D1001
+export function countGitCommits(options: GitCountOptions = {}): number {
+  if (isShallowClone()) return 0
+
   let cmd = "git rev-list --all --count"
   if (options.author) cmd += ` --author="${options.author}"`
   if (options.grep) cmd += ` --grep="${options.grep}"`
@@ -102,7 +116,8 @@ export async function countGitCommits(options: GitCountOptions = {}): Promise<nu
 }
 
 // skipcq: JS-D1001
-export async function countJsTests(): Promise<number> {
+export function countJsTests(): number {
+  // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
     encoding: "utf-8",
   })
@@ -112,7 +127,7 @@ export async function countJsTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export async function countPlaywrightTests(): Promise<number> {
+export function countPlaywrightTests(): number {
   const output = execSync('grep -r "test(" quartz/components/tests/*.spec.ts | wc -l', {
     encoding: "utf-8",
   })
@@ -125,7 +140,7 @@ export const PYTEST_COUNT_CMD =
   "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
 
 // skipcq: JS-D1001
-export async function countPythonTests(): Promise<number> {
+export function countPythonTests(): number {
   const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
 
   const match = output.match(/(?<count>\d+)\s+tests?\s+collected/)
@@ -137,7 +152,7 @@ export async function countPythonTests(): Promise<number> {
 }
 
 // skipcq: JS-D1001
-export async function countLinesOfCode(): Promise<number> {
+export function countLinesOfCode(): number {
   const output = execSync(
     'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/lost-pixel/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
     { encoding: "utf-8" },
@@ -203,7 +218,7 @@ export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",
 ): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const faviconElement = createFaviconElement(faviconPath, altText)
     return [createNowrapSpan("", faviconElement)]
   }
@@ -214,7 +229,7 @@ export const generateSpecialFaviconContent = (
  * using the same component that renders real post metadata.
  */
 export const generateMetadataAdmonition = (): ContentGenerator => {
-  return async (): Promise<Element[]> => {
+  return (): Element[] => {
     const dummyProps = {
       cfg: {},
       fileData: {
@@ -250,7 +265,7 @@ export const generateMetadataAdmonition = (): ContentGenerator => {
  */
 export const generateFaviconContent = (): ContentGenerator => {
   return async (): Promise<Element[]> => {
-    const faviconCounts = getFaviconCounts()
+    const faviconCounts = await getFaviconCounts()
     logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
 
     // Find PNG paths that need SVG CDN checking
@@ -336,7 +351,7 @@ export const populateElements = async (
 ): Promise<FilePath[]> => {
   const html = fs.readFileSync(htmlPath, "utf-8")
   const root = fromHtml(html)
-  let modified = false
+  const populatedElements: Element[] = []
 
   for (const config of configs) {
     // Validate that config has exactly one of id or className
@@ -353,7 +368,7 @@ export const populateElements = async (
 
       const content = await config.generator()
       element.children = content
-      modified = true
+      populatedElements.push(element)
     } else if (config.className) {
       const elements = findElementsByClass(root, config.className)
       if (elements.length === 0) {
@@ -365,20 +380,43 @@ export const populateElements = async (
       const content = await config.generator()
       for (const element of elements) {
         element.children = content
+        populatedElements.push(element)
       }
-      modified = true
       logger.debug(`Added ${content.length} elements to each .${config.className}`)
     } else {
       throw new Error("Config missing both id and className")
     }
   }
 
-  if (modified) {
+  if (populatedElements.length > 0) {
+    // Add favicons only to links within populated containers, not the entire page.
+    // The favicon transformer already processed the rest of the page.
+    for (const element of populatedElements) {
+      await addFaviconsToLinks(element)
+    }
     fs.writeFileSync(htmlPath, toHtml(root), "utf-8")
     return [htmlPath as FilePath]
   }
 
   return []
+}
+
+/**
+ * Adds favicons to links within a subtree using the same logic as the
+ * favicon transformer. Populated content is injected after the favicon
+ * transformer runs, so links in populated containers need this post-pass.
+ */
+export async function addFaviconsToLinks(subtree: Element | Root): Promise<void> {
+  const faviconCounts = await getFaviconCounts()
+  const nodesToProcess: [Element, Parent][] = []
+
+  visit(subtree, "element", (node, _index, parent) => {
+    if (node.tagName === "a" && node.properties?.href && parent) {
+      nodesToProcess.push([node, parent as Parent])
+    }
+  })
+
+  await Promise.all(nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)))
 }
 
 /**
@@ -393,6 +431,10 @@ const createPopulatorMap = (
     ["populate-favicon-container", generateFaviconContent()],
     ["populate-favicon-threshold", generateConstantContent(minFaviconCount)],
     ["populate-max-size-card", generateConstantContent(maxCardImageSizeKb)],
+    [
+      "populate-dropcap-probability",
+      generateConstantContent(`${Math.round(colorDropcapProbability * 100)}%`),
+    ],
     [
       "populate-turntrout-favicon",
       generateSpecialFaviconContent(specialFaviconPaths.turntrout, "A trout jumping to the left."),

@@ -6,9 +6,13 @@ import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
+  isSafariBrowser,
   getAllWithWait,
   isElementChecked,
-  openSearch,
+  search,
+  gotoPage,
+  triggerAndWaitForSPANav,
+  moveMouseToSafePosition,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -25,7 +29,7 @@ const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
     await expect(dummyLink).toBeVisible()
-    await use(dummyLink)
+    await use(dummyLink) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
   },
 })
 
@@ -34,7 +38,12 @@ test.beforeEach(async ({ page }) => {
     test.skip()
   }
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+
+  // After page load, the nav event sets mouseMovedSinceNav=false to suppress
+  // spurious Safari mouseenter events.  Move the mouse once to clear this flag
+  // so hover-triggered popovers work reliably in tests.
+  await page.mouse.move(1, 1)
 })
 
 test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
@@ -55,7 +64,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   })
 
   // Move mouse away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 })
 
@@ -82,15 +91,16 @@ test("Popover content matches target page content", async ({ page, dummyLink }) 
   const selector = "#article-title"
   const originalH1Text = await page.locator(selector).first().textContent()
 
-  // Hover and wait for popover
+  // Hover and wait for popover (WebKit can be slow to render visibility)
   await dummyLink.hover()
   const popover = page.locator(".popover")
-  await expect(popover).toBeVisible()
+  await expect(popover).toHaveClass(/popover-visible/, { timeout: 10_000 })
+  await expect(popover).toBeVisible({ timeout: 10_000 })
   const popoverContent = await popover.locator(".popover-inner").textContent()
 
   // Check that we navigated to the right page
-  await dummyLink.click()
   const targetHref = linkHref?.replace("./", "")
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
   await page.waitForURL(`**/${targetHref}`)
 
   // Wait until the h1 changes, indicating navigation completed
@@ -113,8 +123,8 @@ test("Multiple popovers don't stack with wait", async ({ page }) => {
     await expect(popover).toBeVisible()
   }
 
-  const popoverCount = await page.locator(".popover").count()
-  expect(popoverCount).toBe(1)
+  const popoverCount = page.locator(".popover")
+  await expect(popoverCount).toHaveCount(1)
 })
 
 test("Multiple popovers don't stack without wait", async ({ page }) => {
@@ -125,7 +135,7 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
     await link.scrollIntoViewIfNeeded()
     await expect(link).toBeVisible()
     await link.hover()
-    await page.mouse.move(0, 0)
+    await moveMouseToSafePosition(page)
   }
 
   await expect(page.locator(".popover")).toHaveCount(0)
@@ -189,22 +199,18 @@ test("Popover stays hidden after mouse leaves", async ({ page, dummyLink }) => {
   popover = page.locator(".popover")
   await expect(popover).toBeVisible()
 
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(popover).toBeHidden()
 
-  // Wait a moment and verify it stays hidden
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
+  // Verify popover stays hidden after dismissal
   await expect(popover).toBeHidden()
 })
+
 test("Popover does not show when noPopover attribute is true", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
 
-  // Set noPopover attribute
-  await page.evaluate(() => {
-    const link = document.querySelector(".can-trigger-popover")
-    if (link) link.setAttribute("data-no-popover", "true")
-  })
+  // Set noPopover attribute on the specific link we'll hover
+  await dummyLink.evaluate((el) => el.setAttribute("data-no-popover", "true"))
 
   await dummyLink.hover()
   const popover = page.locator(".popover")
@@ -246,20 +252,18 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 })
 
 test("Popovers do not appear in search previews", async ({ page }) => {
-  // Open search and search for a term that will have internal links
-  await openSearch(page)
-  const searchBar = page.locator("#search-bar")
-  await searchBar.fill("Test page")
-
-  // Wait for search results to render before checking preview
-  const searchLayout = page.locator("#search-layout")
-  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+  // Search preview content is fetched asynchronously and can be slow on CI
+  test.slow()
+  // Use search() helper for reliable fill+result rendering (toPass retry)
+  await search(page, "Test page")
 
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Find an internal link in the preview and hover over it
+  // Wait for the link inside the preview content to render (fetched async)
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
+  await expect(searchDummyLink).toBeVisible({ timeout: 30_000 })
+  await searchDummyLink.scrollIntoViewIfNeeded()
   await searchDummyLink.hover()
 
   // Verify no popover appears
@@ -278,7 +282,7 @@ test("Popovers appear for content-meta links", async ({ page, dummyLink }) => {
   const metaX = (await metaPopover.boundingBox())?.x
 
   // Move mouse and wait for it to go away
-  await page.mouse.move(0, 0)
+  await moveMouseToSafePosition(page)
   await expect(metaPopover).toBeHidden()
 
   await dummyLink.scrollIntoViewIfNeeded()
@@ -323,26 +327,66 @@ for (const id of ["navbar", "toc-content"]) {
 
 test("Popover does not appear on next page after navigation", async ({ page, dummyLink }) => {
   await expect(dummyLink).toBeVisible()
-  const linkHref = await dummyLink.getAttribute("href")
-  const linkSlug = linkHref?.split("/").pop()
 
   // Hover over the link to initiate a popover, but don't wait for it to appear
   await dummyLink.hover()
 
-  // Immediately click the link to navigate
-  await dummyLink.click()
+  // Immediately click the link to navigate.  Wait for the SPA `nav` event
+  // which clears the pending popover timer and resets mouseMovedSinceNav.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
 
-  // Wait for navigation to the new page. The href of dummyLink is /design.
-  await page.waitForURL(`**/${linkSlug}`)
-
-  // The 'nav' event should have cleared the pending popover timer.
-  // Wait a bit to ensure the popover doesn't appear.
-  // The popover timeout is 300ms, let's wait a little longer.
-  // eslint-disable-next-line playwright/no-wait-for-timeout
-  await page.waitForTimeout(500)
+  // Move cursor to a neutral area so it doesn't accidentally hover over a
+  // link on the new page (which could trigger a *new* popover, especially in
+  // Safari where the cursor position persists after SPA navigation).
+  await page.mouse.move(10, 10)
 
   const popover = page.locator(".popover")
   await expect(popover).toBeHidden()
+})
+
+test("In-flight popover fetch does not create orphaned popover after navigation", async ({
+  page,
+  dummyLink,
+}) => {
+  await expect(dummyLink).toBeVisible()
+
+  // Delay the popover fetch so it completes *after* SPA navigation.
+  // Use a promise to signal when the fetch has been intercepted, and a
+  // second one to control when it resolves (after navigation completes).
+
+  // skipcq: JS-0321 -- placeholder reassigned inside the promise
+  let releasePopoverFetch = (): void => {}
+  const popoverFetchIntercepted = new Promise<void>((resolve) => {
+    const holdFetch = new Promise<void>((release) => {
+      releasePopoverFetch = release
+    })
+    let firstRequest = true
+    page.route("**/design", async (route) => {
+      if (firstRequest) {
+        firstRequest = false
+        resolve() // signal that the popover fetch has started
+        await holdFetch // hold the response until we release it
+      }
+      await route.continue()
+    })
+  })
+
+  // Hover to start the popover timer; wait until the fetch is actually in-flight.
+  await dummyLink.hover()
+  await popoverFetchIntercepted
+
+  // Click the link to trigger SPA navigation while the popover fetch is held.
+  await triggerAndWaitForSPANav(page, () => dummyLink.click())
+
+  // Release the held fetch and wait for the response to complete, so we know
+  // mouseEnterHandler has had a chance to process it (and should bail out).
+  const responsePromise = page.waitForResponse("**/design")
+  releasePopoverFetch()
+  await responsePromise
+
+  // No orphaned popover should appear on the new page.
+  const popover = page.locator(".popover")
+  await expect(popover).toHaveCount(0)
 })
 
 test.describe("Footnote popovers", () => {
@@ -466,6 +510,7 @@ test.describe("Footnote popovers", () => {
   test("Focus moves into pinned footnote popover on open", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
@@ -477,8 +522,17 @@ test.describe("Footnote popovers", () => {
   })
 
   test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+    // WebKit doesn't support Tab navigation by default — it requires the
+    // "Press Tab to highlight each item on a webpage" Safari preference,
+    // which Playwright cannot enable. See microsoft/playwright#2114.
+    test.skip(
+      isSafariBrowser(page),
+      "WebKit does not support Tab navigation without Safari preference",
+    )
+
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
+    await expect(footnoteRef).toBeInViewport()
 
     await footnoteRef.click()
     const popover = page.locator(".popover.footnote-popover")
@@ -560,13 +614,13 @@ test.describe("Footnote popovers", () => {
     const scrollBefore = await page.evaluate(() => window.scrollY)
     await footnoteRef.click()
 
-    // Give the browser time to potentially scroll
-    // eslint-disable-next-line playwright/no-wait-for-timeout
-    await page.waitForTimeout(300)
-    const scrollAfter = await page.evaluate(() => window.scrollY)
-
     // Page should NOT have scrolled to the footnote section
-    expect(Math.abs(scrollAfter - scrollBefore)).toBeLessThan(50)
+    await expect
+      .poll(async () => {
+        const scrollAfter = await page.evaluate(() => window.scrollY)
+        return Math.abs(scrollAfter - scrollBefore)
+      })
+      .toBeLessThan(50)
   })
 })
 
@@ -575,7 +629,7 @@ test.describe("Footnote popovers", () => {
 base.describe("Footnote popover on mobile", () => {
   base.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 })
-    await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
   })
 
   base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
@@ -658,7 +712,7 @@ test.describe("Popover checkbox state preservation", () => {
   })
 
   test("Popover preserves checkbox state", async ({ page }) => {
-    await page.goto("http://localhost:8080/design", { waitUntil: "load" })
+    await gotoPage(page, "http://localhost:8080/design")
 
     const linkToTestPage = page.locator('a[href*="test-page"]').last()
     await linkToTestPage.scrollIntoViewIfNeeded()

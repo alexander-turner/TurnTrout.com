@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH
+export PATH="$HOME/.local/bin:$PATH"
+
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
   echo "Resuming from last failed step."
@@ -9,9 +12,6 @@ fi
 
 PUSHED_CHANGES=0
 trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
-
-# Main script logic first
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 # Handle cleanup function separately
 # shellcheck disable=SC2317
@@ -45,25 +45,8 @@ stash_and_exit() {
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
-if command -v conda >/dev/null 2>&1; then
-  ACTIVE_ENV=$(conda info | grep 'active environment' | awk '{print $NF}')
-
-  if [ "$ACTIVE_ENV" != "website" ]; then
-    echo "Activating conda environment: website"
-
-    CONDA_BASE=$(conda info --base)
-    # shellcheck source=/dev/null
-    . "$CONDA_BASE/etc/profile.d/conda.sh"
-    conda activate website
-  fi
-fi
-
 if [ "$RESUME" != "true" ]; then
   PUSHED_CHANGES=$(stash_and_exit)
-fi
-
-if [ "$CURRENT_BRANCH" != "main" ]; then
-  exit 0
 fi
 
 uv run python "$GIT_ROOT/scripts/run_push_checks.py" $RESUME_FLAG

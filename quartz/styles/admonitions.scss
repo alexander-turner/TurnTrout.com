@@ -301,4 +301,6 @@
 
 .footnotes .admonition {
   margin-bottom: calc(2 * $base-margin);
+  max-width: 100%;
+  box-sizing: border-box;
 }

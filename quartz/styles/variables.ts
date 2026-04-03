@@ -31,11 +31,51 @@ export const midgroundFaintDark = "#737994"
 export const midgroundDark = "#aab3db"
 export const midgroundFaintLight = "#9ca0b0"
 export const midgroundLight = "#74747b"
+export const midgroundStrongLight = "#5c5f77"
+export const midgroundStrongDark = "#c6cff0"
+export const secondaryLight = "#1e66f5"
+export const secondaryDark = "#97b0e9"
+export const tertiaryLight = "#0486b9"
+export const tertiaryDark = "#99d1db"
+export const highlightLight = "#7c7f9324"
+export const highlightDark = "#949cbb30"
+
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
+
+// Palette colors — single source of truth for _palette.scss (generated) and critical CSS
+export const darkPalette: Record<string, string> = {
+  pink: "#fba7e4",
+  red: "#e88283",
+  maroon: "#d586a1",
+  orange: "#e19b5b",
+  yellow: "#e5c890",
+  green: "#a6d189",
+  teal: "#81c8be",
+  sky: "#5bc4d7",
+  blue: "#8caaee",
+  lavender: "#9899d7",
+  purple: "#ba8be9",
+  gold: "#db9c01",
+}
+
+export const lightPalette: Record<string, string> = {
+  pink: "#d020a3",
+  red: "#be415c",
+  orange: "#a45c19",
+  yellow: "#7d751c",
+  green: "#22820d",
+  teal: "#037e85",
+  sky: "#007cb4",
+  blue: "#3e6ccb",
+  lavender: "#4963fd",
+  purple: "#6f42c1",
+  gold: "#9b6700",
+}
 
 export const dropcapVerticalOffset = "0.15rem"
 export const dropcapFontSize = "3.95rem"
 export const dropcapMinHeight = "4.2rem"
+export const dropcapPaddingRight = "0.1em"
 
 // Design tokens — shared across SCSS files
 export const borderRadius = 5
@@ -83,6 +123,14 @@ export const variables = {
   midgroundDark,
   midgroundFaintLight,
   midgroundLight,
+  midgroundStrongLight,
+  midgroundStrongDark,
+  secondaryLight,
+  secondaryDark,
+  tertiaryLight,
+  tertiaryDark,
+  highlightLight,
+  highlightDark,
   fontScaleFactor,
   liPaddingLeft,
   shikiRed,
@@ -93,6 +141,7 @@ export const variables = {
   dropcapVerticalOffset,
   dropcapFontSize,
   dropcapMinHeight,
+  dropcapPaddingRight,
   borderRadius,
   transitionDurationQuick,
   transitionDurationMedium,

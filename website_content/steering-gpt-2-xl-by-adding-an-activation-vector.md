@@ -42,9 +42,10 @@ date_published: 2023-05-13 00:00:00
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-01-25 23:47:56.984113
+date_updated: 2026-03-29 17:13:24.103427
 createBibtex: true
 ---
+
 
 
 
@@ -97,7 +98,7 @@ We already added vectors to forward passes of a convolutional policy network tha
 
 Not only did we modify the network's goal pursuit while preserving its capabilities and coherence, we were able to mix and match the modifications! The modifications did not seem to interfere with each other.
 
-We provide a proper literature review [in an appendix](/gpt2-steering-vectors#Appendix-1-Related-Work) to this post.
+We provide a proper literature review [in an appendix](/gpt2-steering-vectors#appendix-1-related-work) to this post.
 
 # How activation additions work
 
@@ -212,7 +213,7 @@ _**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention 
 
 ### 3\. Conspiracy
 
-When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section ["How steering vectors impact GPT-2's capabilities"](/gpt2-steering-vectors#How-steering-vectors-impact-GPT-2-s-capabilities).
+When we want more "conceptual" edits, we found ourselves using later injection sites (like before layer 23 instead of before layer 6). Later, we swept over all layer choices. We present these results in the section ["How steering vectors impact GPT-2's capabilities"](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities).
 
 _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1.[^9]
 
@@ -547,7 +548,7 @@ Consider the norms of the steering vectors sourced from layers 2 and 20. Maybe t
 Magnifying the $2\to20$ vector does make it more effective. However, this vector still doesn't seem as effective as the normal steering vector (recorded just before layer 20). This suggests that the layer-0 and layer-2 vectors aren't _just_ getting amplified by layers 2–19. Instead, useful computational work is being done by these layers, which is then added to forward passes in order to produce angrier completions.
 
 > [!note] Summary
-> Steering vectors contain important computational work done by later layers. The activation addition technique is not equivalent to injecting extra tokens. (We provide further evidence on this point [later](/gpt2-steering-vectors#Activation-addition-behaves-differently-than-prompting).)
+> Steering vectors contain important computational work done by later layers. The activation addition technique is not equivalent to injecting extra tokens. (We provide further evidence on this point [later](/gpt2-steering-vectors#activation-addition-behaves-differently-than-prompting).)
 
 ## Only modifying certain residual stream dimensions
 
@@ -730,7 +731,7 @@ Let's see how the layer-16, coefficient +1 “ wedding” vector affects perplex
 
 ### Activation addition behaves differently than prompting
 
-As [discussed earlier](/gpt2-steering-vectors#Testing-the-hypothesis-that-we-re-just-injecting-extra-tokens), one hypothesis for our "weddings" vector is that it's "essentially equivalent" to injecting e.g. an extra `weddings` token at the given position. While we think this would be a fascinating equivalence to observe, we think it isn't true, and that our approach is doing something more subtle to GPT-2-XL.
+As [discussed earlier](/gpt2-steering-vectors#testing-the-hypothesis-that-we-re-just-injecting-extra-tokens), one hypothesis for our "weddings" vector is that it's "essentially equivalent" to injecting e.g. an extra `weddings` token at the given position. While we think this would be a fascinating equivalence to observe, we think it isn't true, and that our approach is doing something more subtle to GPT-2-XL.
 
 To test this belief, we repeat the above perplexity experiment, but with one tweak.
 
@@ -865,7 +866,7 @@ Insofar as our brief tests are accurate, they demonstrate that there are wedding
 
 ### GPT-2-XL is fairly robust to activation noise. Why?
 
-GPT-2-XL could have broken in the presence of large amounts of noise, for example random activation vectors with norm comparable to the unmodified residual stream. [GPT-2-XL didn't break.](/gpt2-steering-vectors#How-steering-vectors-impact-GPT-2-s-capabilities) Why not?
+GPT-2-XL could have broken in the presence of large amounts of noise, for example random activation vectors with norm comparable to the unmodified residual stream. [GPT-2-XL didn't break.](/gpt2-steering-vectors#how-steering-vectors-impact-gpt-2-s-capabilities) Why not?
 
 ### Evidence of generalization
 
@@ -1100,7 +1101,6 @@ Honestly, there's a ton of prior work in the domain of generative models. ["Deep
 
 Goh mirrors our confusion about why activation additions work:
 
-<!-- vale off-->
 > [!quote]
 >
 > The final question that should be asked is why this structure should even exist in the first place. How does this structure emerge from training? And how does the decoder work?
@@ -1110,17 +1110,16 @@ Goh mirrors our confusion about why activation additions work:
 > This is pretty encouraging. It has been hypothesized by [Gregor et al.](http://yann.lecun.com/exdb/publis/pdf/gregor-icml-10.pdf) that the decoder might be implementing an unfolded sparse coding algorithm, at least for a single iteration. Perhaps this theory can be confirmed by correlating various constellations of activations to the atoms of our dictionary. And perhaps there's a possibility we can read the \[internal features right out of the network\].
 >
 > The former riddle is more difficult to answer. And it breaks down into a bevy of minor mysteries when probed. Is this structure specific to certain neural architectures (perhaps those which use ReLU activations)? Or does it come from the data? Was this structure discovered automatically, or were the assumptions of sparsity hidden in the network structure? Does sparse structure exist in all levels of representation, or only encoder/decoder networks? Is sparse coding even the true model for the data, or is this just an approximation to how the data is really represented? But lacking any formal theory of deep learning, these questions are still open to investigation. I hope to have convinced you, at least, that this is an avenue worth investigating.
-<!-- vale on-->
 
 ## Activation additions in reinforcement learning
 
 In ["Understanding and controlling a maze-solving policy network"](/understanding-and-controlling-a-maze-solving-policy-network) and ["Maze-solving agents: Add a top-right vector, make the agent go to the top-right"](/top-right-steering-vector), we algebraically edited the activations of a pretrained deep convolutional policy network (3.7M parameters). We computed a cheese vector (by diffing activations for the same maze with and without cheese) and a top-right vector (by diffing activations for a maze with and without an extended path to the top-right of the screen).
 
-Subtracting the cheese vector essentially [makes the agent behave as if the cheese is not present](/understanding-and-controlling-a-maze-solving-policy-network#Comparing-the-modified-network-against-behavior-when-cheese-isn-t-there), but [_adding_ the cheese vector doesn't do much](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector). Conversely, [adding the top-right vector attracts the agent to the top-right corner](/top-right-steering-vector#Adding-the-top-right-vector-with-different-coefficient-strengths), while [_subtracting_ the top-right vector doesn't do much](/top-right-steering-vector#Subtracting-the-top-right-vector-has-little-effect). These vectors not only transfer across agent positions in the maze in which the vector was computed, the vectors also exhibit substantial transfer across mazes themselves. The cheese vector intervention also [works for a range of differently pretrained maze-solving policy networks](/top-right-steering-vector#The-cheese-vector-technique-generalizes-to-other-pretrained-models). Finally, the vectors [compose, in that they can simultaneously modify behavior](/top-right-steering-vector#Composing-the-activation-additions). This allows substantial but limited customization of the policy network's behavioral goals.
+Subtracting the cheese vector essentially [makes the agent behave as if the cheese is not present](/understanding-and-controlling-a-maze-solving-policy-network#comparing-the-modified-network-against-behavior-when-cheese-isn-t-there), but [_adding_ the cheese vector doesn't do much](/understanding-and-controlling-a-maze-solving-policy-network#not-much-happens-when-you-add-the-cheese-vector). Conversely, [adding the top-right vector attracts the agent to the top-right corner](/top-right-steering-vector#adding-the-top-right-vector-with-different-coefficient-strengths), while [_subtracting_ the top-right vector doesn't do much](/top-right-steering-vector#subtracting-the-top-right-vector-has-little-effect). These vectors not only transfer across agent positions in the maze in which the vector was computed, the vectors also exhibit substantial transfer across mazes themselves. The cheese vector intervention also [works for a range of differently pretrained maze-solving policy networks](/top-right-steering-vector#the-cheese-vector-technique-generalizes-to-other-pretrained-models). Finally, the vectors [compose, in that they can simultaneously modify behavior](/top-right-steering-vector#composing-the-activation-additions). This allows substantial but limited customization of the policy network's behavioral goals.
 
 # Appendix 2: Resolving prediction markets
 
-Subtitle: Originally made at ["predictions for algebraically editing LM forward passes"](/top-right-steering-vector#Predictions-for-algebraically-editing-LM-forward-passes).
+Subtitle: Originally made at ["predictions for algebraically editing LM forward passes"](/top-right-steering-vector#predictions-for-algebraically-editing-lm-forward-passes).
 
 <iframe src="https://manifold.markets/embed/MartinRandall/algebraic-value-editing-works-for-a" title="Algebraic value editing works (for at least one "X vector") in language models" frameborder="0" class="manifold-embed"></iframe>
 
@@ -1296,7 +1295,7 @@ Subtitle: Originally made at ["predictions for algebraically editing LM forward 
 
 [^31]: GPT-2's perplexity is reduced on text (output by GPT-4) which _isn't similar_ to GPT-2's [WebText training corpus](https://paperswithcode.com/dataset/webtext) (websites linked to from Reddit). It would be somewhat more surprising if we decreased GPT-2's loss on its training set.
 [^32]: We think it's important to take perplexity over each sentence, not over each essay. Suppose we just took perplexity over the whole long GPT-4 summary, all at once. Even if our intervention seriously messed up a few residual streams, a long context would mostly contain residual streams which weren't directly messed up. Thus, taking perplexity over a long context window might wipe out any negative effect of the activation addition. This would make our method look better than it should.
-[^33]: Importantly, we exclude positions 0 and 1 because position 0 is unchanged, and position 1 is directly modified by the steering vector. [As mentioned earlier](/gpt2-steering-vectors#Activation-additions-mess-up-output-tokens-for-directly-modified-residual-streams), steering vectors mess up the next-token distributions at the relevant residual stream positions. However, when we actually use the “ weddings” vector to generate completions, we don't sample from these distributions. Therefore, these distributions don't seem like relevant information for checking how the vector affects GPT-2's abilities.
+[^33]: Importantly, we exclude positions 0 and 1 because position 0 is unchanged, and position 1 is directly modified by the steering vector. [As mentioned earlier](/gpt2-steering-vectors#activation-additions-mess-up-output-tokens-for-directly-modified-residual-streams), steering vectors mess up the next-token distributions at the relevant residual stream positions. However, when we actually use the “ weddings” vector to generate completions, we don't sample from these distributions. Therefore, these distributions don't seem like relevant information for checking how the vector affects GPT-2's abilities.
 [^34]: Layer 16's "saturating and unidirectional wedding-increase" mirrors our findings with the top-right vector in the maze environment. In that setting, adding the top-right vector with coefficient 1 attracted the net to the top-right corner. Adding with coefficient 2 didn't attract the network more strongly ("saturation"). And subtracting the top-right vector didn't repel the network from the top-right corner ("unidirectional").
 [^35]: In a few late layers, positive reviews have a lower perplexity ratio than neutral reviews. The effect seems within noise.
 

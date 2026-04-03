@@ -3,8 +3,7 @@ permalink: a-certain-formalization-of-corrigibility-is-vnm-incoherent
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
+lw-page-url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
 lw-is-question: 'false'
 lw-posted-at: 2021-11-20T00:30:48.961000Z
 lw-last-modification: 2023-05-16T20:35:48.377000Z
@@ -37,13 +36,12 @@ next-post-title: Formalizing Policy-Modification Corrigibility
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-11-20 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
+original_url: https://www.lesswrong.com/posts/WCX3EwnWAx7eyucqH/a-certain-formalization-of-corrigibility-is-vnm-incoherent
 skip_import: true
-description: Formal analysis showing that, for agents optimizing a reward function,
-  corrigibility is rare and perhaps even incoherent.
-date_updated: 2025-11-22 00:21:52.667251
+description: Formal analysis showing that, for agents optimizing a reward function, corrigibility is rare and perhaps even incoherent.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -61,7 +59,7 @@ date_updated: 2025-11-22 00:21:52.667251
 
 Surprisingly, I wasn't able to find any formal analysis of this situation. I did the analysis, and it turned out to be straightforward and fruitful.
 
-To analyze the situation, I consider [corrigibility to be an agent's willingness to let us modify its policy, without being incentivized to manipulate us.](/non-obstruction-motivates-corrigibility#Nomenclature)
+To analyze the situation, I consider [corrigibility to be an agent's willingness to let us modify its policy, without being incentivized to manipulate us.](/non-obstruction-motivates-corrigibility#nomenclature)
 
 # The convergent instrumentality of avoiding correction & manipulating humans
 

@@ -87,7 +87,8 @@ export const REGEX_ABBREVIATION =
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
-export const allCapsContinuation = `(?:[${smallCapsSeparators}\\d\\s]+[${upperCapsChars}]+)`
+const decimalOrSeparator = `[${smallCapsSeparators}\\d\\s]|\\d\\.\\d`
+export const allCapsContinuation = `(?:(?:${decimalOrSeparator})+[${upperCapsChars}]+)`
 
 // Restricting to at least 2 words to avoid interfering with REGEX_ACRONYM
 // Added negative lookbehind to prevent matching if preceded by a single capital letter and space
@@ -270,6 +271,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: processMatchedText(phrase, shouldCapitalize),
           after: "",
+          originalText: phrase,
         }
       }
 
@@ -280,6 +282,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: processMatchedText(acronym, shouldCapitalize),
           after: suffix || "",
+          originalText: acronym,
         }
       }
 
@@ -290,6 +293,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           before: "",
           replacedMatch: number + abbreviation.toLowerCase(),
           after: "",
+          originalText: number + abbreviation,
         }
       }
 

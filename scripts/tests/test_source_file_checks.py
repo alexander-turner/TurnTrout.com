@@ -3,7 +3,7 @@ import sys
 import tempfile
 import unittest.mock as mock
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, List, Tuple
 from unittest.mock import patch
 
 import git  # type: ignore[import]
@@ -77,7 +77,7 @@ def valid_metadata() -> Dict[str, str | List[str]]:
 )
 def test_check_required_fields(
     metadata: Dict[str, str | List[str]], expected_errors: List[str]
-) -> None:
+):
     """
     Test the required fields checker with various metadata configurations.
 
@@ -148,7 +148,7 @@ def test_check_required_fields(
 )
 def test_check_cover_image_alt(
     metadata: Dict[str, str | List[str]], expected_errors: List[str]
-) -> None:
+):
     """
     Test the cover image alt text checker with various metadata configurations.
 
@@ -177,13 +177,15 @@ def test_check_cover_image_alt(
         {"card_image": ""},
     ],
 )
-def test_check_card_image_valid(metadata: Dict[str, str]) -> None:
+def test_check_card_image_valid(metadata: Dict[str, str]):
     """Test card image checker with valid inputs."""
     mock_response = mock.Mock()
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(metadata)
         assert errors == []
 
@@ -210,13 +212,15 @@ def test_check_card_image_valid(metadata: Dict[str, str]) -> None:
 )
 def test_check_card_image_invalid(
     metadata: Dict[str, str], expected_error_text: str
-) -> None:
+):
     """Test card image checker with invalid formats."""
     mock_response = mock.Mock()
     mock_response.status_code = 200
     mock_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(metadata)
         assert len(errors) > 0
         assert any(expected_error_text in error for error in errors)
@@ -234,8 +238,8 @@ def test_check_card_image_invalid(
 def test_check_card_image_size(
     status_code: int,
     content_length: int | None,
-    expected_error_contains: str | None,
-) -> None:
+    expected_error_contains: str,
+):
     """Test that card_image size checking works correctly."""
     mock_response = mock.Mock()
     mock_response.status_code = status_code
@@ -243,7 +247,9 @@ def test_check_card_image_size(
         {"Content-Length": str(content_length)} if content_length else {}
     )
 
-    with mock.patch("requests.head", return_value=mock_response):
+    with mock.patch.object(
+        source_file_checks._http_session, "head", return_value=mock_response
+    ):
         errors = source_file_checks.check_card_image(
             {"card_image": "https://example.com/image.jpg"}
         )
@@ -252,9 +258,7 @@ def test_check_card_image_size(
         assert any(expected_error_contains in error for error in errors)
 
 
-def test_main_workflow(
-    git_repo_setup, quartz_project_structure, monkeypatch
-) -> None:
+def test_main_workflow(git_repo_setup, quartz_project_structure, monkeypatch):
     """
     Integration test for the main workflow. Tests both valid and invalid
     markdown files in the content directory.
@@ -398,7 +402,7 @@ tags: [test]
 )
 def test_url_uniqueness(
     git_repo_setup, quartz_project_structure, monkeypatch, test_case
-) -> None:
+):
     """Test the check_links function workflow."""
     # Setup
     content_dir = quartz_project_structure["content"]
@@ -422,7 +426,7 @@ def test_url_uniqueness(
 
 def test_check_links_invalid_links(
     git_repo_setup, quartz_project_structure, monkeypatch
-) -> None:
+):
     """Test detection of invalid markdown links."""
     content_dir = quartz_project_structure["content"]
     tmp_path = git_repo_setup["root"]
@@ -454,7 +458,7 @@ Valid external: [Link](https://example.com)
 
 
 @pytest.fixture
-def scss_scenarios() -> Dict[str, Dict[str, Any]]:
+def scss_scenarios() -> Dict[str, Dict[str, object]]:
     """Fixture providing different SCSS test scenarios."""
     return {
         "valid": {
@@ -557,9 +561,9 @@ def setup_font_test(
 )
 def test_font_file_scenarios(
     scenario: str,
-    scss_scenarios: Dict[str, Dict[str, Any]],
+    scss_scenarios,
     setup_font_test: Callable,
-) -> None:
+):
     """Test various font file scenarios."""
     test_case = scss_scenarios[scenario]
     fonts_scss, tmp_path = setup_font_test(
@@ -573,9 +577,9 @@ def test_font_file_scenarios(
 
 
 def test_scss_compilation_error(
-    scss_scenarios: Dict[str, Dict[str, Any]],
+    scss_scenarios,
     setup_font_test: Callable,
-) -> None:
+):
     """Test handling of SCSS compilation errors."""
     test_case = scss_scenarios["scss_error"]
     fonts_scss, tmp_path = setup_font_test(test_case["website_content"], [])
@@ -651,7 +655,7 @@ More text.
         ),
     ],
 )
-def test_check_heading_links(text: str, expected_errors: List[str]) -> None:
+def test_check_heading_links(text: str, expected_errors: List[str]):
     """
     Test the heading links checker with various markdown content.
 
@@ -664,10 +668,10 @@ def test_check_heading_links(text: str, expected_errors: List[str]) -> None:
 
 
 def test_integration_with_main(
-    scss_scenarios: Dict[str, Dict[str, Any]],
+    scss_scenarios,
     setup_font_test: Callable,
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     """Integration test including font file checks."""
     # Set up test environment with missing fonts scenario
     test_case = scss_scenarios["missing"]
@@ -692,7 +696,7 @@ def test_integration_with_main(
 
 
 @requires_sass
-def test_compile_scss(tmp_path: Path) -> None:
+def test_compile_scss(tmp_path: Path):
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
     scss_file.write_text(
@@ -707,7 +711,7 @@ def test_compile_scss(tmp_path: Path) -> None:
     assert "red" in css
 
 
-def test_check_font_files(tmp_path: Path) -> None:
+def test_check_font_files(tmp_path: Path):
     """Test font file checking."""
     css_content = """
         @font-face {
@@ -720,7 +724,7 @@ def test_check_font_files(tmp_path: Path) -> None:
     assert "/quartz/static/styles/fonts/test.woff2" in missing
 
 
-def test_check_font_families() -> None:
+def test_check_font_families():
     """Test font family declaration checking."""
     css_content = """
         @font-face {
@@ -736,7 +740,7 @@ def test_check_font_families() -> None:
     assert "Undeclared font family: undeclaredfont" in missing
 
 
-def test_check_font_families_with_opentype() -> None:
+def test_check_font_families_with_opentype():
     """Test font family checking with OpenType features."""
     css_content = """
         @font-face {
@@ -753,7 +757,7 @@ def test_check_font_families_with_opentype() -> None:
     assert len(missing) == 0  # Should not report EBGaramond as missing
 
 
-def test_check_latex_tags(tmp_path: Path) -> None:
+def test_check_latex_tags(tmp_path: Path):
     """Test detection of LaTeX \tag{} commands in markdown files."""
     content_dir = tmp_path / "website_content"
     content_dir.mkdir()
@@ -792,7 +796,7 @@ Another invalid: $\\tag{eq:test}$
 )
 def test_latex_tags_variations(
     tmp_path: Path, content: str, expected_count: int
-) -> None:
+):
     """
     Test various scenarios for LaTeX tag detection.
 
@@ -876,7 +880,7 @@ def test_latex_tags_variations(
         },
     ],
 )
-def test_check_sequence_relationships(test_case: Dict[str, Any]) -> None:
+def test_check_sequence_relationships(test_case):
     """
     Test checking bidirectional relationships between posts using next/prev post
     slugs.
@@ -898,7 +902,7 @@ def test_check_sequence_relationships(test_case: Dict[str, Any]) -> None:
     )
 
 
-def test_check_sequence_relationships_invalid_input() -> None:
+def test_check_sequence_relationships_invalid_input():
     """Test check_sequence_relationships with invalid input."""
     # Test with empty permalink
     with pytest.raises(ValueError, match="Invalid permalink"):
@@ -979,7 +983,7 @@ def test_check_sequence_relationships_invalid_input() -> None:
         },
     ],
 )
-def test_check_post_titles(test_case: Dict[str, Any]) -> None:
+def test_check_post_titles(test_case):
     """
     Test checking titles between linked posts.
 
@@ -1018,7 +1022,7 @@ def create_test_file(tmp_path: Path) -> Callable[[str, str], Path]:
     return _create_file
 
 
-def test_build_sequence_data_basic(create_test_file: Callable) -> None:
+def test_build_sequence_data_basic(create_test_file: Callable):
     """Test basic functionality of _build_sequence_data with a single file."""
     content = """---
 title: Test Post
@@ -1047,7 +1051,7 @@ Test content
     assert sequence_data == expected_mapping
 
 
-def test_build_sequence_data_with_aliases(create_test_file: Callable) -> None:
+def test_build_sequence_data_with_aliases(create_test_file: Callable):
     """Test _build_sequence_data with a file containing aliases."""
     content = """---
 title: Test Post
@@ -1072,7 +1076,7 @@ Test content
 
 def test_build_sequence_data_multiple_files(
     create_test_file: Callable,
-) -> None:
+):
     """Test _build_sequence_data with multiple files having different
     combinations of fields."""
     file1_content = """---
@@ -1126,7 +1130,7 @@ permalink: /third
     assert sequence_data == expected_mapping
 
 
-def test_build_sequence_data_empty_cases(create_test_file: Callable) -> None:
+def test_build_sequence_data_empty_cases(create_test_file: Callable):
     """Test _build_sequence_data with edge cases like empty metadata and empty
     aliases."""
     # File with empty metadata
@@ -1155,7 +1159,7 @@ aliases: [""]
     assert sequence_data == expected_mapping
 
 
-def test_build_sequence_data_no_files() -> None:
+def test_build_sequence_data_no_files():
     """Test _build_sequence_data with an empty list of files."""
     sequence_data = source_file_checks.build_sequence_data([])
     assert sequence_data == {}
@@ -1181,10 +1185,12 @@ def test_build_sequence_data_no_files() -> None:
     ],
 )
 def test_check_card_image(
-    metadata: dict, mock_response: Any, expected_error_contains: List[str]
-) -> None:
+    metadata: dict,
+    mock_response: mock.Mock | None,
+    expected_error_contains: List[str],
+):
     """Test checking card image URLs in metadata."""
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         if mock_response is not None:
             mock_head.return_value = mock_response
 
@@ -1202,11 +1208,11 @@ def test_check_card_image(
         ), f"Expected {len(expected_error_contains)} errors, got {len(errors)}: {errors}"
 
 
-def test_check_card_image_request_exception() -> None:
+def test_check_card_image_request_exception():
     """Test handling of request exceptions when checking card image URLs."""
     metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
 
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         mock_head.side_effect = requests.RequestException("Connection error")
 
         errors = source_file_checks.check_card_image(metadata)
@@ -1214,10 +1220,10 @@ def test_check_card_image_request_exception() -> None:
         assert any("Connection error" in error for error in errors)
 
 
-def test_check_card_image_sends_user_agent() -> None:
+def test_check_card_image_sends_user_agent():
     """Test that check_card_image sends a User-Agent header."""
     metadata = {"card_image": "https://assets.turntrout.com/image.jpg"}
-    with patch("requests.head") as mock_head:
+    with patch.object(source_file_checks._http_session, "head") as mock_head:
         mock_head.return_value = mock.Mock(
             ok=True, headers={"Content-Length": str(200 * 1024)}
         )
@@ -1323,7 +1329,7 @@ def test_check_card_image_sends_user_agent() -> None:
 )
 def test_check_table_alignments(
     tmp_path: Path, content: str, expected_errors: List[str]
-) -> None:
+):
     """
     Test checking markdown table alignments.
 
@@ -1339,9 +1345,7 @@ def test_check_table_alignments(
     assert errors == expected_errors
 
 
-def test_check_table_alignments_integration(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_check_table_alignments_integration(tmp_path: Path, monkeypatch):
     """Integration test for table alignment checking within the main
     workflow."""
     content_dir = tmp_path / "website_content"
@@ -1499,7 +1503,7 @@ permalink: /test
 )
 def test_unescaped_braces(
     tmp_path: Path, content: str, expected_errors: List[str]
-) -> None:
+):
     """
     Test various scenarios for unescaped braces detection.
 
@@ -1515,7 +1519,7 @@ def test_unescaped_braces(
     assert sorted(errors) == sorted(expected_errors)
 
 
-def test_unescaped_braces_integration(tmp_path: Path, monkeypatch) -> None:
+def test_unescaped_braces_integration(tmp_path: Path, monkeypatch):
     """Integration test for unescaped braces checking within the main
     workflow."""
     content_dir = tmp_path / "website_content"
@@ -1579,7 +1583,7 @@ Some math: $x^2 + {y^2}$ and more {text}.
         ("Both `code` and $math$", "Both  and $math$"),
     ],
 )
-def test_remove_code(input_text: str, expected_output: str) -> None:
+def test_remove_code(input_text: str, expected_output: str):
     """
     Test stripping code blocks and inline code from text.
 
@@ -1616,7 +1620,7 @@ def test_remove_code(input_text: str, expected_output: str) -> None:
         ("Both `code` and $math$", "Both `code` and "),
     ],
 )
-def test_remove_math(input_text: str, expected_output: str) -> None:
+def test_remove_math(input_text: str, expected_output: str):
     """
     Test stripping math elements from text.
 
@@ -1644,7 +1648,7 @@ def test_remove_math(input_text: str, expected_output: str) -> None:
 )
 def test_remove_code_with_replacement_character(
     input_text: str, expected_output: str
-) -> None:
+):
     """Test removing code elements with the replacement character."""
     result = source_file_checks.remove_code(input_text, mark_boundaries=True)
     assert result == expected_output
@@ -1666,13 +1670,13 @@ def test_remove_code_with_replacement_character(
 )
 def test_remove_math_with_replacement_character(
     input_text: str, expected_output: str
-) -> None:
+):
     """Test removing math elements with the replacement character."""
     result = source_file_checks.remove_math(input_text, mark_boundaries=True)
     assert result == expected_output
 
 
-def test_remove_code_with_fenced_blocks() -> None:
+def test_remove_code_with_fenced_blocks():
     """Test stripping fenced code blocks specifically, which should be handled
     by regex with the DOTALL flag."""
     # Current implementation doesn't handle fenced code blocks
@@ -1680,7 +1684,7 @@ def test_remove_code_with_fenced_blocks() -> None:
     Normal text.
     
     ```python
-    def example():
+    def example() -> None:
         return "This is code"
     ```
     
@@ -1707,9 +1711,7 @@ def test_remove_code_with_fenced_blocks() -> None:
         ),
     ],
 )
-def test_remove_code_with_complex_blocks(
-    input_text: str, expected_output: str
-) -> None:
+def test_remove_code_with_complex_blocks(input_text: str, expected_output: str):
     """Test stripping complex multi-line code blocks."""
     result = source_file_checks.remove_code(input_text)
     assert result == expected_output
@@ -1732,9 +1734,7 @@ def test_remove_code_with_complex_blocks(
         ),
     ],
 )
-def test_remove_math_with_complex_blocks(
-    input_text: str, expected_output: str
-) -> None:
+def test_remove_math_with_complex_blocks(input_text: str, expected_output: str):
     """Test stripping complex multi-line math blocks."""
     result = source_file_checks.remove_math(input_text)
     assert result == expected_output
@@ -1758,9 +1758,7 @@ def test_remove_math_with_complex_blocks(
         ),  # 9 lines: L1, ```, a, ```, L2, ```, b, ```, L3
     ],
 )
-def test_remove_code_preserves_lines(
-    text: str, expected_line_count: int
-) -> None:
+def test_remove_code_preserves_lines(text: str, expected_line_count: int):
     """Test that remove_code preserves line structure."""
     result = source_file_checks.remove_code(text)
     assert result.count("\n") == text.count("\n")
@@ -1785,9 +1783,7 @@ def test_remove_code_preserves_lines(
         ),  # 9 lines: L1, $$, a, $$, L2, $$, b, $$, L3
     ],
 )
-def test_remove_math_preserves_lines(
-    text: str, expected_line_count: int
-) -> None:
+def test_remove_math_preserves_lines(text: str, expected_line_count: int):
     """Test that remove_math preserves line structure."""
     result = source_file_checks.remove_math(text)
     assert result.count("\n") == text.count("\n")
@@ -1807,7 +1803,7 @@ def test_remove_math_preserves_lines(
 )
 def test_remove_code_no_cross_line_matching(
     text: str, line_with_content: int, content_present: str
-) -> None:
+):
     """Test that inline code patterns don't match across newlines."""
     result = source_file_checks.remove_code(text)
     lines = result.split("\n")
@@ -1827,7 +1823,7 @@ def test_remove_code_no_cross_line_matching(
 )
 def test_remove_math_no_cross_line_matching(
     text: str, line_with_content: int, content_present: str
-) -> None:
+):
     """Test that inline math patterns don't match across newlines."""
     result = source_file_checks.remove_math(text)
     lines = result.split("\n")
@@ -1863,7 +1859,7 @@ def test_remove_math_no_cross_line_matching(
         ("/notfound", {"permalink": "/test", "aliases": "/alias"}, False),
     ],
 )
-def test_slug_in_metadata(slug: str, metadata: dict, expected: bool) -> None:
+def test_slug_in_metadata(slug: str, metadata: dict, expected: bool):
     """
     Test the _slug_in_metadata function with various combinations of slug and
     metadata.
@@ -2121,7 +2117,7 @@ def test_check_html_with_braces(text: str, expected_errors: List[str]):
 )
 def test_extract_footnote_definitions(
     text: str, expected_definitions: Dict[str, int]
-) -> None:
+):
     """Test extracting footnote definitions from text."""
     definitions = source_file_checks.extract_footnote_line_numbers(text)
     assert definitions == expected_definitions
@@ -2143,7 +2139,7 @@ def test_extract_footnote_definitions(
 )
 def test_extract_footnote_references(
     text: str, expected_references: Dict[str, int]
-) -> None:
+):
     """Test extracting footnote references from text."""
     references = source_file_checks.extract_footnote_references(text)
     assert references == expected_references
@@ -2283,9 +2279,7 @@ def test_extract_footnote_references(
         ),
     ],
 )
-def test_check_footnote_references(
-    text: str, expected_errors: List[str]
-) -> None:
+def test_check_footnote_references(text: str, expected_errors: List[str]):
     """Test checking footnote references."""
     errors = source_file_checks.check_footnote_references(text)
     # Sort both lists for comparison since order may vary
@@ -2377,7 +2371,7 @@ def test_check_footnote_references(
 )
 def test_check_description_list_continuations(
     text: str, expected_errors: List[str]
-) -> None:
+):
     """Test checking description list continuations."""
     errors = source_file_checks.check_description_list_continuations(text)
     assert errors == expected_errors
@@ -2398,8 +2392,8 @@ _MISSING_DATE_ERR = ["Missing or empty date_published field"]
     ],
 )
 def test_check_publication_date(
-    metadata: Dict[str, Any], expected_errors: List[str]
-) -> None:
+    metadata: Dict[str, object], expected_errors: List[str]
+):
     """Test the check_publication_date function."""
     assert (
         source_file_checks.check_publication_date(metadata) == expected_errors
@@ -2415,7 +2409,7 @@ def test_main_publication_dates_flag(
     monkeypatch,
     check_dates,
     should_fail,
-) -> None:
+):
     """Test main() behavior with/without --check-publication-dates flag."""
     content_dir = quartz_project_structure["content"]
     tmp_path = git_repo_setup["root"]
@@ -2479,15 +2473,13 @@ tags: [test]
 )
 def test_check_self_closing_non_void_elements(
     text: str, expected_errors: list[str]
-) -> None:
+):
     errors = source_file_checks.check_self_closing_non_void_elements(text)
     assert errors == expected_errors
 
 
-@pytest.mark.parametrize(
-    "tag", sorted(source_file_checks._NON_VOID_ELEMENTS)
-)
-def test_each_non_void_element_is_caught(tag: str) -> None:
+@pytest.mark.parametrize("tag", sorted(source_file_checks._NON_VOID_ELEMENTS))
+def test_each_non_void_element_is_caught(tag: str):
     """Every element in _NON_VOID_ELEMENTS should be flagged."""
     text = f"<{tag} />"
     errors = source_file_checks.check_self_closing_non_void_elements(text)
@@ -2496,7 +2488,7 @@ def test_each_non_void_element_is_caught(tag: str) -> None:
 
 
 @pytest.mark.parametrize("tag", ["img", "br", "hr", "input", "meta", "link"])
-def test_void_elements_are_allowed_self_closing(tag: str) -> None:
+def test_void_elements_are_allowed_self_closing(tag: str):
     """Void elements should never be flagged."""
     text = f"<{tag} />"
     errors = source_file_checks.check_self_closing_non_void_elements(text)

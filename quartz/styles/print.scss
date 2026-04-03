@@ -1,0 +1,277 @@
+@use "./variables.scss" as *;
+@use "./palette" as *;
+
+@media print {
+  // Light-mode is forced via beforeprint/afterprint JS in darkmode.ts,
+  // so we only need to set print-specific overrides here.
+  :root {
+    @include palette-vars($light-colors, $important: true);
+
+    --background: #fff !important;
+    --midground-faint: #{$midground-faint-light} !important;
+    --midground: #{$midground-light} !important;
+    --midground-strong: #{$midground-strong-light} !important;
+    --foreground: #{$foreground-light} !important;
+    --secondary: #{$secondary-light} !important;
+    --tertiary: #{$tertiary-light} !important;
+    --highlight: #{$highlight-light} !important;
+    --light: var(--background) !important;
+    --dark: var(--foreground) !important;
+    --dark-gray: var(--midground-strong) !important;
+
+    color-scheme: light !important;
+  }
+
+  // ── Hide interactive / navigation UI ───────────────────────────
+  #navbar,
+  #left-sidebar,
+  #right-sidebar,
+  #search-container,
+  #search-layout,
+  .search,
+  .popover,
+  .skip-to-content,
+  #menu-button,
+  .mobile-only:not(:has(#toc-content-mobile)),
+  #subscription-and-contact,
+  .sequence-links,
+  .sequence-nav,
+  .after-article-components,
+  footer,
+  .scroll-indicator::before,
+  .scroll-indicator::after,
+  .favicon-span svg,
+  .fold-icon,
+  .fold-admonition-icon,
+  .data-footnote-backref,
+  a[data-footnote-backref],
+  .spoiler-overlay {
+    display: none !important;
+  }
+
+  // ── Layout: single column, full width ──────────────────────────
+  body {
+    min-height: auto !important;
+  }
+
+  .page,
+  #quartz-body,
+  #center-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .page-header {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0 !important;
+  }
+
+  @page {
+    margin: 2cm 2.5cm;
+    size: auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  pre,
+  table,
+  .katex-display,
+  img {
+    break-inside: avoid;
+  }
+
+  // ── Links: show URLs after link text ───────────────────────────
+  article a[href^="http"]:not([href*="turntrout.com"])::after,
+  article a[href^="mailto:"]::after,
+  article a.internal:not(h1 > a, h2 > a, h3 > a, h4 > a, h5 > a, h6 > a)::after {
+    content: " (" attr(href) ")";
+    font-family: monospace;
+    font-size: 0.7em;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  // Suppress URLs on footnote refs, anchors, heading links, within-page links
+  a[data-footnote-backref]::after,
+  a[role="anchor"]::after,
+  a[id*="fnref-"]::after,
+  .page-header a::after,
+  article a[href^="#"]::after {
+    content: none !important;
+  }
+
+  article a {
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+  }
+
+  article p {
+    overflow-wrap: break-word !important;
+  }
+
+  // ── Code blocks ────────────────────────────────────────────────
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
+  // ── KaTeX: prevent horizontal overflow ─────────────────────────
+  .katex-display {
+    overflow: visible !important;
+  }
+
+  .katex {
+    overflow: visible !important;
+  }
+
+  .scroll-indicator > .katex-display > .katex {
+    display: block !important;
+    white-space: normal !important;
+  }
+
+  // ── Spoilers: reveal hidden content ────────────────────────────
+  .spoiler-content {
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  // ── Elvish: show both Tengwar and translation ──────────────────
+  .elvish {
+    font-family: Elvish, serif !important;
+    text-decoration: none !important;
+  }
+
+  .elvish .elvish-tengwar {
+    display: inline !important;
+  }
+
+  .elvish .elvish-translation {
+    display: inline !important;
+    font-family: var(--font-main) !important;
+    font-style: italic;
+  }
+
+  .elvish .elvish-translation::before {
+    content: " (";
+  }
+
+  .elvish .elvish-translation::after {
+    content: ")";
+  }
+
+  // ── Admonitions: expand collapsed, fix icons for print ─────────
+  .admonition {
+    max-width: 99% !important;
+  }
+
+  .admonition.is-collapsed > .admonition-content {
+    display: block !important;
+    max-height: none !important;
+  }
+
+  // Browsers don't reliably render CSS masks when printing,
+  // so switch to background-image instead.
+  .admonition .admonition-icon {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+    mask-image: none !important;
+
+    /* stylelint-disable-next-line property-no-vendor-prefix -- needed for Safari print */
+    -webkit-mask-image: none !important;
+    background-color: transparent !important;
+    background-image: var(--admonition-icon) !important;
+    background-size: 0.75rem 0.75rem !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    filter: brightness(0) opacity(0.6) !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  // ── Collapsibles: expand in print ──────────────────────────────
+  .collapsible .content {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  // ── Horizontal rules ──────────────────────────────────────────
+  // background-color is stripped by default in print mode.
+  hr {
+    background-color: transparent !important;
+    border-top: 1px solid var(--midground-faint) !important;
+    height: 0 !important;
+  }
+
+  // ── Mermaid diagrams: ensure edge label backgrounds render ─────
+  /* stylelint-disable selector-class-pattern -- mermaid-generated class */
+  .edgeLabel > div,
+  .edgeLabel > p {
+    background-color: #f0f0f0 !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+  /* stylelint-enable selector-class-pattern */
+
+  // ── Video / Audio: show placeholder with source URL ────────────
+  .video-container,
+  .audio-container {
+    display: block !important;
+    max-width: 98% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .video-container video,
+  .audio-container audio {
+    display: none !important;
+  }
+
+  .video-container::after,
+  .audio-container::after {
+    display: block;
+    padding: 1rem;
+    text-align: center;
+    border: 1px solid var(--midground-faint);
+    border-radius: $border-radius;
+    color: var(--midground);
+    font-style: italic;
+    font-family: monospace;
+    font-size: 0.7em;
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .video-container::after {
+    content: "[Video: " attr(data-src) "]";
+  }
+
+  .audio-container::after {
+    content: "[Audio: " attr(data-src) "]";
+  }
+
+  // ── Trout ornament: lighten for print ──────────────────────────
+  #trout-ornament-container > img,
+  #trout-ornament-container > span {
+    opacity: 0.4 !important;
+  }
+}
