@@ -1,7 +1,15 @@
 version: 2
 
-# The "obfuscatedFile" alert fires on packages with generated/minified
-# lookup tables (e.g. entities' HTML-entity decode maps). These are
-# false positives for well-known packages, not actual obfuscation.
+# Socket.dev flags packages with generated/minified lookup tables as
+# "obfuscated code." This is a known false positive for packages like
+# `entities` (HTML-entity decode maps) and `he` (HTML entity encoder).
+#
+# NOTE: issueRules are global — this disables the obfuscatedFile alert
+# for ALL packages, not just the known false positives. Socket does not
+# support per-package suppression in config (only via PR bot commands:
+# `@SocketSecurity ignore pkg@version`). We accept this tradeoff because
+# obfuscatedFile has a high false-positive rate on legitimate packages
+# with generated data tables. Genuine obfuscation in malicious packages
+# is typically caught by Socket's higher-severity "malware" alert instead.
 issueRules:
   obfuscatedFile: false
