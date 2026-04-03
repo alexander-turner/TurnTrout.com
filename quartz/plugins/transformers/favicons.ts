@@ -37,11 +37,15 @@ const logger = createWinstonLogger("linkFavicons")
 // istanbul ignore if
 if (!fs.existsSync(faviconUrlsFile)) {
   try {
-    fs.writeFileSync(faviconUrlsFile, "")
-  } catch {
-    throw new Error(
-      `Favicon URL cache file not found at path ${faviconUrlsFile}; create it with \`touch\` if that's the right path.`,
-    )
+    // Use 'wx' flag for exclusive creation to avoid TOCTOU race
+    fs.writeFileSync(faviconUrlsFile, "", { flag: "wx" })
+  } catch (error) {
+    // EEXIST means another process created it between our check and write — that's fine
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+      throw new Error(
+        `Favicon URL cache file not found at path ${faviconUrlsFile}; create it with \`touch\` if that's the right path.`,
+      )
+    }
   }
 }
 
