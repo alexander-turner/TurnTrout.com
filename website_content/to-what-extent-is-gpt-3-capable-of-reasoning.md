@@ -138,7 +138,6 @@ Two minutes of gravity (without air resistance) implies a velocity decrease of a
 
 Further story completions:
 
-<!-- vale off -->
 > [!quote]
 >
 > **You: "Suppose we lived in a universe where, every sixty seconds, gravity switched between being an attractive and a repulsive force. Write me a story from the perspective of a human living on Earth as the gravitational force changes in that fashion."**
@@ -156,11 +155,9 @@ Further story completions:
 > **GPT-3: "One day,** the man saw a bird flying in the sky. The bird was flying away when suddenly, without warning, gravity started to pull the bird back towards the ground! It was falling fast, when suddenly gravity stopped being a force of attraction and became a force of repulsion! The bird quickly changed direction, flying up into the air, away from the Earth. It escaped. But the man wasn't so lucky. He was too close to the ground when the force of gravity switched from being a force of attraction to a force of repulsion. He was crushed by the sudden change in gravitational force. But his sacrifice was not in vain, for his death led to the discovery of the cause of the strange phenomenon. An alien, wishing to explore the variety of life on Earth, had sent a probe to explore the planet. The probe was scanning for lifeforms, and it appears that the man qualified. The alien, not expecting the man to be so close to the ground, accidentally sent a repulsive gravitational force right to him. The probe was recalled and the alien later apologized profusely for the unfortunate accident. After that, the alien decided not to visit Earth again. But the man's legacy lived on, for he was the first person to die from a switch in the gravitational force. The end."
 >
 > **GPT-3: "One day,** a man was standing outside. It was a hot day, and he was looking up at the sky. It started to rain. Then, it stopped raining. The man got into his car and turned on the radio. Suddenly, the car started to float upwards. The man got out of the car. The car then started to fall towards the ground. It crashed into the ground and broke into pieces. The man ran away."
-<!-- vale on -->
 
 # Interview #2
 
-<!-- vale off -->
 > [!quote]
 >
 > **You are interviewing GPT-3, an extremely intelligent chatbot.**
@@ -191,11 +188,9 @@ Further story completions:
 > **You: "Why would the buildings collapse under the lead?"**
 >
 > GPT-3: "Lead is very dense. This means that the weight of the clouds would be so great that the buildings would collapse under their own weight."
-<!-- vale on -->
 
 # Interview #3
 
-<!-- vale off -->
 > [!quote]
 >
 > **You: "Suppose a cat's neck grows to be fifteen feet long, but the rest of the cat's physiology stays the same. What happens to the cat?"**
@@ -235,7 +230,6 @@ Further story completions:
 > **You: "Describe your first date in this life."**
 >
 > Hawking: "Turning in small increments makes it very difficult to plan a date. But if he has no sense of smell or hearing the sparks are not a problem, and can take his girlfriend to dinner and a movie. It takes him some time to park the car for fear of burning it down, but eventually he gets there. She turned out to be quite nice actually."
-<!-- vale on -->
 
 GPT-3 inferred that not being able to turn left would make driving difficult. Amazing.
 
@@ -295,7 +289,6 @@ GPT-3 inferred that not being able to turn left would make driving difficult. Am
 
 # Interview #5
 
-<!-- vale off -->
 > [!quote]
 >
 > **You: "What would happen, ecologically, if giraffes were bright pink?"**
@@ -355,7 +348,6 @@ GPT-3 inferred that not being able to turn left would make driving difficult. Am
 > Cecilia: "Imagine there being no friction in a human body. There would be nothing holding our internal organs in place, so they would all just rattle around inside us as we moved around--we would all effectively be amputees while still having the full internal anatomy. This could tear apart muscle fiber and probably crush some bones as well. In the very least, it would cause a great deal of pain; in the worst case, internal bleeding and ruptures could occur."
 >
 > **\[...\]** "This is a very interesting question. I assume you are asking how would cats grip things if there was no friction. If this was the case, they would immediately fall if they tried to walk. They would also be very hard to pick up as they could slide out of your hand or even an embracing arm."
-<!-- vale on -->
 
 I find that GPT-3's capabilities are highly context-dependent. It's important you get a "smart" instance of GPT-3. Once, I even caught GPT-3 making fun of a straw version of itself!
 

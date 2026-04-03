@@ -96,7 +96,7 @@ describe("PopulateContainers", () => {
         return '<html><body><div id="populate-favicon-container"></div></body></html>'
       }
       if (pathStr.includes("design.html")) {
-        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
+        return '<html><body><div id="populate-favicon-threshold"></div><div id="populate-max-size-card"></div><div id="populate-dropcap-probability"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-playwright-configs"></span><span class="populate-playwright-total-tests"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span></body></html>'
       }
       // Default for other files
       return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'

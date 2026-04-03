@@ -183,7 +183,6 @@ I confess that upon wading back into the thicket of logical notation and termino
 
 Indeed, the notion of provability can be subtly different from our mental processes for judging the truth of a proposition; within the confines of a formal system, provability doesn't just tell us about the proposition in question, but also about the characteristics of that system. This _must_ be kept in mind.
 
-<!-- vale off -->
 > [!quote] E.T. Jaynes, _Probability Theory_
 >
 > When Godel’s theorem first appeared, with its more general conclusion that a mathematical system may contain certain propositions that are undecidable within that system, it seems to have been a great psychological blow to logicians, who saw it at first as a devastating obstacle to what they were trying to achieve. Yet a moment’s thought shows us that many quite simple questions are undecidable by deductive logic. There are situations in which one can prove that a certain property must exist in a finite set, even though it is impossible to exhibit any member of the set that has that property. For example, two persons are the sole witnesses to an event; they give opposite testimony about it and then both die. Then we know that one of them was lying, but it is impossible to determine which one.
@@ -191,7 +190,6 @@ Indeed, the notion of provability can be subtly different from our mental proces
 > In this example, the undecidability is not an inherent property of the proposition or the event; it signifies only the incompleteness of our own _information_. But this is equally true of abstract mathematical systems; when a proposition is undecidable in such a system, that means only that its axioms do not provide enough information to decide it. But new axioms... might supply the missing information and make the proposition decidable after all.
 >
 > In the future, as science becomes more and more oriented to thinking in terms of information content, Godel’s results will be seen as more of a platitude than a paradox. Indeed, from our viewpoint "undecidability" merely signifies that a problem is one that calls for _inference_ rather than deduction. Probability theory as extended logic is designed specifically for such problems.
-<!-- vale on -->
 
 ## 18: The Unprovability Of Consistency
 

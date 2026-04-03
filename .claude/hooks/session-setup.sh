@@ -61,7 +61,8 @@ fi
 # Remove stop-hook retry counter for THIS project so a new session starts fresh
 # (keyed on project dir hash, matching verify_ci.py's _retry_file)
 PROJ_HASH=$(printf '%s' "$PROJECT_DIR" | sha256sum | cut -c1-16)
-rm -f "/tmp/claude-stop-attempts-${PROJ_HASH}"
+TMPDIR_ACTUAL=$(python3 -c "import tempfile; print(tempfile.gettempdir())" 2>/dev/null || echo "/tmp")
+rm -f "${TMPDIR_ACTUAL}/claude-stop-attempts-${PROJ_HASH}"
 
 #######################################
 # Git setup
@@ -140,8 +141,16 @@ fi
 #######################################
 
 if [ ! -d "$PROJECT_DIR/.timestamps/.git" ]; then
-	git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" ||
-		warn "Failed to clone .timestamps repo"
+	# In web sessions, direct GitHub URLs may not work through the local proxy.
+	# Use GH_TOKEN for authentication if available.
+	if [ -n "${GH_TOKEN:-}" ]; then
+		git clone --quiet "https://x-access-token:${GH_TOKEN}@github.com/alexander-turner/.timestamps.git" \
+			"$PROJECT_DIR/.timestamps" ||
+			warn "Failed to clone .timestamps repo"
+	else
+		git clone --quiet https://github.com/alexander-turner/.timestamps "$PROJECT_DIR/.timestamps" ||
+			warn "Failed to clone .timestamps repo"
+	fi
 fi
 
 # Configure .timestamps push access using GH_TOKEN (the local proxy only
@@ -159,6 +168,7 @@ uv_install_if_missing ots opentimestamps-client
 #######################################
 
 if [ -f "$PROJECT_DIR/package.json" ]; then
+	# Always run install (git hooks are configured in package.json postinstall)
 	if command -v pnpm &>/dev/null; then
 		pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
@@ -168,6 +178,7 @@ fi
 
 if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then
 	uv sync --quiet || warn "Failed to sync Python dependencies"
+	# Add .venv/bin to PATH so Python tools are available to hooks
 	if [ -d "$PROJECT_DIR/.venv/bin" ]; then
 		export PATH="$PROJECT_DIR/.venv/bin:$PATH"
 		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then

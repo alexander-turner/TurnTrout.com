@@ -1,4 +1,4 @@
-import { popoverScrollOffset } from "../constants"
+import { popoverScrollOffset, popoverRemovalDelayMs, CAN_TRIGGER_POPOVER_CLASS } from "../constants"
 import {
   setPopoverPosition,
   attachPopoverEventListeners,
@@ -238,7 +238,7 @@ document.addEventListener("nav", () => {
   )
 
   // Re-attach event listeners to all links that can trigger a popover
-  const links = [...document.getElementsByClassName("can-trigger-popover")] as HTMLLinkElement[]
+  const links = [...document.getElementsByClassName(CAN_TRIGGER_POPOVER_CLASS)] as HTMLLinkElement[]
   for (const link of links) {
     const href = link.getAttribute("href") || ""
     const isFootnoteLink = footnoteForwardRefRegex.test(href)
@@ -271,7 +271,7 @@ document.addEventListener("nav", () => {
           }
           mouseEnterHandler.call(link) // Show the new popover
           pendingPopoverTimer = null
-        }, 300)
+        }, popoverRemovalDelayMs)
       }
 
       const handleMouseLeave = () => {

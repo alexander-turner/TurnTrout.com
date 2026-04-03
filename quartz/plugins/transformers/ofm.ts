@@ -71,7 +71,7 @@ const tagRegex = new RegExp(
 )
 
 /** Regular expression to match block references (^blockid) */
-const blockReferenceRegex = new RegExp(`\\^(?<blockId>[-_\\p{L}\\d]+)$`, "gu")
+const blockReferenceRegex = /\^(?<blockId>[-_\p{L}\d]+)$/gu
 
 /** Regular expression to match YouTube video URLs */
 const ytLinkRegex = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)(?<videoId>[^#&?]*).*/

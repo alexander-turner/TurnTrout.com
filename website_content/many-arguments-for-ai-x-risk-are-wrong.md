@@ -117,7 +117,6 @@ In this essay, I'll address some of the arguments for "deceptive alignment" or "
 
 ## The counting argument for AI "scheming" provides \~0 evidence
 
-<!-- vale off -->
 > [!quote] Quote from a draft of [Counting arguments provide no evidence for AI doom](https://www.lesswrong.com/posts/YsFZF3K9tuzbfrLxo/counting-arguments-provide-no-evidence-for-ai-doom)
 > Most AI doom scenarios posit that future AIs will engage in **scheming**— planning to escape, gain power, and pursue ulterior motives while deceiving us into thinking they are aligned with our interests. The worry is that if a schemer escapes, it may seek world domination to ensure humans do not interfere with its plans, whatever they may be.
 >
@@ -150,7 +149,6 @@ In this essay, I'll address some of the arguments for "deceptive alignment" or "
 > Let's see what the overfitting argument predicts in a simple real-world example from [Caballero et al. (2022)](https://arxiv.org/abs/2210.14891), where a neural network is trained to solve 4-digit addition problems. There are 10,000<sup>2</sup> = 100,000,000 possible pairs of input numbers, and 19,999 possible sums, for a total of 19,999<sup>100,000,000</sup> ≈ 1.1 × 10<sup>430,100,828</sup> possible input-output mappings. They used a training dataset of 992 problems, so there are therefore 19,999<sup>100,000,000 - 992</sup> ≈ 2.75 × 10<sup>430,096,561</sup> functions that achieve perfect training accuracy.
 >
 > The proportion with greater than 50% test accuracy is literally too small to compute using standard high-precision math tools. Hence, this counting argument predicts virtually all networks trained on this problem should massively overfit— contradicting the empirical result that networks _do_ generalize to the test set.
-<!--vale on -->
 
 We are not just comparing "counting schemers" to another similar-_seeming_ argument ("counting memorizers"). The arguments not only have the same _logical structure_, but they also share the same _mechanism_: "Because most functions have property X, SGD will find something with X." Therefore, by pointing out that the memorization argument fails, we see that _this structure of argument is not a sound way of predicting deep learning results_.
 

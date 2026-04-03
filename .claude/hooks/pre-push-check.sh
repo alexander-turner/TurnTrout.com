@@ -33,7 +33,4 @@ if [[ -f pyproject.toml ]] || [[ -f uv.lock ]]; then
   { exists ruff || [[ -n "$PREFIX" ]]; } && run_check "ruff" "${PREFIX}ruff check ."
 fi
 
-if [ "$FAILED" -ne 0 ]; then
-  echo "Pre-push checks failed — see errors above" >&2
-fi
 exit $FAILED

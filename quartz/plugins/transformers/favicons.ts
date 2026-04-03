@@ -4,7 +4,6 @@ import type { ReadableStream } from "stream/web"
 import fs from "fs"
 import mime from "mime-types"
 import path from "path"
-import { parse as parseDomain } from "psl"
 import { Readable } from "stream"
 import { pipeline } from "stream/promises"
 import { visit } from "unist-util-visit"
@@ -15,20 +14,18 @@ import {
   simpleConstants,
   specialFaviconPaths,
   defaultPath,
-  specialDomainMappings,
+  cdnBaseUrl,
 } from "../../components/constants"
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
+import {
+  normalizeHostname,
+  faviconCountWhitelistComputed,
+  faviconSubstringBlacklistComputed,
+} from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
 import { hasClass, spliceAndWrapLastChars } from "./utils"
 
-const {
-  minFaviconCount,
-  googleSubdomainWhitelist,
-  faviconCountWhitelist,
-  faviconSubstringBlacklist,
-  quartzFolder,
-  faviconFolder,
-} = simpleConstants
+const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
 
 const logger = createWinstonLogger("linkFavicons")
 
@@ -114,76 +111,6 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
   logger.info(`Successfully downloaded image to ${imagePath}`)
   return true
 }
-
-/**
- * Special hostname mappings that deviate from simple subdomain removal.
- * These map one domain to a different canonical domain, or preserve specific subdomains.
- * Imported from constants.ts which computes them from config.
- */
-const specialDomainMappingsComputed = specialDomainMappings
-
-/**
- * Normalizes a hostname by removing subdomains and extracting the root domain.
- * Converts subdomains like "blog.openai.com" to their root domain "openai.com".
- * Properly handles multi-part TLDs like "co.uk" (e.g., "blog.example.co.uk" -> "example.co.uk").
- *
- * Special cases:
- * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
- * - Preserves whitelisted Google subdomains (scholar.google.com, play.google.com, etc.)
- * - Preserves all StackExchange subdomains (math.stackexchange.com, gaming.stackexchange.com, etc.)
- *
- * @param hostname - The hostname to normalize
- * @returns The root domain or mapped domain, or the original hostname if parsing fails
- */
-function normalizeHostname(hostname: string): string {
-  // Preserve StackExchange subdomains
-  if (/^[^.]+\.stackexchange\.com$/.test(hostname)) {
-    return hostname
-  }
-
-  for (const mapping of specialDomainMappingsComputed) {
-    if (mapping.pattern.test(hostname)) {
-      return mapping.to
-    }
-  }
-
-  // Use psl library to extract root domain (handles multi-part TLDs correctly)
-  const parsed = parseDomain(hostname)
-  // Return the registered domain if valid, otherwise return original hostname
-  if (parsed.error !== undefined || !parsed.domain) {
-    return hostname
-  }
-  return parsed.domain
-}
-
-/**
- * Normalize an underscore-separated hostname entry through the same PSL pipeline
- * used for real hostnames, so entries like "playpen_icomtek_csir_co_za" are
- * automatically reduced to "csir_co_za" — matching what getQuartzPath produces.
- */
-export function normalizeFaviconListEntry(entry: string): string {
-  const hostname = entry.replaceAll("_", ".")
-  const normalized = normalizeHostname(hostname)
-  return normalized.replaceAll(".", "_")
-}
-
-/**
- * Whitelist uses substring matching, so raw entries work fine (e.g., "apple_com"
- * matches any path containing that substring). No PSL normalization needed.
- */
-const faviconCountWhitelistComputed = [
-  ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
-]
-
-/**
- * Blacklist entries are normalized through the same PSL pipeline as hostnames,
- * so entries with full subdomains (e.g., "playpen_icomtek_csir_co_za") are
- * reduced to their registered domain form (e.g., "csir_co_za") to match
- * what getQuartzPath produces.
- */
-const faviconSubstringBlacklistComputed = faviconSubstringBlacklist.map(normalizeFaviconListEntry)
 
 /**
  * Normalizes a favicon path for counting by removing format-specific extensions.
@@ -326,7 +253,7 @@ export function getFaviconUrl(faviconPath: string): string {
 
   // SVG files don't need conversion, serve directly via CDN
   if (faviconPath.endsWith(".svg")) {
-    return `https://assets.turntrout.com${faviconPath}`
+    return `${cdnBaseUrl}${faviconPath}`
   }
 
   // Normalize path to .png for cache lookup (cache keys are always .png paths)
@@ -340,7 +267,7 @@ export function getFaviconUrl(faviconPath: string): string {
     }
     // Cache contains SVG path, construct CDN URL
     if (cached.endsWith(".svg")) {
-      return `https://assets.turntrout.com${cached}`
+      return `${cdnBaseUrl}${cached}`
     }
   }
 
@@ -350,14 +277,14 @@ export function getFaviconUrl(faviconPath: string): string {
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
     // SVG exists locally, return SVG CDN URL
-    return `https://assets.turntrout.com${svgPath}`
+    return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
   }
 
   // Fallback to AVIF
   const avifPath = pngPath.replace(".png", ".avif")
-  return `https://assets.turntrout.com${avifPath}`
+  return `${cdnBaseUrl}${avifPath}`
 }
 
 /**

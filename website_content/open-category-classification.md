@@ -62,9 +62,7 @@ In short, we'd like our machine learning algorithms to learn explanations which 
 > Conservatism and conservative planning seems like it might directly tackle some standard concerns \[in alignment\] head-on and in a sufficiently basic way to avoid loopholes, and might also be subject to those concerns. E.g.:
 >
 > - [Edge instantiation](https://arbital.com/p/edge_instantiation/) - if in full generality we don't go to the edge of the graph but try to stay in the center of what's already been positively classified, maybe we can avoid this.
-> <!-- vale off -->
 > - [Unforeseen maximum](https://arbital.com/p/unforeseen_maximum/) \- if we stick to things very similar to already positively classified instances, we won't automatically go into the unimagined parts of the graph.
-> <!-- vale on -->
 > - [Context disaster](https://arbital.com/p/context_disaster/) - a sufficiently conservative optimizer might go on using options similar to previously whitelisted ones even if large new sections of planning space opened up.
 
 # Prior Work

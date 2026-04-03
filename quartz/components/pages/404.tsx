@@ -1,11 +1,12 @@
 import React from "react"
 
+import { cdnBaseUrl, PREVIEWABLE_CLASS } from "../constants"
 import notFoundStyle from "../styles/404.scss"
 import { QuartzComponent, QuartzComponentConstructor } from "../types"
 
 const NotFound: QuartzComponent = () => {
   return (
-    <article className="previewable" data-use-dropcap="false">
+    <article className={PREVIEWABLE_CLASS} data-use-dropcap="false">
       <div id="not-found-div">
         <div>
           <h1>404</h1>
@@ -17,7 +18,7 @@ const NotFound: QuartzComponent = () => {
         </div>
 
         <img
-          src="https://assets.turntrout.com/static/images/turntrout-art-transparent.avif"
+          src={`${cdnBaseUrl}/static/images/turntrout-art-transparent.avif`}
           id="trout-reading"
           className="no-select"
           alt="Alex in a trout costume, reading a book."

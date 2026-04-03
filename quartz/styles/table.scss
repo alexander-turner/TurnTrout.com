@@ -91,7 +91,7 @@ tr {
 
 .title-cell {
   text-align: center;
-  text-shadow: 0.3px 0.3px var(--foreground);
+  text-shadow: $faux-bold-offset $faux-bold-offset var(--foreground);
 }
 
 .percentage-cell {
