@@ -324,6 +324,33 @@ export function optimizeMermaidSvgs(tree: Root): void {
         delete child.properties[attr]
       }
     })
+
+    // Remove unreferenced <marker> elements (mermaid 11.14.0 adds margin
+    // variants that are defined but never used in url() references)
+    removeUnreferencedMarkers(node)
+  })
+}
+
+/** Collects all url(#id) references in an SVG, then removes any `<marker>`
+ * elements whose IDs are not referenced. */
+export function removeUnreferencedMarkers(svg: Element): void {
+  const referencedIds = new Set<string>()
+  visit(svg, "element", (child: Element) => {
+    if (!child.properties) return
+    for (const value of Object.values(child.properties)) {
+      if (typeof value !== "string") continue
+      for (const match of value.matchAll(/url\(#(?<id>[^)]+)\)/g)) {
+        referencedIds.add(match.groups!.id)
+      }
+    }
+  })
+
+  visit(svg, "element", (parent: Element) => {
+    parent.children = parent.children.filter((child) => {
+      if (child.type !== "element" || child.tagName !== "marker") return true
+      const id = child.properties?.id?.toString()
+      return !id || referencedIds.has(id)
+    })
   })
 }
 

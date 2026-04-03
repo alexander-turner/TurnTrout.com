@@ -19,6 +19,7 @@ import {
   htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
   optimizeMermaidSvgs,
+  removeUnreferencedMarkers,
   isValidDlStructure,
   ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
@@ -1143,6 +1144,63 @@ describe("optimizeMermaidSvgs", () => {
     optimizeMermaidSvgs(tree)
 
     expect((style.children[0] as { type: "text"; value: string }).value).toBe(css)
+  })
+})
+
+describe("removeUnreferencedMarkers", () => {
+  it("removes markers whose IDs are not referenced by any url()", () => {
+    const referencedMarker: Element = h("marker", { id: "arrow-used" }, [])
+    const unreferencedMarker: Element = h("marker", { id: "arrow-unused" }, [])
+    const defs: Element = h("defs", [referencedMarker, unreferencedMarker])
+    const path: Element = h("path", { markerEnd: "url(#arrow-used)" })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [defs, path])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(defs.children).toContain(referencedMarker)
+    expect(defs.children).not.toContain(unreferencedMarker)
+  })
+
+  it("keeps markers without an id property", () => {
+    const noIdMarker: Element = h("marker", [])
+    const defs: Element = h("defs", [noIdMarker])
+    const svg: Element = h("svg", { id: "mermaid-0" }, [defs])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(defs.children).toContain(noIdMarker)
+  })
+
+  it("preserves non-marker elements regardless of references", () => {
+    const rect: Element = h("rect", { id: "not-referenced" })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [rect])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(svg.children).toContain(rect)
+  })
+
+  it("handles elements without properties when scanning references", () => {
+    const noProps = { type: "element" as const, tagName: "g", children: [] } as unknown as Element
+    const marker: Element = h("marker", { id: "some-marker" }, [])
+    const svg: Element = h("svg", { id: "mermaid-0" }, [noProps, marker])
+
+    removeUnreferencedMarkers(svg)
+
+    // marker should be removed (unreferenced), noProps element kept
+    expect(svg.children).toContain(noProps)
+    expect(svg.children).not.toContain(marker)
+  })
+
+  it("handles non-string property values when scanning url() references", () => {
+    const marker: Element = h("marker", { id: "some-id" }, [])
+    const el: Element = h("g", { tabIndex: 0, className: ["cls"] })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [el, marker])
+
+    removeUnreferencedMarkers(svg)
+
+    // non-string values should be skipped; marker unreferenced so removed
+    expect(svg.children).not.toContain(marker)
   })
 })
 
