@@ -514,11 +514,11 @@ describe("GitHubFlavoredMarkdown plugin", () => {
     const plugin = GitHubFlavoredMarkdown()
     const { htmlPlugins } = getPlugins(plugin)
 
-    const footnoteProcessor = htmlPlugins[0] as (tree: unknown) => void
+    const footnoteProcessor = htmlPlugins[0] as (tree?: unknown) => void
 
     // Should not throw when called with undefined tree
     expect(() => {
-      footnoteProcessor(undefined)
+      footnoteProcessor()
     }).not.toThrow()
   })
 })
