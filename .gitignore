@@ -66,6 +66,9 @@ prettierrc
 private/
 scripts/*.json
 
+# Python Tools
+.dmypy.json
+
 # AI Tools
 .aider*
 .beads
