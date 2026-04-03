@@ -44,6 +44,11 @@ MEDIA_EXTENSIONS = (
 EXCLUDED_DOMAIN = "assets.turntrout.com"
 
 
+def filename_from_url(url: str) -> str:
+    """Extract filename from URL, stripping query params and fragments."""
+    return os.path.basename(urlparse(url).path)
+
+
 def download_media(url: str, target_dir: Path) -> bool:
     """
     Download media file from URL to target directory.
@@ -55,9 +60,7 @@ def download_media(url: str, target_dir: Path) -> bool:
     Returns:
         True if download succeeded, False otherwise
     """
-    # Extract filename from URL path, stripping query params and fragments
-    parsed_url = urlparse(url)
-    filename = os.path.basename(parsed_url.path)
+    filename = filename_from_url(url)
     if not filename:
         print(f"Skipping URL with no filename: {url}", file=sys.stderr)
         return False
@@ -163,8 +166,7 @@ def main() -> None:
         if not download_media(url, asset_staging_dir):
             continue
 
-        parsed_url = urlparse(url)
-        filename = os.path.basename(parsed_url.path)
+        filename = filename_from_url(url)
         new_url = f"asset_staging/{filename}"
         print(f"Downloaded to {new_url}")
 
