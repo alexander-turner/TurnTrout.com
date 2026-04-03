@@ -294,8 +294,28 @@ export function htmlAccessibilityPlugin() {
 
     makePreElementsKeyboardAccessible(tree)
     makeMermaidSvgsAccessible(tree)
+    stripUnusedMermaidNeoStyles(tree)
     ensureVideoCaptionTracks(tree)
   }
+}
+
+/** Strips unused `[data-look="neo"]` CSS rules from mermaid SVG inline styles.
+ * Mermaid ≥11.14.0 always emits neo look selectors in its theme CSS even when
+ * using classic look, adding ~1KB of unused CSS per diagram. */
+export function stripUnusedMermaidNeoStyles(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "svg") return
+    if (!node.properties?.id?.toString().startsWith("mermaid")) return
+
+    visit(node, "element", (child: Element) => {
+      if (child.tagName !== "style") return
+      for (const textChild of child.children) {
+        if (textChild.type !== "text") continue
+        // Remove CSS rule blocks that target [data-look="neo"]
+        textChild.value = textChild.value.replace(/[^{}]*\[data-look="neo"\][^{]*\{[^}]*\}/g, "")
+      }
+    })
+  })
 }
 
 /** Adds `aria-label` to heading links that have no direct text content (e.g. KaTeX-only headings). */

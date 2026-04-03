@@ -18,6 +18,7 @@ import {
   appendArrowToFootnoteListItemVisitor,
   htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
+  stripUnusedMermaidNeoStyles,
   isValidDlStructure,
   ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
@@ -1034,6 +1035,69 @@ describe("htmlAccessibilityPlugin (integration)", () => {
     runPlugin(tree)
 
     expect(dl.tagName).toBe("div")
+  })
+})
+
+describe("stripUnusedMermaidNeoStyles", () => {
+  it("ignores non-text children in style elements", () => {
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [h("span", ["not text"])],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    expect(() => stripUnusedMermaidNeoStyles(tree)).not.toThrow()
+  })
+
+  it("removes [data-look='neo'] CSS rules from mermaid SVG styles", () => {
+    const css =
+      '#mermaid-0 .node{fill:red;}#mermaid-0 [data-look="neo"].node rect{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-0 .label{color:blue;}'
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: css }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    stripUnusedMermaidNeoStyles(tree)
+
+    const result = (style.children[0] as { type: "text"; value: string }).value
+    expect(result).not.toContain("data-look")
+    expect(result).toContain("#mermaid-0 .node{fill:red;}")
+    expect(result).toContain("#mermaid-0 .label{color:blue;}")
+  })
+
+  it("skips non-mermaid SVGs", () => {
+    const css = '#other [data-look="neo"]{fill:red;}'
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: css }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "other-svg" },
+      children: [style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    stripUnusedMermaidNeoStyles(tree)
+
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(css)
   })
 })
 
