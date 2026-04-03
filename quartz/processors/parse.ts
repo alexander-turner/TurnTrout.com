@@ -56,6 +56,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         strategy: "inline-svg",
         mermaidConfig: {
           theme: "default",
+          look: "classic" as const,
           themeVariables: {
             lineColor: midgroundLight,
             primaryTextColor: foregroundLight,
@@ -65,6 +66,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         },
         dark: {
           theme: "dark",
+          look: "classic" as const,
           themeVariables: {
             lineColor: midgroundDark,
             primaryTextColor: foregroundDark,
