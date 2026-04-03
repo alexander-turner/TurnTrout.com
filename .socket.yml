@@ -1,0 +1,7 @@
+version: 2
+
+# The "obfuscatedFile" alert fires on packages with generated/minified
+# lookup tables (e.g. entities' HTML-entity decode maps). These are
+# false positives for well-known packages, not actual obfuscation.
+issueRules:
+  obfuscatedFile: false
