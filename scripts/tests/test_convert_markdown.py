@@ -184,7 +184,10 @@ def test_process_card_image_in_markdown_skips(
 
     with (
         mock.patch("requests.get") as mock_get,
-        mock.patch("requests.head", return_value=mock_head_response),
+        mock.patch(
+            "scripts.source_file_checks._http_session.head",
+            return_value=mock_head_response,
+        ),
         mock.patch("subprocess.run") as mock_subproc_run,
         mock.patch("shutil.move") as mock_shutil_move,
         mock.patch(
