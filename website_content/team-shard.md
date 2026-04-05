@@ -54,7 +54,7 @@ Compared to other MATS streams, Team Shard has some of the best team culture and
 
 Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, Team Shard lifted together every Wednesday and Thursday in MATS 8.0.
 
-![[team-shard-04022026.png|In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day).]]
+![In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day).](https://assets.turntrout.com/static/images/posts/team-shard-04022026.avif)
 
 Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day). :)
 
