@@ -407,14 +407,7 @@ class AssetProcessor {
       node.properties = node.properties || {}
       node.properties.width = dims.width
       node.properties.height = dims.height
-
-      // Add or prepend aspect-ratio to the style attribute
-      const existingStyle = typeof node.properties.style === "string" ? node.properties.style : ""
-      const aspectRatioStyle = `aspect-ratio: ${dims.width} / ${dims.height};`
-      // Ensure a space if existingStyle is not empty and doesn't end with a semicolon or space
-      const separator =
-        existingStyle && !existingStyle.endsWith(";") && !existingStyle.endsWith(" ") ? " " : ""
-      node.properties.style = `${aspectRatioStyle}${separator}${existingStyle}`.trim()
+      prependStyles(node, `aspect-ratio: ${dims.width} / ${dims.height};`)
     }
   }
 }
@@ -426,6 +419,32 @@ export { AssetProcessor }
 export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
   // Replace the default assetProcessor with a new one that uses the mock spawn function
   Object.assign(assetProcessor, new AssetProcessor(fn))
+}
+
+/**
+ * Prepends CSS declarations to an element's inline style, normalizing
+ * whitespace/semicolons so the result is always valid CSS.
+ */
+export function prependStyles(node: Element, newStyles: string): void {
+  node.properties = node.properties || {}
+  const existing = (typeof node.properties.style === "string" ? node.properties.style : "").trim()
+  node.properties.style = existing ? `${newStyles} ${existing}` : newStyles
+}
+
+/**
+ * Returns the dimensions of the shortest image (widest aspect ratio) among
+ * the given elements, or null if none have valid width/height properties.
+ */
+export function findShortestImageDims(imgs: Element[]): { w: number; h: number } | null {
+  let result: { w: number; h: number } | null = null
+  for (const img of imgs) {
+    const w = Number(img.properties?.width)
+    const h = Number(img.properties?.height)
+    if (w > 0 && h > 0 && (result === null || w / h > result.w / result.h)) {
+      result = { w, h }
+    }
+  }
+  return result
 }
 
 /**
@@ -442,32 +461,15 @@ export function constrainSliderHeight(tree: Root): void {
     )
     if (imgs.length < 2) return
 
-    // Find the image with the widest aspect ratio (shortest when rendered at the
-    // same width). Use its original width/height for a clean CSS aspect-ratio value.
-    let shortestImg: { w: number; h: number } | null = null
-    for (const img of imgs) {
-      const w = Number(img.properties?.width)
-      const h = Number(img.properties?.height)
-      if (w > 0 && h > 0) {
-        if (shortestImg === null || w / h > shortestImg.w / shortestImg.h) {
-          shortestImg = { w, h }
-        }
-      }
-    }
+    const shortest = findShortestImageDims(imgs)
+    if (!shortest) return
 
-    if (shortestImg === null) return
-
-    const { w: widthVal, h: heightVal } = shortestImg
-
-    node.properties = node.properties || {}
-    const existingStyle = typeof node.properties.style === "string" ? node.properties.style : ""
-    // overflow:hidden is required on the element itself so that the aspect-ratio
-    // is authoritative for non-replaced elements (prevents content from stretching
-    // the box beyond the computed height).
-    const newStyles = `aspect-ratio: ${widthVal} / ${heightVal}; overflow: hidden;`
-    const separator =
-      existingStyle && !existingStyle.endsWith(";") && !existingStyle.endsWith(" ") ? " " : ""
-    node.properties.style = `${newStyles}${separator}${existingStyle}`.trim()
+    // overflow:hidden is required on the element itself so that aspect-ratio
+    // is authoritative for non-replaced elements: e.g. a slider 800px wide with
+    // aspect-ratio 16/9 has a preferred height of 450px, but the shadow DOM's
+    // .second div may contain a 2700px-tall image whose content height would
+    // stretch the box beyond 450px without overflow:hidden to enforce the cap.
+    prependStyles(node, `aspect-ratio: ${shortest.w} / ${shortest.h}; overflow: hidden;`)
   })
 }
 
