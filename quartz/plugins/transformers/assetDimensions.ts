@@ -429,6 +429,49 @@ export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
 }
 
 /**
+ * After image dimensions are set, constrain each img-comparison-slider's
+ * aspect-ratio to the shorter image so both sides render at the same height.
+ * The shadow DOM's overflow:hidden clips the taller image at the bottom.
+ */
+export function constrainSliderHeight(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "img-comparison-slider") return
+
+    const imgs = node.children.filter(
+      (child): child is Element => child.type === "element" && child.tagName === "img",
+    )
+    if (imgs.length < 2) return
+
+    // Find the image with the widest aspect ratio (shortest when rendered at the
+    // same width). Use its original width/height for a clean CSS aspect-ratio value.
+    let shortestImg: { w: number; h: number } | null = null
+    for (const img of imgs) {
+      const w = Number(img.properties?.width)
+      const h = Number(img.properties?.height)
+      if (w > 0 && h > 0) {
+        if (shortestImg === null || w / h > shortestImg.w / shortestImg.h) {
+          shortestImg = { w, h }
+        }
+      }
+    }
+
+    if (shortestImg === null) return
+
+    const { w: widthVal, h: heightVal } = shortestImg
+
+    node.properties = node.properties || {}
+    const existingStyle = typeof node.properties.style === "string" ? node.properties.style : ""
+    // overflow:hidden is required on the element itself so that the aspect-ratio
+    // is authoritative for non-replaced elements (prevents content from stretching
+    // the box beyond the computed height).
+    const newStyles = `aspect-ratio: ${widthVal} / ${heightVal}; overflow: hidden;`
+    const separator =
+      existingStyle && !existingStyle.endsWith(";") && !existingStyle.endsWith(" ") ? " " : ""
+    node.properties.style = `${newStyles}${separator}${existingStyle}`.trim()
+  })
+}
+
+/**
  * Creates a Quartz plugin that adds width, height, and aspect-ratio CSS to image and video elements.
  * In offline mode, uses cached dimensions only and skips remote asset fetches.
  */
@@ -456,6 +499,8 @@ export const addAssetDimensionsFromSrc = () => {
               await assetProcessor.maybeSaveAssetDimensions()
               assetProcessor["needToSaveCache"] = false
             }
+
+            constrainSliderHeight(tree)
           }
         },
       ]

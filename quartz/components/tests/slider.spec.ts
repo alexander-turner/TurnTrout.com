@@ -18,8 +18,6 @@ test.describe("img-comparison-slider", () => {
       const second = el.querySelector<HTMLImageElement>('[slot="second"]')
       if (!first || !second) throw new Error("Images not found")
 
-      // Both images have aspect-ratio set via assetDimensions, so their
-      // rendered heights reflect their aspect ratios at width: 100%.
       const h1 = first.getBoundingClientRect().height
       const h2 = second.getBoundingClientRect().height
 
@@ -29,7 +27,7 @@ test.describe("img-comparison-slider", () => {
       }
     })
 
-    // The slider should be constrained to the shorter image's height (±1px rounding)
+    // The slider's build-time aspect-ratio constrains it to the shorter image (±1px rounding)
     expect(sliderHeight).toBeGreaterThan(0)
     expect(sliderHeight).toBeLessThanOrEqual(minImageHeight + 1)
     expect(sliderHeight).toBeGreaterThanOrEqual(minImageHeight - 1)
@@ -39,8 +37,6 @@ test.describe("img-comparison-slider", () => {
     const slider = page.locator("img-comparison-slider").first()
     await expect(slider).toBeVisible()
 
-    // The design page slider compares images with different aspect ratios.
-    // The taller image's rendered height should exceed the slider's visible height.
     const { sliderHeight, maxImageHeight } = await page.evaluate(() => {
       const el = document.querySelector("img-comparison-slider")
       if (!el) throw new Error("Slider not found")
@@ -58,7 +54,7 @@ test.describe("img-comparison-slider", () => {
       }
     })
 
-    // The taller image is clipped — slider height is less than its rendered height
+    // The taller image overflows and is clipped — slider height < its rendered height
     expect(sliderHeight).toBeLessThan(maxImageHeight)
   })
 })

@@ -25,6 +25,7 @@ import {
   addAssetDimensionsFromSrc,
   type AssetDimensionMap,
   AssetProcessor,
+  constrainSliderHeight,
   paths,
   assetProcessor as globalAssetProcessor,
   setSpawnSyncForTesting,
@@ -1295,6 +1296,113 @@ describe("Asset Dimensions Plugin", () => {
       expect(dims).toEqual({ width: mockImageWidth, height: mockImageHeight })
 
       jest.dontMock("image-size")
+    })
+  })
+
+  describe("constrainSliderHeight", () => {
+    it("sets aspect-ratio on slider to the wider (shorter) image's ratio", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first", src: "a.png", width: 1920, height: 6581 }) as Element,
+            h("img", { slot: "second", src: "b.png", width: 1920, height: 1080 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const slider = tree.children[0] as Element
+      const style = slider.properties?.style as string
+      // 1920/1080 ≈ 1.7778 is wider than 1920/6581 ≈ 0.2918
+      // So the slider should use the second image's aspect ratio (the shorter one)
+      expect(style).toContain("aspect-ratio:")
+      expect(style).toContain("overflow: hidden")
+
+      // Should use the shorter image's exact dimensions (1920x1080)
+      expect(style).toContain("aspect-ratio: 1920 / 1080;")
+    })
+
+    it("does nothing when slider has fewer than 2 images", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first", src: "a.png", width: 100, height: 200 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const slider = tree.children[0] as Element
+      expect(slider.properties?.style).toBeUndefined()
+    })
+
+    it("does nothing when images lack dimensions", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first", src: "a.png" }) as Element,
+            h("img", { slot: "second", src: "b.png" }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const slider = tree.children[0] as Element
+      expect(slider.properties?.style).toBeUndefined()
+    })
+
+    it("preserves existing style on the slider", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            { style: "color: red;" },
+            h("img", { slot: "first", src: "a.png", width: 800, height: 600 }) as Element,
+            h("img", { slot: "second", src: "b.png", width: 800, height: 400 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const slider = tree.children[0] as Element
+      const style = slider.properties?.style as string
+      expect(style).toContain("color: red;")
+      expect(style).toContain("aspect-ratio:")
+    })
+
+    it("uses the shorter image when first is shorter", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first", src: "a.png", width: 800, height: 400 }) as Element,
+            h("img", { slot: "second", src: "b.png", width: 800, height: 2000 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const slider = tree.children[0] as Element
+      const style = slider.properties?.style as string
+      // 800/400 = 2.0 is wider than 800/2000 = 0.4, so it should use 800x400
+      expect(style).toContain("aspect-ratio: 800 / 400;")
     })
   })
 })
