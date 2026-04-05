@@ -199,6 +199,7 @@ export default (() => {
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
         <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
         <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
+        <script defer src="/static/scripts/slider-height.js" spa-preserve />
         {/* Show Elvish translations and stack before/after images when JavaScript is disabled */}
         <noscript>
           <style

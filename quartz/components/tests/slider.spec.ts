@@ -6,46 +6,59 @@ test.describe("img-comparison-slider", () => {
     await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
   })
 
-  test("slider height does not exceed 80vh", async ({ page }) => {
+  test("slider height matches the shorter image", async ({ page }) => {
     const slider = page.locator("img-comparison-slider").first()
     await expect(slider).toBeVisible()
 
-    const { sliderHeight, viewportHeight } = await page.evaluate(() => {
+    const { sliderHeight, minImageHeight } = await page.evaluate(() => {
       const el = document.querySelector("img-comparison-slider")
       if (!el) throw new Error("Slider not found")
+
+      const first = el.querySelector<HTMLImageElement>('[slot="first"]')
+      const second = el.querySelector<HTMLImageElement>('[slot="second"]')
+      if (!first || !second) throw new Error("Images not found")
+
+      // Both images have aspect-ratio set via assetDimensions, so their
+      // rendered heights reflect their aspect ratios at width: 100%.
+      const h1 = first.getBoundingClientRect().height
+      const h2 = second.getBoundingClientRect().height
+
       return {
         sliderHeight: el.getBoundingClientRect().height,
-        viewportHeight: window.innerHeight,
+        minImageHeight: Math.min(h1, h2),
       }
     })
 
-    const maxAllowed = viewportHeight * 0.8
-    expect(sliderHeight).toBeLessThanOrEqual(maxAllowed + 1) // +1 for rounding
+    // The slider should be constrained to the shorter image's height (±1px rounding)
+    expect(sliderHeight).toBeGreaterThan(0)
+    expect(sliderHeight).toBeLessThanOrEqual(minImageHeight + 1)
+    expect(sliderHeight).toBeGreaterThanOrEqual(minImageHeight - 1)
   })
 
-  test("slider clips tall images rather than expanding to full image height", async ({ page }) => {
+  test("slider clips the taller image rather than expanding", async ({ page }) => {
     const slider = page.locator("img-comparison-slider").first()
     await expect(slider).toBeVisible()
 
-    // The second (after) image is a full-page screenshot (1920x6581).
-    // At any reasonable container width, its natural height far exceeds 80vh.
-    // Verify the slider clips it rather than expanding to the full image height.
-    const { sliderHeight, secondImageRenderedHeight } = await page.evaluate(() => {
+    // The design page slider compares images with different aspect ratios.
+    // The taller image's rendered height should exceed the slider's visible height.
+    const { sliderHeight, maxImageHeight } = await page.evaluate(() => {
       const el = document.querySelector("img-comparison-slider")
       if (!el) throw new Error("Slider not found")
 
-      const secondImg = el.querySelector<HTMLImageElement>('[slot="second"]')
-      if (!secondImg) throw new Error("Second image not found")
+      const first = el.querySelector<HTMLImageElement>('[slot="first"]')
+      const second = el.querySelector<HTMLImageElement>('[slot="second"]')
+      if (!first || !second) throw new Error("Images not found")
 
       return {
         sliderHeight: el.getBoundingClientRect().height,
-        // The image's rendered height (height: auto) exceeds the slider due to overflow clipping
-        secondImageRenderedHeight: secondImg.getBoundingClientRect().height,
+        maxImageHeight: Math.max(
+          first.getBoundingClientRect().height,
+          second.getBoundingClientRect().height,
+        ),
       }
     })
 
-    // The image's rendered height should exceed the slider's visible height,
-    // proving the slider is clipping the overflow
-    expect(sliderHeight).toBeLessThan(secondImageRenderedHeight)
+    // The taller image is clipped — slider height is less than its rendered height
+    expect(sliderHeight).toBeLessThan(maxImageHeight)
   })
 })
