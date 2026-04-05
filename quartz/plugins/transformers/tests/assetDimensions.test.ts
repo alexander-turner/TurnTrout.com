@@ -1323,7 +1323,7 @@ describe("Asset Dimensions Plugin", () => {
           h("img", { width: 1920, height: 6581 }) as Element,
           h("img", { width: 1920, height: 1080 }) as Element,
         ],
-        expected: { w: 1920, h: 1080 },
+        expected: { width: 1920, height: 1080 },
       },
       {
         desc: "picks first when it is shorter",
@@ -1331,7 +1331,7 @@ describe("Asset Dimensions Plugin", () => {
           h("img", { width: 800, height: 400 }) as Element,
           h("img", { width: 800, height: 2000 }) as Element,
         ],
-        expected: { w: 800, h: 400 },
+        expected: { width: 800, height: 400 },
       },
       {
         desc: "returns null when no images have dimensions",
@@ -1349,7 +1349,7 @@ describe("Asset Dimensions Plugin", () => {
           h("img", { width: 0, height: 100 }) as Element,
           h("img", { width: 800, height: 600 }) as Element,
         ],
-        expected: { w: 800, h: 600 },
+        expected: { width: 800, height: 600 },
       },
     ])("$desc", ({ imgs, expected }) => {
       expect(findShortestImageDims(imgs)).toEqual(expected)

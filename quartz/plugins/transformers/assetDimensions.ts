@@ -435,13 +435,17 @@ export function prependStyles(node: Element, newStyles: string): void {
  * Returns the dimensions of the shortest image (widest aspect ratio) among
  * the given elements, or null if none have valid width/height properties.
  */
-export function findShortestImageDims(imgs: Element[]): { w: number; h: number } | null {
-  let result: { w: number; h: number } | null = null
+export function findShortestImageDims(imgs: Element[]): AssetDimensions | null {
+  let result: AssetDimensions | null = null
   for (const img of imgs) {
-    const w = Number(img.properties?.width)
-    const h = Number(img.properties?.height)
-    if (w > 0 && h > 0 && (result === null || w / h > result.w / result.h)) {
-      result = { w, h }
+    const width = Number(img.properties?.width)
+    const height = Number(img.properties?.height)
+    if (
+      width > 0 &&
+      height > 0 &&
+      (result === null || width / height > result.width / result.height)
+    ) {
+      result = { width, height }
     }
   }
   return result
@@ -469,7 +473,7 @@ export function constrainSliderHeight(tree: Root): void {
     // aspect-ratio 16/9 has a preferred height of 450px, but the shadow DOM's
     // .second div may contain a 2700px-tall image whose content height would
     // stretch the box beyond 450px without overflow:hidden to enforce the cap.
-    prependStyles(node, `aspect-ratio: ${shortest.w} / ${shortest.h}; overflow: hidden;`)
+    prependStyles(node, `aspect-ratio: ${shortest.width} / ${shortest.height}; overflow: hidden;`)
   })
 }
 
