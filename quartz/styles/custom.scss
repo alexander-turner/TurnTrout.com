@@ -987,6 +987,10 @@ img-comparison-slider {
   visibility: hidden;
   margin: calc(2 * $base-margin) 0;
 
+  // Prevent extremely tall sliders from full-page screenshots;
+  // the shadow DOM's overflow:hidden clips both images equally
+  max-height: 80vh;
+
   // Reset inherited img styles on images inside the slider
   > img {
     width: 100%;
