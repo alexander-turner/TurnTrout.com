@@ -1200,7 +1200,7 @@ Python dependency management
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-To verify that a commit `ABC012` was indeed committed by a given date, run
+To verify that a commit `ABC012` was indeed committed by a given date, run:
 
 ```shell
 git clone https://github.com/alexander-turner/.timestamps
