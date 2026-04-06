@@ -1,0 +1,56 @@
+version: 2
+
+# Socket.dev alert configuration: suppress quality/informational noise,
+# keep only genuine security and vulnerability alerts.
+#
+# issueRules only supports true/false (granular actions like warn/block
+# are configured in the Socket Dashboard, not here). Per-package
+# suppression is not supported in config — use PR bot commands instead:
+# `@SocketSecurity ignore pkg@version`
+#
+# NOTE: issueRules is deprecated (will be replaced by "repository labels")
+# but still works as of 2026.
+
+issueRules:
+  # ── Quality & maintenance (disable — not security-relevant) ──────
+  unpopularPackage: false
+  minifiedFile: false
+  badSemverDependency: false
+  floatingDependency: false
+  deprecated: false
+  unmaintained: false
+  trivialPackage: false
+
+  # ── Known false positives (high noise on legitimate packages) ────
+  # obfuscatedFile: fires on packages with generated lookup tables
+  # (entities, buffer, he, etc.) — not actual obfuscation
+  obfuscatedFile: false
+  # hasNativeCode: flags legitimate native addons (sharp, esbuild, etc.)
+  hasNativeCode: false
+
+  # ── Low-severity informational (too noisy for a static site) ─────
+  envVars: false
+  filesystemAccess: false
+  urlStrings: false
+  debugAccess: false
+  dynamicRequire: false
+  highEntropyStrings: false
+  newAuthor: false
+
+  # ── License alerts (not vulnerability-related) ──────────────────
+  ambiguousClassifier: false
+  copyleftLicense: false
+  licenseException: false
+  noLicenseFound: false
+  nonpermissiveLicense: false
+  unidentifiedLicense: false
+  miscLicenseIssues: false
+
+  # ── KEPT ENABLED (genuine security/supply-chain risks) ──────────
+  # criticalCVE, cve, mediumCVE, mildCVE — vulnerability alerts
+  # malware, didYouMean, gptMalware — malicious package detection
+  # gptSecurity, gptAnomaly, gptDidYouMean — AI security analysis
+  # telemetry, networkAccess, shellAccess, installScripts — supply chain
+  # troll, unstableOwnership, manifestConfusion — tampering signals
+  # potentialVulnerability, gitDependency, httpDependency — risk signals
+  # explicitlyUnlicensedItem, licenseSpdxDisj — high-severity license
