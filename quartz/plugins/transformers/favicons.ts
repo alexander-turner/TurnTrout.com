@@ -34,14 +34,13 @@ const logger = createWinstonLogger("linkFavicons")
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-// istanbul ignore if
-if (!fs.existsSync(faviconUrlsFile)) {
-  try {
-    fs.writeFileSync(faviconUrlsFile, "")
-  } catch {
-    throw new Error(
-      `Favicon URL cache file not found at path ${faviconUrlsFile}; create it with \`touch\` if that's the right path.`,
-    )
+// Atomically create the file if it doesn't exist; harmless if it already does.
+// istanbul ignore next -- module-level init; EEXIST race is impractical to unit test
+try {
+  fs.writeFileSync(faviconUrlsFile, "", { flag: "wx" })
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+    throw error
   }
 }
 

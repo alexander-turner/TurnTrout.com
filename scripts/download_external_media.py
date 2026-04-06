@@ -13,6 +13,7 @@ import sys
 import time
 from pathlib import Path
 from typing import Sequence
+from urllib.parse import urlparse
 
 try:
     from . import utils as script_utils
@@ -54,7 +55,10 @@ def download_media(url: str, target_dir: Path) -> bool:
     Returns:
         True if download succeeded, False otherwise
     """
-    filename = os.path.basename(url)
+    filename = os.path.basename(urlparse(url).path)
+    if not filename:
+        print(f"Skipping URL with no filename: {url}", file=sys.stderr)
+        return False
     target_path = target_dir / filename
 
     print(f"Downloading: {url} to {target_path}")
@@ -157,7 +161,7 @@ def main() -> None:
         if not download_media(url, asset_staging_dir):
             continue
 
-        filename = os.path.basename(url)
+        filename = os.path.basename(urlparse(url).path)
         new_url = f"asset_staging/{filename}"
         print(f"Downloaded to {new_url}")
 
