@@ -30,7 +30,7 @@ if [ -n "$(ls -A "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
 fi
 
 # Convert images to AVIF format, mp4s to webm/HEVC, and remove metadata
-IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif new_site.avif)
+IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif new_site.avif original_site.avif)
 uv run python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" "${IGNORE_FILES[@]}" --remove-originals
 
 # Left over original files
