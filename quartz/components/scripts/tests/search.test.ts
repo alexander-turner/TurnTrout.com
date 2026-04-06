@@ -21,6 +21,9 @@ import {
   navigateWithSearchTerm,
   scrollContainerToMatch,
   matchHTML,
+  getSearchStateForTesting,
+  resetSearchStateForTesting,
+  initializeSearch,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -690,5 +693,65 @@ describe("navigateWithSearchTerm", () => {
     const mockFn = window.spaNavigate as jest.Mock
     const calledUrl = mockFn.mock.calls[0][0] as URL
     expect(calledUrl.hash).toBe("#:~:text=test%20%26%20query")
+  })
+})
+
+describe("initializeSearch retry after failed fetch", () => {
+  beforeEach(() => {
+    resetSearchStateForTesting()
+    document.body.innerHTML = `
+      <div id="search-container">
+        <input id="search-bar" type="text" placeholder="Search" />
+        <div id="search-layout" data-preview="false"></div>
+      </div>
+    `
+    setSearchLayoutForTesting(document.getElementById("search-layout"))
+  })
+
+  afterEach(() => {
+    resetSearchStateForTesting()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (globalThis as any).getContentIndex
+  })
+
+  it("should not mark search as initialized when data fetch returns null", async () => {
+    // Simulate getContentIndex returning null (fetch failure)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(false)
+    expect(state.hasData).toBe(false)
+    expect(state.hasIndex).toBe(false)
+  })
+
+  it("should allow retry after a failed initialization", async () => {
+    // First attempt: getContentIndex returns null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+
+    await initializeSearch()
+    expect(getSearchStateForTesting().searchInitialized).toBe(false)
+
+    // Second attempt: getContentIndex returns valid data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).getContentIndex = () =>
+      Promise.resolve({
+        "test-slug": {
+          title: "Test Page",
+          content: "Test content for searching",
+          slug: "test-slug",
+          authors: ["Author"],
+        },
+      })
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(true)
+    expect(state.hasData).toBe(true)
+    expect(state.hasIndex).toBe(true)
   })
 })

@@ -512,6 +512,26 @@ let data: { [key: FullSlug]: ContentDetails } | undefined
 export function setSearchLayoutForTesting(layout: HTMLElement | null) {
   searchLayout = layout
 }
+
+// Test helpers for verifying search initialization retry behavior
+export function getSearchStateForTesting() {
+  return {
+    searchInitialized,
+    searchInitializing,
+    hasData: data !== undefined && data !== null,
+    hasIndex: index !== null,
+  }
+}
+
+export function resetSearchStateForTesting() {
+  searchInitialized = false
+  searchInitializing = false
+  initializationPromise = null
+  data = undefined
+  index = null
+}
+
+export { initializeSearch }
 let results: HTMLElement
 let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
