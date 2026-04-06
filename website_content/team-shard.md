@@ -102,7 +102,4 @@ Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assemble
 
 # Apply today
 
-![[https://assets.turntrout.com/static/images/posts/team-shard-12222025.avif|Five people outside of a gym loosely spell "S H A R D" with their poses, with green lettering drawn over each person.]]
-Figure: Team Shard in the summer of '25. From left: [Luke Marks](https://lukemarks.bot/), [Jacob Drori](https://scholar.google.com/citations?user=ahvoHMIAAAAJ&hl=en), [Victor Gillioz](https://www.linkedin.com/in/victor-gillioz/), Alex Turner, and [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/).
-
 MATS only runs a few times per year. First, [check when applications next open.](https://www.matsprogram.org/faq) Then [apply](https://www.matsprogram.org/apply) and indicate you want to work with Team Shard.
