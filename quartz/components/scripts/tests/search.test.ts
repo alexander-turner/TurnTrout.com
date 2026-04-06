@@ -21,6 +21,10 @@ import {
   navigateWithSearchTerm,
   scrollContainerToMatch,
   matchHTML,
+  getSearchStateForTesting,
+  resetSearchStateForTesting,
+  setSearchInitializedForTesting,
+  initializeSearch,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -28,6 +32,21 @@ const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 jest.mock("../../../styles/variables", () => ({
   tabletBreakpoint: 800,
 }))
+
+/** Set the global getContentIndex stub used by initializeSearch.
+ *  The cast is needed because tests return null to simulate fetch failures,
+ *  which the production declaration doesn't allow. */
+function stubGetContentIndex(fn: () => Promise<Record<string, unknown> | null>): void {
+  globalThis.getContentIndex = fn as typeof getContentIndex
+}
+
+/** Remove the global getContentIndex stub. */
+function removeGetContentIndex(): void {
+  // The global declaration marks getContentIndex as a required function,
+  // but in tests we need to remove it to avoid leaking between tests.
+  // Reflect.deleteProperty works on the global object without a type cast.
+  Reflect.deleteProperty(globalThis, "getContentIndex")
+}
 
 describe("Search Module Functions", () => {
   let rootNode: HTMLElement
@@ -223,6 +242,14 @@ describe("showSearch", () => {
     container = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
     navbar = document.getElementById("navbar") as HTMLElement
+    // Simulate already-initialized search so showSearch exercises the
+    // "already initialized" path (lines 458-473) instead of delegating
+    // to maybeInitializeSearch.
+    setSearchInitializedForTesting(true)
+  })
+
+  afterEach(() => {
+    resetSearchStateForTesting()
   })
 
   it("should make the search container active and focus the search bar", () => {
@@ -244,6 +271,19 @@ describe("showSearch", () => {
 
   it("should not throw if the container or search bar is not found", () => {
     expect(() => showSearch(null, null)).not.toThrow()
+  })
+
+  it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {})
+    resetSearchStateForTesting()
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await showSearch(container, searchBar)
+
+    expect(container.classList.contains("active")).toBe(true)
+    expect(document.body.style.overflow).toBe("hidden")
+    removeGetContentIndex()
+    spy.mockRestore()
   })
 })
 
@@ -690,5 +730,66 @@ describe("navigateWithSearchTerm", () => {
     const mockFn = window.spaNavigate as jest.Mock
     const calledUrl = mockFn.mock.calls[0][0] as URL
     expect(calledUrl.hash).toBe("#:~:text=test%20%26%20query")
+  })
+})
+
+describe("initializeSearch retry after failed fetch", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    resetSearchStateForTesting()
+    document.body.innerHTML = `
+      <div id="search-container">
+        <input id="search-bar" type="text" placeholder="Search" />
+        <div id="search-layout" data-preview="false"></div>
+      </div>
+    `
+    setSearchLayoutForTesting(document.getElementById("search-layout"))
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+    resetSearchStateForTesting()
+    removeGetContentIndex()
+  })
+
+  it("should not mark search as initialized when data fetch returns null", async () => {
+    // Simulate getContentIndex returning null (fetch failure)
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(false)
+    expect(state.hasData).toBe(false)
+    expect(state.hasIndex).toBe(false)
+  })
+
+  it("should allow retry after a failed initialization", async () => {
+    // First attempt: getContentIndex returns null
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await initializeSearch()
+    expect(getSearchStateForTesting().searchInitialized).toBe(false)
+
+    // Second attempt: getContentIndex returns valid data
+    stubGetContentIndex(() =>
+      Promise.resolve({
+        "test-slug": {
+          title: "Test Page",
+          content: "Test content for searching",
+          slug: "test-slug",
+          authors: ["Author"],
+        },
+      }),
+    )
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(true)
+    expect(state.hasData).toBe(true)
+    expect(state.hasIndex).toBe(true)
   })
 })
