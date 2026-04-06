@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-03 00:30:36.502652
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
@@ -1200,7 +1202,7 @@ Python dependency management
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
 
-To verify that a commit `ABC012` was indeed committed by a given date, run
+To verify that a commit `ABC012` was indeed committed by a given date, run:
 
 ```shell
 git clone https://github.com/alexander-turner/.timestamps

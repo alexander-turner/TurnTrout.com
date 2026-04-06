@@ -11,9 +11,10 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-03 00:30:36.502652
 createBibtex: true
 ---
+
 
 
 
@@ -88,7 +89,7 @@ Unordered list inside a description list
   - Roam / note-taking
 
 Code block in a `<dl>`
-: To verify that a commit `ABC012` was indeed committed by a given date, run
+: To verify that a commit `ABC012` was indeed committed by a given date, run:
 
   ```shell
   git clone https://github.com/alexander-turner/.timestamps

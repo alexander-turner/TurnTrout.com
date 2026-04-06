@@ -2,7 +2,7 @@ import subprocess
 import tempfile
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import call, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 import yaml
@@ -771,20 +771,53 @@ def test_update_readme_copyright_year_pattern_not_found(
 
 
 def test_commit_changes():
+    mock_diff_result = MagicMock()
+    mock_diff_result.returncode = 1  # Has staged changes
+
     with (
         patch(
             "scripts.update_date_on_publish.script_utils.find_executable",
             return_value="git",
         ),
-        patch("scripts.update_date_on_publish.subprocess.run") as mock_run,
+        patch(
+            "scripts.update_date_on_publish.subprocess.run",
+            side_effect=[
+                MagicMock(),  # git add -A
+                mock_diff_result,  # git diff --cached --quiet (returncode=1 means changes exist)
+                MagicMock(),  # git commit
+            ],
+        ) as mock_run,
     ):
         test_message = "chore: test message"
         update_lib.commit_changes(test_message)
         expected_calls = [
             call(["git", "add", "-A"], check=True),
+            call(["git", "diff", "--cached", "--quiet"], check=False),
             call(["git", "commit", "-m", test_message], check=True),
         ]
         mock_run.assert_has_calls(expected_calls, any_order=False)
+
+
+def test_commit_changes_nothing_to_commit():
+    mock_diff_result = MagicMock()
+    mock_diff_result.returncode = 0  # No staged changes
+
+    with (
+        patch(
+            "scripts.update_date_on_publish.script_utils.find_executable",
+            return_value="git",
+        ),
+        patch(
+            "scripts.update_date_on_publish.subprocess.run",
+            side_effect=[
+                MagicMock(),  # git add -A
+                mock_diff_result,  # git diff --cached --quiet (returncode=0 means no changes)
+            ],
+        ) as mock_run,
+    ):
+        update_lib.commit_changes("chore: test")
+        # Should not call git commit
+        assert mock_run.call_count == 2
 
 
 def test_main_no_changes_no_modifications(

@@ -18,9 +18,11 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23 00:16:38.244546
-date_updated: 2026-01-10 10:26:40.099417
+date_updated: 2026-04-02 22:05:04.183490
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
+
+
 
 
 
@@ -54,7 +56,7 @@ Compared to other MATS streams, Team Shard has some of the best team culture and
 
 Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, Team Shard lifted together every Wednesday and Thursday in MATS 8.0.
 
-![[team-shard-04022026.png|]]
+![[https://assets.turntrout.com/static/images/posts/team-shard-04022026.avif|Sixteen people happily flex for the camera. Alex wears a Shrek tank top.]]
 
 Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day). :)
 

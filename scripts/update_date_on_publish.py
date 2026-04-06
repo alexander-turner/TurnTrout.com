@@ -200,6 +200,16 @@ def update_readme_copyright_year(current_datetime: datetime) -> bool:
 def commit_changes(message: str) -> None:
     git_executable = script_utils.find_executable("git")
     subprocess.run([git_executable, "add", "-A"], check=True)
+
+    # Check if there are staged changes before committing
+    result = subprocess.run(
+        [git_executable, "diff", "--cached", "--quiet"],
+        check=False,
+    )
+    if result.returncode == 0:
+        # No staged changes, nothing to commit
+        return
+
     subprocess.run([git_executable, "commit", "-m", message], check=True)
 
 
