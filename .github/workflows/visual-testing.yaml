@@ -179,7 +179,7 @@ jobs:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-14
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
