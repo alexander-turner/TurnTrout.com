@@ -1304,17 +1304,22 @@ async function initializeSearch(): Promise<void> {
       }
       if (data) {
         await fillDocument(data)
-      }
 
-      searchInitialized = true
-      // Signal to tests that the index is ready. Unlike __searchHandlersReady,
-      // this is never reset — the index persists across SPA navigations.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window as any).__searchIndexReady = true
-      document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
+        searchInitialized = true
+        // Signal to tests that the index is ready. Unlike __searchHandlersReady,
+        // this is never reset — the index persists across SPA navigations.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(window as any).__searchIndexReady = true
+        document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
+      } else {
+        // Data fetch failed — don't mark as initialized so retry is possible
+        index = null
+        console.error("Search data fetch returned null — will retry on next attempt")
+      }
     } catch (error) {
       console.error("Error initializing search:", error)
       searchBar.placeholder = "Search failed to load."
+      index = null
     } finally {
       searchInitializing = false
 
