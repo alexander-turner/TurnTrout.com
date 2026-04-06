@@ -33,6 +33,21 @@ jest.mock("../../../styles/variables", () => ({
   tabletBreakpoint: 800,
 }))
 
+/** Set the global getContentIndex stub used by initializeSearch.
+ *  The cast is needed because tests return null to simulate fetch failures,
+ *  which the production declaration doesn't allow. */
+function stubGetContentIndex(fn: () => Promise<Record<string, unknown> | null>): void {
+  globalThis.getContentIndex = fn as typeof getContentIndex
+}
+
+/** Remove the global getContentIndex stub. */
+function removeGetContentIndex(): void {
+  // The global declaration marks getContentIndex as a required function,
+  // but in tests we need to remove it to avoid leaking between tests.
+  // Reflect.deleteProperty works on the global object without a type cast.
+  Reflect.deleteProperty(globalThis, "getContentIndex")
+}
+
 describe("Search Module Functions", () => {
   let rootNode: HTMLElement
 
@@ -259,16 +274,16 @@ describe("showSearch", () => {
   })
 
   it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+    stubGetContentIndex(() => Promise.resolve(null))
 
     await showSearch(container, searchBar)
 
     expect(container.classList.contains("active")).toBe(true)
     expect(document.body.style.overflow).toBe("hidden")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).getContentIndex
+    removeGetContentIndex()
+    spy.mockRestore()
   })
 })
 
@@ -719,7 +734,10 @@ describe("navigateWithSearchTerm", () => {
 })
 
 describe("initializeSearch retry after failed fetch", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+
   beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
     document.body.innerHTML = `
       <div id="search-container">
@@ -731,15 +749,14 @@ describe("initializeSearch retry after failed fetch", () => {
   })
 
   afterEach(() => {
+    consoleErrorSpy.mockRestore()
     resetSearchStateForTesting()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete (globalThis as any).getContentIndex
+    removeGetContentIndex()
   })
 
   it("should not mark search as initialized when data fetch returns null", async () => {
     // Simulate getContentIndex returning null (fetch failure)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+    stubGetContentIndex(() => Promise.resolve(null))
 
     await initializeSearch()
 
@@ -751,15 +768,13 @@ describe("initializeSearch retry after failed fetch", () => {
 
   it("should allow retry after a failed initialization", async () => {
     // First attempt: getContentIndex returns null
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+    stubGetContentIndex(() => Promise.resolve(null))
 
     await initializeSearch()
     expect(getSearchStateForTesting().searchInitialized).toBe(false)
 
     // Second attempt: getContentIndex returns valid data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(globalThis as any).getContentIndex = () =>
+    stubGetContentIndex(() =>
       Promise.resolve({
         "test-slug": {
           title: "Test Page",
@@ -767,7 +782,8 @@ describe("initializeSearch retry after failed fetch", () => {
           slug: "test-slug",
           authors: ["Author"],
         },
-      })
+      }),
+    )
 
     await initializeSearch()
 

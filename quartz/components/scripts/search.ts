@@ -517,7 +517,6 @@ export function setSearchLayoutForTesting(layout: HTMLElement | null) {
 export function getSearchStateForTesting() {
   return {
     searchInitialized,
-    searchInitializing,
     hasData: data !== undefined && data !== null,
     hasIndex: index !== null,
   }
@@ -536,6 +535,7 @@ export function setSearchInitializedForTesting(value: boolean) {
 }
 
 export { initializeSearch }
+
 let results: HTMLElement
 let preview: HTMLDivElement | undefined
 let currentHover: HTMLElement | null = null
