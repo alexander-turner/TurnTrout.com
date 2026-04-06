@@ -422,33 +422,43 @@ export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
 }
 
 /**
- * Prepends CSS declarations to an element's inline style, normalizing
- * whitespace/semicolons so the result is always valid CSS.
+ * Prepends CSS declarations to an element's inline style.
  */
 export function prependStyles(node: Element, newStyles: string): void {
   node.properties = node.properties || {}
-  const existing = (typeof node.properties.style === "string" ? node.properties.style : "").trim()
-  node.properties.style = existing ? `${newStyles} ${existing}` : newStyles
+  const existingStyle = (
+    typeof node.properties.style === "string" ? node.properties.style : ""
+  ).trim()
+  node.properties.style = existingStyle ? `${newStyles} ${existingStyle}` : newStyles
 }
 
 /**
- * Returns the dimensions of the shortest image (widest aspect ratio) among
- * the given elements, or null if none have valid width/height properties.
+ * Given the child images of an img-comparison-slider, returns the dimensions
+ * of the image with the widest aspect ratio (i.e. shortest rendered height at
+ * equal width). Throws if any image lacks valid dimensions.
  */
-export function findShortestImageDims(imgs: Element[]): AssetDimensions | null {
-  let result: AssetDimensions | null = null
-  for (const img of imgs) {
-    const width = Number(img.properties?.width)
-    const height = Number(img.properties?.height)
-    if (
-      width > 0 &&
-      height > 0 &&
-      (result === null || width / height > result.width / result.height)
-    ) {
-      result = { width, height }
+export function findWidestAspectRatio(images: Element[]): AssetDimensions {
+  if (images.length === 0) {
+    throw new Error("findWidestAspectRatio requires at least one image")
+  }
+
+  let widest: AssetDimensions = { width: 0, height: 0 }
+  let widestRatio = -Infinity
+  for (const image of images) {
+    const imageWidth = Number(image.properties?.width)
+    const imageHeight = Number(image.properties?.height)
+    if (!(imageWidth > 0) || !(imageHeight > 0)) {
+      throw new Error(
+        `img-comparison-slider image missing dimensions: src="${image.properties?.src}"`,
+      )
+    }
+    const aspectRatio = imageWidth / imageHeight
+    if (aspectRatio > widestRatio) {
+      widestRatio = aspectRatio
+      widest = { width: imageWidth, height: imageHeight }
     }
   }
-  return result
+  return widest
 }
 
 /**
@@ -460,13 +470,14 @@ export function constrainSliderHeight(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "img-comparison-slider") return
 
-    const imgs = node.children.filter(
+    const images = node.children.filter(
       (child): child is Element => child.type === "element" && child.tagName === "img",
     )
-    if (imgs.length < 2) return
+    if (images.length < 2) {
+      throw new Error("img-comparison-slider must have at least 2 child <img> elements")
+    }
 
-    const shortest = findShortestImageDims(imgs)
-    if (!shortest) return
+    const shortest = findWidestAspectRatio(images)
 
     // overflow:hidden is required on the element itself so that aspect-ratio
     // is authoritative for non-replaced elements: e.g. a slider 800px wide with

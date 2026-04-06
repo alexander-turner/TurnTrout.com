@@ -26,7 +26,7 @@ import {
   type AssetDimensionMap,
   AssetProcessor,
   constrainSliderHeight,
-  findShortestImageDims,
+  findWidestAspectRatio,
   prependStyles,
   paths,
   assetProcessor as globalAssetProcessor,
@@ -1315,11 +1315,11 @@ describe("Asset Dimensions Plugin", () => {
     })
   })
 
-  describe("findShortestImageDims", () => {
+  describe("findWidestAspectRatio", () => {
     it.each([
       {
         desc: "picks the wider aspect ratio (shorter image)",
-        imgs: [
+        images: [
           h("img", { width: 1920, height: 6581 }) as Element,
           h("img", { width: 1920, height: 1080 }) as Element,
         ],
@@ -1327,32 +1327,24 @@ describe("Asset Dimensions Plugin", () => {
       },
       {
         desc: "picks first when it is shorter",
-        imgs: [
+        images: [
           h("img", { width: 800, height: 400 }) as Element,
           h("img", { width: 800, height: 2000 }) as Element,
         ],
         expected: { width: 800, height: 400 },
       },
-      {
-        desc: "returns null when no images have dimensions",
-        imgs: [h("img") as Element, h("img") as Element],
-        expected: null,
-      },
-      {
-        desc: "returns null for empty array",
-        imgs: [],
-        expected: null,
-      },
-      {
-        desc: "skips images with zero dimensions",
-        imgs: [
-          h("img", { width: 0, height: 100 }) as Element,
-          h("img", { width: 800, height: 600 }) as Element,
-        ],
-        expected: { width: 800, height: 600 },
-      },
-    ])("$desc", ({ imgs, expected }) => {
-      expect(findShortestImageDims(imgs)).toEqual(expected)
+    ])("$desc", ({ images, expected }) => {
+      expect(findWidestAspectRatio(images)).toEqual(expected)
+    })
+
+    it("throws when an image lacks dimensions", () => {
+      const images = [
+        h("img", { src: "a.png" }) as Element,
+        h("img", { src: "b.png", width: 800, height: 600 }) as Element,
+      ]
+      expect(() => findWidestAspectRatio(images)).toThrow(
+        'img-comparison-slider image missing dimensions: src="a.png"',
+      )
     })
   })
 
@@ -1376,21 +1368,37 @@ describe("Asset Dimensions Plugin", () => {
       expect(style).toBe("aspect-ratio: 1920 / 1080; overflow: hidden;")
     })
 
-    it.each([
-      { desc: "fewer than 2 images", children: [h("img", { width: 100, height: 200 })] },
-      {
-        desc: "images lack dimensions",
-        children: [h("img", { slot: "first" }), h("img", { slot: "second" })],
-      },
-    ])("does nothing when $desc", ({ children }) => {
+    it("throws when slider has fewer than 2 images", () => {
       const tree: Root = {
         type: "root",
-        children: [h("img-comparison-slider", {}, ...(children as Element[])) as Element],
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { width: 100, height: 200 }) as Element,
+          ) as Element,
+        ],
       }
 
-      constrainSliderHeight(tree)
+      expect(() => constrainSliderHeight(tree)).toThrow(
+        "img-comparison-slider must have at least 2 child <img> elements",
+      )
+    })
 
-      expect((tree.children[0] as Element).properties?.style).toBeUndefined()
+    it("throws when images lack dimensions", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first" }) as Element,
+            h("img", { slot: "second" }) as Element,
+          ) as Element,
+        ],
+      }
+
+      expect(() => constrainSliderHeight(tree)).toThrow("missing dimensions")
     })
 
     it("preserves existing style on the slider", () => {
