@@ -35,6 +35,7 @@ const logger = createWinstonLogger("linkFavicons")
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
 // Atomically create the file if it doesn't exist; harmless if it already does.
+// istanbul ignore next -- module-level init; EEXIST race is impractical to unit test
 try {
   fs.writeFileSync(faviconUrlsFile, "", { flag: "wx" })
 } catch (error) {
