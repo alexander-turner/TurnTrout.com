@@ -294,87 +294,63 @@ export function htmlAccessibilityPlugin() {
 
     makePreElementsKeyboardAccessible(tree)
     makeMermaidSvgsAccessible(tree)
+    optimizeMermaidSvgs(tree)
     ensureVideoCaptionTracks(tree)
-    deduplicateSvgIds(tree)
   }
 }
 
-/** Replaces `url(#oldId)` references using an ID mapping. */
-function remapUrlIdReferences(text: string, idMap: Map<string, string>): string {
-  return text.replace(/url\(#(?<urlId>[^)]+)\)/g, (match, _urlId, _offset, _str, { urlId }) => {
-    return idMap.has(urlId) ? `url(#${idMap.get(urlId)})` : match
-  })
-}
-
-/** Collects all element IDs within an SVG and renames them with a prefix. */
-function collectAndPrefixIds(svg: Element, prefix: string): Map<string, string> {
-  const idMap = new Map<string, string>()
-  visit(svg, "element", (child: Element) => {
-    if (child.properties?.id) {
-      const oldId = String(child.properties.id)
-      idMap.set(oldId, `${prefix}${oldId}`)
-      child.properties.id = `${prefix}${oldId}`
-    }
-  })
-  return idMap
-}
-
-/** Updates href, xlinkHref, and url(#id) attribute references. */
-function updatePropertyReferences(svg: Element, idMap: Map<string, string>): void {
-  visit(svg, "element", (child: Element) => {
-    if (!child.properties) return
-
-    for (const [key, value] of Object.entries(child.properties)) {
-      if (typeof value !== "string") continue
-
-      if ((key === "href" || key === "xlinkHref") && value.startsWith("#")) {
-        const refId = value.slice(1)
-        if (idMap.has(refId)) {
-          child.properties[key] = `#${idMap.get(refId)}`
-        }
-      }
-
-      if (value.includes("url(#")) {
-        child.properties[key] = remapUrlIdReferences(value, idMap)
-      }
-    }
-  })
-}
-
-/** Updates ID references inside inline `<style>` elements. */
-function updateStyleReferences(svg: Element, idMap: Map<string, string>): void {
-  visit(svg, "element", (child: Element) => {
-    if (child.tagName !== "style") return
-    for (const textChild of child.children) {
-      if (textChild.type !== "text") continue
-
-      if (textChild.value.includes("url(#")) {
-        textChild.value = remapUrlIdReferences(textChild.value, idMap)
-      }
-
-      for (const [oldId, newId] of idMap) {
-        textChild.value = textChild.value.replaceAll(`#${oldId}`, `#${newId}`)
-      }
-    }
-  })
-}
-
-/**
- * Makes SVG internal IDs unique by adding a per-SVG prefix.
- * When multiple SVGs are inlined (e.g., Mermaid diagrams), their internal IDs
- * (markers, clipPaths, etc.) can collide. This function prefixes each SVG's IDs
- * with a unique identifier based on its position in the document.
- */
-export function deduplicateSvgIds(tree: Root): void {
-  let svgIndex = 0
+/** Strips unused CSS and unnecessary attributes from mermaid SVG output.
+ * Mermaid ≥11.14.0 emits neo look CSS selectors and verbose data-* attributes
+ * that aren't needed for static server-rendered SVGs. */
+export function optimizeMermaidSvgs(tree: Root): void {
   visit(tree, "element", (node: Element) => {
     if (node.tagName !== "svg") return
+    if (!node.properties?.id?.toString().startsWith("mermaid")) return
 
-    const idMap = collectAndPrefixIds(node, `svg-${svgIndex++}-`)
-    if (idMap.size === 0) return
+    // Strip unused [data-look="neo"] CSS rules from inline <style>
+    visit(node, "element", (child: Element) => {
+      if (child.tagName !== "style") return
+      for (const textChild of child.children) {
+        if (textChild.type !== "text") continue
+        textChild.value = textChild.value.replace(/[^{}]*\[data-look="neo"\][^{]*\{[^}]*\}/g, "")
+      }
+    })
 
-    updatePropertyReferences(node, idMap)
-    updateStyleReferences(node, idMap)
+    // Strip runtime data-* attributes not needed for static rendering
+    const unnecessaryAttrs = ["dataPoints", "dataId", "dataEt", "dataEdge", "dataLook"]
+    visit(node, "element", (child: Element) => {
+      if (!child.properties) return
+      for (const attr of unnecessaryAttrs) {
+        delete child.properties[attr]
+      }
+    })
+
+    // Remove unreferenced <marker> elements (mermaid 11.14.0 adds margin
+    // variants that are defined but never used in url() references)
+    removeUnreferencedMarkers(node)
+  })
+}
+
+/** Collects all url(#id) references in an SVG, then removes any `<marker>`
+ * elements whose IDs are not referenced. */
+export function removeUnreferencedMarkers(svg: Element): void {
+  const referencedIds = new Set<string>()
+  visit(svg, "element", (child: Element) => {
+    if (!child.properties) return
+    for (const value of Object.values(child.properties)) {
+      if (typeof value !== "string") continue
+      for (const match of value.matchAll(/url\(#(?<id>[^)]+)\)/g)) {
+        referencedIds.add(match.groups!.id)
+      }
+    }
+  })
+
+  visit(svg, "element", (parent: Element) => {
+    parent.children = parent.children.filter((child) => {
+      if (child.type !== "element" || child.tagName !== "marker") return true
+      const id = child.properties?.id?.toString()
+      return !id || referencedIds.has(id)
+    })
   })
 }
 
