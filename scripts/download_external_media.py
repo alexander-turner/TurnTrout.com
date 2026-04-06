@@ -55,9 +55,7 @@ def download_media(url: str, target_dir: Path) -> bool:
     Returns:
         True if download succeeded, False otherwise
     """
-    # Extract filename from URL path, stripping query params and fragments
-    parsed_url = urlparse(url)
-    filename = os.path.basename(parsed_url.path)
+    filename = os.path.basename(urlparse(url).path)
     if not filename:
         print(f"Skipping URL with no filename: {url}", file=sys.stderr)
         return False
@@ -163,8 +161,7 @@ def main() -> None:
         if not download_media(url, asset_staging_dir):
             continue
 
-        parsed_url = urlparse(url)
-        filename = os.path.basename(parsed_url.path)
+        filename = os.path.basename(urlparse(url).path)
         new_url = f"asset_staging/{filename}"
         print(f"Downloaded to {new_url}")
 
