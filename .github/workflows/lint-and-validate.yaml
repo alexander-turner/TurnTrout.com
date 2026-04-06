@@ -109,8 +109,82 @@ jobs:
               - 'config/constants.json'
               - '.github/actions/**'
 
+  autofix:
+    needs: [detect-changes]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    # Auto-fix formatting on PRs and dev branch pushes (not main, not merge queue)
+    if: >
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true') &&
+      (github.event_name == 'pull_request' ||
+       (github.event_name == 'push' && github.ref == 'refs/heads/dev'))
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-python: "false"
+
+      - name: Generate SCSS variables
+        if: needs.detect-changes.outputs.styles == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Run ESLint --fix
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint . --fix --config config/javascript/eslint.config.js
+
+      - name: Run Stylelint --fix
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec stylelint \
+            --config config/stylelint/.stylelintrc.json \
+            --fix \
+            "quartz/**/*.scss"
+
+      - name: Run Prettier on styles
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec prettier --write \
+            --config config/prettier/.prettierrc \
+            --ignore-path config/prettier/.prettierignore \
+            "quartz/**/*.scss"
+
+      - name: Run Prettier on code
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec prettier --write \
+            --config config/prettier/.prettierrc \
+            --ignore-path config/prettier/.prettierignore \
+            "quartz/**/*.{js,jsx,ts,tsx}"
+
+      - name: Commit and push fixes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Only stage files that formatters could have modified
+          git add 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx'
+          if [[ -n $(git diff --cached --name-only) ]]; then
+            git commit -m "style: auto-fix formatting [skip ci]"
+            git push
+            echo "::notice::Pushed auto-fix formatting commit"
+          else
+            echo "::notice::No formatting changes needed"
+          fi
+
   lint:
-    needs: [update-dates, detect-changes]
+    needs: [update-dates, detect-changes, autofix]
     # Run if detect-changes found changes, and not a deepsource PR
     # update-dates is allowed to be skipped (runs only on push to main by users)
     # Skip if update-dates pushed changes (the new commit will trigger a fresh workflow)
@@ -126,7 +200,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
+      # When autofix ran (PRs/dev), check out the branch tip to get any fix commit.
+      # Otherwise (main/merge_group), use the default SHA that triggered the workflow.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: needs.autofix.result == 'success'
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: needs.autofix.result != 'success'
 
       - name: Setup site
         uses: ./.github/actions/setup-site
