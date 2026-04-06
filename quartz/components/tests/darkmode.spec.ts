@@ -13,19 +13,24 @@ const AUTO_THEME: Theme = "light"
 const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
+const POSTSCRIPT_TIMEOUT_MS = 15_000
+
+/**
+ * Wait for the postscript module to finish executing.  setupDarkMode() runs
+ * earlier in the same module, so once spaNavigate is defined, darkmode init
+ * is guaranteed complete.  Replaces the old __darkmodeReady flag which was
+ * unreliable on Safari/WebKit.
+ */
+async function waitForPostscriptModule(page: Page): Promise<void> {
+  await page.waitForFunction(() => typeof window.spaNavigate === "function", null, {
+    timeout: POSTSCRIPT_TIMEOUT_MS,
+  })
+}
 
 test.beforeEach(async ({ page }) => {
   await gotoPage(page, "http://localhost:8080/test-page")
   await page.emulateMedia({ colorScheme: AUTO_THEME })
-  // Wait for setupDarkMode() to finish (fires on initial "nav" event).
-  // Without this, WebKit/Safari can destroy the execution context before
-  // the first page.evaluate in the test body.
-  await page.waitForFunction(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (window as any).__darkmodeReady === true,
-    null,
-    { timeout: 15_000 },
-  )
+  await waitForPostscriptModule(page)
 })
 
 class DarkModeHelper {
@@ -135,16 +140,7 @@ test.describe("Theme persistence and UI states", () => {
       // leaving data-theme unset.
       await gotoPage(page, "http://localhost:8080/about")
 
-      // Wait for setupDarkMode() to complete (sets localStorage + data-theme).
-      // Without this, Safari/WebKit may not have finished running the init
-      // script before verifyTheme checks the attribute.
-      await page.waitForFunction(
-        () =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).__darkmodeReady === true,
-        null,
-        { timeout: 45_000 },
-      )
+      await waitForPostscriptModule(page)
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
@@ -262,16 +258,7 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       const targetPath = prefix.replace(/^\.\//, "").replace(/#.*$/, "")
       await gotoPage(page, `http://localhost:8080/${targetPath}`, "domcontentloaded")
 
-      // Wait for setupDarkMode() to complete (writes localStorage + CSS
-      // custom property). This replaces a toPass() retry with an event-driven
-      // signal: setupDarkMode() dispatches "darkmode-ready" and sets a flag.
-      await page.waitForFunction(
-        () =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).__darkmodeReady === true,
-        null,
-        { timeout: 45_000 },
-      )
+      await waitForPostscriptModule(page)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
       await helper.verifyTheme(theme)

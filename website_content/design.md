@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-03 00:30:36.502652
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 

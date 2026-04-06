@@ -175,14 +175,20 @@ describe("maybeGenerateCriticalCSS variable replacement", () => {
     resetCriticalCSSCache = handlers.resetCriticalCSSCache
   })
 
+  let consoleLogSpy: jest.SpiedFunction<typeof console.log>
+
   beforeEach(async () => {
     outputDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "handlers-test-"))
     resetCriticalCSSCache()
     mockGenerate.mockClear()
     mockGenerate.mockResolvedValue({ css: "/* critical */" })
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {
+      // Suppress console.log output during tests
+    })
   })
 
   afterEach(async () => {
+    consoleLogSpy.mockRestore()
     await remove(outputDir)
   })
 

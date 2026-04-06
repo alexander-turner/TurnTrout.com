@@ -4,7 +4,7 @@
 
 import type { Parent } from "hast"
 
-import { describe, it, expect, beforeEach, jest } from "@jest/globals"
+import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
 import {
   processInlineCode,
@@ -180,10 +180,18 @@ describe("debounce", () => {
 
   let func: jest.Mock<(...args: unknown[]) => unknown>
   let debouncedFunc: ((...args: unknown[]) => void) & { cancel: () => void }
+  let consoleDebugSpy: jest.SpiedFunction<typeof console.debug>
 
   beforeEach(() => {
     func = jest.fn()
     debouncedFunc = debounce(func, debounceMs)
+    consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation(() => {
+      // Suppress console.debug output during tests
+    })
+  })
+
+  afterEach(() => {
+    consoleDebugSpy.mockRestore()
   })
 
   it("should call the function after the wait time", () => {
