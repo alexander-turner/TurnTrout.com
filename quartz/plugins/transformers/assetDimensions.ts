@@ -407,14 +407,7 @@ class AssetProcessor {
       node.properties = node.properties || {}
       node.properties.width = dims.width
       node.properties.height = dims.height
-
-      // Add or prepend aspect-ratio to the style attribute
-      const existingStyle = typeof node.properties.style === "string" ? node.properties.style : ""
-      const aspectRatioStyle = `aspect-ratio: ${dims.width} / ${dims.height};`
-      // Ensure a space if existingStyle is not empty and doesn't end with a semicolon or space
-      const separator =
-        existingStyle && !existingStyle.endsWith(";") && !existingStyle.endsWith(" ") ? " " : ""
-      node.properties.style = `${aspectRatioStyle}${separator}${existingStyle}`.trim()
+      prependStyles(node, `aspect-ratio: ${dims.width} / ${dims.height};`)
     }
   }
 }
@@ -426,6 +419,73 @@ export { AssetProcessor }
 export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
   // Replace the default assetProcessor with a new one that uses the mock spawn function
   Object.assign(assetProcessor, new AssetProcessor(fn))
+}
+
+/**
+ * Prepends CSS declarations to an element's inline style.
+ */
+export function prependStyles(node: Element, newStyles: string): void {
+  node.properties = node.properties || {}
+  const existingStyle = (
+    typeof node.properties.style === "string" ? node.properties.style : ""
+  ).trim()
+  node.properties.style = existingStyle ? `${newStyles} ${existingStyle}` : newStyles
+}
+
+/**
+ * Given the child images of an img-comparison-slider, returns the dimensions
+ * of the image with the widest aspect ratio (i.e. shortest rendered height at
+ * equal width). Throws if any image lacks valid dimensions.
+ */
+export function findWidestAspectRatio(images: Element[]): AssetDimensions {
+  if (images.length === 0) {
+    throw new Error("findWidestAspectRatio requires at least one image")
+  }
+
+  let widest: AssetDimensions = { width: 0, height: 0 }
+  let widestRatio = -Infinity
+  for (const image of images) {
+    const imageWidth = Number(image.properties?.width)
+    const imageHeight = Number(image.properties?.height)
+    if (!(imageWidth > 0) || !(imageHeight > 0)) {
+      throw new Error(
+        `img-comparison-slider image missing dimensions: src="${image.properties?.src}"`,
+      )
+    }
+    const aspectRatio = imageWidth / imageHeight
+    if (aspectRatio > widestRatio) {
+      widestRatio = aspectRatio
+      widest = { width: imageWidth, height: imageHeight }
+    }
+  }
+  return widest
+}
+
+/**
+ * After image dimensions are set, constrain each img-comparison-slider's
+ * aspect-ratio to the shorter image so both sides render at the same height.
+ * The shadow DOM's overflow:hidden clips the taller image at the bottom.
+ */
+export function constrainSliderHeight(tree: Root): void {
+  visit(tree, "element", (node: Element) => {
+    if (node.tagName !== "img-comparison-slider") return
+
+    const images = node.children.filter(
+      (child): child is Element => child.type === "element" && child.tagName === "img",
+    )
+    if (images.length < 2) {
+      throw new Error("img-comparison-slider must have at least 2 child <img> elements")
+    }
+
+    const shortest = findWidestAspectRatio(images)
+
+    // overflow:hidden is required on the element itself so that aspect-ratio
+    // is authoritative for non-replaced elements: e.g. a slider 800px wide with
+    // aspect-ratio 16/9 has a preferred height of 450px, but the shadow DOM's
+    // .second div may contain a 2700px-tall image whose content height would
+    // stretch the box beyond 450px without overflow:hidden to enforce the cap.
+    prependStyles(node, `aspect-ratio: ${shortest.width} / ${shortest.height}; overflow: hidden;`)
+  })
 }
 
 /**
@@ -456,6 +516,8 @@ export const addAssetDimensionsFromSrc = () => {
               await assetProcessor.maybeSaveAssetDimensions()
               assetProcessor["needToSaveCache"] = false
             }
+
+            constrainSliderHeight(tree)
           }
         },
       ]

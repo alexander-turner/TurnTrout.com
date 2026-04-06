@@ -25,6 +25,9 @@ import {
   addAssetDimensionsFromSrc,
   type AssetDimensionMap,
   AssetProcessor,
+  constrainSliderHeight,
+  findWidestAspectRatio,
+  prependStyles,
   paths,
   assetProcessor as globalAssetProcessor,
   setSpawnSyncForTesting,
@@ -946,7 +949,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
       expect(node.properties?.style).toBe(
-        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight};${initialStyle}`,
+        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight}; ${initialStyle}`,
       )
       expect(assetProcessor["needToSaveCache"]).toBe(true)
     })
@@ -962,7 +965,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(node.properties?.width).toBe(mockImageWidth)
       expect(node.properties?.height).toBe(mockImageHeight)
       expect(node.properties?.style).toBe(
-        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight};color: green;`,
+        `aspect-ratio: ${mockImageWidth} / ${mockImageHeight}; color: green;`,
       )
       expect(assetProcessor["needToSaveCache"]).toBe(true)
     })
@@ -1295,6 +1298,126 @@ describe("Asset Dimensions Plugin", () => {
       expect(dims).toEqual({ width: mockImageWidth, height: mockImageHeight })
 
       jest.dontMock("image-size")
+    })
+  })
+
+  describe("prependStyles", () => {
+    it("sets style on a node with no existing style", () => {
+      const node = h("div") as Element
+      prependStyles(node, "color: red;")
+      expect(node.properties?.style).toBe("color: red;")
+    })
+
+    it("prepends to existing style", () => {
+      const node = h("div", { style: "font-size: 12px;" }) as Element
+      prependStyles(node, "color: red;")
+      expect(node.properties?.style).toBe("color: red; font-size: 12px;")
+    })
+  })
+
+  describe("findWidestAspectRatio", () => {
+    it.each([
+      {
+        desc: "picks the wider aspect ratio (shorter image)",
+        images: [
+          h("img", { width: 1920, height: 6581 }) as Element,
+          h("img", { width: 1920, height: 1080 }) as Element,
+        ],
+        expected: { width: 1920, height: 1080 },
+      },
+      {
+        desc: "picks first when it is shorter",
+        images: [
+          h("img", { width: 800, height: 400 }) as Element,
+          h("img", { width: 800, height: 2000 }) as Element,
+        ],
+        expected: { width: 800, height: 400 },
+      },
+    ])("$desc", ({ images, expected }) => {
+      expect(findWidestAspectRatio(images)).toEqual(expected)
+    })
+
+    it("throws when an image lacks dimensions", () => {
+      const images = [
+        h("img", { src: "a.png" }) as Element,
+        h("img", { src: "b.png", width: 800, height: 600 }) as Element,
+      ]
+      expect(() => findWidestAspectRatio(images)).toThrow(
+        'img-comparison-slider image missing dimensions: src="a.png"',
+      )
+    })
+  })
+
+  describe("constrainSliderHeight", () => {
+    it("sets aspect-ratio and overflow:hidden using the shorter image's dimensions", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first", src: "a.png", width: 1920, height: 6581 }) as Element,
+            h("img", { slot: "second", src: "b.png", width: 1920, height: 1080 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const style = (tree.children[0] as Element).properties?.style as string
+      expect(style).toBe("aspect-ratio: 1920 / 1080; overflow: hidden;")
+    })
+
+    it("throws when slider has fewer than 2 images", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { width: 100, height: 200 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      expect(() => constrainSliderHeight(tree)).toThrow(
+        "img-comparison-slider must have at least 2 child <img> elements",
+      )
+    })
+
+    it("throws when images lack dimensions", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            {},
+            h("img", { slot: "first" }) as Element,
+            h("img", { slot: "second" }) as Element,
+          ) as Element,
+        ],
+      }
+
+      expect(() => constrainSliderHeight(tree)).toThrow("missing dimensions")
+    })
+
+    it("preserves existing style on the slider", () => {
+      const tree: Root = {
+        type: "root",
+        children: [
+          h(
+            "img-comparison-slider",
+            { style: "color: red;" },
+            h("img", { slot: "first", src: "a.png", width: 800, height: 600 }) as Element,
+            h("img", { slot: "second", src: "b.png", width: 800, height: 400 }) as Element,
+          ) as Element,
+        ],
+      }
+
+      constrainSliderHeight(tree)
+
+      const style = (tree.children[0] as Element).properties?.style as string
+      expect(style).toBe("aspect-ratio: 800 / 400; overflow: hidden; color: red;")
     })
   })
 })
