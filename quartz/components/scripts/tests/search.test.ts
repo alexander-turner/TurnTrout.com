@@ -23,6 +23,7 @@ import {
   matchHTML,
   getSearchStateForTesting,
   resetSearchStateForTesting,
+  setSearchInitializedForTesting,
   initializeSearch,
 } from "../search"
 
@@ -226,6 +227,14 @@ describe("showSearch", () => {
     container = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
     navbar = document.getElementById("navbar") as HTMLElement
+    // Simulate already-initialized search so showSearch exercises the
+    // "already initialized" path (lines 458-473) instead of delegating
+    // to maybeInitializeSearch.
+    setSearchInitializedForTesting(true)
+  })
+
+  afterEach(() => {
+    resetSearchStateForTesting()
   })
 
   it("should make the search container active and focus the search bar", () => {
@@ -247,6 +256,19 @@ describe("showSearch", () => {
 
   it("should not throw if the container or search bar is not found", () => {
     expect(() => showSearch(null, null)).not.toThrow()
+  })
+
+  it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    resetSearchStateForTesting()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).getContentIndex = () => Promise.resolve(null)
+
+    await showSearch(container, searchBar)
+
+    expect(container.classList.contains("active")).toBe(true)
+    expect(document.body.style.overflow).toBe("hidden")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (globalThis as any).getContentIndex
   })
 })
 

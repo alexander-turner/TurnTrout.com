@@ -531,6 +531,10 @@ export function resetSearchStateForTesting() {
   index = null
 }
 
+export function setSearchInitializedForTesting(value: boolean) {
+  searchInitialized = value
+}
+
 export { initializeSearch }
 let results: HTMLElement
 let preview: HTMLDivElement | undefined
