@@ -8,6 +8,8 @@ updates:
     versioning-strategy: auto
     groups:
       npm-all:
+        patterns:
+          - "*"
         update-types:
           - "major"
           - "minor"
@@ -21,6 +23,8 @@ updates:
     versioning-strategy: auto
     groups:
       uv-all:
+        patterns:
+          - "*"
         update-types:
           - "major"
           - "minor"
@@ -33,6 +37,8 @@ updates:
       interval: "weekly"
     groups:
       actions-all:
+        patterns:
+          - "*"
         update-types:
           - "major"
           - "minor"
