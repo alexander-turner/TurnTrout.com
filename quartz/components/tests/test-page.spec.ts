@@ -713,14 +713,16 @@ test.describe("Elvish toggle", () => {
     const context = await browser.newContext({ javaScriptEnabled: false })
     const page = await context.newPage()
 
-    await gotoPage(page, "http://localhost:8080/test-page", "load")
+    // Use page.goto directly instead of gotoPage, because gotoPage calls
+    // page.waitForFunction (for SPA router init) which requires JS execution.
+    await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
 
     const elvishText = page.locator(".elvish").first()
-    await elvishText.scrollIntoViewIfNeeded()
 
     const tengwar = elvishText.locator(".elvish-tengwar")
     const translation = elvishText.locator(".elvish-translation")
 
+    // Use CSS visibility checks only -- scrollIntoViewIfNeeded() executes JS
     await expect(tengwar).toBeVisible()
     await expect(translation).toBeVisible()
 
