@@ -8,6 +8,27 @@ from .. import convert_markdown_yaml, source_file_checks
 from .. import utils as script_utils
 from .utils import create_markdown_file
 
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Prevent all tests from making real HTTP requests via the shared session.
+
+    Every test that exercises code paths through source_file_checks needs
+    _http_session.head mocked; making this autouse avoids accidental real
+    network calls across the entire module.
+    """
+    mock_head_response = mock.Mock()
+    mock_head_response.ok = True
+    mock_head_response.status_code = 200
+    mock_head_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+    monkeypatch.setattr(
+        source_file_checks._http_session,
+        "head",
+        lambda *args, **kwargs: mock_head_response,
+    )
+
+
 try:
     # ruff: noqa: F401
     from .utils import setup_test_env  # type: ignore
