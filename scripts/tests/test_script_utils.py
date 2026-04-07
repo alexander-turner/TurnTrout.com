@@ -1167,14 +1167,23 @@ def test_get_imagemagick_version_returns_6_when_im6_detected(
     assert script_utils._get_imagemagick_version() == 6
 
 
-def test_get_imagemagick_command_im7(monkeypatch: pytest.MonkeyPatch):
+@pytest.mark.parametrize(
+    "operation,expected",
+    [
+        ("identify", ["/usr/bin/magick", "identify"]),
+        ("convert", ["/usr/bin/magick"]),
+    ],
+)
+def test_get_imagemagick_command_im7(
+    monkeypatch: pytest.MonkeyPatch, operation: str, expected: list[str]
+):
     monkeypatch.setattr(script_utils, "_get_imagemagick_version", lambda: 7)
     monkeypatch.setattr(
         script_utils, "find_executable", lambda name: f"/usr/bin/{name}"
     )
 
-    result = script_utils.get_imagemagick_command("identify")
-    assert result == ["/usr/bin/magick", "identify"]
+    result = script_utils.get_imagemagick_command(operation)
+    assert result == expected
 
 
 def test_get_imagemagick_command_im6_operation_found(
