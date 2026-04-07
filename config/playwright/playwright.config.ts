@@ -73,6 +73,7 @@ function sanitizeConfigForBrowser(
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
+  workers: process.env.CI ? 3 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
