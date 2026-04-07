@@ -114,13 +114,13 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-    # Auto-fix formatting on PRs and dev branch pushes (not main, not merge queue)
+    # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
     if: >
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.code == 'true' ||
        needs.detect-changes.outputs.styles == 'true') &&
       (github.event_name == 'pull_request' ||
-       (github.event_name == 'push' && github.ref == 'refs/heads/dev'))
+       (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
