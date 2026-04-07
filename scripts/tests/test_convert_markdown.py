@@ -19,9 +19,8 @@ def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
     network calls across the entire module.
     """
     mock_head_response = mock.Mock()
-    mock_head_response.ok = True
-    mock_head_response.status_code = 200
-    mock_head_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+    mock_head_response.ok = False
+    mock_head_response.status_code = 404
     monkeypatch.setattr(
         source_file_checks._http_session,
         "head",

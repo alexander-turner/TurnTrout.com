@@ -88,6 +88,9 @@ def _get_imagemagick_version() -> int:
 def get_imagemagick_command(operation: str) -> list[str]:
     """Get ImageMagick command for an operation (handles IM6 vs IM7)."""
     if _get_imagemagick_version() == 7:
+        # In IM7, "magick convert" is deprecated; just "magick" is equivalent.
+        if operation == "convert":
+            return [find_executable("magick")]
         return [find_executable("magick"), operation]
 
     operation_path = shutil.which(operation)
