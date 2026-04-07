@@ -183,20 +183,18 @@ def _replace_content(
 
         # Parse curly brace attributes and convert to HTML attributes
         html_attrs = ""
-        try:
-            attr_parens = match.group("attributes_parens") or ""
-            attr_brackets = match.group("attributes_brackets") or ""
-            combined_attrs = attr_parens or attr_brackets
+        groups = match.groupdict()
+        attr_parens = groups.get("attributes_parens") or ""
+        attr_brackets = groups.get("attributes_brackets") or ""
+        combined_attrs = attr_parens or attr_brackets
 
-            if combined_attrs:
-                html_attrs = _parse_curly_brace_attributes(combined_attrs)
-        except IndexError:
-            pass
-        finally:
-            # Replace the placeholder with parsed HTML attributes
-            replaced_text = replaced_text.replace(
-                "___ATTRIBUTES_PLACEHOLDER___", html_attrs
-            )
+        if combined_attrs:
+            html_attrs = _parse_curly_brace_attributes(combined_attrs)
+
+        # Replace the placeholder with parsed HTML attributes
+        replaced_text = replaced_text.replace(
+            "___ATTRIBUTES_PLACEHOLDER___", html_attrs
+        )
 
         if not original_alt_was_empty:
             replaced_text = replaced_text.replace('alt=""', "")
