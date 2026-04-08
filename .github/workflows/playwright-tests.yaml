@@ -114,7 +114,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -132,7 +132,7 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -141,7 +141,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
@@ -150,7 +150,7 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # WebKit (Safari) tests on macOS for real Safari fidelity.
@@ -215,7 +215,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -233,7 +233,7 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -242,7 +242,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
@@ -251,7 +251,7 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # Unified status check — required by branch protection
@@ -281,7 +281,13 @@ jobs:
 
   summarize-failures:
     name: Summarize Failures
-    if: always() && (needs.playwright-tests-linux.result == 'failure' || needs.playwright-tests-macos.result == 'failure')
+    if: >-
+      always() && (
+        needs.playwright-tests-linux.result == 'failure' ||
+        needs.playwright-tests-linux.result == 'cancelled' ||
+        needs.playwright-tests-macos.result == 'failure' ||
+        needs.playwright-tests-macos.result == 'cancelled'
+      )
     needs: [playwright-tests-linux, playwright-tests-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

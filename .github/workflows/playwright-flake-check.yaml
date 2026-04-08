@@ -105,7 +105,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload flake check logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -123,7 +123,7 @@ jobs:
           retention-days: 3
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-webserver-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -132,7 +132,7 @@ jobs:
           retention-days: 3
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-traces-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -141,7 +141,7 @@ jobs:
           retention-days: 3
 
       - name: Fail if flaky tests detected
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # WebKit flake check on macOS
@@ -201,7 +201,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload flake check logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -219,7 +219,7 @@ jobs:
           retention-days: 3
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-webserver-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -228,7 +228,7 @@ jobs:
           retention-days: 3
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-traces-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -237,7 +237,7 @@ jobs:
           retention-days: 3
 
       - name: Fail if flaky tests detected
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # Unified status check
@@ -262,7 +262,13 @@ jobs:
 
   summarize:
     name: Flake Check Summary
-    if: always() && (needs.flake-check-linux.result == 'failure' || needs.flake-check-macos.result == 'failure')
+    if: >-
+      always() && (
+        needs.flake-check-linux.result == 'failure' ||
+        needs.flake-check-linux.result == 'cancelled' ||
+        needs.flake-check-macos.result == 'failure' ||
+        needs.flake-check-macos.result == 'cancelled'
+      )
     needs: [flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
