@@ -14,8 +14,9 @@ Usage:
 from __future__ import annotations
 
 import math
-import types
 from dataclasses import dataclass
+
+from frozendict import frozendict
 
 # ---------------------------------------------------------------------------
 # Test counts (from codebase analysis)
@@ -46,7 +47,7 @@ COST_LINUX = 0.008
 COST_MACOS = 0.08
 
 # Original shard counts (before optimization)
-ORIGINAL_SHARDS = types.MappingProxyType(
+ORIGINAL_SHARDS = frozendict(
     {
         "Playwright Linux (main)": 30,
         "Playwright macOS (main)": 15,

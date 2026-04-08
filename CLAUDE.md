@@ -247,9 +247,7 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 - **Never add backward-compatibility re-exports** (e.g., `export { foo } from "./other-module"`). Update imports at the call site instead
-- **Prefer immutable data structures.** Use the most restrictive type that works:
-  - TypeScript: `ReadonlySet`, `ReadonlyMap`, `ReadonlyArray`/`readonly T[]`, `Readonly<Record<K,V>>` for collections that are built once and then only read. Use `as const` for literal arrays/objects that never change. Function parameters that don't mutate their input should accept `readonly` types.
-  - Python: `frozenset` over `set`, `tuple` over `list`, `types.MappingProxyType` over `dict` for module-level constants.
+- **Prefer immutable types** for collections that are built once and only read: `ReadonlySet`, `ReadonlyMap`, `readonly T[]`, `Readonly<Record<K,V>>`, `as const`. In Python: `frozenset`, `tuple`, `frozendict`.
 
 ### Error Handling
 
@@ -269,3 +267,7 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
+
+## Lessons Learned
+
+- Module-level Sets, Maps, arrays, and Records were widely typed as mutable despite never being mutated after creation. Use `ReadonlySet`, `ReadonlyMap`, `readonly T[]`, `Readonly<Record<K,V>>` for these. When adding `readonly` to an interface property's array type, update downstream function signatures to accept `readonly` arrays too — methods like `.map()`, `.filter()`, `.some()`, `.includes()` all work on readonly arrays, but `.sort()` and `.push()` don't (copy first with spread: `[...arr].sort()`).
