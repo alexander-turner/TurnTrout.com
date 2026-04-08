@@ -108,7 +108,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Install linkchecker
-        run: uv pip install --system linkchecker==10.6.0
+        run: uv tool install linkchecker==10.6.0
 
       - name: Start server
         id: server
