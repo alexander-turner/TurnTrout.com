@@ -13,8 +13,9 @@ aliases:
   - prettify
   - text-prettify
   - punctilio-demo
-date_updated: 2026-03-01 12:17:52.007453
+date_updated: 2026-04-08 01:48:13.740399
 ---
+
 
 Tired of the incomplete smart quote abilities offered by 2024's JavaScript libraries, I created my own. I christened the library "`punctilio`" - the "precise observance of formalities".  As of publication, [`punctilio`](https://github.com/alexander-turner/punctilio) is the best library for prettifying text.
 
