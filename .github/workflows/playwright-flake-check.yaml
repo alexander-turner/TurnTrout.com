@@ -157,6 +157,9 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:

@@ -70,6 +70,11 @@ function sanitizeConfigForBrowser(
   return config
 }
 
+// In CI, use 127.0.0.1 to avoid IPv4/IPv6 resolution issues with "localhost"
+// on macOS runners (WebKit may resolve localhost to ::1 while the server
+// listens on 0.0.0.0, causing all tests to timeout).
+const baseURL = process.env.CI ? "http://127.0.0.1:8080" : "http://localhost:8080"
+
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
@@ -83,12 +88,12 @@ export default defineConfig({
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
     command: process.env.CI ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1" : "pnpm start",
-    url: "http://localhost:8080",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 7 minutes
   },
   use: {
-    baseURL: "http://localhost:8080",
+    baseURL,
     trace: "retain-on-failure",
     screenshot: {
       mode: "only-on-failure",
