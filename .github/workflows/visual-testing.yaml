@@ -1,7 +1,7 @@
 name: Visual Testing
 
 concurrency:
-  group: visual-testing-${{ github.ref_name }}
+  group: visual-testing-${{ github.event_name }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -34,36 +34,19 @@ jobs:
   should-run:
     name: visual-should-run
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
-      run-macos: ${{ steps.check.outputs.run-macos }}
-      browsers: ${{ steps.check.outputs.browsers }}
+      run: ${{ steps.gate.outputs.run }}
+      run-macos: ${{ steps.gate.outputs.run-macos }}
+      browsers: ${{ steps.gate.outputs.browsers }}
     steps:
-      - id: check
-        run: |
-          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ github.event.action }}" == "labeled" ]]; then
-              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-visual') }}" == "true" ]]; then
-                echo "run=true" >> "$GITHUB_OUTPUT"
-              else
-                echo "run=false" >> "$GITHUB_OUTPUT"
-              fi
-            else
-              echo "run=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-          # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
-            echo "run-macos=true" >> "$GITHUB_OUTPUT"
-            echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
-          else
-            echo "run-macos=false" >> "$GITHUB_OUTPUT"
-            echo "browsers=chromium" >> "$GITHUB_OUTPUT"
-          fi
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-visual"
 
   build:
     name: visual-testing-build
@@ -289,6 +272,7 @@ jobs:
     if: always()
     needs: [should-run, visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Check results
         run: |

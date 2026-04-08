@@ -107,31 +107,24 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Install linkchecker
-        run: pip install linkchecker
+      - name: Start server
+        id: server
+        uses: ./.github/actions/wait-for-server
+        with:
+          path: public
 
-      - name: Start server and run linkchecker
+      - name: Run linkchecker
+        env:
+          SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |
-          # Start server in background
-          pnpm exec serve public -l 8080 &
-          SERVER_PID=$!
-
-          # Wait for server to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:8080 > /dev/null; then
-              break
-            fi
-            sleep 1
-          done
-
           # Check internal links
           echo "Checking internal links..."
-          linkchecker http://localhost:8080 --threads 50
+          uv run linkchecker http://localhost:8080 --threads 50
           INTERNAL_STATUS=$?
 
           # Check external links (only assets.turntrout.com and github repo)
           echo "Checking external links..."
-          linkchecker public/**/*.html \
+          uv run linkchecker public/**/*.html \
             --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
             --check-extern \
             --threads 30 \

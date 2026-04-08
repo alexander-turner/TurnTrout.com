@@ -1227,8 +1227,8 @@ Lighthouse audits
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
 
-System package management
-: CI workflows need system packages (`ffmpeg`, `inkscape`, `libxml2-utils`, etc.) that aren't pre-installed on GitHub's runners. All packages are consolidated into a single version-pinned `apt-get install` in the [`setup-site`](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/actions/setup-site/action.yaml) composite action, and a CI lint check rejects unpinned packages. To avoid re-downloading ~60MB of `.deb` files from slow Azure mirrors on every run, `setup-site` redirects apt's archive directory to a cached location via `Dir::Cache::Archives`. On cache hit, packages install from disk in seconds.
+Action SHA pinning
+: All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`), preventing a compromised upstream action from injecting code into CI. A CI lint job fails any commit that introduces an unpinned action reference.
 
 ## Automated workflows
 

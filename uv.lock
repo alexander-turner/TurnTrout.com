@@ -399,6 +399,15 @@ wheels = [
 ]
 
 [[package]]
+name = "dnspython"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/8b/57666417c0f90f08bcafa776861060426765fdb422eb10212086fb811d26/dnspython-2.8.0.tar.gz", hash = "sha256:181d3c6996452cb1189c4046c61599b84a5a86e099562ffde77d26984ff26d0f", size = 368251, upload-time = "2025-09-07T18:58:00.022Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ba/5a/18ad964b0086c6e62e2e7500f7edc89e3faa45033c71c1893d34eed2b2de/dnspython-2.8.0-py3-none-any.whl", hash = "sha256:01d9bbc4a2d76bf0db7c1f729812ded6d912bd318d3b1cf81d30c0f845dbf3af", size = 331094, upload-time = "2025-09-07T18:57:58.071Z" },
+]
+
+[[package]]
 name = "docformatter"
 version = "1.7.7"
 source = { registry = "https://pypi.org/simple" }
@@ -554,6 +563,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/22/f0/07fb6ab5c39a4ca9af3e37554f9d42f25c464829254d72e4ebbd81da351c/librt-0.7.8-cp314-cp314t-win32.whl", hash = "sha256:171ca3a0a06c643bd0a2f62a8944e1902c94aa8e5da4db1ea9a8daf872685365", size = 41173, upload-time = "2026-01-14T12:55:59.315Z" },
     { url = "https://files.pythonhosted.org/packages/24/d4/7e4be20993dc6a782639625bd2f97f3c66125c7aa80c82426956811cfccf/librt-0.7.8-cp314-cp314t-win_amd64.whl", hash = "sha256:445b7304145e24c60288a2f172b5ce2ca35c0f81605f5299f3fa567e189d2e32", size = 47668, upload-time = "2026-01-14T12:56:00.261Z" },
     { url = "https://files.pythonhosted.org/packages/fc/85/69f92b2a7b3c0f88ffe107c86b952b397004b5b8ea5a81da3d9c04c04422/librt-0.7.8-cp314-cp314t-win_arm64.whl", hash = "sha256:8766ece9de08527deabcd7cb1b4f1a967a385d26e33e536d6d8913db6ef74f06", size = 40550, upload-time = "2026-01-14T12:56:01.542Z" },
+]
+
+[[package]]
+name = "linkchecker"
+version = "10.6.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+    { name = "dnspython" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/60/1ad47dd9db638546c4e70b49b5adfddfaadb2c6669a1a9b06a4dcf140d7b/LinkChecker-10.6.0.tar.gz", hash = "sha256:fb7e8facda7749c2fa5fa5dc241c0adc302da3d31d588964a2570db501aa49e5", size = 547746, upload-time = "2025-07-28T18:43:50.884Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/07/ff8a29330fa35483a19221fd89e102e7ebf700acda8f0ba0b66ef14bcd48/LinkChecker-10.6.0-py3-none-any.whl", hash = "sha256:5268587ed0b0f7e7521b75905128c96856f30f67dad49f66e2c963bc174ca92d", size = 280937, upload-time = "2025-07-28T18:43:48.932Z" },
 ]
 
 [[package]]
@@ -1374,6 +1397,7 @@ dependencies = [
     { name = "gitpython" },
     { name = "google-auth" },
     { name = "isort" },
+    { name = "linkchecker" },
     { name = "lxml-stubs" },
     { name = "mypy" },
     { name = "numpy" },
@@ -1416,6 +1440,7 @@ requires-dist = [
     { name = "gitpython" },
     { name = "google-auth" },
     { name = "isort", specifier = ">=5.13.2" },
+    { name = "linkchecker", specifier = ">=10.6.0" },
     { name = "lxml-stubs", specifier = ">=0.5.1" },
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "numpy" },
