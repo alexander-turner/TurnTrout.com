@@ -113,6 +113,15 @@ jobs:
           fi
           echo "Current template version: $TEMPLATE_SHA"
 
+          # Early exit: nothing to sync if template hasn't changed
+          if [ "$PREV_SHA" = "$TEMPLATE_SHA" ]; then
+            echo "Template is already at $TEMPLATE_SHA_SHORT — nothing to sync"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+            echo "has_deletions=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Generate changelog between versions if we have a previous SHA
           if [ -n "$PREV_SHA" ] && [ "$PREV_SHA" != "$TEMPLATE_SHA" ]; then
             CHANGELOG=$(git -C _template log --oneline "$PREV_SHA..$TEMPLATE_SHA" 2>/dev/null || echo "Could not generate changelog (previous SHA may no longer exist)")
