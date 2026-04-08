@@ -57,7 +57,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg
-          uv tool install linkchecker==10.6.0
 
       - name: Install ImageMagick 7 via Homebrew
         run: |

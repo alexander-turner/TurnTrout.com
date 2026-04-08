@@ -107,9 +107,6 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Install linkchecker
-        run: uv tool install linkchecker==10.6.0
-
       - name: Start server
         id: server
         uses: ./.github/actions/wait-for-server
@@ -122,12 +119,12 @@ jobs:
         run: |
           # Check internal links
           echo "Checking internal links..."
-          linkchecker http://localhost:8080 --threads 50
+          uv run linkchecker http://localhost:8080 --threads 50
           INTERNAL_STATUS=$?
 
           # Check external links (only assets.turntrout.com and github repo)
           echo "Checking external links..."
-          linkchecker public/**/*.html \
+          uv run linkchecker public/**/*.html \
             --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
             --check-extern \
             --threads 30 \
