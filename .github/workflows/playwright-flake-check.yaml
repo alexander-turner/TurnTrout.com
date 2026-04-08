@@ -171,6 +171,9 @@ jobs:
       - name: Install Playwright WebKit browser
         run: pnpm exec playwright install webkit
 
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
+
       - name: Restore built site from cache
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
