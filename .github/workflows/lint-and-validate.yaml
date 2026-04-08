@@ -208,8 +208,9 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Check for unpinned action references
         run: |
-          # Find all uses: lines with tag-based refs (@v1, @v2, etc.) instead of SHA pins
-          UNPINNED=$(grep -rn 'uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
+          # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
+          # Only match lines where uses: is a YAML key (not inside comments or run blocks)
+          UNPINNED=$(grep -rn '^\s*-\?\s*uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
           if [ -n "$UNPINNED" ]; then
             echo "::error::Found unpinned action references (must use SHA pins with version comment):"
             echo "$UNPINNED"
