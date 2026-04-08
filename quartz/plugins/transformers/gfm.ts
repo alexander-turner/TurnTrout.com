@@ -151,7 +151,7 @@ function ensureVideoCaptionTracks(tree: Root): void {
   })
 }
 
-const VALID_DL_CHILD_TAGS = new Set(["dt", "dd", "div", "script", "template"])
+const VALID_DL_CHILD_TAGS: ReadonlySet<string> = new Set(["dt", "dd", "div", "script", "template"])
 
 /**
  * Validates that a <dl> element's structure complies with the axe definition-list rule:

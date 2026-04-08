@@ -25,7 +25,7 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  * Content inside these elements won't have formatting improvements applied.
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
-export const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 
 /**
  * Tags that should be skipped during fraction replacement.

@@ -93,7 +93,7 @@ export const specialFaviconPaths = {
 } as const
 
 // Computed special domain mappings with RegExp patterns
-export const specialDomainMappings: Array<{ pattern: RegExp; to: string }> = [
+export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string }> = [
   // Preserve whitelisted Google subdomains (map to themselves)
   ...googleSubdomainWhitelist.map((subdomain) => ({
     pattern: new RegExp(`^${subdomain.replace(".", "\\.")}\\.google\\.com$`),

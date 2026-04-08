@@ -12,7 +12,7 @@ export function isLocalFavicon(fp: FilePath): boolean {
 }
 
 // Files that should be copied to root instead of /static/
-export const ROOT_FILES = ["robots.txt", "_headers", "_redirects"]
+export const ROOT_FILES: readonly string[] = ["robots.txt", "_headers", "_redirects"]
 
 export function shouldCopyToRoot(fp: FilePath): boolean {
   return ROOT_FILES.includes(fp) || isLocalFavicon(fp)

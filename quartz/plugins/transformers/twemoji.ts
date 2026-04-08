@@ -98,7 +98,7 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
 }
 
 // Characters to protect from twemoji processing by temporarily replacing with PUA characters
-export const ignoreMap = new Map<string, string>([
+export const ignoreMap: ReadonlyMap<string, string> = new Map<string, string>([
   [emojiReplacement, twemojiIgnoreChars.emojiReplacement],
   ["⇔", twemojiIgnoreChars.doubleArrow],
   ["↗", twemojiIgnoreChars.upRightArrow],
