@@ -43,7 +43,7 @@ export const highlightDark = "#949cbb30"
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
 // Palette colors — single source of truth for _palette.scss (generated) and critical CSS
-export const darkPalette: Record<string, string> = {
+export const darkPalette: Readonly<Record<string, string>> = {
   pink: "#fba7e4",
   red: "#e88283",
   maroon: "#d586a1",
@@ -58,7 +58,7 @@ export const darkPalette: Record<string, string> = {
   gold: "#db9c01",
 }
 
-export const lightPalette: Record<string, string> = {
+export const lightPalette: Readonly<Record<string, string>> = {
   pink: "#d020a3",
   red: "#be415c",
   orange: "#a45c19",

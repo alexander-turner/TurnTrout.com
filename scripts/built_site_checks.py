@@ -670,7 +670,7 @@ def resolve_media_path(src: str, base_dir: Path) -> Path:
     return full_path
 
 
-ALLOWED_ASSET_DOMAINS = {"assets.turntrout.com"}
+ALLOWED_ASSET_DOMAINS = frozenset({"assets.turntrout.com"})
 
 
 def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
@@ -2199,9 +2199,11 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
 
 # Whitelisted emphasis patterns that should be ignored
 # If both prev and next are in the whitelist, then the emphasis is whitelisted
-WHITELISTED_EMPHASIS = {
-    ("Some", ""),  # For e.g. "Some<i>one</i>"
-}
+WHITELISTED_EMPHASIS = frozenset(
+    {
+        ("Some", ""),  # For e.g. "Some<i>one</i>"
+    }
+)
 
 
 def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:

@@ -134,14 +134,14 @@ declare module "vfile" {
     frontmatter: { [key: string]: unknown } & {
       title: string
     } & Partial<{
-        tags: string[]
-        aliases: string[]
-        authors: string[]
+        tags: readonly string[]
+        aliases: readonly string[]
+        authors: readonly string[]
         description: string
         draft: boolean
         lang: string
         enableToc: string
-        cssclasses: string[]
+        cssclasses: readonly string[]
       }>
   }
 }

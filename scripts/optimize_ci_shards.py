@@ -16,6 +16,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
+from frozendict import frozendict
+
 # ---------------------------------------------------------------------------
 # Test counts (from codebase analysis)
 # ---------------------------------------------------------------------------
@@ -45,16 +47,18 @@ COST_LINUX = 0.008
 COST_MACOS = 0.08
 
 # Original shard counts (before optimization)
-ORIGINAL_SHARDS = {
-    "Playwright Linux (main)": 30,
-    "Playwright macOS (main)": 15,
-    "Visual Linux (main)": 15,
-    "Visual macOS (main)": 7,
-    "Playwright Linux (PR)": 30,
-    "Playwright macOS (PR)": 15,
-    "Visual Linux (PR)": 15,
-    "Visual macOS (PR)": 7,
-}
+ORIGINAL_SHARDS = frozendict(
+    {
+        "Playwright Linux (main)": 30,
+        "Playwright macOS (main)": 15,
+        "Visual Linux (main)": 15,
+        "Visual macOS (main)": 7,
+        "Playwright Linux (PR)": 30,
+        "Playwright macOS (PR)": 15,
+        "Visual Linux (PR)": 15,
+        "Visual macOS (PR)": 7,
+    }
+)
 
 
 @dataclass

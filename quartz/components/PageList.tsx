@@ -80,7 +80,7 @@ export function createPageTitleElement(
  * @param fileDataSlug - The slug of the current file (for relative path resolution)
  * @returns A HAST Element containing the list of tag links
  */
-export function createTagsElement(tags: string[], fileDataSlug: FullSlug): Element {
+export function createTagsElement(tags: readonly string[], fileDataSlug: FullSlug): Element {
   return h(
     "ul.tags",
     tags.map((tag) =>
@@ -110,8 +110,7 @@ export function createPageItemElement(
 ): Element {
   const title = page.frontmatter?.title
   const formattedTitle = title ? formatTitle(title) : ""
-  let tags = page.frontmatter?.tags ?? []
-  tags = tags.sort((a, b) => b.length - a.length)
+  const tags = [...(page.frontmatter?.tags ?? [])].sort((a, b) => b.length - a.length)
   const date = getDate(cfg, page)?.toLocaleDateString(locale) || ""
   const pageSlug = page.slug || ("" as FullSlug)
 
