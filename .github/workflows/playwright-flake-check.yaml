@@ -1,7 +1,7 @@
 name: Playwright Flake Check
 
 # Runs each Playwright test multiple times to detect flaky tests.
-# Triggered manually or by adding the ci:flake-check label to a PR.
+# Manual-only: use the "Run workflow" button in the Actions UI.
 
 concurrency:
   group: playwright-flake-check-${{ github.ref_name }}
@@ -15,48 +15,32 @@ on:
         required: false
         default: "3"
         type: string
-  pull_request:
-    types: [labeled]
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  should-run:
-    name: flake-check-gate
+  setup:
+    name: flake-check-setup
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
       repeat: ${{ steps.check.outputs.repeat }}
     steps:
       - id: check
         env:
-          EVENT_NAME: ${{ github.event_name }}
           REPEAT_EACH: ${{ github.event.inputs.repeat-each || '3' }}
-          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'ci:flake-check') }}
-        run: |
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "repeat=$REPEAT_EACH" >> "$GITHUB_OUTPUT"
-          elif [[ "$HAS_LABEL" == "true" ]]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-            echo "repeat=3" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-            echo "repeat=3" >> "$GITHUB_OUTPUT"
-          fi
+        run: echo "repeat=$REPEAT_EACH" >> "$GITHUB_OUTPUT"
 
   build:
     name: flake-check-build
-    needs: should-run
-    if: needs.should-run.outputs.run == 'true'
+    needs: setup
     uses: ./.github/workflows/build-site.yaml
 
   # Chromium + Firefox flake check on Linux
   flake-check-linux:
-    needs: [should-run, build]
+    needs: [setup, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     strategy:
@@ -86,7 +70,7 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Run Playwright tests (repeat-each=${{ needs.should-run.outputs.repeat }})
+      - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
         id: playwright
         continue-on-error: true
         run: |
@@ -95,7 +79,7 @@ jobs:
             --config config/playwright/playwright.config.ts \
             --grep "^(?:(?!lostpixel).)*$" \
             --shard ${{ matrix.shard }} \
-            --repeat-each ${{ needs.should-run.outputs.repeat }} \
+            --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log
 
       - name: Sanitize shard name
@@ -146,7 +130,7 @@ jobs:
 
   # WebKit flake check on macOS
   flake-check-macos:
-    needs: [should-run, build]
+    needs: [setup, build]
     runs-on: macos-14
     timeout-minutes: 90
     strategy:
@@ -182,7 +166,7 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Run Playwright tests (repeat-each=${{ needs.should-run.outputs.repeat }})
+      - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
         id: playwright
         continue-on-error: true
         run: |
@@ -191,7 +175,7 @@ jobs:
             --config config/playwright/playwright.config.ts \
             --grep "^(?:(?!lostpixel).)*$" \
             --shard ${{ matrix.shard }} \
-            --repeat-each ${{ needs.should-run.outputs.repeat }} \
+            --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log
 
       - name: Sanitize shard name
@@ -244,16 +228,12 @@ jobs:
   flake-check:
     name: flake-check
     if: always()
-    needs: [should-run, flake-check-linux, flake-check-macos]
+    needs: [flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Flake check was skipped (no label/dispatch)"
-            exit 0
-          fi
           if [[ "${{ needs.flake-check-linux.result }}" != "success" ]] || \
              [[ "${{ needs.flake-check-macos.result }}" != "success" ]]; then
             echo "Flake check did not succeed (linux=${{ needs.flake-check-linux.result }}, macos=${{ needs.flake-check-macos.result }})"

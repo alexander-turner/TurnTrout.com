@@ -9,21 +9,7 @@ on:
   push:
     branches: ["main", "dev", "no-layout-shift"]
   pull_request:
-    paths:
-      - "quartz/**/*.scss"
-      - "quartz/**/*.tsx"
-      - "!quartz/**/*.test.tsx"
-      - "quartz/**/*.ts"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/tests/**"
-      - "quartz/static/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
+    types: [labeled]
   merge_group:
 
 permissions:
@@ -39,10 +25,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      run: ${{ steps.gate.outputs.run }}
     steps:
-      - id: check
-        run: echo "run=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-lighthouse"
 
   build:
     needs: should-run
