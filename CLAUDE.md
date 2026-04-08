@@ -247,6 +247,9 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 - **Never add backward-compatibility re-exports** (e.g., `export { foo } from "./other-module"`). Update imports at the call site instead
+- **Prefer immutable data structures.** Use the most restrictive type that works:
+  - TypeScript: `ReadonlySet`, `ReadonlyMap`, `ReadonlyArray`/`readonly T[]`, `Readonly<Record<K,V>>` for collections that are built once and then only read. Use `as const` for literal arrays/objects that never change. Function parameters that don't mutate their input should accept `readonly` types.
+  - Python: `frozenset` over `set`, `tuple` over `list`, `types.MappingProxyType` over `dict` for module-level constants.
 
 ### Error Handling
 
