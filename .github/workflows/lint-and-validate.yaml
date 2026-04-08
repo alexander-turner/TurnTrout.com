@@ -75,6 +75,7 @@ jobs:
       code: ${{ steps.changes.outputs.code }}
       styles: ${{ steps.changes.outputs.styles }}
       source-checks: ${{ steps.changes.outputs.source-checks }}
+      workflows: ${{ steps.changes.outputs.workflows }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -109,6 +110,9 @@ jobs:
               - 'scripts/source_file_checks.py'
               - 'config/quartz/**'
               - 'config/constants.json'
+              - '.github/actions/**'
+            workflows:
+              - '.github/workflows/**'
               - '.github/actions/**'
 
   autofix:
@@ -194,6 +198,27 @@ jobs:
           else
             echo "::notice::No formatting changes needed"
           fi
+
+  check-action-pins:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check for unpinned action references
+        run: |
+          # Find all uses: lines with tag-based refs (@v1, @v2, etc.) instead of SHA pins
+          UNPINNED=$(grep -rn 'uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
+          if [ -n "$UNPINNED" ]; then
+            echo "::error::Found unpinned action references (must use SHA pins with version comment):"
+            echo "$UNPINNED"
+            echo ""
+            echo "Pin actions to a commit SHA, e.g.:"
+            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6"
+            exit 1
+          fi
+          echo "All action references are SHA-pinned"
 
   lint:
     needs: [update-dates, detect-changes, autofix]

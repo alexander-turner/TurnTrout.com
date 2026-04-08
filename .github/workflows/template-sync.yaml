@@ -1,5 +1,9 @@
 name: Sync from Template
 
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
 # Syncs updates from the template repository automatically.
 # Runs daily or manually via "Run workflow" button.
 # No setup required - works out of the box.

@@ -1,5 +1,9 @@
 name: Monthly Newsletter Draft
 
+concurrency:
+  group: monthly-newsletter
+  cancel-in-progress: false
+
 on:
   schedule:
     # Run on the 28th of each month at 9am UTC
