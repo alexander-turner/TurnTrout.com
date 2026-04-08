@@ -2199,9 +2199,11 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
 
 # Whitelisted emphasis patterns that should be ignored
 # If both prev and next are in the whitelist, then the emphasis is whitelisted
-WHITELISTED_EMPHASIS = {
-    ("Some", ""),  # For e.g. "Some<i>one</i>"
-}
+WHITELISTED_EMPHASIS = frozenset(
+    {
+        ("Some", ""),  # For e.g. "Some<i>one</i>"
+    }
+)
 
 
 def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:

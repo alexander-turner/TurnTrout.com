@@ -23,7 +23,7 @@ export function isRomanNumeral(str: string): boolean {
 
 // Regex for acronyms and abbreviations
 //  E.g. "IID" is technically a roman numeral
-export const allowAcronyms = [
+export const allowAcronyms: readonly string[] = [
   "IF",
   "CCC",
   "IL",
@@ -42,7 +42,7 @@ export const allowAcronyms = [
   "CC0",
 ]
 // Ignore these words if included in a potential acronym
-export const ignoreList = ["th", "hz", "st", "nd", "rd"]
+export const ignoreList: readonly string[] = ["th", "hz", "st", "nd", "rd"]
 
 // Escaped and joined allowAcronyms as an intermediate variable
 const escapedAllowAcronyms = allowAcronyms.map((acronym) =>
@@ -103,7 +103,12 @@ const combinedRegex = new RegExp(
 )
 
 // Predicate if we should skip smallcaps for a given node
-export const skipSmallcapsClasses = ["no-smallcaps", "no-formatting", "bad-handwriting", "katex"]
+export const skipSmallcapsClasses: readonly string[] = [
+  "no-smallcaps",
+  "no-formatting",
+  "bad-handwriting",
+  "katex",
+]
 
 // skipcq: JS-0257
 export function skipSmallcaps(node: Node): boolean {

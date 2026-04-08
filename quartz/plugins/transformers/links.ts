@@ -239,6 +239,6 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
 
 declare module "vfile" {
   interface DataMap {
-    links: SimpleSlug[]
+    links: readonly SimpleSlug[]
   }
 }

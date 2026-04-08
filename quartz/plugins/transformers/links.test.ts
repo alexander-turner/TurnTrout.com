@@ -17,7 +17,7 @@ function processHtml(
     prettyLinks?: boolean
     openLinksInNewTab?: boolean
   } = {},
-): Promise<{ html: string; links: string[]; firstImageUrl?: string }> {
+): Promise<{ html: string; links: readonly string[]; firstImageUrl?: string }> {
   const slug = (opts.slug ?? "test-page") as FullSlug
   const allSlugs = opts.allSlugs ?? (["test-page", "other-page"] as FullSlug[])
 
@@ -41,7 +41,7 @@ function processHtml(
 
   return processor.process({ value: html, data: { slug } }).then((file) => ({
     html: String(file),
-    links: (file.data.links as string[]) ?? [],
+    links: (file.data.links as readonly string[]) ?? [],
     firstImageUrl: file.data.firstImageUrl as string | undefined,
   }))
 }

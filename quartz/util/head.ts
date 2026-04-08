@@ -28,7 +28,7 @@ interface HeadProps {
 }
 
 // skipcq: JS-D1001
-function maybeRenderAuthorTags(authors: string[] | undefined): string {
+function maybeRenderAuthorTags(authors: readonly string[] | undefined): string {
   if (!authors || authors.length === 0) {
     return ""
   }

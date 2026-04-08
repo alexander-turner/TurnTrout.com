@@ -171,7 +171,7 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
 
 declare module "vfile" {
   interface DataMap {
-    toc: TocEntry[]
+    toc: readonly TocEntry[]
     collapseToc: boolean
   }
 }

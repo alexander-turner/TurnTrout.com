@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import math
+import types
 from dataclasses import dataclass
 
 # ---------------------------------------------------------------------------
@@ -45,16 +46,18 @@ COST_LINUX = 0.008
 COST_MACOS = 0.08
 
 # Original shard counts (before optimization)
-ORIGINAL_SHARDS = {
-    "Playwright Linux (main)": 30,
-    "Playwright macOS (main)": 15,
-    "Visual Linux (main)": 15,
-    "Visual macOS (main)": 7,
-    "Playwright Linux (PR)": 30,
-    "Playwright macOS (PR)": 15,
-    "Visual Linux (PR)": 15,
-    "Visual macOS (PR)": 7,
-}
+ORIGINAL_SHARDS = types.MappingProxyType(
+    {
+        "Playwright Linux (main)": 30,
+        "Playwright macOS (main)": 15,
+        "Visual Linux (main)": 15,
+        "Visual macOS (main)": 7,
+        "Playwright Linux (PR)": 30,
+        "Playwright macOS (PR)": 15,
+        "Visual Linux (PR)": 15,
+        "Visual macOS (PR)": 7,
+    }
+)
 
 
 @dataclass

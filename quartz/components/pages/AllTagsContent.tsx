@@ -60,7 +60,7 @@ export function generateAllTagsHast(props: QuartzComponentProps): Element {
 // Component for direct rendering (uses JSX)
 const AllTagsContent: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData } = props
-  const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
+  const cssClasses: readonly string[] = fileData.frontmatter?.cssclasses ?? []
   const classes = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
 
   // Convert HAST to JSX for component rendering
