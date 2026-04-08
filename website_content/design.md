@@ -1226,6 +1226,9 @@ Lighthouse audits
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
 
+Action SHA pinning
+: All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`). A CI lint job rejects any PR that introduces an unpinned action reference. Dependabot preserves the SHA-pinned format when proposing version updates.
+
 ## Automated workflows
 
 Several GitHub workflows run on schedules or in response to external events. Much of this automation infrastructure comes from my [Claude Code automation template repo](/open-source#claude-code-automation-template).
