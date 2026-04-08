@@ -18,6 +18,7 @@ jobs:
   update-dates:
     needs: detect-changes
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
       contents: write
     outputs:
@@ -68,11 +69,13 @@ jobs:
 
   detect-changes:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       content: ${{ steps.changes.outputs.content }}
       code: ${{ steps.changes.outputs.code }}
       styles: ${{ steps.changes.outputs.styles }}
       source-checks: ${{ steps.changes.outputs.source-checks }}
+      workflows: ${{ steps.changes.outputs.workflows }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -108,14 +111,21 @@ jobs:
               - 'config/quartz/**'
               - 'config/constants.json'
               - '.github/actions/**'
+            workflows:
+              - '.github/workflows/**'
+              - '.github/actions/**'
 
   autofix:
-    needs: [detect-changes]
+    needs: [detect-changes, update-dates]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
+    # Depends on update-dates to avoid push race condition (both push to main).
+    # always() lets this run even when update-dates is skipped (PRs, no content changes).
     if: >
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.code == 'true' ||
        needs.detect-changes.outputs.styles == 'true') &&
@@ -177,11 +187,39 @@ jobs:
           git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
           if [[ -n $(git diff --cached --name-only) ]]; then
             git commit -m "style: auto-fix formatting [skip ci]"
+            # Pull any commits pushed by update-dates before pushing
+            if ! git pull --rebase origin ${{ github.head_ref || github.ref_name }}; then
+              echo "::error::Rebase failed — aborting to avoid pushing broken state"
+              git rebase --abort 2>/dev/null || true
+              exit 1
+            fi
             git push
             echo "::notice::Pushed auto-fix formatting commit"
           else
             echo "::notice::No formatting changes needed"
           fi
+
+  check-action-pins:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check for unpinned action references
+        run: |
+          # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
+          # Only match lines where uses: is a YAML key (not inside comments or run blocks)
+          UNPINNED=$(grep -rn '^\s*-\?\s*uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
+          if [ -n "$UNPINNED" ]; then
+            echo "::error::Found unpinned action references (must use SHA pins with version comment):"
+            echo "$UNPINNED"
+            echo ""
+            echo "Pin actions to a commit SHA, e.g.:"
+            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6"
+            exit 1
+          fi
+          echo "All action references are SHA-pinned"
 
   lint:
     needs: [update-dates, detect-changes, autofix]
@@ -217,6 +255,7 @@ jobs:
         if: needs.detect-changes.outputs.content == 'true'
         run: |
           wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
+          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  vale_3.9.0_Linux_64-bit.tar.gz" | sha256sum --check
           tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
           sudo mv vale /usr/local/bin/
 
@@ -291,6 +330,18 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
         run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
+
+      - name: Verify apt packages are version-pinned
+        run: |
+          # Find package-like lines between apt-get install and shell: that lack =version
+          awk '/apt-get install/,/shell:/' .github/actions/setup-site/action.yaml \
+            | grep -E '^\s+[a-z][a-z0-9._+-]+\s*\\?\s*$' \
+            | while read -r line; do
+                pkg=$(echo "$line" | tr -d ' \\')
+                echo "::error::Unpinned apt package in setup-site: '$pkg' (add =version suffix)"
+                exit 1
+              done
+          echo "All apt packages are version-pinned"
 
       - name: Check results
         run: |

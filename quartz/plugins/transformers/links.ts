@@ -35,8 +35,8 @@ const defaultOptions: Options = {
   lazyLoad: true,
 }
 
-const HEADER_TAGS = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
-const MEDIA_TAGS = new Set(["img", "video", "audio", "iframe"])
+const HEADER_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "iframe"])
 
 /**
  * Whether a URL should be left as-is (not rewritten by `transformLink`).
@@ -239,6 +239,6 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
 
 declare module "vfile" {
   interface DataMap {
-    links: SimpleSlug[]
+    links: readonly SimpleSlug[]
   }
 }

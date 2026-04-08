@@ -81,7 +81,7 @@ export const CreateTableOfContents: QuartzComponent = ({
  * @returns A tuple containing an array of JSX elements and the next index to process.
  */
 export function buildNestedList(
-  entries: TocEntry[],
+  entries: readonly TocEntry[],
   currentIndex = 0,
   currentDepth = entries[0]?.depth || 0,
 ): [JSX.Element[], number] {

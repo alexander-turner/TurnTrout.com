@@ -21,12 +21,12 @@ import { write } from "./helpers"
 export type ContentIndex = Map<FullSlug, ContentDetails>
 export type ContentDetails = {
   title: string
-  links: SimpleSlug[]
-  tags: string[]
+  links: readonly SimpleSlug[]
+  tags: readonly string[]
   content: string
   richContent?: string
   date?: Date
-  authors?: string[]
+  authors?: readonly string[]
   description?: string
 }
 

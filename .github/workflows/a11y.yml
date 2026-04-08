@@ -1,5 +1,9 @@
 name: Accessibility
 
+concurrency:
+  group: a11y-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
@@ -48,21 +52,17 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Start server and run accessibility checks
+      - name: Start server
+        id: server
+        uses: ./.github/actions/wait-for-server
+        with:
+          path: public
+
+      - name: Run accessibility checks
         timeout-minutes: 25
+        env:
+          SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |
-          # Start server in background
-          pnpm exec serve public -l 8080 &
-          SERVER_PID=$!
-
-          # Wait for server to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:8080 > /dev/null; then
-              break
-            fi
-            sleep 1
-          done
-
           # Retry up to 3 times for Chrome crashes (exit code 1) or
           # Chrome/Puppeteer timeouts (exit code 2 with only timeout/crash errors).
           # Real a11y violations (exit code 2 without timeouts) fail immediately.

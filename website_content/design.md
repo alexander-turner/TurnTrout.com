@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-06 18:02:03.576874
+date_updated: 2026-04-08 19:46:41.351839
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 
 
@@ -1225,6 +1227,9 @@ Lighthouse audits
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+
+Action SHA pinning
+: All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`), preventing a compromised upstream action from injecting code into CI. A CI lint job fails any commit that introduces an unpinned action reference.
 
 ## Automated workflows
 

@@ -48,7 +48,10 @@ export function findFootnoteList(tree: Root): FootnoteLocation | null {
 const UPSTREAM_FOOTNOTE_HEADING_ID = "footnote-label"
 
 /** IDs that identify a footnote heading (upstream uses "footnote-label", we normalize to "footnotes") */
-const FOOTNOTE_HEADING_IDS = new Set([footnoteHeadingId, UPSTREAM_FOOTNOTE_HEADING_ID])
+const FOOTNOTE_HEADING_IDS: ReadonlySet<string> = new Set([
+  footnoteHeadingId,
+  UPSTREAM_FOOTNOTE_HEADING_ID,
+])
 
 // skipcq: JS-D1001
 function isFootnoteHeadingId(id: unknown): boolean {

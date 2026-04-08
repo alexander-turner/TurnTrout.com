@@ -73,7 +73,7 @@ jobs:
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
@@ -167,6 +167,10 @@ jobs:
           # recent check run for each name.
           for CHECK_NAME in visual-testing playwright-tests; do
             echo "Waiting for $CHECK_NAME..."
+            CANCEL_RETRIES=0
+            MAX_CANCEL_RETRIES=10  # Wait up to ~5 min for a replacement run
+            POLL_INTERVAL=30
+            MAX_POLL_INTERVAL=120
             while true; do
               RESULT=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
                 --jq "[.check_runs[] | select(.name == \"$CHECK_NAME\")] | sort_by(.started_at) | last | .conclusion // empty" \
@@ -178,7 +182,20 @@ jobs:
                   break
                   ;;
                 "")
-                  echo "$CHECK_NAME still pending, waiting 30s..."
+                  CANCEL_RETRIES=0
+                  echo "$CHECK_NAME still pending, waiting ${POLL_INTERVAL}s..."
+                  sleep $POLL_INTERVAL
+                  # Exponential backoff with cap
+                  POLL_INTERVAL=$(( POLL_INTERVAL + POLL_INTERVAL / 4 ))
+                  [ $POLL_INTERVAL -gt $MAX_POLL_INTERVAL ] && POLL_INTERVAL=$MAX_POLL_INTERVAL
+                  ;;
+                cancelled)
+                  CANCEL_RETRIES=$((CANCEL_RETRIES + 1))
+                  if [ $CANCEL_RETRIES -ge $MAX_CANCEL_RETRIES ]; then
+                    echo "::error::$CHECK_NAME was cancelled with no replacement after $MAX_CANCEL_RETRIES retries"
+                    exit 1
+                  fi
+                  echo "$CHECK_NAME was cancelled, waiting for replacement run ($CANCEL_RETRIES/$MAX_CANCEL_RETRIES)..."
                   sleep 30
                   ;;
                 *)

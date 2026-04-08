@@ -8,13 +8,13 @@ import type { TocEntry } from "./transformers/toc"
 export interface FrontmatterData {
   title: string
   description?: string
-  tags?: string[]
-  aliases?: string[]
+  tags?: readonly string[]
+  aliases?: readonly string[]
   publish?: boolean
   draft?: boolean
   toc?: boolean | string
   enableToc?: string
-  cssclasses?: string[]
+  cssclasses?: readonly string[]
   date_published?: string | Date
   date_updated?: string | Date
   hide_metadata?: boolean
@@ -27,7 +27,7 @@ export interface FrontmatterData {
   "next-post-slug"?: string
   "next-post-title"?: string
   "lw-linkpost-url"?: string
-  authors?: string[]
+  authors?: readonly string[]
   createBibtex?: boolean
   created?: string | Date
   children?: string[]
@@ -40,8 +40,8 @@ export interface BlockData {
 
 export interface Data {
   frontmatter?: FrontmatterData
-  toc?: TocEntry[]
-  links?: SimpleSlug[]
+  toc?: readonly TocEntry[]
+  links?: readonly SimpleSlug[]
   slug?: FullSlug
   filePath?: FilePath
   relativePath?: FilePath
