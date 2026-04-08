@@ -298,6 +298,17 @@ jobs:
         continue-on-error: true
         run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
 
+      - name: Verify apt packages are version-pinned
+        run: |
+          # Extract the apt-get install block from setup-site and check for unpinned packages
+          awk '/apt-get install/,/^[^ ]/' .github/actions/setup-site/action.yaml \
+            | grep -oP '(?<=\s)[a-z][a-z0-9._+-]+(?=\s*\\?$)' \
+            | while read -r pkg; do
+                echo "::error::Unpinned apt package in setup-site: '$pkg' (add =version suffix)"
+                exit 1
+              done
+          echo "All apt packages are version-pinned"
+
       - name: Check results
         run: |
           failed=""
