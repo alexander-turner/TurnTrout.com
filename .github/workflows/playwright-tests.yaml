@@ -34,36 +34,19 @@ jobs:
     name: playwright-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
-      run-macos: ${{ steps.check.outputs.run-macos }}
-      browsers: ${{ steps.check.outputs.browsers }}
+      run: ${{ steps.gate.outputs.run }}
+      run-macos: ${{ steps.gate.outputs.run-macos }}
+      browsers: ${{ steps.gate.outputs.browsers }}
     steps:
-      - id: check
-        run: |
-          # On PRs, only run when a CI label is actively added (per-commit, not persistent)
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if [[ "${{ github.event.action }}" == "labeled" ]]; then
-              if [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:full-tests') }}" == "true" ]] || \
-                 [[ "${{ contains(github.event.pull_request.labels.*.name, 'ci:run-playwright') }}" == "true" ]]; then
-                echo "run=true" >> "$GITHUB_OUTPUT"
-              else
-                echo "run=false" >> "$GITHUB_OUTPUT"
-              fi
-            else
-              echo "run=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          fi
-          # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
-          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_name }}" == "main" ]]; then
-            echo "run-macos=true" >> "$GITHUB_OUTPUT"
-            echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
-          else
-            echo "run-macos=false" >> "$GITHUB_OUTPUT"
-            echo "browsers=chromium" >> "$GITHUB_OUTPUT"
-          fi
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-playwright"
 
   build:
     name: playwright-build
@@ -131,7 +114,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -149,7 +132,7 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -158,7 +141,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
@@ -167,7 +150,7 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # WebKit (Safari) tests on macOS for real Safari fidelity.
@@ -177,7 +160,7 @@ jobs:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-14
-    timeout-minutes: 40
+    timeout-minutes: 50
     strategy:
       fail-fast: false
       matrix:
@@ -194,6 +177,9 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:
@@ -204,6 +190,9 @@ jobs:
 
       - name: Install Playwright WebKit browser
         run: pnpm exec playwright install webkit
+
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
 
       - name: Restore built site from cache
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
@@ -226,7 +215,7 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -244,7 +233,7 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -253,7 +242,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        if: steps.playwright.outcome == 'failure'
+        if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
@@ -262,7 +251,7 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # Unified status check — required by branch protection
@@ -271,6 +260,7 @@ jobs:
     if: always()
     needs: [should-run, playwright-tests-linux, playwright-tests-macos]
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Check results
         run: |
@@ -291,7 +281,13 @@ jobs:
 
   summarize-failures:
     name: Summarize Failures
-    if: always() && (needs.playwright-tests-linux.result == 'failure' || needs.playwright-tests-macos.result == 'failure')
+    if: >-
+      always() && (
+        needs.playwright-tests-linux.result == 'failure' ||
+        needs.playwright-tests-linux.result == 'cancelled' ||
+        needs.playwright-tests-macos.result == 'failure' ||
+        needs.playwright-tests-macos.result == 'cancelled'
+      )
     needs: [playwright-tests-linux, playwright-tests-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

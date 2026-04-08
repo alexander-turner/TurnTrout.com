@@ -11,11 +11,8 @@ const ArticleTitle: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   if (fileData.frontmatter?.hide_title) {
     return null
   }
-  if (fileData.frontmatter?.title) {
-    fileData.frontmatter.title = formatTitle(fileData.frontmatter.title)
-  }
 
-  const title = fileData.frontmatter?.title
+  const title = fileData.frontmatter?.title ? formatTitle(fileData.frontmatter.title) : undefined
   // skipcq: JS-0424
   let tagContent = <>{title}</>
 

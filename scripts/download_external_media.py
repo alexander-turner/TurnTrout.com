@@ -8,6 +8,7 @@ and updates the markdown references to point to the local staging directory.
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -83,7 +84,8 @@ def download_media(url: str, target_dir: Path) -> bool:
         subprocess.run(curl_command, check=True, stderr=subprocess.PIPE)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Error downloading {url}: {e.stderr.decode()}", file=sys.stderr)
+        error_output = e.stderr.decode() if e.stderr else str(e)
+        print(f"Error downloading {url}: {error_output}", file=sys.stderr)
         return False
 
 
@@ -134,8 +136,10 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
 def main() -> None:
     """Download external media files to asset_staging and update references."""
     # Kill Obsidian to prevent it from renaming downloaded files
-    subprocess.run(["/usr/bin/pkill", "-x", "Obsidian"], check=False)
-    time.sleep(0.5)
+    pkill = shutil.which("pkill")
+    if pkill:
+        subprocess.run([pkill, "-x", "Obsidian"], check=False)
+        time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
     markdown_directory = git_root / "website_content"
@@ -174,7 +178,9 @@ def main() -> None:
         f"Successfully downloaded {successful_downloads}/{len(asset_urls)} files to asset_staging."
     )
 
-    subprocess.run(["/usr/bin/open", "-g", "-a", "Obsidian"], check=False)
+    open_cmd = shutil.which("open")
+    if open_cmd:
+        subprocess.run([open_cmd, "-g", "-a", "Obsidian"], check=False)
 
 
 if __name__ == "__main__":

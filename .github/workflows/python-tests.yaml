@@ -18,6 +18,7 @@ permissions:
 jobs:
   detect-changes:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       python: ${{ steps.changes.outputs.python }}
     steps:
@@ -51,18 +52,21 @@ jobs:
         with:
           install-node-deps: "false"
           install-system-deps: "true"
+          cache-apt: "true"
 
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
-          pip install linkchecker
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape fish ffmpeg
 
       - name: Install ImageMagick 7 via Homebrew
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install imagemagick
+          # libheif's post-install (update-mime-database) can fail on CI runners,
+          # causing brew to return exit code 1 even though ImageMagick installs fine.
+          brew install imagemagick || true
           echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+          magick --version
 
       - name: Run pytest
         run: |

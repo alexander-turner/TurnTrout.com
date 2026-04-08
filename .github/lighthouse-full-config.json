@@ -2,6 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 5,
+      "maxRetries": 3,
       "settings": {
         "throttling": {
           "cpuSlowdownMultiplier": 1,

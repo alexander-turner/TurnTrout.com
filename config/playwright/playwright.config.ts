@@ -70,9 +70,14 @@ function sanitizeConfigForBrowser(
   return config
 }
 
+const baseURL = "http://localhost:8080"
+
 export default defineConfig({
   timeout: 30000,
   fullyParallel: true,
+  // macOS-14 M1 runners have 3 cores but Playwright defaults to 1 worker for
+  // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.
+  workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 3 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
@@ -80,12 +85,12 @@ export default defineConfig({
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
     command: process.env.CI ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1" : "pnpm start",
-    url: "http://localhost:8080",
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 7 minutes
   },
   use: {
-    baseURL: "http://localhost:8080",
+    baseURL,
     trace: "retain-on-failure",
     screenshot: {
       mode: "only-on-failure",

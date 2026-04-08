@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-06 18:02:03.576874
+date_updated: 2026-04-08 19:46:41.351839
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 
 
@@ -849,7 +851,7 @@ Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
 
 ID uniqueness
-: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410).
+: In, [Mermaid diagrams](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
 
 Skip-to-content link
 : A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
@@ -945,11 +947,11 @@ Print mode
 <figcaption>Drag to compare: before vs. after print mode.</figcaption>
 </figure>
 
+Before/after image sliders
+: Drag-to-compare, powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
+
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
-
-Before/after image sliders
-: Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
 
 Automatic BibTeX citations
 : I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
@@ -1225,6 +1227,9 @@ Lighthouse audits
 
 Quality gates
 : CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+
+Action SHA pinning
+: All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`), preventing a compromised upstream action from injecting code into CI. A CI lint job fails any commit that introduces an unpinned action reference.
 
 ## Automated workflows
 

@@ -37,6 +37,7 @@ jobs:
     name: lighthouse-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
@@ -99,8 +100,9 @@ jobs:
           DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[a-zA-Z0-9.-]*pages.dev' | tail -n 1)
 
           if [[ -z "$DEPLOY_URL" ]]; then
-            echo "::error::Could not determine deployment URL from Wrangler output using primary method."
-            DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[a-zA-Z0-9.-]*pages.dev' | tail -n 1)
+            echo "::error::Could not determine deployment URL from Wrangler output using URL pattern."
+            # Fallback: try to extract from "Deployment complete!" line or similar
+            DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -oP 'https://[^\s]+\.pages\.dev' | tail -n 1)
             if [[ -z "$DEPLOY_URL" ]]; then
               echo "::error::Fallback URL extraction also failed. Please check Wrangler output."
               exit 1
@@ -109,6 +111,22 @@ jobs:
 
           echo "Extracted DEPLOY_URL: $DEPLOY_URL"
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      - name: Wait for deployment to be reachable
+        run: |
+          URL="${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}"
+          echo "Waiting for $URL to respond..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" 2>/dev/null || echo "000")
+            if [[ "$STATUS" =~ ^[23] ]]; then
+              echo "Deploy reachable (HTTP $STATUS) on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Deploy URL $URL not reachable after 20 attempts"
+          exit 1
 
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
@@ -136,7 +154,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: lighthouse-cls-reports-desktop
-          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          path: ${{ github.workspace }}/.lighthouseci/
           retention-days: 1
 
   lighthouse_mobile_cls:
@@ -165,7 +183,7 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: lighthouse-cls-reports-mobile
-          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          path: ${{ github.workspace }}/.lighthouseci/
           retention-days: 1
 
   lighthouse_full_audit:
@@ -193,5 +211,5 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: lighthouse-reports-full-audit
-          path: /home/runner/work/TurnTrout.com/TurnTrout.com/.lighthouseci/
+          path: ${{ github.workspace }}/.lighthouseci/
           retention-days: 1

@@ -6,7 +6,7 @@ import { type GlobalConfiguration } from "../cfg"
 import { RenderPublicationInfo } from "./ContentMeta"
 
 // skipcq: JS-D1001
-export function formatAuthors(authors: string[]): string {
+export function formatAuthors(authors: readonly string[]): string {
   if (authors.length === 0) return "Alex Turner"
   if (authors.length === 1) return authors[0]
   if (authors.length === 2) return `${authors[0]} and ${authors[1]}`

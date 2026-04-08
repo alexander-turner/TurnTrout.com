@@ -30,8 +30,7 @@ export const getTags = (fileData: QuartzPluginData): string[] => {
   if (!fileData.frontmatter) {
     return []
   }
-  let tags = fileData.frontmatter.tags ?? []
-  tags = tags.map(formatTag)
+  const tags = (fileData.frontmatter.tags ?? []).map(formatTag)
   return tags.sort((a: string, b: string) => b.length - a.length)
 }
 

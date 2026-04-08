@@ -1,5 +1,9 @@
 name: Monthly Newsletter Draft
 
+concurrency:
+  group: monthly-newsletter
+  cancel-in-progress: false
+
 on:
   schedule:
     # Run on the 28th of each month at 9am UTC
@@ -17,16 +21,17 @@ permissions:
 jobs:
   generate-newsletter:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
           filter: blob:none # Full commit history for git log, skip historical blobs
 
       - name: Restore last reviewed commit
         id: cache-commit
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-
@@ -243,7 +248,7 @@ jobs:
 
       - name: Save last reviewed commit to cache
         if: steps.commits.outputs.skip != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
           path: .last-newsletter-commit
           key: newsletter-last-commit-${{ steps.range.outputs.end_commit }}

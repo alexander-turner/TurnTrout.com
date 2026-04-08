@@ -19,6 +19,7 @@ from pathlib import Path
 from urllib import parse
 
 import requests
+from frozendict import frozendict
 from ruamel.yaml import YAML  # type: ignore
 
 yaml_parser = YAML(typ="rt")  # Use Round-Trip to preserve formatting
@@ -63,14 +64,16 @@ def _parse_markdown_frontmatter(content: str) -> tuple[dict, str] | None:
     return data, md_body
 
 
-_DOWNLOAD_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/91.0.4472.124 Safari/537.36"
-    ),
-    "Referer": "https://turntrout.com/",
-}
+_DOWNLOAD_HEADERS = frozendict(
+    {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        ),
+        "Referer": "https://turntrout.com/",
+    }
+)
 
 
 def _download_image(url: str, output_path: Path) -> None:

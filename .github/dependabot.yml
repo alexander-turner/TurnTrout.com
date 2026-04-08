@@ -43,3 +43,22 @@ updates:
           - "major"
           - "minor"
           - "patch"
+
+  # Dependabot only scans .github/workflows/ by default.
+  # These entries cover composite actions in .github/actions/.
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/setup-site"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/setup-visual-testing-env"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/summarize-failed-shards"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/deploy-to-cloudflare"
+    schedule:
+      interval: "weekly"

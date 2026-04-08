@@ -195,8 +195,8 @@ After pushing to main:
 
 - **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~33 parallel shards (Linux only on PRs/merge queue; macOS WebKit added on main)
-- macOS runners (10x cost of Linux) only run on pushes to main, not on PRs or merge queue
+- Tests run on ~33 parallel shards (Linux only on PRs; macOS WebKit added on main)
+- macOS runners (10x cost of Linux) only run on pushes to main, not on PRs
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
@@ -215,7 +215,6 @@ After pushing to main:
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
 - **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
 - **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.
-- **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
 
@@ -248,6 +247,7 @@ Per `.cursorrules` and `design.md`:
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
 - **Never add backward-compatibility re-exports** (e.g., `export { foo } from "./other-module"`). Update imports at the call site instead
+- **Prefer immutable types** for collections that are built once and only read: `ReadonlySet`, `ReadonlyMap`, `readonly T[]`, `Readonly<Record<K,V>>`, `as const`. In Python: `frozenset`, `tuple`, `frozendict`. Function parameters should accept `readonly` types when they don't mutate the input.
 
 ### Error Handling
 
@@ -267,3 +267,7 @@ Per `.cursorrules` and `design.md`:
 ### Dependencies
 
 - Use pnpm (not npm) for all package operations
+
+## Lessons Learned
+
+- When making interface array properties `readonly`, you must also update downstream function signatures to accept `readonly` arrays. Most array methods (`.map()`, `.filter()`, `.some()`, `.includes()`) work on readonly arrays, but mutating methods (`.sort()`, `.push()`) don't — copy first: `[...arr].sort()`.

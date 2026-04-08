@@ -1,0 +1,68 @@
+name: CI Gate
+description: >
+  Determines whether expensive CI tests should run based on event type,
+  labels, and branch. Used by Playwright and visual testing workflows.
+
+inputs:
+  run-labels:
+    description: >
+      Comma-separated list of PR labels that trigger a run
+      (e.g. "ci:full-tests,ci:run-playwright")
+    required: true
+
+outputs:
+  run:
+    description: Whether tests should run
+    value: ${{ steps.check.outputs.run }}
+  run-macos:
+    description: Whether macOS (WebKit) tests should run
+    value: ${{ steps.check.outputs.run-macos }}
+  browsers:
+    description: Comma-separated list of browsers to test
+    value: ${{ steps.check.outputs.browsers }}
+
+runs:
+  using: composite
+  steps:
+    - id: check
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        EVENT_ACTION: ${{ github.event.action }}
+        REF_NAME: ${{ github.ref_name }}
+        RUN_LABELS: ${{ inputs.run-labels }}
+        # Pass label names as JSON array string for safe parsing
+        PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+      run: |
+        # On PRs, only run when a CI label is actively added (per-commit, not persistent)
+        if [[ "$EVENT_NAME" == "pull_request" ]]; then
+          if [[ "$EVENT_ACTION" == "labeled" ]]; then
+            # Check if any of the run-labels are present on the PR
+            IFS=',' read -ra LABELS <<< "$RUN_LABELS"
+            MATCH=false
+            for label in "${LABELS[@]}"; do
+              if echo "$PR_LABELS" | grep -q "\"$label\""; then
+                MATCH=true
+                break
+              fi
+            done
+            if [[ "$MATCH" == "true" ]]; then
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+        else
+          echo "run=true" >> "$GITHUB_OUTPUT"
+        fi
+
+        # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
+        if [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
+          echo "run-macos=true" >> "$GITHUB_OUTPUT"
+          echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
+        else
+          echo "run-macos=false" >> "$GITHUB_OUTPUT"
+          echo "browsers=chromium" >> "$GITHUB_OUTPUT"
+        fi
