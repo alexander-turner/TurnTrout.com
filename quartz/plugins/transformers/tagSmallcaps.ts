@@ -139,7 +139,7 @@ export const capitalizeAfterEnding = new RegExp(
   `(?<prefix>^\\s*|\\n|[.!?](?<![eE]\\.[gG]\\.|[iI]\\.[eE]\\.)\\s+)(?<letter>[${upperCapsChars}${lowerCapsChars}])$`,
 )
 
-export const INLINE_ELEMENTS = new Set([
+export const INLINE_ELEMENTS: ReadonlySet<string> = new Set([
   "b",
   "strong",
   "em",

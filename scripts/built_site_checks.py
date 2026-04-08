@@ -670,7 +670,7 @@ def resolve_media_path(src: str, base_dir: Path) -> Path:
     return full_path
 
 
-ALLOWED_ASSET_DOMAINS = {"assets.turntrout.com"}
+ALLOWED_ASSET_DOMAINS = frozenset({"assets.turntrout.com"})
 
 
 def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
