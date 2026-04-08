@@ -17,12 +17,8 @@ inputs:
     description: "Whether to install Chromium (Playwright) and Chrome (Puppeteer)"
     required: false
     default: "false"
-  install-ffmpeg:
-    description: "Whether to install ffmpeg from system packages"
-    required: false
-    default: "false"
   install-system-deps:
-    description: "Whether to install system build deps (libxml2-utils, dos2unix)"
+    description: "Whether to install all system apt packages (build tools, ffmpeg, test utilities)"
     required: false
     default: "false"
   cache-playwright:
@@ -33,8 +29,8 @@ inputs:
     description: "Whether to cache Puppeteer browsers"
     required: false
     default: "false"
-  cache-apt-playwright:
-    description: "Whether to cache apt packages for Playwright system deps"
+  cache-apt:
+    description: "Whether to cache apt packages across runs (redirects apt archive dir)"
     required: false
     default: "false"
 runs:
@@ -131,14 +127,24 @@ runs:
         restore-keys: |
           puppeteer-${{ runner.os }}-
 
-    - name: Cache apt packages for Playwright system deps
-      if: inputs.cache-apt-playwright == 'true'
+    # ── Apt package cache ──────────────────────────────────────────
+    # Redirect apt's archive dir to a cached location so ALL apt-get
+    # install commands (here and in calling workflows) reuse cached .debs.
+    - name: Restore apt package cache
+      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
-        path: ~/apt-playwright-cache
-        key: apt-playwright-${{ runner.os }}-24.04-${{ hashFiles('**/pnpm-lock.yaml') }}
+        path: ~/apt-cache
+        key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
         restore-keys: |
-          apt-playwright-${{ runner.os }}-24.04-
+          apt-cache-${{ runner.os }}-
+
+    - name: Configure apt to use cached archives
+      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
+      run: |
+        mkdir -p ~/apt-cache/partial
+        echo "Dir::Cache::Archives \"$HOME/apt-cache/\";" | sudo tee /etc/apt/apt.conf.d/99-github-cache
+      shell: bash
 
     - name: Install Chromium and Chrome for Mermaid rendering and critical CSS
       if: inputs.install-browsers == 'true' && inputs.install-node-deps == 'true'
@@ -146,24 +152,21 @@ runs:
       shell: bash
 
     # ── System packages ──────────────────────────────────────────────
-    - name: Install system build dependencies
-      if: inputs.install-system-deps == 'true'
+    # All apt packages in one step so every workflow populates the same
+    # cache. With cache-apt enabled, repeat installs unpack from disk in
+    # seconds instead of downloading from slow mirrors.
+    # All versions pinned for deterministic builds. Bump when Ubuntu
+    # pushes security updates that remove the old version.
+    - name: Install system packages
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libxml2-utils dos2unix
-      shell: bash
-
-    - name: Install ffmpeg from system packages
-      if: inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
-      run: |
-        # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
-        if command -v ffprobe &>/dev/null; then
-          echo "ffprobe already available, skipping install"
-          ffprobe -version
-          exit 0
-        fi
-        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
-        sudo apt-get update || true
-        sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
-        ffprobe -version
+        sudo apt-get install -y --no-install-recommends \
+          libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
+          dos2unix=7.5.1-1 \
+          ffmpeg=7:6.1.1-3ubuntu5 \
+          libimage-exiftool-perl=12.76+dfsg-1 \
+          inkscape=1.2.2-2ubuntu12 \
+          rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
+          fish=3.7.0-1
       shell: bash
