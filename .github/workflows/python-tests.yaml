@@ -51,6 +51,7 @@ jobs:
         with:
           install-node-deps: "false"
           install-system-deps: "true"
+          cache-apt: "true"
 
       - name: Install test dependencies
         run: |

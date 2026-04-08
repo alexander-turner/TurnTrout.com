@@ -47,7 +47,7 @@ jobs:
           install-system-deps: "true"
           cache-playwright: "true"
           cache-puppeteer: "true"
-          cache-ffmpeg: "true"
+          cache-apt: "true"
 
       - name: Build site
         if: steps.cache.outputs.cache-hit != 'true'

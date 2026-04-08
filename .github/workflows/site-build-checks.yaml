@@ -61,6 +61,8 @@ jobs:
 
       - name: Setup site
         uses: ./.github/actions/setup-site
+        with:
+          cache-apt: "true"
 
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libxml2-utils
