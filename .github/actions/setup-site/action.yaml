@@ -17,12 +17,8 @@ inputs:
     description: "Whether to install Chromium (Playwright) and Chrome (Puppeteer)"
     required: false
     default: "false"
-  install-ffmpeg:
-    description: "Whether to install ffmpeg from system packages"
-    required: false
-    default: "false"
   install-system-deps:
-    description: "Whether to install system build deps (libxml2-utils, dos2unix)"
+    description: "Whether to install all system apt packages (build tools, ffmpeg, test utilities)"
     required: false
     default: "false"
   cache-playwright:
@@ -139,9 +135,8 @@ runs:
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
         path: ~/apt-cache
-        key: apt-cache-${{ runner.os }}-${{ github.workflow }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
+        key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
         restore-keys: |
-          apt-cache-${{ runner.os }}-${{ github.workflow }}-
           apt-cache-${{ runner.os }}-
 
     - name: Configure apt to use cached archives
@@ -157,25 +152,15 @@ runs:
       shell: bash
 
     # ── System packages ──────────────────────────────────────────────
-    - name: Install system build dependencies
-      if: inputs.install-system-deps == 'true'
+    # All apt packages in one step so every workflow populates the same
+    # cache. With cache-apt enabled, repeat installs unpack from disk in
+    # seconds instead of downloading from slow mirrors.
+    - name: Install system packages
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libxml2-utils dos2unix
-      shell: bash
-
-    - name: Install ffmpeg from system packages
-      if: inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
-      run: |
-        # Skip if ffmpeg is already available (e.g. pre-installed in Docker image)
-        if command -v ffprobe &>/dev/null; then
-          echo "ffprobe already available, skipping install"
-          ffprobe -version
-          exit 0
-        fi
-        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
-        # With cache-apt enabled, debs are served from ~/apt-cache instead of downloading
-        sudo apt-get update || true
-        sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
-        ffprobe -version
+        sudo apt-get install -y --no-install-recommends \
+          libxml2-utils dos2unix \
+          ffmpeg=7:6.1.1-3ubuntu5 \
+          libimage-exiftool-perl inkscape rclone fish
       shell: bash

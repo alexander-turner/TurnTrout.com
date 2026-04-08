@@ -43,7 +43,6 @@ jobs:
         with:
           install-sharp: "true"
           install-browsers: "true"
-          install-ffmpeg: "true"
           install-system-deps: "true"
           cache-playwright: "true"
           cache-puppeteer: "true"
