@@ -37,6 +37,10 @@ inputs:
     description: "Whether to cache apt packages for Playwright system deps"
     required: false
     default: "false"
+  cache-ffmpeg:
+    description: "Whether to cache ffmpeg apt packages"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -153,6 +157,14 @@ runs:
         sudo apt-get install -y --no-install-recommends libxml2-utils dos2unix
       shell: bash
 
+    - name: Cache ffmpeg apt packages
+      if: inputs.cache-ffmpeg == 'true' && inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
+      id: cache-ffmpeg
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/apt-cache-ffmpeg
+        key: apt-ffmpeg-ubuntu-24.04-6.1.1-3ubuntu5
+
     - name: Install ffmpeg from system packages
       if: inputs.install-ffmpeg == 'true' && runner.os == 'Linux'
       run: |
@@ -162,8 +174,20 @@ runs:
           ffprobe -version
           exit 0
         fi
-        # Pinned to ubuntu-24.04 runner's ffmpeg version (only ffprobe is needed at build time)
+
+        # Try cached .deb packages first (avoids slow Azure mirror downloads)
+        if [ -d ~/apt-cache-ffmpeg ] && ls ~/apt-cache-ffmpeg/*.deb &>/dev/null; then
+          echo "Installing ffmpeg from cached .deb packages"
+          sudo dpkg -i ~/apt-cache-ffmpeg/*.deb 2>/dev/null || sudo apt-get install -f -y --no-install-recommends
+          ffprobe -version
+          exit 0
+        fi
+
+        # Fresh install: download and install, then cache the .deb files
         sudo apt-get update || true
+        sudo apt-get install -y -d --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
+        mkdir -p ~/apt-cache-ffmpeg
+        cp /var/cache/apt/archives/*.deb ~/apt-cache-ffmpeg/ 2>/dev/null || true
         sudo apt-get install -y --no-install-recommends ffmpeg=7:6.1.1-3ubuntu5
         ffprobe -version
       shell: bash
