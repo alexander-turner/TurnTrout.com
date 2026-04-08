@@ -1010,9 +1010,9 @@ img-comparison-slider {
   // Customize handle visibility
   --divider-width: 1px;
   --divider-color: var(--foreground);
-  --divider-shadow: 0 0 8px var(--background);
+  --divider-shadow: 0 0 4px rgb(0 0 0 / 50%);
   --default-handle-color: var(--foreground);
-  --default-handle-shadow: 0 0 1px var(--background);
+  --default-handle-shadow: 0 0 4px rgb(0 0 0 / 50%);
 
   // Remove blue focus outline
   &:focus {
