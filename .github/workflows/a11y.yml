@@ -51,7 +51,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  a11y:
+  a11y-test:
     needs: [should-run, a11y-build]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -121,7 +121,7 @@ jobs:
   a11y-status:
     name: a11y
     if: always()
-    needs: [should-run, a11y]
+    needs: [should-run, a11y-test]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -131,7 +131,7 @@ jobs:
             echo "Tests were skipped (no label)"
             exit 0
           fi
-          if [[ "${{ needs.a11y.result }}" != "success" ]]; then
-            echo "a11y tests did not succeed (${{ needs.a11y.result }})"
+          if [[ "${{ needs.a11y-test.result }}" != "success" ]]; then
+            echo "a11y tests did not succeed (${{ needs.a11y-test.result }})"
             exit 1
           fi

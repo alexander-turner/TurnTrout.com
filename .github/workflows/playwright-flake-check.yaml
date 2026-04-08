@@ -98,7 +98,7 @@ jobs:
           retention-days: 3
 
       - name: Upload Winston logs
-        if: failure()
+        if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-winston-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -194,7 +194,7 @@ jobs:
           retention-days: 3
 
       - name: Upload Winston logs
-        if: failure()
+        if: steps.playwright.outcome == 'failure'
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: flake-check-winston-macos-shard-${{ env.SANITIZED_SHARD }}
