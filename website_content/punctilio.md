@@ -31,6 +31,17 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 <button class="punctilio-mode-btn" data-mode="html">HTML</button>
 </div>
 
+> [!info] Input
+> <div class="no-formatting">
+> <textarea id="punctilio-input" spellcheck="false" aria-label="Text input for punctilio transformation"></textarea>
+> </div>
+
+> [!info] Output
+> <div class="punctilio-output-wrapper no-formatting">
+> <div class="punctilio-output-content"></div>
+> <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
+> </div>
+
 > [!abstract]- Options
 > <ul class="punctilio-options-list">
 > <li class="punctilio-option"><label>Punctuation style:
@@ -54,14 +65,3 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />Ligatures</label></li>
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
 > </ul>
-
-> [!info] Input
-> <div class="no-formatting">
-> <textarea id="punctilio-input" spellcheck="false" aria-label="Text input for punctilio transformation"></textarea>
-> </div>
-
-> [!info] Output
-> <div class="punctilio-output-wrapper no-formatting">
-> <div class="punctilio-output-content"></div>
-> <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
-> </div>
