@@ -26,6 +26,7 @@ jobs:
   should-run:
     name: flake-check-gate
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       run: ${{ steps.check.outputs.run }}
       repeat: ${{ steps.check.outputs.repeat }}
@@ -245,6 +246,7 @@ jobs:
     if: always()
     needs: [should-run, flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Check results
         run: |

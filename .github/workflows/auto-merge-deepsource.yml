@@ -9,10 +9,11 @@ permissions:
 jobs:
   deepsource-auto-merge:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     # Check if PR is from DeepSource and is a style fix
     if: |
       (github.actor == 'deepsource-autofix[bot]' || github.actor == 'deepsource-io') &&
-      contains(github.event.pull_request.title, 'style:')
+      startsWith(github.event.pull_request.title, 'style:')
     steps:
       - name: Enable auto-merge for DeepSource style PRs
         run: gh pr merge --auto --merge "$PR_URL"

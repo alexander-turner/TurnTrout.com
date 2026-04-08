@@ -18,6 +18,7 @@ permissions:
 jobs:
   detect-changes:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       python: ${{ steps.changes.outputs.python }}
     steps:
@@ -55,8 +56,8 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg=7:6.1.1-3ubuntu5
-          pip install linkchecker
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape rclone fish ffmpeg
+          uv pip install --system linkchecker==10.6.0
 
       - name: Install ImageMagick 7 via Homebrew
         run: |

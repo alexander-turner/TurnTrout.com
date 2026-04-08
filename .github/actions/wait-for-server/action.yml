@@ -1,0 +1,48 @@
+name: Wait for Server
+description: >
+  Starts a static file server and waits for it to be ready.
+  Outputs the server PID so callers can kill it when done.
+
+inputs:
+  path:
+    description: Directory to serve
+    required: true
+  port:
+    description: Port to serve on
+    required: false
+    default: "8080"
+  max-attempts:
+    description: Maximum number of readiness checks (1s apart)
+    required: false
+    default: "30"
+
+outputs:
+  server-pid:
+    description: PID of the background server process
+    value: ${{ steps.start.outputs.pid }}
+
+runs:
+  using: composite
+  steps:
+    - id: start
+      shell: bash
+      env:
+        SERVE_PATH: ${{ inputs.path }}
+        SERVE_PORT: ${{ inputs.port }}
+        MAX_ATTEMPTS: ${{ inputs.max-attempts }}
+      run: |
+        pnpm exec serve "$SERVE_PATH" -l "$SERVE_PORT" &
+        SERVER_PID=$!
+        echo "pid=$SERVER_PID" >> "$GITHUB_OUTPUT"
+
+        for i in $(seq 1 "$MAX_ATTEMPTS"); do
+          if curl -s --max-time 5 "http://localhost:${SERVE_PORT}" > /dev/null; then
+            echo "Server ready on port $SERVE_PORT (attempt $i)"
+            exit 0
+          fi
+          sleep 1
+        done
+
+        echo "::error::Server on port $SERVE_PORT not ready after $MAX_ATTEMPTS attempts"
+        kill "$SERVER_PID" 2>/dev/null || true
+        exit 1
