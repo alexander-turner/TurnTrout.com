@@ -135,8 +135,9 @@ runs:
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
         path: ~/apt-cache
-        key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
+        key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}-${{ github.run_id }}
         restore-keys: |
+          apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}-
           apt-cache-${{ runner.os }}-
 
     - name: Configure apt to use cached archives
