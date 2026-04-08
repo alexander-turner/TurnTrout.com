@@ -70,10 +70,7 @@ function sanitizeConfigForBrowser(
   return config
 }
 
-// In CI, use 127.0.0.1 to avoid IPv4/IPv6 resolution issues with "localhost"
-// on macOS runners (WebKit may resolve localhost to ::1 while the server
-// listens on 0.0.0.0, causing all tests to timeout).
-const baseURL = process.env.CI ? "http://127.0.0.1:8080" : "http://localhost:8080"
+const baseURL = "http://localhost:8080"
 
 export default defineConfig({
   timeout: 30000,
