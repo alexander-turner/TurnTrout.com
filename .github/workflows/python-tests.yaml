@@ -61,8 +61,11 @@ jobs:
       - name: Install ImageMagick 7 via Homebrew
         run: |
           eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-          brew install imagemagick
+          # libheif's post-install (update-mime-database) can fail on CI runners,
+          # causing brew to return exit code 1 even though ImageMagick installs fine.
+          brew install imagemagick || true
           echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+          magick --version
 
       - name: Run pytest
         run: |
