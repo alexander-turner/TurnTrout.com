@@ -116,7 +116,7 @@ runs:
       if: inputs.cache-playwright == 'true'
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
-        path: ~/.cache/ms-playwright
+        path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
