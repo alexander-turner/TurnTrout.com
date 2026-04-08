@@ -136,6 +136,12 @@ The way this works is that:
 2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
 3. The `lolcat` command splays the text 'cross the rainbow.
 
+## Faster font subsetting
+
+[`@turntrout/subfont`](https://www.npmjs.com/package/@turntrout/subfont) is a hard fork of [`Munter/subfont`](https://github.com/Munter/subfont), which shrinks fonts to only contain the characters necessary for the content.
+
+The original `subfont` traced font usage from scratch on every page. That took almost two hours per deploy. My fork groups pages by their CSS and only traces one representative per group, extracting just the text from the rest (for my site: 382 -> 5 CSS traces). Those remaining traces run in parallel across worker threads.
+
 # Claude Code automation template
 
 [`alexander-turner/claude-automation-template`](https://github.com/alexander-turner/claude-automation-template) packages my automation workflows into a reusable starting point for any project using Claude Code. The template is designed so that adopting repos get improvements automatically via the sync workflow --- fix a bug in the template, and every downstream project picks it up.

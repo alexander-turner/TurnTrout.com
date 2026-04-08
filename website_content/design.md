@@ -945,11 +945,11 @@ Print mode
 <figcaption>Drag to compare: before vs. after print mode.</figcaption>
 </figure>
 
+Before/after image sliders
+: Drag-to-compare, powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
+
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
-
-Before/after image sliders
-: Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
 
 Automatic BibTeX citations
 : I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
