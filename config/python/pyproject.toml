@@ -41,6 +41,7 @@ dependencies = [
     "autoflake>=2.3.1",
     "autopep8>=2.3.1",
     "isort>=5.13.2",
+    "frozendict>=2.4.7",
 ]
 
 [tool.black]
