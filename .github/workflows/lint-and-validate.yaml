@@ -110,12 +110,16 @@ jobs:
               - '.github/actions/**'
 
   autofix:
-    needs: [detect-changes]
+    needs: [detect-changes, update-dates]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
+    # Depends on update-dates to avoid push race condition (both push to main).
+    # always() lets this run even when update-dates is skipped (PRs, no content changes).
     if: >
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.code == 'true' ||
        needs.detect-changes.outputs.styles == 'true') &&
@@ -177,6 +181,8 @@ jobs:
           git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
           if [[ -n $(git diff --cached --name-only) ]]; then
             git commit -m "style: auto-fix formatting [skip ci]"
+            # Pull any commits pushed by update-dates before pushing
+            git pull --rebase origin ${{ github.head_ref || github.ref_name }}
             git push
             echo "::notice::Pushed auto-fix formatting commit"
           else

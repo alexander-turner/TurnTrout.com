@@ -110,6 +110,22 @@ jobs:
           echo "Extracted DEPLOY_URL: $DEPLOY_URL"
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
+      - name: Wait for deployment to be reachable
+        run: |
+          URL="${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}"
+          echo "Waiting for $URL to respond..."
+          for i in $(seq 1 20); do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" 2>/dev/null || echo "000")
+            if [[ "$STATUS" =~ ^[23] ]]; then
+              echo "Deploy reachable (HTTP $STATUS) on attempt $i"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $STATUS, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Deploy URL $URL not reachable after 20 attempts"
+          exit 1
+
   lighthouse_desktop_cls:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
