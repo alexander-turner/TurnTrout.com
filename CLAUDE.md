@@ -203,13 +203,14 @@ After pushing to main:
 
 ### CI Cost Optimization
 
-- **Expensive tests always run on main**: Pushes to main always trigger Playwright, visual, and Lighthouse tests. All three workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
-- **Cheap checks always run on PRs**: Accessibility (pa11y) runs on every PR push (with path filters). No label required.
+- **Expensive tests always run on main**: Pushes to main always trigger Playwright, visual, Lighthouse, a11y, and site-build-checks. These workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
 - **Per-commit CI labels on PRs**: On PRs, expensive tests only run when a CI label is _actively added_ (one-shot per commit, not persistent). Adding a label triggers tests for the current HEAD; the next push won't re-trigger unless the label is added again. Labels:
   - `ci:run-playwright` — Playwright integration tests only (Linux shards only on PRs)
   - `ci:run-visual` — Visual regression tests only (Linux shards only on PRs)
   - `ci:run-lighthouse` — Lighthouse performance/CLS/audit tests only
-  - `ci:full-tests` — All of the above (Playwright + visual + Lighthouse)
+  - `ci:run-a11y` — Accessibility (pa11y) tests only
+  - `ci:run-site-checks` — Site build checks and link validation only
+  - `ci:full-tests` — All of the above
 
   Path filters further limit PR triggers to relevant file changes. **When creating a PR that modifies Playwright tests or interaction behavior, add the appropriate label** (e.g., `gh pr edit <number> --add-label "ci:run-playwright"`). Labels are per-commit: re-add to run again on the next push.
 - **Flake check**: `workflow_dispatch` only (manual trigger via Actions UI). Not triggered by labels or PR events. Configurable `repeat-each` count (default 3).
