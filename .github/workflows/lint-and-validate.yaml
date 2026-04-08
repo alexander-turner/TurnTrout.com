@@ -300,10 +300,11 @@ jobs:
 
       - name: Verify apt packages are version-pinned
         run: |
-          # Extract the apt-get install block from setup-site and check for unpinned packages
-          awk '/apt-get install/,/^[^ ]/' .github/actions/setup-site/action.yaml \
-            | grep -oP '(?<=\s)[a-z][a-z0-9._+-]+(?=\s*\\?$)' \
-            | while read -r pkg; do
+          # Find package-like lines between apt-get install and shell: that lack =version
+          awk '/apt-get install/,/shell:/' .github/actions/setup-site/action.yaml \
+            | grep -E '^\s+[a-z][a-z0-9._+-]+\s*\\?\s*$' \
+            | while read -r line; do
+                pkg=$(echo "$line" | tr -d ' \\')
                 echo "::error::Unpinned apt package in setup-site: '$pkg' (add =version suffix)"
                 exit 1
               done
