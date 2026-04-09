@@ -1235,6 +1235,7 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
   // Reading offsetHeight triggers a synchronous reflow so the browser
   // paints the new content before Playwright polls for visibility.
   if (results) {
+    // This forces a style recalculation
     // skipcq: JS-0098
     void results.offsetHeight
   }
