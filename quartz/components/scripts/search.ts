@@ -1229,14 +1229,15 @@ async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
     formatForDisplay(currentSearchTerm, id, data as { [key: FullSlug]: ContentDetails }, idDataMap),
   )
 
-  // Force a layout recalculation in WebKit
+  displayResults(finalResults, results, enablePreview)
+
+  // Force a layout recalculation in WebKit after inserting results.
+  // Reading offsetHeight triggers a synchronous reflow so the browser
+  // paints the new content before Playwright polls for visibility.
   if (results) {
-    // This forces a style recalculation
     // skipcq: JS-0098
     void results.offsetHeight
   }
-
-  displayResults(finalResults, results, enablePreview)
 
   // Re-enable mouse after a short delay to prevent immediate hover selection
   setTimeout(() => {
