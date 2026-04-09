@@ -81,6 +81,9 @@ jobs:
             --shard ${{ matrix.shard }} \
             --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log
+        env:
+          # 90 min job timeout → 85 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
@@ -177,6 +180,9 @@ jobs:
             --shard ${{ matrix.shard }} \
             --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log
+        env:
+          # 90 min job timeout → 85 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
