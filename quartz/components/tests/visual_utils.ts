@@ -432,16 +432,15 @@ export async function search(page: Page, term: string) {
 
   await searchBar.fill(term)
   // Explicitly dispatch input event — Playwright's fill() should do this,
-  // but Firefox on tablet viewports sometimes fails to trigger the handler.
+  // but Firefox and WebKit on tablet viewports sometimes fail to trigger the handler.
   await searchBar.dispatchEvent("input")
   await expect(searchLayout).toBeVisible({ timeout: 15_000 })
   await expect(searchLayout).toHaveClass(/display-results/, { timeout: 15_000 })
 
-  // Wait for results to appear — the display-results class is set before
-  // searchAsync completes, so also wait for actual result cards to render.
-  const resultsContainer = page.locator("#results-container")
-  await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
-  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 10_000 })
+  // Wait for result cards to render. On mobile viewports #results-container
+  // has height:auto and is invisible while empty, so wait for the cards
+  // directly rather than checking the container first.
+  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 15_000 })
 }
 
 // skipcq: JS-0098
