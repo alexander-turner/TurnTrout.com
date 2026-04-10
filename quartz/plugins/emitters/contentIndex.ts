@@ -3,6 +3,7 @@ import type { Root } from "hast"
 import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
+import { formatTitle } from "../../components/component_utils"
 import { locale, uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
@@ -183,7 +184,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
 
         if (opts?.includeEmptyFiles || (file.data.text && file.data.text !== "")) {
           linkIndex.set(slug, {
-            title: file.data.frontmatter?.title ?? "",
+            title: formatTitle(file.data.frontmatter?.title ?? ""),
             links: file.data.links ?? [],
             tags: file.data.frontmatter?.tags ?? [],
             content: (file.data.text as string) ?? "",
