@@ -4,7 +4,7 @@ import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
 import { formatTitle } from "../../components/component_utils"
-import { locale, uiStrings } from "../../components/constants"
+import { uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
 import { escapeHTML } from "../../util/escape"
@@ -111,15 +111,10 @@ function generateRSSFeed(
 
   const items = Array.from(idx)
     .sort(([, f1], [, f2]) => {
-      if (f1.date && f2.date) {
-        return f2.date.getTime() - f1.date.getTime()
-      } else if (f1.date && !f2.date) {
-        return -1
-      } else if (!f1.date && f2.date) {
-        return 1
-      }
-
-      return f1.title.localeCompare(f2.title, locale)
+      // date is always set by emit() via getDate() ?? new Date()
+      const d1 = f1.date as Date
+      const d2 = f2.date as Date
+      return d2.getTime() - d1.getTime()
     })
     .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
     .slice(0, maxItemsInFeed ?? idx.size)
