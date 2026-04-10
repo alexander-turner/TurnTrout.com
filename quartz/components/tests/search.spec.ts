@@ -308,8 +308,11 @@ test("Search results work for a single character", async ({ page }, testInfo) =>
 })
 
 test("Preview element persists after closing and reopening search", async ({ page }, testInfo) => {
-  // Two full search + preview cycles can exceed 30s on Firefox in CI
-  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+  // Two full search + preview cycles can exceed default timeouts on Firefox and WebKit
+  test.slow(
+    testInfo.project.name.includes("Firefox") || testInfo.project.name.includes("Safari"),
+    "Firefox and WebKit are slow in CI",
+  )
   await search(page, "Steering")
   await waitForArticlePreview(page)
 
