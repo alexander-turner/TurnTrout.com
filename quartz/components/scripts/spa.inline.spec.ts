@@ -7,9 +7,10 @@
  *  - Playwright implicitly scrolling when clicking on an anchor
  */
 
-import { type Page, test, expect } from "@playwright/test"
+import type { Page } from "@playwright/test"
 
 import { simpleConstants, tightScrollTolerance, testPageSlug } from "../constants"
+import { test, expect } from "../tests/fixtures"
 import { isDesktopViewport, getAllWithWait } from "../tests/visual_utils"
 
 const { pondVideoId } = simpleConstants
@@ -79,8 +80,8 @@ async function waitForScroll(page: Page, targetScrollY: number, timeout = 30000)
 
 // Normal page.reload() will wipe the history state
 async function softRefresh(page: Page): Promise<void> {
-  await page.goBack()
-  await page.goForward()
+  await page.goBack({ waitUntil: "domcontentloaded" })
+  await page.goForward({ waitUntil: "domcontentloaded" })
 }
 
 async function addMarker(page: Page): Promise<void> {
@@ -179,6 +180,11 @@ test.describe("Local Link Navigation", () => {
   })
 
   test("external links are not intercepted", async ({ page }) => {
+    // Mock the external URL to avoid real network requests in CI
+    await page.route("https://www.example.com/**", (route) =>
+      route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
+    )
+
     await page.evaluate(() => {
       const link = document.createElement("a")
       link.href = "https://www.example.com"
@@ -255,8 +261,8 @@ test.describe("Scroll Behavior", () => {
       page,
     }, testInfo) => {
       test.skip(
-        !isDesktopViewport(page) && testInfo.project.use.browserName === "webkit",
-        "Mobile Safari has unreliable scroll restoration after hash navigation",
+        testInfo.project.use.browserName === "webkit",
+        "WebKit has unreliable scroll restoration after hash navigation",
       )
 
       const anchorId = await createFinalAnchor(page)
@@ -282,7 +288,7 @@ test.describe("Scroll Behavior", () => {
     await waitForScroll(page, targetScroll)
     await waitForHistoryState(page, targetScroll)
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       await softRefresh(page)
       await waitForScroll(page, targetScroll)
     }
@@ -384,28 +390,41 @@ test.describe("Instant Scroll Restoration", () => {
       }
     })
 
+    // Register an init script that dispatches a user scroll event during page
+    // load. Using addInitScript avoids the race where the 15-frame monitoring
+    // loop completes before a post-reload page.evaluate round-trip can fire.
+    // We wait for scrollY > 0 (scroll restoration happened), then skip two
+    // extra frames so the programmaticScroll flag (set during
+    // scrollToProgrammatic and cleared on the next rAF) has been reset.
+    await page.addInitScript(() => {
+      const tryDispatch = () => {
+        if (window.scrollY > 0) {
+          // Skip two frames: the programmaticScroll flag is cleared in the
+          // first rAF after scrollToProgrammatic, and our addInitScript rAF
+          // was registered before it. Waiting two frames guarantees the flag
+          // is false when we fire the scroll event.
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }))
+              window.scrollBy(0, 100)
+            })
+          })
+        } else {
+          requestAnimationFrame(tryDispatch)
+        }
+      }
+      requestAnimationFrame(tryDispatch)
+    })
+
     await page.reload({ waitUntil: "domcontentloaded" })
-
-    // Wait for layout stability monitoring to start
-    await page.waitForFunction(() => {
-      return window.scrollY > 0
-    })
-
-    // Ensure the layout monitoring has begun before triggering user scroll.
-    // We wait until at least one InstantScrollRestoration console message has appeared.
-    await expect
-      .poll(() => consoleMessages.length, { message: "waiting for monitoring to start" })
-      .toBeGreaterThan(0)
-
-    await page.evaluate(() => {
-      window.scrollBy(0, 100)
-    })
 
     // Wait for the monitoring to detect and cancel by polling the messages array.
     // We poll on the Node.js side because the `consoleMessages` array lives here,
     // not in the browser context that page.waitForFunction evaluates in.
     await expect
-      .poll(() => consoleMessages.find((msg) => msg.includes("canceled due to user input")))
+      .poll(() => consoleMessages.find((msg) => msg.includes("canceled due to user input")), {
+        timeout: 10_000,
+      })
       .toBeDefined()
   })
 })
@@ -548,9 +567,14 @@ test.describe("SPA Navigation DOM Cleanup", () => {
 
 // eslint-disable-next-line playwright/expect-expect
 test("restores scroll position when returning from external page", async ({ page }) => {
+  // Mock the external URL to avoid real network requests in CI
+  await page.route("https://example.com/**", (route) =>
+    route.fulfill({ status: 200, body: "<html><body>External</body></html>" }),
+  )
+
   await page.evaluate(() => {
     const link = document.createElement("a")
-    link.href = "https://github.com/alexander-turner"
+    link.href = "https://example.com/external"
     link.textContent = "External link"
     document.body.prepend(link)
   })

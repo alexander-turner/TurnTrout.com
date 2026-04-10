@@ -79,7 +79,7 @@ a[id*="fnref-"] {
   // Dotted border signals "click for interaction" (same pattern as Elvish text)
   border: 1px dotted var(--midground-fainter);
   padding: 0 calc(0.25 * $base-margin);
-  border-radius: 5px;
+  border-radius: $border-radius;
 
   @media all and (max-width: $max-mobile-width) {
     scroll-margin-top: calc(7 * $base-margin);
@@ -314,7 +314,8 @@ figure:has(> .subfigure) {
   flex-wrap: wrap;
 
   > figcaption {
-    flex-basis: 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
   }
 }
 
@@ -376,6 +377,7 @@ p:has(+ .subtitle),
   color: var(--midground);
   margin-top: calc(0.25 * $base-margin);
   font-size: var(--font-size-minus-1);
+  text-wrap: balance;
 
   .admonition & {
     color: color-mix(in srgb, var(--midground) 60%, var(--color));
@@ -404,6 +406,7 @@ figcaption {
   max-width: 90%;
   margin-left: auto;
   margin-right: auto;
+  text-wrap: balance;
 }
 
 img,
@@ -464,7 +467,7 @@ figcaption,
   & .content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.2s ease-out;
+    transition: max-height $transition-duration-quick ease-out;
   }
 }
 
@@ -481,7 +484,7 @@ svg.fold-icon {
   width: var(--icon-size);
   height: var(--icon-size);
   fill: var(--midground); /* Set the default color here */
-  transition: transform 0.2s ease-out; /* Add a smooth transition */
+  transition: transform $transition-duration-quick ease-out; /* Add a smooth transition */
   transform: rotate(-90deg); /* Initial 90-degree rotation */
 
   &[aria-expanded="true"] {
@@ -761,7 +764,7 @@ img.emoji {
   align-items: baseline !important;
   background-color: var(--midground-faintest) !important;
   padding: calc(0.5 * $base-margin);
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .flowchart {
@@ -830,7 +833,7 @@ foreignObject {
   width: 100%;
   height: 18rem;
   max-width: 35rem;
-  border-radius: 5px;
+  border-radius: $border-radius;
 }
 
 .after-article-components {
@@ -843,7 +846,7 @@ foreignObject {
 }
 
 #subscription-and-contact {
-  border-radius: 5px;
+  border-radius: $border-radius;
   border: 1px solid var(--midground);
   padding-bottom: 1rem;
   padding-left: 1rem;
@@ -860,7 +863,7 @@ foreignObject {
 iframe {
   border: none;
   width: 95%;
-  border-radius: 5px;
+  border-radius: $border-radius;
   margin-top: calc(2 * $base-margin);
   margin-bottom: calc(2 * $base-margin);
 
@@ -974,10 +977,11 @@ figure#goose-terminal {
   fill: var(--foreground);
   pointer-events: none;
   paint-order: stroke fill;
-  stroke: var(--background);
+  stroke: var(--bg, var(--background));
   stroke-width: 5px;
   stroke-linejoin: round;
-  filter: drop-shadow(0 0 3px var(--background)) drop-shadow(0 0 3px var(--background));
+  filter: drop-shadow(0 0 3px var(--bg, var(--background)))
+    drop-shadow(0 0 3px var(--bg, var(--background)));
 }
 
 .smart-chart-point {
@@ -989,7 +993,17 @@ figure#goose-terminal {
   }
 }
 
+.smart-chart-tooltip-bg {
+  display: none;
+}
+
 .smart-chart-point-group:hover > .smart-chart-tooltip,
-.smart-chart-annotation:hover > .smart-chart-tooltip {
+.smart-chart-point-group:hover > .smart-chart-tooltip-bg {
+  display: block;
+}
+
+/* Annotation tooltips: JS positions on first hover; CSS hover as no-JS fallback */
+.smart-chart-annotation:hover > .smart-chart-tooltip,
+.smart-chart-annotation:hover > .smart-chart-tooltip-bg {
   display: block;
 }

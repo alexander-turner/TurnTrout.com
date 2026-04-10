@@ -36,10 +36,11 @@ describe("wrapScrollables", () => {
 
       const observers = wrapScrollables(container)
 
-      const wrapper = el.parentElement!
-      expect(wrapper.classList.contains("scroll-indicator")).toBe(true)
-      expect(wrapper.classList.contains("can-scroll-left")).toBe(expectLeft)
-      expect(wrapper.classList.contains("can-scroll-right")).toBe(expectRight)
+      const wrapper = el.parentElement
+      expect(wrapper).not.toBeNull()
+      expect(wrapper?.classList.contains("scroll-indicator")).toBe(true)
+      expect(wrapper?.classList.contains("can-scroll-left")).toBe(expectLeft)
+      expect(wrapper?.classList.contains("can-scroll-right")).toBe(expectRight)
       expect(observers).toHaveLength(1)
     },
   )

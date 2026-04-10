@@ -58,6 +58,8 @@ pnpm check          # Lint and type check
 
 ## Architecture
 
+Place any "magic numbers" or constants used in >1 file in `config/constants.json` (for static quantities) or `quartz/components/constants.ts` (for dynamically generated values).
+
 ### Quartz Plugin System (TypeScript)
 
 The build follows a three-stage pipeline: **Transform → Filter → Emit**
@@ -177,17 +179,18 @@ After pushing to main:
 
 - **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
-- Tests run on ~40 parallel shards to complete in ~10 minutes
+- Tests run on ~30 parallel shards to complete in ~10 minutes
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
-- DeepSource static analysis
+- DeepSource static analysis (use the forked `deepsource` CLI to check issues — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 
 ### CI Cost Optimization
 
-- **Playwright/visual tests on PRs**: These only run when the `ci:full-tests` label is added to a PR. They always run on push to main/dev and in the merge queue.
+- **Playwright/visual tests always run on main**: Pushes to main always trigger Playwright and visual tests (no path filters). Both workflows also support `workflow_dispatch` for manual triggering from the Actions UI.
+- **Playwright/visual tests on PRs**: On PRs, these only run when the `ci:full-tests` label is added. Path filters further limit PR triggers to relevant file changes.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards/jobs.
-- **Path filters**: Workflows only trigger when relevant files change. Playwright tests skip content-only changes.
-- **Skip CI for docs-only changes**: Commits that only touch documentation files (README, CLAUDE.md, `.hooks/`, `.cursorrules`, `asset_staging/`) will not trigger CI workflows due to path filters. When creating PRs with only such changes, note that CI checks will be skipped.
+- **Path filters**: PR workflows only trigger when relevant files change. Each workflow lists only the `config/` subdirectories it actually uses. Build/deploy workflows exclude test files from triggering.
+- **Skip CI**: Use `[skip ci]` in commit messages to skip all workflows for a commit.
 - **Merge queue**: The repository uses GitHub merge queue. All required checks have `merge_group` triggers so they run in the merge queue context.
 
 ## Design Philosophy
@@ -220,6 +223,7 @@ Per `.cursorrules` and `design.md`:
 - Un-nest conditionals where possible; combine related checks into single blocks
 - Create shared helpers when the same logic is needed in multiple places
 - In TypeScript/JavaScript, avoid `!` field assertions (flagged by linter) - use proper null checks instead
+- **Never add backward-compatibility re-exports** (e.g., `export { foo } from "./other-module"`). Update imports at the call site instead
 
 ### Error Handling
 

@@ -579,7 +579,7 @@ describe("attachPopoverEventListeners", () => {
       popoverElement = document.createElement("div")
       if (isFootnote) popoverElement.classList.add("footnote-popover")
       linkElement.href = "http://example.com/"
-      cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {})
+      cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
 
       Object.defineProperty(window, "location", { value: { href: "" }, writable: true })
 
@@ -609,7 +609,7 @@ describe("attachPopoverEventListeners (footnote popover)", () => {
     popoverElement = document.createElement("div")
     popoverElement.classList.add("footnote-popover")
     linkElement = document.createElement("a") as unknown as HTMLLinkElement
-    cleanup = attachPopoverEventListeners(popoverElement, linkElement, () => {})
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
   })
 
   afterEach(() => {

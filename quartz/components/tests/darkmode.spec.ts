@@ -1,6 +1,8 @@
-import { test, expect, type Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
 
+import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
+import { test, expect } from "./fixtures"
 import { setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect
@@ -12,7 +14,7 @@ const THEME_SCHEMES = ["light", "dark"] as const
 const ALL_THEMES = ["light", "dark", "auto"] as const
 const NAVIGATION_PREFIXES = ["./shard-theory", "./about", "./design#"]
 test.beforeEach(async ({ page }) => {
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
   await page.emulateMedia({ colorScheme: AUTO_THEME })
 })
 
@@ -48,8 +50,13 @@ class DarkModeHelper {
   }
 
   async verifyStorage(expectedTheme: Theme): Promise<void> {
-    const storedTheme = await this.page.evaluate(() => localStorage.getItem("saved-theme"))
-    expect(storedTheme).toBe(expectedTheme)
+    // Wait inside the browser context for setupDarkMode() to write to
+    // localStorage after a reload (avoids Safari timing flake).
+    await this.page.waitForFunction(
+      ({ key, expected }) => localStorage.getItem(key) === expected,
+      { key: savedThemeKey, expected: expectedTheme },
+      { timeout: 5_000 },
+    )
   }
 
   async clickToggle(): Promise<void> {
@@ -104,7 +111,9 @@ test.describe("Theme persistence and UI states", () => {
       await helper.setTheme(theme)
       await helper.verifyThemeLabel(theme)
 
-      await page.reload()
+      // Use goto instead of reload to avoid transient WebKit "internal error"
+      // driver crashes. Equivalent for localStorage-based persistence.
+      await page.goto(page.url())
       await helper.verifyTheme(theme)
       await helper.verifyStorage(theme)
       await helper.verifyThemeLabel(theme)
@@ -167,10 +176,13 @@ test("No flash of unstyled content on page load", async ({ page }) => {
 
   for (const initialTheme of ["light", "dark", "auto"] as const) {
     // Set up initial conditions before loading page
-    await page.addInitScript((initialTheme: Theme) => {
-      localStorage.clear()
-      localStorage.setItem("saved-theme", initialTheme)
-    }, initialTheme)
+    await page.addInitScript(
+      ({ initialTheme, key }: { initialTheme: Theme; key: string }) => {
+        localStorage.clear()
+        localStorage.setItem(key, initialTheme)
+      },
+      { initialTheme, key: savedThemeKey },
+    )
     // eslint-disable-next-line playwright/no-conditional-in-test
     const themeToSet = initialTheme === "auto" ? AUTO_THEME : initialTheme
     await page.emulateMedia({ colorScheme: themeToSet })
@@ -215,9 +227,12 @@ NAVIGATION_PREFIXES.forEach((prefix) => {
       await helper.verifyThemeLabel(theme)
 
       // Navigate to a different internal page
-      // NOTE I think it should be fine to not click
-      await page.goto("http://localhost:8080/test-page")
-      await helper.verifyThemeLabel(theme)
+      await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
+
+      // CSS custom property may not be set synchronously after navigation
+      await expect(async () => {
+        await helper.verifyThemeLabel(theme)
+      }).toPass({ timeout: 5_000 })
       await helper.verifyTheme(theme)
     })
   })

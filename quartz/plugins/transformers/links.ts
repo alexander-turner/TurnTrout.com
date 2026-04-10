@@ -6,6 +6,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { EXTERNAL_LINK_REL, CAN_TRIGGER_POPOVER_CLASS } from "../../components/constants"
 import {
   type FullSlug,
   type RelativeURL,
@@ -79,7 +80,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                     parent?.type === "element" &&
                     headers.some((header) => header === parent.tagName)
                   if (!isLinkOfHeader) {
-                    classes.push("can-trigger-popover")
+                    classes.push(CAN_TRIGGER_POPOVER_CLASS)
                   }
                 }
 
@@ -116,7 +117,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   node.properties.target = "_blank"
                 }
                 if (isExternal) {
-                  node.properties.rel = "noopener noreferrer"
+                  node.properties.rel = EXTERNAL_LINK_REL
                 }
 
                 // don't process external links or intra-document anchors

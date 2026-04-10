@@ -2,7 +2,7 @@ import fs from "fs"
 
 import type { QuartzEmitterPlugin } from "../types"
 
-import { localTroutFaviconBasenameDefault } from "../../components/constants"
+import { localTroutFaviconBasenameDefault, simpleConstants } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
 import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
@@ -16,6 +16,39 @@ export const ROOT_FILES = ["robots.txt", "_headers", "_redirects"]
 
 export function shouldCopyToRoot(fp: FilePath): boolean {
   return ROOT_FILES.includes(fp) || isLocalFavicon(fp)
+}
+
+/**
+ * Build esbuild `define` map that injects constants from constants.json
+ * into static scripts at build time. This eliminates the need for static
+ * scripts to hardcode values that also appear in constants.json.
+ *
+ * Identifiers in scripts (e.g., `SAVED_THEME_KEY`) get replaced with the
+ * actual string/array values at build time.
+ */
+export function buildStaticScriptDefines(): Record<string, string> {
+  return {
+    SAVED_THEME_KEY: JSON.stringify(simpleConstants.savedThemeKey),
+    AUTOPLAY_STORAGE_KEY: JSON.stringify(simpleConstants.autoplayStorageKey),
+    INSTANT_SCROLL_RESTORE_KEY: JSON.stringify(simpleConstants.instantScrollRestoreKey),
+    DROPCAP_COLORS: JSON.stringify(simpleConstants.dropcapColors),
+    COLOR_DROPCAP_PROBABILITY: JSON.stringify(simpleConstants.colorDropcapProbability),
+  }
+}
+
+/**
+ * Process a static script through esbuild, replacing build-time constant
+ * identifiers with their actual values from constants.json.
+ */
+async function processStaticScript(source: string): Promise<string> {
+  // Dynamic import avoids esbuild's Buffer invariant check at module load
+  // time, which fails in Jest's test environment.
+  const { transform } = await import("esbuild")
+  const result = await transform(source, {
+    define: buildStaticScriptDefines(),
+    // Don't minify — these scripts must remain readable for debugging
+  })
+  return result.code
 }
 
 export const Static: QuartzEmitterPlugin = () => ({
@@ -75,6 +108,16 @@ export const Static: QuartzEmitterPlugin = () => ({
       dereference: true,
       filter: (source: string) => !source.endsWith(".test.ts") && !source.endsWith(".test.js"),
     })
+
+    // Process static scripts: inject build-time constants via esbuild define
+    const scriptDir = joinSegments(argv.output, "static", "scripts")
+    const scriptFiles = fps.filter((fp) => fp.startsWith("scripts/") && fp.endsWith(".js"))
+    for (const scriptFile of scriptFiles) {
+      const outputPath = joinSegments(scriptDir, scriptFile.slice("scripts/".length))
+      const source = await fs.promises.readFile(outputPath, "utf-8")
+      const processed = await processStaticScript(source)
+      await fs.promises.writeFile(outputPath, processed)
+    }
 
     // Add all other files to emitted files list
     emittedFiles.push(

@@ -359,8 +359,9 @@ describe("renderLineChart", () => {
     expect(rootTitles).toHaveLength(0)
     // <desc> with data summary
     expect(descElements).toHaveLength(1)
-    expect(descElements[0].properties?.id).toBe("chart-desc-Series1")
-    expect(svg.properties?.["aria-describedby"]).toBe("chart-desc-Series1")
+    const descId = descElements[0].properties?.id as string
+    expect(descId).toMatch(/^chart-desc-\d+-Series1$/)
+    expect(svg.properties?.["aria-describedby"]).toBe(descId)
     const descText = descElements[0].children[0]
     expect(descText.type === "text" && descText.value).toContain("X Axis:")
     expect(descText.type === "text" && descText.value).toContain("Series1: 3 points")
@@ -640,6 +641,48 @@ series:
     const svg = figure.children[0] as Element
     expect(svg.tagName).toBe("svg")
     expect(svg.properties?.class).toBe("smart-chart")
+  })
+
+  it("includes tooltip script when chart has annotations", () => {
+    const yamlWithAnnotations = `type: line
+x:
+  label: X
+y:
+  label: Y
+series:
+  - name: S
+    data:
+      - [1, 2]
+annotations:
+  - type: horizontal-line
+    value: 1.5
+    label: Baseline
+    style: dashed`
+    const tree = createChartTree(yamlWithAnnotations)
+    const plugin = Charts()
+    const transform = ((plugin.htmlPlugins?.(mockCtx) ?? [])[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    const figure = tree.children[0] as Element
+    const script = figure.children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "script",
+    )
+    expect(script).toBeDefined()
+    const scriptText = script?.children[0]
+    expect(scriptText?.type === "text" && scriptText.value).toContain("smart-chart-annotation")
+  })
+
+  it("omits tooltip script when chart has no annotations", () => {
+    const tree = createChartTree(VALID_YAML)
+    const plugin = Charts()
+    const transform = ((plugin.htmlPlugins?.(mockCtx) ?? [])[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    const figure = tree.children[0] as Element
+    const script = figure.children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "script",
+    )
+    expect(script).toBeUndefined()
   })
 
   it("does not modify non-chart code blocks", () => {

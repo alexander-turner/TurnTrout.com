@@ -302,12 +302,10 @@ Subtitle: Written in October 2024
 
 A few colleagues I respect were skeptical of steering vectors at first. I feel proud of how I generated the technique:
 
-<!-- vale off -->
 > [!quote] [Retrospective comment I wrote](https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network?view=postCommentsTop&postId=cAC4AXiNC5ig6jQnc&commentId=jZ9v8yJHp43FEXJkp)
 > In light of Anthropic's viral "Golden Gate Claude" activation engineering, I want to come back and claim the points I earned \[in this post\].
   >
   > I was extremely prescient in predicting the importance and power of activation engineering (then called "AVEC"). **In** _**January**_ **2023, right after running the cheese vector as my** _**first**_ **idea for what to do to interpret the network, and well before anyone ran LLM steering vectors...** **I had only seen the cheese-hiding vector work on a few mazes. Given that (seemingly) tiny amount of evidence, I** **immediately wrote down 60% credence that the technique would be a big deal for LLMs...**
-<!-- vale on -->
 
 [^steering]: "Steering vector" was originally coined by [Subramani et al. (2022)](https://arxiv.org/abs/2205.05124).
 

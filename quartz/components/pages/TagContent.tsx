@@ -6,7 +6,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 
 import { htmlToJsx } from "../../util/jsx"
 import { type FilePath, type FullSlug, getAllSegmentPrefixes, simplifySlug } from "../../util/path"
-import { uiStrings } from "../constants"
+import { uiStrings, PREVIEWABLE_CLASS } from "../constants"
 import { PageList } from "../PageList"
 import style from "../styles/listPage.scss"
 
@@ -30,7 +30,7 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
       : htmlToJsx(fileData.filePath || ("" as FilePath), tree)
 
   const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
-  const articleClasses = ["previewable", ...cssClasses].join(" ")
+  const articleClasses = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
 
   const pageListProps = {
     ...props,

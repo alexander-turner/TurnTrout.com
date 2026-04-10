@@ -5,8 +5,11 @@ import { max, min } from "d3-array"
 import { format } from "d3-format"
 import { scaleLinear, scaleLog } from "d3-scale"
 import { line } from "d3-shape"
+import { titleCase } from "title-case"
 
 import type { ChartSpec, SeriesSpec } from "./types"
+
+import { locale } from "../../../components/constants"
 
 const CHART_WIDTH = 600
 const CHART_HEIGHT = 370
@@ -216,6 +219,7 @@ function renderSeries(
       `${axisLabels.y}: ${formatTick(d[1])}`,
     ]
 
+    const tooltipY = cy - TOOLTIP_LINE_HEIGHT - 10
     return createSvgElement("g", { class: "smart-chart-point-group" }, [
       createSvgElement("circle", {
         cx,
@@ -227,7 +231,8 @@ function renderSeries(
         "data-y": d[1],
         "data-series": series.name,
       }),
-      createTooltipElement(cx, cy - TOOLTIP_LINE_HEIGHT - 10, tooltipLines),
+      createTooltipBg(cx, tooltipY, tooltipLines),
+      createTooltipElement(cx, tooltipY, tooltipLines),
     ])
   })
 
@@ -242,6 +247,30 @@ function renderSeries(
   )
 }
 
+const TOOLTIP_CHAR_WIDTH = 5.5
+const TOOLTIP_BG_PAD_X = 8
+const TOOLTIP_BG_PAD_Y = 4
+const FONT_ASCENT = 9
+const FONT_DESCENT = 3
+const ANNOTATION_HIT_HEIGHT = 20
+
+function createTooltipBg(x: number, y: number, lines: string[]): Element {
+  const maxLineWidth = Math.max(...lines.map((l) => l.length)) * TOOLTIP_CHAR_WIDTH
+  const bgWidth = maxLineWidth + 2 * TOOLTIP_BG_PAD_X
+  const bgHeight =
+    FONT_ASCENT + FONT_DESCENT + (lines.length - 1) * TOOLTIP_LINE_HEIGHT + 2 * TOOLTIP_BG_PAD_Y
+  return createSvgElement("rect", {
+    x: x - bgWidth / 2,
+    y: y - FONT_ASCENT - TOOLTIP_BG_PAD_Y,
+    width: bgWidth,
+    height: bgHeight,
+    rx: 3,
+    fill: "var(--bg, var(--background))",
+    class: "smart-chart-tooltip-bg",
+    "pointer-events": "none",
+  })
+}
+
 function renderAnnotations(
   spec: ChartSpec,
   xScale: ScaleContinuousNumeric<number, number>,
@@ -252,6 +281,8 @@ function renderAnnotations(
   return spec.annotations.map((ann) => {
     const yPos = yScale(ann.value)
     const tooltipLabel = `${ann.label ?? "Annotation"}: ${formatTick(ann.value)}`
+    const tooltipX = INNER_WIDTH / 2
+    const tooltipY = yPos - 8
     const children: Element[] = [
       createSvgElement("line", {
         x1: 0,
@@ -261,9 +292,20 @@ function renderAnnotations(
         stroke: "var(--midground-faint)",
         "stroke-width": "1.5",
         "stroke-dasharray": ann.style === "dashed" ? "6,4" : "none",
-        "pointer-events": "stroke",
+        "pointer-events": "none",
       }),
-      createTooltipElement(INNER_WIDTH / 2, yPos - 8, [tooltipLabel]),
+      // Wide transparent hit area for easier hovering
+      createSvgElement("rect", {
+        x: 0,
+        y: yPos - ANNOTATION_HIT_HEIGHT / 2,
+        width: INNER_WIDTH,
+        height: ANNOTATION_HIT_HEIGHT,
+        fill: "transparent",
+        "pointer-events": "all",
+        class: "smart-chart-annotation-hit",
+      }),
+      createTooltipBg(tooltipX, tooltipY, [tooltipLabel]),
+      createTooltipElement(tooltipX, tooltipY, [tooltipLabel]),
     ]
 
     if (ann.label) {
@@ -281,7 +323,7 @@ function renderAnnotations(
 }
 
 function renderTitle(title: string): Element {
-  return createTextElement(CHART_WIDTH / 2, 18, title, {
+  return createTextElement(CHART_WIDTH / 2, 18, titleCase(title, { locale }), {
     "text-anchor": "middle",
     "font-size": "14px",
     "text-decoration": "none",
@@ -319,7 +361,11 @@ function buildAccessibleDescription(spec: ChartSpec): string {
   return parts.join(" ")
 }
 
+let chartCounter = 0
+
 export function renderLineChart(spec: ChartSpec): Element {
+  chartCounter++
+
   // Compute domains
   const xDomain = computeDomain(spec.series, (d) => d[0])
   const yDomain = computeDomain(spec.series, (d) => d[1])
@@ -344,7 +390,10 @@ export function renderLineChart(spec: ChartSpec): Element {
   const chartChildren: Element[] = []
 
   // Accessible <desc> (no native tooltip, unlike <title>)
-  const descId = `chart-desc-${spec.series.map((s) => s.name).join("-")}`.replace(/\s+/g, "-")
+  const descId = `chart-desc-${chartCounter}-${spec.series.map((s) => s.name).join("-")}`.replace(
+    /\s+/g,
+    "-",
+  )
   chartChildren.push(
     createSvgElement("desc", { id: descId }, [
       { type: "text" as const, value: buildAccessibleDescription(spec) },
@@ -356,14 +405,14 @@ export function renderLineChart(spec: ChartSpec): Element {
     chartChildren.push(renderTitle(spec.title))
   }
 
-  // Inner group with margin offset
+  // Inner group with margin offset — annotations render AFTER series for z-order
   const innerChildren: Element[] = [
     renderXAxis(xScale, spec.x.label),
     renderYAxis(yScale, spec.y.label),
-    ...renderAnnotations(spec, xScale, yScale),
     ...spec.series.map((s, i) =>
       renderSeries(s, xScale, yScale, i, { x: spec.x.label, y: spec.y.label }),
     ),
+    ...renderAnnotations(spec, xScale, yScale),
   ]
 
   chartChildren.push(

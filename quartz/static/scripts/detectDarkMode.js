@@ -1,5 +1,6 @@
+/* global SAVED_THEME_KEY -- injected at build time by Static emitter (see buildStaticScriptDefines) */
 ;(() => {
-  let theme = localStorage.getItem("saved-theme") || "auto"
+  let theme = localStorage.getItem(SAVED_THEME_KEY) || "auto"
   document.documentElement.setAttribute("data-theme-mode", theme)
 
   // If the theme is auto, set it to the user's preference

@@ -1,9 +1,8 @@
-import { test, expect } from "@playwright/test"
-import { promises as fs } from "fs"
 import { type Page } from "playwright"
 
 import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
 import { tightScrollTolerance, listTolerance } from "../constants"
+import { test, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   setTheme,
@@ -41,12 +40,7 @@ test.beforeEach(async ({ page }) => {
 
   page.on("pageerror", (err) => console.error(err))
 
-  await page.goto("http://localhost:8080/test-page", { waitUntil: "load" })
-
-  // Dispatch the 'nav' event to initialize clipboard functionality
-  await page.evaluate(() => {
-    window.dispatchEvent(new Event("nav"))
-  })
+  await page.goto("http://localhost:8080/test-page", { waitUntil: "domcontentloaded" })
 
   // Hide all video and audio controls
   await page.evaluate(() => {
@@ -111,6 +105,9 @@ test.describe("Unique content around the site", () => {
 
     await page.goto("http://localhost:8080", { waitUntil: "load" })
     await page.locator("body").waitFor({ state: "visible" })
+    // Wait for the SPA router to finish initializing so a late navigation
+    // doesn't destroy the execution context during evaluate.
+    await page.waitForFunction(() => window.__routerInitialized === true)
 
     await page.evaluate(() => {
       const article = document.querySelector("article")
@@ -316,22 +313,46 @@ test.describe("Table of contents", () => {
     // TOC highlight updates via IntersectionObserver after scroll; allow extra time on Firefox/Safari
     await expect(tocHighlightLocator).toBeVisible({ timeout: 10_000 })
 
-    const initialHighlightText = await tocHighlightLocator.textContent()
-    expect(initialHighlightText).not.toBeNull()
+    // Scroll a mid-page heading to the top of the viewport so it enters
+    // the IntersectionObserver's detection zone (top 30%).
+    // Wait for a rAF after scrolling so the IntersectionObserver processes the change.
+    await page.evaluate(() => {
+      document.querySelector("#spoilers")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
+    await page.waitForFunction(
+      () => document.querySelector("#table-of-contents .active")?.textContent?.trim() !== "",
+      { timeout: 15_000 },
+    )
 
-    const spoilerHeading = page.locator("#spoilers").first()
-    await spoilerHeading.scrollIntoViewIfNeeded()
+    // Need the raw string to pass into waitForFunction below
+    const initialHighlightText = await page
+      .locator("#table-of-contents .active")
+      .first()
+      .textContent()
+    // eslint-disable-next-line playwright/no-conditional-in-test
+    if (!initialHighlightText) {
+      throw new Error("Expected initial TOC highlight text to be non-null")
+    }
 
-    // Wait for scroll event to fire and TOC to update
-    await page.waitForFunction((initialText) => {
-      const activeElement = document.querySelector("#table-of-contents .active")
-      return activeElement && activeElement.textContent !== initialText
-    }, initialHighlightText)
+    // Scroll to a different heading, wait for rAF so IntersectionObserver fires
+    await page.evaluate(() => {
+      document.querySelector("#lists")?.scrollIntoView({ block: "start" })
+      return new Promise((resolve) => requestAnimationFrame(resolve))
+    })
 
-    const highlightText = await tocHighlightLocator.textContent()
-    expect(highlightText).not.toBeNull()
-    // skipcq: JS-0339
-    await expect(tocHighlightLocator).not.toHaveText(initialHighlightText!)
+    // Wait for IntersectionObserver to fire and TOC to update
+    await page.waitForFunction(
+      (initialText) => {
+        const activeElement = document.querySelector("#table-of-contents .active")
+        return activeElement && activeElement.textContent !== initialText
+      },
+      initialHighlightText,
+      { timeout: 15_000 },
+    )
+
+    const highlightText = page.locator("#table-of-contents .active").first()
+    await expect(highlightText).not.toHaveText(initialHighlightText)
   })
 })
 
@@ -801,30 +822,19 @@ test.describe("Video Speed Controller visibility", () => {
   })
 })
 
-test("First paragraph is the same before and after clicking on a heading", async ({
-  page,
-}, testInfo) => {
-  const snapshotPath = testInfo.snapshotPath("first-paragraph.png")
-  try {
-    const firstParagraph = page.locator("#center-content article > p").first()
+test("First paragraph is the same before and after clicking on a heading", async ({ page }) => {
+  const firstParagraph = page.locator("#center-content article > p").first()
 
-    // First, assert the initial state against a snapshot.
-    // This either creates the snapshot or confirms the element is in the expected state.
-    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
-      maxDiffPixels: 0,
-    })
+  // Capture the paragraph before navigating to a heading anchor.
+  const screenshotBefore = await firstParagraph.screenshot()
 
-    // Then, perform the action that might change the state.
-    await page.goto(`${page.url()}#header-3`)
-    await firstParagraph.scrollIntoViewIfNeeded()
+  // Navigate to a heading anchor (triggers SPA navigation).
+  await page.goto(`${page.url()}#header-3`)
+  await firstParagraph.scrollIntoViewIfNeeded()
 
-    // Assert that the element's state still matches the original snapshot.
-    await expect(firstParagraph).toHaveScreenshot("first-paragraph.png", {
-      maxDiffPixels: 0,
-    })
-  } finally {
-    await fs.rm(snapshotPath, { force: true })
-  }
+  // The paragraph should look identical after the navigation.
+  const screenshotAfter = await firstParagraph.screenshot()
+  expect(screenshotAfter).toEqual(screenshotBefore)
 })
 
 test.describe("Link color states", () => {

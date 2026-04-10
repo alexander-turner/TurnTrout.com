@@ -95,11 +95,9 @@ We're going to isolate the effects for which the agent is responsible over the c
   - This seems difficult to meet robustly, but I don't see a way around it.
 - we can reason counterfactually in a sensible way for all agents.
 
-<!-- vale off -->
 > [!quote] Soares and Fallenstein, _[Questions of Reasoning Under Logical Uncertainty](https://intelligence.org/files/QuestionsLogicalUncertainty.pdf)_
 >
 > It is natural to consider extending standard probability theory to include the consideration of worlds which are "logically impossible" (such as where a deterministic Rube Goldberg machine behaves in a way that it doesn't)... What, precisely, are logically impossible possibilities?
-<!-- vale on -->
 
 - the artificial agent is _omniscient_- it can perfectly model both other agents and the consequences of actions.
   - We could potentially instead merely assume a powerful model, but this requires extra work and is beyond the scope of this initial foray. Perhaps a distribution model could be used to calculate the action/inaction counterfactual likelihood ratio of a given side effect.

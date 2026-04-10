@@ -1,13 +1,14 @@
-import { test as base, expect, type Locator } from "@playwright/test"
+import type { Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
 import { scrollTolerance, popoverScrollOffset } from "../constants"
+import { test as base, expect } from "./fixtures"
 import {
   takeRegressionScreenshot,
   isDesktopViewport,
-  showingPreview,
   getAllWithWait,
   isElementChecked,
+  openSearch,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */
@@ -246,14 +247,17 @@ test("Can scroll within popover content", async ({ page, dummyLink }) => {
 
 test("Popovers do not appear in search previews", async ({ page }) => {
   // Open search and search for a term that will have internal links
-  await page.locator("#search-icon").click()
+  await openSearch(page)
   const searchBar = page.locator("#search-bar")
   await expect(searchBar).toBeVisible()
   await searchBar.fill("Test page")
 
-  // Wait for search results and preview
+  // Wait for search results to render before checking preview
+  const searchLayout = page.locator("#search-layout")
+  await expect(searchLayout).toHaveClass(/display-results/, { timeout: 10_000 })
+
   const previewContainer = page.locator("#preview-container")
-  await expect(previewContainer).toBeVisible({ visible: showingPreview(page) })
+  await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
   // Find an internal link in the preview and hover over it
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
