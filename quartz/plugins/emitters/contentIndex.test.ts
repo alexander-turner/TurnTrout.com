@@ -1,6 +1,7 @@
 import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
 
 import { type QuartzConfig } from "../../cfg"
+import { uiStrings } from "../../components/constants"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
@@ -68,10 +69,12 @@ describe("ContentIndex", () => {
     write.mock.calls.find((c) => c[0].slug.includes(slugSubstring))
 
   // --- Title formatting (the fix under test) ---
-  it.each([
+  const titleTransformCases: [string, string, string][] = [
     ["straight quotes become smart quotes", '"hello world"', "\u201CHello World\u201D"],
     ["hyphens become em-dashes", "before -- after", "\u2014"],
-  ])("%s in content index JSON", async (_, input, expected) => {
+  ]
+
+  it.each(titleTransformCases)("%s in content index JSON", async (_, input, expected) => {
     const plugin = ContentIndex({ enableSiteMap: false, enableRSS: false })
     await plugin.emit(mockCtx, makeContent(input), mockResources)
 
@@ -80,10 +83,7 @@ describe("ContentIndex", () => {
     expect(index["test-post"].title).toContain(expected)
   })
 
-  it.each([
-    ["straight quotes become smart quotes", '"hello world"', "\u201CHello World\u201D"],
-    ["hyphens become em-dashes", "before -- after", "\u2014"],
-  ])("%s in RSS feed", async (_, input, expected) => {
+  it.each(titleTransformCases)("%s in RSS feed", async (_, input, expected) => {
     const plugin = ContentIndex({ enableSiteMap: false, enableRSS: true })
     await plugin.emit(mockCtx, makeContent(input), mockResources)
 
@@ -143,20 +143,22 @@ describe("ContentIndex", () => {
     expect(rssCall![0].content).toContain("\u201C")
   })
 
-  it("uses richContent for RSS when rssFullHtml is enabled", async () => {
+  it("uses richContent in RSS description when rssFullHtml is enabled", async () => {
     const plugin = ContentIndex({ enableSiteMap: false, enableRSS: true, rssFullHtml: true })
     await plugin.emit(mockCtx, makeContent("Post"), mockResources)
 
     const rssCall = getWriteCall("rss")
-    expect(rssCall).toBeDefined()
+    const xml = rssCall![0].content
+    // richContent is the HTML-escaped toHtml output; verify it lands in <description>
+    expect(xml).toMatch(/<description>.*<\/description>/)
   })
 
-  it("RSS shows unlimited items when rssLimit is undefined", async () => {
+  it("RSS uses all items when rssLimit is undefined", async () => {
     const plugin = ContentIndex({ enableSiteMap: false, enableRSS: true, rssLimit: undefined })
     await plugin.emit(mockCtx, makeContent("Post"), mockResources)
 
     const rssCall = getWriteCall("rss")
-    expect(rssCall![0].content).toContain("Recent notes")
+    expect(rssCall![0].content).toContain(uiStrings.pages.rss.recentNotes)
   })
 
   // --- Dependency graph ---
