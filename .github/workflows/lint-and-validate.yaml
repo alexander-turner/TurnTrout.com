@@ -195,6 +195,9 @@ jobs:
           git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
           if [[ -n $(git diff --cached --name-only) ]]; then
             git commit -m "style: auto-fix formatting [skip ci]"
+            # Discard unstaged changes (e.g. generated SCSS, ESLint fixes outside quartz/)
+            # so git pull --rebase can proceed cleanly
+            git checkout -- .
             # Pull any commits pushed by update-dates before pushing
             if ! git pull --rebase origin ${{ github.head_ref || github.ref_name }}; then
               echo "::error::Rebase failed — aborting to avoid pushing broken state"
