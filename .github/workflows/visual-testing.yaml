@@ -164,7 +164,7 @@ jobs:
   visual-testing-macos:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
-    runs-on: macos-14
+    runs-on: macos-26
     timeout-minutes: 40
     strategy:
       fail-fast: false
