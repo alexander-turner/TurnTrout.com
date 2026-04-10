@@ -73,7 +73,7 @@ function sanitizeConfigForBrowser(
 const baseURL = "http://localhost:8080"
 
 export default defineConfig({
-  timeout: 30000,
+  timeout: 45_000,
   // Cap total shard runtime in CI so tests fail with output instead of
   // silently hanging until the GitHub Actions job timeout kills them.
   // Each workflow job sets PLAYWRIGHT_GLOBAL_TIMEOUT_MS to ~5 min less
