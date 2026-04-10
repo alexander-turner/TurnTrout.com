@@ -766,10 +766,11 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
   page,
 }, testInfo) => {
-  // Two sequential searches with mouse coordination need extra time,
-  // especially on WebKit which has a 90s project timeout.
-  test.slow(testInfo.project.name.includes("Safari"), "WebKit is slow in CI")
-  testInfo.setTimeout(Math.max(60_000, testInfo.timeout))
+  // Two sequential searches can exceed default timeouts on Firefox and WebKit
+  test.slow(
+    testInfo.project.name.includes("Firefox") || testInfo.project.name.includes("Safari"),
+    "Firefox and WebKit are slow in CI",
+  )
   await search(page, "alignment")
 
   // Figure out where the second result is, and hover over it
