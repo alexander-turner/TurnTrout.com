@@ -43,7 +43,7 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 > <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 > </div>
 
-> [!abstract]- Options
+> [!abstract] Options
 > <ul class="punctilio-options-list">
 > <li class="punctilio-option"><label>Punctuation style:
 > <select id="opt-punctuation-style">

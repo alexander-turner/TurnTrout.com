@@ -28,20 +28,9 @@
     "setup:python": "uv sync"
   },
   "lint-staged": {
-    "*.{css,scss}": [
-      "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
-    ],
-    "*.json": [
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
-    ],
-    "*.{js,jsx,ts,tsx}": [
-      "pnpm eslint --fix --config config/javascript/eslint.config.js",
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
-    ],
-    ".hooks/prepare-commit-msg": [
-      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore"
-    ],
+    "*.{css,scss}": "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
+    "*.{js,jsx,ts,tsx}": "pnpm eslint --fix --config config/javascript/eslint.config.js",
+    "{*.{css,scss,json,js,jsx,ts,tsx},.hooks/prepare-commit-msg}": "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
     "*.fish": "fish_indent",
     "{*.sh,.hooks/commit-msg,.hooks/post-commit,.hooks/pre-commit,.hooks/pre-push}": [
       "shfmt -i 2 -w",
@@ -55,9 +44,7 @@
       "black",
       "ruff check --fix"
     ],
-    "!(*.vale-styles)/**/*.md": [
-      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
-    ]
+    "!(*.vale-styles)/**/*.md": "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
   },
   "commitlint": {
     "extends": [
@@ -355,6 +342,12 @@
     "patchedDependencies": {
       "pa11y@9.0.1": "patches/pa11y@9.0.1.patch",
       "pa11y@9.1.1": "patches/pa11y@9.1.1.patch"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild",
+      "puppeteer",
+      "sharp"
+    ]
   }
 }

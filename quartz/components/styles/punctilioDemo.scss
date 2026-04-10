@@ -60,9 +60,7 @@ $panel-min-height: 200px;
   }
 
   #punctilio-input {
-    font-family: var(--font-monospace);
-    font-size: var(--font-size-code);
-    font-variant-ligatures: none;
+    font-family: var(--font-main);
     background-color: var(--background);
 
     &::placeholder {
