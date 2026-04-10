@@ -76,9 +76,14 @@ export default defineConfig({
   timeout: 30000,
   // Cap total shard runtime in CI so tests fail with output instead of
   // silently hanging until the GitHub Actions job timeout kills them.
-  // Visual testing macOS: 40 min job → 35 min global.
-  // Playwright macOS: 50 min job → 45 min global.
-  globalTimeout: process.env.CI ? 45 * 60 * 1000 : undefined,
+  // Each workflow job sets PLAYWRIGHT_GLOBAL_TIMEOUT_MS to ~5 min less
+  // than its job timeout-minutes, giving Playwright time to report errors
+  // and upload artifacts before GitHub Actions kills the runner.
+  globalTimeout: process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS
+    ? Number(process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS)
+    : process.env.CI
+      ? 45 * 60 * 1000
+      : undefined,
   fullyParallel: true,
   // macOS-14 M1 runners have 3 cores but Playwright defaults to 1 worker for
   // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.

@@ -102,6 +102,9 @@ jobs:
         run: |
           set -o pipefail
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+        env:
+          # 20 min job timeout → 15 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "900000"
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
@@ -203,6 +206,9 @@ jobs:
         run: |
           set -o pipefail
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+        env:
+          # 50 min job timeout → 45 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2700000"
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
