@@ -46,4 +46,4 @@ jobs:
           push: true
           tags: |
             ${{ steps.img.outputs.prefix }}:latest
-            ${{ steps.img.outputs.prefix }}:v1.55.1
+            ${{ steps.img.outputs.prefix }}:v1.58.2
