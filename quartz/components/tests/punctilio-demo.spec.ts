@@ -359,9 +359,9 @@ test.describe("Ghost placeholder text per mode", () => {
 })
 
 test.describe("Input styling", () => {
-  test("input has monospace font", async ({ page }) => {
+  test("input has main body font", async ({ page }) => {
     const input = page.locator("#punctilio-input")
-    await expect(input).toHaveCSS("font-family", /monospace/)
+    await expect(input).toHaveCSS("font-family", /EBGaramond/)
   })
 })
 
