@@ -8,6 +8,14 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/**"
   merge_group:
 
 permissions:
