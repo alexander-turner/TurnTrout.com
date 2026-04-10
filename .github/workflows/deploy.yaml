@@ -262,16 +262,22 @@ jobs:
 
           echo "Lost Pixel result: $SUMMARY"
 
-          # Extract counts for changed, added, and deleted images
-          CHANGED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
-          ADDED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
-          DELETED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
+          # A summary like "The check is completed!" with no counts means zero differences
+          if echo "$SUMMARY" | grep -qiP '(completed|passed|no\s+(visual\s+)?differences)'; then
+            echo "Lost Pixel reports success with no visual differences."
+            CHANGED=0; ADDED=0; DELETED=0
+          else
+            # Extract counts for changed, added, and deleted images
+            CHANGED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
+            ADDED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
+            DELETED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
 
-          # If none of the patterns matched, fail — the LP summary format may have changed
-          if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
-            echo "::error::Could not parse any counts from Lost Pixel summary. Format may have changed."
-            echo "Raw summary: $SUMMARY"
-            exit 1
+            # If none of the patterns matched, fail — the LP summary format may have changed
+            if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
+              echo "::error::Could not parse any counts from Lost Pixel summary. Format may have changed."
+              echo "Raw summary: $SUMMARY"
+              exit 1
+            fi
           fi
 
           CHANGED=${CHANGED:-0}
