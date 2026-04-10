@@ -267,8 +267,11 @@ test("search matches in headers have correct color styling", async ({ page }) =>
 })
 
 test("Search results are case-insensitive", async ({ page }, testInfo) => {
-  // Two sequential searches can exceed 30s on Firefox tablet viewports
-  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+  // Two sequential searches can exceed default timeouts on Firefox and WebKit
+  test.slow(
+    testInfo.project.name.includes("Firefox") || testInfo.project.name.includes("Safari"),
+    "Firefox and WebKit are slow in CI",
+  )
 
   await search(page, "TEST")
   await expect(page.locator(".result-card").first()).toBeVisible()
@@ -305,8 +308,11 @@ test("Search results work for a single character", async ({ page }, testInfo) =>
 })
 
 test("Preview element persists after closing and reopening search", async ({ page }, testInfo) => {
-  // Two full search + preview cycles can exceed 30s on Firefox in CI
-  test.slow(testInfo.project.name.includes("Firefox"), "Firefox is slow in CI")
+  // Two full search + preview cycles can exceed default timeouts on Firefox and WebKit
+  test.slow(
+    testInfo.project.name.includes("Firefox") || testInfo.project.name.includes("Safari"),
+    "Firefox and WebKit are slow in CI",
+  )
   await search(page, "Steering")
   await waitForArticlePreview(page)
 
@@ -763,7 +769,11 @@ test("Result card matching stays synchronized with preview", async ({ page }) =>
 test("should not select a search result on initial render, even if the mouse is hovering over it", async ({
   page,
 }, testInfo) => {
-  testInfo.setTimeout(60_000)
+  // Two sequential searches can exceed default timeouts on Firefox and WebKit
+  test.slow(
+    testInfo.project.name.includes("Firefox") || testInfo.project.name.includes("Safari"),
+    "Firefox and WebKit are slow in CI",
+  )
   await search(page, "alignment")
 
   // Figure out where the second result is, and hover over it
