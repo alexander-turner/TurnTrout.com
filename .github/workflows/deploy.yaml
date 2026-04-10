@@ -224,13 +224,13 @@ jobs:
           ATTEMPT=0
           SUMMARY=""
           LP_CONCLUSION=""
+          LP_TEXT=""
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             ATTEMPT=$((ATTEMPT + 1))
 
             # Check runs (GitHub App check) — grab conclusion + summary + text
             LP_JSON=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-              --paginate \
               --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0] // empty | {conclusion, summary: .output.summary, text: .output.text}' \
               2>/dev/null || true)
 
