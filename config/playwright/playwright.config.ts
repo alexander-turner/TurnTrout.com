@@ -80,7 +80,7 @@ export default defineConfig({
   // than its job timeout-minutes, giving Playwright time to report errors
   // and upload artifacts before GitHub Actions kills the runner.
   globalTimeout: process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS
-    ? parseInt(process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS)
+    ? Number(process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS)
     : process.env.CI
       ? 45 * 60 * 1000
       : undefined,
