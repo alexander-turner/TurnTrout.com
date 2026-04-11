@@ -85,9 +85,9 @@ export default defineConfig({
       ? 45 * 60 * 1000
       : undefined,
   fullyParallel: true,
-  // macOS ARM runners have 3 cores but Playwright defaults to 1 worker for
-  // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.
-  workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 3 : undefined,
+  // WebKit on macOS ARM crashes pages when running multiple workers in parallel
+  // (microsoft/playwright#35896, #30428). Run 1 worker to avoid crashes.
+  workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
