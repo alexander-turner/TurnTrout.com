@@ -86,7 +86,7 @@ export default defineConfig({
       : undefined,
   fullyParallel: true,
   // WebKit on macOS ARM crashes pages when running multiple workers in parallel
-  // (microsoft/playwright#35896, #30428). Run 1 worker to avoid OOM/crash.
+  // (microsoft/playwright#35896, #30428). Run 1 worker to avoid crashes.
   workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
