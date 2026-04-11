@@ -1086,7 +1086,7 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!money] Cost of running CI on GitHub Actions
 > My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
 >
-> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
+> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot). macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation (iPhone/iPad) on ARM64, so mobile viewports are covered by Linux Chromium and Firefox.
 
 ### Validating links
 

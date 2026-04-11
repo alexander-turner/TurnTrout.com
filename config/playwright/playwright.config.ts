@@ -16,7 +16,7 @@ interface Browser {
 
 // Use robust device presets that include stable layout-affecting fields only
 // (viewport, DPR, touch/mobile flags).
-const deviceList: DeviceConfig[] = [
+const allDevices: DeviceConfig[] = [
   {
     name: "Desktop",
     config: {
@@ -38,6 +38,14 @@ const deviceList: DeviceConfig[] = [
     },
   },
 ]
+
+// Playwright 1.58+ WebKit crashes on mobile device emulation (iPhone/iPad)
+// on macOS ARM64 — "page.goto: Page crashed" in every search test.
+// Desktop Safari works fine. Mobile coverage comes from Linux Chromium/Firefox.
+const isWebKitOnly = process.env.PLAYWRIGHT_BROWSERS === "webkit"
+const deviceList: DeviceConfig[] = isWebKitOnly
+  ? allDevices.filter((d) => d.name === "Desktop")
+  : allDevices
 
 const allBrowsers: Browser[] = [
   { name: "Chrome", engine: "chromium" },
