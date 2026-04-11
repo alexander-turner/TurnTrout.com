@@ -1069,7 +1069,7 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 ### Simulating site interactions
 
-Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
 
 ### Visual regression testing
 
@@ -1087,7 +1087,7 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!money] Cost of running CI on GitHub Actions
 > My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
 >
-> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot). macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation (iPhone/iPad) on ARM64, so mobile viewports are covered by Linux Chromium and Firefox.
+> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
 
 ### Validating links
 
