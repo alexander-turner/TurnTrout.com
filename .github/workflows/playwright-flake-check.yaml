@@ -142,6 +142,10 @@ jobs:
         shard: ["1/7", "2/7", "3/7", "4/7", "5/7", "6/7", "7/7"]
     env:
       PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
