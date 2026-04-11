@@ -263,11 +263,11 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Click the "Test page" result card to explicitly trigger preview loading.
-  // The auto-focus after search may not reliably trigger fetchAndUpdateContent
-  // on WebKit — clicking ensures the preview manager fetches the content.
+  // Hover the result card to trigger displayPreview via mouseenter.
+  // The auto-focus after search calls displayPreview, but on some browsers
+  // the fetch races with result rendering. Hovering re-triggers it reliably.
   const testPageCard = page.locator('.result-card[id*="test-page"]').first()
-  await testPageCard.click()
+  await testPageCard.hover()
 
   // Wait for the link inside the preview content to render (fetched async)
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
