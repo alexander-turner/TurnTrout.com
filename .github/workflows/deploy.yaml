@@ -283,9 +283,9 @@ jobs:
 
           # Extract counts for changed, added, and deleted images
           # Handles both "N changed" and "Differences: N" formats
-          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(changed|visual|difference|diff))|(difference|diff)[s:]?\s*\K\d+)' | head -1)
-          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(added|new|created))|addition[s:]?\s*\K\d+)' | head -1)
-          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(deleted|removed))|deletion[s:]?\s*\K\d+)' | head -1)
+          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
+          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
+          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
 
           # If no counts parsed, use conclusion to decide
           if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
