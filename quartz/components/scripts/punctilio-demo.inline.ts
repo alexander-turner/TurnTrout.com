@@ -208,7 +208,7 @@ document.addEventListener("nav", () => {
     }
     const isCodeMode = currentMode === "markdown" || currentMode === "html"
     outputContent.classList.toggle("monospace-output", isCodeMode)
-    input.classList.toggle("monospace-input", currentMode === "html")
+    input.classList.toggle("monospace-input", isCodeMode)
 
     input.placeholder = GHOST_INPUTS[currentMode]
   }

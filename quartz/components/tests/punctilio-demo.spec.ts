@@ -370,8 +370,16 @@ test.describe("Input styling", () => {
     await expect(input).toHaveClass(/monospace-input/)
   })
 
-  test("input reverts to normal font when switching from HTML to plaintext", async ({ page }) => {
-    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+  test("input has monospace font in markdown mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
+    const input = page.locator("#punctilio-input")
+    await expect(input).toHaveClass(/monospace-input/)
+  })
+
+  test("input reverts to normal font when switching from code mode to plaintext", async ({
+    page,
+  }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
     await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
     const input = page.locator("#punctilio-input")
     await expect(input).not.toHaveClass(/monospace-input/)
