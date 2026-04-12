@@ -137,9 +137,6 @@ test.describe("Options panel", () => {
     await page.locator("#punctilio-input").fill('"Hello world"')
     await expect(page.locator(OUTPUT_CONTENT)).toContainText("\u201c") // left double quote present
 
-    // Expand the collapsed options admonition (Markdown-generated admonition)
-    await page.locator("#punctilio-demo .admonition.abstract").click()
-
     // Set punctuation style to "none"
     await page.locator("#opt-punctuation-style").selectOption("none")
 
@@ -237,15 +234,6 @@ test.describe("Visual regression", () => {
     await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-markdown", {
-      elementToScreenshot: page.locator("#punctilio-demo"),
-    })
-  })
-
-  test("Punctilio demo with options expanded (lostpixel)", async ({ page }, testInfo) => {
-    await page.locator("#punctilio-demo .admonition.abstract").click()
-    await page.locator("#opt-punctuation-style").waitFor({ state: "visible" })
-
-    await takeRegressionScreenshot(page, testInfo, "punctilio-demo-options-expanded", {
       elementToScreenshot: page.locator("#punctilio-demo"),
     })
   })
@@ -371,17 +359,14 @@ test.describe("Ghost placeholder text per mode", () => {
 })
 
 test.describe("Input styling", () => {
-  test("input has monospace font", async ({ page }) => {
+  test("input has main body font", async ({ page }) => {
     const input = page.locator("#punctilio-input")
-    await expect(input).toHaveCSS("font-family", /monospace/)
+    await expect(input).toHaveCSS("font-family", /EBGaramond/)
   })
 })
 
 test.describe("Options panel labels", () => {
   test("style options have colons after labels", async ({ page }) => {
-    // Expand the collapsed options admonition
-    await page.locator("#punctilio-demo .admonition.abstract").click()
-
     // Check that the label text for select-based options includes a colon
     const punctuationLabel = page.locator("label:has(#opt-punctuation-style)")
     await expect(punctuationLabel).toContainText("Punctuation style:")

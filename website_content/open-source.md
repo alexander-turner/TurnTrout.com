@@ -17,8 +17,9 @@ aliases:
   - software
   - OSS
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-03-14 17:55:20.890828
+date_updated: 2026-04-10 04:21:11.395410
 ---
+
 
 
 
@@ -135,6 +136,12 @@ The way this works is that:
 1. I sample a saying by calling the `fortune` command,
 2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
 3. The `lolcat` command splays the text 'cross the rainbow.
+
+## Faster font subsetting
+
+[`@turntrout/subfont`](https://www.npmjs.com/package/@turntrout/subfont) is a hard fork of [`Munter/subfont`](https://github.com/Munter/subfont), which shrinks fonts to only contain the characters necessary for the content.
+
+The original `subfont` traced font usage from scratch on every page. That took almost two hours per deploy. My fork groups pages by their CSS and only traces one representative per group, extracting just the text from the rest (for my site: 382 -> 5 CSS traces). Those remaining traces run in parallel across worker threads.
 
 # Claude Code automation template
 

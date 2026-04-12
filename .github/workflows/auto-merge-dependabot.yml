@@ -2,7 +2,9 @@ name: Auto-merge Dependabot PRs
 # pull_request_target is required because Dependabot PRs run from a
 # fork-like context and need write permissions. This is safe as long as
 # no step checks out or executes PR code.
-on: pull_request_target
+on:
+  pull_request_target:
+    types: [opened]
 
 permissions:
   contents: write

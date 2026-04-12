@@ -13,8 +13,9 @@ aliases:
   - prettify
   - text-prettify
   - punctilio-demo
-date_updated: 2026-04-08 01:48:13.740399
+date_updated: 2026-04-10 04:21:11.395410
 ---
+
 
 
 Tired of the incomplete smart quote abilities offered by 2024's JavaScript libraries, I created my own. I christened the library "`punctilio`" - the "precise observance of formalities".  As of publication, [`punctilio`](https://github.com/alexander-turner/punctilio) is the best library for prettifying text.
@@ -43,7 +44,7 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 > <button id="punctilio-copy-btn" class="clipboard-button" type="button" aria-label="Copy output"></button>
 > </div>
 
-> [!abstract]- Options
+> [!abstract] Options
 > <ul class="punctilio-options-list">
 > <li class="punctilio-option"><label>Punctuation style:
 > <select id="opt-punctuation-style">

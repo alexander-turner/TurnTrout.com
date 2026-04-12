@@ -103,6 +103,8 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
+          # 25 min job timeout → 20 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "1200000"
 
       - name: Create sanitized shard
         if: always()
@@ -111,8 +113,8 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: visual-testing-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -120,8 +122,8 @@ jobs:
           retention-days: 1
 
       - name: Upload Winston logs
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -129,8 +131,8 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -138,15 +140,16 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        if: steps.playwright.outcome == 'failure'
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-linux-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: lost-pixel-screenshots-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -154,14 +157,14 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
-    runs-on: macos-14
+    runs-on: macos-26
     timeout-minutes: 40
     strategy:
       fail-fast: false
@@ -173,6 +176,10 @@ jobs:
           ]
     env:
       PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -212,6 +219,8 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
+          # 40 min job timeout → 35 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Create sanitized shard
         if: always()
@@ -220,8 +229,8 @@ jobs:
           MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: visual-testing-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -229,8 +238,8 @@ jobs:
           retention-days: 1
 
       - name: Upload Winston logs
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: steps.playwright.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -238,8 +247,8 @@ jobs:
           retention-days: 1
 
       - name: Upload webServer build logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -247,15 +256,16 @@ jobs:
           retention-days: 1
 
       - name: Upload Playwright traces
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        if: steps.playwright.outcome == 'failure'
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-macos-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: lost-pixel-screenshots-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -263,7 +273,7 @@ jobs:
           retention-days: 1
 
       - name: Fail if playwright tests failed
-        if: steps.playwright.outcome == 'failure'
+        if: steps.playwright.outcome != 'success'
         run: exit 1
 
   # Unified status check — required by branch protection
@@ -293,7 +303,13 @@ jobs:
 
   summarize-failures:
     name: Summarize Failures
-    if: always() && (needs.visual-testing-linux.result == 'failure' || needs.visual-testing-macos.result == 'failure')
+    if: >-
+      always() && (
+        needs.visual-testing-linux.result == 'failure' ||
+        needs.visual-testing-linux.result == 'cancelled' ||
+        needs.visual-testing-macos.result == 'failure' ||
+        needs.visual-testing-macos.result == 'cancelled'
+      )
     needs: [visual-testing-linux, visual-testing-macos]
     runs-on: ubuntu-24.04
     timeout-minutes: 5

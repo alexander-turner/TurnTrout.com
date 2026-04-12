@@ -73,7 +73,7 @@ jobs:
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload prepared site after subfont
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: public-dir
           path: public/
@@ -223,24 +223,35 @@ jobs:
           MAX_ATTEMPTS=40  # 40 × 30s = 20 min max wait
           ATTEMPT=0
           SUMMARY=""
+          LP_CONCLUSION=""
+          LP_TEXT=""
 
           while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
             ATTEMPT=$((ATTEMPT + 1))
 
-            # Check runs (GitHub App check)
-            SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-              --paginate \
-              --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0].output.summary // empty' \
+            # Check runs (GitHub App check) — grab conclusion + summary + text
+            LP_JSON=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+              --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0] // empty | {conclusion, summary: .output.summary, text: .output.text}' \
               2>/dev/null || true)
 
-            if [ -z "$SUMMARY" ]; then
+            if [ -n "$LP_JSON" ] && [ "$LP_JSON" != "null" ]; then
+              LP_CONCLUSION=$(echo "$LP_JSON" | jq -r '.conclusion // empty')
+              SUMMARY=$(echo "$LP_JSON" | jq -r '.summary // empty')
+              # If summary has no counts, check the text field too
+              LP_TEXT=$(echo "$LP_JSON" | jq -r '.text // empty')
+            fi
+
+            if [ -z "$LP_CONCLUSION" ]; then
               # Also check commit statuses (Lost Pixel may use status API)
               SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
                 --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
                 2>/dev/null || true)
+              if [ -n "$SUMMARY" ]; then
+                LP_CONCLUSION="from_status"
+              fi
             fi
 
-            if [ -n "$SUMMARY" ]; then
+            if [ -n "$LP_CONCLUSION" ] || [ -n "$SUMMARY" ]; then
               echo "Lost Pixel check found on attempt $ATTEMPT"
               break
             fi
@@ -255,23 +266,38 @@ jobs:
             sleep 30
           done
 
-          if [ -z "$SUMMARY" ]; then
+          if [ -z "$LP_CONCLUSION" ] && [ -z "$SUMMARY" ]; then
             echo "::error::Lost Pixel check never appeared after $MAX_ATTEMPTS attempts"
             exit 1
           fi
 
-          echo "Lost Pixel result: $SUMMARY"
+          echo "Lost Pixel conclusion: $LP_CONCLUSION"
+          echo "Lost Pixel summary: $SUMMARY"
+          [ -n "${LP_TEXT:-}" ] && echo "Lost Pixel text: $LP_TEXT"
+
+          # Use the richest available source for count extraction
+          PARSE_SOURCE="$SUMMARY"
+          if [ -n "${LP_TEXT:-}" ]; then
+            PARSE_SOURCE="$SUMMARY $LP_TEXT"
+          fi
 
           # Extract counts for changed, added, and deleted images
-          CHANGED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
-          ADDED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
-          DELETED=$(echo "$SUMMARY" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
+          # Handles both "N changed" and "Differences: N" formats
+          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
+          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
+          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
 
-          # If none of the patterns matched, fail — the LP summary format may have changed
+          # If no counts parsed, use conclusion to decide
           if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
-            echo "::error::Could not parse any counts from Lost Pixel summary. Format may have changed."
-            echo "Raw summary: $SUMMARY"
-            exit 1
+            if [ "$LP_CONCLUSION" = "success" ]; then
+              echo "Lost Pixel concluded with success and no parseable counts — treating as 0 differences."
+              CHANGED=0; ADDED=0; DELETED=0
+            else
+              echo "::error::Could not parse any counts from Lost Pixel output (conclusion: $LP_CONCLUSION)."
+              echo "Raw summary: $SUMMARY"
+              [ -n "${LP_TEXT:-}" ] && echo "Raw text: $LP_TEXT"
+              exit 1
+            fi
           fi
 
           CHANGED=${CHANGED:-0}

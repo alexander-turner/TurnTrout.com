@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.55.1-noble
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
 
 # Pre-install ffmpeg at the version pinned in CI so the setup step is instant
 RUN apt-get update \

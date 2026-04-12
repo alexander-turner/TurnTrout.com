@@ -20,9 +20,10 @@ next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
 date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-01-25 23:47:56.984113
+date_updated: 2026-04-10 04:21:11.395410
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
+
 
 
 
@@ -249,6 +250,11 @@ Subtitle: Time: 5 minutes.
  The well-known application [Signal](https://signal.org/) is both open source and E2EE. Secure your communications. Use it.
 
 - [ ] Use Signal.
+- [ ] In Signal settings, go to "Notifications." For "Show", select "No name or message." Why? [FBI Extracts Suspect’s Deleted Signal Messages Saved in iPhone Notification Database](https://www.404media.co/fbi-extracts-suspects-deleted-signal-messages-saved-in-iphone-notification-database-2/).
+
+> [!warning] Signal doesn't always keep you anonymous against targeted attacks
+> > [!quote] [Tracking Signal Identifiers](https://scriptjunkie.us/2026/01/tracking-signal-identifiers/)
+> > Anyone in or invited to a group can get ID's for all members that Signal or AWS can obtain phone numbers for and can be linked to Apple/Google ID's and that will remain constant through username or display name changes.
 
  > [!idea] Consider encouraging your friends to use Signal.
  > I don't really use other texting applications anymore.

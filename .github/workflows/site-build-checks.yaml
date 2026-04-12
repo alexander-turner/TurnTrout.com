@@ -5,6 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main", "dev"]
     paths:
@@ -23,6 +24,7 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
+    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "!quartz/**/*.spec.ts"
@@ -45,15 +47,32 @@ permissions:
   contents: read
 
 jobs:
+  should-run:
+    name: site-checks-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-site-checks"
+
   build:
     name: site-checks-build
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
 
   built-site-checks:
-    needs: build
+    needs: [should-run, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -91,7 +110,7 @@ jobs:
         run: uv run python scripts/built_site_checks.py
 
   linkchecker:
-    needs: build
+    needs: [should-run, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -140,5 +159,25 @@ jobs:
             echo "Link checks failed:"
             echo "Internal linkchecker: $INTERNAL_STATUS"
             echo "External linkchecker: $EXTERNAL_STATUS"
+            exit 1
+          fi
+
+  # Unified status check — provides passing status when gated off on PRs
+  site-build-checks:
+    name: site-build-checks
+    if: always()
+    needs: [should-run, built-site-checks, linkchecker]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.built-site-checks.result }}" != "success" ]] || \
+             [[ "${{ needs.linkchecker.result }}" != "success" ]]; then
+            echo "Site build checks did not succeed (checks=${{ needs.built-site-checks.result }}, links=${{ needs.linkchecker.result }})"
             exit 1
           fi

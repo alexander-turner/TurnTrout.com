@@ -9,6 +9,7 @@ on:
   push:
     branches: ["main"]
   pull_request:
+    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "!quartz/**/*.spec.ts"
@@ -29,12 +30,29 @@ permissions:
   contents: read
 
 jobs:
+  should-run:
+    name: a11y-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-a11y"
+
   a11y-build:
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  a11y:
-    needs: a11y-build
+  a11y-test:
+    needs: [should-run, a11y-build]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -98,3 +116,22 @@ jobs:
           done
 
           kill $SERVER_PID 2>/dev/null || true
+
+  # Unified status check — provides passing status when gated off on PRs
+  a11y-status:
+    name: a11y
+    if: always()
+    needs: [should-run, a11y-test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.a11y-test.result }}" != "success" ]]; then
+            echo "a11y tests did not succeed (${{ needs.a11y-test.result }})"
+            exit 1
+          fi

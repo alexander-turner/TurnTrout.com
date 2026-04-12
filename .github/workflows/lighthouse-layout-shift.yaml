@@ -7,23 +7,9 @@ concurrency:
 on:
   workflow_dispatch:
   push:
-    branches: ["main", "dev", "no-layout-shift"]
+    branches: ["main", "dev"]
   pull_request:
-    paths:
-      - "quartz/**/*.scss"
-      - "quartz/**/*.tsx"
-      - "!quartz/**/*.test.tsx"
-      - "quartz/**/*.ts"
-      - "!quartz/**/*.spec.ts"
-      - "!quartz/**/*.test.ts"
-      - "!quartz/**/tests/**"
-      - "quartz/static/**"
-      - "config/quartz/**"
-      - "config/constants.json"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - ".github/actions/**"
-      - ".github/lighthouse-*.json"
+    types: [labeled]
   merge_group:
 
 permissions:
@@ -39,10 +25,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      run: ${{ steps.check.outputs.run }}
+      run: ${{ steps.gate.outputs.run }}
     steps:
-      - id: check
-        run: echo "run=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-lighthouse"
 
   build:
     needs: should-run
@@ -151,7 +142,7 @@ jobs:
 
       - name: Upload CLS reports (Desktop)
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: lighthouse-cls-reports-desktop
           path: ${{ github.workspace }}/.lighthouseci/
@@ -180,7 +171,7 @@ jobs:
 
       - name: Upload CLS reports (Mobile)
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: lighthouse-cls-reports-mobile
           path: ${{ github.workspace }}/.lighthouseci/
@@ -208,7 +199,7 @@ jobs:
 
       - name: Upload Lighthouse Full Audit reports
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: lighthouse-reports-full-audit
           path: ${{ github.workspace }}/.lighthouseci/

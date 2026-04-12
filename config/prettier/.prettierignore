@@ -18,3 +18,7 @@ test-results/
 pnpm-lock.yaml
 **/asset_queue.json
 **/img-comparison-slider.js
+.beads/
+.vscode/
+**/suggested_alts.json
+**/website_content/.obsidian/**

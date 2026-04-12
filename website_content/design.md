@@ -13,10 +13,13 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-08 19:46:41.351839
+date_updated: 2026-04-11 20:12:28.087440
 no_dropcap: false
 createBibtex: true
 ---
+
+
+
 
 
 
@@ -28,7 +31,7 @@ When I decided to design my own website, I had no experience with web developmen
 <figure>
 <img-comparison-slider>
   <img slot="first" src="https://assets.turntrout.com/static/images/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents'. The website looks bare and amateurish."/>
-  <img slot="second" src="/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
 </img-comparison-slider>
 <figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
 </figure>
@@ -851,7 +854,7 @@ Color contrast
 : I hand-adjusted the [site colors](#color-scheme) to meet a 5:1 contrast ratio in every context.
 
 ID uniqueness
-: As of February 2026, [Mermaid diagrams](#mermaid-diagrams) don't scope their HTML `id`s. Therefore, a page with multiple diagrams will have `id` collisions, causing both rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410).
+: In, [Mermaid diagrams](#mermaid-diagrams) didn't scope their HTML `id`s. Therefore, a page with multiple diagrams would have `id` collisions, causing rendering issues and accessibility violations. I fixed this problem by making [a PR overhauling Mermaid's `id` assignment system](https://github.com/mermaid-js/mermaid/pull/7410). Mermaid merged the PR.
 
 Skip-to-content link
 : A hidden link lets keyboard and screen reader users skip the navigation and jump straight to the main content. The link text is rendered via a CSS `::after` pseudo-element so that it doesn't appear in Ctrl+F search results.
@@ -947,11 +950,11 @@ Print mode
 <figcaption>Drag to compare: before vs. after print mode.</figcaption>
 </figure>
 
+Before/after image sliders
+: Drag-to-compare, powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
+
 Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
-
-Before/after image sliders
-: Drag-to-compare (as seen [at the top of this article](/design)), powered by [`img-comparison-slider`](https://www.npmjs.com/package/img-comparison-slider).
 
 Automatic BibTeX citations
 : I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
@@ -1067,7 +1070,7 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 ### Simulating site interactions
 
-Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
 
 ### Visual regression testing
 
