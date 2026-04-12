@@ -42,8 +42,10 @@ const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "ifram
  * Whether a URL should be left as-is (not rewritten by `transformLink`).
  * True for scheme-based URLs (`https:`, `data:`) and anchors (`#`).
  */
+const NON_HIERARCHICAL_SCHEMES = /^(?:data|mailto|tel|javascript|blob):/i
+
 export function isNonRewritableUrl(url: string): boolean {
-  return isAbsoluteUrl(url) || url.startsWith("#")
+  return isAbsoluteUrl(url) || url.startsWith("#") || NON_HIERARCHICAL_SCHEMES.test(url)
 }
 
 /** A link is external if it doesn't start with #, ., or / */
@@ -135,7 +137,7 @@ function processAnchor(
   // "Resolvable internal" excludes anchors (#foo) and absolute URLs that happen to be internal
   const isInternal = isResolvableInternalLink(dest, isExternal)
   if (isInternal) {
-    dest = resolveInternalLink(dest, node, file, curSlug, transformOptions, outgoing)
+    resolveInternalLink(dest, node, file, curSlug, transformOptions, outgoing)
   }
 
   if (

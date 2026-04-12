@@ -361,7 +361,7 @@ describe("PopulateContainers", () => {
       // Mock fetch to return successful response for SVG
       const originalFetch = global.fetch
       const mockFetch = jest
-        .fn<() => Promise<Response>>()
+        .fn<(url: string) => Promise<Response>>()
         .mockResolvedValue({ ok: true } as Response)
       global.fetch = mockFetch as unknown as typeof fetch
 
@@ -394,7 +394,7 @@ describe("PopulateContainers", () => {
       // Mock fetch to return successful response for SVG
       const originalFetch = global.fetch
       const mockFetch = jest
-        .fn<() => Promise<Response>>()
+        .fn<(url: string) => Promise<Response>>()
         .mockResolvedValue({ ok: true } as Response)
       global.fetch = mockFetch as unknown as typeof fetch
 

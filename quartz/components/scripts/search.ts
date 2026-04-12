@@ -1195,7 +1195,7 @@ function displayResults(finalResults: Item[], results: HTMLElement, enablePrevie
  * @param e - Input event
  */
 /* istanbul ignore next */
-async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
+async function onType(e: Event): Promise<void> {
   if (!searchLayout) return
 
   // Ensure search is initialized (waits if initialization is in progress)

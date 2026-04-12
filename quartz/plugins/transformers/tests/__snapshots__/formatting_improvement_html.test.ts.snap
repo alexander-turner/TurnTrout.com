@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`assertSmartQuotesMatch should throw for mismatched closing quotes 1`] = `"Mismatched quotes in This has a random ending quote”"`;
 
