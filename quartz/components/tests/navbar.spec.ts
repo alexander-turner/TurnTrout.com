@@ -362,14 +362,10 @@ test("Right sidebar is visible on desktop on page load", async ({ page }) => {
   await page.addInitScript(() => {
     document.addEventListener("DOMContentLoaded", () => {
       const sidebar = document.querySelector<HTMLElement>("#right-sidebar")
-      let sidebarStyle: string | null = null
-      if (sidebar) {
-        sidebarStyle = window.getComputedStyle(sidebar).display
-      } else {
-        sidebarStyle = "not-found"
-      }
       // @ts-expect-error - test instrumentation
-      window.initialSidebarDisplayStyle = sidebarStyle
+      window.initialSidebarDisplayStyle = sidebar
+        ? window.getComputedStyle(sidebar).display
+        : "not-found"
     })
   })
 

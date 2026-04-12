@@ -1,5 +1,3 @@
-/* global module */
-/* eslint-env node */
 "use strict"
 
 // babel.config.cjs

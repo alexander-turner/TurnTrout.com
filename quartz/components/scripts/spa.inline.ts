@@ -328,7 +328,6 @@ function updateHeadElements(html: Document): void {
     const property = currentMeta.getAttribute("property")
     const httpEquiv = currentMeta.getAttribute("http-equiv")
 
-    let existsInNew = false
     let selector = ""
     if (name) {
       selector = `meta[name="${name}"]`
@@ -341,9 +340,7 @@ function updateHeadElements(html: Document): void {
         `[updateHeadElements] No name, property, or http-equiv found for meta tag: ${currentMeta.outerHTML}`,
       )
     }
-    existsInNew = newHead.querySelector(selector) !== null
-
-    if (!existsInNew) {
+    if (!newHead.querySelector(selector)) {
       currentMeta.remove()
     }
   }
@@ -364,8 +361,6 @@ interface FetchResult {
  */
 async function fetchContent(url: URL): Promise<FetchResult> {
   let responseStatus: number | undefined
-  let contentType: string | null = null
-  let content: string | undefined
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), spaFetchTimeoutMs)
@@ -374,10 +369,10 @@ async function fetchContent(url: URL): Promise<FetchResult> {
     const res = await fetch(url.toString(), { signal: controller.signal })
     clearTimeout(timeoutId)
     responseStatus = res.status
-    contentType = res.headers.get("content-type")
+    const contentType = res.headers.get("content-type")
 
     if (res.ok && contentType?.startsWith("text/html")) {
-      content = await res.text()
+      const content = await res.text()
       return { status: "success", content, finalUrl: url, responseStatus, contentType }
     } else {
       const sanitizedContentType = contentType ? escape(contentType) : "unknown"

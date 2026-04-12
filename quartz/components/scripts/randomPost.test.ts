@@ -148,6 +148,8 @@ describe("randomPostScript (inline)", () => {
     // jsdom locks down window.location, so we verify via the script string instead.
     expect(randomPostScript).toContain("window.spaNavigate")
     expect(randomPostScript).toContain("location.assign")
-    expect(randomPostScript).toMatch(/spaNavigate\s*\?\s*window\.spaNavigate\(.*\)\s*:\s*location\.assign/)
+    expect(randomPostScript).toMatch(
+      /spaNavigate\s*\?\s*window\.spaNavigate\(.*\)\s*:\s*location\.assign/,
+    )
   })
 })

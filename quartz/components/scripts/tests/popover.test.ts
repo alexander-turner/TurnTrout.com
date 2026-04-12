@@ -601,8 +601,7 @@ describe("attachPopoverEventListeners", () => {
     popoverElement.dispatchEvent(new MouseEvent("click"))
     expect(navSpy).not.toHaveBeenCalled()
     navSpy.mockRestore()
-  },
-  )
+  })
 })
 
 describe("attachPopoverEventListeners (footnote popover)", () => {
@@ -793,4 +792,3 @@ describe("fetchWithMetaRedirect", () => {
     expect(response.ok).toBe(true)
   })
 })
-

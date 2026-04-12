@@ -59,10 +59,9 @@ export const replaceRegex = (
     return
   }
 
-  let lastIndex = 0
   const matches: RegExpExecArray[] = []
   let lastMatchEnd = 0
-  let match: RegExpExecArray | null = null
+  let match: RegExpExecArray | null
 
   // Find all non-overlapping matches in the node's text
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
@@ -77,7 +76,7 @@ export const replaceRegex = (
   if (!matches?.length || !node.value) return
 
   const fragment: RootContent[] = []
-  lastIndex = 0
+  let lastIndex = 0
 
   for (const match of matches) {
     const index = match.index
