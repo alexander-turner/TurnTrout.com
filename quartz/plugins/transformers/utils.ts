@@ -110,10 +110,7 @@ export const replaceRegex = (
     }
 
     // Update lastIndex to the end of the match
-    /* istanbul ignore next -- match is always truthy inside for-of loop over matches array */
-    if (match) {
-      lastIndex = index + match[0].length
-    }
+    lastIndex = index + match[0].length
   }
 
   // Add any remaining text after the last match

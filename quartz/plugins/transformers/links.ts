@@ -66,11 +66,15 @@ function resolveInternalLink(
   curSlug: SimpleSlug,
   transformOptions: TransformOptions,
   outgoing: Set<SimpleSlug>,
-): RelativeURL {
-  dest = node.properties.href = transformLink(file.data.slug as FullSlug, dest, transformOptions)
+): void {
+  const resolved = (node.properties.href = transformLink(
+    file.data.slug as FullSlug,
+    dest,
+    transformOptions,
+  ))
 
   // Dummy hostname required by WHATWG URL constructor; only the pathname is used
-  const url = new URL(dest, `https://base.com/${stripSlashes(curSlug, true)}`)
+  const url = new URL(resolved, `https://base.com/${stripSlashes(curSlug, true)}`)
   let canonicalPath = splitAnchor(url.pathname)[0]
   if (canonicalPath.endsWith("/")) {
     canonicalPath += "index"
@@ -80,8 +84,6 @@ function resolveInternalLink(
   const full = decodeURIComponent(stripSlashes(canonicalPath, true)) as FullSlug
   outgoing.add(simplifySlug(full))
   node.properties["data-slug"] = full
-
-  return dest
 }
 
 /**

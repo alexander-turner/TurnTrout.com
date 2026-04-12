@@ -328,7 +328,7 @@ function updateHeadElements(html: Document): void {
     const property = currentMeta.getAttribute("property")
     const httpEquiv = currentMeta.getAttribute("http-equiv")
 
-    let selector = ""
+    let selector: string
     if (name) {
       selector = `meta[name="${name}"]`
     } else if (property) {
@@ -339,6 +339,7 @@ function updateHeadElements(html: Document): void {
       console.warn(
         `[updateHeadElements] No name, property, or http-equiv found for meta tag: ${currentMeta.outerHTML}`,
       )
+      continue
     }
     if (!newHead.querySelector(selector)) {
       currentMeta.remove()
