@@ -197,6 +197,7 @@ After pushing to main:
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
 - Tests run on ~33 parallel shards (Linux only on PRs; macOS WebKit added on main)
 - macOS runners (10x cost of Linux) only run on pushes to main, not on PRs
+- macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation on ARM64
 - Visual regression testing with `lost-pixel`
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
