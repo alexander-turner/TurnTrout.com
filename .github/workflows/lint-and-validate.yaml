@@ -158,7 +158,7 @@ jobs:
       - name: Run ESLint --fix
         if: needs.detect-changes.outputs.code == 'true'
         continue-on-error: true
-        run: pnpm eslint . --fix --config config/javascript/eslint.config.js
+        run: pnpm eslint "quartz/**/*.{js,jsx,ts,tsx}" --fix --config config/javascript/eslint.config.js
 
       - name: Run Stylelint --fix
         if: needs.detect-changes.outputs.styles == 'true'

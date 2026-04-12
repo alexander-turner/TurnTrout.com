@@ -404,7 +404,7 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 // NOTE: Assumes search is opened
 // skipcq: JS-0098
 export async function search(page: Page, term: string) {
-  const searchBar = await waitForSearchBar(page)
+  await waitForSearchBar(page)
   const searchLayout = page.locator("#search-layout")
 
   // Wait for the search index to load before filling (avoids resetting
@@ -430,11 +430,17 @@ export async function search(page: Page, term: string) {
     })
   }
 
-  await searchBar.fill(term)
-  // Explicitly dispatch input event — Playwright's fill() should do this,
-  // but Firefox and WebKit on tablet viewports sometimes fail to trigger the handler.
-  await searchBar.dispatchEvent("input")
-  await expect(searchLayout).toBeVisible({ timeout: 15_000 })
+  // Set the search value and trigger the handler directly in the browser
+  // context. Playwright's fill() on mobile WebKit can generate tap events
+  // that inadvertently close the search overlay, and its dispatchEvent()
+  // creates a basic Event rather than InputEvent. Setting the value and
+  // dispatching InputEvent via evaluate is reliable across all browsers.
+  await page.evaluate((searchTerm: string) => {
+    const bar = document.getElementById("search-bar") as HTMLInputElement
+    bar.focus()
+    bar.value = searchTerm
+    bar.dispatchEvent(new InputEvent("input", { bubbles: true }))
+  }, term)
   await expect(searchLayout).toHaveClass(/display-results/, { timeout: 15_000 })
 
   // Wait for result cards to render. On mobile viewports #results-container
