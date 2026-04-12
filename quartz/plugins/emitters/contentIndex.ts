@@ -3,7 +3,8 @@ import type { Root } from "hast"
 import { toHtml } from "hast-util-to-html"
 
 import { type GlobalConfiguration } from "../../cfg"
-import { locale, uiStrings } from "../../components/constants"
+import { formatTitle } from "../../components/component_utils"
+import { uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
 import { escapeHTML } from "../../util/escape"
@@ -18,6 +19,15 @@ import { applyTextTransforms } from "../transformers/formatting_improvement_html
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
 
+/** Build-time content entry with required date (always set by emit via getDate). */
+type BuildContentDetails = ContentDetails & {
+  date: Date
+  description?: string
+}
+
+type BuildContentIndex = Map<FullSlug, BuildContentDetails>
+
+/** Client-side content details (date/description stripped before writing to JSON). */
 export type ContentIndex = Map<FullSlug, ContentDetails>
 export type ContentDetails = {
   title: string
@@ -25,9 +35,7 @@ export type ContentDetails = {
   tags: readonly string[]
   content: string
   richContent?: string
-  date?: Date
   authors?: readonly string[]
-  description?: string
 }
 
 interface Options {
@@ -51,10 +59,10 @@ const defaultOptions: Options = {
 const createSiteMapURLEntry = (
   base: string,
   slug: SimpleSlug,
-  content: ContentDetails,
+  content: BuildContentDetails,
 ): string => `<url>
     <loc>https://${joinSegments(base, encodeURI(slug))}</loc>
-    ${content.date && `<lastmod>${content.date.toISOString()}</lastmod>`}
+    <lastmod>${content.date.toISOString()}</lastmod>
   </url>`
 
 /**
@@ -64,7 +72,7 @@ const createSiteMapURLEntry = (
  * @param idx The content index to generate the sitemap from.
  * @returns An XML string representing the sitemap.
  */
-function generateSiteMap(cfg: GlobalConfiguration, idx: ContentIndex): string {
+function generateSiteMap(cfg: GlobalConfiguration, idx: BuildContentIndex): string {
   const base = cfg.baseUrl ?? ""
   const urls = Array.from(idx)
     .map(([slug, content]) => createSiteMapURLEntry(base, simplifySlug(slug), content))
@@ -88,13 +96,13 @@ const textTransformDescription = (description: string): string => {
 const createRSSURLEntry = (
   base: string,
   slug: SimpleSlug,
-  content: ContentDetails,
+  content: BuildContentDetails,
 ): string => `<item>
     <title>${escapeHTML(content.title)}</title>
     <link>https://${joinSegments(base, encodeURI(slug))}</link>
     <description>${content.richContent ?? textTransformDescription(content.description ?? "")}</description>
     <guid isPermaLink="true">https://${joinSegments(base, encodeURI(slug))}</guid>
-    <pubDate>${content.date?.toUTCString()}</pubDate>
+    <pubDate>${content.date.toUTCString()}</pubDate>
   </item>`
 
 /**
@@ -103,23 +111,13 @@ const createRSSURLEntry = (
  */
 function generateRSSFeed(
   cfg: GlobalConfiguration,
-  idx: ContentIndex,
+  idx: BuildContentIndex,
   maxItemsInFeed?: number,
 ): string {
   const base = cfg.baseUrl ?? ""
 
   const items = Array.from(idx)
-    .sort(([, f1], [, f2]) => {
-      if (f1.date && f2.date) {
-        return f2.date.getTime() - f1.date.getTime()
-      } else if (f1.date && !f2.date) {
-        return -1
-      } else if (!f1.date && f2.date) {
-        return 1
-      }
-
-      return f1.title.localeCompare(f2.title, locale)
-    })
+    .sort(([, f1], [, f2]) => f2.date.getTime() - f1.date.getTime())
     .map(([slug, content]) => createRSSURLEntry(base, simplifySlug(slug), content))
     .slice(0, maxItemsInFeed ?? idx.size)
     .join("")
@@ -175,7 +173,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
     async emit(ctx, content) {
       const cfg = ctx.cfg.configuration
       const emitted: FilePath[] = []
-      const linkIndex: ContentIndex = new Map()
+      const linkIndex: BuildContentIndex = new Map()
 
       for (const [tree, file] of content) {
         const slug = file.data.slug as FullSlug
@@ -183,7 +181,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
 
         if (opts?.includeEmptyFiles || (file.data.text && file.data.text !== "")) {
           linkIndex.set(slug, {
-            title: file.data.frontmatter?.title ?? "",
+            title: formatTitle(file.data.frontmatter?.title ?? ""),
             links: file.data.links ?? [],
             tags: file.data.frontmatter?.tags ?? [],
             content: (file.data.text as string) ?? "",
@@ -221,13 +219,11 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
       }
 
       const fp = joinSegments("static", "contentIndex") as FullSlug
+      // Strip date and description — only needed for RSS/sitemap, not the client-side JSON
       const simplifiedIndex = Object.fromEntries(
-        Array.from(linkIndex).map(([slug, content]) => {
-          // remove description and date from content index as nothing downstream
-          // actually uses them. we only keep description for the RSS feed
-          delete content.description
-          delete content.date
-          return [slug, content]
+        Array.from(linkIndex).map(([slug, entry]): [string, ContentDetails] => {
+          const { title, links, tags, content: text, richContent, authors } = entry
+          return [slug, { title, links, tags, content: text, richContent, authors }]
         }),
       )
 

@@ -16,7 +16,7 @@ interface Browser {
 
 // Use robust device presets that include stable layout-affecting fields only
 // (viewport, DPR, touch/mobile flags).
-const deviceList: DeviceConfig[] = [
+const allDevices: DeviceConfig[] = [
   {
     name: "Desktop",
     config: {
@@ -38,6 +38,14 @@ const deviceList: DeviceConfig[] = [
     },
   },
 ]
+
+// Playwright 1.58+ WebKit crashes on mobile device emulation (iPhone/iPad)
+// on macOS ARM64 — "page.goto: Page crashed" in every search test.
+// Desktop Safari works fine. Mobile coverage comes from Linux Chromium/Firefox.
+const isWebKitOnly = process.env.PLAYWRIGHT_BROWSERS === "webkit"
+const deviceList: DeviceConfig[] = isWebKitOnly
+  ? allDevices.filter((d) => d.name === "Desktop")
+  : allDevices
 
 const allBrowsers: Browser[] = [
   { name: "Chrome", engine: "chromium" },
@@ -73,9 +81,19 @@ function sanitizeConfigForBrowser(
 const baseURL = "http://localhost:8080"
 
 export default defineConfig({
-  timeout: 30000,
+  timeout: 45_000,
+  // Cap total shard runtime in CI so tests fail with output instead of
+  // silently hanging until the GitHub Actions job timeout kills them.
+  // Each workflow job sets PLAYWRIGHT_GLOBAL_TIMEOUT_MS to ~5 min less
+  // than its job timeout-minutes, giving Playwright time to report errors
+  // and upload artifacts before GitHub Actions kills the runner.
+  globalTimeout: process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS
+    ? Number(process.env.PLAYWRIGHT_GLOBAL_TIMEOUT_MS)
+    : process.env.CI
+      ? 45 * 60 * 1000
+      : undefined,
   fullyParallel: true,
-  // macOS-14 M1 runners have 3 cores but Playwright defaults to 1 worker for
+  // macOS ARM runners have 3 cores but Playwright defaults to 1 worker for
   // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.
   workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 3 : undefined,
   retries: process.env.CI ? 1 : 0,

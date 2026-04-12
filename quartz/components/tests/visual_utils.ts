@@ -404,7 +404,7 @@ export async function waitForSearchBar(page: Page): Promise<Locator> {
 // NOTE: Assumes search is opened
 // skipcq: JS-0098
 export async function search(page: Page, term: string) {
-  const searchBar = await waitForSearchBar(page)
+  await waitForSearchBar(page)
   const searchLayout = page.locator("#search-layout")
 
   // Wait for the search index to load before filling (avoids resetting
@@ -430,18 +430,23 @@ export async function search(page: Page, term: string) {
     })
   }
 
-  await searchBar.fill(term)
-  // Explicitly dispatch input event — Playwright's fill() should do this,
-  // but Firefox on tablet viewports sometimes fails to trigger the handler.
-  await searchBar.dispatchEvent("input")
-  await expect(searchLayout).toBeVisible({ timeout: 15_000 })
+  // Set the search value and trigger the handler directly in the browser
+  // context. Playwright's fill() on mobile WebKit can generate tap events
+  // that inadvertently close the search overlay, and its dispatchEvent()
+  // creates a basic Event rather than InputEvent. Setting the value and
+  // dispatching InputEvent via evaluate is reliable across all browsers.
+  await page.evaluate((searchTerm: string) => {
+    const bar = document.getElementById("search-bar") as HTMLInputElement
+    bar.focus()
+    bar.value = searchTerm
+    bar.dispatchEvent(new InputEvent("input", { bubbles: true }))
+  }, term)
   await expect(searchLayout).toHaveClass(/display-results/, { timeout: 15_000 })
 
-  // Wait for results to appear — the display-results class is set before
-  // searchAsync completes, so also wait for actual result cards to render.
-  const resultsContainer = page.locator("#results-container")
-  await expect(resultsContainer).toBeVisible({ timeout: 10_000 })
-  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 10_000 })
+  // Wait for result cards to render. On mobile viewports #results-container
+  // has height:auto and is invisible while empty, so wait for the cards
+  // directly rather than checking the container first.
+  await expect(page.locator(".result-card").first()).toBeVisible({ timeout: 15_000 })
 }
 
 // skipcq: JS-0098

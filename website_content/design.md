@@ -13,10 +13,13 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-08 19:46:41.351839
+date_updated: 2026-04-11 20:12:28.087440
 no_dropcap: false
 createBibtex: true
 ---
+
+
+
 
 
 
@@ -964,7 +967,7 @@ I quickly learned the importance of _comprehensive tests and documentation_. The
 2. The `pre-push` hook runs before commits are pushed to the `main` branch.
 3. Github actions ensure that the site still works properly on the remote server.
 
-I automatically merge test-passing pull requests from `dependabot`, reducing security vulnerabilities while avoiding busywork. Lastly, external static analysis alerts me to potential vulnerabilities and anti-patterns. If somehow a bad version slips through anyways, Cloudflare allows me to instantly revert the live site to a previous good version.
+External static analysis alerts me to potential vulnerabilities and anti-patterns. If somehow a bad version slips through anyways, Cloudflare allows me to instantly revert the live site to a previous good version.
 
 ## `pre-commit` linting and formatting
 
@@ -1067,7 +1070,7 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 ### Simulating site interactions
 
-Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
 
 ### Visual regression testing
 
@@ -1220,7 +1223,7 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-I run these tests using 30 shards for functional tests and 10 shards for visual regression tests, with tests running sequentially within each shard to ensure reliability. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+I run these tests using 8 Linux shards (plus 5 macOS shards on pushes to `main`) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
 : I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
@@ -1243,12 +1246,3 @@ Weekly security scan
 
 Template sync
 : A [daily workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/template-sync.yaml) diffs local automation files against the [template repo](https://github.com/alexander-turner/claude-automation-template), copies new files, and opens a PR.
-
-Dependency auto-merge
-: [Dependabot](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/dependabot.yml) proposes weekly updates for `npm`, Python, and GitHub Actions dependencies. Non-major bumps are [auto-approved and -merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-dependabot.yml), while major bumps require manual review. [DeepSource](https://deepsource.com/) style-fix PRs are also [auto-merged](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/auto-merge-deepsource.yml).
-
-CI failure notifications
-: When CI fails on a `claude/*` branch, a [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/comment-on-failed-checks.yaml) comments on the PR mentioning `@claude` with a failure summary (capped at 2 pings per workflow). The pings keep Claude Code going without my involvement.
-
-Self-improving tooling
-: When Claude merges a PR, it includes a "Lessons Learned" section documenting what worked and what didn't. A [workflow](https://github.com/alexander-turner/TurnTrout.com/blob/main/.github/workflows/phone-home.yaml) detects these sections and files corresponding issues on the [template repo](https://github.com/alexander-turner/claude-automation-template), propagating improvements upstream to all projects using the template.
