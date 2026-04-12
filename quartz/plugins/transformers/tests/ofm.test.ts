@@ -516,6 +516,54 @@ describe("processWikilink", () => {
         '<span class="transclude" data-url="file.unknown" data-block=""><a href="/file.unknown" class="transclude-inner">Transclude of file.unknown</a></span>',
     })
   })
+
+  it.each([
+    {
+      name: "video with XSS filename",
+      input: [
+        '![[file"><img src=x onerror=alert(1)>.mp4]]',
+        'file"><img src=x onerror=alert(1)>.mp4',
+        "",
+        "",
+      ] as [string, string, string, string],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain('"><img')
+        expect(html).toContain("&quot;&gt;&lt;img")
+      },
+    },
+    {
+      name: "audio with XSS filename",
+      input: ['![[file"onload=alert(1).mp3]]', 'file"onload=alert(1).mp3', "", ""] as [
+        string,
+        string,
+        string,
+        string,
+      ],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain('"onload=')
+        expect(html).toContain("&quot;onload=")
+      },
+    },
+    {
+      name: "pdf with XSS filename",
+      input: [
+        '![[file"><script>alert(1)</script>.pdf]]',
+        'file"><script>alert(1)</script>.pdf',
+        "",
+        "",
+      ] as [string, string, string, string],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain("<script>")
+        expect(html).toContain("&lt;script&gt;")
+      },
+    },
+  ])("should escape HTML in $name", ({ input, check }) => {
+    const result = processWikilink(input[0], input[1], input[2], input[3])
+    check(result)
+  })
 })
 
 describe("ObsidianFlavoredMarkdown", () => {
