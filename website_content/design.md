@@ -13,10 +13,12 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-10 04:21:11.395410
+date_updated: 2026-04-11 20:12:28.087440
 no_dropcap: false
 createBibtex: true
 ---
+
+
 
 
 
@@ -29,7 +31,7 @@ When I decided to design my own website, I had no experience with web developmen
 <figure>
 <img-comparison-slider>
   <img slot="first" src="https://assets.turntrout.com/static/images/original_site.avif" alt="A basic rendition of the article 'Think carefully before calling RL policies 'agents'. The website looks bare and amateurish."/>
-  <img slot="second" src="/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
+  <img slot="second" src="https://assets.turntrout.com/static/images/new_site.avif" alt="A pleasing rendition of the article 'Think carefully before calling RL policies 'agents'."/>
 </img-comparison-slider>
 <figcaption>Drag to compare: my third commit (<a href="https://github.com/alexander-turner/TurnTrout.com/commit/6e687609a4b8f4bb14d1812c8fca5d833904729e"><code>6e687609</code></a>, April 2024) vs. commit <a href="https://github.com/alexander-turner/TurnTrout.com/commit/2531d4359a0fa1576a7be2cba729892dd190f0a3"><code>2531d435</code></a> (March 2026).</figcaption>
 </figure>
@@ -1068,7 +1070,7 @@ I have thousands of JavaScript unit tests and hundreds of Python tests. I am _qu
 
 ### Simulating site interactions
 
-Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop).
+Pure unit tests cannot test the end-to-end experience of my site, nor can they easily interact with a local server. [Playwright](https://playwright.dev/) lets me test dynamic features like search, spoiler blocks, and light / dark mode. I can also guard against bugs like [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content) upon page load. What's more, I test these features across a range of browsers and viewport dimensions (mobile vs desktop). macOS WebKit runs Desktop Safari only, since Playwright's WebKit crashes on mobile device emulation on Apple Silicon.
 
 ### Visual regression testing
 

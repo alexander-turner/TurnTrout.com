@@ -73,7 +73,7 @@ jobs:
 
       - name: Comment preview URL on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         with:
@@ -145,7 +145,7 @@ jobs:
 
       - name: Upload prepared site after subfont
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: public-dir
           path: public/
@@ -282,9 +282,10 @@ jobs:
           fi
 
           # Extract counts for changed, added, and deleted images
-          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '\d+(?=\s*(changed|visual|difference|diff))' | head -1)
-          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '\d+(?=\s*(added|new|created))' | head -1)
-          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '\d+(?=\s*(deleted|removed))' | head -1)
+          # Handles both "N changed" and "Differences: N" formats
+          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
+          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
+          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
 
           # If no counts parsed, use conclusion to decide
           if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
