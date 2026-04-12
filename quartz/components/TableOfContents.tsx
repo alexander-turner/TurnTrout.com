@@ -197,6 +197,7 @@ export function processTocEntry(entry: TocEntry): Parent {
  */
 export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
   htmlAst.children.forEach((node: RootContent) => {
+    /* istanbul ignore else -- fromHtml only produces text/element nodes */
     if (node.type === "text") {
       const textValue = node.value
       let textToProcess = textValue

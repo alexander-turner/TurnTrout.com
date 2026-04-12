@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
-import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
+import { mockFetchResolve, mockFetchNetworkError, removePositions } from "./test-utils"
 
 describe("test-utils", () => {
   let fetchMock: jest.MockedFunction<typeof fetch>
@@ -204,6 +204,19 @@ describe("test-utils", () => {
       mockFetchNetworkError(fetchMock, customError)
 
       expect(fetchMock.mockRejectedValueOnce).toBeDefined()
+    })
+  })
+
+  describe("removePositions", () => {
+    it("strips position keys from nested objects", () => {
+      const input = { type: "text", value: "hi", position: { start: 1, end: 2 } }
+      expect(removePositions(input)).toEqual({ type: "text", value: "hi" })
+    })
+
+    it("handles arrays and primitives", () => {
+      expect(removePositions([{ position: {}, a: 1 }])).toEqual([{ a: 1 }])
+      expect(removePositions("hello")).toBe("hello")
+      expect(removePositions(null)).toBeNull()
     })
   })
 

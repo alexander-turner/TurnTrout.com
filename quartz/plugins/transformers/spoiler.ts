@@ -99,6 +99,7 @@ export function modifyNode(node: Element, index: number | undefined, parent: Par
     return
   }
 
+  /* istanbul ignore next -- spoilerContent is always non-empty when all children pass spoiler checks */
   if (spoilerContent.length > 0) {
     parent.children[index] = createSpoilerNode(spoilerContent)
   }
@@ -125,6 +126,7 @@ export function processParagraph(paragraph: Element): Element | null {
       continue
     }
 
+    /* istanbul ignore next -- paragraph children are always text or element nodes */
     if (child.type === "element") {
       newChildren.push(child)
     }

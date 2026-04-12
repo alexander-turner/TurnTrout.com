@@ -1,3 +1,4 @@
+/* global module */
 "use strict"
 
 // babel.config.cjs

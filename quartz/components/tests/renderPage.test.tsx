@@ -702,6 +702,14 @@ describe("renderPage helpers", () => {
     expect(child.tagName).toBe("p")
   })
 
+  it("setBlockTransclusion does nothing when block ref not found", () => {
+    const node = h("span") as unknown as Element
+    const originalChildren = [...node.children]
+    const page = { blocks: { otherBlock: h("p", "x") } } as unknown as QuartzPluginData
+    setBlockTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "missingBlock")
+    expect(node.children).toEqual(originalChildren)
+  })
+
   it("setHeaderTransclusion extracts section under header and appends anchor", () => {
     const node = h("span") as unknown as Element
     const h2 = h("h2", { id: "section" }, "title") as unknown as Element
@@ -718,6 +726,28 @@ describe("renderPage helpers", () => {
     const [c1, c2] = node.children as Element[]
     expect(c1.tagName).toBe("p")
     expect(c2.tagName).toBe("p")
+  })
+
+  it("setHeaderTransclusion includes sub-headers within the section", () => {
+    const node = h("span") as unknown as Element
+    const h2 = h("h2", { id: "section" }, "title") as unknown as Element
+    const para1 = h("p", "one") as unknown as Element
+    const h3 = h("h3", { id: "sub" }, "subtitle") as unknown as Element
+    const para2 = h("p", "two") as unknown as Element
+    const nextH2 = h("h2", "next") as unknown as Element
+
+    const page = {
+      htmlAst: { type: "root", children: [h2, para1, h3, para2, nextH2] },
+    } as unknown as QuartzPluginData
+
+    setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "section")
+
+    // Should include para1, h3, and para2 (everything between h2#section and the next h2)
+    expect(node.children.length).toBe(3)
+    const [c1, c2, c3] = node.children as Element[]
+    expect(c1.tagName).toBe("p")
+    expect(c2.tagName).toBe("h3")
+    expect(c3.tagName).toBe("p")
   })
 
   it.each([

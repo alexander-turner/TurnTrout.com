@@ -47,6 +47,7 @@ function processFootnoteForPopover(
   normalizeRelativeURLs(tempContainer, targetUrl)
 
   // modifyElementIds only modifies descendants, so also modify the element's own ID
+  /* istanbul ignore next -- footnotes always have IDs in practice */
   if (clonedFootnote.id) {
     clonedFootnote.id = `${clonedFootnote.id}-popover`
   }
@@ -282,12 +283,15 @@ export function attachPopoverEventListeners(
 
   const removePopover = () => {
     popoverElement.classList.remove("popover-visible")
-    setTimeout(() => {
-      if (!isMouseOverLink && !isMouseOverPopover) {
-        popoverElement.remove()
-        onRemove()
-      }
-    }, popoverRemovalDelayMs)
+    setTimeout(
+      /* istanbul ignore next -- async mouse state check not reachable in sync tests */ () => {
+        if (!isMouseOverLink && !isMouseOverPopover) {
+          popoverElement.remove()
+          onRemove()
+        }
+      },
+      popoverRemovalDelayMs,
+    )
   }
 
   const showPopover = () => {

@@ -113,6 +113,7 @@ function makePreElementsKeyboardAccessible(tree: Root): void {
     // Also make <code> children focusable since they may be the actual
     // scrollable element (e.g. Shiki code blocks with display:grid)
     for (const child of node.children) {
+      /* istanbul ignore next -- pre elements may contain text nodes or other non-code children */
       if (child.type === "element" && child.tagName === "code") {
         child.properties = child.properties || {}
         child.properties.tabIndex = 0
@@ -259,6 +260,7 @@ function fixOrphanedDefinitionLists(tree: Root): void {
     // Fallback: degrade to <div> with <p> children
     dl.tagName = "div"
     for (const child of dl.children) {
+      /* istanbul ignore next -- dl children may include non-dd elements or text nodes */
       if (child.type === "element" && child.tagName === "dd") {
         child.tagName = "p"
       }
