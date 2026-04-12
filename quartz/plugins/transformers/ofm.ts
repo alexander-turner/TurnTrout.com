@@ -234,9 +234,9 @@ const createTranscludeElement = (
   return {
     type: "html",
     data: { hProperties: { transclude: true } },
-    value: `<span class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${
-      escapeHTML(displayAlias ?? `Transclude of ${url}${ref}`)
-    }</a></span>`,
+    value: `<span class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${escapeHTML(
+      displayAlias ?? `Transclude of ${url}${ref}`,
+    )}</a></span>`,
   }
 }
 
