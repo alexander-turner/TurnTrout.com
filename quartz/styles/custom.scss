@@ -269,6 +269,7 @@ sup {
     font-size: 3rem;
     filter: saturate(90%);
     color: var(--blue);
+    opacity: 0.6;
     opacity: light-dark(0.6, 0.7);
   }
 
@@ -282,7 +283,9 @@ sup {
     width: calc(6 * $base-margin);
     margin-top: calc(2 * $base-margin);
     margin-bottom: calc(2 * $base-margin);
+    filter: none !important;
     filter: light-dark(none, invert(66%)) !important;
+    opacity: 0.5;
     opacity: light-dark(0.5, 1);
   }
 

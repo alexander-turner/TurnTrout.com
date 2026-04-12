@@ -427,5 +427,6 @@ article .ordinal-num {
   color: var(--gold);
 
   // Make it easier to see on light themes
+  -webkit-text-stroke: 0.2px black;
   -webkit-text-stroke: 0.2px light-dark(black, transparent);
 }

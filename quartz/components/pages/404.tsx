@@ -22,6 +22,7 @@ const NotFound: QuartzComponent = () => {
           id="trout-reading"
           className="no-select"
           alt="Alex in a trout costume, reading a book."
+          loading="lazy"
           width={1280}
           height={1152}
         />
