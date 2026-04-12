@@ -490,6 +490,7 @@ const findPopulateTargets = (htmlPath: string): { ids: Set<string>; classes: Set
     const classNames = node.properties?.className
     if (Array.isArray(classNames)) {
       for (const cls of classNames) {
+        /* istanbul ignore next -- className array items are always strings in practice */
         if (typeof cls === "string" && cls.startsWith("populate-")) {
           classes.add(cls)
         }

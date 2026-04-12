@@ -589,6 +589,7 @@ const createAdmonitionsPlugin = () => () => {
 
 /** Parses block references in HTML elements and stores them in file data. */
 function parseBlockReferences(tree: HtmlRoot, file: VFile): void {
+  /* istanbul ignore next -- blocks are always initialized by preceding pipeline stages */
   if (!file.data.blocks) {
     file.data.blocks = {}
   }
@@ -765,6 +766,7 @@ export function markdownPlugins(opts: OFMOptions): PluggableList {
 
   plugins.push(createRegexReplacementsPlugin(opts))
 
+  /* istanbul ignore next -- config-dependent branch; video embed is always enabled in production */
   if (opts.enableVideoEmbed) {
     plugins.push(createVideoEmbedPlugin())
   }

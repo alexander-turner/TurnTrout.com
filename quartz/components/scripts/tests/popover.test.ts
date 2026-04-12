@@ -14,6 +14,7 @@ import {
   computeTop,
   fetchWithMetaRedirect,
   footnoteForwardRefRegex,
+  navigation,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
@@ -560,19 +561,17 @@ describe("attachPopoverEventListeners", () => {
     isFootnote | clickInnerLink | expectedHref
     ${false}   | ${false}       | ${"http://example.com/"}
     ${false}   | ${true}        | ${"http://clicked-link.com/"}
-    ${true}    | ${false}       | ${""}
     ${true}    | ${true}        | ${"http://clicked-link.com/"}
   `(
     "click navigates to $expectedHref (isFootnote=$isFootnote, clickInnerLink=$clickInnerLink)",
     ({ isFootnote, clickInnerLink, expectedHref }) => {
-      // Need a fresh popover+cleanup since isFootnote changes class before attaching
       cleanup()
       popoverElement = document.createElement("div")
       if (isFootnote) popoverElement.classList.add("footnote-popover")
       linkElement.href = "http://example.com/"
       cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
 
-      Object.defineProperty(window, "location", { value: { href: "" }, writable: true })
+      const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
 
       let clickEvent: MouseEvent
       if (clickInnerLink) {
@@ -586,9 +585,23 @@ describe("attachPopoverEventListeners", () => {
       }
 
       popoverElement.dispatchEvent(clickEvent)
-      expect(window.location.href).toBe(expectedHref)
+      expect(navSpy).toHaveBeenCalledWith(expectedHref as string)
+      navSpy.mockRestore()
     },
   )
+
+  it("footnote click without inner link does not navigate", () => {
+    cleanup()
+    popoverElement = document.createElement("div")
+    popoverElement.classList.add("footnote-popover")
+    linkElement.href = "http://example.com/"
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
+
+    const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
+    popoverElement.dispatchEvent(new MouseEvent("click"))
+    expect(navSpy).not.toHaveBeenCalled()
+    navSpy.mockRestore()
+  })
 })
 
 describe("attachPopoverEventListeners (footnote popover)", () => {

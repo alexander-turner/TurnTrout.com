@@ -172,7 +172,7 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
   const CHUNK_SIZE = 32
   const concurrency = ctx.argv.concurrency ?? clamp(fps.length / CHUNK_SIZE, 1, 4)
 
-  let res: ProcessedContent[] = []
+  let res: ProcessedContent[]
   log.info(`Parsing input files using ${concurrency} threads`)
   if (concurrency === 1) {
     const processor = createProcessor(ctx)

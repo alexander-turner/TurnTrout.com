@@ -234,7 +234,7 @@
     "critical": "7.2.1",
     "domhandler": "6.0.1",
     "esbuild": "0.28.0",
-    "eslint": "10.2.0",
+    "eslint": "9.39.4",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-jest": "29.15.2",
     "eslint-plugin-jsx-a11y": "6.10.2",

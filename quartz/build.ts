@@ -83,7 +83,7 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     console.log(`  Emitters: ${pluginNames("emitters").join(", ")}`)
   }
 
-  let parsedFiles: ProcessedContent[] = []
+  let parsedFiles: ProcessedContent[]
   const dependencies: Record<string, DepGraph<FilePath> | null> = {}
 
   const release = await mut.acquire()

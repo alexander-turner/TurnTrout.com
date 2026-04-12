@@ -436,7 +436,9 @@ export async function maybeGenerateCriticalCSS(outputDir: string): Promise<void>
       console.error(`Error generating critical CSS (attempt ${attempts}/${maxAttempts}):`, error)
       cachedCriticalCSS = "" // Ensure it's reset on failure
       if (attempts >= maxAttempts) {
-        throw new Error(`Critical CSS generation failed after ${maxAttempts} attempts.`)
+        throw new Error(`Critical CSS generation failed after ${maxAttempts} attempts.`, {
+          cause: error,
+        })
       }
     }
   }

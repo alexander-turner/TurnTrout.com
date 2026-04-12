@@ -42,8 +42,10 @@ const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "ifram
  * Whether a URL should be left as-is (not rewritten by `transformLink`).
  * True for scheme-based URLs (`https:`, `data:`) and anchors (`#`).
  */
+const NON_HIERARCHICAL_SCHEMES = /^(?:data|mailto|tel|javascript|blob):/i
+
 export function isNonRewritableUrl(url: string): boolean {
-  return isAbsoluteUrl(url) || url.startsWith("#")
+  return isAbsoluteUrl(url) || url.startsWith("#") || NON_HIERARCHICAL_SCHEMES.test(url)
 }
 
 /** A link is external if it doesn't start with #, ., or / */
@@ -64,11 +66,15 @@ function resolveInternalLink(
   curSlug: SimpleSlug,
   transformOptions: TransformOptions,
   outgoing: Set<SimpleSlug>,
-): RelativeURL {
-  dest = node.properties.href = transformLink(file.data.slug as FullSlug, dest, transformOptions)
+): void {
+  const resolved = (node.properties.href = transformLink(
+    file.data.slug as FullSlug,
+    dest,
+    transformOptions,
+  ))
 
   // Dummy hostname required by WHATWG URL constructor; only the pathname is used
-  const url = new URL(dest, `https://base.com/${stripSlashes(curSlug, true)}`)
+  const url = new URL(resolved, `https://base.com/${stripSlashes(curSlug, true)}`)
   let canonicalPath = splitAnchor(url.pathname)[0]
   if (canonicalPath.endsWith("/")) {
     canonicalPath += "index"
@@ -78,8 +84,6 @@ function resolveInternalLink(
   const full = decodeURIComponent(stripSlashes(canonicalPath, true)) as FullSlug
   outgoing.add(simplifySlug(full))
   node.properties["data-slug"] = full
-
-  return dest
 }
 
 /**
@@ -135,7 +139,7 @@ function processAnchor(
   // "Resolvable internal" excludes anchors (#foo) and absolute URLs that happen to be internal
   const isInternal = isResolvableInternalLink(dest, isExternal)
   if (isInternal) {
-    dest = resolveInternalLink(dest, node, file, curSlug, transformOptions, outgoing)
+    resolveInternalLink(dest, node, file, curSlug, transformOptions, outgoing)
   }
 
   if (

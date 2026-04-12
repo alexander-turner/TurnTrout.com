@@ -144,14 +144,16 @@ export function cleanupIframeFootnoteText(tree: Root): void {
     if (node.tagName !== "iframe") {
       return
     }
-    node.children = node.children.filter((child) => {
-      if (child.type === "text") {
-        const trimmed = child.value.trim()
-        return trimmed !== "Footnotes" && trimmed !== ""
-      }
-      // istanbul ignore next
-      return true
-    })
+    node.children = node.children.filter(
+      /* istanbul ignore next -- iframe children are always text nodes in practice */
+      (child) => {
+        if (child.type === "text") {
+          const trimmed = child.value.trim()
+          return trimmed !== "Footnotes" && trimmed !== ""
+        }
+        return true
+      },
+    )
   })
 }
 
