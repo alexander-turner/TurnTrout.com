@@ -118,12 +118,11 @@ export default [
     ],
   },
 
-  // React settings — use explicit version to avoid eslint-plugin-react crash
-  // with ESLint 10 (plugin uses removed context.getFilename() during detection)
+  // React settings
   {
     settings: {
       react: {
-        version: "18.0",
+        version: "detect",
       },
     },
   },
