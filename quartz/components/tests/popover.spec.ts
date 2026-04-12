@@ -138,7 +138,10 @@ test("Multiple popovers don't stack without wait", async ({ page }) => {
     await moveMouseToSafePosition(page)
   }
 
-  await expect(page.locator(".popover")).toHaveCount(0)
+  // Use toPass to retry — WebKit may still be animating popovers away
+  await expect(async () => {
+    await expect(page.locator(".popover")).toHaveCount(0)
+  }).toPass({ timeout: 5_000 })
 })
 
 test("Popover updates position on window resize", async ({ page, dummyLink }) => {
@@ -260,9 +263,17 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Wait for the link inside the preview content to render (fetched async)
+  // Ensure the test-page result exists and hover it to trigger preview via
+  // mouseenter. Mouse events are locked for 100ms after search results
+  // render, so the hover retries via toPass until displayPreview fires and
+  // the fetched content appears in #preview-container.
+  const testPageCard = page.locator('.result-card[id*="test-page"]').first()
+  await expect(testPageCard).toBeVisible()
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
-  await expect(searchDummyLink).toBeVisible({ timeout: 30_000 })
+  await expect(async () => {
+    await testPageCard.hover()
+    await expect(searchDummyLink).toBeVisible()
+  }).toPass({ timeout: 30_000 })
   await searchDummyLink.scrollIntoViewIfNeeded()
   await searchDummyLink.hover()
 
