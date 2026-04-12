@@ -359,9 +359,22 @@ test.describe("Ghost placeholder text per mode", () => {
 })
 
 test.describe("Input styling", () => {
-  test("input has monospace font", async ({ page }) => {
+  test("input has normal font in plaintext mode", async ({ page }) => {
     const input = page.locator("#punctilio-input")
-    await expect(input).toHaveCSS("font-family", /monospace/)
+    await expect(input).not.toHaveClass(/monospace-input/)
+  })
+
+  test("input has monospace font in HTML mode", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    const input = page.locator("#punctilio-input")
+    await expect(input).toHaveClass(/monospace-input/)
+  })
+
+  test("input reverts to normal font when switching from HTML to plaintext", async ({ page }) => {
+    await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
+    await page.locator('.punctilio-mode-btn[data-mode="plaintext"]').click()
+    const input = page.locator("#punctilio-input")
+    await expect(input).not.toHaveClass(/monospace-input/)
   })
 })
 

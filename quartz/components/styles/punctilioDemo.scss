@@ -63,6 +63,12 @@ $panel-min-height: 200px;
     font-family: var(--font-main);
     background-color: var(--background);
 
+    &.monospace-input {
+      font-family: var(--font-monospace);
+      font-size: var(--font-size-code);
+      font-variant-ligatures: none;
+    }
+
     &::placeholder {
       color: var(--midground);
     }
