@@ -207,6 +207,11 @@ describe("DepGraph", () => {
       const leaves = graph.getLeafNodes("a")
       expect(leaves.size).toBe(0)
     })
+
+    it("returns empty set for non-existent start node", () => {
+      const leaves = graph.getLeafNodes("nonexistent")
+      expect(leaves.size).toBe(0)
+    })
   })
 
   describe("getLeafNodeAncestors", () => {

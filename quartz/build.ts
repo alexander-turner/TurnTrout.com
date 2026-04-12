@@ -46,6 +46,13 @@ type BuildData = {
 
 type FileEvent = "add" | "change" | "delete"
 
+function getFilePath(vfile: ProcessedContent[1]): FilePath {
+  if (!vfile.data.filePath) {
+    throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
+  }
+  return vfile.data.filePath
+}
+
 /**
  * Builds the Quartz site.
  * @param argv - The command-line arguments.
@@ -153,10 +160,7 @@ async function startServing(
   const contentMap = new Map<FilePath, ProcessedContent>()
   for (const content of initialContent) {
     const [, vfile] = content
-    if (!vfile.data.filePath) {
-      throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
-    }
-    contentMap.set(vfile.data.filePath, content)
+    contentMap.set(getFilePath(vfile), content)
   }
 
   const buildData: BuildData = {
@@ -232,12 +236,7 @@ async function partialRebuildFromEntrypoint(
       case "add":
         // add to cache when new file is added
         processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) => {
-          if (!vfile.data.filePath) {
-            throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
-          }
-          contentMap.set(vfile.data.filePath, [tree, vfile])
-        })
+        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
 
         // update the dep graph by asking all emitters whether they depend on this file
         for (const emitter of cfg.plugins.emitters) {
@@ -258,12 +257,7 @@ async function partialRebuildFromEntrypoint(
       case "change":
         // invalidate cache when file is changed
         processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) => {
-          if (!vfile.data.filePath) {
-            throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
-          }
-          contentMap.set(vfile.data.filePath, [tree, vfile])
-        })
+        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
 
         // only content files can have added/removed dependencies because of transclusions
         if (path.extname(fp) === ".md") {
@@ -460,10 +454,7 @@ async function rebuildFromEntrypoint(
     const parsedContent = await parseMarkdown(ctx, filesToRebuild)
     for (const content of parsedContent) {
       const [, vfile] = content
-      if (!vfile.data.filePath) {
-        throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
-      }
-      contentMap.set(vfile.data.filePath, content)
+      contentMap.set(getFilePath(vfile), content)
     }
 
     for (const fp of toRemove) {
