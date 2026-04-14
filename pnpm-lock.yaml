@@ -78,12 +78,6 @@ importers:
       '@napi-rs/simple-git':
         specifier: 0.1.22
         version: 0.1.22
-      '@types/flexsearch':
-        specifier: 0.7.6
-        version: 0.7.6
-      '@types/psl':
-        specifier: 1.11.0
-        version: 1.11.0
       '@types/unist':
         specifier: 3.0.3
         version: 3.0.3
@@ -361,9 +355,6 @@ importers:
       '@testing-library/jest-dom':
         specifier: 6.9.1
         version: 6.9.1
-      '@types/cheerio':
-        specifier: 1.0.0
-        version: 1.0.0
       '@types/clean-css':
         specifier: 4.2.11
         version: 4.2.11
@@ -2406,10 +2397,6 @@ packages:
   '@types/cacheable-request@6.0.3':
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
 
-  '@types/cheerio@1.0.0':
-    resolution: {integrity: sha512-zAaImHWoh5RY2CLgU2mvg3bl2k3F65B0N5yphuII3ythFLPmJhL7sj1RDu6gSxcgqHlETbr/lhA2OBY+WF1fXQ==}
-    deprecated: This is a stub types definition. cheerio provides its own type definitions, so you do not need this installed.
-
   '@types/clean-css@4.2.11':
     resolution: {integrity: sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw==}
 
@@ -2527,9 +2514,6 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
-  '@types/flexsearch@0.7.6':
-    resolution: {integrity: sha512-H5IXcRn96/gaDmo+rDl2aJuIJsob8dgOXDqf8K0t8rWZd1AFNaaspmRsElESiU+EWE33qfbFPgI0OC/B1g9FCA==}
-
   '@types/fs-extra@11.0.4':
     resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
 
@@ -2613,10 +2597,6 @@ packages:
 
   '@types/pretty-time@1.1.5':
     resolution: {integrity: sha512-5yl+BYwmnRWZb783W8YYoHXvPY8q/rp7ctHBVaGBB9RxlzGpHNJ72tGQMK7TrUSnxzl1dbDcBDuBCSbtfnSQGg==}
-
-  '@types/psl@1.11.0':
-    resolution: {integrity: sha512-OeASqmnreaSJyxwljqCZjRIf7jpbwswaqbSPahE99PZrizNAOXEl9HRWhXvCt3fkAc/WuF8wcZ6zkDHXaE7X4g==}
-    deprecated: This is a stub types definition. psl provides its own type definitions, so you do not need this installed.
 
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
@@ -11826,10 +11806,6 @@ snapshots:
       '@types/node': 22.13.8
       '@types/responselike': 1.0.3
 
-  '@types/cheerio@1.0.0':
-    dependencies:
-      cheerio: 1.2.0
-
   '@types/clean-css@4.2.11':
     dependencies:
       '@types/node': 22.13.8
@@ -11976,8 +11952,6 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-  '@types/flexsearch@0.7.6': {}
-
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
@@ -12068,10 +12042,6 @@ snapshots:
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/pretty-time@1.1.5': {}
-
-  '@types/psl@1.11.0':
-    dependencies:
-      psl: 1.15.0
 
   '@types/react-dom@19.2.3(@types/react@19.2.14)':
     dependencies:
