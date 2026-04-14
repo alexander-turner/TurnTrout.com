@@ -18,8 +18,12 @@ import {
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }, testInfo) => {
-  // Safari/WebKit is consistently slow for search operations in CI
-  test.slow(testInfo.project.name.includes("Safari"), "Safari/WebKit is slow for search in CI")
+  // Safari/WebKit is consistently slow for search operations in CI.
+  // Use setTimeout instead of test.slow() so individual tests can also use
+  // test.slow() without triggering no-duplicate-slow lint warnings.
+  if (testInfo.project.name.includes("Safari")) {
+    test.setTimeout(testInfo.timeout * 3)
+  }
 
   // Log any console errors
   page.on("pageerror", (err) => console.error(err))
@@ -204,6 +208,7 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
 
   const previewContainer = page.locator("#preview-container")
 
+  // eslint-disable-next-line playwright/no-conditional-in-test -- viewport varies by project config
   const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
@@ -319,7 +324,8 @@ test("Preview element persists after closing and reopening search", async ({ pag
 
   // Search again and trigger preview
   await search(page, "Steering")
-  await waitForArticlePreview(page)
+  const preview = await waitForArticlePreview(page)
+  await expect(preview).toBeVisible()
 })
 
 test.describe("Search accuracy", () => {
