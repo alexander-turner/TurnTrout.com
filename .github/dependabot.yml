@@ -53,7 +53,7 @@ updates:
     ignore:
       # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
       - dependency-name: "pnpm/action-setup"
-        versions: [">=6"]
+        versions: ["6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/setup-visual-testing-env"
     schedule:
