@@ -180,7 +180,7 @@ test.describe("Local Link Navigation", () => {
     })
 
     const currentUrl = page.url()
-    await page.click("#blank-link")
+    await page.locator("#blank-link").click()
 
     // The local link with target=_blank should not be intercepted
     expect(page.url()).toBe(currentUrl)
@@ -766,7 +766,7 @@ test.describe("Critical CSS", () => {
       document.body.appendChild(link)
     })
 
-    await triggerAndWaitForSPANav(page, () => page.click("#design-link"))
+    await triggerAndWaitForSPANav(page, () => page.locator("#design-link").click())
 
     await expect(cssLocator).toHaveCount(0)
   })
@@ -797,7 +797,7 @@ test.describe("Network Behavior", () => {
     }, finalAnchorId)
 
     // Click the link to trigger hash navigation
-    await page.click("#link-to-anchor")
+    await page.locator("#link-to-anchor").click()
 
     // Wait for the URL to reflect the hash change
     await page.waitForURL(`**/*#${finalAnchorId}`)

@@ -116,7 +116,6 @@ runs:
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           playwright-${{ runner.os }}-
-        save-always: true
 
     - name: Cache Puppeteer browsers
       if: inputs.cache-puppeteer == 'true'

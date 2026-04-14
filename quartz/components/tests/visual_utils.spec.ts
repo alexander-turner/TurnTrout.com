@@ -43,7 +43,7 @@ test.describe("wrapH1SectionsInSpans", () => {
   test("wraps each H1 and its subsequent content into a span", async ({ page }) => {
     await wrapH1SectionsInSpans(page)
 
-    const html = await page.innerHTML("body")
+    const html = await page.locator("body").innerHTML()
     expect(html).toContain('<span id="h1-span-first-h1">')
     expect(html).toContain('<span id="h1-span-second-h1">')
     expect(html).toContain('<span id="h1-span-third-h1">')
@@ -64,13 +64,13 @@ test.describe("wrapH1SectionsInSpans", () => {
     await wrapH1SectionsInSpans(page)
     const initialSpans = page.locator("span[id^='h1-span-']")
     await expect(initialSpans).toHaveCount(4)
-    const initialHtml = await page.innerHTML("body")
+    const initialHtml = await page.locator("body").innerHTML()
 
     // Second call
     await wrapH1SectionsInSpans(page)
     const finalSpans = page.locator("span[id^='h1-span-']")
     await expect(finalSpans).toHaveCount(4)
-    const finalHtml = await page.innerHTML("body")
+    const finalHtml = await page.locator("body").innerHTML()
 
     // The DOM should not have changed
     expect(finalHtml).toEqual(initialHtml)
@@ -107,7 +107,7 @@ test.describe("wrapH1SectionsInSpans", () => {
 
     await wrapH1SectionsInSpans(page)
 
-    const html = await page.innerHTML("body")
+    const html = await page.locator("body").innerHTML()
     // The main heading gets its own span
     expect(html).toContain('<span id="h1-span-main-heading">')
     // The footnote section gets its own span
@@ -141,10 +141,10 @@ test.describe("wrapH1SectionsInSpans", () => {
     `)
 
     await wrapH1SectionsInSpans(page)
-    const initialHtml = await page.innerHTML("body")
+    const initialHtml = await page.locator("body").innerHTML()
 
     await wrapH1SectionsInSpans(page)
-    const finalHtml = await page.innerHTML("body")
+    const finalHtml = await page.locator("body").innerHTML()
 
     expect(finalHtml).toEqual(initialHtml)
     await expect(page.locator("span[id^='h1-span-']")).toHaveCount(2)
