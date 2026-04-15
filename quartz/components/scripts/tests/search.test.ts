@@ -710,14 +710,12 @@ describe("navigateWithSearchTerm", () => {
     expect(calledUrl.hash).toBe("#:~:text=test%20query")
   })
 
-  it("should log error when search term is empty", () => {
+  it("should throw when search term is empty", () => {
     const href = "https://example.com/page"
     const searchTerm = ""
 
-    navigateWithSearchTerm(href, searchTerm)
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
+    expect(() => navigateWithSearchTerm(href, searchTerm)).toThrow(
+      "[navigateWithSearchTerm] No search term available for result card navigation",
     )
   })
 

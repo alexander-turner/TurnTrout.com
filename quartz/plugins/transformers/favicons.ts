@@ -234,7 +234,6 @@ export async function readFaviconUrls(): Promise<Map<string, string>> {
     return urlMap
   } catch (error) {
     logger.warn(`Error reading favicon URLs file: ${error}`)
-    console.warn(error)
     return new Map<string, string>()
   }
 }

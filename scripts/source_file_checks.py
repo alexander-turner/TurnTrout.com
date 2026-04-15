@@ -354,7 +354,10 @@ def check_sequence_relationships(
         key for key, value in sequence_data.items() if value is current_mapping
     }
 
-    for key, target_field_prefix in (("next", "prev"), ("prev", "next")):
+    direction_pairs: tuple[
+        tuple[SequenceDirection, str], tuple[SequenceDirection, str]
+    ] = (("next", "prev"), ("prev", "next"))
+    for key, target_field_prefix in direction_pairs:
         slug_field = f"{key}-post-slug"
         if slug_field not in current_mapping:
             continue
@@ -381,7 +384,7 @@ def check_sequence_relationships(
                 current_mapping,
                 target_mapping,
                 target_slug,
-                key,  # type: ignore[arg-type]
+                key,
             )
         )
 
