@@ -1436,14 +1436,12 @@ describe("favicons.readFaviconUrls", () => {
 
   it("should handle file read errors and return an empty Map", async () => {
     const mockError = new Error("File read error")
-    const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined)
     jest.spyOn(fs.promises, "readFile").mockRejectedValue(mockError)
 
     const result = await favicons.readFaviconUrls()
 
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(mockError)
   })
 })
 

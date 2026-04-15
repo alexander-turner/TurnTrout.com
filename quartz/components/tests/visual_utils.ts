@@ -367,12 +367,7 @@ export async function getNextElementMatchingSelector(
 export async function openSearch(page: Page) {
   // After SPA navigation (e.g. goBack), onNav() re-registers all search
   // event handlers asynchronously. Wait for the flag it sets at completion.
-  await page.waitForFunction(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (window as any).__searchHandlersReady === true,
-    null,
-    { timeout: 15_000 },
-  )
+  await page.waitForFunction(() => window.__searchHandlersReady === true, null, { timeout: 15_000 })
 
   const searchContainer = page.locator("#search-container")
   const searchBar = page.locator("#search-bar")
@@ -409,12 +404,7 @@ export async function search(page: Page, term: string) {
 
   // Wait for the search index to load before filling (avoids resetting
   // the 400ms debounce timer with repeated fill() retries).
-  await page.waitForFunction(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => (window as any).__searchIndexReady === true,
-    null,
-    { timeout: 30_000 },
-  )
+  await page.waitForFunction(() => window.__searchIndexReady === true, null, { timeout: 30_000 })
 
   // If results are already displayed from a previous search, clear them
   // directly via the DOM. We can't rely on the app's debounced input handler
