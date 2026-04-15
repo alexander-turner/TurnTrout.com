@@ -156,6 +156,8 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    outputs:
+      lp-pending: ${{ steps.lp-check.outputs.lp-pending }}
     steps:
       - name: Wait for test workflows to succeed
         env:
@@ -207,6 +209,7 @@ jobs:
           done
 
       - name: Verify Lost Pixel visual changes
+        id: lp-check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -283,9 +286,9 @@ jobs:
 
           # Extract counts for changed, added, and deleted images
           # Handles both "N changed" and "Differences: N" formats
-          CHANGED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
-          ADDED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
-          DELETED=$(echo "$PARSE_SOURCE" | grep -oP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
+          CHANGED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
+          ADDED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
+          DELETED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
 
           # If no counts parsed, use conclusion to decide
           if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
@@ -293,10 +296,11 @@ jobs:
               echo "Lost Pixel concluded with success and no parseable counts — treating as 0 differences."
               CHANGED=0; ADDED=0; DELETED=0
             else
-              echo "::error::Could not parse any counts from Lost Pixel output (conclusion: $LP_CONCLUSION)."
+              echo "::warning::Could not parse counts from Lost Pixel output (conclusion: $LP_CONCLUSION). Will re-check after delay."
               echo "Raw summary: $SUMMARY"
               [ -n "${LP_TEXT:-}" ] && echo "Raw text: $LP_TEXT"
-              exit 1
+              echo "lp-pending=true" >> "$GITHUB_OUTPUT"
+              exit 0
             fi
           fi
 
@@ -307,14 +311,44 @@ jobs:
 
           echo "Visual changes: $CHANGED changed, $ADDED added, $DELETED deleted (total: $TOTAL)"
           if [ "$TOTAL" -ge 10 ]; then
-            echo "::error::Too many visual differences ($TOTAL). Maximum allowed: 9. Breakdown: $CHANGED changed, $ADDED added, $DELETED deleted"
+            echo "::warning::Visual differences ($TOTAL) exceed auto-accept threshold (9). Waiting for Lost Pixel approval. Breakdown: $CHANGED changed, $ADDED added, $DELETED deleted"
+            echo "lp-pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Visual differences within acceptable range (< 10)"
+          fi
+
+  # Re-check LP approval after a delay (environment wait timer avoids runner costs).
+  # One-time setup: create a "delayed-lp-check" environment in repo Settings >
+  # Environments with a 360-minute (6h) wait timer. Anyone with write access can
+  # click "Review deployments" in the Actions UI to approve early.
+  verify-lp-approval:
+    needs: verify-test-results
+    if: needs.verify-test-results.outputs.lp-pending == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: delayed-lp-check
+    steps:
+      - name: Re-check Lost Pixel approval status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Checking Lost Pixel status for commit ${{ github.sha }}..."
+          LP_CONCLUSION=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+            --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | sort_by(.started_at) | last | .conclusion // empty' \
+            2>/dev/null || echo "")
+
+          echo "Lost Pixel conclusion: $LP_CONCLUSION"
+          if [ "$LP_CONCLUSION" = "success" ]; then
+            echo "Lost Pixel changes have been approved!"
+          else
+            echo "::error::Lost Pixel changes still not approved (conclusion: ${LP_CONCLUSION:-pending}). Approve changes at https://app.lost-pixel.com/ and re-run this job."
             exit 1
           fi
-          echo "Visual differences within acceptable range (< 10)"
 
   deploy:
-    needs: [prepare-deploy, verify-test-results]
-    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || needs.verify-test-results.result == 'success') }}
+    needs: [prepare-deploy, verify-test-results, verify-lp-approval]
+    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || (needs.verify-test-results.result == 'success' && (needs.verify-lp-approval.result == 'success' || needs.verify-lp-approval.result == 'skipped'))) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
