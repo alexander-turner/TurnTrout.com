@@ -231,9 +231,9 @@ jobs:
 
   lint:
     needs: [update-dates, detect-changes, autofix]
-    # Run if detect-changes found changes, and not a deepsource PR
-    # update-dates is allowed to be skipped (runs only on push to main by users)
-    # Skip if update-dates pushed changes (the new commit will trigger a fresh workflow)
+    # Run if detect-changes found changes, and not a deepsource PR.
+    # update-dates is allowed to be skipped (runs only on push to main by users).
+    # always() ensures this runs even when update-dates or autofix are skipped.
     if: >
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.content == 'true' ||
@@ -241,20 +241,19 @@ jobs:
        needs.detect-changes.outputs.styles == 'true' ||
        needs.detect-changes.outputs.source-checks == 'true') &&
       always() && !cancelled() &&
-      needs.detect-changes.result == 'success' &&
-      needs.update-dates.outputs.pushed != 'true'
+      needs.detect-changes.result == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      # When autofix ran (PRs/dev), check out the branch tip to get any fix commit.
-      # Otherwise (main/merge_group), use the default SHA that triggered the workflow.
+      # Check out branch tip when autofix or update-dates pushed commits, so lint
+      # sees the final state. Otherwise use the default SHA that triggered the workflow.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result == 'success'
+        if: needs.autofix.result == 'success' || needs.update-dates.outputs.pushed == 'true'
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result != 'success'
+        if: needs.autofix.result != 'success' && needs.update-dates.outputs.pushed != 'true'
 
       - name: Setup site
         uses: ./.github/actions/setup-site
