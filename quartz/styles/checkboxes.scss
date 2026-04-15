@@ -62,10 +62,14 @@ input.checkbox-toggle {
   }
 
   &:checked {
+    /* stylelint-disable declaration-block-no-duplicate-custom-properties --
+       Fallback for browsers without light-dark() support */
+    --checkbox-color: color-mix(in srgb, var(--green), var(--light) 20%);
     --checkbox-color: light-dark(
       color-mix(in srgb, var(--green), var(--light) 20%),
       color-mix(in srgb, var(--green), var(--dark) 45%)
     );
+    /* stylelint-enable declaration-block-no-duplicate-custom-properties */
 
     background-color: var(--checkbox-color);
     border-color: var(--checkbox-color);

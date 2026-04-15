@@ -11,10 +11,14 @@
 
 .admonition {
   --border: color-mix(in srgb, var(--color) 60%, var(--background));
+  /* stylelint-disable declaration-block-no-duplicate-custom-properties --
+     Fallback for browsers without light-dark() support */
+  --bg: color-mix(in srgb, var(--color) 4%, var(--background));
   --bg: light-dark(
     color-mix(in srgb, var(--color) 4%, var(--background)),
     color-mix(in srgb, var(--color) 2%, var(--background))
   );
+  /* stylelint-enable declaration-block-no-duplicate-custom-properties */
   --admonition-icon-note: url("https://assets.turntrout.com/static/icons/note.svg");
   --admonition-icon-abstract: url("https://assets.turntrout.com/static/icons/abstract.svg");
   --admonition-icon-info: url("https://assets.turntrout.com/static/icons/info.svg");

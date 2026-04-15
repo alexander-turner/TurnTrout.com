@@ -17,6 +17,7 @@ import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
 import {
   createTranscludeSourceAnchor,
+  optimizeLcpImage,
   pageResources,
   renderPage,
   setBlockTransclusion,
@@ -847,5 +848,98 @@ describe("renderPage helpers", () => {
     const originalChildren = node.children
     setHeaderTransclusion(node, page, "a/b" as FullSlug, "x/y" as FullSlug, "missing-section")
     expect(node.children).toEqual(originalChildren)
+  })
+})
+
+describe("optimizeLcpImage", () => {
+  it.each([
+    { name: "no article tag", html: "<html><head></head><body><img src='x.avif'></body></html>" },
+    {
+      name: "no closing article tag",
+      html: '<html><head></head><body><article><img src="x.avif"></body></html>',
+    },
+    {
+      name: "no images in article",
+      html: "<html><head></head><body><article>text</article></body></html>",
+    },
+    {
+      name: "only favicon images",
+      html: '<html><head></head><body><article><img class="favicon" src="icon.svg"></article></body></html>',
+    },
+    {
+      name: "image with no src",
+      html: '<html><head></head><body><article><img alt="no source"></article></body></html>',
+    },
+  ])("returns HTML unchanged when $name", ({ html }) => {
+    expect(optimizeLcpImage(html)).toBe(html)
+  })
+
+  it("sets loading='eager' and fetchpriority='high' on first image with loading='lazy'", () => {
+    const html =
+      '<html><head></head><body><article><img src="img.avif" loading="lazy" width="100"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('loading="eager"')
+    expect(result).toContain('fetchpriority="high"')
+    expect(result).not.toContain('loading="lazy"')
+  })
+
+  it("adds loading='eager' and fetchpriority='high' when attributes are missing", () => {
+    const html =
+      '<html><head></head><body><article><img src="img.avif" width="100"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('loading="eager"')
+    expect(result).toContain('fetchpriority="high"')
+  })
+
+  it("adds preload link in <head> for first content image", () => {
+    const html =
+      '<html><head></head><body><article><img src="https://cdn.example.com/hero.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain(
+      '<link rel="preload" href="https://cdn.example.com/hero.avif" as="image"/>',
+    )
+  })
+
+  it("does not duplicate preload link when already present", () => {
+    const html =
+      '<html><head><link rel="preload" href="img.avif" as="image"/></head><body><article><img src="img.avif" loading="eager" fetchpriority="high"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    const preloadCount = (result.match(/rel="preload" href="img.avif"/g) ?? []).length
+    expect(preloadCount).toBe(1)
+  })
+
+  it("skips favicon images and optimizes the next content image", () => {
+    const html =
+      '<html><head></head><body><article><img class="favicon" src="icon.svg"><img src="hero.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    // Favicon should be unchanged
+    expect(result).toContain('class="favicon" src="icon.svg"')
+    // Second image should be optimized
+    expect(result).toContain('src="hero.avif" loading="eager"')
+    expect(result).toContain('fetchpriority="high"')
+  })
+
+  it("only optimizes the first content image, not subsequent ones", () => {
+    const html =
+      '<html><head></head><body><article><img src="first.avif" loading="lazy"><img src="second.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('src="first.avif" loading="eager"')
+    expect(result).toContain('src="second.avif" loading="lazy"')
+  })
+
+  it("replaces existing fetchpriority value", () => {
+    const html =
+      '<html><head></head><body><article><img src="img.avif" loading="lazy" fetchpriority="low"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('fetchpriority="high"')
+    expect(result).not.toContain('fetchpriority="low"')
+  })
+
+  it("ignores images outside the article boundary", () => {
+    const html =
+      '<html><head></head><body><article>no images here</article><img src="outside.avif" loading="lazy"></body></html>'
+    const result = optimizeLcpImage(html)
+    expect(result).toContain('loading="lazy"')
+    expect(result).not.toContain('loading="eager"')
   })
 })

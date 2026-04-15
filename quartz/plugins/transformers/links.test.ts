@@ -17,7 +17,7 @@ function processHtml(
     prettyLinks?: boolean
     openLinksInNewTab?: boolean
   } = {},
-): Promise<{ html: string; links: readonly string[]; firstImageUrl?: string }> {
+): Promise<{ html: string; links: readonly string[] }> {
   const slug = (opts.slug ?? "test-page") as FullSlug
   const allSlugs = opts.allSlugs ?? (["test-page", "other-page"] as FullSlug[])
 
@@ -42,7 +42,6 @@ function processHtml(
   return processor.process({ value: html, data: { slug } }).then((file) => ({
     html: String(file),
     links: (file.data.links as readonly string[]) ?? [],
-    firstImageUrl: file.data.firstImageUrl as string | undefined,
   }))
 }
 
@@ -183,14 +182,15 @@ describe("CrawlLinks anchor processing", () => {
 })
 
 describe("CrawlLinks media processing", () => {
-  it("marks first image as eager LCP candidate, second as lazy", async () => {
+  it("marks all images as lazy (LCP promotion handled by optimizeLcpImage)", async () => {
     const result = await processHtml(
       '<img src="https://example.com/1.avif" alt="first"><img src="https://example.com/2.avif" alt="second">',
     )
-    expect(result.html).toContain('loading="eager"')
-    expect(result.html).toContain('fetchpriority="high"')
-    expect(result.html).toContain('loading="lazy"')
-    expect(result.firstImageUrl).toBe("https://example.com/1.avif")
+    expect(result.html).not.toContain('loading="eager"')
+    expect(result.html).not.toContain('fetchpriority="high"')
+    // Both images should be lazy
+    const lazyCount = (result.html.match(/loading="lazy"/g) ?? []).length
+    expect(lazyCount).toBe(2)
   })
 
   it.each(["video", "audio", "iframe"])("marks <%s> as lazy-loaded", async (tag) => {
