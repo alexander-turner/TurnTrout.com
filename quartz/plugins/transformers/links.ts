@@ -152,30 +152,20 @@ function processAnchor(
 /**
  * Set loading strategy and resolve src for media elements (img, video, audio, iframe).
  *
- * The first `<img>` is marked eager (likely LCP element) and its URL stored
- * for `<link rel="preload">` in `<head>`. All other media get `loading="lazy"`.
- * Relative `src` URLs are resolved via `transformLink`.
- *
- * @returns Updated `seenFirstContentImage` flag.
+ * All media get `loading="lazy"`. The first content image is promoted to
+ * `loading="eager"` with `fetchpriority="high"` by {@link optimizeLcpImage}
+ * in the render pipeline, which also adds the `<link rel="preload">`.
  */
 function processMedia(
   node: Element,
   opts: Options,
   file: VFile,
-  seenFirstContentImage: boolean,
   transformOptions: TransformOptions,
-): boolean {
-  if (typeof node.properties.src !== "string") return seenFirstContentImage
+): void {
+  if (typeof node.properties.src !== "string") return
 
   if (opts.lazyLoad) {
-    if (node.tagName === "img" && !seenFirstContentImage) {
-      seenFirstContentImage = true
-      node.properties.loading = "eager"
-      node.properties.fetchpriority = "high"
-      file.data.firstImageUrl = node.properties.src
-    } else {
-      node.properties.loading = "lazy"
-    }
+    node.properties.loading = "lazy"
   }
 
   const src = node.properties.src as string
@@ -186,8 +176,6 @@ function processMedia(
       transformOptions,
     )
   }
-
-  return seenFirstContentImage
 }
 
 export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> = (userOpts) => {
@@ -200,7 +188,6 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
           return (tree: Root, file) => {
             const curSlug = simplifySlug(file.data.slug as FullSlug)
             const outgoing: Set<SimpleSlug> = new Set()
-            let seenFirstContentImage = false
 
             const transformOptions: TransformOptions = {
               strategy: opts.markdownLinkResolution,
@@ -219,13 +206,7 @@ export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> =
                   outgoing,
                 )
               } else if (MEDIA_TAGS.has(node.tagName)) {
-                seenFirstContentImage = processMedia(
-                  node,
-                  opts,
-                  file,
-                  seenFirstContentImage,
-                  transformOptions,
-                )
+                processMedia(node, opts, file, transformOptions)
               }
             })
 

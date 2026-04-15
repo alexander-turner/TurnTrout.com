@@ -168,10 +168,9 @@ export default (() => {
         <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
         <link rel="preload" href="/index.css" as="style" spa-preserve />
-        {/* Preload the first content image (likely LCP element) so the browser
-            starts downloading it immediately instead of waiting to discover the
-            <img> tag deep in the HTML body. */}
-        {fileData.firstImageUrl && <link rel="preload" href={fileData.firstImageUrl} as="image" />}
+        {/* First content image preload is handled by optimizeLcpImage() in
+            the render pipeline — it post-processes the final HTML to add a
+            <link rel="preload"> for the LCP image on every page. */}
         {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <link rel="stylesheet" href="/index.css" spa-preserve />
         {headJsx}
