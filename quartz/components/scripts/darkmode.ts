@@ -128,6 +128,7 @@ function onBeforePrint() {
 }
 
 function onAfterPrint() {
+  /* istanbul ignore next -- print events not available in jsdom */
   if (themeBeforePrint) {
     document.documentElement.setAttribute("data-theme", themeBeforePrint)
   }

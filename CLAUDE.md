@@ -99,8 +99,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **`config/quartz/quartz.config.ts`**: Main configuration defining transformer/emitter/filter pipeline
 - **`config/quartz/quartz.layout.ts`**: Page layout and component arrangement
 - **`config/typescript/tsconfig.json`**: Strict TypeScript config with Preact JSX
-- **`jest.config.js`**: Test config enforcing 100% coverage thresholds (at root due to Jest's module resolution requirements)
-- **`.cursorrules`**: Coding guidelines (minimal diffs, derive style from context, security-first)
+- **`config/javascript/jest.config.js`**: Test config enforcing 100% coverage thresholds (see `coveragePathIgnorePatterns` for excluded paths)
 
 ## Git Workflow
 
@@ -126,7 +125,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 ## Testing Requirements
 
 - **Zero flakiness tolerance**: Every CI check must pass every time. Prioritize root-cause fixes for anything we control (fix the test, fix the timeout, fix the code). For external services outside our control (e.g. Cloudflare API 504s), add retry logic as a last resort. No flakiness is acceptable regardless of source.
-- **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest
+- **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest for non-excluded files (see `coveragePathIgnorePatterns` in jest config)
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
 - Visual regression tests use Playwright with `lost-pixel`
@@ -221,7 +220,7 @@ After pushing to main:
 
 ## Design Philosophy
 
-Per `.cursorrules` and `design.md`:
+Per `design.md`:
 
 - Minimal, targeted changes only
 - Verify all information before generating code

@@ -8,6 +8,7 @@ export function isLocalUrl(href: string): boolean {
   try {
     // Provide the current location as the base URL for resolving protocol-relative URLs
     const url = new URL(href, window.location.href)
+    /* istanbul ignore next -- SSR guard: typeof window is always defined in jsdom */
     if (typeof window !== "undefined" && window.location) {
       if (window.location.origin === url.origin) {
         return true

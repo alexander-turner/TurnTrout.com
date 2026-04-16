@@ -257,7 +257,7 @@ describe("smallcaps-copy", () => {
 
   describe("initSmallCapsCopy", () => {
     it("registers copy and cut event listeners", () => {
-      const spy = jest.spyOn(document, "addEventListener")
+      const spy = jest.spyOn(document, "addEventListener" as never) as unknown as jest.Mock
       initSmallCapsCopy()
       expect(spy).toHaveBeenCalledWith("copy", handleSmallCapsCopy)
       expect(spy).toHaveBeenCalledWith("cut", handleSmallCapsCopy)

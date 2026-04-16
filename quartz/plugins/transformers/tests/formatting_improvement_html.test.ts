@@ -255,6 +255,22 @@ describe("HTMLFormattingImprovement", () => {
     )
   })
 
+  describe("non-breaking spaces around slashes and ampersands", () => {
+    it.each([
+      ["dog/cat", `dog${NBSP}/${NBSP}cat`],
+      ["3/month", `3${NBSP}/${NBSP}month`],
+    ])("should use nbsp around slashes: %s", (input, expected) => {
+      const result = spacesAroundSlashes(input)
+      expect(result).toBe(expected)
+    })
+
+    it("should use nbsp around ampersand from plus", () => {
+      const input = "<p>A+B</p>"
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(`<p>A${NBSP}&#x26;${NBSP}B</p>`)
+    })
+  })
+
   describe("spacesAroundSlashes marker invariance", () => {
     // Testing marker invariance for spacesAroundSlashes
     // Original error: "at : / , , ." became "at :  / , , ." (extra space)
@@ -792,6 +808,22 @@ describe("HTMLFormattingImprovement", () => {
     ])("should format arrows correctly: %s", (input, expected) => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
+    })
+
+    it.each([
+      // Spaces around arrows should be non-breaking
+      ["<p>word -> arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      ["<p>word->arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // At start of line, no nbsp before but nbsp after
+      ["<p>-> arrow</p>", `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // Multiple arrows
+      [
+        "<p>-> first --> second</p>",
+        `<p><span class="right-arrow">⭢</span>${NBSP}first${NBSP}<span class="right-arrow">⭢</span>${NBSP}second</p>`,
+      ],
+    ])("should use non-breaking spaces around arrows: %s", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
     })
   })
 })
@@ -2102,6 +2134,23 @@ describe("HTMLFormattingImprovement plugin", () => {
         '<p>The mapping <span class="katex">π: C → A</span> shows that <span class="monospace-arrow">→</span> arrows work differently</p>'
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
+    })
+
+    it.each(arrowsToWrap.map((arrow) => [arrow]))(
+      "should use non-breaking spaces around %s arrow",
+      (arrow) => {
+        const input = `<p>word ${arrow} next</p>`
+        const expected = `<p>word${NBSP}<span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      },
+    )
+
+    it("should use nbsp after arrow at start of text", () => {
+      const input = "<p>→ next</p>"
+      const expected = `<p><span class="monospace-arrow">→</span>${NBSP}next</p>`
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
     })
   })
 })

@@ -20,6 +20,7 @@ function processBacklinkTitle(title: string): Parent {
 
 function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
   htmlAst.children.forEach((node: RootContent) => {
+    /* istanbul ignore else -- fromHtml only produces text/element nodes */
     if (node.type === "text") {
       processSmallCaps(node.value, parent)
     } else if (node.type === "element") {
