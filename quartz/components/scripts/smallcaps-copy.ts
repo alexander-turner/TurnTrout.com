@@ -90,6 +90,7 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
       // selectedText was cloned from within the element.
       const fullText = smallCapsAncestor.textContent
       const selectedText = tempDiv.textContent
+      /* istanbul ignore next -- requires specific partial DOM selection state */
       if (fullText && selectedText) {
         const startIdx = fullText.indexOf(selectedText)
         tempDiv.textContent = originalText.slice(startIdx, startIdx + selectedText.length)

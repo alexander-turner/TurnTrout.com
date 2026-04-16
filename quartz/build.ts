@@ -46,6 +46,13 @@ type BuildData = {
 
 type FileEvent = "add" | "change" | "delete"
 
+function getFilePath(vfile: ProcessedContent[1]): FilePath {
+  if (!vfile.data.filePath) {
+    throw new Error(`Parsed file missing filePath: ${vfile.path ?? "unknown"}`)
+  }
+  return vfile.data.filePath
+}
+
 /**
  * Builds the Quartz site.
  * @param argv - The command-line arguments.
@@ -76,7 +83,7 @@ async function buildQuartz(argv: Argv, mut: Mutex, clientRefresh: () => void) {
     console.log(`  Emitters: ${pluginNames("emitters").join(", ")}`)
   }
 
-  let parsedFiles: ProcessedContent[] = []
+  let parsedFiles: ProcessedContent[]
   const dependencies: Record<string, DepGraph<FilePath> | null> = {}
 
   const release = await mut.acquire()
@@ -153,7 +160,7 @@ async function startServing(
   const contentMap = new Map<FilePath, ProcessedContent>()
   for (const content of initialContent) {
     const [, vfile] = content
-    contentMap.set(vfile.data.filePath || ("" as FilePath), content)
+    contentMap.set(getFilePath(vfile), content)
   }
 
   const buildData: BuildData = {
@@ -229,9 +236,7 @@ async function partialRebuildFromEntrypoint(
       case "add":
         // add to cache when new file is added
         processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) =>
-          contentMap.set(vfile.data.filePath || ("" as FilePath), [tree, vfile]),
-        )
+        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
 
         // update the dep graph by asking all emitters whether they depend on this file
         for (const emitter of cfg.plugins.emitters) {
@@ -252,9 +257,7 @@ async function partialRebuildFromEntrypoint(
       case "change":
         // invalidate cache when file is changed
         processedFiles = await parseMarkdown(ctx, [fp])
-        processedFiles.forEach(([tree, vfile]) =>
-          contentMap.set(vfile.data.filePath || ("" as FilePath), [tree, vfile]),
-        )
+        processedFiles.forEach(([tree, vfile]) => contentMap.set(getFilePath(vfile), [tree, vfile]))
 
         // only content files can have added/removed dependencies because of transclusions
         if (path.extname(fp) === ".md") {
@@ -300,7 +303,7 @@ async function partialRebuildFromEntrypoint(
         }
 
         const files = [...contentMap.values()].filter(
-          ([, vfile]) => !toRemove.has(vfile.data.filePath || ("" as FilePath)),
+          ([, vfile]) => vfile.data.filePath && !toRemove.has(vfile.data.filePath),
         )
 
         const emittedFps = await emitter.emit(ctx, files, staticResources)
@@ -451,7 +454,7 @@ async function rebuildFromEntrypoint(
     const parsedContent = await parseMarkdown(ctx, filesToRebuild)
     for (const content of parsedContent) {
       const [, vfile] = content
-      contentMap.set(vfile.data.filePath || ("" as FilePath), content)
+      contentMap.set(getFilePath(vfile), content)
     }
 
     for (const fp of toRemove) {

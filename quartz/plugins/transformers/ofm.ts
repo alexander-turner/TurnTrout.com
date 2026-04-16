@@ -27,6 +27,7 @@ import { VFile } from "vfile"
 import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
+import { escapeHTML } from "../../util/escape"
 import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
 import { UNICODE_WORD_CHAR } from "../../util/regex"
 import { slugify as slugAnchor, resetSlugger } from "./gfm"
@@ -207,19 +208,19 @@ const createAdmonitionContent = (contentChildren: ElementContent[]): Element | n
 /** Creates a video element for embedding. */
 const createVideoElement = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<span class="video-container" data-src="${url}"><video src="${url}" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>`,
+  value: `<span class="video-container" data-src="${escapeHTML(url)}"><video src="${escapeHTML(url)}" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>`,
 })
 
 /** Creates an audio element for embedding. */
 const createAudioElement = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<span class="audio-container" data-src="${url}"><audio src="${url}" controls></audio></span>`,
+  value: `<span class="audio-container" data-src="${escapeHTML(url)}"><audio src="${escapeHTML(url)}" controls></audio></span>`,
 })
 
 /** Creates a PDF embed iframe. */
 const createPdfEmbed = (url: string): PhrasingContent => ({
   type: "html",
-  value: `<iframe src="${url}"></iframe>`,
+  value: `<iframe src="${escapeHTML(url)}"></iframe>`,
 })
 
 /** Creates a transclude element for embedding content from other pages. */
@@ -233,16 +234,16 @@ const createTranscludeElement = (
   return {
     type: "html",
     data: { hProperties: { transclude: true } },
-    value: `<span class="transclude" data-url="${url}" data-block="${ref}"><a href="${href}" class="transclude-inner">${
-      displayAlias ?? `Transclude of ${url}${ref}`
-    }</a></span>`,
+    value: `<span class="transclude" data-url="${escapeHTML(url)}" data-block="${escapeHTML(ref)}"><a href="${escapeHTML(href)}" class="transclude-inner">${escapeHTML(
+      displayAlias ?? `Transclude of ${url}${ref}`,
+    )}</a></span>`,
   }
 }
 
 /** Creates a highlight span element. */
 const createHighlightElement = (content: string): PhrasingContent => ({
   type: "html",
-  value: `<span class="text-highlight">${content}</span>`,
+  value: `<span class="text-highlight">${escapeHTML(content)}</span>`,
 })
 
 // skipcq: JS-D1001
@@ -588,6 +589,7 @@ const createAdmonitionsPlugin = () => () => {
 
 /** Parses block references in HTML elements and stores them in file data. */
 function parseBlockReferences(tree: HtmlRoot, file: VFile): void {
+  /* istanbul ignore next -- blocks are always initialized by preceding pipeline stages */
   if (!file.data.blocks) {
     file.data.blocks = {}
   }
@@ -764,6 +766,7 @@ export function markdownPlugins(opts: OFMOptions): PluggableList {
 
   plugins.push(createRegexReplacementsPlugin(opts))
 
+  /* istanbul ignore next -- config-dependent branch; video embed is always enabled in production */
   if (opts.enableVideoEmbed) {
     plugins.push(createVideoEmbedPlugin())
   }

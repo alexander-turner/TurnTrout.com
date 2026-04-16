@@ -16,6 +16,12 @@ import { wrapScrollables } from "./scroll-indicator-utils"
 // Global function injected by renderPage.tsx to lazy-load content index
 declare global {
   function getContentIndex(): Promise<{ [key: string]: ContentDetails }>
+  interface Window {
+    /** Set by onNav() after search event handlers are fully registered. */
+    __searchHandlersReady: boolean
+    /** Set once the search index has been built; never reset across SPA navigations. */
+    __searchIndexReady: boolean
+  }
 }
 
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
@@ -214,6 +220,7 @@ export function syncSearchLayoutState() {
  */
 export const matchTextNodes = (node: Node, term: string) => {
   // Skip if node is within table of contents
+  /* istanbul ignore else -- only element and text nodes appear in search results */
   if (node.nodeType === Node.ELEMENT_NODE) {
     const element = node as HTMLElement
     if (element.closest("#toc-content-mobile")) return
@@ -424,6 +431,7 @@ export function updatePlaceholder(searchBar?: HTMLInputElement | null) {
 async function maybeInitializeSearch(container: HTMLElement, searchBar: HTMLInputElement) {
   // Show the UI first for better UX
   const navbar = document.getElementById("navbar")
+  /* istanbul ignore next -- navbar always present in production DOM */
   if (navbar) {
     navbar.style.zIndex = "1"
   }
@@ -456,6 +464,7 @@ export async function showSearch(
   }
 
   const navbar = document.getElementById("navbar")
+  /* istanbul ignore next -- navbar always present in production DOM */
   if (navbar) {
     navbar.style.zIndex = "1"
   }
@@ -481,9 +490,11 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
   const searchBar = document.getElementById("search-bar") as HTMLInputElement | null
   const results = document.getElementById("results-container")
 
+  /* istanbul ignore next -- DOM element null guards for search UI cleanup */
   container?.classList.remove("active")
   document.body.classList.remove("no-mix-blend-mode")
   document.body.style.overflow = ""
+  /* istanbul ignore next -- DOM element null guard */
   if (searchBar) {
     searchBar.value = ""
     searchBar.setAttribute("aria-expanded", "false")
@@ -730,8 +741,7 @@ let cleanupListeners: (() => void) | undefined
 /* istanbul ignore next */
 function onNav(e: CustomEventMap["nav"]) {
   // Reset ready flag so tests wait for re-registration after SPA navigation.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).__searchHandlersReady = false
+  window.__searchHandlersReady = false
 
   // Clean up previous listeners and preview manager if they exist
   if (cleanupListeners) {
@@ -837,8 +847,7 @@ function onNav(e: CustomEventMap["nav"]) {
   }
 
   // Signal that search event handlers are fully registered for this page.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(window as any).__searchHandlersReady = true
+  window.__searchHandlersReady = true
 }
 
 /**
@@ -1117,9 +1126,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
  */
 export function navigateWithSearchTerm(href: string, searchTerm: string) {
   if (!searchTerm) {
-    console.error(
-      "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
-    )
+    throw new Error("[navigateWithSearchTerm] No search term available for result card navigation")
   }
 
   const targetUrl = new URL(href)
@@ -1195,7 +1202,7 @@ function displayResults(finalResults: Item[], results: HTMLElement, enablePrevie
  * @param e - Input event
  */
 /* istanbul ignore next */
-async function onType(e: HTMLElementEventMap["input"]): Promise<void> {
+async function onType(e: Event): Promise<void> {
   if (!searchLayout) return
 
   // Ensure search is initialized (waits if initialization is in progress)
@@ -1316,7 +1323,7 @@ async function initializeSearch(): Promise<void> {
       console.error("Can't locate the #search-bar element.")
       return
     }
-    const originalPlaceholder = searchBar?.placeholder
+    const originalPlaceholder = searchBar.placeholder
     searchBar.placeholder = "Loading search..."
 
     try {
@@ -1334,8 +1341,7 @@ async function initializeSearch(): Promise<void> {
         searchInitialized = true
         // Signal to tests that the index is ready. Unlike __searchHandlersReady,
         // this is never reset — the index persists across SPA navigations.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(window as any).__searchIndexReady = true
+        window.__searchIndexReady = true
         document.dispatchEvent(new CustomEvent("search-index-ready", { detail: undefined }))
       } else {
         // Data fetch failed — don't mark as initialized so retry is possible

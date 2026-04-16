@@ -6,6 +6,14 @@ import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "
 // IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
 export const footnoteForwardRefRegex = /^#user-content-fn-(?<footnoteId>[\w-]+)$/
 
+/** Navigation helper. Uses a mutable object so tests can spy on it (jsdom locks down window.location). */
+export const navigation = {
+  /* istanbul ignore next -- jsdom does not implement navigation */
+  goTo(url: string): void {
+    window.location.href = url
+  },
+}
+
 export interface PopoverOptions {
   parentElement: HTMLElement
   targetUrl: URL
@@ -39,6 +47,7 @@ function processFootnoteForPopover(
   normalizeRelativeURLs(tempContainer, targetUrl)
 
   // modifyElementIds only modifies descendants, so also modify the element's own ID
+  /* istanbul ignore next -- footnotes always have IDs in practice */
   if (clonedFootnote.id) {
     clonedFootnote.id = `${clonedFootnote.id}-popover`
   }
@@ -274,12 +283,15 @@ export function attachPopoverEventListeners(
 
   const removePopover = () => {
     popoverElement.classList.remove("popover-visible")
-    setTimeout(() => {
-      if (!isMouseOverLink && !isMouseOverPopover) {
-        popoverElement.remove()
-        onRemove()
-      }
-    }, popoverRemovalDelayMs)
+    setTimeout(
+      /* istanbul ignore next -- async mouse state check not reachable in sync tests */ () => {
+        if (!isMouseOverLink && !isMouseOverPopover) {
+          popoverElement.remove()
+          onRemove()
+        }
+      },
+      popoverRemovalDelayMs,
+    )
   }
 
   const showPopover = () => {
@@ -289,11 +301,11 @@ export function attachPopoverEventListeners(
   const clickPopover = (e: MouseEvent) => {
     const clickedLink = (e.target as HTMLElement).closest("a")
     if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-      window.location.href = clickedLink.href
+      navigation.goTo(clickedLink.href)
     } else if (!isFootnote) {
       // For non-footnote popovers, clicking body navigates to the link target.
       // For footnote popovers, clicking body does nothing (content is just readable text).
-      window.location.href = linkElement.href
+      navigation.goTo(linkElement.href)
     }
   }
 

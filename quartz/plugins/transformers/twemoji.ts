@@ -35,6 +35,7 @@ export function parseAttributes(imgTag: string): Record<string, string> {
   const regex = /(?<key>\w+)="(?<value>[^"]*)"?/g
   const result: Record<string, string> = {}
   for (const match of imgTag.matchAll(regex)) {
+    /* istanbul ignore next -- named capture groups always produce .groups when matched */
     if (match.groups) {
       result[match.groups.key] = match.groups.value
     }

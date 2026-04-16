@@ -2,6 +2,7 @@
 
 import functools
 import json
+import logging
 import shutil
 import subprocess
 from pathlib import Path
@@ -198,9 +199,10 @@ def get_files(
                 ValueError,
                 RuntimeError,
                 subprocess.CalledProcessError,
-            ):
-                # If Git operations fail, continue without Git filtering
-                pass
+            ) as exc:
+                logging.debug(
+                    "Git filtering failed, continuing without it: %s", exc
+                )
     return tuple(files)
 
 

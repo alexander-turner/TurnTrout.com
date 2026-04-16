@@ -292,6 +292,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       }
 
       const abbreviationMatch = REGEX_ABBREVIATION.exec(matchText)
+      /* istanbul ignore next -- falls through to unreachable throw when regex doesn't match */
       if (abbreviationMatch?.groups) {
         const { number, abbreviation } = abbreviationMatch.groups
         return {

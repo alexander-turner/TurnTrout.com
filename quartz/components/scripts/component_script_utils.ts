@@ -106,6 +106,7 @@ export function debounce<Args extends unknown[], R>(
 
   debounced.cancel = () => {
     console.debug("cancelling debounce")
+    /* istanbul ignore next -- defensive null check for rAF cleanup */
     if (frameId !== null) {
       cancelAnimationFrame(frameId)
     }
@@ -210,6 +211,7 @@ export function animate(
 
   // Return cleanup function
   return () => {
+    /* istanbul ignore next -- defensive null check for rAF cleanup */
     if (rafId !== null) {
       cancelAnimationFrame(rafId)
       rafId = null

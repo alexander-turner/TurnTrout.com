@@ -68,9 +68,6 @@ def strip_quote_blocks(text: str) -> str:
                 result.append(next_line)
                 break
             result.append("")
-        else:
-            # Quote block extends to end of file (no break hit)
-            pass
 
     return "\n".join(result)
 
