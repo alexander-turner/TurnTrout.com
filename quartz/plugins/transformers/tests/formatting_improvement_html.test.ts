@@ -793,6 +793,31 @@ describe("HTMLFormattingImprovement", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    it.each([
+      // Spaces around arrows should be non-breaking
+      [
+        "<p>word -> arrow</p>",
+        `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
+      ],
+      [
+        "<p>word->arrow</p>",
+        `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
+      ],
+      // At start of line, no nbsp before but nbsp after
+      [
+        "<p>-> arrow</p>",
+        `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
+      ],
+      // Multiple arrows
+      [
+        "<p>-> first --> second</p>",
+        `<p><span class="right-arrow">⭢</span>${NBSP}first${NBSP}<span class="right-arrow">⭢</span>${NBSP}second</p>`,
+      ],
+    ])("should use non-breaking spaces around arrows: %s", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
   })
 })
 
