@@ -324,6 +324,7 @@ code {
   position: relative;
   text-transform: uppercase;
   margin-right: 0.05rem;
+  cursor: text;
 
   // Inline dropcaps should be slightly higher than the baseline
   p & {

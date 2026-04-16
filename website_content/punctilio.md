@@ -9,6 +9,7 @@ description: Meticulously beautify your text using my "punctilio" library. No in
 tags:
   - website
   - open-source
+  - smallcaps
 aliases:
   - prettify
   - text-prettify
