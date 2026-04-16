@@ -92,21 +92,17 @@ export function spacesAroundSlashes(text: string): string {
   )
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
-      spaceBefore: string
       markerBefore: string | undefined
       markerAfter: string | undefined
-      spaceAfter: string
     }
-    const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
-    // Add space only if not already present
+    const { markerBefore, markerAfter } = groups
+    // Use NBSP to prevent line breaks around slashes
     // Place markers outside spaces: marker-space-slash-space-marker
-    const pre = spaceBefore || " "
-    const post = spaceAfter || " "
-    return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
+    return `${markerBefore || ""}${NBSP}/${NBSP}${markerAfter || ""}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
-  text = text.replace(numberSlashThenNonNumber, " / ")
+  text = text.replace(numberSlashThenNonNumber, `${NBSP}/${NBSP}`)
 
   // Restore the h/t occurrences
   return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
@@ -286,7 +282,9 @@ export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "�
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  const arrowRegex = new RegExp(`(?<arrow>${arrowsToWrap.join("|")})`, "g")
+  // Consume optional surrounding spaces so they can be replaced with NBSP
+  const arrowPattern = arrowsToWrap.join("|")
+  const arrowRegex = new RegExp(` ?(?<arrow>${arrowPattern}) ?`, "g")
 
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
@@ -306,10 +304,25 @@ export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
     if (hasAncestor(parent as Element, (n) => hasClass(n, "monospace-arrow"), ancestors)) return
 
     replaceRegex(node as Text, index, parent, arrowRegex, (match: RegExpMatchArray) => {
+      const fullMatch = match[0] ?? /* istanbul ignore next */ ""
+      const matchIndex = match.index ?? /* istanbul ignore next */ 0
+      const arrow = match.groups?.arrow ?? /* istanbul ignore next */ fullMatch.trim()
+
+      const consumedLeadingSpace = fullMatch.startsWith(" ")
+      const consumedTrailingSpace = fullMatch.endsWith(" ")
+
+      const beforeChar =
+        matchIndex > 0 ? (match.input?.charAt(matchIndex - 1) ?? /* istanbul ignore next */ "") : ""
+      const afterIndex = matchIndex + fullMatch.length
+      const afterChar = match.input?.charAt(afterIndex) ?? /* istanbul ignore next */ ""
+
+      const needsNbspBefore = consumedLeadingSpace || /\w/.test(beforeChar)
+      const needsNbspAfter = consumedTrailingSpace || /\w/.test(afterChar)
+
       return {
-        before: "",
-        replacedMatch: h("span.monospace-arrow", match[0]),
-        after: "",
+        before: needsNbspBefore ? NBSP : "",
+        replacedMatch: h("span.monospace-arrow", arrow),
+        after: needsNbspAfter ? NBSP : "",
       }
     })
   })
@@ -504,7 +517,7 @@ export function normalizeAbbreviations(text: string): string {
 
 export function plusToAmpersand(text: string): string {
   const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
-  const result = text.replace(new RegExp(sourcePattern, "gu"), " \u0026 ")
+  const result = text.replace(new RegExp(sourcePattern, "gu"), `${NBSP}\u0026${NBSP}`)
   return result
 }
 
