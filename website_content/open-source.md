@@ -141,7 +141,7 @@ The way this works is that:
 
 [`@turntrout/subfont`](https://www.npmjs.com/package/@turntrout/subfont) is a hard fork of [`Munter/subfont`](https://github.com/Munter/subfont), which shrinks fonts to only contain the characters necessary for the content.
 
-The original `subfont` traced font usage from scratch on every page. That took almost two hours per deploy. My fork groups pages by their CSS and only traces one representative per group, extracting just the text from the rest (for my site: 382 -> 5 CSS traces). Those remaining traces run in parallel across worker threads.
+The original `subfont` traced font usage from scratch on every page. That took almost two hours per deploy. My fork groups pages by their CSS and only traces one representative per group, extracting just the text from the rest (for my site: 382 → 5 CSS traces). Those remaining traces run in parallel across worker threads.
 
 # Claude Code automation template
 
