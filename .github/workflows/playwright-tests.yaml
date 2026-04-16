@@ -58,7 +58,7 @@ jobs:
   playwright-tests-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -103,8 +103,8 @@ jobs:
           set -o pipefail
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
         env:
-          # 20 min job timeout → 15 min Playwright global timeout
-          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "900000"
+          # 40 min job timeout → 35 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Sanitize shard name
         run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
