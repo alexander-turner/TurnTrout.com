@@ -324,6 +324,7 @@ code {
   position: relative;
   text-transform: uppercase;
   margin-right: 0.05rem;
+  cursor: text;
 
   // Inline dropcaps should be slightly higher than the baseline
   p & {
@@ -352,6 +353,7 @@ article[data-use-dropcap="true"] > p:not(.subtitle):first-of-type {
   font-family: var(--font-main);
   position: relative;
   min-height: #{$dropcap-min-height};
+  cursor: text;
 
   // Float spacer: controls text wrapping with fixed width, preventing CLS
   // when dropcap fonts load (::first-letter doesn't support width)
