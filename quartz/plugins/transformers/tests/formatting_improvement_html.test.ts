@@ -796,19 +796,10 @@ describe("HTMLFormattingImprovement", () => {
 
     it.each([
       // Spaces around arrows should be non-breaking
-      [
-        "<p>word -> arrow</p>",
-        `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
-      ],
-      [
-        "<p>word->arrow</p>",
-        `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
-      ],
+      ["<p>word -> arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      ["<p>word->arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
       // At start of line, no nbsp before but nbsp after
-      [
-        "<p>-> arrow</p>",
-        `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`,
-      ],
+      ["<p>-> arrow</p>", `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
       // Multiple arrows
       [
         "<p>-> first --> second</p>",
