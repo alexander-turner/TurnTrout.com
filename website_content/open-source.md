@@ -26,11 +26,7 @@ date_updated: 2026-04-10 04:21:11.395410
 
 # Punctilio for meticulous typography
 
-<div class="no-smallcaps">
-  
 <span class="populate-markdown-punctilio"></span>
-
-</div>
 
 # This website
 
