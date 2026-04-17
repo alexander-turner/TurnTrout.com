@@ -246,6 +246,43 @@ describe("Head Component", () => {
       expect(html).toContain("https://assets.turntrout.com/static/icons/note.svg")
       expect(html).toContain("/static/styles/fonts/EBGaramond/EBGaramond-InitialsF1.woff2")
     })
+
+    it("should load KaTeX CSS asynchronously and skip font preloads on pages without math", () => {
+      const html = render(h(Head, mockProps))
+
+      expect(html).toContain('media="print"')
+      expect(html).toContain("this.media='all'")
+      expect(html).not.toContain("/static/styles/fonts/katex/KaTeX_Main-Regular.woff2")
+      expect(html).not.toContain("/static/styles/fonts/katex/KaTeX_Math-Italic.woff2")
+    })
+
+    it.each([
+      ["inline", "katex"],
+      ["display", "katex-display"],
+    ])(
+      "should load KaTeX CSS synchronously and preload fonts when the tree contains %s math",
+      (_label, className) => {
+        const treeWithMath = {
+          type: "root",
+          children: [
+            {
+              type: "element",
+              tagName: "span",
+              properties: { className: [className] },
+              children: [],
+            },
+          ],
+        } as Root
+        const html = render(h(Head, { ...mockProps, tree: treeWithMath }))
+
+        const katexLink = html.match(/<link[^>]*katex\.min\.css[^>]*>/g) ?? []
+        expect(katexLink.length).toBeGreaterThan(0)
+        expect(katexLink.every((tag) => !tag.includes('media="print"'))).toBe(true)
+        expect(html).not.toContain("this.media='all'")
+        expect(html).toContain("/static/styles/fonts/katex/KaTeX_Main-Regular.woff2")
+        expect(html).toContain("/static/styles/fonts/katex/KaTeX_Math-Italic.woff2")
+      },
+    )
   })
 
   describe("conditional content", () => {

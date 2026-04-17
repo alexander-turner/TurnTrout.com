@@ -1,10 +1,12 @@
 /* eslint-disable react/no-unknown-property */
+import type { Element, Node, Parent } from "hast"
 import type { JSX } from "react"
 
 // (For the spa-preserve attribute)
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
+import { visit } from "unist-util-visit"
 
 import { GlobalConfiguration } from "../cfg"
 import { QuartzPluginData } from "../plugins/vfile"
@@ -19,6 +21,27 @@ import {
   type QuartzComponentConstructor,
   type QuartzComponentProps,
 } from "./types"
+
+// rehype-katex tags every rendered formula with `katex` (inline) or
+// `katex-display` (block). If neither appears in the page tree, we can keep
+// the KaTeX stylesheet on the async/print-media path.
+function pageHasKatex(tree: Node): boolean {
+  let found = false
+  visit(tree as Parent, "element", (node: Element) => {
+    const classes = node.properties?.className
+    if (Array.isArray(classes) && classes.some((c) => c === "katex" || c === "katex-display")) {
+      found = true
+      return false
+    }
+    return undefined
+  })
+  return found
+}
+
+// Most-used KaTeX font faces. Preloading them on math pages avoids the
+// ~3 second invisible period (KaTeX ships @font-face without `font-display`,
+// so browsers default to `block`) and the layout shift that follows.
+const KATEX_FONT_PRELOADS = ["KaTeX_Main-Regular", "KaTeX_Math-Italic"] as const
 
 // Preload icons to prevent race condition on admonition icons
 //  These are very small assets, so we can preload them all
@@ -81,8 +104,14 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
 
 export default (() => {
   // skipcq: JS-D1001
-  const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
+  const Head: QuartzComponent = ({
+    cfg,
+    fileData,
+    externalResources,
+    tree,
+  }: QuartzComponentProps) => {
     const headJsx = renderMetaJsx(cfg, fileData)
+    const hasKatex = pageHasKatex(tree)
 
     // Scripts
     const { js } = externalResources
@@ -177,19 +206,41 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        {/* Load KaTeX CSS without blocking render — math styling applies
-            once the sheet loads, but FCP/LCP aren't delayed.
-            Use spread to bypass Preact's onLoad type (expects function, but SSR needs string). */}
-        <link
-          rel="stylesheet"
-          href="/static/styles/katex.min.css"
-          media="print"
-          {...({ onload: "this.media='all'" } as Record<string, string>)}
-          spa-preserve
-        />
-        <noscript>
-          <link rel="stylesheet" href="/static/styles/katex.min.css" />
-        </noscript>
+        {/* On math pages, load KaTeX synchronously so the rehype-katex
+            output is styled on first paint — otherwise the MathML fallback
+            renders raw alongside the HTML output and causes a layout shift
+            once the stylesheet arrives. On non-math pages, keep the async
+            print-media trick to avoid render-blocking. */}
+        {hasKatex ? (
+          <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
+        ) : (
+          <>
+            {/* Use spread to bypass Preact's onLoad type
+                (expects function, but SSR needs string). */}
+            <link
+              rel="stylesheet"
+              href="/static/styles/katex.min.css"
+              media="print"
+              {...({ onload: "this.media='all'" } as Record<string, string>)}
+              spa-preserve
+            />
+            <noscript>
+              <link rel="stylesheet" href="/static/styles/katex.min.css" />
+            </noscript>
+          </>
+        )}
+        {hasKatex &&
+          KATEX_FONT_PRELOADS.map((font) => (
+            <link
+              key={font}
+              href={`/static/styles/fonts/katex/${font}.woff2`}
+              as="font"
+              type="font/woff2"
+              crossorigin="anonymous"
+              spa-preserve
+              rel="preload"
+            />
+          ))}
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
