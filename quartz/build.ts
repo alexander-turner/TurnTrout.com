@@ -489,7 +489,7 @@ export default async (argv: Argv, mut: Mutex, clientRefresh: () => void) => {
   try {
     return await buildQuartz(argv, mut, clientRefresh)
   } catch (err) {
-    trace("\nExiting Quartz due to a fatal error", err as Error)
+    trace("\nExiting Quartz due to a fatal error", err)
     return () => {
       // No cleanup needed on fatal error (process will exit)
     }

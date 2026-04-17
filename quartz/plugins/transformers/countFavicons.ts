@@ -31,7 +31,7 @@ export const faviconCounter = new Map<string, number>()
  * This handles cases where counts are needed in a different process than where they were generated.
  * @returns A Map of favicon path to count
  */
-export async function getFaviconCounts(): Promise<Map<string, number>> {
+export async function getFaviconCounts(): Promise<ReadonlyMap<string, number>> {
   // If in-memory map has data, use it (normal build-time usage)
   if (faviconCounter.size > 0) {
     logger.info(`Using in-memory favicon counts: ${faviconCounter.size} entries`)
