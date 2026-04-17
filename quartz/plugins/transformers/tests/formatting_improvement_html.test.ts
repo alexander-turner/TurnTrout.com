@@ -226,6 +226,13 @@ describe("HTMLFormattingImprovement", () => {
         "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
         "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
       ],
+      // IPA-style /ˈnæftə/ embedded in an <a>. Previously either no-ops (old
+      // behaviour) or broke invariance (the short-lived NBSP-always fork).
+      // Ensure the markup still builds and the rendered text reads right.
+      [
+        '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
+        '<p>(<strong>NAFTA</strong><a href="x"> / ˈnæftə / </a><a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+      ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
       (input: string, expected: string) => {
