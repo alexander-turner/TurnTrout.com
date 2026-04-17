@@ -173,7 +173,7 @@ function generate(): string {
 function main(): void {
   const table = generate()
   writeFileSync(OUTPUT, table, "utf-8")
-   
+
   console.log(`Wrote ${resolve(OUTPUT)}`)
 }
 
