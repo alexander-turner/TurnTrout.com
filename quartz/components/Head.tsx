@@ -22,25 +22,24 @@ import {
   type QuartzComponentProps,
 } from "./types"
 
-// rehype-katex tags every rendered formula with `katex` (inline) or
-// `katex-display` (block). If neither appears in the page tree, we can keep
-// the KaTeX stylesheet on the async/print-media path.
+// rehype-katex wraps every rendered formula in a `<span class="katex">`
+// (display math nests one inside `.katex-display`), so a single class check
+// catches both. Used to gate KaTeX font preloads.
 function pageHasKatex(tree: Node): boolean {
   let found = false
   visit(tree as Parent, "element", (node: Element) => {
     const classes = node.properties?.className
-    if (Array.isArray(classes) && classes.some((c) => c === "katex" || c === "katex-display")) {
+    if (Array.isArray(classes) && classes.includes("katex")) {
       found = true
       return false
     }
-    return undefined
   })
   return found
 }
 
-// Most-used KaTeX font faces. Preloading them on math pages avoids the
-// ~3 second invisible period (KaTeX ships @font-face without `font-display`,
-// so browsers default to `block`) and the layout shift that follows.
+// KaTeX ships @font-face without `font-display`, so browsers default to
+// `block` (text invisible for ~3s). Preloading the two most-used faces lets
+// them arrive before paint and avoids the swap-induced layout shift.
 const KATEX_FONT_PRELOADS = ["KaTeX_Main-Regular", "KaTeX_Math-Italic"] as const
 
 // Preload icons to prevent race condition on admonition icons
@@ -206,29 +205,10 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        {/* On math pages, load KaTeX synchronously so the rehype-katex
-            output is styled on first paint — otherwise the MathML fallback
-            renders raw alongside the HTML output and causes a layout shift
-            once the stylesheet arrives. On non-math pages, keep the async
-            print-media trick to avoid render-blocking. */}
-        {hasKatex ? (
-          <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
-        ) : (
-          <>
-            {/* Use spread to bypass Preact's onLoad type
-                (expects function, but SSR needs string). */}
-            <link
-              rel="stylesheet"
-              href="/static/styles/katex.min.css"
-              media="print"
-              {...({ onload: "this.media='all'" } as Record<string, string>)}
-              spa-preserve
-            />
-            <noscript>
-              <link rel="stylesheet" href="/static/styles/katex.min.css" />
-            </noscript>
-          </>
-        )}
+        {/* Sync-load KaTeX so rehype-katex output is styled on first paint;
+            the previous async/print-media trick let the MathML fallback
+            render as raw unicode before the stylesheet arrived. */}
+        <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {hasKatex &&
           KATEX_FONT_PRELOADS.map((font) => (
             <link
