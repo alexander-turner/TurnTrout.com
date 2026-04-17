@@ -195,8 +195,6 @@ I use [`subfont`](https://github.com/Munter/subfont) to subset each font across 
 
 Eventually, the ultimate solution will be [progressive font enrichment](https://www.w3.org/TR/PFE-evaluation/), which will load just those glyphs needed for a webpage, and then cache those glyphs so that they aren't reloaded during future calls. Sadly, progressive font enrichment is not yet available.
 
-For fonts that only appear on a few pages — like the [old italic comparison fonts](#upright-punctuation-in-italic-text) — `subfont` narrows the glyph set to just the characters used in those comparisons. This shrinks the three italic comparison fonts from ~320KB to ~44KB (86%) and the old regular font from 82KB to about 1KB.
-
 ### Images
 
 Among lossy compression formats, there are two kings: AVIF and WEBP. Under my tests, they achieved similar (amazing) compression ratios of about 10x over PNG. For compatibility reasons, I chose AVIF. The upshot is that _images are nearly costless in terms of responsiveness_, which is liberating.

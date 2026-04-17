@@ -6,6 +6,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { NBSP } from "../../components/constants"
 import {
   shouldCapitalizeNodeText,
   replaceRegex,
@@ -86,8 +87,9 @@ export const REGEX_ACRONYM = new RegExp(
 // the abbreviation so callers that reconstruct the text (replacedMatch /
 // originalText below) preserve it. Regular spaces are intentionally not
 // matched — "1000 km" stays a plain phrase.
-export const REGEX_ABBREVIATION =
-  /(?<number>\d+(?:\.\d+)?|\.\d+)(?<abbreviation>\u00A0?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\b/
+export const REGEX_ABBREVIATION = new RegExp(
+  `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
+)
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`

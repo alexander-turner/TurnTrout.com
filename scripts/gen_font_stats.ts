@@ -11,6 +11,8 @@
 import { existsSync, readdirSync, statSync, writeFileSync } from "node:fs"
 import { join, resolve } from "node:path"
 
+import { NBSP } from "../quartz/components/constants"
+
 interface FontEntry {
   /** Human-readable name used in the output table. */
   display: string
@@ -93,10 +95,10 @@ const SUBFONT_DIR = join(ROOT, "public/subfont")
 const OUTPUT = join(ROOT, "config/font_stats.md")
 
 function formatKB(bytes: number): string {
-  // Non-breaking space keeps the unit on the same line as the number;
-  // tagSmallcaps' REGEX_ABBREVIATION permits `\u00A0?` between them so the
-  // "KB" still renders as smallcaps.
-  return `${(bytes / 1024).toFixed(1)}&nbsp;KB`
+  // NBSP keeps the unit on the same line as the number; tagSmallcaps'
+  // REGEX_ABBREVIATION accepts an optional NBSP between them so the "KB"
+  // still renders as smallcaps.
+  return `${(bytes / 1024).toFixed(1)}${NBSP}KB`
 }
 
 function savingsPct(full: number, subset: number): number {

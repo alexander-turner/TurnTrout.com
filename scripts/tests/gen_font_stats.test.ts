@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
+import { NBSP } from "../../quartz/components/constants"
 import {
   FONTS,
   collectRows,
@@ -12,7 +13,9 @@ import {
   renderTable,
   savingsPct,
   type FontEntry,
-} from "./gen_font_stats"
+} from "../gen_font_stats"
+
+const KB = `${NBSP}KB`
 
 const tmpRoots: string[] = []
 
@@ -31,10 +34,10 @@ afterEach(() => {
 
 describe("formatKB", () => {
   it.each([
-    [0, "0.0&nbsp;KB"],
-    [1024, "1.0&nbsp;KB"],
-    [1536, "1.5&nbsp;KB"],
-    [104044, "101.6&nbsp;KB"],
+    [0, `0.0${KB}`],
+    [1024, `1.0${KB}`],
+    [1536, `1.5${KB}`],
+    [104044, `101.6${KB}`],
   ])("renders %i bytes as %s", (bytes, expected) => {
     expect(formatKB(bytes)).toBe(expected)
   })
@@ -126,8 +129,8 @@ describe("renderTable", () => {
       { display: "Bar", full: 1024, subset: null },
     ])
     expect(md).toContain("| Font | Full | Subset | Saved |")
-    expect(md).toContain("| Foo | 2.0&nbsp;KB | — | — |")
-    expect(md).toContain("| **Total** | **3.0&nbsp;KB** | **—** | **—** |")
+    expect(md).toContain(`| Foo | 2.0${KB} | — | — |`)
+    expect(md).toContain(`| **Total** | **3.0${KB}** | **—** | **—** |`)
   })
 
   it("leaves Total Subset/Saved as '—' when any row is missing a subset", () => {
@@ -135,10 +138,10 @@ describe("renderTable", () => {
       { display: "Foo", full: 2048, subset: 512 },
       { display: "Bar", full: 1024, subset: null },
     ])
-    expect(md).toContain("| Foo | 2.0&nbsp;KB | 0.5&nbsp;KB | 75% |")
-    expect(md).toContain("| Bar | 1.0&nbsp;KB | — | — |")
+    expect(md).toContain(`| Foo | 2.0${KB} | 0.5${KB} | 75% |`)
+    expect(md).toContain(`| Bar | 1.0${KB} | — | — |`)
     // Mixing missing subsets into the ratio would lie, so totals stay blank.
-    expect(md).toContain("| **Total** | **3.0&nbsp;KB** | **—** | **—** |")
+    expect(md).toContain(`| **Total** | **3.0${KB}** | **—** | **—** |`)
     expect(md.endsWith("\n")).toBe(true)
   })
 
@@ -147,7 +150,7 @@ describe("renderTable", () => {
       { display: "Foo", full: 2048, subset: 512 },
       { display: "Bar", full: 1024, subset: 256 },
     ])
-    expect(md).toContain("| **Total** | **3.0&nbsp;KB** | **0.8&nbsp;KB** | **75%** |")
+    expect(md).toContain(`| **Total** | **3.0${KB}** | **0.8${KB}** | **75%** |`)
   })
 })
 
@@ -176,8 +179,8 @@ describe("generate", () => {
     writeFileSync(join(subfont, `${entries[0].family}-400-a.woff2`), Buffer.alloc(1024))
 
     const out = generate(entries, sources, subfont)
-    expect(out).toContain(`| ${entries[0].display} | 2.0&nbsp;KB | 1.0&nbsp;KB | 50% |`)
-    expect(out).toContain("| **Total** | **2.0&nbsp;KB** | **1.0&nbsp;KB** | **50%** |")
+    expect(out).toContain(`| ${entries[0].display} | 2.0${KB} | 1.0${KB} | 50% |`)
+    expect(out).toContain(`| **Total** | **2.0${KB}** | **1.0${KB}** | **50%** |`)
   })
 
   it("falls back to defaults (reads real fonts; no subfont dir expected)", () => {
