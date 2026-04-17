@@ -375,6 +375,10 @@ describe("REGEX_ABBREVIATION tests", () => {
     ["-2.5MB", "2.5", "MB"],
     ["300k", "300", "k"],
     ["300W", "300", "W"],
+    // Non-breaking space between value and unit is allowed and preserved in
+    // the captured abbreviation.
+    ["101.6\u00A0KB", "101.6", "\u00A0KB"],
+    ["5\u00A0TB", "5", "\u00A0TB"],
   ])("should match abbreviation: %s", (input, expectedNumber, expectedAbbreviation) => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })

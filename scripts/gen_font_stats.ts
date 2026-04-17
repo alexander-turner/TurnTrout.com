@@ -93,6 +93,9 @@ const SUBFONT_DIR = join(ROOT, "public/subfont")
 const OUTPUT = join(ROOT, "config/font_stats.md")
 
 function formatKB(bytes: number): string {
+  // Non-breaking space keeps the unit on the same line as the number;
+  // tagSmallcaps' REGEX_ABBREVIATION permits `\u00A0?` between them so the
+  // "KB" still renders as smallcaps.
   return `${(bytes / 1024).toFixed(1)}&nbsp;KB`
 }
 
@@ -138,35 +141,46 @@ function collectRows(
 }
 
 function renderTable(rows: readonly FontRow[]): string {
-  // MD041 asks for a leading heading; suppress since this file is inlined.
-  const header =
-    "<!-- markdownlint-disable MD041 -->\n" +
-    "| Font | Full | Subset | Saved |\n| :--- | ---: | ---: | ---: |"
+  // lint-staged hands the file directly to markdownlint, which disregards
+  // the ignores config, so suppress MD041 (first-line H1) inline. The
+  // comment is a valid HTML comment and is stripped before user-facing HTML.
+  const header = [
+    "<!-- markdownlint-disable MD041 -->",
+    "| Font | Full | Subset | Saved |",
+    "| :--- | ---: | ---: | ---: |",
+  ].join("\n")
   const body: string[] = []
   let totalFull = 0
   let totalSubset = 0
-  let subsetSeen = false
+  let subsetsMissing = false
 
   for (const row of rows) {
     totalFull += row.full
     const subsetCell = row.subset === null ? "—" : formatKB(row.subset)
     const savedCell = row.subset === null ? "—" : `${savingsPct(row.full, row.subset)}%`
-    if (row.subset !== null) {
+    if (row.subset === null) {
+      subsetsMissing = true
+    } else {
       totalSubset += row.subset
-      subsetSeen = true
     }
     body.push(`| ${row.display} | ${formatKB(row.full)} | ${subsetCell} | ${savedCell} |`)
   }
 
-  const totalSubsetCell = subsetSeen ? `**${formatKB(totalSubset)}**` : "**—**"
-  const totalSavedCell = subsetSeen ? `**${savingsPct(totalFull, totalSubset)}%**` : "**—**"
+  // Saved % is only meaningful when every row has a subset; otherwise the
+  // ratio would mix full sizes of missing rows against a smaller subset sum.
+  const totalSubsetCell = subsetsMissing ? "**—**" : `**${formatKB(totalSubset)}**`
+  const totalSavedCell = subsetsMissing ? "**—**" : `**${savingsPct(totalFull, totalSubset)}%**`
   body.push(`| **Total** | **${formatKB(totalFull)}** | ${totalSubsetCell} | ${totalSavedCell} |`)
 
-  return [header, ...body].join("\n") + "\n"
+  return `${[header, ...body].join("\n")}\n`
 }
 
-function generate(): string {
-  return renderTable(collectRows())
+function generate(
+  entries: readonly FontEntry[] = FONTS,
+  sourceDir: string = SOURCE_DIR,
+  subfontDir: string = SUBFONT_DIR,
+): string {
+  return renderTable(collectRows(entries, sourceDir, subfontDir))
 }
 
 // istanbul ignore next - CLI entrypoint
@@ -178,7 +192,7 @@ function main(): void {
 }
 
 // istanbul ignore next - CLI entrypoint
-if (import.meta.url.endsWith(process.argv[1]) || process.argv[1].endsWith("gen_font_stats.ts")) {
+if (process.argv[1]?.endsWith("gen_font_stats.ts")) {
   main()
 }
 
