@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
-import { simpleConstants } from "../../constants"
+import { NBSP, simpleConstants } from "../../constants"
 import {
   matchTextNodes,
   descendantsWithId,
@@ -447,7 +447,7 @@ describe("matchTextNodes", () => {
     },
     {
       name: "NBSP normalized to regular space for multi-word matching",
-      html: "<p>AI\u00A0presidents discuss alignment</p>",
+      html: `<p>AI${NBSP}presidents discuss alignment</p>`,
       searchTerm: "AI presidents",
       expectedCount: 1,
       expectedHTML: '<p><span class="search-match">AI presidents</span> discuss alignment</p>',

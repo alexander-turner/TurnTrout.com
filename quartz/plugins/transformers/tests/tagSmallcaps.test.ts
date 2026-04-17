@@ -4,6 +4,7 @@ import { h } from "hastscript"
 import { rehype } from "rehype"
 import seedrandom from "seedrandom"
 
+import { NBSP } from "../../../components/constants"
 import {
   allowAcronyms,
   rehypeTagSmallcaps,
@@ -375,6 +376,10 @@ describe("REGEX_ABBREVIATION tests", () => {
     ["-2.5MB", "2.5", "MB"],
     ["300k", "300", "k"],
     ["300W", "300", "W"],
+    // Non-breaking space between value and unit is allowed and preserved in
+    // the captured abbreviation.
+    [`101.6${NBSP}KB`, "101.6", `${NBSP}KB`],
+    [`5${NBSP}TB`, "5", `${NBSP}TB`],
   ])("should match abbreviation: %s", (input, expectedNumber, expectedAbbreviation) => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })
