@@ -217,6 +217,15 @@ describe("HTMLFormattingImprovement", () => {
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
       ],
+      // Three inline elements separated by `/` must also be left alone. Regression:
+      // flattening "<code>a</code> / <code>b</code> / <code>c</code>" gives
+      // text nodes ["", " / ", " / ", ...] where the middle slash has a prior
+      // `/` as its anchor, which previously caused a marker-vs-stripped
+      // invariance failure on design.md.
+      [
+        "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
+        "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
+      ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
       (input: string, expected: string) => {

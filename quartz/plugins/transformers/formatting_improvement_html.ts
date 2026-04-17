@@ -86,8 +86,15 @@ export function spacesAroundSlashes(text: string): string {
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
+  //
+  // Exclude the marker char from the \S anchors: a marker alone (e.g. between
+  // two text nodes whose contents flatten to "...<space>/<space>...") must not
+  // stand in for real content, otherwise transform(marked) and
+  // transform(stripSep(marked)) diverge when the slash is flanked only by
+  // inline-element boundaries, as in `<code>a</code> / <code>b</code> / <code>c</code>`.
+  const nonWsNonMarker = `[^\\s${markerChar}]`
   const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=\\S)(?!/)`,
+    `(?<![\\d/<])(?<=${nonWsNonMarker})(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${nonWsNonMarker})(?!/)`,
     "gu",
   )
   text = text.replace(slashRegex, (...args) => {
