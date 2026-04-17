@@ -92,13 +92,20 @@ export function spacesAroundSlashes(text: string): string {
   )
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
+      spaceBefore: string | undefined
       markerBefore: string | undefined
       markerAfter: string | undefined
+      spaceAfter: string | undefined
     }
-    const { markerBefore, markerAfter } = groups
-    // Use NBSP to prevent line breaks around slashes
-    // Place markers outside spaces: marker-space-slash-space-marker
-    return `${markerBefore || ""}${NBSP}/${NBSP}${markerAfter || ""}`
+    const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
+    // Preserve captured spaces (critical for marker invariance: when text nodes
+    // end/start with a space, stripSep produces multiple spaces that the regex
+    // would no longer match, so we must not change the captured whitespace).
+    // Only substitute NBSP when we're *adding* new whitespace (input had no
+    // space around the slash), which still prevents line breaks at that site.
+    const pre = spaceBefore || NBSP
+    const post = spaceAfter || NBSP
+    return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g

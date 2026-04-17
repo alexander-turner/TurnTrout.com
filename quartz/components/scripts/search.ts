@@ -8,7 +8,7 @@ import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { tabletBreakpoint } from "../../styles/variables"
 import { type FullSlug, resolveRelative } from "../../util/path"
-import { simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
+import { NBSP, simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
 import { fetchHTMLContent, processPreviewables } from "./content_renderer"
 import { wrapScrollables } from "./scroll-indicator-utils"
@@ -230,9 +230,9 @@ export const matchTextNodes = (node: Node, term: string) => {
   } else if (node.nodeType === Node.TEXT_NODE) {
     /* istanbul ignore next */
     const nodeText = node.nodeValue ?? ""
-    // Normalize NBSP (U+00A0) to regular space so multi-word search terms
+    // Normalize NBSP to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
-    const normalizedText = nodeText.replace(/\u00A0/gu, " ")
+    const normalizedText = nodeText.replace(new RegExp(NBSP, "gu"), " ")
     const sanitizedTerm = RegExp.escape(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
