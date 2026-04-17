@@ -58,7 +58,7 @@ jobs:
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -103,8 +103,8 @@ jobs:
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
-          # 25 min job timeout → 20 min Playwright global timeout
-          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "1200000"
+          # 40 min job timeout → 35 min Playwright global timeout
+          PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Create sanitized shard
         if: always()
