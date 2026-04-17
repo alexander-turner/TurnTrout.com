@@ -71,6 +71,9 @@ const config: QuartzConfig = {
             jsonPath: "lint-staged",
             transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
           },
+          "font-stats": {
+            filePath: "config/font_stats.md",
+          },
         },
       }),
       CreatedModifiedDate(),
