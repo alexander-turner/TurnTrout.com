@@ -90,32 +90,91 @@ export const REGEX_ACRONYM = new RegExp(
 // without this filtering the smallcaps pass would then wrap the preposition.
 export const SMALLCAPS_UNITS: readonly string[] = [
   // Length
-  "km", "cm", "mm", "nm", "pm", "yd", "mi", "ft", "KM",
+  "km",
+  "cm",
+  "mm",
+  "nm",
+  "pm",
+  "yd",
+  "mi",
+  "ft",
+  "KM",
   // Mass
-  "kg", "mg", "oz", "lb", "lbs",
+  "kg",
+  "mg",
+  "oz",
+  "lb",
+  "lbs",
   // Volume
-  "ml", "mL", "gal",
+  "ml",
+  "mL",
+  "gal",
   // Time
-  "ms", "hr", "hrs", "min",
-  // Frequency / speed
-  "Hz", "kHz", "MHz", "GHz", "THz", "rpm",
+  "ms",
+  "hr",
+  "hrs",
+  "min",
+  // Frequency / speed. Intentionally omit Hz / kHz / MHz / GHz / THz — they
+  // render awkwardly in smallcaps and the project has historically left them
+  // as plain text.
+  "rpm",
   // Digital
-  "KB", "MB", "GB", "TB", "PB", "ZB", "kB", "Mb", "Gb",
-  "kbps", "Mbps", "Gbps",
+  "KB",
+  "MB",
+  "GB",
+  "TB",
+  "PB",
+  "ZB",
+  "kB",
+  "Mb",
+  "Gb",
+  "kbps",
+  "Mbps",
+  "Gbps",
   // Power / energy
-  "kW", "MW", "GW", "kWh", "MWh", "Wh", "kJ", "MJ",
+  "kW",
+  "MW",
+  "GW",
+  "kWh",
+  "MWh",
+  "Wh",
+  "kJ",
+  "MJ",
   // Electrical
-  "kV", "mV", "mA",
+  "kV",
+  "mV",
+  "mA",
   // Pressure
-  "Pa", "kPa", "MPa", "psi", "bar",
+  "Pa",
+  "kPa",
+  "MPa",
+  "psi",
+  "bar",
   // Area
   "ha",
   // Typography / CSS
-  "px", "pt", "em", "rem", "vw", "vh", "dpi",
+  "px",
+  "pt",
+  "em",
+  "rem",
+  "vw",
+  "vh",
+  "dpi",
   // Misc
-  "dB", "cal", "kcal", "mol", "MM",
+  "dB",
+  "cal",
+  "kcal",
+  "mol",
+  "MM",
   // Currency / crypto tickers
-  "BTC", "ETH", "SOL", "USD", "EUR", "GBP", "JPY", "CNY",
+  "BTC",
+  "ETH",
+  "SOL",
+  "USD",
+  "EUR",
+  "GBP",
+  "JPY",
+  "CNY",
 ]
 
 // Sort longest-first so alternation prefers e.g. "kWh" over "kW" and "Mbps"
@@ -308,11 +367,6 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       const whitelisted = isInAllowList(matchText)
       // Return unchanged - no formatting
       if (!whitelisted && isRomanNumeral(matchText)) {
-        return { before: matchText, replacedMatch: "", after: "" }
-      }
-
-      // Check ignore list for numeric abbreviations (if not whitelisted)
-      if (!whitelisted && shouldIgnoreNumericAbbreviation(matchText)) {
         return { before: matchText, replacedMatch: "", after: "" }
       }
 
