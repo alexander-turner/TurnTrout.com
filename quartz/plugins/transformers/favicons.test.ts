@@ -1415,6 +1415,14 @@ describe("favicons.readFaviconUrls", () => {
     ],
     ["", new Map(), "empty file"],
     [
+      "example.com,https://example.com/path?a=1,2\ntest.com,https://test.com/favicon.png",
+      new Map([
+        ["example.com", "https://example.com/path?a=1,2"],
+        ["test.com", "https://test.com/favicon.png"],
+      ]),
+      "URL containing comma",
+    ],
+    [
       "example.com,https://example.com/favicon.ico\ninvalid_line\ntest.com,https://test.com/favicon.png",
       new Map([
         ["example.com", "https://example.com/favicon.ico"],
