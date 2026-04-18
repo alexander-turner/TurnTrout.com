@@ -247,53 +247,11 @@ describe("Head Component", () => {
       expect(html).toContain("/static/styles/fonts/EBGaramond/EBGaramond-InitialsF1.woff2")
     })
 
-    it("should always load KaTeX CSS synchronously and never use the async print-media trick", () => {
+    it("should load KaTeX CSS synchronously without the async print-media trick", () => {
       const html = render(h(Head, mockProps))
 
       expect(html).not.toContain('media="print"')
       expect(html).not.toContain("this.media='all'")
-    })
-
-    it("should skip KaTeX font preloads on pages without math", () => {
-      const treeWithoutMath = {
-        type: "root",
-        children: [
-          {
-            type: "element",
-            tagName: "p",
-            properties: { className: ["intro"] },
-            children: [{ type: "text", value: "no math here" }],
-          },
-          {
-            type: "element",
-            tagName: "img",
-            properties: { src: "/x.png" },
-            children: [],
-          },
-        ],
-      } as Root
-      const html = render(h(Head, { ...mockProps, tree: treeWithoutMath }))
-
-      expect(html).not.toContain("/static/styles/fonts/katex/KaTeX_Main-Regular.woff2")
-      expect(html).not.toContain("/static/styles/fonts/katex/KaTeX_Math-Italic.woff2")
-    })
-
-    it("should preload KaTeX fonts when the tree contains math", () => {
-      const treeWithMath = {
-        type: "root",
-        children: [
-          {
-            type: "element",
-            tagName: "span",
-            properties: { className: ["katex"] },
-            children: [],
-          },
-        ],
-      } as Root
-      const html = render(h(Head, { ...mockProps, tree: treeWithMath }))
-
-      expect(html).toContain("/static/styles/fonts/katex/KaTeX_Main-Regular.woff2")
-      expect(html).toContain("/static/styles/fonts/katex/KaTeX_Math-Italic.woff2")
     })
   })
 

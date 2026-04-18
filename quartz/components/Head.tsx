@@ -1,12 +1,10 @@
 /* eslint-disable react/no-unknown-property */
-import type { Element, Node, Parent } from "hast"
 import type { JSX } from "react"
 
 // (For the spa-preserve attribute)
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
-import { visit } from "unist-util-visit"
 
 import { GlobalConfiguration } from "../cfg"
 import { QuartzPluginData } from "../plugins/vfile"
@@ -21,26 +19,6 @@ import {
   type QuartzComponentConstructor,
   type QuartzComponentProps,
 } from "./types"
-
-// rehype-katex wraps every rendered formula in a `<span class="katex">`
-// (display math nests one inside `.katex-display`), so a single class check
-// catches both. Used to gate KaTeX font preloads.
-function pageHasKatex(tree: Node): boolean {
-  let found = false
-  visit(tree as Parent, "element", (node: Element) => {
-    const classes = node.properties?.className
-    if (Array.isArray(classes) && classes.includes("katex")) {
-      found = true
-      return false
-    }
-  })
-  return found
-}
-
-// KaTeX ships @font-face without `font-display`, so browsers default to
-// `block` (text invisible for ~3s). Preloading the two most-used faces lets
-// them arrive before paint and avoids the swap-induced layout shift.
-const KATEX_FONT_PRELOADS = ["KaTeX_Main-Regular", "KaTeX_Math-Italic"] as const
 
 // Preload icons to prevent race condition on admonition icons
 //  These are very small assets, so we can preload them all
@@ -103,14 +81,8 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
 
 export default (() => {
   // skipcq: JS-D1001
-  const Head: QuartzComponent = ({
-    cfg,
-    fileData,
-    externalResources,
-    tree,
-  }: QuartzComponentProps) => {
+  const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
     const headJsx = renderMetaJsx(cfg, fileData)
-    const hasKatex = pageHasKatex(tree)
 
     // Scripts
     const { js } = externalResources
@@ -205,22 +177,11 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        {/* Sync-load KaTeX so rehype-katex output is styled on first paint;
-            the previous async/print-media trick let the MathML fallback
-            render as raw unicode before the stylesheet arrived. */}
+        {/* Sync-load KaTeX so rehype-katex output is styled on first paint.
+            The previous async/print-media trick let the MathML fallback
+            render as raw unicode before the stylesheet arrived. KaTeX font
+            preloads are emitted per-page by `subfont` during post-build. */}
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
-        {hasKatex &&
-          KATEX_FONT_PRELOADS.map((font) => (
-            <link
-              key={font}
-              href={`/static/styles/fonts/katex/${font}.woff2`}
-              as="font"
-              type="font/woff2"
-              crossorigin="anonymous"
-              spa-preserve
-              rel="preload"
-            />
-          ))}
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
