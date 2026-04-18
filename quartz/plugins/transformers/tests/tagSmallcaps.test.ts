@@ -85,7 +85,7 @@ describe("rehypeTagSmallcaps", () => {
 
 describe("Abbreviations and Units", () => {
   // Test numeric abbreviations (e.g., 100km)
-  const validCases = ["10ZB", "10BTC", "100.0KM", "5K"].map((text) => [
+  const validCases = ["10ZB", ".1EXP", "5XP", "10BTC", "100.0KM", "5K"].map((text) => [
     text,
     `<p><abbr class="small-caps">${text.toLowerCase()}</abbr></p>`,
   ])
@@ -395,8 +395,7 @@ describe("REGEX_ABBREVIATION tests", () => {
     // though punctilio's nbspTransform treats it as one.
     `1${NBSP}in`,
     `D.1${NBSP}in`,
-    // Not in unit list — "EXP" and "FOO" are not abbreviations we smallcaps.
-    ".1EXP",
+    // Not in unit list.
     "5FOO",
   ])("should not match invalid abbreviations: %s", (input) => {
     expect(REGEX_ABBREVIATION.test(input)).toBe(false)

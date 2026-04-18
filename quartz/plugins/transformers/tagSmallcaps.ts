@@ -175,6 +175,9 @@ export const SMALLCAPS_UNITS: readonly string[] = [
   "GBP",
   "JPY",
   "CNY",
+  // Gaming
+  "XP",
+  "EXP",
 ]
 
 // Sort longest-first so alternation prefers e.g. "kWh" over "kW" and "Mbps"
