@@ -83,12 +83,55 @@ export const REGEX_ACRONYM = new RegExp(
   `${beforeWordBoundary}(?<acronym>${boundaryAllowAcronyms}|${allowedUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
 )
 
+// Curated list of multi-character abbreviations that should be wrapped in
+// smallcaps when directly preceded by a number. English-word collisions like
+// "in" (preposition) are intentionally excluded: punctilio's nbspTransform
+// converts "D.1 in" → "D.1\u00A0in" because it treats "in" as inches, and
+// without this filtering the smallcaps pass would then wrap the preposition.
+export const SMALLCAPS_UNITS: readonly string[] = [
+  // Length
+  "km", "cm", "mm", "nm", "pm", "yd", "mi", "ft", "KM",
+  // Mass
+  "kg", "mg", "oz", "lb", "lbs",
+  // Volume
+  "ml", "mL", "gal",
+  // Time
+  "ms", "hr", "hrs", "min",
+  // Frequency / speed
+  "Hz", "kHz", "MHz", "GHz", "THz", "rpm",
+  // Digital
+  "KB", "MB", "GB", "TB", "PB", "ZB", "kB", "Mb", "Gb",
+  "kbps", "Mbps", "Gbps",
+  // Power / energy
+  "kW", "MW", "GW", "kWh", "MWh", "Wh", "kJ", "MJ",
+  // Electrical
+  "kV", "mV", "mA",
+  // Pressure
+  "Pa", "kPa", "MPa", "psi", "bar",
+  // Area
+  "ha",
+  // Typography / CSS
+  "px", "pt", "em", "rem", "vw", "vh", "dpi",
+  // Misc
+  "dB", "cal", "kcal", "mol", "MM",
+  // Currency / crypto tickers
+  "BTC", "ETH", "SOL", "USD", "EUR", "GBP", "JPY", "CNY",
+]
+
+// Sort longest-first so alternation prefers e.g. "kWh" over "kW" and "Mbps"
+// over "MB". RegExp backtracking would also find the right match, but an
+// explicit ordering avoids the extra work.
+const escapedUnits = [...SMALLCAPS_UNITS]
+  .sort((a, b) => b.length - a.length)
+  .map((u) => u.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"))
+  .join("|")
+
 // Optional non-breaking space between number and unit is captured as part of
 // the abbreviation so callers that reconstruct the text (replacedMatch /
 // originalText below) preserve it. Regular spaces are intentionally not
 // matched — "1000 km" stays a plain phrase.
 export const REGEX_ABBREVIATION = new RegExp(
-  `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
+  `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:${escapedUnits}|[KkMmBbTGgWw]))\\b`,
 )
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase

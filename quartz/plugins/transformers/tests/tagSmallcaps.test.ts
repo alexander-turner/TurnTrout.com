@@ -85,7 +85,7 @@ describe("rehypeTagSmallcaps", () => {
 
 describe("Abbreviations and Units", () => {
   // Test numeric abbreviations (e.g., 100km)
-  const validCases = ["10ZB", ".1EXP", "10BTC", "100.0KM", "5K"].map((text) => [
+  const validCases = ["10ZB", "10BTC", "100.0KM", "5K"].map((text) => [
     text,
     `<p><abbr class="small-caps">${text.toLowerCase()}</abbr></p>`,
   ])
@@ -384,12 +384,23 @@ describe("REGEX_ABBREVIATION tests", () => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })
 
-  it.each(["1000", "KM", "1000 km", "1000-km", "1000.km", "5N"])(
-    "should not match invalid abbreviations: %s",
-    (input) => {
-      expect(REGEX_ABBREVIATION.test(input)).toBe(false)
-    },
-  )
+  it.each([
+    "1000",
+    "KM",
+    "1000 km",
+    "1000-km",
+    "1000.km",
+    "5N",
+    // Regression: "in" is an English preposition, not an "inches" unit, even
+    // though punctilio's nbspTransform treats it as one.
+    `1${NBSP}in`,
+    `D.1${NBSP}in`,
+    // Not in unit list — "EXP" and "FOO" are not abbreviations we smallcaps.
+    ".1EXP",
+    "5FOO",
+  ])("should not match invalid abbreviations: %s", (input) => {
+    expect(REGEX_ABBREVIATION.test(input)).toBe(false)
+  })
 })
 
 const allCapsSentences = ["I LOVE SHREK", "WHERE DID YOU GO", "X-CAFÉ", "THE GPT-2 RESULTS"]
