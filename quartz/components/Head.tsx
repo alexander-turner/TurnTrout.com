@@ -177,19 +177,7 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        {/* Load KaTeX CSS without blocking render — math styling applies
-            once the sheet loads, but FCP/LCP aren't delayed.
-            Use spread to bypass Preact's onLoad type (expects function, but SSR needs string). */}
-        <link
-          rel="stylesheet"
-          href="/static/styles/katex.min.css"
-          media="print"
-          {...({ onload: "this.media='all'" } as Record<string, string>)}
-          spa-preserve
-        />
-        <noscript>
-          <link rel="stylesheet" href="/static/styles/katex.min.css" />
-        </noscript>
+        <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
         {fontPreloads}
         <script defer src="/static/scripts/collapsible-listeners.js" spa-preserve />
