@@ -156,7 +156,7 @@ export function getQuartzPath(hostname: string): string {
   return path
 }
 
-const defaultCache = new Map<string, string>([
+const defaultCache: ReadonlyMap<string, string> = new Map<string, string>([
   [specialFaviconPaths.turntrout, specialFaviconPaths.turntrout],
 ])
 // skipcq: JS-D1001
@@ -184,11 +184,11 @@ export function writeCacheToFile(): void {
 }
 
 /**
- * Reads favicon counts from the faviconCountsFile and returns them as a Map.
+ * Reads favicon counts from the faviconCountsFile and returns them as a ReadonlyMap.
  *
- * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
+ * @returns A ReadonlyMap of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
-export async function readFaviconCounts(): Promise<Map<string, number>> {
+export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> {
   try {
     await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
   } catch {
@@ -216,17 +216,20 @@ export async function readFaviconCounts(): Promise<Map<string, number>> {
 }
 
 /**
- * Reads favicon URLs from the faviconUrlsFile and returns them as a Map.
+ * Reads favicon URLs from the faviconUrlsFile and returns them as a ReadonlyMap.
  *
- * @returns A Promise that resolves to a Map of basename to URL strings.
+ * @returns A Promise that resolves to a ReadonlyMap of basename to URL strings.
  */
-export async function readFaviconUrls(): Promise<Map<string, string>> {
+export async function readFaviconUrls(): Promise<ReadonlyMap<string, string>> {
   try {
     const data = await fs.promises.readFile(faviconUrlsFile, "utf8")
     const lines = data.split("\n")
     const urlMap = new Map<string, string>()
     for (const line of lines) {
-      const [basename, url] = line.split(",")
+      const commaIndex = line.indexOf(",")
+      if (commaIndex === -1) continue
+      const basename = line.slice(0, commaIndex)
+      const url = line.slice(commaIndex + 1)
       if (basename && url) {
         urlMap.set(basename, url)
       }
@@ -811,7 +814,7 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 export function shouldIncludeFavicon(
   imgPath: string,
   countKey: string,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): boolean {
   const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
     imgPath.includes(entry),
@@ -843,7 +846,7 @@ export function normalizeUrl(href: string): string {
 async function handleLink(
   href: string,
   node: Element,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): Promise<void> {
   try {
     const finalURL = new URL(href)
@@ -894,7 +897,7 @@ async function handleLink(
 export async function ModifyNode(
   node: Element,
   parent: Parent,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): Promise<void> {
   logger.debug(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
