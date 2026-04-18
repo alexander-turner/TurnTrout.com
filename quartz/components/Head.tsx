@@ -177,10 +177,6 @@ export default (() => {
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
-        {/* Sync-load KaTeX so rehype-katex output is styled on first paint.
-            The previous async/print-media trick let the MathML fallback
-            render as raw unicode before the stylesheet arrived. KaTeX font
-            preloads are emitted per-page by `subfont` during post-build. */}
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
         {fontPreloads}

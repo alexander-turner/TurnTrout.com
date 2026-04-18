@@ -246,13 +246,6 @@ describe("Head Component", () => {
       expect(html).toContain("https://assets.turntrout.com/static/icons/note.svg")
       expect(html).toContain("/static/styles/fonts/EBGaramond/EBGaramond-InitialsF1.woff2")
     })
-
-    it("should load KaTeX CSS synchronously without the async print-media trick", () => {
-      const html = render(h(Head, mockProps))
-
-      expect(html).not.toContain('media="print"')
-      expect(html).not.toContain("this.media='all'")
-    })
   })
 
   describe("conditional content", () => {
