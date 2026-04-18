@@ -184,9 +184,9 @@ export function writeCacheToFile(): void {
 }
 
 /**
- * Reads favicon counts from the faviconCountsFile and returns them as a Map.
+ * Reads favicon counts from the faviconCountsFile and returns them as a ReadonlyMap.
  *
- * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
+ * @returns A ReadonlyMap of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
 export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> {
   try {
@@ -216,9 +216,9 @@ export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> 
 }
 
 /**
- * Reads favicon URLs from the faviconUrlsFile and returns them as a Map.
+ * Reads favicon URLs from the faviconUrlsFile and returns them as a ReadonlyMap.
  *
- * @returns A Promise that resolves to a Map of basename to URL strings.
+ * @returns A Promise that resolves to a ReadonlyMap of basename to URL strings.
  */
 export async function readFaviconUrls(): Promise<ReadonlyMap<string, string>> {
   try {
