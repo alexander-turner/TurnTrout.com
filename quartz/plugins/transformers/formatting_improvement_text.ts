@@ -46,7 +46,7 @@ export function editAdmonition(text: string): string {
   return text
 }
 
-const CALLOUT_REGEX_NO_SPACE = new RegExp(/^(?<prefix> *(?:> )+)(?<callout>\[!.*$)(?!(?:> *)+\n)/gm)
+const CALLOUT_REGEX_NO_SPACE = /^(?<prefix> *(?:> )+)(?<callout>\[!.*$)(?!(?:> *)+\n)/gm
 const TARGET_REGEX_WITH_SPACE = "$<prefix>$<callout>\n$<prefix>"
 
 /**

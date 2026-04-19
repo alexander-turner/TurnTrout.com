@@ -6,6 +6,7 @@ import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
+import { quote } from "shell-quote"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
@@ -108,10 +109,10 @@ export function isShallowClone(): boolean {
 export function countGitCommits(options: GitCountOptions = {}): number {
   if (isShallowClone()) return 0
 
-  let cmd = "git rev-list --all --count"
-  if (options.author) cmd += ` --author="${options.author}"`
-  if (options.grep) cmd += ` --grep="${options.grep}"`
-  const output = execSync(cmd, { encoding: "utf-8" })
+  const args = ["git", "rev-list", "--all", "--count"]
+  if (options.author) args.push(`--author=${options.author}`)
+  if (options.grep) args.push(`--grep=${options.grep}`)
+  const output = execSync(quote(args), { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
@@ -206,8 +207,8 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
         if (response.ok) {
           urlCache.set(pngPath, svgUrl)
         }
-      } catch {
-        // SVG doesn't exist on CDN, that's fine
+      } catch (err) {
+        logger.debug(`SVG not available on CDN for ${pngPath}: ${err}`)
       }
     }),
   )
