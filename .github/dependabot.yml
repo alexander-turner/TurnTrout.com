@@ -63,6 +63,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
     groups:
       actions-all:
         patterns:
@@ -79,18 +83,26 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
       - dependency-name: "pnpm/action-setup"
-        versions: ["6"]
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/setup-visual-testing-env"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/summarize-failed-shards"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/deploy-to-cloudflare"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
