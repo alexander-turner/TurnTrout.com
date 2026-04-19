@@ -13,6 +13,26 @@ updates:
         versions: [">=10"]
       - dependency-name: "@eslint/js"
         versions: [">=10"]
+      # punctilio 3.3+ adds quote wrappers to "Mismatched quotes in ..." errors,
+      # which breaks toThrowErrorMatchingSnapshot assertions in
+      # formatting_improvement_html.test.ts. Revisit by regenerating the
+      # affected snapshots intentionally.
+      - dependency-name: "punctilio"
+        versions: [">=3.3.0"]
+      # jest 30 switches to v8 coverage by default, which drops branch
+      # coverage below 100% on existing files (pre-existing branches that
+      # istanbul counted as fully covered). Re-enable after reconciling
+      # coverage reporter config.
+      - dependency-name: "jest"
+        versions: [">=30"]
+      - dependency-name: "jest-environment-jsdom"
+        versions: [">=30"]
+      - dependency-name: "babel-jest"
+        versions: [">=30"]
+      - dependency-name: "@jest/globals"
+        versions: [">=30"]
+      - dependency-name: "@types/jest"
+        versions: [">=30"]
     groups:
       npm-all:
         patterns:
