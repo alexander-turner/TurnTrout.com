@@ -34,14 +34,15 @@ next-post-slug: seeking-power-is-often-convergently-instrumental-in-mdps
 next-post-title: Seeking Power is Often Convergently Instrumental in MDPs
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-10-07 00:00:00
+date_published: 2019-10-07
 original_url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/PFqi66W.jpg
 description: "Impact reframed: a gears-level view of how and why some things seem important to us."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).'
 ---
+
 
 
 

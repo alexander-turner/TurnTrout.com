@@ -42,15 +42,16 @@ next-post-slug: understanding-and-avoiding-value-drift
 next-post-title: Understanding and avoiding value drift
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-09-04 00:00:00
+date_published: 2022-09-04
 original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory-of-human-values
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.jpg
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
 createBibtex: true
 ---
+
 
 
 

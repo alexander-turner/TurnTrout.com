@@ -25,12 +25,13 @@ aliases:
   - review-of-but-exactly-how-complex-and-fragile
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2021-01-06 00:00:00
+date_published: 2021-01-06
 original_url: https://www.lesswrong.com/posts/r6p5cqT6aWYGCYHJx/review-of-but-exactly-how-complex-and-fragile
 skip_import: true
 description: A review of Katja Grace's post questioning the "value is fragile" argument, arguing it sparked valuable but confused debate.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

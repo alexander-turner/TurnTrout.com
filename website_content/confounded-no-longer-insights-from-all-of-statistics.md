@@ -34,12 +34,13 @@ next-post-slug: first-analysis-textbook-review
 next-post-title: "Into the Kiln: Insights from Tao's 'Analysis I'"
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-05-03 00:00:00
+date_published: 2018-05-03
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-02-23 17:58:50.463964
+date_updated: 2026-02-23
 ---
+
 
 
 > [!quote]Larry Wasserman, _All of Statistics_

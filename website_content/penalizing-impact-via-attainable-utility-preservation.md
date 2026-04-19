@@ -3,8 +3,7 @@ permalink: attainable-utility-preservation-paper
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
+lw-page-url: https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
 lw-linkpost-url: https://arxiv.org/abs/1902.09725
 lw-is-question: 'false'
 lw-posted-at: 2018-12-28T21:46:00.843000Z
@@ -28,14 +27,13 @@ aliases:
   - penalizing-impact-via-attainable-utility-preservation
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2018-12-28 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
+date_published: 2018-12-28
+original_url: https://www.lesswrong.com/posts/mDTded2Dn7BKRBEPX/penalizing-impact-via-attainable-utility-preservation
 skip_import: true
-description: A new AI safety paper formalizing "attainable utility preservation" to
-  penalize negative AI impacts, with experimental results.
-date_updated: 2025-11-22 00:21:52.667251
+description: A new AI safety paper formalizing "attainable utility preservation" to penalize negative AI impacts, with experimental results.
+date_updated: 2025-11-22
 ---
+
 
 
 

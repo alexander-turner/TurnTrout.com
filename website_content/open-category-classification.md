@@ -25,13 +25,13 @@ aliases:
   - open-category-classification
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-03-28 00:00:00
+date_published: 2018-03-28
 original_url: https://www.lesswrong.com/posts/txGJZAPjraYEQfHq2/open-category-classification
 skip_import: '"true"'
-description: 'Open-category classification: How can we penalize classifiers which
-  overgeneralize from their training data?'
-date_updated: 2025-11-22 00:21:52.667251
+description: 'Open-category classification: How can we penalize classifiers which overgeneralize from their training data?'
+date_updated: 2025-11-22
 ---
+
 
 
 

@@ -3,8 +3,7 @@ permalink: lower-stakes-alignment-scenario
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
+lw-page-url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 lw-is-question: 'false'
 lw-posted-at: 2021-07-08T02:31:03.674000Z
 lw-last-modification: 2021-07-08T20:36:20.299000Z
@@ -32,18 +31,16 @@ sequence-link: posts#the-causes-of-power-seeking-and-instrumental-convergence
 prev-post-slug: environmental-structure-can-cause-instrumental-convergence
 prev-post-title: Environmental Structure Can Cause Instrumental Convergence
 next-post-slug: quantitative-strength-of-instrumental-convergence
-next-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets
-  For Optimal Policies
+next-post-title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2021-07-08 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
+date_published: 2021-07-08
+original_url: https://www.lesswrong.com/posts/sunXMY5WyDcrHsNRr/a-world-in-which-the-alignment-problem-seems-lower-stakes
 skip_import: true
-description: "This post explores a hypothetical scenario where the AI alignment problem
-  seems lower-stakes due to a unique universe structure. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "This post explores a hypothetical scenario where the AI alignment problem seems lower-stakes due to a unique universe structure. "
+date_updated: 2025-11-22
 ---
+
 
 
 

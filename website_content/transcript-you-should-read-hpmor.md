@@ -29,14 +29,15 @@ aliases:
   - transcript-you-should-read-hpmor
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2021-11-02 00:00:00
+date_published: 2021-11-02
 original_url: https://www.lesswrong.com/posts/HL6x8zHo9BkuK3tic/transcript-you-should-read-hpmor
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/grinnell.jpg
 description: Why you should read “Harry Potter and the Methods of Rationality” to live more ethically and effectively.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
+
 
 
 

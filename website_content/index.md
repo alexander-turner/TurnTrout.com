@@ -10,11 +10,12 @@ aliases:
 hideSubscriptionLinks: true
 toc: false
 description: Writings on AI, self-improvement, and living a good life.
-date_published: 2024-10-27 19:14:04.653922
-date_updated: 2026-03-08 23:44:38.062842
+date_published: 2024-10-27
+date_updated: 2026-03-08
 tags:
   - website
 ---
+
 
 
 

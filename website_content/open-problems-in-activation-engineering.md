@@ -3,8 +3,7 @@ permalink: open-problems-in-activation-engineering
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/JMebqicMD6azB8MwK/open-problems-in-activation-engineering
+lw-page-url: https://www.lesswrong.com/posts/JMebqicMD6azB8MwK/open-problems-in-activation-engineering
 lw-linkpost-url: https://coda.io/@alice-rigg/open-problems-in-activation-engineering
 lw-is-question: 'false'
 lw-posted-at: 2023-07-24T19:46:08.733000Z
@@ -34,15 +33,14 @@ aliases:
   - open-problems-in-activation-engineering
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2023-07-24 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/JMebqicMD6azB8MwK/open-problems-in-activation-engineering
+date_published: 2023-07-24
+original_url: https://www.lesswrong.com/posts/JMebqicMD6azB8MwK/open-problems-in-activation-engineering
 skip_import: true
-description: Open questions on controlling language models at runtime via activation
-  engineering.
-date_updated: 2025-11-22 00:21:52.667251
+description: Open questions on controlling language models at runtime via activation engineering.
+date_updated: 2025-11-22
 createBibtex: true
 ---
+
 
 
 

@@ -26,12 +26,13 @@ aliases:
   - "pretense"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-07-29 00:00:00
+date_published: 2018-07-29
 original_url: https://www.lesswrong.com/posts/FPrt6esZvAKRX2vmQ/pretense
 skip_import: true
 description: Reflections on self-deception and the fleeting nature of genuine connection.
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-11-22
 ---
+
 
 
 

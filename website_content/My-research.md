@@ -3,12 +3,13 @@ draft: "false"
 permalink: research
 hideSubscriptionLinks: false
 description: A tour of the research areas I've loved over the years.
-date_published: 2024-10-27 19:14:04.653922
-date_updated: 2026-03-26 04:03:48.327812
+date_published: 2024-10-27
+date_updated: 2026-03-26
 tags:
   - AI
 title: My research
 ---
+
 
 
 

@@ -3,8 +3,7 @@ permalink: alignment-tier-list
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/7M2iHPLaNzPNXHuMv/ai-presidents-discuss-ai-alignment-agendas
+lw-page-url: https://www.lesswrong.com/posts/7M2iHPLaNzPNXHuMv/ai-presidents-discuss-ai-alignment-agendas
 lw-linkpost-url: https://www.youtube.com/watch?v=02kbWY5mahQ
 lw-is-question: "false"
 lw-posted-at: 2023-09-09T18:55:37.931000Z
@@ -31,15 +30,15 @@ aliases:
   - "ai-presidents-discuss-ai-alignment-agendas"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-09-09 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/7M2iHPLaNzPNXHuMv/ai-presidents-discuss-ai-alignment-agendas
+date_published: 2023-09-09
+original_url: https://www.lesswrong.com/posts/7M2iHPLaNzPNXHuMv/ai-presidents-discuss-ai-alignment-agendas
 no_dropcap: "true"
 video_preview_link: https://assets.turntrout.com/US%20presidents%20rate%20alignment%20agendas.mp4
 skip_import: true
 description: Obama, Trump, and Biden walk into a bar. They talk about AI alignment.
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-11-22
 ---
+
 
 
 

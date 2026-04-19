@@ -27,12 +27,13 @@ aliases:
   - positive-values-seem-more-robust-and-lasting-than
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-12-17 00:00:00
+date_published: 2022-12-17
 original_url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 skip_import: true
 description: Negative values ("don't kill") may be fragile. Positive values ("protect people") might be more robust and lasting within AI agents.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

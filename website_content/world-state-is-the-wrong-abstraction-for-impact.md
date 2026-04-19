@@ -3,8 +3,7 @@ permalink: world-state-is-the-wrong-abstraction-for-impact
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
+lw-page-url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 lw-is-question: 'false'
 lw-posted-at: 2019-10-01T21:03:40.153000Z
 lw-last-modification: 2020-12-14T23:42:24.235000Z
@@ -36,13 +35,13 @@ next-post-slug: the-gears-of-impact
 next-post-title: The Gears of Impact
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2019-10-01 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
+date_published: 2019-10-01
+original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-11-22
 ---
+
 
 
 

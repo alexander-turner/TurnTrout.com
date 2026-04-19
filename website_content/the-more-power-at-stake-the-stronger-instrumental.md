@@ -34,13 +34,14 @@ next-post-slug: power-seeking-beyond-MDPs
 next-post-title: Seeking Power is Convergently Instrumental in a Broad Class of Environments
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-07-11 00:00:00
+date_published: 2021-07-11
 original_url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 skip_import: true
 card_image:
 description: Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

@@ -21,12 +21,13 @@ aliases:
   - steering-gemini
   - bidpo-steering
 original_url: https://www.lesswrong.com/posts/WqjkqrEyFDXoHzz9K/steering-gemini-with-bidpo
-date_published: 2025-01-30 09:30:36.233182
-date_updated: 2025-11-22 08:59:29.674980
+date_published: 2025-01-30
+date_updated: 2025-11-22
 other_urls:
   - https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9
 createBibtex: true
 ---
+
 
 
 

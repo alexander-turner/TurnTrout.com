@@ -33,13 +33,14 @@ next-post-slug: against-inner-outer-alignment
 next-post-title: Inner and Outer Alignment Decompose One Hard Problem Into Two Extremely Hard Problems
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-11-29 00:00:00
+date_published: 2022-11-29
 original_url: https://www.lesswrong.com/posts/rauMEna2ddf26BqiE/alignment-allows-nonrobust-decision-influences-and-doesn-t
 skip_import: true
 description: Values steer optimization, they are not optimized against. Values don't have to be robustly "correct", because they are not the thing being optimized.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 createBibtex: true
 ---
+
 
 
 

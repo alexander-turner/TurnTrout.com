@@ -12,11 +12,12 @@ card_image:
 aliases:
   - website-design
   - site-design
-date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-19 21:59:16.896431
+date_published: 2024-10-31
+date_updated: 2026-04-19
 no_dropcap: false
 createBibtex: true
 ---
+
 
 
 

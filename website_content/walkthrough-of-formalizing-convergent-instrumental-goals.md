@@ -3,8 +3,7 @@ permalink: toy-instrumental-convergence-paper-walkthrough
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
+lw-page-url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
 lw-is-question: 'false'
 lw-posted-at: 2018-02-26T02:20:09.294000Z
 lw-last-modification: None
@@ -27,14 +26,13 @@ aliases:
   - walkthrough-of-formalizing-convergent-instrumental-goals
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-02-26 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
+date_published: 2018-02-26
+original_url: https://www.lesswrong.com/posts/KXMqckn9avvY4Zo9W/walkthrough-of-formalizing-convergent-instrumental-goals
 skip_import: true
-description: "Proof of instrumental convergence: Even if an AI's goals seem unrelated
-  to humanity, it may still turn us into paperclips. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "Proof of instrumental convergence: Even if an AI's goals seem unrelated to humanity, it may still turn us into paperclips. "
+date_updated: 2025-11-22
 ---
+
 
 
 

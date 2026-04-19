@@ -35,14 +35,15 @@ next-post-slug: lower-stakes-alignment-scenario
 next-post-title: A world in which the alignment problem seems lower-stakes
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
-date_published: 2021-06-22 00:00:00
+date_published: 2021-06-22
 original_url: https://www.lesswrong.com/posts/b6jJddSvWMdZHJHh3/environmental-structure-can-cause-instrumental-convergence
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/78ceb0300f76784b6d8d043afb15587fb25a50dd52a42e21.png
 description: The structure of environments, not just reward functions, contributes to power-seeking in AI agents.
-date_updated: 2025-11-22 00:21:52.667251
+date_updated: 2025-11-22
 card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.
 ---
+
 
 
 

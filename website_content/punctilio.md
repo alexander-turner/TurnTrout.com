@@ -4,7 +4,7 @@ permalink: punctilio
 no_dropcap: "true"
 hideSubscriptionLinks: true
 publish: true
-date_published: 2026-02-14T00:00:00Z
+date_published: 2026-02-14
 description: Meticulously beautify your text using my "punctilio" library. No installation needed—just one click away.
 tags:
   - website
@@ -13,8 +13,9 @@ aliases:
   - prettify
   - text-prettify
   - punctilio-demo
-date_updated: 2026-04-10 04:21:11.395410
+date_updated: 2026-04-10
 ---
+
 
 
 

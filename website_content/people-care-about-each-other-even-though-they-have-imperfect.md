@@ -3,8 +3,7 @@ permalink: humane-values-despite-imperfections
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/heXcGuJqbx3HBmero/people-care-about-each-other-even-though-they-have-imperfect
+lw-page-url: https://www.lesswrong.com/posts/heXcGuJqbx3HBmero/people-care-about-each-other-even-though-they-have-imperfect
 lw-is-question: 'false'
 lw-posted-at: 2022-11-08T18:15:32.023000Z
 lw-last-modification: 2022-11-21T21:18:42.103000Z
@@ -27,14 +26,13 @@ aliases:
   - people-care-about-each-other-even-though-they-have-imperfect
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-11-08 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/heXcGuJqbx3HBmero/people-care-about-each-other-even-though-they-have-imperfect
+date_published: 2022-11-08
+original_url: https://www.lesswrong.com/posts/heXcGuJqbx3HBmero/people-care-about-each-other-even-though-they-have-imperfect
 skip_import: true
-description: Imperfect human values like familial love seem to contradict AI alignment
-  arguments about Goodhart's Curse.
-date_updated: 2025-11-22 00:21:52.667251
+description: Imperfect human values like familial love seem to contradict AI alignment arguments about Goodhart's Curse.
+date_updated: 2025-11-22
 ---
+
 
 
 

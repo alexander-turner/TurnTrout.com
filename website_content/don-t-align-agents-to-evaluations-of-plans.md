@@ -32,13 +32,14 @@ next-post-slug: alignment-without-total-robustness
 next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-11-26 00:00:00
+date_published: 2022-11-26
 original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
 description: Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.
 skip_import: true
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 createBibtex: true
 ---
+
 
 
 

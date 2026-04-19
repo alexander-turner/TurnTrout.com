@@ -28,13 +28,13 @@ aliases:
   - game-theoretic-definition-of-deception
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-07-12 00:00:00
+date_published: 2020-07-12
 original_url: https://www.lesswrong.com/posts/8LEPDY36jBYpijrSw/what-counts-as-defection
 skip_import: true
-description: "A game-theoretic formalism of “defection”, analyzing whether an action
-  is self-serving at the expense of the group."
-date_updated: 2025-11-22 00:21:52.667251
+description: "A game-theoretic formalism of “defection”, analyzing whether an action is self-serving at the expense of the group."
+date_updated: 2025-11-22
 ---
+
 
 
 

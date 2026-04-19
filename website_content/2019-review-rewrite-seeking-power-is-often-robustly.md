@@ -3,10 +3,8 @@ permalink: announcing-rewrite-of-power-seeking-post
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
-lw-linkpost-url: 
-  https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-robustly-instrumental-in-mdps
+lw-page-url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
+lw-linkpost-url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-robustly-instrumental-in-mdps
 lw-is-question: 'false'
 lw-posted-at: 2020-12-23T17:16:10.174000Z
 lw-last-modification: 2021-01-02T01:12:50.607000Z
@@ -28,14 +26,13 @@ tags:
 aliases: 2019-review-rewrite-seeking-power-is-often-robustly
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-12-23 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
+date_published: 2020-12-23
+original_url: https://www.lesswrong.com/posts/mxXcPzpgGx4f8eK7v/2019-review-rewrite-seeking-power-is-often-robustly
 skip_import: true
-description: Revised post clarifies theory on power-seeking  and corrects terminology
-  used in the original post.
-date_updated: 2025-11-22 00:21:52.667251
+description: Revised post clarifies theory on power-seeking  and corrects terminology used in the original post.
+date_updated: 2025-11-22
 ---
+
 
 
 

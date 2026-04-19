@@ -31,14 +31,15 @@ aliases:
   - batman
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-09-30 00:00:00
+date_published: 2022-09-30
 original_url: https://www.lesswrong.com/posts/9KF28JSTJBqqkmkJZ/bruce-wayne-and-the-cost-of-inaction
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/QBOtBED.jpg
 description: Christopher Nolan's Batman Begins, but more rationalist and severe. Looking right at the pain you ignore whenever you walk by a homeless person.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A destitute man slumped against a brick wall, surrounded by darkness and lit by a spotlight - the bat-signal.
 ---
+
 
 
 

@@ -3,8 +3,7 @@ permalink: invalid-ai-risk-arguments
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
+lw-page-url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 lw-is-question: 'false'
 lw-posted-at: 2024-03-05T02:31:00.990000Z
 lw-last-modification: 2024-07-09T07:23:08.172000Z
@@ -27,14 +26,13 @@ aliases:
   - many-arguments-for-ai-x-risk-are-wrong
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2024-03-05 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
+date_published: 2024-03-05
+original_url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 skip_import: true
-description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing.
-  Deep learning defies naive predictions, and better arguments are needed.
-date_updated: 2025-11-22 00:21:52.667251
+description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.
+date_updated: 2025-11-22
 ---
+
 
 
 

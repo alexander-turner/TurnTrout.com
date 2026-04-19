@@ -3,8 +3,7 @@ permalink: shard-theory-confirmed
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
+lw-page-url: https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
 lw-is-question: "false"
 lw-posted-at: 2023-04-01T07:27:23.096000Z
 lw-last-modification: 2023-04-03T16:23:50.515000Z
@@ -30,14 +29,13 @@ aliases:
   - shard-theory-confirmation
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-04-01 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
+date_published: 2023-04-01
+original_url: https://www.lesswrong.com/posts/wvbGiHwbie24mmhXw/april-fools-definitive-confirmation-of-shard-theory
 skip_import: true
-description: Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B.
-  Time to stop arguing and start experimenting.
-date_updated: 2025-11-22 00:21:52.667251
+description: Shard theory, once speculative, is definitively confirmed by GPT-NeoX-20B. Time to stop arguing and start experimenting.
+date_updated: 2025-11-22
 ---
+
 
 
 

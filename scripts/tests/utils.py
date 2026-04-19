@@ -1,7 +1,6 @@
 import shutil
 import subprocess
 from collections.abc import Iterator, Mapping
-from datetime import datetime
 from pathlib import Path
 from typing import cast
 from unittest.mock import Mock
@@ -13,7 +12,6 @@ import pytest
 import requests
 from PIL import Image
 from ruamel.yaml import YAML
-from ruamel.yaml.timestamp import TimeStamp
 
 from .. import compress
 from .. import utils as script_utils
@@ -346,19 +344,6 @@ def run_shell_command(
     cmd = [shell_executable, str(script_path)]
     cmd.extend(args)
     return subprocess.run(cmd, capture_output=True, text=True, check=False)
-
-
-def create_timestamp(dt: datetime) -> TimeStamp:
-    """
-    Convert a datetime object to a ruamel.yaml TimeStamp.
-
-    Args:
-        dt: The datetime to convert.
-
-    Returns:
-        TimeStamp object compatible with ruamel.yaml serialization.
-    """
-    return TimeStamp(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 
 def setup_git_repo_with_files(

@@ -32,14 +32,15 @@ prev-post-slug: excitement-about-impact-measures
 prev-post-title: Reasons for Excitement about Impact of Impact Measure Research
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2020-02-28 00:00:00
+date_published: 2020-02-28
 original_url: https://www.lesswrong.com/posts/sHpiiZS2gPgoPnijX/conclusion-to-reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/C0o5g91.jpg
 description: The "Reframing Impact" sequence concludes with probability estimates for key claims.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: 'Mt. Doom erupts in the distance, as viewed from the White Tower of Gondor. The White Tree begins to blossom. Text: "Thanks for reading."'
 ---
+
 
 
 

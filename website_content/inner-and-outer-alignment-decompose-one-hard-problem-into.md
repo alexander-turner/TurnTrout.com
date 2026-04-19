@@ -31,13 +31,14 @@ prev-post-slug: alignment-without-total-robustness
 prev-post-title: "Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-12-02 00:00:00
+date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 createBibtex: true
 ---
+
 
 
 

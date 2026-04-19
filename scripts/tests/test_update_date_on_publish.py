@@ -1,17 +1,16 @@
 import subprocess
 import tempfile
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, call, patch
 
 import pytest
 import yaml
-from ruamel.yaml.timestamp import TimeStamp
 
 import scripts.utils as script_utils
 
 from .. import update_date_on_publish as update_lib
-from .utils import create_markdown_file, create_timestamp
+from .utils import create_markdown_file
 
 
 @pytest.fixture
@@ -21,11 +20,10 @@ def temp_content_dir(quartz_project_structure) -> Path:
 
 
 @pytest.fixture
-def mock_datetime(monkeypatch) -> datetime:
-    """Mock datetime to return a fixed date."""
-    fixed_date = datetime(2024, 2, 1)
-    fixed_timestamp = create_timestamp(fixed_date)
-    monkeypatch.setattr(update_lib, "current_date", fixed_timestamp)
+def mock_datetime(monkeypatch) -> date:
+    """Mock ``current_date`` to a fixed day-level ``date``."""
+    fixed_date = date(2024, 2, 1)
+    monkeypatch.setattr(update_lib, "current_date", fixed_date)
     return fixed_date
 
 
@@ -75,7 +73,7 @@ def test_adds_missing_date(temp_content_dir, mock_datetime, mock_git):
 
     with test_file.open("r", encoding="utf-8") as f:
         metadata = yaml.safe_load(f.read().split("---")[1])
-    expected_date = create_timestamp(datetime(2024, 2, 1))
+    expected_date = date(2024, 2, 1)
     assert metadata["date_published"] == expected_date
     assert metadata["date_updated"] == expected_date
 
@@ -115,9 +113,8 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
     with test_file.open("r", encoding="utf-8") as f:
         metadata = yaml.safe_load(f.read().split("---")[1])
 
-    expected_date = create_timestamp(mock_datetime)
-    assert metadata["date_published"] == expected_date
-    assert metadata["date_updated"] == expected_date
+    assert metadata["date_published"] == mock_datetime
+    assert metadata["date_updated"] == mock_datetime
 
 
 def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
@@ -272,7 +269,7 @@ def test_long_urls_not_wrapped(temp_content_dir, mock_git):
 
 def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     """Test the main function's integration."""
-    initial_date = create_timestamp(datetime(2024, 1, 1))
+    initial_date = date(2024, 1, 1)
     files: list[tuple[str, dict[str, object]]] = [
         ("new.md", {"title": "New Post"}),
         (
@@ -300,7 +297,7 @@ def test_main_function_integration(temp_content_dir, mock_datetime, mock_git):
     ):
         update_lib.main(temp_content_dir)
 
-    expected_new_date = create_timestamp(datetime(2024, 2, 1))
+    expected_new_date = date(2024, 2, 1)
     for filename, _ in files:
         with (temp_content_dir / filename).open("r", encoding="utf-8") as f:
             metadata = yaml.safe_load(f.read().split("---")[1])
@@ -475,12 +472,11 @@ def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
     with open(test_file, "w") as f:
         f.write(test_case)
 
-    expected_date = create_timestamp(mock_datetime)
     metadata, _ = script_utils.split_yaml(test_file)
     update_lib.maybe_update_publish_date(metadata)
 
-    assert metadata["date_published"] == expected_date
-    assert metadata["date_updated"] == expected_date
+    assert metadata["date_published"] == mock_datetime
+    assert metadata["date_updated"] == mock_datetime
 
 
 def test_preserve_existing_publish_date(temp_content_dir):
@@ -587,28 +583,33 @@ def test_git_modified_date_update(temp_content_dir, mock_git):
     assert metadata["date_updated"] == "02/01/2024"
 
 
-def test_maybe_convert_to_timestamp_datetime_input():
-    """Test maybe_convert_to_timestamp with a datetime object input."""
+def test_maybe_convert_to_date_datetime_input():
+    """Test maybe_convert_to_date truncates a datetime to day-level."""
     input_dt = datetime(2023, 10, 26, 12, 30, 0)
-    expected_ts = TimeStamp(2023, 10, 26, 12, 30, 0)
-    result_ts = update_lib.maybe_convert_to_timestamp(input_dt)
-    assert result_ts == expected_ts
-    assert isinstance(result_ts, TimeStamp)
+    result = update_lib.maybe_convert_to_date(input_dt)
+    assert result == date(2023, 10, 26)
+    assert type(result) is date
 
 
-def test_maybe_convert_to_timestamp_iso_string_input():
-    """Test maybe_convert_to_timestamp with an ISO format string input."""
+def test_maybe_convert_to_date_date_input():
+    """Test maybe_convert_to_date passes through a ``date`` unchanged."""
+    input_date = date(2023, 10, 26)
+    result = update_lib.maybe_convert_to_date(input_date)
+    assert result is input_date
+
+
+def test_maybe_convert_to_date_iso_string_input():
+    """Test maybe_convert_to_date with an ISO format string input."""
     input_iso_str = "2023-10-26T12:30:00"
-    expected_ts = TimeStamp(2023, 10, 26, 12, 30, 0)
-    result_ts = update_lib.maybe_convert_to_timestamp(input_iso_str)
-    assert result_ts == expected_ts
-    assert isinstance(result_ts, TimeStamp)
+    result = update_lib.maybe_convert_to_date(input_iso_str)
+    assert result == date(2023, 10, 26)
+    assert type(result) is date
 
 
-def test_maybe_convert_to_timestamp_invalid_type():
-    """Test maybe_convert_to_timestamp with an unsupported input type."""
+def test_maybe_convert_to_date_invalid_type():
+    """Test maybe_convert_to_date with an unsupported input type."""
     with pytest.raises(ValueError, match="Unknown date type <class 'int'>"):
-        update_lib.maybe_convert_to_timestamp(12345)  # type: ignore[arg-type]
+        update_lib.maybe_convert_to_date(12345)  # type: ignore[arg-type]
 
 
 def test_main_default_content_dir(mock_datetime, mock_git):
@@ -783,7 +784,8 @@ def test_commit_changes():
             "scripts.update_date_on_publish.subprocess.run",
             side_effect=[
                 MagicMock(),  # git add -A
-                mock_diff_result,  # git diff --cached --quiet (returncode=1 means changes exist)
+                # git diff --cached --quiet (returncode=1 means changes exist)
+                mock_diff_result,
                 MagicMock(),  # git commit
             ],
         ) as mock_run,
@@ -811,7 +813,8 @@ def test_commit_changes_nothing_to_commit():
             "scripts.update_date_on_publish.subprocess.run",
             side_effect=[
                 MagicMock(),  # git add -A
-                mock_diff_result,  # git diff --cached --quiet (returncode=0 means no changes)
+                # git diff --cached --quiet (returncode=0 means no changes)
+                mock_diff_result,
             ],
         ) as mock_run,
     ):
@@ -824,7 +827,7 @@ def test_main_no_changes_no_modifications(
     temp_content_dir, mock_datetime, mock_git
 ):
     """Test that main doesn't modify files when no changes are needed."""
-    initial_date = create_timestamp(datetime(2024, 1, 1))
+    initial_date = date(2024, 1, 1)
     files = [
         (
             "existing1.md",

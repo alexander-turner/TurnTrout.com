@@ -3,8 +3,7 @@ permalink: emotionally-confronting-doom
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
+lw-page-url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
 lw-is-question: "false"
 lw-posted-at: 2022-04-10T18:45:08.027000Z
 lw-last-modification: 2022-04-17T17:24:52.840000Z
@@ -28,14 +27,13 @@ aliases:
   - emotionally-confronting-a-probably-doomed-world-against
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-04-10 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
+date_published: 2022-04-10
+original_url: https://www.lesswrong.com/posts/Cf2zBkoocqcjnrNFD/emotionally-confronting-a-probably-doomed-world-against
 skip_import: true
-description: Rejecting defeatism in the face of potential AI doom.  We shouldn't seek
-  a “dignified” death—let's fight for a future worth living.
-date_updated: 2025-11-22 00:21:52.667251
+description: Rejecting defeatism in the face of potential AI doom.  We shouldn't seek a “dignified” death—let's fight for a future worth living.
+date_updated: 2025-11-22
 ---
+
 
 
 

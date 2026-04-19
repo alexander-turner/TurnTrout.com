@@ -89,6 +89,19 @@ interface DateElementProps {
   formatOrdinalSuffix?: boolean
 }
 
+// Parse a frontmatter date value. Day-only "YYYY-MM-DD" strings are parsed in
+// local time so display and the `datetime` attribute don't shift by one day in
+// timezones behind UTC.
+const parseDate = (date: Date | string): Date => {
+  if (date instanceof Date) return date
+  const match = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/.exec(date)
+  if (match?.groups) {
+    const { year, month, day } = match.groups
+    return new Date(Number(year), Number(month) - 1, Number(day))
+  }
+  return new Date(date)
+}
+
 // Render date element with proper datetime attribute
 export const DateElement = ({
   date,
@@ -96,16 +109,19 @@ export const DateElement = ({
   includeOrdinalSuffix,
   formatOrdinalSuffix,
 }: DateElementProps): JSX.Element => {
-  // Convert string dates to Date objects
-  const dateObj = date instanceof Date ? date : new Date(date)
+  const dateObj = parseDate(date)
 
-  if (!dateObj || isNaN(dateObj.getTime())) {
+  if (isNaN(dateObj.getTime())) {
     throw new Error(`date must be a valid Date object or date string: ${date}`)
   }
 
+  const year = dateObj.getFullYear()
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0")
+  const day = String(dateObj.getDate()).padStart(2, "0")
+
   return (
     <time
-      dateTime={dateObj.toISOString()}
+      dateTime={`${year}-${month}-${day}`}
       // skipcq: JS-0440
       dangerouslySetInnerHTML={{
         __html: formatDate(dateObj, monthFormat, includeOrdinalSuffix, formatOrdinalSuffix, ""),

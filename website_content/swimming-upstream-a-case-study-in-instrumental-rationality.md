@@ -35,12 +35,13 @@ next-post-slug: RL-textbook-review
 next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-06-03 00:00:00
+date_published: 2018-06-03
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2025-12-18
 ---
+
 
 
 

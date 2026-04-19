@@ -13,11 +13,12 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 original_url: https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=onhHdxZ8iQ4qvSHgi
-date_published: 2024-10-27 19:14:04.653922
-date_updated: 2025-12-18 09:42:00.251916
+date_published: 2024-10-27
+date_updated: 2025-12-18
 aliases:
   - layer-horizon
 ---
+
 
 
 

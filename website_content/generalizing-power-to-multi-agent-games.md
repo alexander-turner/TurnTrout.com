@@ -3,8 +3,7 @@ permalink: formalizing-multi-agent-power
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+lw-page-url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 lw-is-question: 'false'
 lw-posted-at: 2021-03-22T02:41:44.763000Z
 lw-last-modification: 2021-06-06T14:23:10.706000Z
@@ -34,18 +33,16 @@ lw-sequence-title: The Causes of Power-Seeking and Instrumental Convergence
 prev-post-slug: power-as-easily-exploitable-opportunities
 prev-post-title: Power as Easily Exploitable Opportunities
 next-post-slug: MDPs-are-not-subjective
-next-post-title: MDP Models Are Determined by the Agent Architecture and the Environmental
-  Dynamics
+next-post-title: MDP Models Are Determined by the Agent Architecture and the Environmental Dynamics
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-03-22 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
+date_published: 2021-03-22
+original_url: https://www.lesswrong.com/posts/MJc9AqyMWpG3BqfyK/generalizing-power-to-multi-agent-games
 skip_import: true
-description: Formalizing "power" in multi-agent games, showing that increased agent
-  capabilities can lead to power scarcity and increased competition for resources.
-date_updated: 2025-11-22 00:21:52.667251
+description: Formalizing "power" in multi-agent games, showing that increased agent capabilities can lead to power scarcity and increased competition for resources.
+date_updated: 2025-11-22
 ---
+
 
 
 

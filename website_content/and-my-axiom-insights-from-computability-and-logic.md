@@ -3,8 +3,7 @@ permalink: computability-and-logic-textbook-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
+lw-page-url: https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
 lw-is-question: 'false'
 lw-posted-at: 2019-01-16T19:48:47.388000Z
 lw-last-modification: 2020-05-07T23:08:26.547000Z
@@ -34,14 +33,13 @@ next-post-slug: managerial-decision-making-review
 next-post-title: "Judgment Day: Insights from 'Judgment in Managerial Decision Making'"
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2019-01-16 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
+date_published: 2019-01-16
+original_url: https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
 skip_import: true
-description: Turing computability and the surprising limits of what formal systems
-  can express.
-date_updated: 2025-11-22 00:21:52.667251
+description: Turing computability and the surprising limits of what formal systems can express.
+date_updated: 2025-11-22
 ---
+
 
 
 
