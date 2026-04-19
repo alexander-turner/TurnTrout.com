@@ -2862,6 +2862,7 @@ reframing-impact
 regexes
 regularizer
 regularizers
+rehype
 reinforcer
 reinforcers
 relacionados
@@ -3235,6 +3236,7 @@ unstoppably
 unstyled
 untackled
 untethered
+untransformed
 unwisdom
 uparrow
 uptime
