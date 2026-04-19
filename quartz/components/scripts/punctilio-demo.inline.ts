@@ -1,4 +1,4 @@
-import { diffChars, type Change } from "diff"
+import { diffChars, diffLines, type Change } from "diff"
 import { transform, type TransformOptions } from "punctilio"
 import { rehypePunctilio } from "punctilio/rehype"
 import { remarkPunctilio } from "punctilio/remark"
@@ -10,9 +10,9 @@ import { unified } from "unified"
 
 import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-// Maximum combined input+output length for character-level diff.
-// Beyond this, show plain output to avoid excessive memory use.
-const MAX_DIFF_LENGTH = 10_000
+// Safety cap for two-level diff (line-diff then char-diff on changed lines).
+// Scales with edit size rather than input size, so we can afford a high ceiling.
+const MAX_DIFF_LENGTH = 200_000
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
@@ -99,16 +99,47 @@ function doTransform(text: string, mode: TransformMode, config: TransformOptions
 
 // ─── Inline diff highlighting ────────────────────────────────────────
 
-/** Render diff changes as HTML spans, showing only additions (green) and unchanged text. */
-function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
-  return changes
-    .filter((change: Change) => !change.removed)
-    .map((change: Change) => {
-      const escaped = escapeHtml(change.value).replace(/\n/g, "<br>")
-      if (change.added) return `<span class="diff-insert">${escaped}</span>`
-      return escaped
-    })
-    .join("")
+function escapeForOutput(text: string): string {
+  return escapeHtml(text).replace(/\n/g, "<br>")
+}
+
+/** Render char-level changes, keeping only additions (green) and unchanged text. */
+function renderCharDiff(changes: readonly Change[]): string {
+  let html = ""
+  for (const change of changes) {
+    if (change.removed) continue
+    const escaped = escapeForOutput(change.value)
+    html += change.added ? `<span class="diff-insert">${escaped}</span>` : escaped
+  }
+  return html
+}
+
+/**
+ * Two-level diff: line-level first, then char-level on changed line pairs only.
+ * Keeps char-granular highlighting while scaling with the size of changes, not
+ * the whole input, so long mostly-unchanged inputs stay responsive.
+ */
+function renderDiffHtml(sourceText: string, resultText: string): string {
+  const lineChanges = diffLines(sourceText, resultText)
+  let html = ""
+  for (let i = 0; i < lineChanges.length; i++) {
+    const change = lineChanges[i]
+    if (!change.added && !change.removed) {
+      html += escapeForOutput(change.value)
+      continue
+    }
+    const next = lineChanges[i + 1]
+    if (change.removed && next?.added) {
+      html += renderCharDiff(diffChars(change.value, next.value))
+      i++
+      continue
+    }
+    if (change.added) {
+      html += `<span class="diff-insert">${escapeForOutput(change.value)}</span>`
+    }
+    // A pure removal with no paired addition contributes nothing to the output.
+  }
+  return html
 }
 
 // ─── Main nav handler ────────────────────────────────────────────────
@@ -175,8 +206,7 @@ document.addEventListener("nav", () => {
       if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
         outputContent.textContent = result
       } else {
-        const segments = diffChars(sourceText, result)
-        outputContent.innerHTML = renderDiffHtml(segments)
+        outputContent.innerHTML = renderDiffHtml(sourceText, result)
       }
     }
     outputContent.classList.toggle("ghost", isEmpty)
