@@ -932,7 +932,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          "git rev-list --all --count --author='Alex Turner'",
+          "git rev-list --all --count '--author=Alex Turner'",
           { encoding: "utf-8" },
         )
       })
@@ -946,7 +946,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(42)
         expect(mockExecSync).toHaveBeenCalledWith(
-          "git rev-list --all --count --author='O'\\''Brien'",
+          'git rev-list --all --count "--author=O\'Brien"',
           { encoding: "utf-8" },
         )
       })
@@ -960,7 +960,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          "git rev-list --all --count --grep='claude.ai/code/session'",
+          "git rev-list --all --count --grep\\=claude.ai/code/session",
           { encoding: "utf-8" },
         )
       })

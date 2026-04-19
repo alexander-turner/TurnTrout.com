@@ -6,6 +6,7 @@ import { fromHtml } from "hast-util-from-html"
 import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
+import { quote } from "shell-quote"
 import { visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
@@ -104,18 +105,14 @@ export function isShallowClone(): boolean {
   return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
 }
 
-function shellEscape(s: string): string {
-  return `'${s.replace(/'/g, "'\\''")}'`
-}
-
 // skipcq: JS-D1001
 export function countGitCommits(options: GitCountOptions = {}): number {
   if (isShallowClone()) return 0
 
-  let cmd = "git rev-list --all --count"
-  if (options.author) cmd += ` --author=${shellEscape(options.author)}`
-  if (options.grep) cmd += ` --grep=${shellEscape(options.grep)}`
-  const output = execSync(cmd, { encoding: "utf-8" })
+  const args = ["git", "rev-list", "--all", "--count"]
+  if (options.author) args.push(`--author=${options.author}`)
+  if (options.grep) args.push(`--grep=${options.grep}`)
+  const output = execSync(quote(args), { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
 
