@@ -6,6 +6,13 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    ignore:
+      # eslint 10 breaks eslint-plugin-react and eslint-plugin-jsx-a11y
+      # (peer deps pin to v9 max). Revisit when plugins add v10 support.
+      - dependency-name: "eslint"
+        versions: [">=10"]
+      - dependency-name: "@eslint/js"
+        versions: [">=10"]
     groups:
       npm-all:
         patterns:
