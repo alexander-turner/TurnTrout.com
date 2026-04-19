@@ -87,6 +87,7 @@ $panel-min-height: 200px;
     white-space: pre-wrap;
     overflow-wrap: break-word;
     overflow-y: auto;
+    transition: opacity 60ms ease-out;
 
     .diff-insert {
       background-color: color-mix(in srgb, #22c55e 20%, transparent);
@@ -102,6 +103,11 @@ $panel-min-height: 200px;
     &.ghost::before {
       content: attr(data-placeholder);
       color: var(--midground-faint);
+    }
+
+    // Dimmed affordance for long inputs while the synchronous transform runs.
+    &.computing {
+      opacity: 0.55;
     }
   }
 }

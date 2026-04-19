@@ -14,6 +14,11 @@ import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 // Scales with edit size rather than input size, so we can afford a high ceiling.
 const MAX_DIFF_LENGTH = 200_000
 
+// Beyond this input length, the unified md/html pipelines take long enough
+// (>100ms) that we yield a paint frame so the "computing" affordance shows
+// before the blocking transform starts.
+const COMPUTING_AFFORDANCE_THRESHOLD = 10_000
+
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
 const STORAGE_KEY_OPT_PREFIX = "punctilio-opt-"
@@ -83,13 +88,17 @@ function transformHtmlText(html: string, config: TransformOptions): string {
 }
 
 function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
+  // Skip punctilio's internal idempotency check (runs the whole transform
+  // twice). It's a library self-test, not a correctness requirement here, and
+  // the remark/rehype plugins already default it off.
+  const fastConfig: TransformOptions = { ...config, checkIdempotency: false }
   switch (mode) {
     case "plaintext":
-      return transform(text, config)
+      return transform(text, fastConfig)
     case "markdown":
-      return transformMarkdownText(text, config)
+      return transformMarkdownText(text, fastConfig)
     case "html":
-      return transformHtmlText(text, config)
+      return transformHtmlText(text, fastConfig)
     default: {
       const exhaustive: never = mode
       throw new Error(`Unknown mode: ${exhaustive}`)
@@ -188,14 +197,29 @@ document.addEventListener("nav", () => {
     }
   }
 
-  function runTransform() {
+  async function runTransform() {
     if (!input || !outputContent) return
     const config = getConfig()
-    const isEmpty = input.value === ""
+    const mode = currentMode
+    const inputValue = input.value
+    const isEmpty = inputValue === ""
 
     // When the input is empty, show transformed ghost text in the output
-    const sourceText = isEmpty ? GHOST_INPUTS[currentMode] : input.value
-    const result = doTransform(sourceText, currentMode, config)
+    const sourceText = isEmpty ? GHOST_INPUTS[mode] : inputValue
+
+    // Long inputs can block the main thread for hundreds of ms in md/html
+    // mode. Yield one paint frame so the dimmed "computing" affordance shows,
+    // then bail if a newer transform is already pending.
+    if (sourceText.length > COMPUTING_AFFORDANCE_THRESHOLD) {
+      outputContent.classList.add("computing")
+      await new Promise<void>((resolve) => {
+        requestAnimationFrame(() => resolve())
+      })
+      if (input.value !== inputValue || currentMode !== mode) return
+    }
+
+    const result = doTransform(sourceText, mode, config)
+    outputContent.classList.remove("computing")
     lastResult = isEmpty ? "" : result
 
     if (isEmpty) {
