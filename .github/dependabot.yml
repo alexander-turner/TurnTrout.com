@@ -13,10 +13,11 @@ updates:
         versions: [">=10"]
       - dependency-name: "@eslint/js"
         versions: [">=10"]
-      # punctilio 3.3+ adds quote wrappers to "Mismatched quotes in ..." errors,
-      # which breaks toThrowErrorMatchingSnapshot assertions in
-      # formatting_improvement_html.test.ts. Revisit by regenerating the
-      # affected snapshots intentionally.
+      # punctilio 3.3+ changes collectTransformableElements to return the
+      # outermost transformable element, so <p><a>URL</a></p> collects <p>
+      # and our "don't mangle URLs" check (elt.tagName !== "a") no longer
+      # fires. Re-enable once we either make the skip href-aware locally or
+      # add a per-text-node skip hook in punctilio itself.
       - dependency-name: "punctilio"
         versions: [">=3.3.0"]
       # jest 30 switches to v8 coverage by default, which drops branch
