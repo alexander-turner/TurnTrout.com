@@ -2621,6 +2621,11 @@ def _normalize_paragraph_text(element: Tag) -> str:
                 link.decompose()
 
     text = script_utils.get_non_code_text(el_copy).strip()
+    # Collapse internal whitespace (including newlines) into single spaces
+    # so each paragraph occupies exactly one line in the spellcheck tempfile;
+    # otherwise embedded newlines would desync the line_to_source mapping and
+    # misattribute later paragraphs' warnings to the wrong source file.
+    text = re.sub(r"\s+", " ", text)
     # Normalize smart quotes to ASCII so spellchecker treats
     # contractions like "I've" as single words instead of "I"+"ve"
     text = text.replace("\u2019", "'").replace("\u2018", "'")
@@ -2674,7 +2679,11 @@ def _write_paragraphs_to_tempfile(
     ) as tmp:
         for file_path, paragraphs in paragraph_map.items():
             for para in paragraphs:
-                tmp.write(f"{para}\n")
+                # Defensive: flatten any embedded newlines so each paragraph
+                # occupies one tempfile line and the line_to_source mapping
+                # stays in sync with spellchecker-cli's per-line warnings.
+                flattened = para.replace("\n", " ")
+                tmp.write(f"{flattened}\n")
                 line_to_source[line_num] = file_path
                 line_num += 1
         return Path(tmp.name), line_to_source
