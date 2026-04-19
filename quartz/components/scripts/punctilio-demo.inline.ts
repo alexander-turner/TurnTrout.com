@@ -10,14 +10,11 @@ import { unified } from "unified"
 
 import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
-// Safety cap for two-level diff (line-diff then char-diff on changed lines).
-// Scales with edit size rather than input size, so we can afford a high ceiling.
-const MAX_DIFF_LENGTH = 200_000
-
-// Beyond this input length, the unified md/html pipelines take long enough
-// (>100ms) that we yield a paint frame so the "computing" affordance shows
-// before the blocking transform starts.
-const COMPUTING_AFFORDANCE_THRESHOLD = 10_000
+// Per-changed-line-pair cap for Myers char-diff. Beyond this combined length,
+// we fall back to a linear prefix+suffix diff — which highlights the divergent
+// middle span as a single block. Myers diffChars is ~O((N+M)·D) and blows up
+// badly on long single-line inputs (>5s at 10K chars), so we cap it.
+const MAX_CHAR_DIFF_LENGTH = 2_000
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
@@ -112,7 +109,7 @@ function escapeForOutput(text: string): string {
   return escapeHtml(text).replace(/\n/g, "<br>")
 }
 
-/** Render char-level changes, keeping only additions (green) and unchanged text. */
+/** Render char-level Myers changes, keeping only additions (green) and unchanged text. */
 function renderCharDiff(changes: readonly Change[]): string {
   let html = ""
   for (const change of changes) {
@@ -124,9 +121,44 @@ function renderCharDiff(changes: readonly Change[]): string {
 }
 
 /**
- * Two-level diff: line-level first, then char-level on changed line pairs only.
- * Keeps char-granular highlighting while scaling with the size of changes, not
- * the whole input, so long mostly-unchanged inputs stay responsive.
+ * Linear O(N) fallback for long changed line pairs. Finds the common prefix
+ * and suffix, then highlights everything between them as one span. Less
+ * precise than Myers when a line has multiple disjoint changes (they merge
+ * into one span) but avoids the quadratic-ish blowup diffChars hits on long
+ * inputs with many edits.
+ */
+function renderPrefixSuffixDiff(oldText: string, newText: string): string {
+  const shorter = Math.min(oldText.length, newText.length)
+  let prefix = 0
+  while (prefix < shorter && oldText[prefix] === newText[prefix]) prefix++
+  let suffix = 0
+  const suffixLimit = shorter - prefix
+  while (
+    suffix < suffixLimit &&
+    oldText[oldText.length - 1 - suffix] === newText[newText.length - 1 - suffix]
+  ) {
+    suffix++
+  }
+  const before = newText.slice(0, prefix)
+  const middle = newText.slice(prefix, newText.length - suffix)
+  const after = newText.slice(newText.length - suffix)
+  let html = escapeForOutput(before)
+  if (middle) html += `<span class="diff-insert">${escapeForOutput(middle)}</span>`
+  html += escapeForOutput(after)
+  return html
+}
+
+function renderChangedLinePair(oldText: string, newText: string): string {
+  if (oldText.length + newText.length <= MAX_CHAR_DIFF_LENGTH) {
+    return renderCharDiff(diffChars(oldText, newText))
+  }
+  return renderPrefixSuffixDiff(oldText, newText)
+}
+
+/**
+ * Two-level diff: line-level first, then per-line-pair refinement. Line pairs
+ * under MAX_CHAR_DIFF_LENGTH combined use Myers char-diff; longer ones fall
+ * back to a linear prefix/suffix diff. Worst case is linear in the input.
  */
 function renderDiffHtml(sourceText: string, resultText: string): string {
   const lineChanges = diffLines(sourceText, resultText)
@@ -139,7 +171,7 @@ function renderDiffHtml(sourceText: string, resultText: string): string {
     }
     const next = lineChanges[i + 1]
     if (change.removed && next?.added) {
-      html += renderCharDiff(diffChars(change.value, next.value))
+      html += renderChangedLinePair(change.value, next.value)
       i++
       continue
     }
@@ -197,29 +229,14 @@ document.addEventListener("nav", () => {
     }
   }
 
-  async function runTransform() {
+  function runTransform() {
     if (!input || !outputContent) return
     const config = getConfig()
-    const mode = currentMode
-    const inputValue = input.value
-    const isEmpty = inputValue === ""
+    const isEmpty = input.value === ""
 
     // When the input is empty, show transformed ghost text in the output
-    const sourceText = isEmpty ? GHOST_INPUTS[mode] : inputValue
-
-    // Long inputs can block the main thread for hundreds of ms in md/html
-    // mode. Yield one paint frame so the dimmed "computing" affordance shows,
-    // then bail if a newer transform is already pending.
-    if (sourceText.length > COMPUTING_AFFORDANCE_THRESHOLD) {
-      outputContent.classList.add("computing")
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => resolve())
-      })
-      if (input.value !== inputValue || currentMode !== mode) return
-    }
-
-    const result = doTransform(sourceText, mode, config)
-    outputContent.classList.remove("computing")
+    const sourceText = isEmpty ? GHOST_INPUTS[currentMode] : input.value
+    const result = doTransform(sourceText, currentMode, config)
     lastResult = isEmpty ? "" : result
 
     if (isEmpty) {
@@ -227,11 +244,7 @@ document.addEventListener("nav", () => {
       outputContent.dataset.placeholder = result
     } else {
       delete outputContent.dataset.placeholder
-      if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
-        outputContent.textContent = result
-      } else {
-        outputContent.innerHTML = renderDiffHtml(sourceText, result)
-      }
+      outputContent.innerHTML = renderDiffHtml(sourceText, result)
     }
     outputContent.classList.toggle("ghost", isEmpty)
 
