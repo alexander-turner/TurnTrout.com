@@ -31,12 +31,13 @@ jobs:
       contents: write
     outputs:
       pushed: ${{ steps.push-result.outputs.pushed }}
-    # Only run on push to main by a human (skip our own automated date commits)
-    # Note: github.actor reflects the PAT owner, not the bot, so we check the commit message
+    # Only run on push to main when content changed.
+    # Amends the triggering commit with date changes and force-pushes,
+    # which cancels in-progress workflows and restarts them on the amended commit.
+    # On the re-triggered run, the script finds no changes (dates already set) and skips.
     if: >
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      !startsWith(github.event.head_commit.message, 'chore: updated publication dates') &&
       needs.detect-changes.outputs.content == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -60,15 +61,15 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push changes
+      - name: Amend commit with date changes and force-push
         id: push-result
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add website_content/*.md README.md
-          git commit -m "chore: updated publication dates [skip ci]"
-          git push
+          git commit --amend --no-edit
+          git push --force-with-lease
           echo "pushed=true" >> $GITHUB_OUTPUT
 
       - name: Set output if no push
@@ -129,7 +130,7 @@ jobs:
     permissions:
       contents: write
     # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
-    # Depends on update-dates to avoid push race condition (both push to main).
+    # Depends on update-dates so it doesn't run until any potential force-push completes.
     # always() lets this run even when update-dates is skipped (PRs, no content changes).
     if: >
       always() && !cancelled() &&
@@ -195,7 +196,7 @@ jobs:
           git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
           if [[ -n $(git diff --cached --name-only) ]]; then
             git commit -m "style: auto-fix formatting [skip ci]"
-            # Pull any commits pushed by update-dates before pushing
+            # Pull any recent commits before pushing to avoid conflicts
             if ! git pull --rebase origin ${{ github.head_ref || github.ref_name }}; then
               echo "::error::Rebase failed — aborting to avoid pushing broken state"
               git rebase --abort 2>/dev/null || true
@@ -245,7 +246,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      # Check out branch tip when autofix or update-dates pushed commits, so lint
+      # Check out branch tip when autofix pushed a commit, so lint
       # sees the final state. Otherwise use the default SHA that triggered the workflow.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: needs.autofix.result == 'success' || needs.update-dates.outputs.pushed == 'true'
