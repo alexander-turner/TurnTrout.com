@@ -13,8 +13,8 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 try:
     from . import utils as script_utils
@@ -77,7 +77,7 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
 def update_markdown_references(
     file_path: Path,
     r2_address: str,
-    references_dir: Optional[Path] = None,
+    references_dir: Path | None = None,
     verbose: bool = False,
 ) -> None:
     """
@@ -89,7 +89,9 @@ def update_markdown_references(
         references_dir: Dir to search for files to update references.
         verbose: Whether to print verbose output.
     """
-    relative_original_path = script_utils.path_relative_to_quartz_parent(file_path)
+    relative_original_path = script_utils.path_relative_to_quartz_parent(
+        file_path
+    )
     static_index = relative_original_path.parts.index("static")
     relative_subpath = Path(*relative_original_path.parts[static_index:])
 
@@ -113,7 +115,9 @@ def update_markdown_references(
             f.write(new_content)
 
 
-def _download_from_r2(upload_target: str, target: Path) -> None:  # pragma: no cover
+def _download_from_r2(
+    upload_target: str, target: Path
+) -> None:  # pragma: no cover
     rclone_args = ["rclone", "copyto", upload_target, str(target)]
     subprocess.run(rclone_args, check=True)
 
@@ -218,8 +222,8 @@ file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm")
 def upload_and_move(
     file_path: Path,
     verbose: bool = False,
-    references_dir: Optional[Path] = None,
-    move_to_dir: Optional[Path] = None,
+    references_dir: Path | None = None,
+    move_to_dir: Path | None = None,
     overwrite_existing: bool = False,
 ) -> None:
     """
@@ -248,7 +252,9 @@ def upload_and_move(
         if not move_to_dir.exists():
             print(f"Warning: Directory does not exist: {move_to_dir}")
         else:
-            move_uploaded_file(file_path, move_to_dir=move_to_dir, verbose=verbose)
+            move_uploaded_file(
+                file_path, move_to_dir=move_to_dir, verbose=verbose
+            )
 
 
 def main() -> None:
@@ -266,7 +272,9 @@ def main() -> None:
         default=None,
         help="Move file to directory after upload",
     )
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose output"
+    )
     parser.add_argument(
         "--upload-from-directory",
         type=Path,
@@ -302,7 +310,9 @@ def main() -> None:
             use_git_ignore=False,  # several image dirs are git ignored
         )
         # Filter out ignored files
-        files_to_upload = [f for f in all_files if f.name not in args.ignore_files]
+        files_to_upload = [
+            f for f in all_files if f.name not in args.ignore_files
+        ]
     elif args.file:
         files_to_upload = [args.file]
     else:

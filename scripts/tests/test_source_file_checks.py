@@ -2,8 +2,9 @@ import shutil
 import sys
 import tempfile
 import unittest.mock as mock
+from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import git  # type: ignore[import]
@@ -28,7 +29,7 @@ else:
 
 
 @pytest.fixture
-def valid_metadata() -> Dict[str, str | List[str]]:
+def valid_metadata() -> dict[str, str | list[str]]:
     """Fixture providing valid metadata that should pass all checks."""
     return {
         "title": "Test Title",
@@ -76,7 +77,7 @@ def valid_metadata() -> Dict[str, str | List[str]]:
     ],
 )
 def test_check_required_fields(
-    metadata: Dict[str, str | List[str]], expected_errors: List[str]
+    metadata: dict[str, str | list[str]], expected_errors: list[str]
 ):
     """
     Test the required fields checker with various metadata configurations.
@@ -147,7 +148,7 @@ def test_check_required_fields(
     ],
 )
 def test_check_cover_image_alt(
-    metadata: Dict[str, str | List[str]], expected_errors: List[str]
+    metadata: dict[str, str | list[str]], expected_errors: list[str]
 ):
     """
     Test the cover image alt text checker with various metadata configurations.
@@ -177,7 +178,7 @@ def test_check_cover_image_alt(
         {"card_image": ""},
     ],
 )
-def test_check_card_image_valid(metadata: Dict[str, str]):
+def test_check_card_image_valid(metadata: dict[str, str]):
     """Test card image checker with valid inputs."""
     mock_response = mock.Mock()
     mock_response.status_code = 200
@@ -211,7 +212,7 @@ def test_check_card_image_valid(metadata: Dict[str, str]):
     ],
 )
 def test_check_card_image_invalid(
-    metadata: Dict[str, str], expected_error_text: str
+    metadata: dict[str, str], expected_error_text: str
 ):
     """Test card image checker with invalid formats."""
     mock_response = mock.Mock()
@@ -458,7 +459,7 @@ Valid external: [Link](https://example.com)
 
 
 @pytest.fixture
-def scss_scenarios() -> Dict[str, Dict[str, object]]:
+def scss_scenarios() -> dict[str, dict[str, object]]:
     """Fixture providing different SCSS test scenarios."""
     return {
         "valid": {
@@ -527,10 +528,10 @@ def scss_scenarios() -> Dict[str, Dict[str, object]]:
 @pytest.fixture
 def setup_font_test(
     tmp_path: Path,
-) -> Callable[[str, List[str]], Tuple[Path, Path]]:
+) -> Callable[[str, list[str]], tuple[Path, Path]]:
     """Fixture providing a function to set up font test environment."""
 
-    def _setup(scss_content: str, font_files: List[str]) -> Tuple[Path, Path]:
+    def _setup(scss_content: str, font_files: list[str]) -> tuple[Path, Path]:
         # Create directory structure
         styles_dir = tmp_path / "quartz" / "styles"
         styles_dir.mkdir(parents=True)
@@ -655,7 +656,7 @@ More text.
         ),
     ],
 )
-def test_check_heading_links(text: str, expected_errors: List[str]):
+def test_check_heading_links(text: str, expected_errors: list[str]):
     """
     Test the heading links checker with various markdown content.
 
@@ -699,12 +700,10 @@ def test_integration_with_main(
 def test_compile_scss(tmp_path: Path):
     """Test SCSS compilation."""
     scss_file = tmp_path / "test.scss"
-    scss_file.write_text(
-        """
+    scss_file.write_text("""
         $color: red;
         body { color: $color; }
-    """
-    )
+    """)
 
     css = source_file_checks.compile_scss(scss_file)
     assert "body" in css
@@ -1187,7 +1186,7 @@ def test_build_sequence_data_no_files():
 def test_check_card_image(
     metadata: dict,
     mock_response: mock.Mock | None,
-    expected_error_contains: List[str],
+    expected_error_contains: list[str],
 ):
     """Test checking card image URLs in metadata."""
     with patch.object(source_file_checks._http_session, "head") as mock_head:
@@ -1328,7 +1327,7 @@ def test_check_card_image_sends_user_agent():
     ],
 )
 def test_check_table_alignments(
-    tmp_path: Path, content: str, expected_errors: List[str]
+    tmp_path: Path, content: str, expected_errors: list[str]
 ):
     """
     Test checking markdown table alignments.
@@ -1502,7 +1501,7 @@ permalink: /test
     ],
 )
 def test_unescaped_braces(
-    tmp_path: Path, content: str, expected_errors: List[str]
+    tmp_path: Path, content: str, expected_errors: list[str]
 ):
     """
     Test various scenarios for unescaped braces detection.
@@ -1926,7 +1925,7 @@ def test_validate_video_tag(video_tag: str, should_raise: bool):
         ("file-without-spaces.md", []),
     ],
 )
-def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
+def test_check_spaces_in_path(path_str: str, expected_errors: list[str]):
     """Tests the _check_spaces_in_path function with various paths."""
     path = Path(path_str)
     errors = source_file_checks.check_spaces_in_path(path)
@@ -2017,7 +2016,7 @@ def test_check_spaces_in_path(path_str: str, expected_errors: List[str]):
         ("Test $math$)", []),
     ],
 )
-def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
+def test_check_no_forbidden_patterns(text: str, expected_errors: list[str]):
     """Test the check_no_forbidden_patterns function."""
     errors = source_file_checks.check_no_forbidden_patterns(text)
     assert errors == expected_errors
@@ -2058,7 +2057,7 @@ def test_check_no_forbidden_patterns(text: str, expected_errors: List[str]):
         ("A double backslash \\\\alpha should be ignored", []),
     ],
 )
-def test_check_stray_katex(text: str, expected_errors: List[str]):
+def test_check_stray_katex(text: str, expected_errors: list[str]):
     """Test the check_stray_katex function."""
     errors = source_file_checks.check_stray_katex(text)
     assert sorted(errors) == sorted(expected_errors)
@@ -2097,7 +2096,7 @@ def test_check_stray_katex(text: str, expected_errors: List[str]):
         ('<img/>{style="width:50%"}', []),  # Self-closing tags
     ],
 )
-def test_check_html_with_braces(text: str, expected_errors: List[str]):
+def test_check_html_with_braces(text: str, expected_errors: list[str]):
     """Test the check_html_with_braces function."""
     errors = source_file_checks.check_html_with_braces(text)
     assert errors == expected_errors
@@ -2116,7 +2115,7 @@ def test_check_html_with_braces(text: str, expected_errors: List[str]):
     ],
 )
 def test_extract_footnote_definitions(
-    text: str, expected_definitions: Dict[str, int]
+    text: str, expected_definitions: dict[str, int]
 ):
     """Test extracting footnote definitions from text."""
     definitions = source_file_checks.extract_footnote_line_numbers(text)
@@ -2138,7 +2137,7 @@ def test_extract_footnote_definitions(
     ],
 )
 def test_extract_footnote_references(
-    text: str, expected_references: Dict[str, int]
+    text: str, expected_references: dict[str, int]
 ):
     """Test extracting footnote references from text."""
     references = source_file_checks.extract_footnote_references(text)
@@ -2279,7 +2278,7 @@ def test_extract_footnote_references(
         ),
     ],
 )
-def test_check_footnote_references(text: str, expected_errors: List[str]):
+def test_check_footnote_references(text: str, expected_errors: list[str]):
     """Test checking footnote references."""
     errors = source_file_checks.check_footnote_references(text)
     # Sort both lists for comparison since order may vary
@@ -2370,7 +2369,7 @@ def test_check_footnote_references(text: str, expected_errors: List[str]):
     ],
 )
 def test_check_description_list_continuations(
-    text: str, expected_errors: List[str]
+    text: str, expected_errors: list[str]
 ):
     """Test checking description list continuations."""
     errors = source_file_checks.check_description_list_continuations(text)
@@ -2392,7 +2391,7 @@ _MISSING_DATE_ERR = ["Missing or empty date_published field"]
     ],
 )
 def test_check_publication_date(
-    metadata: Dict[str, object], expected_errors: List[str]
+    metadata: dict[str, object], expected_errors: list[str]
 ):
     """Test the check_publication_date function."""
     assert (
@@ -2414,15 +2413,13 @@ def test_main_publication_dates_flag(
     content_dir = quartz_project_structure["content"]
     tmp_path = git_repo_setup["root"]
 
-    (content_dir / "test.md").write_text(
-        """---
+    (content_dir / "test.md").write_text("""---
 title: Test Post
 description: Test Description
 permalink: /test
 tags: [test]
 ---
-"""
-    )
+""")
     monkeypatch.setattr(
         script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
     )

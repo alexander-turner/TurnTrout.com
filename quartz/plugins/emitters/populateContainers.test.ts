@@ -410,6 +410,27 @@ describe("PopulateContainers", () => {
         global.fetch = originalFetch
       }
     })
+    it("should handle CDN fetch errors gracefully", async () => {
+      urlCache.clear()
+
+      const pngPath = "/static/images/external-favicons/example_com"
+      setFaviconCounts([[pngPath, minFaviconCount + 1]])
+
+      const originalFetch = global.fetch
+      const mockFetch = jest
+        .fn<(url: string) => Promise<Response>>()
+        .mockRejectedValue(new Error("Network error"))
+      global.fetch = mockFetch as unknown as typeof fetch
+
+      try {
+        const emitter = PopulateContainersEmitter()
+        const result = await emitter.emit(mockCtx, [], mockStaticResources)
+        expect(result).toBeDefined()
+      } finally {
+        global.fetch = originalFetch
+      }
+    })
+
     it("should handle unknown populate targets gracefully", async () => {
       setFaviconCounts([])
 
@@ -910,7 +931,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'git rev-list --all --count --author="Alex Turner"',
+          "git rev-list --all --count --author='Alex Turner'",
           { encoding: "utf-8" },
         )
       })
@@ -924,7 +945,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'git rev-list --all --count --grep="claude.ai/code/session"',
+          "git rev-list --all --count --grep='claude.ai/code/session'",
           { encoding: "utf-8" },
         )
       })

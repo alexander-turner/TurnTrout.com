@@ -104,13 +104,17 @@ export function isShallowClone(): boolean {
   return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
 }
 
+function shellEscape(s: string): string {
+  return `'${s.replace(/'/g, "'\\''")}'`
+}
+
 // skipcq: JS-D1001
 export function countGitCommits(options: GitCountOptions = {}): number {
   if (isShallowClone()) return 0
 
   let cmd = "git rev-list --all --count"
-  if (options.author) cmd += ` --author="${options.author}"`
-  if (options.grep) cmd += ` --grep="${options.grep}"`
+  if (options.author) cmd += ` --author=${shellEscape(options.author)}`
+  if (options.grep) cmd += ` --grep=${shellEscape(options.grep)}`
   const output = execSync(cmd, { encoding: "utf-8" })
   return parseInt(output.trim(), 10)
 }
@@ -206,8 +210,8 @@ const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
         if (response.ok) {
           urlCache.set(pngPath, svgUrl)
         }
-      } catch {
-        // SVG doesn't exist on CDN, that's fine
+      } catch (err) {
+        logger.debug(`SVG not available on CDN for ${pngPath}: ${err}`)
       }
     }),
   )

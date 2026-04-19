@@ -15,9 +15,10 @@ import tempfile
 import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Literal, NamedTuple, Set
+from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -52,7 +53,7 @@ _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
 RSS_XSD_PATH = _GIT_ROOT / "scripts" / ".rss-2.0.xsd"
 
-_IssuesDict = Dict[str, list[str] | list[Tag] | bool]
+_IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
 # Define the parser but don't parse immediately
 parser = argparse.ArgumentParser(
@@ -76,9 +77,9 @@ _css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
 _css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
 
 
-def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
+def _get_defined_css_variables(css_file_path: Path) -> set[str]:
     """Extract all defined CSS variable names from a CSS file."""
-    defined_vars: Set[str] = set()
+    defined_vars: set[str] = set()
 
     css_content = css_file_path.read_text(encoding="utf-8")
     for match in _css_variable_declaration_pattern.finditer(css_content):
@@ -88,7 +89,7 @@ def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
 
 
 def check_inline_style_variables(
-    soup: BeautifulSoup, defined_variables: Set[str] | None = None
+    soup: BeautifulSoup, defined_variables: set[str] | None = None
 ) -> list[str]:
     """Check elements for inline styles using undefined CSS variables."""
     issues: list[str] = []
@@ -1787,7 +1788,7 @@ class CheckOptions:
     """Configuration options shared across all file checks."""
 
     should_check_fonts: bool = False
-    defined_css_variables: Set[str] | None = None
+    defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
 
 
@@ -2491,7 +2492,7 @@ def extract_citation_keys_from_html(soup: BeautifulSoup) -> list[str]:
 
 
 def _find_duplicate_citations(
-    citation_to_files: Dict[str, list[str]],
+    citation_to_files: dict[str, list[str]],
 ) -> list[str]:
     """Find citation keys that appear in multiple files."""
     issues: list[str] = []
@@ -2508,7 +2509,7 @@ def _find_duplicate_citations(
 def _maybe_collect_citation_keys(
     file_path: Path,
     public_dir: Path,
-    citation_to_files: Dict[str, list[str]],
+    citation_to_files: dict[str, list[str]],
 ) -> None:
     """Extract citation keys from file and add to collection if not a
     redirect."""
@@ -2815,14 +2816,14 @@ def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
     check_fonts: bool,
-    defined_css_vars: Set[str] | None = None,
+    defined_css_vars: set[str] | None = None,
 ) -> bool:
     """Processes all HTML files in the public directory and returns if issues
     were found."""
     issues_found_in_html = False
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
-    files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
-    citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    files_to_skip: set[str] = script_utils.collect_aliases(content_dir)
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
@@ -2893,7 +2894,7 @@ def main() -> None:
         _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
         overall_issues_found = True
 
-    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
+    defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
         _PUBLIC_DIR,
         _GIT_ROOT / "website_content",

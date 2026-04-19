@@ -35,6 +35,8 @@ const colorMapping: Readonly<Record<string, string>> = {
   "#E36209": "var(--orange)",
 }
 
+const placeholderRestoreRegex = /___VAR_PLACEHOLDER_(?<index>\d+)___/g
+
 /**
  * Transforms a CSS style string by replacing color values with corresponding CSS variables.
  *
@@ -56,13 +58,12 @@ export const transformStyle = (
   })
 
   // Transform colors in the remaining style string
-  Object.entries(colorMapping).forEach(([color, variable]) => {
-    const regex = new RegExp(`\\b${color}\\b`, "gi")
-    newStyle = newStyle.replace(regex, variable)
-  })
+  for (const [color, variable] of Object.entries(colorMapping)) {
+    newStyle = newStyle.replace(new RegExp(`\\b${color}\\b`, "gi"), variable)
+  }
 
   // Restore var() expressions
-  newStyle = newStyle.replace(new RegExp(`${placeholder}(?<index>\\d+)___`, "g"), (...args) => {
+  newStyle = newStyle.replace(placeholderRestoreRegex, (...args) => {
     const groups = args[args.length - 1] as { index: string }
     return varExpressions[parseInt(groups.index)]
   })
