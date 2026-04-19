@@ -410,6 +410,7 @@ describe("PopulateContainers", () => {
         global.fetch = originalFetch
       }
     })
+
     it("should handle CDN fetch errors gracefully", async () => {
       urlCache.clear()
 
@@ -932,6 +933,20 @@ describe("PopulateContainers", () => {
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
           "git rev-list --all --count --author='Alex Turner'",
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should escape single quotes in author name", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("42\n")
+
+        const count = populateModule.countGitCommits({ author: "O'Brien" })
+
+        expect(count).toBe(42)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          "git rev-list --all --count --author='O'\\''Brien'",
           { encoding: "utf-8" },
         )
       })
