@@ -12,9 +12,10 @@ import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
 
 // Per-changed-line-pair cap for Myers char-diff. Beyond this combined length,
 // we fall back to a linear prefix+suffix diff — which highlights the divergent
-// middle span as a single block. Myers diffChars is ~O((N+M)·D) and blows up
-// badly on long single-line inputs (>5s at 10K chars), so we cap it.
-const MAX_CHAR_DIFF_LENGTH = 2_000
+// middle as a single block. Myers diffChars is ~O((N+M)·D) and scales badly:
+// ~5ms at 1.6K chars, ~55ms at 6.6K, ~850ms at 25K on punctilio-style edits.
+// 4K keeps the worst case around 25ms per line pair.
+const MAX_CHAR_DIFF_LENGTH = 4_000
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
