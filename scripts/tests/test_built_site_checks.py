@@ -2838,6 +2838,22 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert "I 've" not in result[0]
 
 
+def test_extract_flat_paragraph_texts_collapses_internal_whitespace():
+    """
+    Embedded newlines/tabs in paragraph HTML are collapsed to single spaces.
+
+    Each paragraph must occupy exactly one line in the spellcheck tempfile so
+    the line_to_source mapping stays in sync with per-line warnings.
+    """
+    html = "<article><p>First line\n\nsecond line\twith\ttabs.</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "\n" not in result[0]
+    assert "\t" not in result[0]
+    assert "First line second line with tabs" in result[0]
+
+
 def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
     """
     A <p> containing block-level elements (e.g. from transclusion wrapping
@@ -2897,6 +2913,37 @@ def test_parse_spellcheck_output(stdout, line_to_source, expected):
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
         == expected
     )
+
+
+def test_write_paragraphs_to_tempfile_preserves_one_line_per_paragraph(
+    tmp_path, monkeypatch
+):
+    """
+    Each paragraph maps to exactly one tempfile line, even if it contains
+    embedded newlines.
+
+    Otherwise line_to_source misattributes later paragraphs' warnings to the
+    wrong source file.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    paragraph_map = {
+        "first.html": ["paragraph one with\nembedded newline"],
+        "second.html": ["paragraph two on second file"],
+    }
+    tmp_file, line_to_source = built_site_checks._write_paragraphs_to_tempfile(
+        paragraph_map
+    )
+    try:
+        contents = tmp_file.read_text(encoding="utf-8")
+    finally:
+        tmp_file.unlink(missing_ok=True)
+
+    lines = contents.splitlines()
+    assert len(lines) == 2
+    assert line_to_source == {1: "first.html", 2: "second.html"}
+    assert "\n" not in lines[0]
+    # The paragraph for line 2 really belongs to the second file.
+    assert "second file" in lines[1]
 
 
 def test_spellcheck_flattened_paragraphs_empty():
@@ -3710,13 +3757,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
