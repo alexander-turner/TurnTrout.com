@@ -702,48 +702,50 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
     visitParents(tree, (node, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]
       if (!parent) return
-      const index = parent.children.indexOf(node as ElementContent)
 
       const skipFormatting = [node, ...ancestors].some((anc) => toSkip(anc as Element))
       if (skipFormatting) {
         return // NOTE replaceRegex visits children so this won't check that children are not marked
       }
 
+      const nodeIndexAmongChildren = parent.children.indexOf(node as ElementContent)
       if (node.type === "text" && "value" in node) {
-        replaceFractions(node, index as number, parent as Parent, ancestors)
+        replaceFractions(node, nodeIndexAmongChildren as number, parent as Parent, ancestors)
       }
 
-      rearrangeLinkPunctuation(node as Element, index, parent as Element)
+      rearrangeLinkPunctuation(node as Element, nodeIndexAmongChildren, parent as Element)
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
-      if (node.type === "element") {
-        // Skip nbsp in headings — it prevents natural line-breaking and looks bad
-        const inHeading =
-          isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
-        const activeUncheckedTransformers = inHeading
-          ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
-          : uncheckedTextTransformers
-
-        const eltsToTransform = collectTransformableElements(node as Element, toSkip)
-        eltsToTransform.forEach((elt) => {
-          for (const transform of checkedTextTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, true)
-          }
-
-          for (const transform of activeUncheckedTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, false)
-          }
-
-          // Don't replace slashes in fractions, but give breathing room
-          // to others
-          const slashPredicate = (n: Element) => {
-            return !hasClass(n, "fraction") && n?.tagName !== "a"
-          }
-          if (slashPredicate(elt)) {
-            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
-          }
-        })
+      if (node.type !== "element") {
+        return;
       }
+
+      // Skip nbsp in headings — it prevents natural line-breaking and looks bad
+      const inHeading =
+        isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
+      const activeUncheckedTransformers = inHeading
+        ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+        : uncheckedTextTransformers
+
+      const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+      eltsToTransform.forEach((elt) => {
+        for (const transform of checkedTextTransformers) {
+          transformElement(elt, transform, toSkip, markerChar, true)
+        }
+
+        for (const transform of activeUncheckedTransformers) {
+          transformElement(elt, transform, toSkip, markerChar, false)
+        }
+
+        // Don't replace slashes in fractions, but give breathing room
+        // to others
+        const isNotFractionOrLink = (n: Element) => {
+          return !hasClass(n, "fraction") && n?.tagName !== "a"
+        }
+        if (isNotFractionOrLink(elt)) {
+          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
+        }
+      })
     })
 
     if (!resolvedOptions.skipFirstLetter) {
