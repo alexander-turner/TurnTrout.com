@@ -208,7 +208,7 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
 
   const previewContainer = page.locator("#preview-container")
 
-  // eslint-disable-next-line playwright/no-conditional-in-test -- viewport varies by project config
+   
   const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
