@@ -55,7 +55,7 @@ runs:
 
     - name: Restore pnpm cache
       if: inputs.install-node-deps == 'true'
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -64,7 +64,7 @@ runs:
 
     - name: Restore asset dimensions cache
       id: asset-dimensions-cache
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: quartz/plugins/transformers/.asset_dimensions.json
         key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
@@ -110,7 +110,7 @@ runs:
     # ── Browsers ─────────────────────────────────────────────────────
     - name: Cache Playwright browsers
       if: inputs.cache-playwright == 'true'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
         key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -119,7 +119,7 @@ runs:
 
     - name: Cache Puppeteer browsers
       if: inputs.cache-puppeteer == 'true'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/.cache/puppeteer
         key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -131,7 +131,7 @@ runs:
     # install commands (here and in calling workflows) reuse cached .debs.
     - name: Restore apt package cache
       if: inputs.cache-apt == 'true' && runner.os == 'Linux'
-      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/apt-cache
         key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
