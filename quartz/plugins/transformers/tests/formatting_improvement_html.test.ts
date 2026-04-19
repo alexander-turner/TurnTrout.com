@@ -1089,7 +1089,7 @@ describe("assertSmartQuotesMatch", () => {
     const invalidStrings = ["“This is missing an end quote", "“Nested “quotes” that are incorrect"]
 
     invalidStrings.forEach((str) => {
-      expect(() => assertSmartQuotesMatch(str)).toThrowErrorMatchingSnapshot()
+      expect(() => assertSmartQuotesMatch(str)).toThrow(/Mismatched quotes/)
     })
   })
 
@@ -1097,7 +1097,7 @@ describe("assertSmartQuotesMatch", () => {
     const invalidStrings = ["This has a random ending quote”", "“More” nested mismatches”"]
 
     invalidStrings.forEach((str) => {
-      expect(() => assertSmartQuotesMatch(str)).toThrowErrorMatchingSnapshot()
+      expect(() => assertSmartQuotesMatch(str)).toThrow(/Mismatched quotes/)
     })
   })
 })

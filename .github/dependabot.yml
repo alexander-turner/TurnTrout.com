@@ -6,6 +6,34 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    ignore:
+      # eslint 10 breaks eslint-plugin-react and eslint-plugin-jsx-a11y
+      # (peer deps pin to v9 max). Revisit when plugins add v10 support.
+      - dependency-name: "eslint"
+        versions: [">=10"]
+      - dependency-name: "@eslint/js"
+        versions: [">=10"]
+      # punctilio 3.3+ changes collectTransformableElements to return the
+      # outermost transformable element, so <p><a>URL</a></p> collects <p>
+      # and our "don't mangle URLs" check (elt.tagName !== "a") no longer
+      # fires. Re-enable once we either make the skip href-aware locally or
+      # add a per-text-node skip hook in punctilio itself.
+      - dependency-name: "punctilio"
+        versions: [">=3.3.0"]
+      # jest 30 switches to v8 coverage by default, which drops branch
+      # coverage below 100% on existing files (pre-existing branches that
+      # istanbul counted as fully covered). Re-enable after reconciling
+      # coverage reporter config.
+      - dependency-name: "jest"
+        versions: [">=30"]
+      - dependency-name: "jest-environment-jsdom"
+        versions: [">=30"]
+      - dependency-name: "babel-jest"
+        versions: [">=30"]
+      - dependency-name: "@jest/globals"
+        versions: [">=30"]
+      - dependency-name: "@types/jest"
+        versions: [">=30"]
     groups:
       npm-all:
         patterns:
@@ -35,6 +63,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
     groups:
       actions-all:
         patterns:
@@ -51,18 +83,26 @@ updates:
     schedule:
       interval: "weekly"
     ignore:
-      # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
       - dependency-name: "pnpm/action-setup"
-        versions: ["6"]
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/setup-visual-testing-env"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/summarize-failed-shards"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
   - package-ecosystem: "github-actions"
     directory: ".github/actions/deploy-to-cloudflare"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "pnpm/action-setup"
+        versions: [">=6"]
