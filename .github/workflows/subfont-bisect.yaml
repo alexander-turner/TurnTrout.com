@@ -1,25 +1,27 @@
 name: Subfont Bisect
 
-# Manually-dispatched workflow for bisecting the
-# `github:alexander-turner/subfont` fork. Pinned ref is installed,
-# subfont is timed against the current commit's built site, and the full
-# log is uploaded as an artifact for inspection.
+# Bisection harness for github:alexander-turner/subfont. On every push to
+# a claude/subfont-bisect* branch, reads the target fork ref from
+# .github/subfont-bisect-ref.txt, installs that subfont, runs it against
+# the current commit's built site, and reports elapsed time + log.
 #
-# Start with a known-good baseline (default) to confirm the pipeline works,
-# then flip `fork_ref` to candidate SHAs between good and bad until the
-# regression is located.
+# To bisect: edit .github/subfont-bisect-ref.txt and push. Can also be
+# dispatched manually from the Actions UI with an override ref.
 
 on:
+  push:
+    branches:
+      - "claude/subfont-bisect"
+      - "claude/subfont-bisect-*"
+    paths:
+      - ".github/workflows/subfont-bisect.yaml"
+      - ".github/subfont-bisect-ref.txt"
   workflow_dispatch:
     inputs:
-      fork_ref:
-        description: "subfont fork git ref (SHA, branch, or tag)"
-        required: true
-        default: "04198b6f"
-      step_timeout_minutes:
-        description: "Per-step subfont timeout (minutes)"
+      fork_ref_override:
+        description: "subfont fork git ref (leave blank to use file)"
         required: false
-        default: "75"
+        default: ""
 
 permissions:
   actions: read
@@ -41,6 +43,24 @@ jobs:
           fetch-depth: 1
           filter: blob:none
 
+      - name: Resolve fork ref
+        id: ref
+        run: |
+          set -e
+          OVERRIDE="${{ inputs.fork_ref_override }}"
+          if [ -n "$OVERRIDE" ]; then
+            FORK_REF="$OVERRIDE"
+            echo "Using dispatch override: $FORK_REF"
+          else
+            FORK_REF=$(tr -d '[:space:]' < .github/subfont-bisect-ref.txt)
+            echo "Using ref from file: $FORK_REF"
+          fi
+          if [ -z "$FORK_REF" ]; then
+            echo "::error::No fork ref supplied (file empty and no override)"
+            exit 1
+          fi
+          echo "fork_ref=$FORK_REF" >> "$GITHUB_OUTPUT"
+
       - name: Setup site tooling
         uses: ./.github/actions/setup-site
         with:
@@ -55,24 +75,31 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Install subfont fork at ${{ inputs.fork_ref }}
-        run: pnpm add -g github:alexander-turner/subfont#${{ inputs.fork_ref }}
+      - name: Install subfont fork at ${{ steps.ref.outputs.fork_ref }}
+        run: pnpm add -g github:alexander-turner/subfont#${{ steps.ref.outputs.fork_ref }}
 
-      - name: Record installed subfont SHA
+      - name: Record installed subfont version
+        id: record
         run: |
           set -e
-          INSTALLED=$(pnpm -g list --depth 0 --json | node -e '
+          INSTALLED=$(pnpm -g list --depth 0 --json 2>/dev/null | node -e '
             let s = "";
             process.stdin.on("data", d => s += d);
             process.stdin.on("end", () => {
-              const pkgs = JSON.parse(s).flatMap(e => Object.entries(e.dependencies || {}));
-              const subfont = pkgs.find(([name]) => name === "subfont");
-              console.log(subfont ? subfont[1].version || subfont[1].from || JSON.stringify(subfont[1]) : "NOT FOUND");
+              try {
+                const arr = JSON.parse(s);
+                const entries = arr.flatMap(e => Object.entries(e.dependencies || {}));
+                const subfont = entries.find(([n]) => n === "subfont");
+                if (!subfont) return console.log("NOT FOUND");
+                const info = subfont[1];
+                console.log(info.from || info.version || JSON.stringify(info));
+              } catch (e) {
+                console.log("PARSE ERROR: " + e.message);
+              }
             });
           ')
           echo "Installed subfont: $INSTALLED"
           echo "installed=$INSTALLED" >> "$GITHUB_OUTPUT"
-        id: record
 
       - name: Make subfont.sh executable
         run: chmod +x ./scripts/subfont.sh
@@ -83,7 +110,6 @@ jobs:
         run: |
           set -o pipefail
           ./scripts/subfont.sh 2>&1 | tee subfont.log
-          # Extract elapsed seconds from subfont.sh output ("Subfont completed in <N>s")
           ELAPSED=$(grep -oE 'Subfont completed in [0-9]+s' subfont.log | grep -oE '[0-9]+' | tail -1 || echo "")
           echo "elapsed_seconds=$ELAPSED" >> "$GITHUB_OUTPUT"
 
@@ -91,14 +117,14 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Subfont bisect — \`${{ inputs.fork_ref }}\`"
+            echo "## Subfont bisect — \`${{ steps.ref.outputs.fork_ref }}\`"
             echo ""
             echo "| Field | Value |"
             echo "|---|---|"
-            echo "| Fork ref (input) | \`${{ inputs.fork_ref }}\` |"
+            echo "| Fork ref | \`${{ steps.ref.outputs.fork_ref }}\` |"
             echo "| Installed | \`${{ steps.record.outputs.installed }}\` |"
             echo "| Subfont step result | ${{ steps.subfont.outcome }} |"
-            echo "| Elapsed (seconds) | ${{ steps.subfont.outputs.elapsed_seconds || 'n/a (step did not complete)' }} |"
+            echo "| Elapsed (seconds) | ${{ steps.subfont.outputs.elapsed_seconds || 'n/a' }} |"
             echo "| Site commit | \`${{ github.sha }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
@@ -106,6 +132,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: subfont-log-${{ inputs.fork_ref }}
+          name: subfont-log-${{ steps.ref.outputs.fork_ref }}
           path: subfont.log
           if-no-files-found: warn
