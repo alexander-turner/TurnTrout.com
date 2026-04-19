@@ -192,7 +192,7 @@ gh run view <run-id> --log-failed   # Show logs from a failed run
 
 After pushing to main:
 
-- **Publication date updates**: Automatically updates `date_published` and `date_updated` fields in article frontmatter
+- **Publication date updates**: Amends the pushed commit with updated `date_published`/`date_updated` fields and force-pushes; all other workflows restart on the amended commit via `cancel-in-progress`
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewport sizes)
 - Tests run on ~33 parallel shards (Linux only on PRs; macOS WebKit added on main)
 - macOS runners (10x cost of Linux) only run on pushes to main, not on PRs
