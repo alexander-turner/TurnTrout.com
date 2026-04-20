@@ -30,17 +30,16 @@ sequence-link: posts#becoming-stronger
 prev-post-slug: set-theory-textbook-review
 prev-post-title: "Set Up for Success: Insights from 'Naïve Set Theory'"
 next-post-slug: AI-textbook-review
-next-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence:
-  A Modern Approach'"
+next-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-03-21 00:00:00
+date_published: 2018-03-21
 original_url: https://www.lesswrong.com/posts/EvKWNRkJgLosgRDSa/lightness-and-unease
 skip_import: true
-description: A personal reflection on finding the rationalist community and the joy
-  and anxiety of pursuing AI alignment.
-date_updated: 2025-11-22 00:21:52.667251
+description: A personal reflection on finding the rationalist community and the joy and anxiety of pursuing AI alignment.
+date_updated: 2025-11-22
 ---
+
 
 
 

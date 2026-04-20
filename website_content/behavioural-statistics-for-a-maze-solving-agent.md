@@ -34,14 +34,15 @@ prev-post-slug: top-right-steering-vector
 prev-post-title: "Maze-Solving Agents: Add a Top-Right Vector, Make the Agent Go to the Top-Right"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-04-20 00:00:00
+date_published: 2023-04-20
 original_url: https://www.lesswrong.com/posts/eowhY5NaCaqY6Pkj9/behavioural-statistics-for-a-maze-solving-agent
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/37e3e1d834bdf27d2c64ea4834d8dcb1d235d054ee2ed177.jpg
 description: Closeness to cheese and the top-right corner both influence a maze-solving AI, suggesting a "shard-like" decision-making process.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."
 ---
+
 
 
 

@@ -19,10 +19,11 @@ aliases:
   - dataset-weaknesses
   - truthfulqa-weaknesses
   - truthful-qa-weaknesses
-date_published: 2025-01-15 15:26:21.006370
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-01-15
+date_updated: 2025-12-30
 card_image_alt: A clickbait-style meme with the headline "TruthfulQA Authors HATE Him!" featuring a stick figure jester pointing at a chart showing "Accuracy" rising. Text reads "Local Researchers nearly hit SOTA" and "With this one weird trick!" above a red "LEARN THE TRUTH NOW" button.
 ---
+
 
 
 

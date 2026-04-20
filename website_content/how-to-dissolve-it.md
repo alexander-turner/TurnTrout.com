@@ -26,13 +26,13 @@ aliases:
   - how-to-dissolve-it
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-03-07 00:00:00
+date_published: 2018-03-07
 original_url: https://www.lesswrong.com/posts/argvWNNHZAz2MeM8C/how-to-dissolve-it
 skip_import: true
-description: Dissolving technical problems by visualizing ideal solutions and then
-  working backwards.
-date_updated: 2025-11-22 00:21:52.667251
+description: Dissolving technical problems by visualizing ideal solutions and then working backwards.
+date_updated: 2025-11-22
 ---
+
 
 
 

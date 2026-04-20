@@ -25,14 +25,14 @@ aliases:
   - towards-a-new-impact-measure
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2018-09-18 00:00:00
+date_published: 2018-09-18
 original_url: https://www.lesswrong.com/posts/yEa7kwoMpsBgaBCgb/towards-a-new-impact-measure
 skip_import: true
-description: "Impact is reframed as a change in attainable utility for both humans
-  and AI agents. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "Impact is reframed as a change in attainable utility for both humans and AI agents. "
+date_updated: 2025-11-22
 createBibtex: true
 ---
+
 
 
 

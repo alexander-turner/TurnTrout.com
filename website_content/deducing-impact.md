@@ -34,14 +34,15 @@ next-post-slug: attainable-utility-theory
 next-post-title: "Attainable Utility Theory: Why Things Matter"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-09-24 00:00:00
+date_published: 2019-09-24
 original_url: https://www.lesswrong.com/posts/Qs88fvwnjBevMrbkK/deducing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/FNVolSf.jpg
 description: Impact, viewed through the lens of humans and other agents, demands a definition. How do we measure the mark we leave on the world?
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: 'Text: "Imagine that the sun goes supernova." An illustration shows the sun exploding into a brilliant supernova, sending a destructive wave of light that engulfs Earth.'
 ---
+
 
 
 

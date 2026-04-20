@@ -34,14 +34,15 @@ next-post-slug: functional-analysis-textbook-review
 next-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2020-03-25 00:00:00
+date_published: 2020-03-25
 original_url: https://www.lesswrong.com/posts/o3aTqo5zp6phkuiRw/ode-to-joy-insights-from-a-first-course-in-ordinary
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/eb2E5Eg.jpg
 description: "Textbook insights into differential equations: how to express systems in terms of change, equilibria and stability, resonance, and more. "
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.'
 ---
+
 
 
 

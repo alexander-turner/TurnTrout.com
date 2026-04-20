@@ -33,14 +33,15 @@ next-post-slug: ordinary-differential-equations-textbook-review
 next-post-title: "ODE to Joy: Insights from 'A First Course in Ordinary Differential Equations'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2020-02-22 00:00:00
+date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/TSLnckszv4Tb5cHmt/continuous-improvement-insights-from-topology
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/k6b4WRE.jpg
 description: Reviewing Munkres' "Topology", reflecting on compactness, homotopy, and what I was even doing with my life before understanding homeomorphisms.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A diagram illustrating the definition of continuity for a function f from a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. The function f maps this to Y, where the corresponding sequence f(x_n) converges to f(x), visually demonstrating topological convergence.
 ---
+
 
 
 

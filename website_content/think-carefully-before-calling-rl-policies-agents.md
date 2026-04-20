@@ -3,8 +3,7 @@ permalink: RL-trains-policies-not-agents
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
+lw-page-url: https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
 lw-is-question: 'false'
 lw-posted-at: 2023-06-02T03:46:07.467000Z
 lw-last-modification: 2024-03-27T15:51:32.355000Z
@@ -27,15 +26,14 @@ aliases:
   - think-carefully-before-calling-rl-policies-agents
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2023-06-02 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
+date_published: 2023-06-02
+original_url: https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
 skip_import: true
-description: RL researchers call trained policies "agents", biasing how we think about
-  their behavior. I advocate for using the term "policy" instead.
-date_updated: 2025-11-22 00:21:52.667251
+description: RL researchers call trained policies "agents", biasing how we think about their behavior. I advocate for using the term "policy" instead.
+date_updated: 2025-11-22
 createBibtex: true
 ---
+
 
 
 

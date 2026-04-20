@@ -32,13 +32,13 @@ next-post-slug: reward-is-not-the-optimization-target
 next-post-title: Reward Is Not the Optimization Target
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-08-08 00:00:00
+date_published: 2022-08-08
 original_url: https://www.lesswrong.com/posts/FMdGt9S9irgxeD9Xz/general-alignment-properties
 skip_import: 'true'
-description: Comparing how AIXI and humans acquire values reveals important differences
-  in how these agents interact with the world.
-date_updated: 2025-11-22 00:21:52.667251
+description: Comparing how AIXI and humans acquire values reveals important differences in how these agents interact with the world.
+date_updated: 2025-11-22
 ---
+
 
 
 

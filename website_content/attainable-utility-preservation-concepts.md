@@ -34,15 +34,16 @@ next-post-slug: attainable-utility-preservation-empirical-results
 next-post-title: "Attainable Utility Preservation: Empirical Results"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2020-02-17 00:00:00
+date_published: 2020-02-17
 original_url: https://www.lesswrong.com/posts/75oMAADr4265AGK3L/attainable-utility-preservation-concepts
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/KPv2beS.jpg
 description: "Exploring the ideas behind Attainable Utility Preservation: penalize the AI for gaining power to bound its impact."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: "Title text reads: \"This approach is called Attainable Utility Preservation.\" A diagram shows a robot's reach being stopped by a blue energy field. Beside it, three status bars labeled \"Human\", \"Trout\", and \"AI\" all show high attainable utility levels."
 createBibtex: true
 ---
+
 
 
 

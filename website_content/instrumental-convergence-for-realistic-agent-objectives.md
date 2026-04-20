@@ -34,12 +34,13 @@ next-post-slug: parametrically-retargetable-power-seeking
 next-post-title: Parametrically retargetable decision-makers tend to seek power
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2022-01-22 00:00:00
+date_published: 2022-01-22
 original_url: https://www.lesswrong.com/posts/W22Btd7NmGuucFejc/instrumental-convergence-for-realistic-agent-objectives
 skip_import: true
 description: Realistic AI objectives aren't random utility functions. I explore instrumental convergence for objectives defined over features of the environment.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

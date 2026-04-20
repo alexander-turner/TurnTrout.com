@@ -5,17 +5,17 @@ no_dropcap: false
 tags:
   - critique
   - practical
-description: When a claim is shown to be incorrect, defenders may say that the author
-  actually meant something else entirely. I think this move is harmful.
+description: When a claim is shown to be incorrect, defenders may say that the author actually meant something else entirely. I think this move is harmful.
 authors:
   - Alex Turner
 hideSubscriptionLinks: false
 card_image:
 aliases:
   - clear-communication
-date_published: 2025-06-29 16:49:07.944742
-date_updated: 2025-07-01 16:01:55.582303
+date_published: 2025-06-29
+date_updated: 2025-07-01
 ---
+
 
 
 

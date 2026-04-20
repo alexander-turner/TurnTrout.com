@@ -34,12 +34,13 @@ next-post-slug: instrumental-convergence-via-vnm-preferences
 next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-08-08 00:00:00
+date_published: 2021-08-08
 original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

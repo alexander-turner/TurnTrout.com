@@ -3,8 +3,7 @@ permalink: understanding-and-avoiding-value-drift
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
+lw-page-url: https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
 lw-is-question: 'false'
 lw-posted-at: 2022-09-09T04:16:48.404000Z
 lw-last-modification: 2022-11-08T00:44:20.675000Z
@@ -35,15 +34,14 @@ next-post-slug: a-shot-at-the-diamond-alignment-problem
 next-post-title: A Shot at the Diamond-Alignment Problem
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-09-09 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
+date_published: 2022-09-09
+original_url: https://www.lesswrong.com/posts/jFvFreCeejRKaZv4v/understanding-and-avoiding-value-drift
 skip_import: true
-description: "A shard theory analysis of value drift: what it is, how it happens,
-  and how to avoid it, even without controlling your experiences. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "A shard theory analysis of value drift: what it is, how it happens, and how to avoid it, even without controlling your experiences. "
+date_updated: 2025-11-22
 createBibtex: true
 ---
+
 
 
 

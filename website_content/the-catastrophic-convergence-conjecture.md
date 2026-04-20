@@ -35,15 +35,16 @@ next-post-slug: attainable-utility-preservation-concepts
 next-post-title: "Attainable Utility Preservation: Concepts"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
-date_published: 2020-02-14 00:00:00
+date_published: 2020-02-14
 original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic-convergence-conjecture
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 createBibtex: true
 ---
+
 
 
 

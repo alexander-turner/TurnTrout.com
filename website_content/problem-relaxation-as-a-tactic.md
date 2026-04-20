@@ -34,12 +34,13 @@ next-post-slug: insights-from-euclids-elements
 next-post-title: Insights from Euclid's 'Elements'
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-04-22 00:00:00
+date_published: 2020-04-22
 original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxation-as-a-tactic
 skip_import: true
 description: Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 

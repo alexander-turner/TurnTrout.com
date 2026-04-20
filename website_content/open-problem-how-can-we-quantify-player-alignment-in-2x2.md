@@ -26,12 +26,13 @@ aliases:
   - open-problem-how-can-we-quantify-player-alignment-in-2x2
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2021-06-16 00:00:00
+date_published: 2021-06-16
 original_url: https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
 skip_import: true
 description: "Quantifying player alignment in game theory: how aligned are the players' incentives in a given game? "
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2025-12-18
 ---
+
 
 
 

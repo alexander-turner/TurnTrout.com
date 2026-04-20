@@ -25,12 +25,13 @@ aliases:
   - gpt-3-gems
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-07-23 00:00:00
+date_published: 2020-07-23
 original_url: https://www.lesswrong.com/posts/uu8FwG5XPQ6zpFaEN/gpt-3-gems
 skip_import: true
 description: "GPT-3's output: sometimes insightful, sometimes silly. Read my favorite interactions with this intriguing, flawed network."
-date_updated: 2026-02-23 17:58:50.463964
+date_updated: 2026-02-23
 ---
+
 
 
 

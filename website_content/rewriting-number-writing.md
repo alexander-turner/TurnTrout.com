@@ -16,10 +16,11 @@ aliases:
   - flipped-integers
   - number-proposal
   - rethinking-number-writing
-date_published: 2025-07-25 13:30:55.478301
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-07-25
+date_updated: 2025-12-30
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
+
 
 
 

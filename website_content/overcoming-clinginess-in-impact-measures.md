@@ -3,8 +3,7 @@ permalink: overcoming-clinginess-in-impact-measures
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
+lw-page-url: https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
 lw-is-question: "false"
 lw-posted-at: 2018-06-30T22:51:29.065000Z
 lw-last-modification: None
@@ -26,14 +25,13 @@ aliases:
   - "overcoming-clinginess-in-impact-measures"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-06-30 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
+date_published: 2018-06-30
+original_url: https://www.lesswrong.com/posts/DvmhXysefEyEvXuXS/overcoming-clinginess-in-impact-measures
 skip_import: true
-description: Impact measures incentivize agents to avoid side effects, but what about
-  the side effects of ★other agents★?
-date_updated: 2025-11-22 00:21:52.667251
+description: Impact measures incentivize agents to avoid side effects, but what about the side effects of ★other agents★?
+date_updated: 2025-11-22
 ---
+
 
 
 

@@ -15,10 +15,11 @@ aliases:
   - routing-demo
   - mnist-partition-demo
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/12/12/interp-latent.html
-date_published: 2024-12-16 17:42:14.364997
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2024-12-16
+date_updated: 2025-12-30
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 ---
+
 
 
 

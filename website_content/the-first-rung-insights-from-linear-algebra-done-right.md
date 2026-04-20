@@ -3,8 +3,7 @@ permalink: linear-algebra-textbook-review
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
+lw-page-url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
 lw-is-question: 'false'
 lw-posted-at: 2018-04-22T05:23:49.024000Z
 lw-last-modification: None
@@ -29,20 +28,18 @@ lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: AI-textbook-review
-prev-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence:
-  A Modern Approach'"
+prev-post-title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
 next-post-slug: internalizing-internal-double-crux
 next-post-title: Internalizing Internal Double Crux
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-04-22 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
+date_published: 2018-04-22
+original_url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
 skip_import: true
-description: "The author rediscovers their love for math while rigorously studying
-  linear algebra, sharing insights and lessons learned along the way. "
-date_updated: 2025-11-22 00:21:52.667251
+description: "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way. "
+date_updated: 2025-11-22
 ---
+
 
 
 
@@ -62,7 +59,7 @@ This time around, the appropriately acronymized _LADR_ is the first step on my j
 
 ## Tight Feedback Loops
 
-In a (possibly maniacal) effort to ensure both mastery of the material and the maturation of my proof skillset, I did nearly [^1] every one of the 561 exercises provided. I skipped problems only when I was confident I wouldn't learn anything, or calculus I didn't remember was required (and the payoff didn't seem worth the time spent relearning it now in a shallow manner, as opposed to thoroughly learning more calculus later). If I could sketch a solid proof in my head, I wouldn't write anything down. Even in the latter case, I checked my answers using [this site](http://linearalgebras.com/) (additional solutions may be found [here](https://github.com/guestname/linear-algebra-done-right-solutions), although be warned that not all of them are correct).
+In a (possibly maniacal) effort to ensure both mastery of the material and the maturation of my proof skillset, I did nearly [^1] every one of the 561 exercises provided. I skipped problems only when I was confident I wouldn't learn anything, or calculus I didn't remember was required (and the payoff didn't seem worth the time spent relearning it now in a shallow manner, as opposed to thoroughly learning more calculus later). If I could sketch a solid proof in my head, I wouldn't write anything down. Even in the latter case, I checked my answers using [this site](http://linearalgebras.com/) (additional solutions may be found in [this GitHub repository](https://github.com/guestname/linear-algebra-done-right-solutions), although be warned that not all of them are correct).
 
 I also sometimes elected to give myself small hints after being stuck on a problem for a while; the idea was to keep things at the difficulty sweet spot. Specifically, I'd spend 10-20 minutes working on a problem by myself; if I wasn't getting anywhere, I'd find a hint and then _backpropagate the correct mental motion instead of what I had been trying to do._ I think that focusing on where you were going wrong and what insight you _should_ have had, in what direction you _should_ have looked, is more efficient than just reading solutions.
 

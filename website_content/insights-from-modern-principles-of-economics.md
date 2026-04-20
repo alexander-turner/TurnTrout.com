@@ -33,14 +33,15 @@ next-post-slug: digital-minimalism
 next-post-title: Do a cost-benefit analysis of your technology usage
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2021-09-22 00:00:00
+date_published: 2021-09-22
 original_url: https://www.lesswrong.com/posts/hRa5c5GaMNkNGtnXq/insights-from-modern-principles-of-economics
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/htfmtdtntpqpmr2mlqxl.jpg
 description: Textbook insights on economic policy, price gouging, and the surprising efficiency of competitive markets.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A scatter plot from Our World in Data showing a strong negative correlation between a country's GDP per capita and the share of its population dissatisfied with their standard of living. Countries with low GDP, like Haiti, show high dissatisfaction (~80%), while wealthy countries, like Luxembourg and Singapore, show low dissatisfaction (<10%).
 ---
+
 
 
 

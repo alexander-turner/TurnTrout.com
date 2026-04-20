@@ -3,8 +3,7 @@ permalink: can-fear-of-the-dark-bias-us-more-generally
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/zkjfzLCqJxdNKfTKJ/can-fear-of-the-dark-bias-us-more-generally
+lw-page-url: https://www.lesswrong.com/posts/zkjfzLCqJxdNKfTKJ/can-fear-of-the-dark-bias-us-more-generally
 lw-is-question: "true"
 lw-posted-at: 2019-12-22T22:09:42.239000Z
 lw-last-modification: 2019-12-22T22:12:38.699000Z
@@ -26,15 +25,14 @@ aliases:
   - can-fear-of-the-dark-bias-us-more-generally
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-12-22 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/zkjfzLCqJxdNKfTKJ/can-fear-of-the-dark-bias-us-more-generally
+date_published: 2019-12-22
+original_url: https://www.lesswrong.com/posts/zkjfzLCqJxdNKfTKJ/can-fear-of-the-dark-bias-us-more-generally
 skip_import: true
 no_dropcap: true
-description: "Fear of the dark increases our perception of risk. I ask: does this
-  apply to decision-making more broadly?"
-date_updated: 2025-11-22 00:21:52.667251
+description: "Fear of the dark increases our perception of risk. I ask: does this apply to decision-making more broadly?"
+date_updated: 2025-11-22
 ---
+
 
 
 

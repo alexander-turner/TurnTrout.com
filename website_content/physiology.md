@@ -17,10 +17,11 @@ lw-sequence-title: Becoming Stronger
 sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
-date_published: 2025-01-23 20:50:38.343137
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-01-23
+date_updated: 2025-12-30
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
+
 
 
 

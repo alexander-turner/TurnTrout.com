@@ -33,15 +33,16 @@ aliases:
   - MELBO
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2024-04-30 00:00:00
+date_published: 2024-04-30
 original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-eliciting-latent-behaviors-in-language-1
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
+
 
 
 

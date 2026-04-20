@@ -27,14 +27,15 @@ aliases:
   - conservative-agency-with-multiple-stakeholders
 lw-reward-post-warning: "true"
 use-full-width-images: "true"
-date_published: 2021-06-08 00:00:00
+date_published: 2021-06-08
 original_url: https://www.lesswrong.com/posts/gLfHp8XaWpfsmXyWZ/conservative-agency-with-multiple-stakeholders
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/5d8db03fe692d0a310f42ec0c249a6b2be892ea6e84ec762.jpg
 description: How to make AI agents avoid negative side effects, especially in multi-stakeholder environments.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: A drawing titled "Importance of Avoiding Side Effects" shows a figure running toward a checkered finish flag. As it runs, it kicks aside delicately arranged blocks, damaging its path and illustrating an agent causing negative side effects while pursuing its goal.
 ---
+
 
 
 

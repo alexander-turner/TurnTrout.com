@@ -34,13 +34,14 @@ next-post-slug: second-analysis-textbook-review
 next-post-title: "Turning Up the Heat: Insights from Tao's 'Analysis II'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-07-05 00:00:00
+date_published: 2018-07-05
 original_url: https://www.lesswrong.com/posts/BGv98aKicyT8eH4AY/making-a-difference-tempore-insights-from-reinforcement
 no_dropcap: "true"
 skip_import: true
 description: "A deep dive into reinforcement learning, covering algorithms, exploration vs. exploitation, and the importance of safe AI development."
-date_updated: 2026-01-25 23:47:56.984113
+date_updated: 2026-01-25
 ---
+
 
 
 

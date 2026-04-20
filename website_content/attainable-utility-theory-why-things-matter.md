@@ -34,14 +34,15 @@ next-post-slug: world-state-is-the-wrong-abstraction-for-impact
 next-post-title: World State is the Wrong Abstraction for Impact
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-09-27 00:00:00
+date_published: 2019-09-27
 original_url: https://www.lesswrong.com/posts/C74F7QTEAYSTGAytJ/attainable-utility-theory-why-things-matter
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hqEX2r1.jpg
 description: "Description: Impact isn't about changing the world; it's about changing our ability to achieve goals within it."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2025-12-30
 card_image_alt: Handwritten text asking, "How does this change my ability to get what I want?". The question is highlighted with a purple and yellow splash.
 ---
+
 
 
 

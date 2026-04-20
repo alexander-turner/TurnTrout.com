@@ -26,13 +26,14 @@ aliases:
   - review-of-debate-on-instrumental-convergence-between-lecun
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-01-12 00:00:00
+date_published: 2021-01-12
 original_url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 skip_import: true
 card_image:
 description: Experts clash on the dangers of "instrumental convergence" in AI, but clear definitions and formal thought are sorely needed.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-03-29
 ---
+
 
 
 
