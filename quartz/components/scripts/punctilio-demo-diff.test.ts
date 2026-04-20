@@ -159,15 +159,12 @@ describe("renderDiffHtml", () => {
   })
 
   it("wraps a pure line insertion (no paired removal) in a single diff-insert span", () => {
-    // Inserting a brand-new line between two unchanged lines
     const html = renderDiffHtml("a\nc\n", "a\nb\nc\n")
     expect(html).toBe('a<br><span class="diff-insert">b<br></span>c<br>')
   })
 
   it("emits nothing for a pure line removal", () => {
-    // Removing a line should leave no trace in the rendered result
     const html = renderDiffHtml("a\nb\nc\n", "a\nc\n")
-    // Only the surviving lines appear, with no diff-insert span
     expect(html).toBe("a<br>c<br>")
     expect(html).not.toContain("diff-insert")
   })
