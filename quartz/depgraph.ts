@@ -174,12 +174,16 @@ export default class DepGraph<T> {
       this.addEdge(neighbor, node)
     })
 
-    // Remove incoming edges for this node that are absent in the other graph
+    // Collect edges to remove first to avoid mutating the Set during iteration
+    const toRemove: T[] = []
     this.forEachInNeighbor(node, (source) => {
       if (!other.hasEdge(source, node)) {
-        this.removeEdge(source, node)
+        toRemove.push(source)
       }
     })
+    for (const source of toRemove) {
+      this.removeEdge(source, node)
+    }
   }
 
   /**
