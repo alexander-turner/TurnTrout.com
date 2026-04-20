@@ -130,11 +130,7 @@ def _parse_decisions(text: str) -> list[Decision]:
 def classify(
     unknowns: list[UnknownWord], *, client: object | None = None
 ) -> list[Decision]:
-    """
-    Ask Claude to classify each unknown word.
-
-    Returns a decision list.
-    """
+    """Ask Claude to classify each unknown word; returns a decision list."""
     if not unknowns:
         return []
     if client is None:
@@ -142,22 +138,15 @@ def classify(
 
         client = anthropic.Anthropic()
 
-    payload = {
-        "words": [
-            {"word": u.word, "source": u.source, "context": u.context}
-            for u in unknowns
-        ]
-    }
+    payload = json.dumps({"words": [u.__dict__ for u in unknowns]})
     response = client.messages.create(  # type: ignore[attr-defined]
         model=_MODEL,
         max_tokens=_MAX_TOKENS,
         system=_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": json.dumps(payload)}],
+        messages=[{"role": "user", "content": payload}],
     )
     text = "".join(
-        block.text
-        for block in response.content
-        if getattr(block, "type", None) == "text"
+        b.text for b in response.content if getattr(b, "type", None) == "text"
     )
     return _parse_decisions(text)
 
@@ -167,14 +156,12 @@ def apply_additions(
 ) -> list[str]:
     """Insert ``add`` decisions into the wordlist; return the words added."""
     existing = set(wordlist_path.read_text(encoding="utf-8").splitlines())
-    additions = sorted(
-        {d.word for d in decisions if d.action == "add"} - existing
-    )
-    if not additions:
+    new = {d.word for d in decisions if d.action == "add"} - existing
+    if not new:
         return []
-    merged = sorted(existing | set(additions), key=lambda w: (w.lower(), w))
+    merged = sorted(existing | new, key=lambda w: (w.lower(), w))
     wordlist_path.write_text("\n".join(merged) + "\n", encoding="utf-8")
-    return additions
+    return sorted(new)
 
 
 def _format_deferrals(
@@ -195,11 +182,7 @@ def _format_deferrals(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """
-    CLI entry point.
-
-    See module docstring for usage.
-    """
+    """CLI entry point; see module docstring for usage."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--public", type=Path, default=Path("public"))
     parser.add_argument(

@@ -3026,117 +3026,111 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
     assert "some warning text" in result[0]
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_AUGMENT_SCRIPT_REAL = _REPO_ROOT / "scripts" / "augment_spellcheck_wordlist.sh"
+_AUGMENT_SCRIPT = (
+    Path(__file__).resolve().parents[2]
+    / "scripts"
+    / "augment_spellcheck_wordlist.sh"
+)
 
 
-def _stage_augment_helper(tmp_path: Path) -> Path:
-    """Copy the real augmentation script into a fake repo under tmp_path."""
-    scripts_dir = tmp_path / "scripts"
-    scripts_dir.mkdir(parents=True, exist_ok=True)
-    dest = scripts_dir / "augment_spellcheck_wordlist.sh"
-    dest.write_bytes(_AUGMENT_SCRIPT_REAL.read_bytes())
-    dest.chmod(0o755)
-    return dest
+@pytest.fixture
+def fake_repo(tmp_path: Path, monkeypatch):
+    """
+    Fake git root with the real augment helper staged under scripts/.
 
-
-def test_augmented_wordlist_missing_wordlist(tmp_path, monkeypatch):
-    """Returns None when the canonical wordlist does not exist."""
+    Returns a helper ``write(content)`` that writes the given text to
+    ``config/spellcheck/.wordlist.txt`` and returns its path.
+    """
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
-    _stage_augment_helper(tmp_path)
-    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
-    assert built_site_checks._augmented_wordlist(wordlist) is None
-
-
-def test_augmented_wordlist_missing_helper_script(tmp_path, monkeypatch):
-    """Returns None when the augmentation helper script is missing."""
-    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    (tmp_path / "scripts").mkdir()
+    staged = tmp_path / "scripts" / "augment_spellcheck_wordlist.sh"
+    staged.write_bytes(_AUGMENT_SCRIPT.read_bytes())
+    staged.chmod(0o755)
     wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
     wordlist.parent.mkdir(parents=True)
-    wordlist.write_text("KaTeX\n")
-    assert built_site_checks._augmented_wordlist(wordlist) is None
+
+    def write(content: str) -> Path:
+        wordlist.write_text(content, encoding="utf-8")
+        return wordlist
+
+    return write
 
 
-def test_augmented_wordlist_emits_possessive_variants(tmp_path, monkeypatch):
-    """Augmented file contains base word + straight and curly possessives."""
-    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
-    _stage_augment_helper(tmp_path)
-    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
-    wordlist.parent.mkdir(parents=True)
-    wordlist.write_text("KaTeX\nAnthropic\n")
-
-    augmented = built_site_checks._augmented_wordlist(wordlist)
-    try:
-        assert augmented is not None
-        content = augmented.read_text(encoding="utf-8").splitlines()
-        assert "KaTeX" in content
-        assert "KaTeX's" in content
-        assert "KaTeX’s" in content
-        assert "Anthropic's" in content
-    finally:
-        if augmented is not None:
-            augmented.unlink(missing_ok=True)
-
-
-def test_augmented_wordlist_does_not_double_suffix(tmp_path, monkeypatch):
-    """Words already ending in 's are not re-suffixed to word's's."""
-    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
-    _stage_augment_helper(tmp_path)
-    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
-    wordlist.parent.mkdir(parents=True)
-    wordlist.write_text("Barto's\nNoether’s\n")
-
-    augmented = built_site_checks._augmented_wordlist(wordlist)
-    try:
-        assert augmented is not None
-        content = augmented.read_text(encoding="utf-8")
-        assert "Barto's's" not in content
-        assert "Noether’s’s" not in content
-        assert "Barto's" in content
-        assert "Noether’s" in content
-    finally:
-        if augmented is not None:
-            augmented.unlink(missing_ok=True)
-
-
-def test_augmented_wordlist_preserves_blanks_and_comments(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize(
+    "wordlist_content,helper_staged,expect_none",
+    [
+        pytest.param(None, True, True, id="missing-wordlist"),
+        pytest.param("KaTeX\n", False, True, id="missing-helper-script"),
+    ],
+)
+def test_augmented_wordlist_returns_none_when_prerequisites_missing(
+    tmp_path, monkeypatch, wordlist_content, helper_staged, expect_none
 ):
-    """Blank lines and comments pass through without generating variants."""
     monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
-    _stage_augment_helper(tmp_path)
+    if helper_staged:
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "augment_spellcheck_wordlist.sh").write_bytes(
+            _AUGMENT_SCRIPT.read_bytes()
+        )
     wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
-    wordlist.parent.mkdir(parents=True)
-    wordlist.write_text("# a comment\n\nKaTeX\n")
+    if wordlist_content is not None:
+        wordlist.parent.mkdir(parents=True)
+        wordlist.write_text(wordlist_content)
 
-    augmented = built_site_checks._augmented_wordlist(wordlist)
+    assert (
+        built_site_checks._augmented_wordlist(wordlist) is None
+    ) is expect_none
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,must_include,must_exclude",
+    [
+        pytest.param(
+            "KaTeX\nAnthropic\n",
+            ["KaTeX", "KaTeX's", "KaTeX’s", "Anthropic's"],
+            [],
+            id="possessive-expansion",
+        ),
+        pytest.param(
+            "Barto's\nNoether’s\n",
+            ["Barto's", "Noether’s"],
+            ["Barto's's", "Noether’s’s"],
+            id="no-double-suffix",
+        ),
+        pytest.param(
+            "# a comment\n\nKaTeX\n",
+            ["# a comment"],
+            ["# a comment's"],
+            id="preserves-blanks-and-comments",
+        ),
+    ],
+)
+def test_augmented_wordlist_content(
+    fake_repo, wordlist_content, must_include, must_exclude
+):
+    augmented = built_site_checks._augmented_wordlist(
+        fake_repo(wordlist_content)
+    )
+    assert augmented is not None
     try:
-        assert augmented is not None
-        content = augmented.read_text(encoding="utf-8")
-        assert "# a comment's" not in content
-        # The comment and blank line are preserved verbatim.
-        assert "# a comment" in content
+        text = augmented.read_text(encoding="utf-8")
+        for word in must_include:
+            assert word in text, f"{word!r} missing from augmented output"
+        for word in must_exclude:
+            assert word not in text, f"{word!r} should not appear"
     finally:
-        if augmented is not None:
-            augmented.unlink(missing_ok=True)
+        augmented.unlink(missing_ok=True)
 
 
-def test_spellcheck_passes_augmented_dict_to_cli(tmp_path, monkeypatch):
+def test_spellcheck_passes_augmented_dict_to_cli(fake_repo):
     """--dictionaries points at the augmented tempfile, not the source."""
-    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
-    _stage_augment_helper(tmp_path)
-    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
-    wordlist.parent.mkdir(parents=True)
-    wordlist.write_text("KaTeX\n")
-
+    wordlist = fake_repo("KaTeX\n")
     captured: dict[str, object] = {}
     real_run = subprocess.run
 
-    def fake_run(cmd, *args, **kwargs):  # noqa: ANN001,ANN002,ANN003
-        # The helper itself is invoked with check=True; let it run for real
-        # so we actually produce an augmented dictionary file.
+    def fake_run(cmd, *args, **kwargs):
         if cmd and str(cmd[0]).endswith("augment_spellcheck_wordlist.sh"):
-            return real_run(cmd, *args, **kwargs)  # noqa: S603
+            return real_run(cmd, *args, **kwargs)
         captured["argv"] = list(cmd)
         return subprocess.CompletedProcess(
             args=cmd, returncode=0, stdout="", stderr=""
@@ -3151,11 +3145,9 @@ def test_spellcheck_passes_augmented_dict_to_cli(tmp_path, monkeypatch):
         )
 
     argv = cast(list[str], captured["argv"])
-    assert "--dictionaries" in argv
-    dict_path_str = argv[argv.index("--dictionaries") + 1]
-    # The tempfile gets cleaned up in finally; re-assert on its name prefix.
-    assert Path(dict_path_str).name.startswith(".wordlist-augmented-")
-    assert str(wordlist) != dict_path_str
+    dict_path = Path(argv[argv.index("--dictionaries") + 1])
+    assert dict_path.name.startswith(".wordlist-augmented-")
+    assert dict_path != wordlist
 
 
 @pytest.mark.parametrize(
