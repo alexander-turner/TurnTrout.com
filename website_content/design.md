@@ -1186,8 +1186,11 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 
 [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) runs over both Markdown source and rendered HTML against `config/spellcheck/.wordlist.txt`. Two layers cut manual dictionary edits:
 
-1. **Possessive expansion** (`scripts/augment_spellcheck_wordlist.sh`): emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
-2. **Claude triage** (`scripts/spellcheck_triage.py`): sends each still-unknown word with its source context to Claude Haiku; obvious proper nouns are auto-added to the wordlist in alphabetical order, ambiguous ones are printed for review. Requires `ANTHROPIC_API_KEY`.
+Possessive expansion (`scripts/augment_spellcheck_wordlist.sh`)
+: Emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
+
+Claude triage (`scripts/spellcheck_triage.py`)
+: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the wordlist in alphabetical order, ambiguous ones are printed for review.
 
 ## Build pipeline extras
 
