@@ -127,6 +127,12 @@ def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
     yaml_parser.dump(metadata, stream)
     updated_yaml = stream.getvalue()
 
+    # split_yaml returns content starting with the newline that follows the
+    # closing `---`; drop it so "---\n" + content doesn't emit an extra
+    # blank line on every round-trip.
+    if content.startswith("\n"):
+        content = content[1:]
+
     # Write back to file if changes were made
     with file_path.open("w", encoding="utf-8") as f:
         f.write("---\n")

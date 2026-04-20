@@ -231,6 +231,23 @@ def test_write_to_yaml_preserves_order(temp_content_dir):
     assert list(field_positions.keys()) == list(original_metadata.keys())
 
 
+def test_write_to_yaml_is_idempotent_on_blank_lines(temp_content_dir):
+    """Round-tripping a file must not accumulate blank lines after the
+    frontmatter."""
+    test_file = create_markdown_file(
+        temp_content_dir / "idempotent.md",
+        frontmatter={"title": "Test Post", "date_published": "2024-01-01"},
+        content="\nHello world\n",
+    )
+    original = test_file.read_text(encoding="utf-8")
+
+    for _ in range(3):
+        metadata, content = script_utils.split_yaml(test_file)
+        update_lib.write_to_yaml(test_file, metadata, content)
+
+    assert test_file.read_text(encoding="utf-8") == original
+
+
 def test_long_urls_not_wrapped(temp_content_dir, mock_git):
     """Test that long URLs in lists are not wrapped across multiple lines."""
     long_url = "https://deepmindsafetyresearch.medium.com/steering-gemini-using-bidpo-vectors-8a0e7e1da1c9"
