@@ -597,7 +597,6 @@ def test_get_formatter_steps():
     step_names = [s.name for s in steps]
     expected_names = {
         "Linting Python",
-        "Formatting Python",
         "Formatting Python docstrings",
         "Linting TypeScript",
         "Cleaning up SCSS",
@@ -608,12 +607,15 @@ def test_get_formatter_steps():
     assert set(step_names) == expected_names
     assert len(steps) == len(expected_names)
 
-    # Ruff commands use --fix / format, not plain `check`, so the step is a
-    # true autofixer rather than a blocking check.
+    # Ruff check has --fix so the step is an autofixer, not a blocking
+    # check. We deliberately do NOT run `ruff format` here — black runs
+    # via lint-staged in the pre-commit hook and the two formatters fight.
     ruff_lint = next(s for s in steps if s.name == "Linting Python")
     assert "--fix" in ruff_lint.command
-    ruff_format = next(s for s in steps if s.name == "Formatting Python")
-    assert "format" in ruff_format.command
+    assert "format" not in ruff_lint.command
+    assert not any(
+        s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps
+    )
 
     eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
     assert "--fix" in eslint_step.command

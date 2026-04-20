@@ -406,14 +406,15 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
         str(git_root_path / "scripts"),
         str(git_root_path / ".github" / "scripts"),
     ]
+    # NB: no `ruff format` step. The pre-commit lint-staged pipeline runs
+    # `black` on Python files (see package.json) and ruff's formatter
+    # produces subtly different output. Running both creates an infinite
+    # loop of empty autofix commits as each reformat fights the other.
+    # `ruff check --fix` only touches lint issues, not layout.
     return [
         CheckStep(
             name="Linting Python",
             command=["uv", "run", "ruff", "check", "--fix", *py_targets],
-        ),
-        CheckStep(
-            name="Formatting Python",
-            command=["uv", "run", "ruff", "format", *py_targets],
         ),
         CheckStep(
             name="Formatting Python docstrings",
