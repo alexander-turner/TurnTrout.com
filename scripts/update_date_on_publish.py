@@ -4,11 +4,10 @@ import io
 import re  # Import the re module
 import subprocess
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from ruamel.yaml import YAML
-from ruamel.yaml.timestamp import TimeStamp
 
 # Ensure the parent directory is in the sys path so we can import utils
 sys.path.append(str(Path(__file__).parent.parent))
@@ -20,16 +19,7 @@ yaml_parser.preserve_quotes = True  # Preserve existing quotes
 yaml_parser.indent(mapping=2, sequence=2, offset=2)
 yaml_parser.width = 4096  # Prevent line wrapping for long URLs
 
-now = datetime.now()
-current_date = TimeStamp(
-    now.year,
-    now.month,
-    now.day,
-    now.hour,
-    now.minute,
-    now.second,
-    now.microsecond,
-)
+current_date = date.today()
 
 
 def _determine_commit_range(commit_range: str | None) -> str:
@@ -103,30 +93,19 @@ def is_file_modified(file_path: Path, commit_range: str | None = None) -> bool:
         return False
 
 
-def maybe_convert_to_timestamp(
-    raw_timestamp_info: str | datetime | TimeStamp,
-) -> TimeStamp:
-    """Convert various date formats to TimeStamp."""
-    if isinstance(raw_timestamp_info, TimeStamp):
-        return raw_timestamp_info
-
-    if isinstance(raw_timestamp_info, str):
+def maybe_convert_to_date(
+    raw_date_info: str | date | datetime,
+) -> date:
+    """Convert various date/datetime formats to a day-level ``date``."""
+    # datetime is a subclass of date, so check datetime first.
+    if isinstance(raw_date_info, datetime):
+        return raw_date_info.date()
+    if isinstance(raw_date_info, date):
+        return raw_date_info
+    if isinstance(raw_date_info, str):
         # Non-ISO is ambiguous; do not catch errors for that
-        dt = datetime.fromisoformat(raw_timestamp_info)
-    elif isinstance(raw_timestamp_info, datetime):
-        dt = raw_timestamp_info
-    else:
-        raise ValueError(f"Unknown date type {type(raw_timestamp_info)}")
-
-    return TimeStamp(
-        dt.year,
-        dt.month,
-        dt.day,
-        dt.hour,
-        dt.minute,
-        dt.second,
-        dt.microsecond,
-    )
+        return datetime.fromisoformat(raw_date_info).date()
+    raise ValueError(f"Unknown date type {type(raw_date_info)}")
 
 
 def maybe_update_publish_date(yaml_metadata: dict) -> None:
@@ -162,7 +141,7 @@ COPYRIGHT_PATTERN = re.compile(
 )
 
 
-def update_readme_copyright_year(current_datetime: datetime) -> bool:
+def update_readme_copyright_year(current_datetime: date) -> bool:
     """
     Update the copyright year in README.md if necessary.
 
@@ -238,17 +217,17 @@ def main(
         if is_file_modified(md_file_path, commit_range):
             metadata["date_updated"] = current_date
 
-        # Ensure that date fields are timestamps
+        # Normalize date fields to day-level ``date`` objects
         for key in ("date_published", "date_updated"):
             value = metadata.get(key)
             if value:
-                metadata[key] = maybe_convert_to_timestamp(value)
+                metadata[key] = maybe_convert_to_date(value)
 
         if metadata != original_metadata:
             print(f"Updated date information on {md_file_path}")
             write_to_yaml(md_file_path, metadata, content)
 
-    update_readme_copyright_year(now)
+    update_readme_copyright_year(current_date)
 
 
 if __name__ == "__main__":
