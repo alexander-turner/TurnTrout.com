@@ -1,4 +1,3 @@
-import { diffChars, type Change } from "diff"
 import { transform, type TransformOptions } from "punctilio"
 import { rehypePunctilio } from "punctilio/rehype"
 import { remarkPunctilio } from "punctilio/remark"
@@ -8,11 +7,8 @@ import remarkParse from "remark-parse"
 import remarkStringify from "remark-stringify"
 import { unified } from "unified"
 
-import { debounce, escapeHtml, setupCopyButton } from "./component_script_utils"
-
-// Maximum combined input+output length for character-level diff.
-// Beyond this, show plain output to avoid excessive memory use.
-const MAX_DIFF_LENGTH = 10_000
+import { debounce, setupCopyButton } from "./component_script_utils"
+import { renderDiffHtml } from "./punctilio-demo-diff"
 
 const STORAGE_KEY_INPUT = "punctilio-input"
 const STORAGE_KEY_MODE = "punctilio-mode"
@@ -83,32 +79,22 @@ function transformHtmlText(html: string, config: TransformOptions): string {
 }
 
 function doTransform(text: string, mode: TransformMode, config: TransformOptions): string {
+  // Skip punctilio's internal idempotency check (runs the whole transform
+  // twice). It's a library self-test, not a correctness requirement here, and
+  // the remark/rehype plugins already default it off.
+  const fastConfig: TransformOptions = { ...config, checkIdempotency: false }
   switch (mode) {
     case "plaintext":
-      return transform(text, config)
+      return transform(text, fastConfig)
     case "markdown":
-      return transformMarkdownText(text, config)
+      return transformMarkdownText(text, fastConfig)
     case "html":
-      return transformHtmlText(text, config)
+      return transformHtmlText(text, fastConfig)
     default: {
       const exhaustive: never = mode
       throw new Error(`Unknown mode: ${exhaustive}`)
     }
   }
-}
-
-// ─── Inline diff highlighting ────────────────────────────────────────
-
-/** Render diff changes as HTML spans, showing only additions (green) and unchanged text. */
-function renderDiffHtml(changes: ReturnType<typeof diffChars>): string {
-  return changes
-    .filter((change: Change) => !change.removed)
-    .map((change: Change) => {
-      const escaped = escapeHtml(change.value).replace(/\n/g, "<br>")
-      if (change.added) return `<span class="diff-insert">${escaped}</span>`
-      return escaped
-    })
-    .join("")
 }
 
 // ─── Main nav handler ────────────────────────────────────────────────
@@ -172,12 +158,7 @@ document.addEventListener("nav", () => {
       outputContent.dataset.placeholder = result
     } else {
       delete outputContent.dataset.placeholder
-      if (sourceText.length + result.length > MAX_DIFF_LENGTH) {
-        outputContent.textContent = result
-      } else {
-        const segments = diffChars(sourceText, result)
-        outputContent.innerHTML = renderDiffHtml(segments)
-      }
+      outputContent.innerHTML = renderDiffHtml(sourceText, result)
     }
     outputContent.classList.toggle("ghost", isEmpty)
 
