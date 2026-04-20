@@ -119,7 +119,6 @@ def test_handles_empty_date(temp_content_dir, mock_datetime, mock_git):
 
 def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
     """Test that date_updated is modified when git shows changes."""
-    # Create initial dates as strings instead of TimeStamp objects
     test_file = create_markdown_file(
         temp_content_dir / "test2.md",
         frontmatter={
@@ -130,15 +129,12 @@ def test_updates_date_when_modified(temp_content_dir, mock_datetime, mock_git):
         content="Test content",
     )
 
-    # Fix: Use the mock_git fixture with modified files
     with patch(
         "subprocess.check_output", side_effect=mock_git([test_file.name])
     ):
         metadata, content = script_utils.split_yaml(test_file)
         if update_lib.is_file_modified(test_file):
-            metadata["date_updated"] = (
-                "2024-02-01"  # Use string format instead of TimeStamp
-            )
+            metadata["date_updated"] = "2024-02-01"
         update_lib.write_to_yaml(test_file, metadata, content)
 
     with test_file.open("r", encoding="utf-8") as f:

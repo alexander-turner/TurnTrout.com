@@ -211,7 +211,6 @@ def create_markdown_file(
         content: Markdown body to append after the front-matter.
     """
     if frontmatter is not None:
-        # Use ruamel.yaml for compatibility with TimeStamp objects
         yaml_parser = YAML(typ="rt")
         yaml_parser.preserve_quotes = True
 
