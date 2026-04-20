@@ -770,7 +770,9 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
           return !hasClass(n, "fraction") && n?.tagName !== "a"
         }
         if (isNotFractionOrLink(elt)) {
-          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
+          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true, {
+            shouldSkipText: shouldSkipLinkUrlText,
+          })
         }
       })
     })
