@@ -1,5 +1,4 @@
-import type { PluginTypes } from "./plugins/types"
-import type { ValidDateType } from "./plugins/vfile"
+import type { ValidDateType } from "../plugins/vfile"
 
 type Page = {
   slug: string
@@ -36,9 +35,4 @@ export interface GlobalConfiguration {
   navbar: {
     pages: Page[]
   }
-}
-
-export interface QuartzConfig {
-  configuration: GlobalConfiguration
-  plugins: PluginTypes
 }

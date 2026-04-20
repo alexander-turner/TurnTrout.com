@@ -1,10 +1,10 @@
-import { type GlobalConfiguration } from "../cfg"
 import { formatAuthors } from "../components/Authors"
 import { formatTitle } from "../components/component_utils"
 import { simpleConstants, faviconUrl } from "../components/constants"
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../styles/variables"
+import { type GlobalConfiguration } from "./config"
 import { escapeHTML } from "./escape"
 import { resolveRelative, type FullSlug } from "./path"
 

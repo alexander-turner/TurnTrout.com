@@ -4,8 +4,8 @@ import { render } from "preact-render-to-string"
 import React from "react"
 import { visit } from "unist-util-visit"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import {
   clone,
   type FullSlug,

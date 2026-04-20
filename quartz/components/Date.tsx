@@ -4,8 +4,8 @@ import type { JSX } from "preact"
 // skipcq: JS-W1028
 import React from "react"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import { locale } from "./constants"
 
 /**

@@ -2,11 +2,11 @@ import type { Root } from "hast"
 
 import { toHtml } from "hast-util-to-html"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { formatTitle } from "../../components/component_utils"
 import { uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
+import { type GlobalConfiguration } from "../../util/config"
 import { escapeHTML } from "../../util/escape"
 import {
   type FilePath,

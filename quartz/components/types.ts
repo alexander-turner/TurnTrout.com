@@ -1,8 +1,8 @@
 import type { Node } from "hast"
 import type { ComponentType, JSX } from "preact"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import { type BuildCtx } from "../util/ctx"
 import { type StaticResources } from "../util/resources"
 
