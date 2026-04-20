@@ -12,87 +12,11 @@ card_image:
 aliases:
   - website-design
   - site-design
-date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-19 21:29:09.691414
+date_published: 2024-10-31
+date_updated: 2026-04-20
 no_dropcap: false
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 

@@ -64,7 +64,6 @@ export function renderLastUpdated(
   if (!frontmatter?.date_updated || frontmatter?.hide_metadata) {
     return null
   }
-  const dateUpdated = new Date(frontmatter.date_updated as string)
 
   const githubStem = "https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/"
   const githubUrl = `${githubStem}${fileData.relativePath}`
@@ -76,7 +75,7 @@ export function renderLastUpdated(
   const date = (
     <DateElement
       cfg={cfg}
-      date={dateUpdated}
+      date={frontmatter.date_updated}
       monthFormat="long"
       includeOrdinalSuffix
       formatOrdinalSuffix

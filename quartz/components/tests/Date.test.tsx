@@ -114,7 +114,7 @@ describe("DateElement", () => {
     }) as JSX.Element
 
     expect(element.type).toBe("time")
-    expect(element.props.dateTime).toBe(validDate.toISOString())
+    expect(element.props.dateTime).toBe("2023-08-01")
     expect(element.props.dangerouslySetInnerHTML.__html).toContain("date-ordinal-num")
     expect(element.props.dangerouslySetInnerHTML.__html).toContain("ordinal-suffix")
   })
@@ -136,5 +136,18 @@ describe("DateElement", () => {
       // @ts-expect-error testing undefined date
       DateElement({ cfg, date: undefined, includeOrdinalSuffix: true, formatOrdinalSuffix: true }),
     ).toThrow("valid Date object")
+  })
+
+  it("parses a day-only YYYY-MM-DD string as local time (no UTC day-shift)", () => {
+    const element = DateElement({
+      cfg,
+      date: "2023-08-01",
+      includeOrdinalSuffix: true,
+      formatOrdinalSuffix: false,
+      monthFormat: "short",
+    }) as JSX.Element
+
+    expect(element.props.dateTime).toBe("2023-08-01")
+    expect(element.props.dangerouslySetInnerHTML.__html).toBe("Aug 1st, 2023")
   })
 })
