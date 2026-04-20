@@ -1,4 +1,3 @@
-import { PageLayout, SharedLayout } from "../../quartz/cfg"
 import {
   ArticleTitle,
   AuthorList,
@@ -8,6 +7,7 @@ import {
   Navbar,
   TableOfContents,
 } from "../../quartz/components"
+import { PageLayout, SharedLayout } from "../../quartz/components/types"
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {

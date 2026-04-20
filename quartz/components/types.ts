@@ -27,3 +27,16 @@ export type QuartzComponent = ComponentType<QuartzComponentProps> & {
 export type QuartzComponentConstructor<Options extends object | undefined = undefined> = (
   opts: Options,
 ) => QuartzComponent
+
+export interface FullPageLayout {
+  head: QuartzComponent
+  header: QuartzComponent[]
+  beforeBody: QuartzComponent[]
+  pageBody: QuartzComponent
+  left: QuartzComponent[]
+  right: QuartzComponent[]
+  footer: QuartzComponent
+}
+
+export type PageLayout = Pick<FullPageLayout, "beforeBody" | "left" | "right">
+export type SharedLayout = Pick<FullPageLayout, "head" | "header" | "left" | "footer">

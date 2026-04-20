@@ -8,8 +8,6 @@ import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { locale } from "./constants"
 
-export type ValidDateType = keyof Required<QuartzPluginData>["dates"]
-
 /**
  * Retrieves the date from plugin data based on the configured default date type.
  * @param cfg - Configuration object containing defaultDateType.

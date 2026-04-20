@@ -1,5 +1,4 @@
-import type { FullPageLayout } from "../../cfg"
-import type { QuartzComponentProps } from "../../components/types"
+import type { FullPageLayout, QuartzComponentProps } from "../../components/types"
 import type { QuartzEmitterPlugin } from "../types"
 
 import { defaultListPageLayout, sharedPageComponents } from "../../../config/quartz/quartz.layout"

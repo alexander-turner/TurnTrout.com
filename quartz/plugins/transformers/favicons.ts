@@ -249,6 +249,13 @@ export async function readFaviconUrls(): Promise<ReadonlyMap<string, string>> {
  * @param faviconPath - Path to favicon (e.g., "/static/images/external-favicons/example_com.png" or ".svg")
  * @returns Full CDN URL (e.g., "https://assets.turntrout.com/static/images/external-favicons/example_com.svg" or ".avif")
  */
+/**
+ * Remembers paths for which a local SVG is known not to exist, so that
+ * subsequent calls for the same path skip the synchronous filesystem check.
+ * Positive results go into `urlCache` (keyed by pngPath with the svgPath value).
+ */
+export const missingLocalSvg = new Set<string>()
+
 export function getFaviconUrl(faviconPath: string): string {
   if (faviconPath.startsWith("http")) {
     return faviconPath
@@ -275,6 +282,13 @@ export function getFaviconUrl(faviconPath: string): string {
     }
   }
 
+  const avifPath = pngPath.replace(".png", ".avif")
+
+  // Check if we already know the local SVG is missing (negative cache)
+  if (missingLocalSvg.has(pngPath)) {
+    return `${cdnBaseUrl}${avifPath}`
+  }
+
   // Check if SVG version exists locally
   const svgPath = pngPath.replace(".png", ".svg")
   const localSvgPath = path.join(quartzFolder, svgPath)
@@ -284,11 +298,10 @@ export function getFaviconUrl(faviconPath: string): string {
     urlCache.set(pngPath, svgPath)
     return `${cdnBaseUrl}${svgPath}`
   } catch {
-    // SVG doesn't exist, fall back to AVIF
+    // SVG doesn't exist; remember this so we skip the I/O next time
+    missingLocalSvg.add(pngPath)
   }
 
-  // Fallback to AVIF
-  const avifPath = pngPath.replace(".png", ".avif")
   return `${cdnBaseUrl}${avifPath}`
 }
 

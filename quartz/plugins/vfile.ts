@@ -3,7 +3,18 @@ import type { Node, Parent, Root, Element as HastElement } from "hast"
 import { VFile } from "vfile"
 
 import type { FullSlug, SimpleSlug, FilePath } from "../util/path"
-import type { TocEntry } from "./transformers/toc"
+
+/**
+ * Represents a single entry in the Table of Contents
+ */
+export interface TocEntry {
+  /** Heading level (0-based from highest level in document) */
+  depth: number
+  /** Plain text content of the heading */
+  text: string
+  /** HTML anchor ID for the heading */
+  slug: string
+}
 
 export interface FrontmatterData {
   title: string
@@ -59,6 +70,18 @@ export interface Data {
 
 export type QuartzPluginData = Data
 export type ProcessedContent = [Node, VFile]
+export type ValidDateType = keyof Required<QuartzPluginData>["dates"]
+
+/** Client-side content details (date/description stripped before writing to JSON). */
+export type ContentDetails = {
+  title: string
+  links: readonly SimpleSlug[]
+  tags: readonly string[]
+  content: string
+  richContent?: string
+  authors?: readonly string[]
+}
+export type ContentIndex = Map<FullSlug, ContentDetails>
 
 export function defaultProcessedContent(vfileData: Partial<QuartzPluginData>): ProcessedContent {
   const root: Parent = { type: "root", children: [] }

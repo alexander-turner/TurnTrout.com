@@ -1,6 +1,5 @@
-import type { ValidDateType } from "./components/Date"
-import type { QuartzComponent } from "./components/types"
 import type { PluginTypes } from "./plugins/types"
+import type { ValidDateType } from "./plugins/vfile"
 
 type Page = {
   slug: string
@@ -43,16 +42,3 @@ export interface QuartzConfig {
   configuration: GlobalConfiguration
   plugins: PluginTypes
 }
-
-export interface FullPageLayout {
-  head: QuartzComponent
-  header: QuartzComponent[]
-  beforeBody: QuartzComponent[]
-  pageBody: QuartzComponent
-  left: QuartzComponent[]
-  right: QuartzComponent[]
-  footer: QuartzComponent
-}
-
-export type PageLayout = Pick<FullPageLayout, "beforeBody" | "left" | "right">
-export type SharedLayout = Pick<FullPageLayout, "head" | "header" | "left" | "footer">

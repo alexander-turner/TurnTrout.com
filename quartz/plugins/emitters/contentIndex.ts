@@ -17,6 +17,7 @@ import {
 } from "../../util/path"
 import { applyTextTransforms } from "../transformers/formatting_improvement_html"
 import { type QuartzEmitterPlugin } from "../types"
+import { type ContentDetails } from "../vfile"
 import { write } from "./helpers"
 
 /** Build-time content entry with required date (always set by emit via getDate). */
@@ -26,17 +27,6 @@ type BuildContentDetails = ContentDetails & {
 }
 
 type BuildContentIndex = Map<FullSlug, BuildContentDetails>
-
-/** Client-side content details (date/description stripped before writing to JSON). */
-export type ContentIndex = Map<FullSlug, ContentDetails>
-export type ContentDetails = {
-  title: string
-  links: readonly SimpleSlug[]
-  tags: readonly string[]
-  content: string
-  richContent?: string
-  authors?: readonly string[]
-}
 
 interface Options {
   enableSiteMap: boolean
