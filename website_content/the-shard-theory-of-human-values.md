@@ -52,21 +52,6 @@ card_image_alt: A silhouette of a human head in profile, its brain composed of v
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 We propose a theory of human value formation. According to this theory, the reward system shapes human values in a relatively straightforward manner. Human values are not e.g. an incredibly complicated, genetically hard-coded set of drives, but rather sets of contextually activated heuristics which were shaped by and bootstrapped from crude, genetically hard-coded reward circuitry.
 
 <hr/>

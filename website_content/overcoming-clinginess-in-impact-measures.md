@@ -32,18 +32,6 @@ description: Impact measures incentivize agents to avoid side effects, but what 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 > [!quote]Taylor et al., _[Alignment for Advanced Machine Learning Systems](https://intelligence.org/files/AlignmentMachineLearning.pdf)_
 >
 > It may be possible to use the concept of a causal counterfactual ([as formalized by Pearl](https://www.amazon.com/Causality-Reasoning-Inference-Judea-Pearl/dp/052189560X)) to separate some intended effects from some unintended ones. Roughly, "follow-on effects" could be defined as those that are causally downstream from the achievement of the goal... With some additional work, perhaps it will be possible to use the causal structure of the system's world-model to select a policy that has the follow-on effects of the goal achievement but few other effects.

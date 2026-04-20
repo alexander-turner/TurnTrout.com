@@ -42,18 +42,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 I think we're plausibly quite close to the impact measurement endgame. What do we have now, and what remains to be had?
 
 AUP for advanced agents will basically involve restraining their power gain, per the catastrophic convergence conjecture (CCC). For simplicity, I'm going to keep writing as if the environment is fully observable, even though we're thinking about an agent interacting with the real world.

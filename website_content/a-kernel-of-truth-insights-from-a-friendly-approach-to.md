@@ -41,16 +41,6 @@ description: 'Functional analysis: infinite dimensions, discontinuous linear fun
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 What is functional analysis? A satisfactory answer requires going back to where it all started.
 
 > [!quote] Once upon a time...

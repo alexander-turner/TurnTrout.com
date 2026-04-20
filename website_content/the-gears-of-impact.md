@@ -43,17 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).'
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 !["What _is_ AU?"](https://assets.turntrout.com/static/images/posts/hKhkvwg.avif)
 
 !["A utility function says how good something is."](https://assets.turntrout.com/static/images/posts/IXogCtA.avif)

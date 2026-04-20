@@ -34,15 +34,6 @@ description: A new AI safety paper formalizing "attainable utility preservation"
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 The [linked paper](https://arxiv.org/abs/1902.09725) offers fresh motivation and simplified formalization of attainable utility preservation (AUP), with brand-new results and minimal notation. Whether or not you're a hardened veteran of the last odyssey of a post, there's a lot new here.  
   
 Key results: AUP induces low-impact behavior even when penalizing shifts in the ability to satisfy **random** preferences. An ablation study on design choices illustrates their consequences.  $N$\-incrementation is experimentally supported[^1] as a means for safely setting a "just right" level of impact. AUP's general formulation allows conceptual re-derivation of Q-learning.

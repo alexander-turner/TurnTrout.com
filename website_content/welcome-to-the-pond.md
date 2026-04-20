@@ -15,10 +15,6 @@ date_published: 2024-10-30
 date_updated: 2026-04-20
 ---
 
-
-
-
-
 For months, I have built a new home for my online content: [`www.turntrout.com`](/). I brooked no compromises. Over [2,220 commits later](https://github.com/alexander-turner/TurnTrout.com/commits/main/),[^commits] I'm ready to publicize.
 
 [^commits]: I counted my commits by running

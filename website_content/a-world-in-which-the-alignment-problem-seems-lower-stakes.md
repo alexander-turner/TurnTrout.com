@@ -41,15 +41,6 @@ description: "This post explores a hypothetical scenario where the AI alignment 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 The danger from power-seeking is not _intrinsic_ to the alignment problem. This danger also depends on [the structure of the agent's environment](/environmental-structure-can-cause-instrumental-convergence).
 
 In [_The Catastrophic Convergence Conjecture_](/the-catastrophic-convergence-conjecture), I wrote:

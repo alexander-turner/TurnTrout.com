@@ -34,14 +34,6 @@ description: Experts clash on the dangers of "instrumental convergence" in AI, b
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#formalizing-instrumental-convergence): proving the existence of instrumental convergence.
 
 Somehow.

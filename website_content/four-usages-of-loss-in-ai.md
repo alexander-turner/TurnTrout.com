@@ -32,17 +32,6 @@ description: Four distinct concepts related to "loss function" in AI are often c
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 What does it _mean_ for a loss function to be "aligned with" human goals? I perceive four different concepts which involve "loss function" in importantly different ways:
 
 1. _Physical-loss:_ The physical implementation of a loss function and the loss computations,

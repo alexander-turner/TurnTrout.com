@@ -231,21 +231,22 @@ def test_write_to_yaml_preserves_order(temp_content_dir):
     assert list(field_positions.keys()) == list(original_metadata.keys())
 
 
-def test_write_to_yaml_is_idempotent_on_blank_lines(temp_content_dir):
-    """Round-tripping a file must not accumulate blank lines after the
-    frontmatter."""
-    test_file = create_markdown_file(
-        temp_content_dir / "idempotent.md",
-        frontmatter={"title": "Test Post", "date_published": "2024-01-01"},
-        content="\nHello world\n",
+def test_write_to_yaml_normalizes_blank_lines(temp_content_dir):
+    """write_to_yaml collapses excess blank lines between frontmatter and body
+    and is idempotent afterwards."""
+    test_file = temp_content_dir / "messy.md"
+    # Simulate a file that accumulated excess blank lines under the old writer.
+    test_file.write_text(
+        '---\ntitle: Test\ndate_published: "2024-01-01"\n---\n\n\n\n\n\nHello\n',
+        encoding="utf-8",
     )
-    original = test_file.read_text(encoding="utf-8")
+    expected = '---\ntitle: Test\ndate_published: "2024-01-01"\n---\n\nHello\n'
 
     for _ in range(3):
         metadata, content = script_utils.split_yaml(test_file)
         update_lib.write_to_yaml(test_file, metadata, content)
 
-    assert test_file.read_text(encoding="utf-8") == original
+    assert test_file.read_text(encoding="utf-8") == expected
 
 
 def test_long_urls_not_wrapped(temp_content_dir, mock_git):

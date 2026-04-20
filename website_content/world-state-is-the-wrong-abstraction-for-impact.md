@@ -42,13 +42,6 @@ description: 'Understanding impact as change to the world: attractive, but misle
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 !["I've been keeping something from you. Remember the confusion I mentioned in the first post? Before the attainable utility theory of impact came along, people made an assumption about what impact is - a reasonable, obvious, compelling assumption: that impact is primarily about how the state of the world changes."](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
 
 ![A cartoon stick figure mischievously presses a remote detonator, causing a fiery explosion of shards. Another stick figure reacts in horror, with a speech bubble that says, "My vases!".](https://assets.turntrout.com/static/images/posts/bimkCyz.avif)

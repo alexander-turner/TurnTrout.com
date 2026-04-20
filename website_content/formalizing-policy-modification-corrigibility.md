@@ -39,17 +39,6 @@ description: "Formalizing one aspect of corrigibility: How much can a human chan
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 In [_Corrigibility Can Be VNM-Incoherent_](/a-certain-formalization-of-corrigibility-is-vnm-incoherent), I operationalized an agent's corrigibility  as our ability to modify the agent so that it follows different policies. In the summer of 2020, I had formalized this notion, but it languished—unloved—in my Overleaf drafts.
 
 > [!info] Clarification

@@ -16,17 +16,6 @@ tags:
   - website
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 Hello! I'm Alex, and this is my pond. _The Pond_ gathers my writings on topics including AI, self-improvement, and living a good life.
 
 The earliest content dates back to January 2018. Over the years, I've built up a web of ideas and philosophies. I even endorse some of them still! I love [my research](/research), and I hope you love it too.

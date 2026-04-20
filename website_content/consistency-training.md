@@ -23,9 +23,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
 > [!note]
 > We conducted this research at Google DeepMind. This post accompanies the full paper, which is [available on Arxiv](https://arxiv.org/abs/2510.27062).
 

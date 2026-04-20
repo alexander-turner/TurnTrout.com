@@ -42,20 +42,6 @@ date_updated: 2026-04-20
 card_image_alt: A scatter plot from Our World in Data showing a strong negative correlation between a country's GDP per capita and the share of its population dissatisfied with their standard of living. Countries with low GDP, like Haiti, show high dissatisfaction (~80%), while wealthy countries, like Luxembourg and Singapore, show low dissatisfaction (<10%).
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 How good are our economists? Look around. On a 20-minute walk to my Berkeley office, I walked past people reeking of urine, past people lying in a dirty sleeping bag on a thin cardboard pad, past some garbage around a tent which housed a child who grew up into an impoverished adult.
 
 ![A makeshift homeless encampment on a dirt shoulder next to a road. A blue tent is pitched under trees, surrounded by a large amount of scattered trash, discarded items, and an empty shopping cart. Cars drive past, with a highway overpass in the background.](https://assets.turntrout.com/static/images/posts/zz47uzlitfrw7bmqaplp.avif)

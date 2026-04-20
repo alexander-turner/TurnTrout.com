@@ -36,15 +36,6 @@ description: Shard theory, once speculative, is definitively confirmed by GPT-Ne
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 I have written a lot about [shard theory](./posts#shard-theory) over the last year. I've poured dozens of hours into theorycrafting, communication, and LessWrong comment threads. I pored over theoretical alignment concerns with exquisite care and worry. I even read a few things that weren't blog posts on LessWrong.[^1]  In other words, I went _all out._
 
 Last month, I was downloading [`gpt-neox-20b`](https://arxiv.org/abs/2204.06745) when I noticed the following:

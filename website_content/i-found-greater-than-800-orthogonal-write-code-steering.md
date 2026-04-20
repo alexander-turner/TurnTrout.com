@@ -38,15 +38,6 @@ description: 800+ orthogonal vectors steer an AI model to write code. Redundant 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 > [!thanks]
 >Produced as part of the MATS Summer 2024 program, under the mentorship of Alex Turner (`TurnTrout`).
 

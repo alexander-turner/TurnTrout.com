@@ -45,23 +45,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 _Reframing Impact_ has focused on supplying the right intuitions and framing. Now we can see how these intuitions about power and the AU landscape both predict and explain AUP's empirical success thus far.
 
 # Conservative Agency in Gridworlds

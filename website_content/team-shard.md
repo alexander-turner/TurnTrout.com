@@ -22,13 +22,6 @@ date_updated: 2026-04-20
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
-
-
-
-
-
-
-
 Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cloud[^cloud]) help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 
 ![[https://assets.turntrout.com/static/images/posts/team-shard-12232025-sunglasses.avif|Five men strike a pose at Lighthaven, the community campus. Four of them wear shades while the fifth, Alex, looks at the camera in a blazer.]]

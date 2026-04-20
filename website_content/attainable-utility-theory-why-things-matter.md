@@ -43,13 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: Handwritten text asking, "How does this change my ability to get what I want?". The question is highlighted with a purple and yellow splash.
 ---
 
-
-
-
-
-
-
-
 > [!warning]
 > If you haven’t read [the prior posts](/posts#reframing-impact), please do so now. This sequence can be spoiled.
 

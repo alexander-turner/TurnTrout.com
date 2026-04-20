@@ -43,15 +43,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
 > [!info]
 > Related to Steve Byrnes’ [_Social instincts are tricky because of the “symbol grounding problem.”_](https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/5F5Tz3u6kJbTNMqsb#13_2_2_Claim_2__Social_instincts_are_tricky_because_of_the__symbol_grounding_problem_) I wouldn’t have had this insight without several great discussions with Quintin Pope.
 

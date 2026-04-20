@@ -40,22 +40,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!info]
 > This post is another stab at explaining [_Don't design agents which exploit adversarial inputs_](/dont-design-agents-which-exploit-adversarial-inputs).
 

@@ -43,16 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: 'A black oval symbolizing an empty universe contains the text: "The universe feels dead and empty and worthless."'
 ---
 
-
-
-
-
-
-
-
-
-
-
 ![Handwritten text: "We think some things are big deals, and we want to understand why. However, it can be hard to read your own mind. Instead, we'll use thought experiments to piece together what's going on." To the right, a confused stick figure holds a brain.](https://assets.turntrout.com/static/images/posts/lG9je1g.avif)
 
 ![A simple robot on wheels next to handwritten text: "XYZ is a Pebblehoarder of the planet Pebblia. XYZ morally values collections of pebbles... One day, all of the pebbles turn into obsidian blocks, which every Pebblehoarder knows are worthless." A pile of obsidian blocks is below.](https://assets.turntrout.com/static/images/posts/1hJa51n.avif)

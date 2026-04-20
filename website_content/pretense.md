@@ -33,15 +33,6 @@ description: Reflections on self-deception and the fleeting nature of genuine co
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 There's a kind of yearning, to be _that_ person who can do _those_ things. This yearning is self-actualization, yet corrupted. I often feel pulled in this way. I find myself wanting to be a certain person _now_, to be producing and being and feeling that way _now_, and I catch myself acting, speaking, signaling as if I were there _now_. As if I could make people happy by tiling the universe with smiley-faces.
 
 There's a revulsion that comes with this, for me - the sense of wearing a heavy coat, of playing a role, of acting instead of connecting. At times, there _is_ a desire to connect: I begin to speak earnestly, but then comes indecision, a "social acceptance" reflex blunting my emotions and diluting my speech. And then, pain, regret, and shame. Even now, it looms: Can I even post this?
