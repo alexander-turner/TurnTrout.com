@@ -717,7 +717,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
       if (node.type !== "element") {
-        return;
+        return
       }
 
       // Skip nbsp in headings — it prevents natural line-breaking and looks bad
