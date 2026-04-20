@@ -40,13 +40,6 @@ date_updated: 2026-04-20
 card_image_alt: A destitute man slumped against a brick wall, surrounded by darkness and lit by a spotlight - the bat-signal.
 ---
 
-
-
-
-
-
-
-
 None of the characters are meant to express my views. I recommend reading accompanied by [this music](https://www.youtube.com/watch?v=a1ExYqrBJio&themeRefresh=1) from [_Batman Begins_](https://en.wikipedia.org/wiki/Batman_Begins) and [_The Dark Knight_](https://en.wikipedia.org/wiki/The_Dark_Knight):
 
 <div class="centered"><audio src="https://assets.turntrout.com/static/audio/batman.mp3" controls> </audio></div>

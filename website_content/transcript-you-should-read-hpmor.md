@@ -38,19 +38,6 @@ date_updated: 2026-04-20
 card_image_alt: A panoramic view of the Grinnell College campus on a sunny autumn day. A large green lawn sits in the foreground before a line of trees with yellow and orange fall foliage, behind which stands a large, ornate brick building under a blue sky.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!note]
 > The following is the transcript of a talk I gave for some current computer science students at my alma mater, [Grinnell College](https://www.grinnell.edu/). This talk answers "What do I wish I had known while at Grinnell?".
 

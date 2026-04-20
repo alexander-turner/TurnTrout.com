@@ -42,14 +42,6 @@ description: "Overcoming self-doubt: How emotionally-charged internal dialogue h
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 > [!quote]
 > In sciences such as [psychology](https://en.wikipedia.org/wiki/Psychology) and [sociology](https://en.wikipedia.org/wiki/Sociology), internalization involves the integration of attitudes, values, standards and the opinions of others into one's own identity or sense of self.
 

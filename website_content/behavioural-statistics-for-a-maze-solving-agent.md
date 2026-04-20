@@ -43,19 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: A scatter plot showing a strong positive correlation between two maze distance metrics. The x-axis is "Euclidean distance between cheese and decision square" and the y-axis is "Steps between cheese and decision square."
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network) analyzed a maze-solving agent's behavior. We isolated four maze properties which seemed to predict whether the mouse goes towards the cheese or towards the top-right corner:
 
 ![Four diagrams illustrating maze properties: 1. A straight arrow from a mouse to cheese. 2. An arrow following the maze path from mouse to cheese. 3. A straight arrow from the cheese to the top-right corner. 4. A straight arrow from the mouse to a red box in the top-right corner.](https://assets.turntrout.com/static/images/posts/caoymohzzppimjllkqx4.avif)

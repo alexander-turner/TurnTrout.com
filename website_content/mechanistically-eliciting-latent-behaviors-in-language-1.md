@@ -43,26 +43,6 @@ card_image_alt: Showing off the behaviors found by this technique on the tasks o
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!thanks]
 > Produced as part of the MATS Winter 2024 program, under the mentorship of Alex Turner (`TurnTrout`).
 

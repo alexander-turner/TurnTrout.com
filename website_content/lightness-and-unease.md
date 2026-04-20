@@ -40,14 +40,6 @@ description: A personal reflection on finding the rationalist community and the 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 # Light
 
 ## Month 1

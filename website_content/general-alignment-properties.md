@@ -39,14 +39,6 @@ description: Comparing how AIXI and humans acquire values reveals important diff
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 [AIXI](https://en.wikipedia.org/wiki/AIXI) and the genome are both ways of specifying intelligent agents.
 
 1. Give AIXI a utility function (perhaps over observation histories), and hook it up to an environment, and this pins down a policy.[^1]

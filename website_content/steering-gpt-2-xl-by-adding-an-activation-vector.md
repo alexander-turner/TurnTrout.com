@@ -46,26 +46,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 | Prompt given to the model[^1]                                              |
 | :------------------------------------------------------------------------: |
 | I hate you because                                                         |

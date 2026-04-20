@@ -43,15 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: 'Text: "Imagine that the sun goes supernova." An illustration shows the sun exploding into a brilliant supernova, sending a destructive wave of light that engulfs Earth.'
 ---
 
-
-
-
-
-
-
-
-
-
 ![Text reads: "Impact is in the eye of the beholder. Traffic jams are vividly big deals to tardy commuters, but everyone else doesn't really care." A frustrating traffic jam is contrasted with a lone driver in an open lane enjoying music.](https://assets.turntrout.com/static/images/posts/lyRy0fS.avif)
 
 ![Text: "This concept is important, so I'm going to present another zany situation. Imagine that the sun goes supernova." An illustration shows the sun exploding into a brilliant supernova, sending a destructive wave of light that engulfs Earth.](https://assets.turntrout.com/static/images/posts/OIDCLpl.avif)

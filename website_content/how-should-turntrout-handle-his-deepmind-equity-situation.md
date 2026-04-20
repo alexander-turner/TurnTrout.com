@@ -37,15 +37,6 @@ description: Considering how to ethically manage AI equity when my goal is to re
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 > [!note]
 > In this dialogue, Oliver Habryka and I discussed how to reduce financial conflict of interest from my Google DeepMind offer.
 

@@ -30,12 +30,6 @@ card_image_alt: A watercolor of a lab setup where a flask of mixed red and blue 
 createBibtex: true
 ---
 
-
-
-
-
-
-
 Current “unlearning” methods [only](https://arxiv.org/pdf/2402.16835) [suppress](https://arxiv.org/pdf/2409.18025) [capabilities](https://www.lesswrong.com/posts/NAYyHimM3FaDYLvEH/breaking-circuit-breakers) [instead](https://www.lesswrong.com/posts/6QYpXEscd8GuE7BgW/unlearning-via-rmu-is-mostly-shallow) of truly unlearning the capabilities. But if you distill an unlearned model into a randomly initialized model, the resulting network is actually robust to relearning. We show why this works, how well it works, and how to trade off compute for robustness. Since labs already distill some models before deployment, our work implies they might achieve robust unlearning "for free" on those models by simply applying an unlearning step before distillation.
 
 ![[https://assets.turntrout.com/static/images/posts/distillation-robustifies-unlearning-20250612141417.avif|A diagram shows unlearning suppresses a model's undesired capabilities, but distilling it removes them. A chart shows the Unlearn and Distill method maintains a lower Forget Domain Performance (CE Loss) during relearning, indicating it is more robust than other methods.]]

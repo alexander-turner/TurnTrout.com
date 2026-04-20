@@ -45,17 +45,6 @@ card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unali
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 !["You've constructed your settlement. However, I get the drop on you and take it over, fortify it, and hire goons to keep you out."](https://assets.turntrout.com/static/images/posts/Rgc4aOs.avif)
 
 ![A diagram where the author's avatar ("Me") is in a fortress controlling access to gems and a farm, next to a polluted river. For "trade goods" and "can I farm here?", Me's AU bar is full and green, while "Your" bar is low and red. For "potable water," both actors have low red bars, indicating scarcity for all.](https://assets.turntrout.com/static/images/posts/JCSrOj7.avif)

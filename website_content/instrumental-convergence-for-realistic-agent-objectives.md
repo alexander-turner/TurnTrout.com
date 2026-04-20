@@ -41,18 +41,6 @@ description: Realistic AI objectives aren't random utility functions. I explore 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 ---
 
 > [!note] Summary of the current power-seeking theorems

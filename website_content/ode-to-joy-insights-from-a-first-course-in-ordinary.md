@@ -43,17 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: '"Unstable": A ball at the peak of a hill rolls away when nudged. "Locally Stable": A ball in a small dip atop a larger hill is stable only within a small "ε-neighborhood". "Globally Stable": A ball at the bottom of a U-shaped valley will always roll back to its resting point.'
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 Sometimes, it's easier to say how things change than to say how things are.
 
 <video autoplay loop muted playsinline><source src="https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4" type="video/mp4; codecs=hvc1">

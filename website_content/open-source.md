@@ -20,13 +20,6 @@ date_published: 2025-10-28
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 # Punctilio for meticulous typography
 
 <span class="populate-markdown-punctilio"></span>

@@ -13,11 +13,6 @@ tags:
 card_image_alt: An anime rendition of a beautiful orange sunset over the Bay skyline. A man and woman enjoy a picnic.
 ---
 
-
-
-
-
-
 Many people know me as `TurnTrout`, but you can call me "Alex". I want to let you see a different facet of me than I usually present online.
 
 ![[https://assets.turntrout.com/static/images/posts/date-me-12272025.avif|Clad in a black jacket and cold-colored scarf, Alex laughs in front of an out-of-focus yellow fall backdrop]]{style="width: 75%"}

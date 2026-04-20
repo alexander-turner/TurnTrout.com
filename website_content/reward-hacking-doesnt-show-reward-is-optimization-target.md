@@ -19,10 +19,6 @@ date_published: 2025-12-18
 date_updated: 2026-04-20
 ---
 
-
-
-
-
  
 Folks ask me, "LLMs seem to reward hack a lot. Does that mean that reward _is_ the optimization target?". In 2022, I wrote the essay [Reward is not the optimization target](/reward-is-not-the-optimization-target), which I here abbreviate to "Reward≠OT".
 

@@ -16,13 +16,6 @@ date_published: 2024-10-31
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 Inspired by Scott Alexander's [Mistakes](https://www.astralcodexten.com/p/mistakes) page:
 
 > [!quote] Scott Alexander

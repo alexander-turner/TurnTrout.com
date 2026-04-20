@@ -36,20 +36,6 @@ date_updated: 2026-04-20
 card_image_alt: A drawing titled "Importance of Avoiding Side Effects" shows a figure running toward a checkered finish flag. As it runs, it kicks aside delicately arranged blocks, damaging its path and illustrating an agent causing negative side effects while pursuing its goal.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!note]
 > Here are the slides for a talk I just gave at CHAI's 2021 workshop.
 

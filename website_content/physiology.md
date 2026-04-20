@@ -22,16 +22,6 @@ date_updated: 2026-04-20
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
 
-
-
-
-
-
-
-
-
-
-
 In physics, there are simple laws and complex consequences. In math, a good formalism (like a "graph") may well appear wherever you concentrate your attention. In economics, incentive structures fractally explain behavior at a range of scales, from intrapersonal to international.
 
 Physiology seemed like a grab-bag of random processes which no one really understands. If you understand a physiological process - congratulations, that idea probably doesn't transfer much to other domains. You just know how humans - and maybe closely related animals - do the thing. At least, that's how I felt. (These sentiments tend to feel sillier when spelled out.)

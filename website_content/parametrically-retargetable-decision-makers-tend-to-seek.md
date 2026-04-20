@@ -41,14 +41,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
 [This paper](https://arxiv.org/abs/2206.13477)—accepted as a poster to NeurIPS 2022— is the sequel to [Optimal Policies Tend to Seek Power](https://arxiv.org/abs/1912.01683). The new theoretical results are extremely broad, discarding the requirements of full observability, optimal policies, or even requiring a finite number of options.
 
 > [!quote] The paper's abstract

@@ -28,19 +28,6 @@ other_urls:
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 A while back, we explored the “[BIDPO](https://arxiv.org/abs/2406.00045)” method for training [steering vectors](https://arxiv.org/abs/2308.10248). In Gemini 1.5v1 Flash and Pro, BIDPO steering vectors boosted TruthfulQA scores by >10% while mostly retaining capabilities. When we [updated to Gemini 1.5v2](https://developers.googleblog.com/en/updated-gemini-models-reduced-15-pro-pricing-increased-rate-limits-and-more/), prompt-based steering baselines became significantly stronger. BIDPO did not beat the stronger baselines, ending the project.
 
 > [!idea] Work completed at Google DeepMind on the North American alignment team

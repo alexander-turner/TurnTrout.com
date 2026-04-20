@@ -261,7 +261,7 @@ describe("HTMLFormattingImprovement", () => {
       })
     }
 
-    it.each([["https://dog"], ["https://dog/cat"]])(
+    it.each([["https://dog"], ["https://dog/cat"], ["https://dog/cat/fish"]])(
       "should not add spaces around '/' in <a> %s",
       (input: string) => {
         const inputElement = `<p><a href="${input}">${input}</a></p>`
@@ -269,6 +269,14 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(processedHtml)).toBe(inputElement)
       },
     )
+
+    it("still transforms <a> text when it differs from href", () => {
+      const inputElement = '<p><a href="https://example.com/abc">dog/cat</a></p>'
+      const processedHtml = testHtmlFormattingImprovement(inputElement)
+      expect(normalizeNbsp(processedHtml)).toBe(
+        '<p><a href="https://example.com/abc">dog / cat</a></p>',
+      )
+    })
   })
 
   describe("non-breaking spaces around slashes and ampersands", () => {

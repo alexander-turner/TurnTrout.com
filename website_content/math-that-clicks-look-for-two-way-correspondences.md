@@ -33,15 +33,6 @@ description: 'Good formalizations are two-way correspondences: the math suggests
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 > [!thanks]
 > Andrew Critch made this explicit to me.
 

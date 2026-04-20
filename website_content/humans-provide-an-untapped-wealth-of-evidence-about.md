@@ -45,18 +45,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 > [!info]
 > This post has been recorded as part of the LessWrong Curated Podcast, and can be listened to on [_Spotify_](https://open.spotify.com/episode/0jpI7LLNzKsn6lwrsoDCc9), [_Apple Podcasts_](https://podcasts.apple.com/us/podcast/humans-provide-an-untapped-wealth-of-evidence/id1630783021?i=1000575990542), and [_Libsyn_](https://five.libsyn.com/episodes/view/23991000)\.
 

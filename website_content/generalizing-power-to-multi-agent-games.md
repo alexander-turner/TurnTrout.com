@@ -43,14 +43,6 @@ description: Formalizing "power" in multi-agent games, showing that increased ag
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 > [!thanks] Acknowledgments
 > This article is a writeup of a research project conducted through the [SERI](https://cisac.fsi.stanford.edu/stanford-existential-risks-initiative/content/stanford-existential-risks-initiative) program under the mentorship of [Alex Turner](https://www.lesswrong.com/users/turntrout). I ([Jacob Stavrianos](https://www.lesswrong.com/users/midco)) would like to thank Alex for turning a messy collection of ideas into legitimate research, as well as the wonderful researchers at SERI for guiding the project and putting me in touch with the broader X-risk community.
 

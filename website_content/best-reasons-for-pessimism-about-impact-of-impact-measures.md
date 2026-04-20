@@ -32,16 +32,6 @@ description: 'Impact measures: Can they make AI safer, or are they a dangerous d
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 > [!quote] [Oliver Habryka](https://www.lesswrong.com/posts/t3t9osBsmwkajWz5Y/long-term-future-fund-april-2019-grant-decisions) (emphasis mine)
 >
 > My inside views on AI Alignment make me think that work on impact measures is _very unlikely_ to result in much concrete progress on what I perceive to be core AI Alignment problems, _and I have talked to a variety of other researchers in the field who share that assessment_. I think it’s important that this grant not be viewed as an endorsement of the concrete research direction that Alex is pursuing, but only as an endorsement of the higher-level process that he has been using while doing that research.  

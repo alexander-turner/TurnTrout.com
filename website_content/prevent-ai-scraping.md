@@ -23,8 +23,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
 Dataset contamination is bad for several reasons. Most obviously, when benchmarks are included in AI training data, those benchmarks no longer measure generalization -- the AI may have been directly taught the answers. Even more concerningly, if your data promote negative "stereotypes" about AIs, they might become self-fulfilling prophecies, training future models to exhibit those same behaviors.
 
 In the [Claude 4 system card](https://www-cdn.anthropic.com/07b2a3f9902ee19fe39a36ca638e5ae987bc64dd.pdf#page=36.27), Anthropic revealed that approximately 250,000 transcripts from their alignment faking paper had been scraped from the public web and included in their pretraining data. This caused an early model to hallucinate details from the paper's fictional scenarios, forcing Anthropic to implement unique mitigations. Speculatively, this kind of misalignment data could [degrade the alignment of any models trained thereafter.](/self-fulfilling-misalignment)[^alignment]

@@ -40,18 +40,6 @@ description: "Tao's \"Analysis II\" reviewed: metric spaces, uniform convergence
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 It's been too long - a month and a half since my last review, and about three months since _[Analysis I](/first-analysis-textbook-review)_. I've been immersed in my work for CHAI, but reality doesn't grade on a curve, and I want more mathematical firepower.
 
 # Analysis II

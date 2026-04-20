@@ -41,14 +41,6 @@ description: Impact measure research deconfuses power-seeking incentives in AI, 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 Can we get impact measurement _right_? Does there exist One Equation To Rule Them All?
 
 I think there’s a decent chance there _isn’t_ a simple airtight way to implement AUP which lines up with AUP<sub>conceptual</sub> , mostly because it’s just incredibly difficult in general to perfectly specify the reward function.

@@ -53,25 +53,6 @@ card_image_alt: An illustration of a cute gray mouse whose body is composed of g
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <video autoplay loop muted playsinline   webkit-playsinline preload="auto" style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 

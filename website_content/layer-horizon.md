@@ -19,19 +19,6 @@ aliases:
   - layer-horizon
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 The [residual stream norm grows exponentially over the forward pass](https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-norms-grow-exponentially-over-the-forward), with a growth rate of about 1.05. Consider the residual stream at layer 0, with norm (say) of 100. Suppose the MLP heads at layer 0 have outputs of norm (say) 5. Then after 30 layers, the residual stream norm will be $100\cdot1.05^{30}\approx432.2$. Then the MLP-0 outputs of norm 5 should have a significantly reduced effect on the computations of MLP-30 due to their smaller relative norm.
 
 On input tokens $x$, let $\mathrm{attn}_i(x),\mathrm{MLP}_i(x)$ be the original model's sublayer outputs at layer $i$. I want to think about what happens when the later sublayers can only "see" the last few layers' worth of outputs.
