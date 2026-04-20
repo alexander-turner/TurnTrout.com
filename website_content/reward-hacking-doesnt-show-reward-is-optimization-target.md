@@ -15,9 +15,11 @@ aliases:
   - specification-gaming-is-not-reward-optimization
   - reward-still-is-not-the-optimization-target
   - reward-retrospective
-date_published: 2025-12-18 09:41:00.470485
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-12-18
+date_updated: 2026-04-20
 ---
+
+
 
 
 
