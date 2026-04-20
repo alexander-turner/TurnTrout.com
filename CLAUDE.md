@@ -116,6 +116,8 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - Most quality checks (linting, tests, spellcheck, link validation) run in CI
 - Can resume from last failure: `RESUME=true git push`
 
+**Dev branch workflow**: Whenever making changes to the `dev` branch, first merge `main` into `dev`, push `dev`, and then start the new feature branch from `dev`.
+
 ## Content Structure
 
 - **`website_content/`**: Markdown source files with YAML frontmatter
