@@ -1,6 +1,7 @@
 """Convert assets to optimized formats."""
 
 import argparse
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -161,12 +162,19 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
 
 def _strip_metadata(file_path: Path) -> None:
     exiftool_executable = script_utils.find_executable("exiftool")
-    subprocess.run(
+    result = subprocess.run(
         [exiftool_executable, "-all=", str(file_path), "--verbose"],
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         check=False,
     )
+    if result.returncode != 0:
+        logging.warning(
+            "exiftool failed for %s (exit %d): %s",
+            file_path,
+            result.returncode,
+            result.stderr.decode(errors="replace").strip(),
+        )
 
 
 def _replace_content(

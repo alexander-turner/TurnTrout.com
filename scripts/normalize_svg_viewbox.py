@@ -58,8 +58,13 @@ def fix_svg_viewbox(svg_path: Path, target_size: int) -> None:
 
     # Get current viewBox to calculate scale
     viewbox = root.get("viewBox") or "0 0 100 100"
-    current_width = float(viewbox.split()[2])
-    current_height = float(viewbox.split()[3])
+    viewbox_parts = viewbox.split()
+    if len(viewbox_parts) < 4:
+        raise ValueError(
+            f"Invalid viewBox '{viewbox}' in {svg_path}: expected 4 values"
+        )
+    current_width = float(viewbox_parts[2])
+    current_height = float(viewbox_parts[3])
 
     # Calculate scale to fill target size (scale to larger dimension)
     scale = target_size / max(current_width, current_height)

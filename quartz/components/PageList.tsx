@@ -184,8 +184,7 @@ export function createPageListHast(
             ...(index < list.length - 1 ? [h("hr.page-divider")] : []),
           ]),
         ])
-        .flat()
-        .filter(Boolean),
+        .flat(),
     ),
   ])
 }

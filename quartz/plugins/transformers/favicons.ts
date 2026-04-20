@@ -293,15 +293,8 @@ export function getFaviconUrl(faviconPath: string): string {
 }
 
 /**
- * Transforms a favicon URL by checking whitelist and blacklist.
- *
- * Processing order:
- * 1. Returns path if whitelisted (always included)
- * 2. Returns defaultPath if blacklisted (never included)
- * 3. Otherwise returns path for further count checking
- *
- * Note: Path replacements are handled at the hostname level in getQuartzPath,
- * so paths passed here are already normalized.
+ * Transforms a favicon URL by checking the blacklist.
+ * Returns defaultPath if blacklisted, otherwise returns the path unchanged.
  *
  * @param faviconPath - The favicon path to transform (can be local path, CDN URL, or special path)
  * @returns The favicon path, or defaultPath if blacklisted
@@ -312,11 +305,6 @@ export function transformUrl(faviconPath: string): string {
   )
   if (isBlacklisted) {
     return defaultPath
-  }
-
-  const isWhitelisted = faviconCountWhitelistComputed.some((entry) => faviconPath.includes(entry))
-  if (isWhitelisted) {
-    return faviconPath
   }
 
   return faviconPath
@@ -330,16 +318,16 @@ export function transformUrl(faviconPath: string): string {
  * @returns Cached favicon path/URL, or null if not cached
  */
 function checkCachedFavicon(faviconPath: string, hostname: string): string | null {
-  if (urlCache.has(faviconPath)) {
-    const cachedValue = urlCache.get(faviconPath)
-    if (cachedValue === defaultPath) {
-      logger.info(`Skipping previously failed favicon for ${hostname}`)
-      return defaultPath
-    }
-    logger.info(`Returning cached favicon for ${hostname}`)
-    return cachedValue as string
+  const cachedValue = urlCache.get(faviconPath)
+  if (cachedValue === undefined) {
+    return null
   }
-  return null
+  if (cachedValue === defaultPath) {
+    logger.info(`Skipping previously failed favicon for ${hostname}`)
+    return defaultPath
+  }
+  logger.info(`Returning cached favicon for ${hostname}`)
+  return cachedValue
 }
 
 /**
@@ -700,9 +688,11 @@ function handleMailtoLink(node: Element): void {
   insertFavicon(specialFaviconPaths.mail, node)
 }
 
+const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+
 // skipcq: JS-D1001
 export function isHeading(node: Element): boolean {
-  return Boolean(node.tagName?.match(/^h[1-6]$/))
+  return HEADING_TAGS.has(node.tagName)
 }
 
 /**
@@ -859,12 +849,9 @@ async function handleLink(
       return
     }
 
-    // transformUrl already handles whitelist/blacklist, so we only need to check count
-    // Use getQuartzPath as the lookup key, but normalize it (remove extension) to match countFavicons.ts
     const countKey = normalizePathForCounting(getQuartzPath(finalURL.hostname))
     const count = faviconCounts.get(countKey) || 0
 
-    // If not whitelisted (already handled by transformUrl), check count threshold
     const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
     if (!isWhitelisted && count < minFaviconCount) {
       logger.debug(
