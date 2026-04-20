@@ -1,0 +1,137 @@
+name: Claude autofix on CI failure
+
+# When a "recoverable" workflow (lint, Python lint, site-build-checks) fails
+# on a PR, post a scoped @claude comment with the trimmed failure log. The
+# existing claude.yaml workflow picks up the comment and takes a pass at a
+# fix. Capped at 2 attempts per PR so a genuinely broken PR doesn't ping
+# Claude in a loop.
+#
+# Intentionally excluded workflows (need human judgment, not autofix):
+#   - Playwright / visual-testing / Lighthouse (flake surface is external;
+#     retries and quarantine are the right knobs, not code edits)
+#   - Deploy (anything touching production)
+
+on:
+  workflow_run:
+    workflows:
+      - "Lint and validate"
+      - "Python linting"
+      - "site-build-checks"
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+concurrency:
+  # One autofix pass per workflow-run ID is plenty; collapse duplicates.
+  group: claude-autofix-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  request-autofix:
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Find PR for this run
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const prs = context.payload.workflow_run.pull_requests || [];
+            if (prs.length === 0) {
+              core.info('No PR attached to this workflow_run; skipping.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+            core.setOutput('number', prs[0].number);
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha);
+
+      - name: Check prior autofix attempts on this PR
+        id: budget
+        if: steps.pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          # Two independent guards:
+          #  1. Don't re-request for the exact same commit (SHA marker).
+          #  2. Cap total autofix attempts per PR to 2 so a repeatedly
+          #     failing PR doesn't loop forever.
+          BODIES=$(gh api --paginate "repos/${{ github.repository }}/issues/$PR/comments" \
+            --jq '.[].body' 2>/dev/null || echo "")
+          if echo "$BODIES" | grep -qF "<!-- claude-autofix-sha:$HEAD_SHA -->"; then
+            echo "Already requested autofix for commit $HEAD_SHA; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(echo "$BODIES" | grep -cE '<!-- claude-autofix-sha:[0-9a-f]{40} -->' || true)
+          if [ "$COUNT" -ge 2 ]; then
+            echo "::notice::Already attempted autofix twice on PR #$PR; leaving for human."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download trimmed failure log
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Tail-only: keep the prompt small. The failing step's last lines
+          # are almost always where the useful error is.
+          gh run view "${{ github.event.workflow_run.id }}" \
+            --repo "${{ github.repository }}" \
+            --log-failed 2>/dev/null | tail -n 300 > failure.log || true
+          if [ ! -s failure.log ]; then
+            echo "No failed-step logs available; skipping."
+            echo "SKIP_EMPTY=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Post scoped @claude request
+        if: >
+          steps.pr.outputs.skip != 'true' &&
+          steps.budget.outputs.skip != 'true' &&
+          env.SKIP_EMPTY != 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const raw = fs.readFileSync('failure.log', 'utf8');
+            // GitHub comment max is 65k chars; keep a healthy margin after
+            // adding our scaffolding.
+            const logBlock = raw.length > 50000
+              ? '...[truncated]...\n' + raw.slice(-50000)
+              : raw;
+            const body = [
+              `<!-- claude-autofix-sha:${process.env.HEAD_SHA} -->`,
+              `@claude the **${process.env.WORKFLOW_NAME}** workflow failed on commit \`${process.env.HEAD_SHA.substring(0,7)}\` ([logs](${process.env.RUN_URL})).`,
+              '',
+              'Take a minimal fix pass with these constraints:',
+              '- Only touch files that directly caused the failure.',
+              '- **Do not** lower CI thresholds, weaken assertions, `# noqa`/`eslint-disable` away real issues, or modify workflows/config without explaining why in the commit message.',
+              '- Prefer a real fix (update the source, fix the test) over silencing the check.',
+              '- If the failure looks like a genuine bug or needs architectural judgment, reply with a one-paragraph diagnosis instead of committing — leave the fix for a human.',
+              '',
+              '<details><summary>Trimmed failure log</summary>',
+              '',
+              '```',
+              logBlock,
+              '```',
+              '',
+              `</details>`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body,
+            });

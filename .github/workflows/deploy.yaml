@@ -159,6 +159,12 @@ jobs:
     outputs:
       lp-pending: ${{ steps.lp-check.outputs.lp-pending }}
     steps:
+      # Need the repo so we can call scripts/parse_lost_pixel.py. Shallow
+      # checkout: we don't need history.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 1
+
       - name: Wait for test workflows to succeed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -284,30 +290,27 @@ jobs:
             PARSE_SOURCE="$SUMMARY $LP_TEXT"
           fi
 
-          # Extract counts for changed, added, and deleted images
-          # Handles both "N changed" and "Differences: N" formats
-          CHANGED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(changed|visual|difference|diff))|differences?:\s*\K\d+)' | head -1)
-          ADDED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(added|new|created))|additions?:\s*\K\d+)' | head -1)
-          DELETED=$(echo "$PARSE_SOURCE" | grep -oiP '(\d+(?=\s*(deleted|removed))|deletions?:\s*\K\d+)' | head -1)
+          # Delegate parsing to scripts/parse_lost_pixel.py (fixture-tested).
+          # If parsing fails AND conclusion isn't 'success', the script exits
+          # non-zero — we catch that and mark the check pending so the
+          # delayed re-check has another shot rather than aborting deploy.
+          PARSE_OUTPUT=$(python3 scripts/parse_lost_pixel.py \
+              --text "$PARSE_SOURCE" \
+              --conclusion "$LP_CONCLUSION" 2>&1) || PARSE_RC=$?
+          PARSE_RC=${PARSE_RC:-0}
 
-          # If no counts parsed, use conclusion to decide
-          if [ -z "$CHANGED" ] && [ -z "$ADDED" ] && [ -z "$DELETED" ]; then
-            if [ "$LP_CONCLUSION" = "success" ]; then
-              echo "Lost Pixel concluded with success and no parseable counts — treating as 0 differences."
-              CHANGED=0; ADDED=0; DELETED=0
-            else
-              echo "::warning::Could not parse counts from Lost Pixel output (conclusion: $LP_CONCLUSION). Will re-check after delay."
-              echo "Raw summary: $SUMMARY"
-              [ -n "${LP_TEXT:-}" ] && echo "Raw text: $LP_TEXT"
-              echo "lp-pending=true" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
+          if [ "$PARSE_RC" -ne 0 ]; then
+            echo "::warning::Lost Pixel output unparseable (conclusion: $LP_CONCLUSION). Will re-check after delay."
+            echo "$PARSE_OUTPUT"
+            echo "lp-pending=true" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
-          CHANGED=${CHANGED:-0}
-          ADDED=${ADDED:-0}
-          DELETED=${DELETED:-0}
-          TOTAL=$((CHANGED + ADDED + DELETED))
+          # Parser prints `key=value` pairs on stdout; eval into shell vars.
+          CHANGED=$(echo "$PARSE_OUTPUT" | sed -n 's/^changed=//p')
+          ADDED=$(echo "$PARSE_OUTPUT" | sed -n 's/^added=//p')
+          DELETED=$(echo "$PARSE_OUTPUT" | sed -n 's/^deleted=//p')
+          TOTAL=$(echo "$PARSE_OUTPUT" | sed -n 's/^total=//p')
 
           echo "Visual changes: $CHANGED changed, $ADDED added, $DELETED deleted (total: $TOTAL)"
           if [ "$TOTAL" -ge 10 ]; then
