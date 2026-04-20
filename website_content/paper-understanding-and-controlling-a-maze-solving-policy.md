@@ -47,15 +47,6 @@ card_image_alt: A four-panel diagram showing how modifying a neural network's ac
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
 Mrinank, Austin, and Alex wrote a paper on the results from [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network), [Maze-solving agents: Add a top-right vector, make the agent go to the top-right](/top-right-steering-vector), and [Behavioural statistics for a maze-solving agent](/statistics-of-a-maze-solving-network).
 
 > [!abstract]

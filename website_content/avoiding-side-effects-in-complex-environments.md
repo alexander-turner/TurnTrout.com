@@ -40,15 +40,6 @@ description: AI agents trained with Attainable Utility Preservation avoid most s
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 ![Title slide with handwritten-style text: "Avoiding Side Effects in Complex Environments". Authors: Alexander Turner & Neale Ratzlaff, Prasad Tadepalli. Affiliation: Oregon State University. ](https://assets.turntrout.com/static/images/posts/2526ca684eae62e8d1fc595b335044d649df02f30f2331b2.avif)
 
 Our most recent AUP paper was accepted to NeurIPS 2020 as a spotlight presentation.

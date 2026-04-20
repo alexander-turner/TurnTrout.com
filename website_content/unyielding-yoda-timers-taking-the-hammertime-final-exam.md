@@ -33,14 +33,6 @@ description: Three short essays written against the clock on instrumental ration
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 > [!quote] [The Hammertime Final Exam](https://www.lesswrong.com/posts/Q7MsMshzbzhEs729s/hammertime-final-exam)
 > Prompts:
 >

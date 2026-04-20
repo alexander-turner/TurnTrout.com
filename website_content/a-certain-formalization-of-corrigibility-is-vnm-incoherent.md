@@ -42,18 +42,6 @@ description: Formal analysis showing that, for agents optimizing a reward functi
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 <hr/>
 
 > [!quote] [Eliezer Yudkowsky](https://www.lesswrong.com/posts/CpvyhFy9WvCNsifkY/discussion-with-eliezer-yudkowsky-on-agi-interventions)

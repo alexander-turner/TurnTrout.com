@@ -43,18 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: An illustration of environmental resources with corresponding meters. "How plentiful are trade goods?" next to a mountain with gems shows a full green meter. "How accessible is potable water?" shows a low red meter. "How fertile is the soil?" shows a full green meter.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 !["In 'The Gears of Impact', we discussed how your attainable utility calculation roughly takes the best of different possibilities." A flashback cloud shows a map with paths to goals: relaxing at home, buying groceries, or hiking. A stick figure asks, "How do different AUs interact with the environment, and how does the environment interact with us?"](https://assets.turntrout.com/static/images/posts/zLypKDZ.avif)
 
 <img src="https://assets.turntrout.com/static/images/posts/BtzHnUq.avif" alt="">

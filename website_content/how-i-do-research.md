@@ -34,14 +34,6 @@ description: "The author's unorthodox approach to AI safety research: Ignore exi
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
 > [!warning] Disclaimer
 > As of 2024, this is no longer an accurate representation of how I do research. I do not necessarily consider the examples I gave to be "virtuous" ways to do research (nor do I necessarily renounce them).
 

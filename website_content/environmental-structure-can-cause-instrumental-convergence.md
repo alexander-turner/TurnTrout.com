@@ -44,21 +44,6 @@ date_updated: 2026-04-20
 card_image_alt: A cartoon titled "Orbit of Fortune" illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an "orbit." Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!failure] As of 2024, I no longer endorse this post
 > Even though this post presents correct and engaging technical explanations, its speculation seems wrong. For example, deceptive alignment is _not_ known to be "prevalent."
 

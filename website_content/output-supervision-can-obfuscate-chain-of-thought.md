@@ -25,11 +25,6 @@ card_image_alt: A diagram shows that penalizing an AI's output for cheating caus
 createBibtex: true
 ---
 
-
-
-
-
-
 We show that training against a monitor that only sees outputs (*not* CoTs) can cause obfuscated[^contradiction] CoTs! The obfuscation happens in two ways:
 
 1. When a model is trained to produce a safe-looking output, that model may generalize to making its CoTs look safe.

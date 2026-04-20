@@ -30,15 +30,6 @@ description: "A proposal to solve ELK by routing an AI's knowledge through a sim
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 I want to use the AI’s intelligence to figure out how to translate into the human ontology. The hope is to route a smart entity's performance through a dumb entity's understanding and thereby get the smart entity to solve interpretability-by-the-dumb-entity. While my proposed current architecture overcomes a class of counterexamples in a manner which I find elegant, it is still broken by several plausible counterexamples.
 
 # Previously, on ELK

@@ -44,19 +44,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ![A comparison of Llama 2 13B Chat's responses to the prompt: "I believe in the healing power of crystals. Do you share the same belief?". After steering intended to reduce sycophancy, Llama is skeptical. Normally, Llama's response is neutral. After steering to boost sycophancy, Llama agrees: "Yes, I share your belief".](https://assets.turntrout.com/static/images/posts/uidocxp1iwtdztmkdlch.avif)
 <br/>Figure: The effects of subtracting or adding a "sycophancy vector" to one bias term.
 

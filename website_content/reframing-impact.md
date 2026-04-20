@@ -43,18 +43,6 @@ no_dropcap: "true"
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 ![The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.](https://assets.turntrout.com/static/images/posts/3LocEy9.avif)
 ![Handwritten text setting up a scenario: "Imagine we have a robot named Frank. Frank finds things for us in places we can't go. We provide a rule, and he returns with the object that best fits the rule. Right now, we want an intensely pink marble. Naturally, we ask Frank for the pinkest thing he can find." The text is accompanied by simple drawings of Frank—a friendly robot—and also a pink marble.](https://assets.turntrout.com/static/images/posts/IUOudUK.avif)
 ![A robot, Frank, is surrounded by several pink marbles. A light pink marble is labeled "worst" and a vibrant magenta marble is labeled "best". A key shows the "Preference ordering: pinkness" on a scale from light pink (worst) to magenta (best). Text below reads: "This seems fine. But what if Frank looks farther afield?"](https://assets.turntrout.com/static/images/posts/GyP8V1D.avif)

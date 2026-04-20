@@ -39,21 +39,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Short summary: One alignment strategy is to 1) capture “what we want” in a loss function to a high degree (“robust grading”), 2) use that loss function to train the AI, and 3) get the AI to exclusively care about optimizing that objective.
 
 I think that each step contains either a serious and unnecessary difficulty, or an unnecessary assumption. I think that:

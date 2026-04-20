@@ -18,13 +18,6 @@ date_published: 2025-08-12
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 # Background
 
 I began working on visual regression testing [on June 4th, 2024](https://github.com/alexander-turner/TurnTrout.com/commit/450764dede34619d6d0c9fb82be80fb2be4fd388). On August 5th, 2025 - the day before my 31st birthday - I accepted all of a build's screenshots for the first time. Thus ended 428 days of sporadic toil.

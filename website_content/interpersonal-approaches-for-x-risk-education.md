@@ -32,13 +32,6 @@ description: Effective ways to raise awareness of AI risk among researchers, wei
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 Much of the AI research community remains unaware of the Alignment Problem (according to my personal experience), and I haven't seen much discussion about how to deliberately expand the community (all I've seen to this effect is [Scott's A/B/C/D/E testing on alignment articles](http://slatestarcodex.com/2016/10/24/ai-persuasion-experiment-results/)).
 
 Expanding the number of people aware of (and ideally, working on) the alignment problem is a high-leverage activity: a constant amount of effort spent educating someone in exchange for a chance of recruiting an ally who will work hard at our sides. Another metric by which we should evaluate approaches is whether we have to convince or simply educate; professors and high-status researchers may be more dismissive (possibly due to the [inside view](https://lesswrong.com/tag/outside_view), their wariness of strange-sounding ideas, and [overconfidence in their long-term predictions](https://www.newyorker.com/magazine/2005/12/05/everybodys-an-expert)), but their influence would be greater. On the other hand, a good friend in a CS or Math under-/post-graduate program may be more receptive.

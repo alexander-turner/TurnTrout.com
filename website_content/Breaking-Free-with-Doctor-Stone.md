@@ -19,18 +19,6 @@ date_updated: 2026-04-20
 card_image_alt: Senku from Dr. Stone grins with fierce determination, his face lit by fire and sparks against a dark forest at night. He has spiky, light-colored hair with green tips, cracks on his face, and "E=mc²" written on his collar.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 Doctor Stone is an anime where everyone suddenly turns into a statue. Civilization falls apart. Thousands of years pass, and then a superhumanly knowledgeable teenager named Senku wakes up due to nitric acid dripping on him for long enough.
 
 He eventually deduces that the nitric acid caused him to depetrify and drags his petrified friend Taiju under a drip of the acid. Taiju wakes up. The two begin Senku's quest to _rebuild civilization from scratch using the power and knowledge of science._

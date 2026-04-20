@@ -39,16 +39,6 @@ description: Obama, Trump, and Biden walk into a bar. They talk about AI alignme
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 <video controls width="100%"><source src="https://assets.turntrout.com/alignment-agendas.mp4" type="video/mp4; codecs=hvc1"/>
 <source src="https://assets.turntrout.com/alignment-agendas.webm" type="video/webm"><track kind="captions" src="/static/debate.vtt" srclang="en" label="English"></video>
 

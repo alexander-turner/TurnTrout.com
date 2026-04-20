@@ -44,15 +44,6 @@ card_image_alt: "Title text reads: \"This approach is called Attainable Utility 
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
 ![Handwritten text reads: "Last time, on Reframing Impact:". Below, a cloud-shaped bubble defines the "Catastrophic Convergence Conjecture": "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."](https://assets.turntrout.com/static/images/posts/hTnYTsJ.avif)
 
 ![Text: "If the CCC is right, then _if_ power gain is disincentivized, the agent isn't incentivized to overfit and disrupt our AU landscape. Without even knowing who we are or what we want, the agent's actions preserve our attainable utilities." Below are illustrated examples of commands: "Make paperclips," "Put the strawberry on the plate," or "Paint the car pink," followed by the main constraint: "... but don't gain power."](https://assets.turntrout.com/static/images/posts/gwVocUy.avif) ![Title text reads: "This approach is called Attainable Utility Preservation." A diagram shows a robot's reach being stopped by a blue energy field. Beside it, three status bars labeled "Human", "Trout", and "AI" all show high attainable utility levels.](https://assets.turntrout.com/static/images/posts/KPv2beS.avif)

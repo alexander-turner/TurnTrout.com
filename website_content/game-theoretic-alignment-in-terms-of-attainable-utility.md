@@ -36,19 +36,6 @@ description: A game-theoretic examination of how "aligned" agents are in a multi
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!thanks] Acknowledgements
 >
 > This article is a writeup of research conducted through the [SERI](https://cisac.fsi.stanford.edu/stanford-existential-risks-initiative/content/stanford-existential-risks-initiative) program under the mentorship of [Alex Turner](https://www.lesswrong.com/users/turntrout). It extends our research on [game-theoretic POWER](/formalizing-multi-agent-power) and Alex's research on [POWER-seeking](/seeking-power-is-often-convergently-instrumental-in-mdps).

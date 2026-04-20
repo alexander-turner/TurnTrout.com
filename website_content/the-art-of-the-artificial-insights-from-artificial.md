@@ -41,13 +41,6 @@ description: My review of "Artificial Intelligence, A Modern Approach" & how I r
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
     
 
 

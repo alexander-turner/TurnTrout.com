@@ -32,20 +32,6 @@ description: A critical look at the idea of "lethal" AI failures, challenging co
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 This was an appendix of [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment). However, I think the material is self-contained and worth sharing separately, especially since [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities) has become so influential.
 
 <hr/>

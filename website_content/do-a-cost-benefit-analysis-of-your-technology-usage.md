@@ -40,19 +40,6 @@ description: 'A cost-benefit analysis of technology: Is your smartphone really w
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 If an unaligned entity invests billions of dollars into an application which you use, where they benefit from wasting your time, and you haven’t at least done a cost-benefit analysis so that your usage minimizes your costs and maximizes your benefits—_You are probably getting fucked over_.
 
 # Mistake: Motivatedly avoiding thinking about the issue

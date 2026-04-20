@@ -33,15 +33,6 @@ description: Dissolving technical problems by visualizing ideal solutions and th
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 In the last month and a half, I've had more (of what I believe to be) profound, creative insights to technical problems than in the five years prior. For example, I independently came up with the core insight behind [DenseNets](https://arxiv.org/abs/1608.06993) during the second lecture on convolutional neural nets in my Deep Learning class. I've noticed that these insights occur as byproducts of _good processes_ and having a _conducive mindset and physiology_ at that point in time. I'm going to focus on the former in this post.
 
 # End in Mind
