@@ -17,6 +17,15 @@ const unitlessKeys = new Set([
   "semi-bold-weight",
   "normal-weight",
   "font-scale-factor",
+  "z-below",
+  "z-base",
+  "z-raised",
+  "z-accent",
+  "z-popover",
+  "z-sticky",
+  "z-navbar",
+  "z-modal",
+  "z-skip-link",
 ])
 
 /**

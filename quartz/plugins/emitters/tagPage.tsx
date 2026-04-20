@@ -3,9 +3,8 @@ import type { QuartzEmitterPlugin } from "../types"
 
 import { defaultListPageLayout, sharedPageComponents } from "../../../config/quartz/quartz.layout"
 import { TagContent } from "../../components"
-import BodyConstructor from "../../components/Body"
 import { uiStrings } from "../../components/constants"
-import HeaderConstructor from "../../components/Header"
+import PageShellConstructor from "../../components/PageShell"
 import { pageResources, renderPage } from "../../components/renderPage"
 import DepGraph from "../../depgraph"
 import {
@@ -31,14 +30,13 @@ export const TagPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOpts) 
     ...userOpts,
   }
 
-  const { head: Head, header, beforeBody, pageBody, left, right, footer: Footer } = opts
-  const Header = HeaderConstructor()
-  const Body = BodyConstructor()
+  const { head: Head, beforeBody, pageBody, left, right } = opts
+  const PageShell = PageShellConstructor()
 
   return {
     name: "TagPage",
     getQuartzComponents() {
-      return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
+      return [Head, PageShell, ...beforeBody, pageBody, ...left, ...right]
     },
     getDependencyGraph(ctx, content) {
       const graph = new DepGraph<FilePath>()

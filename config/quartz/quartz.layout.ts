@@ -2,7 +2,6 @@ import {
   ArticleTitle,
   AuthorList,
   ContentMeta,
-  Footer,
   Head,
   Navbar,
   TableOfContents,
@@ -12,11 +11,7 @@ import { PageLayout, SharedLayout } from "../../quartz/components/types"
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Head(),
-  header: [],
   left: [Navbar()],
-  footer: Footer({
-    links: {},
-  }),
 }
 
 // components for pages that display a single page (e.g. a single note)

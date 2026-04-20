@@ -9,8 +9,7 @@ import {
   sharedPageComponents,
 } from "../../../config/quartz/quartz.layout"
 import { Content } from "../../components"
-import BodyConstructor from "../../components/Body"
-import HeaderConstructor from "../../components/Header"
+import PageShellConstructor from "../../components/PageShell"
 import { pageResources, renderPage } from "../../components/renderPage"
 import { type FullPageLayout, type QuartzComponentProps } from "../../components/types"
 import DepGraph from "../../depgraph"
@@ -78,16 +77,15 @@ export const ContentPage: QuartzEmitterPlugin<Partial<FullPageLayout>> = (userOp
     ...userOpts,
   }
 
-  const { head: Head, header, beforeBody, pageBody, left, right, footer: Footer } = opts
-  const Header = HeaderConstructor()
-  const Body = BodyConstructor()
+  const { head: Head, beforeBody, pageBody, left, right } = opts
+  const PageShell = PageShellConstructor()
 
   return {
     name: "ContentPage",
 
     // istanbul ignore next
     getQuartzComponents() {
-      return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
+      return [Head, PageShell, ...beforeBody, pageBody, ...left, ...right]
     },
 
     getDependencyGraph(ctx, content) {
