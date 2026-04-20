@@ -157,7 +157,7 @@ KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the f
 
 ## KaTeX TypeScript cleanup
 
-KaTeX's TypeScript codebase carried ~50 `as any` casts and `TODO(ts)` comments left over from its Flow-to-TypeScript migration, silently suppressing type errors rather than resolving them. [PR #4171](https://github.com/KaTeX/KaTeX/pull/4171) (merged) eliminates nearly all of these by introducing runtime type guards (`isAtom()`, `isMathDomNode()`), discriminated unions, and generic-typed Settings, then enables `@typescript-eslint/no-explicit-any` as an error to prevent regressions.
+KaTeX's TypeScript codebase carried dozens of escape-hatch `as any` casts left over from its earlier Flow-to-TypeScript migration. Each one silenced a type error instead of fixing it, so the compiler couldn't catch bugs in those spots. [PR #4171](https://github.com/KaTeX/KaTeX/pull/4171) (merged) replaces these with proper checks and tighter type definitions, then enables a lint rule so new `any` casts can't sneak back in.
 
 ## SCSS linting rule
 
