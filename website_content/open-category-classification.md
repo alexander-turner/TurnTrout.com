@@ -32,16 +32,6 @@ description: 'Open-category classification: How can we penalize classifiers whic
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 # Introduction
 
 > [!quote] [AI Alignment: Why It's Hard and Where to Start](https://intelligence.org/2016/12/28/ai-alignment-why-its-hard-and-where-to-start/#recent-topics)

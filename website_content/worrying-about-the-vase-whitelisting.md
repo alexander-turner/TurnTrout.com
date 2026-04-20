@@ -33,21 +33,6 @@ description: An impact measure for AI safety that whitelists the object transfor
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!quote] Quotes
 > > [!quote]Amodei et al., _[Concrete Problems in AI Safety](https://arxiv.org/abs/1606.06565)_
 > >

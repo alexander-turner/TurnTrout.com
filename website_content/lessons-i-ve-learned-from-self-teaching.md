@@ -44,21 +44,6 @@ date_updated: 2026-04-20
 card_image_alt: "Anki's \"Future Due\" graph, a bar chart showing the number of flashcard reviews scheduled over the next 3 months. The bars are highest in the immediate future, showing a high workload that drops off quickly over time. Text below states: \"Total: 830 reviews, Average: 9 reviews/day, Due tomorrow: 58 reviews.\""
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 In 2018, I was a bright-eyed grad student who was freaking out about AI alignment. I guess I'm still a bright-eyed grad student freaking out about AI alignment, but that's beside the point.
 
 I wanted to help, and so I [started levelling up](/posts#becoming-stronger). While I'd read Nate Soares's [self-teaching posts](https://www.lesswrong.com/posts/w5F4w8tNZc6LcBKRP/on-learning-difficult-things), there were a few key lessons I'd either failed to internalize or failed to consider at all. I think that implementing these might have doubled the benefit I drew from my studies.

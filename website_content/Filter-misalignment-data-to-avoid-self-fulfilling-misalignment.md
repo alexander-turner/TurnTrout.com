@@ -21,23 +21,6 @@ date_updated: 2026-04-20
 card_image_alt: A person says "AI will be evil", causing a later AI to think it's evil.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Your AI's training data might make it more "evil" and more able to circumvent your security, monitoring, and control measures. Evidence suggests that when you pretrain a powerful model to predict a blog post about how powerful models will probably have bad goals, then the model is more likely to adopt bad goals. I discuss ways to test for and mitigate these potential mechanisms. If tests confirm the mechanisms, then frontier labs should act quickly to break the self-fulfilling prophecy.
 
 ---

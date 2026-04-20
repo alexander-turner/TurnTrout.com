@@ -43,17 +43,6 @@ date_updated: 2026-04-20
 card_image_alt: A geometry proof uses colored lines and symbols instead of letters to visually demonstrate that the triangle's sides are equal.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 Presumably, I was taught geometry as a child. I do not remember.
 
 Recently, I'd made my way halfway through a complex analysis textbook, only to find another which seemed more suitable and engaging. Unfortunately, the exposition was geometric. I knew something was wrong – I knew something had to change – when, asked to prove the similarity of two triangles, I got stuck on _page 7_.

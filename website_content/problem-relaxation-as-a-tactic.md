@@ -41,17 +41,6 @@ description: Relax difficult problems by simplifying them while retaining their 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
 > [!warning]
 > As of September 2024, I no longer endorse following some of these strategies. Concretely, beware of most content on [Arbital](https://arbital.com), especially the methodology of unbounded analysis.
 

@@ -40,16 +40,6 @@ description: "The author rediscovers their love for math while rigorously studyi
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 # Foreword
 
 Linear algebra, my old flame - how I missed you. At my undergraduate institution, linear algebra was my introduction to proof-based mathematics. Some people shake hands, and some people **shake hands**. You know the type - you grasp their hand, and they clamp down and pull you in, agitating so wildly you fear for the structural integrity of your joints. My first experience with proofs was an encounter of the latter variety.

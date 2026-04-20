@@ -42,18 +42,6 @@ date_updated: 2026-04-20
 card_image_alt: A diagram illustrating the definition of continuity for a function f from a domain X to a codomain Y. In X, a sequence of points x_n converges to a point x. The function f maps this to Y, where the corresponding sequence f(x_n) converges to f(x), visually demonstrating topological convergence.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 Sometimes you really like someone, but you can't understand why. By all means, you should have tired of them long ago, but you keep coming back. Welcome, my friend, to [_Topology_](https://www.amazon.com/Topology-2nd-James-Munkres/dp/0131816292).
 
 This book is a good one, but boy was it _slow_ (349 pages at ~30 minutes a page, on average). I just kept coming back, and I was slowly rewarded each time I did.

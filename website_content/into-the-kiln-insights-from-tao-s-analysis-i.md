@@ -41,23 +41,6 @@ description: Tao's "Analysis I" illuminates the foundations of mathematics, from
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.
 
 In high school, I'd daydream about what would happen to integrals as I twisted functions in my mind. I was curious.

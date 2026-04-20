@@ -40,16 +40,6 @@ description: Turing computability and the surprising limits of what formal syste
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 Max Tegmark's _[Our Mathematical Universe](https://www.amazon.com/Our-Mathematical-Universe-Ultimate-Reality/dp/0307599809)_ briefly touches on a captivating, beautiful mystery:
 
 ![A diagram connecting "Formal systems," "Mathematical structures," and "Computations" in a triangle. Questions are posed for each: "Decidable?", "Defined?", and "Halting?". Labeled arrows show their interrelationships, such as "are models of" and "describe." A central question mark suggests a single underlying structure.](https://assets.turntrout.com/static/images/posts/math_structure.avif)

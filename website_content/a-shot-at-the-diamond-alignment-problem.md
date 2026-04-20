@@ -40,18 +40,6 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 I think that relatively simple alignment techniques can go a long way. In particular, I want to tell a plausible-to-me story about how simple techniques can align a proto-AGI so that it makes lots of diamonds.
 
 Why is it interesting to get an AI which makes lots of diamonds? Because we avoid the complexity of human value and thinking about what kind of future we want, while still testing our ability to align an AI. Since diamond-production is our goal for training, it’s actually okay (in this story) if the AI kills everyone. The real goal is to ensure the AI ends up acquiring and producing lots of diamonds, instead of just optimizing some weird proxies that didn’t have anything to do with diamonds. It’s also OK if the AI doesn’t [_maximize_ diamonds](https://arbital.com/p/diamond_maximizer/), and instead just makes a whole lot of diamonds.[^1]

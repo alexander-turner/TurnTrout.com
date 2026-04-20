@@ -42,20 +42,6 @@ description: "I dove headfirst into AI safety, even at the risk of my PhD. This 
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!success]
 > One data point for careful planning, the unapologetic pursuit of fulfillment, and success. Of particular interest to up-and-coming AI safety researchers, this post chronicles how I made a change in my PhD program to work more directly on AI safety, overcoming significant institutional pressure in the process.
 

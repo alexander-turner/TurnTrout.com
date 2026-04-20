@@ -24,20 +24,6 @@ date_updated: 2026-04-20
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
 > Subtitle: By George Retes, Iraq war veteran

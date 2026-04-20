@@ -24,16 +24,6 @@ date_updated: 2026-04-20
 card_image_alt: A red "no" sign over a Shoggoth meme.
 ---
 
-
-
-
-
-
-
-
-
-
-
 > [!quote] [How the Shoggoth Meme Has Come to Symbolize the State of AI](https://www.nytimes.com/2023/05/30/technology/shoggoth-meme-ai.html)
 > What’s happening in AI today feels, to some of its participants, more like an act of summoning than a software process. They are creating blobby, alien Shoggoths, making them bigger and more powerful, and hoping that there are enough smiley faces to cover the scary parts.
 >

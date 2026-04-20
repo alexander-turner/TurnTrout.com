@@ -35,18 +35,6 @@ description: "A game-theoretic formalism of “defection”, analyzing whether a
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
 > [!quote] Vignette
 >
  > They can't prove the conspiracy... But they could, if Steve runs his mouth.

@@ -33,16 +33,6 @@ description: "Proof of instrumental convergence: Even if an AI's goals seem unre
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
-
 # Introduction
 
 I found _[Formalizing Convergent Instrumental Goals](https://intelligence.org/files/FormalizingConvergentGoals.pdf)_ (Benson-Tilsen and Soares) to be quite readable. I was surprised that the instrumental convergence hypothesis had been formulated and proven (within the confines of a reasonable toy model); this caused me to update slightly upwards on existential risk from unfriendly AI.

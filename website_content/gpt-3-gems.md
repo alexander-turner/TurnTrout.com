@@ -32,10 +32,6 @@ description: "GPT-3's output: sometimes insightful, sometimes silly. Read my fav
 date_updated: 2026-04-20
 ---
 
-
-
-
-
 GPT-3 is captivating, and not just because of its [potential reasoning abilities](/to-what-extent-is-gpt3-capable-of-reasoning). This post will be a living collection of my favorite experiences with the network.
 
 > [!note]

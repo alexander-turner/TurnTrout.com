@@ -24,19 +24,6 @@ card_image_alt: A landscape of sparkling crystalline shards growing out of the g
 createBibtex: true
 ---
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 We present _gradient routing_, a way of controlling where learning happens in neural networks. Gradient routing applies masks to limit the flow of gradients during backpropagation. By supplying different masks for different data points, the user can induce specialized subcomponents within a model. We think gradient routing has the potential to train safer AI systems by making them more transparent or by enabling the removal or monitoring of bad capabilities.
 
 > [!idea] A key takeaway

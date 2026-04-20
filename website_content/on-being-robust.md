@@ -33,13 +33,6 @@ description: "How to avoid feeling like a fraud: build good habits and stop cutt
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
 > [!thanks]
 > Inspired in part by `Raemon`'s [Being a Robust Agent](https://www.lesswrong.com/posts/2jfiMgKkh7qw9z8Do/being-a-robust-agent).
 

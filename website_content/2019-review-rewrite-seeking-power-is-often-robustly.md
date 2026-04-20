@@ -33,15 +33,6 @@ description: Revised post clarifies theory on power-seeking  and corrects termin
 date_updated: 2026-04-20
 ---
 
-
-
-
-
-
-
-
-
-
 For the 2019 LessWrong review, I've rewritten my post [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps). The post explains the key insights of [my theorems on power-seeking and instrumental convergence / robust instrumentality](https://arxiv.org/abs/1912.01683). The new version is more substantial, more nuanced, and better motivated - without sacrificing the broad accessibility or the cute drawings of the original.
 
 > [!thanks]
