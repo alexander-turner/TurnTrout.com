@@ -2,7 +2,12 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
-import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
+import {
+  getTextContent,
+  transformElement,
+  collectTransformableElements,
+  type TextNodeSkipPredicate,
+} from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -48,6 +53,18 @@ export function toSkip(node: Element): boolean {
     return skipTag || skipClass || isFootnoteRef
   }
   return false
+}
+
+/**
+ * Skip typography transforms on anchor text that equals its href, so URL-like
+ * link text (e.g. `<a href="https://x/y">https://x/y</a>`) is not mangled by
+ * slash spacing, hyphen rewrites, etc.
+ */
+export const shouldSkipLinkUrlText: TextNodeSkipPredicate = (textNode, ancestors) => {
+  const parent = ancestors[ancestors.length - 1]
+  if (parent?.tagName !== "a") return false
+  const href = parent.properties?.href
+  return typeof href === "string" && href === textNode.value
 }
 
 /**
@@ -725,13 +742,14 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
           : uncheckedTextTransformers
 
         const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+        const transformOptions = { shouldSkipText: shouldSkipLinkUrlText }
         eltsToTransform.forEach((elt) => {
           for (const transform of checkedTextTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, true)
+            transformElement(elt, transform, toSkip, markerChar, true, transformOptions)
           }
 
           for (const transform of activeUncheckedTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, false)
+            transformElement(elt, transform, toSkip, markerChar, false, transformOptions)
           }
 
           // Don't replace slashes in fractions, but give breathing room
@@ -740,7 +758,7 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
             return !hasClass(n, "fraction") && n?.tagName !== "a"
           }
           if (slashPredicate(elt)) {
-            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
+            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true, transformOptions)
           }
         })
       }
