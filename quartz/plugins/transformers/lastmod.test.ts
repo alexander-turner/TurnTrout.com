@@ -9,7 +9,8 @@ describe("coerceDate", () => {
   it.each([
     ["ISO 8601 date", "2024-01-19T00:47:04.621Z", new Date("2024-01-19T00:47:04.621Z")],
     ["date with space separator", "2024-01-19 20:10:07", new Date("2024-01-19T20:10:07")],
-    ["simple date", "2024-01-19", new Date("2024-01-19")],
+    // Day-only strings are parsed as local midnight, not UTC midnight
+    ["simple date", "2024-01-19", new Date(2024, 0, 19)],
     ["numeric timestamp", 1705694407919, new Date(1705694407919)],
   ])("parses valid date: %s", (_, input, expected) => {
     const result = coerceDate("test.md", input)
