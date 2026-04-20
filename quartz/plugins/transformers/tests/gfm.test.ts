@@ -4,7 +4,7 @@ import { h } from "hastscript"
 
 import type { BuildCtx } from "../../../util/ctx"
 
-import { QuartzConfig } from "../../../cfg"
+import { QuartzConfig } from "../../../util/ctx"
 import {
   slugify,
   resetSlugger,

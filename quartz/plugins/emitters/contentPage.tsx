@@ -8,12 +8,11 @@ import {
   defaultContentPageLayout,
   sharedPageComponents,
 } from "../../../config/quartz/quartz.layout"
-import { type FullPageLayout } from "../../cfg"
 import { Content } from "../../components"
 import BodyConstructor from "../../components/Body"
 import HeaderConstructor from "../../components/Header"
 import { pageResources, renderPage } from "../../components/renderPage"
-import { type QuartzComponentProps } from "../../components/types"
+import { type FullPageLayout, type QuartzComponentProps } from "../../components/types"
 import DepGraph from "../../depgraph"
 import { type Argv } from "../../util/ctx"
 import {

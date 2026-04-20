@@ -2,7 +2,7 @@ import React from "react"
 
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 
-import { type GlobalConfiguration } from "../cfg"
+import { type GlobalConfiguration } from "../util/config"
 import { RenderPublicationInfo } from "./ContentMeta"
 
 // skipcq: JS-D1001

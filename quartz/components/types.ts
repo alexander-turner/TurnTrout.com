@@ -1,8 +1,8 @@
 import type { Node } from "hast"
 import type { ComponentType, JSX } from "preact"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import { type BuildCtx } from "../util/ctx"
 import { type StaticResources } from "../util/resources"
 
@@ -27,3 +27,16 @@ export type QuartzComponent = ComponentType<QuartzComponentProps> & {
 export type QuartzComponentConstructor<Options extends object | undefined = undefined> = (
   opts: Options,
 ) => QuartzComponent
+
+export interface FullPageLayout {
+  head: QuartzComponent
+  header: QuartzComponent[]
+  beforeBody: QuartzComponent[]
+  pageBody: QuartzComponent
+  left: QuartzComponent[]
+  right: QuartzComponent[]
+  footer: QuartzComponent
+}
+
+export type PageLayout = Pick<FullPageLayout, "beforeBody" | "left" | "right">
+export type SharedLayout = Pick<FullPageLayout, "head" | "header" | "left" | "footer">

@@ -6,8 +6,8 @@ import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
-import { GlobalConfiguration } from "../cfg"
 import { QuartzPluginData } from "../plugins/vfile"
+import { GlobalConfiguration } from "../util/config"
 import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"

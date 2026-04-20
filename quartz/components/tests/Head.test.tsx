@@ -30,8 +30,9 @@ jest.mock("hast-util-from-html", () => ({
   fromHtml: mockFromHtml,
 }))
 
-import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"

@@ -7,8 +7,8 @@ import { h } from "hastscript"
 // skipcq: JS-W1028
 import React from "react"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
 import { locale, normalizeNbsp } from "../constants"

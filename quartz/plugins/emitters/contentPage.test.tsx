@@ -2,7 +2,7 @@ import { jest, describe, it, expect, beforeEach, beforeAll } from "@jest/globals
 import { type Root } from "hast"
 import { VFile } from "vfile"
 
-import { type QuartzConfig } from "../../cfg"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"

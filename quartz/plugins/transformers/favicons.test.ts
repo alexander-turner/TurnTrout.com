@@ -44,6 +44,7 @@ beforeEach(async () => {
   jest.resetAllMocks()
   jest.restoreAllMocks()
   favicons.urlCache.clear()
+  favicons.missingLocalSvg.clear()
 })
 
 afterEach(async () => {
