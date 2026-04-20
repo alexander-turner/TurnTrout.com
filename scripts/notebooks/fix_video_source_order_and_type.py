@@ -46,9 +46,8 @@ def _process_video_content(
                           indicating if changes were made.
     """
     sources: List[Dict[str, str]] = []
-    original_sources_str: Dict[str, str] = (
-        {}
-    )  # Map type (webm/mp4) to full tag string
+    # Map type (webm/mp4) to full tag string
+    original_sources_str: Dict[str, str] = {}
     modified = False
 
     # Find all source tags and store their info
@@ -125,12 +124,8 @@ def _process_video_content(
             placeholder1 = "__TEMP_WEBM_PLACEHOLDER__"
             placeholder2 = "__TEMP_MP4_PLACEHOLDER__"
             new_content = new_content.replace(mp4_tag_to_swap, placeholder1, 1)
-            new_content = new_content.replace(
-                webm_tag_to_swap, placeholder2, 1
-            )
-            new_content = new_content.replace(
-                placeholder1, webm_tag_to_swap, 1
-            )
+            new_content = new_content.replace(webm_tag_to_swap, placeholder2, 1)
+            new_content = new_content.replace(placeholder1, webm_tag_to_swap, 1)
             new_content = new_content.replace(placeholder2, mp4_tag_to_swap, 1)
             modified = True
 
@@ -196,9 +191,7 @@ def process_markdown_file(md_path: Path) -> None:
         try:
             md_path.write_text(new_content, encoding="utf-8")
         except Exception as e:
-            print(
-                f"  Error writing changes to {md_path}: {e}", file=sys.stderr
-            )
+            print(f"  Error writing changes to {md_path}: {e}", file=sys.stderr)
     else:
         print(f"  No changes needed for {md_path.name}")
 
@@ -215,7 +208,9 @@ def main() -> None:
 
     # Process only markdown files in the content directory
     md_files = script_utils.get_files(
-        content_dir, (".md",), use_git_ignore=True  # Respect .gitignore
+        content_dir,
+        (".md",),
+        use_git_ignore=True,  # Respect .gitignore
     )
 
     print(f"Found {len(md_files)} markdown files in {content_dir}")

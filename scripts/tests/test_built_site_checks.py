@@ -1950,7 +1950,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MAX_DESCRIPTION_LENGTH + 1)}">
+                <meta name="description" content="{"a" * (_MAX_DESCRIPTION_LENGTH + 1)}">
             </head>
             </html>
             """,
@@ -1963,7 +1963,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MIN_DESCRIPTION_LENGTH - 1)}">
+                <meta name="description" content="{"a" * (_MIN_DESCRIPTION_LENGTH - 1)}">
             </head>
             </html>
             """,
@@ -6448,7 +6448,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://apple.com/products">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: apple.com" " (https://apple.com/products)"],
+            ["Link missing favicon: apple.com (https://apple.com/products)"],
         ),
         # Non-included domain without favicon (valid — not expected)
         (
@@ -6463,8 +6463,7 @@ def test_is_asset_href(href, expected):
             "Blog</a></article>",
             {"apple_com"},
             [
-                "Link missing favicon: blog.apple.com"
-                " (https://blog.apple.com/news)"
+                "Link missing favicon: blog.apple.com (https://blog.apple.com/news)"
             ],
         ),
         # www. prefix stripped correctly
@@ -6472,7 +6471,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://www.apple.com">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: www.apple.com" " (https://www.apple.com)"],
+            ["Link missing favicon: www.apple.com (https://www.apple.com)"],
         ),
         # Asset link to included domain (should be skipped)
         (
@@ -6483,8 +6482,7 @@ def test_is_asset_href(href, expected):
         ),
         # Internal link (no class="external") to included domain (skip)
         (
-            '<article><a href="https://apple.com/products">'
-            "Apple</a></article>",
+            '<article><a href="https://apple.com/products">Apple</a></article>',
             {"apple_com"},
             [],
         ),
@@ -6496,7 +6494,7 @@ def test_is_asset_href(href, expected):
             '<a class="external" href="https://discord.gg/abc">bad</a>'
             "</article>",
             {"apple_com", "discord_gg"},
-            ["Link missing favicon: discord.gg" " (https://discord.gg/abc)"],
+            ["Link missing favicon: discord.gg (https://discord.gg/abc)"],
         ),
         # Google subdomain included entry
         (
@@ -6525,22 +6523,19 @@ def test_is_asset_href(href, expected):
         ),
         # Empty included domains set - nothing flagged
         (
-            '<article><a class="external" href="https://apple.com">'
-            "Apple</a></article>",
+            '<article><a class="external" href="https://apple.com">Apple</a></article>',
             set(),
             [],
         ),
         # Malformed URL with no hostname (should be skipped gracefully)
         (
-            '<article><a class="external" href="https://">'
-            "Bad URL</a></article>",
+            '<article><a class="external" href="https://">Bad URL</a></article>',
             {"apple_com"},
             [],
         ),
         # Link outside <article> (nav/aside) - should be skipped
         (
-            '<nav><a class="external" href="https://apple.com">'
-            "Apple</a></nav>",
+            '<nav><a class="external" href="https://apple.com">Apple</a></nav>',
             {"apple_com"},
             [],
         ),

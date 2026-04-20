@@ -186,8 +186,7 @@ def run_checks(
 
                 if continue_on_failure:
                     console.log(
-                        f"[yellow]continuing past failure in "
-                        f"{step.name}[/yellow]"
+                        f"[yellow]continuing past failure in {step.name}[/yellow]"
                     )
                     continue
                 raise CheckFailedError(step.name, result.stdout, result.stderr)
