@@ -1182,6 +1182,13 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > 1. RSS file generation failure or schema validation errors.
 
+### Spellchecking source Markdown and rendered HTML
+
+[`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) runs against both the raw Markdown (via `scripts/spellcheck.sh`) and the rendered HTML paragraphs (via `scripts/built_site_checks.py`), reading a shared custom dictionary at `config/spellcheck/.wordlist.txt`. Two layers reduce the number of manual dictionary edits:
+
+1. **Automatic possessive expansion.** `scripts/augment_spellcheck_wordlist.sh` streams the canonical wordlist and, for every entry that doesn't already end in `'s` / `’s`, emits both apostrophe-variants alongside the original. Both call sites pass this augmented file to `spellchecker-cli --dictionaries`, so adding `KaTeX` alone covers `KaTeX's` in straight-apostrophe Markdown source and `KaTeX’s` in smart-quoted rendered HTML.
+2. **Claude-assisted triage for the remainder.** When a new proper noun or term slips through, `uv run python scripts/spellcheck_triage.py --public public/` walks the spellcheck output, sends each unknown word (with source file and the sentence it appeared in) to Claude Haiku, and acts on the structured verdict: words Claude tags as obviously legitimate proper nouns or established technical terms are inserted into `.wordlist.txt` in alphabetical order; anything ambiguous is printed for me to review. Requires `ANTHROPIC_API_KEY`.
+
 ## Build pipeline extras
 
 Reordering elements in `<head>` to ensure social media previews
