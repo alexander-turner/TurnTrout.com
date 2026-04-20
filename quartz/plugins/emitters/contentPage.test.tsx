@@ -55,11 +55,7 @@ jest.unstable_mockModule("../../../config/quartz/quartz.layout", () => ({
   sharedPageComponents: {},
 }))
 
-jest.unstable_mockModule("../../components/Body", () => ({
-  default: jest.fn(() => () => null),
-}))
-
-jest.unstable_mockModule("../../components/Header", () => ({
+jest.unstable_mockModule("../../components/PageShell", () => ({
   default: jest.fn(() => () => null),
 }))
 

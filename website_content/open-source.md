@@ -155,6 +155,10 @@ When math content becomes scrollable (e.g. via CSS overflow), it cannot be focus
 
 KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the final HTML output even though no CSS rules reference them. [PR #4164](https://github.com/KaTeX/KaTeX/pull/4164) strips these build-time-only classes from the rendered output, reducing the KaTeX DOM footprint by ~15%.
 
+## KaTeX TypeScript cleanup
+
+KaTeX's TypeScript codebase carried ~50 `as any` casts and `TODO(ts)` comments left over from its Flow-to-TypeScript migration, silently suppressing type errors rather than resolving them. [PR #4171](https://github.com/KaTeX/KaTeX/pull/4171) (merged) eliminates nearly all of these by introducing runtime type guards (`isAtom()`, `isMathDomNode()`), discriminated unions, and generic-typed Settings, then enables `@typescript-eslint/no-explicit-any` as an error to prevent regressions.
+
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:

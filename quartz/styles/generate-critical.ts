@@ -122,7 +122,7 @@ em {
 }
 
 @media all and (min-width: $min-desktop-width) {
-  #quartz-body {
+  #page-columns {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -164,7 +164,7 @@ em {
 }
 
 @media all and (min-width: $wider-gap-breakpoint) {
-  #quartz-body {
+  #page-columns {
     gap: $max-sidebar-gap;
   }
 
