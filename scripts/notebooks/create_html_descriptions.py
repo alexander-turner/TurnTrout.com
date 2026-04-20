@@ -63,7 +63,7 @@ Example post content (first 4000 characters):
 {post_content[:4000]}  # Limiting to first 4000 characters for brevity
 
 Description:
-{data['description']}
+{data["description"]}
 
 """
     return few_shot_examples

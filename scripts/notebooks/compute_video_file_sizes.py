@@ -103,8 +103,8 @@ def main() -> None:
         print("No pairs with both WEBM and MP4 found for ratio calculation.")
 
     print("Total Sizes (all found files):")
-    print(f"Total WEBM size: {df['webm_size'].sum() / (1024*1024):.2f} MB")
-    print(f"Total MP4 size: {df['mp4_size'].sum() / (1024*1024):.2f} MB")
+    print(f"Total WEBM size: {df['webm_size'].sum() / (1024 * 1024):.2f} MB")
+    print(f"Total MP4 size: {df['mp4_size'].sum() / (1024 * 1024):.2f} MB")
 
 
 if __name__ == "__main__":

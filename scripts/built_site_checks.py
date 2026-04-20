@@ -826,8 +826,7 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
 
     if loading != "eager":
         issues.append(
-            f"First content image should have loading='eager', "
-            f"got '{loading}': {src}"
+            f"First content image should have loading='eager', got '{loading}': {src}"
         )
     if fetchpriority != "high":
         issues.append(
@@ -899,8 +898,7 @@ def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
                 tag_preview = str(element)[:120]
                 _append_to_list(
                     issues,
-                    f"Invalid class name '{cls}' on <{element.name}>:"
-                    f" {tag_preview}",
+                    f"Invalid class name '{cls}' on <{element.name}>: {tag_preview}",
                 )
 
     return issues
@@ -2408,8 +2406,7 @@ def _check_single_video(
     if len(sources) < len(expected_sources):
         _append_to_list(
             issues,
-            f"<video> tag has < {len(expected_sources)}"
-            f" <source> children: {open_tag}",
+            f"<video> tag has < {len(expected_sources)} <source> children: {open_tag}",
         )
         return issues  # Cannot proceed if sources are missing
 

@@ -104,7 +104,6 @@ def test_process_card_image_in_markdown_skips_cases(
             "scripts.convert_markdown_yaml.r2_upload.upload_and_move"
         ) as mock_r2_upload,
     ):
-
         convert_markdown_yaml.process_card_image_in_markdown(md_file)
 
         # Ensure that no download was attempted
