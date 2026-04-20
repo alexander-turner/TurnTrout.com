@@ -394,16 +394,16 @@ export function renderPage(
 
   const LeftComponent = (
     <aside id="left-sidebar" className="sidebar" aria-label="Site navigation">
-      {left.map((BodyComponent) => (
-        <BodyComponent {...componentData} key={BodyComponent.name} />
+      {left.map((LayoutComponent) => (
+        <LayoutComponent {...componentData} key={LayoutComponent.name} />
       ))}
     </aside>
   )
 
   const RightComponent = (
     <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
-      {right.map((BodyComponent) => (
-        <BodyComponent {...componentData} key={BodyComponent.name} />
+      {right.map((LayoutComponent) => (
+        <LayoutComponent {...componentData} key={LayoutComponent.name} />
       ))}
     </aside>
   )
@@ -411,8 +411,8 @@ export function renderPage(
   const pageHeader = (
     <div className="page-header">
       <div className={PREVIEWABLE_CLASS}>
-        {beforeBody.map((BodyComponent) => (
-          <BodyComponent {...componentData} key={BodyComponent.name} />
+        {beforeBody.map((LayoutComponent) => (
+          <LayoutComponent {...componentData} key={LayoutComponent.name} />
         ))}
       </div>
     </div>
@@ -425,7 +425,7 @@ export function renderPage(
         className="skip-to-content internal same-page-link"
         aria-label="Skip to main content"
       />
-      <div id="quartz-root" className="page">
+      <div id="site-root" className="page">
         <PageShell {...componentData}>
           {LeftComponent}
           {RightComponent}

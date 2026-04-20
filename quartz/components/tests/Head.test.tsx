@@ -225,7 +225,7 @@ describe("Head Component", () => {
     it("should include frontmatter script with exposed data", () => {
       const html = render(h(Head, mockProps))
 
-      expect(html).toContain('id="quartz-frontmatter"')
+      expect(html).toContain('id="page-frontmatter"')
       expect(html).toContain('type="application/json"')
       expect(html).toContain('{"no_dropcap":false}')
     })
@@ -348,7 +348,7 @@ describe("Head Component", () => {
 
       expect(html).toContain("<head")
       // When frontmatter is undefined, the exposed frontmatter should be empty object
-      expect(html).toContain('id="quartz-frontmatter"')
+      expect(html).toContain('id="page-frontmatter"')
       expect(html).toContain("{}")
     })
 

@@ -28,7 +28,7 @@ type BuildContentDetails = ContentDetails & {
 
 type BuildContentIndex = Map<FullSlug, BuildContentDetails>
 
-interface Options {
+interface ContentIndexOptions {
   enableSiteMap: boolean
   enableRSS: boolean
   rssLimit?: number
@@ -36,7 +36,7 @@ interface Options {
   includeEmptyFiles: boolean
 }
 
-const defaultOptions: Options = {
+const defaultOptions: ContentIndexOptions = {
   enableSiteMap: true,
   enableRSS: true,
   rssLimit: 10,
@@ -136,7 +136,7 @@ function generateRSSFeed(
  *
  * @param opts Options for configuring the plugin.
  */
-export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
+export const ContentIndex: QuartzEmitterPlugin<Partial<ContentIndexOptions>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {
     name: "ContentIndex",
