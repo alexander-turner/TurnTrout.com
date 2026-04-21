@@ -1,0 +1,88 @@
+name: Lost Pixel Recheck
+
+# Dispatched by deploy.yaml's verify-lp-approval when LP wasn't approved at the
+# first check. Keeps re-entering the delayed-lp-check environment (10-min wait
+# timer) until LP is approved, the attempt cap is hit, or a new deploy run
+# cancels us via the shared concurrency group.
+
+concurrency:
+  # Match deploy.yaml so a fresh push to the same branch cancels pending rechecks.
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit SHA to check LP status for"
+        required: true
+      run_id:
+        description: "Original deploy workflow run ID (for artifact download)"
+        required: true
+      attempt:
+        description: "Current attempt number (1-indexed)"
+        required: true
+      max_attempts:
+        description: "Maximum number of attempts before giving up"
+        required: true
+
+permissions:
+  actions: write
+  contents: read
+  id-token: write
+  pages: write
+
+jobs:
+  recheck:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: delayed-lp-check
+    outputs:
+      approved: ${{ steps.check.outputs.approved }}
+    steps:
+      - name: Re-check Lost Pixel approval status
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.inputs.sha }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+          ATTEMPT: ${{ github.event.inputs.attempt }}
+          MAX: ${{ github.event.inputs.max_attempts }}
+        run: |
+          echo "Checking Lost Pixel status for $SHA (attempt $ATTEMPT/$MAX)..."
+          LP_CONCLUSION=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
+            --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | sort_by(.started_at) | last | .conclusion // empty' \
+            2>/dev/null || echo "")
+
+          echo "Lost Pixel conclusion: $LP_CONCLUSION"
+          if [ "$LP_CONCLUSION" = "success" ]; then
+            echo "Lost Pixel approved on attempt $ATTEMPT"
+            echo "approved=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "approved=false" >> "$GITHUB_OUTPUT"
+          if [ "$ATTEMPT" -ge "$MAX" ]; then
+            echo "::error::Lost Pixel still not approved after $MAX attempts. Approve at https://app.lost-pixel.com/ and re-run deploy."
+            exit 1
+          fi
+
+          NEXT=$((ATTEMPT + 1))
+          echo "LP not approved yet (conclusion: ${LP_CONCLUSION:-pending}). Dispatching attempt $NEXT/$MAX..."
+          gh workflow run lp-recheck.yaml \
+            --ref "${{ github.ref_name }}" \
+            -f sha="$SHA" \
+            -f run_id="$RUN_ID" \
+            -f attempt="$NEXT" \
+            -f max_attempts="$MAX"
+
+  deploy:
+    needs: recheck
+    if: needs.recheck.outputs.approved == 'true'
+    uses: ./.github/workflows/deploy-reusable.yaml
+    with:
+      ref: ${{ github.event.inputs.sha }}
+      run_id: ${{ github.event.inputs.run_id }}
+      branch: ${{ github.ref_name }}
+    secrets: inherit
