@@ -1,4 +1,4 @@
-import type { Element, Parent, Root, Text } from "hast"
+import type { Element, Parent, Root } from "hast"
 
 import { visit } from "unist-util-visit"
 
@@ -66,25 +66,26 @@ export function maybeInsertOrnament(
   if (
     node.tagName === "section" &&
     node.properties?.["dataFootnotes"] !== undefined &&
-    (node.properties?.className as Array<string>)?.includes("footnotes")
+    Array.isArray(node.properties?.className) && node.properties.className.includes("footnotes")
   ) {
-    // <hr/> looks weird right before the trout hr, so remove it.
-    // Check if there's a newline and then an HR preceding
-    const prevElement = parent.children[index - 1] as Element | Text
+    const prevElement = parent.children[index - 1]
+    const prevPrevElement = parent.children[index - 2]
     if (
       index > 1 &&
-      prevElement.type === "text" &&
+      prevElement?.type === "text" &&
       prevElement.value === "\n" &&
-      (parent.children[index - 2] as Element).tagName === "hr"
+      prevPrevElement?.type === "element" &&
+      prevPrevElement.tagName === "hr"
     ) {
       parent.children.splice(index - 2, 1)
       index--
-
-      // Check if there's an HR right before the footnotes section
-    } else if (index > 0 && (prevElement as Element).tagName === "hr") {
-      // Remove the HR element
+    } else if (
+      index > 0 &&
+      prevElement?.type === "element" &&
+      prevElement.tagName === "hr"
+    ) {
       parent.children.splice(index - 1, 1)
-      index-- // Adjust index after removal
+      index--
     }
 
     // If it is, insert the ornament node before the footnotes section
@@ -108,9 +109,8 @@ export function insertOrnamentNode(tree: Root): void {
   })
 
   if (!ornamentInserted) {
-    // Check if the last child is an <hr> element
-    const lastChild = tree.children[tree.children.length - 1] as Element
-    if (lastChild && lastChild.type === "element" && lastChild.tagName === "hr") {
+    const lastChild = tree.children[tree.children.length - 1]
+    if (lastChild?.type === "element" && lastChild.tagName === "hr") {
       // Remove the last <hr> element
       tree.children.pop()
     }

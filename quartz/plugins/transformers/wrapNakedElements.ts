@@ -61,13 +61,14 @@ function wrapElement(
  * Checks the element's `src` attribute first, then falls back to the first `<source>` child's `src`.
  */
 function getMediaSrc(node: Element): string {
-  const src = node.properties?.src as string | undefined
-  if (src) return src
+  const src = node.properties?.src
+  if (typeof src === "string") return src
 
   const sourceChild = node.children.find(
-    (child) => child.type === "element" && child.tagName === "source",
-  ) as Element | undefined
-  return (sourceChild?.properties?.src as string) ?? ""
+    (child): child is Element => child.type === "element" && child.tagName === "source",
+  )
+  const childSrc = sourceChild?.properties?.src
+  return typeof childSrc === "string" ? childSrc : ""
 }
 
 function isElement(node: Parent): node is Element {
