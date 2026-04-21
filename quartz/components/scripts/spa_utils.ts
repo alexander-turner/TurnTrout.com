@@ -37,26 +37,24 @@ export const isElement = (target: EventTarget | null): target is Element =>
 /**
  * Extracts navigation options from a click event.
  * Returns URL and scroll behavior settings, or `undefined` when the click
- * should not be intercepted by the SPA router (e.g. modified clicks,
- * external links, `target="_blank"`, or `data-router-ignore`).
+ * should not be intercepted by the SPA router (e.g. external links,
+ * `target="_blank"` anchors, or anchors with `data-router-ignore`).
  */
 export const getNavigationOpts = ({
   target,
 }: Event): { url: URL; scroll?: boolean } | undefined => {
   if (!target || !isElement(target)) return undefined
 
-  const attributes = target.attributes
-  /* istanbul ignore next -- all Element instances carry a NamedNodeMap */
-  if (!attributes) return undefined
-
-  const targetAttr = attributes.getNamedItem("target")
-  if (targetAttr?.value === "_blank") return undefined
-
   const closestLink = target.closest("a")
   if (!closestLink) return undefined
 
+  // Check target="_blank" on the ancestor anchor, not just the clicked node,
+  // so clicks on nested children (e.g. <span> inside <a target="_blank">) still
+  // open in a new tab.
+  if (closestLink.getAttribute("target") === "_blank") return undefined
+
   const dataset = closestLink.dataset
-  if (!dataset || "routerIgnore" in dataset) return undefined
+  if ("routerIgnore" in dataset) return undefined
 
   const href = closestLink.href
   if (!href || !isLocalUrl(href)) return undefined

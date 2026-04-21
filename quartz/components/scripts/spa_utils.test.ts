@@ -18,158 +18,115 @@ import {
   updateHeadElements,
 } from "./spa_utils"
 
-describe("SPA Utilities", () => {
-  describe("isLocalUrl", () => {
-    it.each([
-      { url: "http://localhost:8080/path", isLocal: true, description: "exact origin match" },
-      { url: "http://localhost:8080/another/path#hash", isLocal: true, description: "with hash" },
-      {
-        url: "//localhost:8080/path",
-        isLocal: true,
-        description: "protocol-relative with matching host",
-      },
-      { url: "https://example.com", isLocal: false, description: "different domain" },
-      {
-        url: "http://otherdomain.com/path",
-        isLocal: false,
-        description: "different domain with path",
-      },
-      { url: "ftp://server.com", isLocal: false, description: "different protocol" },
-      { url: "not a url", isLocal: true, description: "relative path resolves to same origin" },
-      { url: "http://", isLocal: false, description: "incomplete URL" },
-    ])("should return $isLocal for $description: $url", ({ url, isLocal }) => {
-      expect(isLocalUrl(url)).toBe(isLocal)
-    })
+describe("isLocalUrl", () => {
+  it.each([
+    ["http://localhost:8080/path", true, "exact origin match"],
+    ["http://localhost:8080/another/path#hash", true, "with hash"],
+    ["//localhost:8080/path", true, "protocol-relative with matching host"],
+    ["https://example.com", false, "different domain"],
+    ["http://otherdomain.com/path", false, "different domain with path"],
+    ["ftp://server.com", false, "different protocol"],
+    ["not a url", true, "relative path resolves to same origin"],
+    ["http://", false, "incomplete URL"],
+  ])("returns %s for %s (%s)", (url, expected) => {
+    expect(isLocalUrl(url as string)).toBe(expected)
   })
+})
 
-  describe("isElement", () => {
-    it("returns true for HTMLElements", () => {
-      expect(isElement(document.createElement("div"))).toBe(true)
-    })
-
-    it("returns false for text nodes", () => {
-      expect(isElement(document.createTextNode("hi"))).toBe(false)
-    })
-
-    it("returns false for null", () => {
-      expect(isElement(null)).toBe(false)
-    })
-
-    it("returns false for non-DOM EventTargets", () => {
-      expect(isElement(window)).toBe(false)
-    })
+describe("isElement", () => {
+  it.each([
+    ["div element", document.createElement("div"), true],
+    ["text node", document.createTextNode("hi"), false],
+    ["null", null, false],
+    ["window (non-DOM EventTarget)", window, false],
+  ])("returns %s for %s", (_label, target, expected) => {
+    expect(isElement(target as EventTarget | null)).toBe(expected)
   })
 })
 
 describe("getNavigationOpts", () => {
   const makeClick = (target: EventTarget | null): Event => ({ target }) as unknown as Event
 
+  const anchor = (attrs: Record<string, string> = {}, href?: string): HTMLAnchorElement => {
+    const a = document.createElement("a")
+    if (href !== undefined) a.href = href
+    for (const [k, v] of Object.entries(attrs)) a.setAttribute(k, v)
+    document.body.appendChild(a)
+    return a
+  }
+
   beforeEach(() => {
     document.body.innerHTML = ""
   })
 
-  it("returns undefined when target is null", () => {
-    expect(getNavigationOpts(makeClick(null))).toBeUndefined()
-  })
-
-  it("returns undefined when target is a non-Element node", () => {
-    const textNode = document.createTextNode("plain text")
-    expect(getNavigationOpts(makeClick(textNode))).toBeUndefined()
-  })
-
-  it("returns undefined when target has no ancestor anchor", () => {
-    const span = document.createElement("span")
-    document.body.appendChild(span)
-    expect(getNavigationOpts(makeClick(span))).toBeUndefined()
-  })
-
-  it('returns undefined when clicked anchor has target="_blank"', () => {
-    const anchor = document.createElement("a")
-    anchor.href = "http://localhost:8080/foo"
-    anchor.setAttribute("target", "_blank")
-    document.body.appendChild(anchor)
-    expect(getNavigationOpts(makeClick(anchor))).toBeUndefined()
-  })
-
-  it("returns undefined for an external link", () => {
-    const anchor = document.createElement("a")
-    anchor.href = "https://example.com/bar"
-    document.body.appendChild(anchor)
-    expect(getNavigationOpts(makeClick(anchor))).toBeUndefined()
-  })
-
-  it("returns undefined when anchor has data-router-ignore", () => {
-    const anchor = document.createElement("a")
-    anchor.href = "http://localhost:8080/ignore"
-    anchor.setAttribute("data-router-ignore", "")
-    document.body.appendChild(anchor)
-    expect(getNavigationOpts(makeClick(anchor))).toBeUndefined()
-  })
-
-  it("returns undefined when anchor has empty href", () => {
-    const anchor = document.createElement("a")
-    document.body.appendChild(anchor)
-    expect(getNavigationOpts(makeClick(anchor))).toBeUndefined()
+  it.each<[string, () => EventTarget | null]>([
+    ["null target", () => null],
+    ["non-Element node", () => document.createTextNode("plain text")],
+    ["no ancestor anchor", () => document.body.appendChild(document.createElement("span"))],
+    [
+      'direct target="_blank" anchor',
+      () => anchor({ target: "_blank" }, "http://localhost:8080/foo"),
+    ],
+    [
+      'nested click inside target="_blank" anchor',
+      () => {
+        const a = anchor({ target: "_blank" }, "http://localhost:8080/foo")
+        return a.appendChild(document.createElement("span"))
+      },
+    ],
+    ["external link", () => anchor({}, "https://example.com/bar")],
+    [
+      "data-router-ignore anchor",
+      () => anchor({ "data-router-ignore": "" }, "http://localhost:8080/ignore"),
+    ],
+    ["anchor with empty href", () => anchor()],
+  ])("returns undefined for %s", (_label, makeTarget) => {
+    expect(getNavigationOpts(makeClick(makeTarget()))).toBeUndefined()
   })
 
   it("returns URL when anchor is a local link", () => {
-    const anchor = document.createElement("a")
-    anchor.href = "http://localhost:8080/page"
-    document.body.appendChild(anchor)
-
-    const result = getNavigationOpts(makeClick(anchor))
-    expect(result?.url.href).toBe("http://localhost:8080/page")
-    expect(result?.scroll).toBeUndefined()
+    const a = anchor({}, "http://localhost:8080/page")
+    expect(getNavigationOpts(makeClick(a))).toEqual({
+      url: expect.objectContaining({ href: "http://localhost:8080/page" }),
+      scroll: undefined,
+    })
   })
 
   it("resolves closest-ancestor anchor when a nested element is clicked", () => {
-    const anchor = document.createElement("a")
-    anchor.href = "http://localhost:8080/nested"
-    const inner = document.createElement("span")
-    anchor.appendChild(inner)
-    document.body.appendChild(anchor)
-
-    const result = getNavigationOpts(makeClick(inner))
-    expect(result?.url.href).toBe("http://localhost:8080/nested")
+    const a = anchor({}, "http://localhost:8080/nested")
+    const inner = a.appendChild(document.createElement("span"))
+    expect(getNavigationOpts(makeClick(inner))?.url.href).toBe("http://localhost:8080/nested")
   })
 
   it("sets scroll=false when anchor has data-router-no-scroll", () => {
-    const anchor = document.createElement("a")
-    anchor.href = "http://localhost:8080/no-scroll"
-    anchor.setAttribute("data-router-no-scroll", "")
-    document.body.appendChild(anchor)
-
-    const result = getNavigationOpts(makeClick(anchor))
-    expect(result?.scroll).toBe(false)
+    const a = anchor({ "data-router-no-scroll": "" }, "http://localhost:8080/no-scroll")
+    expect(getNavigationOpts(makeClick(a))?.scroll).toBe(false)
   })
 })
 
 describe("saveScrollToLocalStorage", () => {
+  const key = `${scrollPositionKeyPrefix}/page`
+
   beforeEach(() => {
     localStorage.clear()
   })
 
-  it("persists scroll positions above the minimum threshold", () => {
-    saveScrollToLocalStorage("/page", scrollPositionMinThreshold + 100)
-    expect(localStorage.getItem(`${scrollPositionKeyPrefix}/page`)).toBe(
+  it.each<[string, number, string | null]>([
+    [
+      "persists above threshold",
+      scrollPositionMinThreshold + 100,
       `${scrollPositionMinThreshold + 100}`,
-    )
-  })
-
-  it("removes existing entry when new position is below threshold", () => {
-    const key = `${scrollPositionKeyPrefix}/page`
-    localStorage.setItem(key, "500")
-    saveScrollToLocalStorage("/page", scrollPositionMinThreshold - 1)
-    expect(localStorage.getItem(key)).toBeNull()
-  })
-
-  it("does not create entry when position is below threshold", () => {
-    saveScrollToLocalStorage("/page", 0)
-    expect(localStorage.getItem(`${scrollPositionKeyPrefix}/page`)).toBeNull()
+    ],
+    ["no-op when below threshold and unset", 0, null],
+    ["removes entry when below threshold", scrollPositionMinThreshold - 1, null],
+  ])("%s", (_label, scrollY, expected) => {
+    if (_label.includes("removes")) localStorage.setItem(key, "500")
+    saveScrollToLocalStorage("/page", scrollY)
+    expect(localStorage.getItem(key)).toBe(expected)
   })
 })
 
-describe("scrollToMatch", () => {
+describe("scroll helpers", () => {
   let scrollSpy: jest.SpiedFunction<typeof window.scrollTo>
 
   beforeEach(() => {
@@ -183,192 +140,135 @@ describe("scrollToMatch", () => {
     scrollSpy.mockRestore()
   })
 
-  it("returns false when there is no <article> in the document", () => {
-    expect(scrollToMatch("anything")).toBe(false)
+  describe("scrollToMatch", () => {
+    it("returns false when there is no <article> in the document", () => {
+      expect(scrollToMatch("anything")).toBe(false)
+      expect(scrollSpy).not.toHaveBeenCalled()
+    })
+
+    it("returns false when no matches in article or title", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Nothing interesting here.</p>"
+      document.body.appendChild(article)
+
+      expect(scrollToMatch("xyzzy")).toBe(false)
+      expect(scrollSpy).not.toHaveBeenCalled()
+    })
+
+    it("returns true and stays at top when only the title matches", () => {
+      const title = document.createElement("h1")
+      title.id = "article-title"
+      title.textContent = "Unique Title"
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Body without match.</p>"
+      document.body.append(title, article)
+
+      expect(scrollToMatch("Unique")).toBe(true)
+      expect(scrollSpy).not.toHaveBeenCalled()
+      const newTitle = document.getElementById("article-title") as HTMLElement
+      expect(newTitle.querySelector(".search-match")?.textContent).toBe("Unique")
+    })
+
+    it("scrolls the window when a body match is found", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Hello world hello</p>"
+      document.body.appendChild(article)
+
+      expect(scrollToMatch("world")).toBe(true)
+      // getBoundingClientRect().top == 0, scrollY == 0, innerHeight*0.25 == 200
+      expect(scrollSpy).toHaveBeenCalledWith({ top: -200, behavior: "instant" })
+    })
   })
 
-  it("returns false when no matches in article or title", () => {
-    const article = document.createElement("article")
-    article.innerHTML = "<p>Nothing interesting here.</p>"
-    document.body.appendChild(article)
+  describe("scrollToUrlTarget", () => {
+    it("does nothing for empty string or unknown id", () => {
+      scrollToUrlTarget("")
+      scrollToUrlTarget("#missing")
+      expect(scrollSpy).not.toHaveBeenCalled()
+    })
 
-    expect(scrollToMatch("xyzzy")).toBe(false)
-    expect(scrollSpy).not.toHaveBeenCalled()
+    it.each<[string, string, string]>([
+      ["plain id", "section-one", "#section-one"],
+      ["URL-encoded id", "my section", "#my%20section"],
+    ])("scrolls to %s", (_label, id, hash) => {
+      const target = document.createElement("div")
+      target.id = id
+      document.body.appendChild(target)
+      jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 420 } as DOMRect)
+
+      scrollToUrlTarget(hash)
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 420, behavior: "instant" })
+    })
+
+    it("uses the text-fragment branch when the query matches article body", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Alpha bravo charlie</p>"
+      document.body.appendChild(article)
+
+      scrollToUrlTarget("#:~:text=bravo")
+      expect(scrollSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it("falls back to standard hash lookup when text-fragment yields no match", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>No needles here.</p>"
+      document.body.appendChild(article)
+      const anchor = document.createElement("div")
+      anchor.id = ":~:text=missing"
+      document.body.appendChild(anchor)
+
+      scrollToUrlTarget("#:~:text=missing")
+      expect(scrollSpy).toHaveBeenCalledTimes(1)
+    })
   })
 
-  it("returns true and stays at top when only the title matches", () => {
-    const title = document.createElement("h1")
-    title.id = "article-title"
-    title.textContent = "Unique Title"
-    const article = document.createElement("article")
-    article.innerHTML = "<p>Body without match.</p>"
-    document.body.append(title, article)
+  describe("handleNavigationScroll", () => {
+    it("does not scroll when opts.scroll is false", () => {
+      handleNavigationScroll(new URL("http://localhost:8080/foo#bar"), { scroll: false })
+      expect(scrollSpy).not.toHaveBeenCalled()
+    })
 
-    expect(scrollToMatch("Unique")).toBe(true)
-    expect(scrollSpy).not.toHaveBeenCalled()
-    // Highlighted title should remain in the DOM (replaced by matched version).
-    const newTitle = document.getElementById("article-title") as HTMLElement
-    expect(newTitle.querySelector(".search-match")?.textContent).toBe("Unique")
-  })
+    it("scrolls to the hash target when a hash is present", () => {
+      const anchor = document.createElement("div")
+      anchor.id = "bar"
+      document.body.appendChild(anchor)
+      jest.spyOn(anchor, "getBoundingClientRect").mockReturnValue({ top: 300 } as DOMRect)
 
-  it("scrolls the window when a body match is found", () => {
-    const article = document.createElement("article")
-    article.innerHTML = "<p>Hello world hello</p>"
-    document.body.appendChild(article)
+      handleNavigationScroll(new URL("http://localhost:8080/foo#bar"))
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 300, behavior: "instant" })
+    })
 
-    const result = scrollToMatch("world")
-    expect(result).toBe(true)
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
-    const arg = scrollSpy.mock.calls[0][0] as ScrollToOptions
-    expect(arg.behavior).toBe("instant")
-    // 0 (top) + 0 (scrollY) - 800*0.25 = -200 since getBoundingClientRect returns 0 in jsdom
-    expect(arg.top).toBe(-200)
-  })
-})
-
-describe("scrollToUrlTarget", () => {
-  let scrollSpy: jest.SpiedFunction<typeof window.scrollTo>
-
-  beforeEach(() => {
-    document.body.innerHTML = ""
-    scrollSpy = jest.spyOn(window, "scrollTo").mockImplementation(() => {})
-    Object.defineProperty(window, "innerHeight", { value: 800, configurable: true })
-    Object.defineProperty(window, "scrollY", { value: 0, configurable: true })
-  })
-
-  afterEach(() => {
-    scrollSpy.mockRestore()
-  })
-
-  it("does nothing when urlTarget is empty", () => {
-    scrollToUrlTarget("")
-    expect(scrollSpy).not.toHaveBeenCalled()
-  })
-
-  it("scrolls to an element with the given id", () => {
-    const target = document.createElement("div")
-    target.id = "section-one"
-    document.body.appendChild(target)
-    jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 420 } as DOMRect)
-    Object.defineProperty(window, "scrollY", { value: 50, configurable: true })
-
-    scrollToUrlTarget("#section-one")
-    expect(scrollSpy).toHaveBeenCalledWith({ top: 470, behavior: "instant" })
-  })
-
-  it("decodes URL-encoded ids", () => {
-    const target = document.createElement("div")
-    target.id = "my section"
-    document.body.appendChild(target)
-    jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 100 } as DOMRect)
-
-    scrollToUrlTarget("#my%20section")
-    expect(scrollSpy).toHaveBeenCalledWith({ top: 100, behavior: "instant" })
-  })
-
-  it("does not throw when the element id does not exist", () => {
-    expect(() => scrollToUrlTarget("#missing")).not.toThrow()
-    expect(scrollSpy).not.toHaveBeenCalled()
-  })
-
-  it("uses the text-fragment branch and scrolls to the match", () => {
-    const article = document.createElement("article")
-    article.innerHTML = "<p>Alpha bravo charlie</p>"
-    document.body.appendChild(article)
-
-    scrollToUrlTarget("#:~:text=bravo")
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
-  })
-
-  it("falls back to standard hash lookup when text-fragment yields no match", () => {
-    const article = document.createElement("article")
-    article.innerHTML = "<p>No needles here.</p>"
-    document.body.appendChild(article)
-
-    const anchor = document.createElement("div")
-    anchor.id = ":~:text=missing"
-    document.body.appendChild(anchor)
-
-    scrollToUrlTarget("#:~:text=missing")
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
-  })
-})
-
-describe("handleNavigationScroll", () => {
-  let scrollSpy: jest.SpiedFunction<typeof window.scrollTo>
-
-  beforeEach(() => {
-    document.body.innerHTML = ""
-    scrollSpy = jest.spyOn(window, "scrollTo").mockImplementation(() => {})
-  })
-
-  afterEach(() => {
-    scrollSpy.mockRestore()
-  })
-
-  it("does not scroll when opts.scroll is false", () => {
-    handleNavigationScroll(new URL("http://localhost:8080/foo#bar"), { scroll: false })
-    expect(scrollSpy).not.toHaveBeenCalled()
-  })
-
-  it("scrolls to the hash target when a hash is present", () => {
-    const anchor = document.createElement("div")
-    anchor.id = "bar"
-    document.body.appendChild(anchor)
-    jest.spyOn(anchor, "getBoundingClientRect").mockReturnValue({ top: 300 } as DOMRect)
-
-    handleNavigationScroll(new URL("http://localhost:8080/foo#bar"))
-    expect(scrollSpy).toHaveBeenCalledWith({ top: 300, behavior: "instant" })
-  })
-
-  it("scrolls to the top when no hash is present", () => {
-    handleNavigationScroll(new URL("http://localhost:8080/foo"))
-    expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: "instant" })
+    it("scrolls to the top when no hash is present", () => {
+      handleNavigationScroll(new URL("http://localhost:8080/foo"))
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: "instant" })
+    })
   })
 })
 
 describe("extractMetaRefreshUrl", () => {
-  it.each([
-    {
-      html: '<meta http-equiv="refresh" content="0;url=/next">',
-      expected: "/next",
-      description: "simple absolute path",
-    },
-    {
-      html: '<meta http-equiv="refresh" content="5;url=https://other.com/page">',
-      expected: "https://other.com/page",
-      description: "absolute URL with delay",
-    },
-    {
-      html: "<meta http-equiv=refresh content='0;url=relative/page'>",
-      expected: "relative/page",
-      description: "unquoted http-equiv + single quotes",
-    },
-    {
-      html: '<META HTTP-EQUIV="REFRESH" CONTENT="0;URL=/upper">',
-      expected: "/upper",
-      description: "uppercase attributes",
-    },
-  ])("returns $expected for $description", ({ html, expected }) => {
+  it.each<[string, string | null, string]>([
+    ['<meta http-equiv="refresh" content="0;url=/next">', "/next", "simple absolute path"],
+    [
+      '<meta http-equiv="refresh" content="5;url=https://other.com/page">',
+      "https://other.com/page",
+      "absolute URL with delay",
+    ],
+    [
+      "<meta http-equiv=refresh content='0;url=relative/page'>",
+      "relative/page",
+      "unquoted http-equiv + single quotes",
+    ],
+    ['<META HTTP-EQUIV="REFRESH" CONTENT="0;URL=/upper">', "/upper", "uppercase attributes"],
+    ["<p>no meta here</p>", null, "no meta tag"],
+    ['<meta name="description" content="0;url=/no">', null, "meta without http-equiv=refresh"],
+    ['<meta http-equiv="refresh" content="0">', null, "meta refresh without url="],
+  ])("parses %s -> %s (%s)", (html, expected) => {
     expect(extractMetaRefreshUrl(html)).toBe(expected)
-  })
-
-  it.each([
-    { html: "<p>no meta here</p>", description: "no meta tag" },
-    {
-      html: '<meta name="description" content="0;url=/no">',
-      description: "meta without http-equiv=refresh",
-    },
-    {
-      html: '<meta http-equiv="refresh" content="0">',
-      description: "meta refresh without url=",
-    },
-  ])("returns null for $description", ({ html }) => {
-    expect(extractMetaRefreshUrl(html)).toBeNull()
   })
 })
 
 describe("updateHeadElements", () => {
+  const parseDoc = (html: string): Document => new DOMParser().parseFromString(html, "text/html")
   let originalHead: string
 
   beforeEach(() => {
@@ -380,128 +280,84 @@ describe("updateHeadElements", () => {
     document.title = ""
   })
 
-  const parseDoc = (html: string): Document => new DOMParser().parseFromString(html, "text/html")
-
-  it("updates the document title when the new doc has one", () => {
-    document.title = "Old"
-    const newDoc = parseDoc("<html><head><title>New</title></head><body></body></html>")
-    updateHeadElements(newDoc)
-    expect(document.title).toBe("New")
+  describe("title", () => {
+    it.each<[string, string, string, string]>([
+      ["updates when new doc has a title", "Old", "<title>New</title>", "New"],
+      ["leaves unchanged when new doc has no title", "Keep", "", "Keep"],
+    ])("%s", (_label, initialTitle, headHtml, expected) => {
+      document.title = initialTitle
+      updateHeadElements(parseDoc(`<html><head>${headHtml}</head><body></body></html>`))
+      expect(document.title).toBe(expected)
+    })
   })
 
-  it("leaves the title unchanged when the new doc has no title", () => {
-    document.title = "Keep"
-    const newDoc = parseDoc("<html><head></head><body></body></html>")
-    updateHeadElements(newDoc)
-    expect(document.title).toBe("Keep")
+  describe("creates missing meta tags", () => {
+    it.each<[string, string, string]>([
+      ["meta[name]", '<meta name="theme-color" content="#000">', 'meta[name="theme-color"]'],
+      ["meta[property]", '<meta property="og:title" content="hi">', 'meta[property="og:title"]'],
+      [
+        "meta[http-equiv] (no name/property)",
+        '<meta http-equiv="x-ua-compatible" content="IE=edge">',
+        'meta[http-equiv="x-ua-compatible"]',
+      ],
+    ])("creates %s when not present", (_label, metaHtml, selector) => {
+      document.head.innerHTML = ""
+      updateHeadElements(parseDoc(`<html><head>${metaHtml}</head><body></body></html>`))
+      const created = document.head.querySelector(selector)
+      expect(created).not.toBeNull()
+      const expectedContent = metaHtml.match(/content="(?<content>[^"]+)"/)?.groups?.content ?? ""
+      expect(created?.getAttribute("content")).toBe(expectedContent)
+    })
   })
 
   it("updates content of existing meta tags matched by name", () => {
     document.head.innerHTML = '<meta name="description" content="old">'
-    const newDoc = parseDoc(
-      '<html><head><meta name="description" content="new"></head><body></body></html>',
+    updateHeadElements(
+      parseDoc('<html><head><meta name="description" content="new"></head><body></body></html>'),
     )
-    updateHeadElements(newDoc)
     expect(document.head.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
       "new",
     )
   })
 
-  it("creates meta tags that don't exist yet", () => {
-    document.head.innerHTML = ""
-    const newDoc = parseDoc(
-      '<html><head><meta property="og:title" content="hi"></head><body></body></html>',
-    )
-    updateHeadElements(newDoc)
-    expect(document.head.querySelector('meta[property="og:title"]')?.getAttribute("content")).toBe(
-      "hi",
-    )
+  it("defaults missing content attribute to empty string when updating", () => {
+    document.head.innerHTML = '<meta name="keywords" content="old">'
+    updateHeadElements(parseDoc('<html><head><meta name="keywords"></head><body></body></html>'))
+    expect(document.head.querySelector('meta[name="keywords"]')?.getAttribute("content")).toBe("")
   })
 
-  it("creates a named meta tag when it doesn't exist yet", () => {
-    document.head.innerHTML = ""
-    const newDoc = parseDoc(
-      '<html><head><meta name="theme-color" content="#000"></head><body></body></html>',
-    )
-    updateHeadElements(newDoc)
-    const created = document.head.querySelector('meta[name="theme-color"]')
-    expect(created?.getAttribute("content")).toBe("#000")
-    expect(created?.getAttribute("name")).toBe("theme-color")
-  })
-
-  it("creates meta tags with http-equiv when not present", () => {
-    document.head.innerHTML = ""
-    const newDoc = parseDoc(
-      '<html><head><meta http-equiv="content-language" content="en"></head><body></body></html>',
-    )
-    updateHeadElements(newDoc)
-    const meta = document.head.querySelector('meta[http-equiv="content-language"]')
-    expect(meta?.getAttribute("content")).toBe("en")
-  })
-
-  it("preserves meta tags flagged with spa-preserve", () => {
+  it("preserves meta tags flagged with spa-preserve and removes others", () => {
     document.head.innerHTML =
       '<meta name="keep" content="1" spa-preserve>' +
-      '<meta name="also-keep" content="2" spa-preserve>'
-    const newDoc = parseDoc("<html><head></head><body></body></html>")
-    updateHeadElements(newDoc)
-    expect(document.head.querySelector('meta[name="keep"]')).not.toBeNull()
-    expect(document.head.querySelector('meta[name="also-keep"]')).not.toBeNull()
-  })
-
-  it("removes meta tags that are no longer in the new head", () => {
-    document.head.innerHTML =
-      '<meta name="description" content="old">' +
       '<meta property="og:title" content="t">' +
       '<meta http-equiv="content-security-policy" content="default-src *">'
-    const newDoc = parseDoc(
-      '<html><head><meta name="description" content="new"></head><body></body></html>',
+    updateHeadElements(
+      parseDoc('<html><head><meta name="description" content="new"></head><body></body></html>'),
     )
-    updateHeadElements(newDoc)
+    expect(document.head.querySelector('meta[name="keep"]')).not.toBeNull()
     expect(document.head.querySelector('meta[name="description"]')).not.toBeNull()
     expect(document.head.querySelector('meta[property="og:title"]')).toBeNull()
     expect(document.head.querySelector('meta[http-equiv="content-security-policy"]')).toBeNull()
   })
 
-  it("skips meta tags without identifying attributes when removing", () => {
+  it("skips identifierless meta tags instead of throwing", () => {
     document.head.innerHTML = '<meta content="nada">'
-    const newDoc = parseDoc("<html><head></head><body></body></html>")
-    expect(() => updateHeadElements(newDoc)).not.toThrow()
-    // The identifierless meta tag should be left in place (skipped)
+    updateHeadElements(parseDoc("<html><head></head><body></body></html>"))
+    // Identifierless meta is left in place (skipped by remove-loop).
     expect(document.head.querySelector("meta")?.getAttribute("content")).toBe("nada")
-  })
-
-  it("defaults missing content attribute to empty string when updating", () => {
-    document.head.innerHTML = '<meta name="keywords" content="old">'
-    const newDoc = parseDoc('<html><head><meta name="keywords"></head><body></body></html>')
-    updateHeadElements(newDoc)
-    expect(document.head.querySelector('meta[name="keywords"]')?.getAttribute("content")).toBe("")
-  })
-
-  it("creates a new http-equiv meta tag (no name/property) when not present", () => {
-    document.head.innerHTML = ""
-    const newDoc = parseDoc(
-      '<html><head><meta http-equiv="x-ua-compatible" content="IE=edge"></head><body></body></html>',
-    )
-    updateHeadElements(newDoc)
-    const created = document.head.querySelector('meta[http-equiv="x-ua-compatible"]')
-    expect(created?.getAttribute("content")).toBe("IE=edge")
-    expect(created?.getAttribute("name")).toBeNull()
-    expect(created?.getAttribute("property")).toBeNull()
   })
 
   it("prefers non-preserve matches when updating an existing meta tag", () => {
     document.head.innerHTML =
       '<meta name="description" content="preserved" spa-preserve>' +
       '<meta name="description" content="old">'
-    const newDoc = parseDoc(
-      '<html><head><meta name="description" content="new"></head><body></body></html>',
+    updateHeadElements(
+      parseDoc('<html><head><meta name="description" content="new"></head><body></body></html>'),
     )
-    updateHeadElements(newDoc)
-    const metas = document.head.querySelectorAll('meta[name="description"]')
-    const contents = Array.from(metas).map((m) => m.getAttribute("content"))
-    expect(contents).toContain("preserved")
-    expect(contents).toContain("new")
+    const contents = Array.from(document.head.querySelectorAll('meta[name="description"]')).map(
+      (m) => m.getAttribute("content"),
+    )
+    expect(contents).toEqual(expect.arrayContaining(["preserved", "new"]))
     expect(contents).not.toContain("old")
   })
 })
