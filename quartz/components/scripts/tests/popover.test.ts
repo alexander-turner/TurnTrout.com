@@ -13,8 +13,11 @@ import {
   computeLeft,
   computeTop,
   fetchWithMetaRedirect,
+  focusableSelector,
   footnoteForwardRefRegex,
+  getVisibleFocusable,
   navigation,
+  trapFocusInPopover,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
@@ -647,6 +650,127 @@ describe("escapeLeadingIdNumber", () => {
     expect(escapeLeadingIdNumber("#1 Test")).toBe("#_1 Test")
     expect(escapeLeadingIdNumber("No number")).toBe("No number")
     expect(escapeLeadingIdNumber("#123 Multiple digits")).toBe("#_123 Multiple digits")
+  })
+})
+
+/** Mark elements as visible by giving them a non-null offsetParent (jsdom's heuristic). */
+const makeVisible = (elements: HTMLElement[], offsetParent: HTMLElement) => {
+  for (const el of elements) {
+    Object.defineProperty(el, "offsetParent", { value: offsetParent, configurable: true })
+  }
+}
+
+describe("getVisibleFocusable", () => {
+  let container: HTMLElement
+
+  beforeEach(() => {
+    container = document.createElement("div")
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    container.remove()
+  })
+
+  it("returns all standard focusable descendants", () => {
+    const anchor = Object.assign(document.createElement("a"), { href: "/foo" })
+    const button = document.createElement("button")
+    const input = document.createElement("input")
+    makeVisible([anchor, button, input], container)
+    container.append(anchor, button, input)
+
+    expect(getVisibleFocusable(container)).toHaveLength(3)
+    expect(container.querySelectorAll(focusableSelector)).toHaveLength(3)
+  })
+
+  it.each<[string, (el: HTMLButtonElement) => void]>([
+    ["disabled buttons", (el) => (el.disabled = true)],
+    [
+      "elements with offsetParent null (display:none)",
+      (el) => Object.defineProperty(el, "offsetParent", { value: null, configurable: true }),
+    ],
+    ["elements with visibility:hidden", (el) => (el.style.visibility = "hidden")],
+  ])("excludes %s", (_label, hide) => {
+    const hidden = document.createElement("button")
+    const visible = document.createElement("button")
+    makeVisible([hidden, visible], container)
+    hide(hidden)
+    container.append(hidden, visible)
+
+    expect(getVisibleFocusable(container)).toEqual([visible])
+  })
+})
+
+describe("trapFocusInPopover", () => {
+  let popover: HTMLElement
+  let first: HTMLButtonElement
+  let last: HTMLButtonElement
+  let cleanup: () => void
+
+  beforeEach(() => {
+    popover = document.createElement("div")
+    first = document.createElement("button")
+    last = document.createElement("button")
+    makeVisible([first, last], popover)
+    popover.append(first, last)
+    document.body.appendChild(popover)
+    cleanup = trapFocusInPopover(popover)
+  })
+
+  afterEach(() => {
+    cleanup()
+    popover.remove()
+  })
+
+  const keydown = (key: string, shiftKey = false): KeyboardEvent => {
+    const evt = new KeyboardEvent("keydown", { key, shiftKey, bubbles: true, cancelable: true })
+    document.dispatchEvent(evt)
+    return evt
+  }
+
+  it.each<[string, boolean, () => HTMLElement, () => HTMLElement]>([
+    ["forward Tab from last -> first", false, () => last, () => first],
+    ["Shift+Tab from first -> last", true, () => first, () => last],
+  ])("wraps %s", (_label, shiftKey, initial, expected) => {
+    initial().focus()
+    const evt = keydown("Tab", shiftKey)
+    expect(evt.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(expected())
+  })
+
+  it("does nothing when Tab is pressed but focus is in the middle", () => {
+    const middle = document.createElement("button")
+    makeVisible([middle], popover)
+    popover.insertBefore(middle, last)
+    middle.focus()
+
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(middle)
+  })
+
+  it("ignores non-Tab keys", () => {
+    last.focus()
+    const evt = keydown("Enter")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
+  })
+
+  it("is a no-op when the popover has no focusable descendants", () => {
+    cleanup()
+    popover.replaceChildren()
+    cleanup = trapFocusInPopover(popover)
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+  })
+
+  it("stops trapping after cleanup", () => {
+    cleanup()
+    cleanup = () => undefined
+    last.focus()
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
   })
 })
 
