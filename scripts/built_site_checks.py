@@ -1625,7 +1625,7 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
         if not isinstance(href, str):  # pragma: no cover
             continue  # a simple typeguard
         if href.startswith("mailto:"):
-            email = href.split(":")[1]
+            email = href.removeprefix("mailto:")
             if not validators.email(email):
                 _append_to_list(
                     malformed_links,

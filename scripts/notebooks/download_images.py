@@ -52,12 +52,12 @@ def replace_urls_in_file(file_path: Path, url: str, new_url: str) -> None:
             f"File path {file_path} is not in the website_content directory."
         )
 
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     new_content = content.replace(url, new_url)
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
 

@@ -77,6 +77,10 @@ function getMediaSrc(node: Element): string {
  * @param ancestors The list of ancestor Parent nodes, where the last element is the direct parent.
  * @param wrapperClassName The class name of the wrapper span to check for.
  */
+function isElement(node: Parent): node is Element {
+  return node.type === "element"
+}
+
 function skipNodeForVideo(
   videoNode: Element,
   ancestors: Parent[],
@@ -84,7 +88,7 @@ function skipNodeForVideo(
 ): boolean {
   const notVideo = videoNode.tagName !== "video"
   const directParent = ancestors[ancestors.length - 1]
-  const inVideoContainer = hasClass(directParent as Element, wrapperClassName)
+  const inVideoContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
   return notVideo || inVideoContainer
 }
 
@@ -109,7 +113,7 @@ function skipNodeForAudio(
 ): boolean {
   const notAudio = audioNode.tagName !== "audio"
   const directParent = ancestors[ancestors.length - 1]
-  const inAudioContainer = hasClass(directParent as Element, wrapperClassName)
+  const inAudioContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
   return notAudio || inAudioContainer
 }
 
@@ -132,14 +136,12 @@ function wrapAudio(audioNode: Element, ancestors: Parent[]): void {
  * @param ancestors The list of ancestor Parent nodes.
  */
 function skipNodeForFloatRight(element: Element, ancestors: Parent[]): boolean {
-  const directParent = ancestors[ancestors.length - 1] as Element
-
-  // Skip if already wrapped in figure
-  return directParent?.tagName === "figure"
+  const directParent = ancestors[ancestors.length - 1]
+  return isElement(directParent) && directParent.tagName === "figure"
 }
 
 function hasAncestorFigure(ancestors: Parent[]): boolean {
-  return ancestors.some((ancestor) => (ancestor as Element).tagName === "figure")
+  return ancestors.some((ancestor) => isElement(ancestor) && ancestor.tagName === "figure")
 }
 
 /**
