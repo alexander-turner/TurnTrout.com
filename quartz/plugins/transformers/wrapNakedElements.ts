@@ -70,6 +70,10 @@ function getMediaSrc(node: Element): string {
   return (sourceChild?.properties?.src as string) ?? ""
 }
 
+function isElement(node: Parent): node is Element {
+  return node.type === "element"
+}
+
 /**
  * Determines if a video node should be skipped based on its tag name and parent class.
  *
@@ -77,10 +81,6 @@ function getMediaSrc(node: Element): string {
  * @param ancestors The list of ancestor Parent nodes, where the last element is the direct parent.
  * @param wrapperClassName The class name of the wrapper span to check for.
  */
-function isElement(node: Parent): node is Element {
-  return node.type === "element"
-}
-
 function skipNodeForVideo(
   videoNode: Element,
   ancestors: Parent[],
