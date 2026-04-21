@@ -1,8 +1,8 @@
 import { jest, describe, it, beforeEach, expect, beforeAll } from "@jest/globals"
 import { VFile } from "vfile"
 
-import { type QuartzConfig } from "../../cfg"
 import { normalizeNbsp } from "../../components/constants"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"

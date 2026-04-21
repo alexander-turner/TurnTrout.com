@@ -125,13 +125,23 @@ class CheckFailedError(Exception):
         super().__init__(f"Check failed: {step_name}")
 
 
-def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
+def run_checks(
+    steps: Sequence[CheckStep],
+    resume: bool = False,
+    auto_commit: bool = True,
+    continue_on_failure: bool = False,
+) -> None:
     """
     Run a sequence of check steps and handle their output.
 
     Args:
         steps: Sequence of check steps to run
         resume: Whether to resume from last successful step
+        auto_commit: Whether to commit any changes a step made after it
+            succeeds. Disable from CI contexts that batch their own commit.
+        continue_on_failure: If true, log a step failure and keep going
+            instead of raising. CI autofix passes this so one unfixable
+            ruff issue doesn't block Prettier/Stylelint fixes from landing.
     """
     step_names = [step.name for step in steps]
     last_step = get_last_step(step_names if resume else None)
@@ -174,9 +184,15 @@ def run_checks(steps: Sequence[CheckStep], resume: bool = False) -> None:
                     console.print("[yellow]stderr:[/yellow]")
                     console.print(result.stderr, markup=False, highlight=False)
 
+                if continue_on_failure:
+                    console.log(
+                        f"[yellow]continuing past failure in {step.name}[/yellow]"
+                    )
+                    continue
                 raise CheckFailedError(step.name, result.stdout, result.stderr)
             console.log(f"[green]✓[/green] {step.name}")
-            commit_step_changes(_GIT_ROOT, step.name)
+            if auto_commit:
+                commit_step_changes(_GIT_ROOT, step.name)
             save_state(step.name)
 
 
@@ -363,21 +379,59 @@ def run_command(
         return CommandResult(success=False, stdout=stdout, stderr=stderr)
 
 
-def get_check_steps(git_root_path: Path) -> list[CheckStep]:
+def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
     """
-    Get the pre-push check steps to run locally.
+    Return deterministic autofixers shared by the pre-push hook and CI.
 
-    Includes cheap checks for fast feedback (type-checking, linting) and
-    tasks unique to local execution: auto-fixing formatters, asset
-    compression/upload, and alt-text scanning.
+    These are the single source of truth for "things the linter should
+    fix automatically" and are invoked unchanged both by the local
+    pre-push flow and by `.github/workflows/lint-and-validate.yaml`'s
+    autofix job (via `--autofix-only`). Keep them idempotent and safe
+    to run on a clean tree — running twice must be a no-op.
 
     Args:
         git_root_path: Path to the git repository root.
     """
+    prettier_args = [
+        "pnpm",
+        "exec",
+        "prettier",
+        "--write",
+        "--config",
+        f"{git_root_path}/config/prettier/.prettierrc",
+        "--ignore-path",
+        f"{git_root_path}/config/prettier/.prettierignore",
+    ]
+    py_targets = [
+        str(git_root_path / "scripts"),
+        str(git_root_path / ".github" / "scripts"),
+    ]
+    # NB: no `ruff format` step. The pre-commit lint-staged pipeline runs
+    # `black` on Python files (see package.json) and ruff's formatter
+    # produces subtly different output. Running both creates an infinite
+    # loop of empty autofix commits as each reformat fights the other.
+    # `ruff check --fix` only touches lint issues, not layout.
     return [
         CheckStep(
             name="Linting Python",
-            command=["uv", "run", "ruff", "check", str(git_root_path)],
+            command=["uv", "run", "ruff", "check", "--fix", *py_targets],
+        ),
+        CheckStep(
+            name="Formatting Python docstrings",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "docformatter",
+                "--in-place",
+                *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
+                *glob.glob(
+                    f"{git_root_path}/.github/scripts/**.py", recursive=True
+                ),
+                "--config",
+                f"{git_root_path}/config/python/pyproject.toml",
+            ],
         ),
         CheckStep(
             name="Linting TypeScript",
@@ -392,20 +446,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             ],
         ),
         CheckStep(
-            name="Formatting Python docstrings",
-            command=[
-                "uv",
-                "run",
-                "python",
-                "-m",
-                "docformatter",
-                "--in-place",
-                *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
-                "--config",
-                f"{git_root_path}/config/python/pyproject.toml",
-            ],
-        ),
-        CheckStep(
             name="Cleaning up SCSS",
             command=[
                 "pnpm",
@@ -417,6 +457,40 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/quartz/**/*.scss",
             ],
         ),
+        CheckStep(
+            name="Formatting SCSS",
+            command=[*prettier_args, f"{git_root_path}/quartz/**/*.scss"],
+        ),
+        CheckStep(
+            name="Formatting TypeScript",
+            command=[
+                *prettier_args,
+                f"{git_root_path}/quartz/**/*.{{js,jsx,ts,tsx}}",
+            ],
+        ),
+        CheckStep(
+            name="Formatting markdown",
+            command=[
+                *prettier_args,
+                f"{git_root_path}/website_content/**/*.md",
+            ],
+        ),
+    ]
+
+
+def get_check_steps(git_root_path: Path) -> list[CheckStep]:
+    """
+    Get the pre-push check steps to run locally.
+
+    Includes shared autofixers from `get_formatter_steps` plus tasks
+    unique to local execution: asset compression/upload (needs R2
+    credentials) and alt-text scanning (needs `alt-text-llm`).
+
+    Args:
+        git_root_path: Path to the git repository root.
+    """
+    return [
+        *get_formatter_steps(git_root_path),
         # skipcq: BAN-B604
         CheckStep(
             name="Compressing and uploading local assets",
@@ -452,10 +526,31 @@ def main() -> int:
         action="store_true",
         help="Resume from last successful check",
     )
+    parser.add_argument(
+        "--autofix-only",
+        action="store_true",
+        help=(
+            "Run only the shared formatter steps (no asset upload or "
+            "alt-text scan). Used by the CI autofix job so local and CI "
+            "autofixers stay in sync."
+        ),
+    )
+    parser.add_argument(
+        "--no-commit",
+        action="store_true",
+        help=(
+            "Skip the per-step auto-commit. Use from CI, which makes a "
+            "single consolidated commit after all steps finish."
+        ),
+    )
     args = parser.parse_args()
 
     try:
-        steps = get_check_steps(_GIT_ROOT)
+        steps = (
+            get_formatter_steps(_GIT_ROOT)
+            if args.autofix_only
+            else get_check_steps(_GIT_ROOT)
+        )
         all_step_names = [step.name for step in steps]
 
         resume = args.resume
@@ -468,7 +563,15 @@ def main() -> int:
                 )
                 resume = False
 
-        run_checks(steps, resume)
+        # In --autofix-only (CI) mode we want every formatter to get a
+        # chance to run: one unfixable ruff issue shouldn't block Prettier
+        # or Stylelint fixes from being committed.
+        run_checks(
+            steps,
+            resume,
+            auto_commit=not args.no_commit,
+            continue_on_failure=args.autofix_only,
+        )
 
         console.log("\n[green]All checks passed successfully! 🎉[/green]")
         reset_saved_progress()

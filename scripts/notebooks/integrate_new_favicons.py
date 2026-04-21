@@ -7,17 +7,9 @@ correct location.
 """
 
 import shutil
-import sys
 from pathlib import Path
-from typing import Iterable
 
 import requests
-
-# Add parent scripts directory to path for imports
-_SCRIPTS_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(_SCRIPTS_DIR))
-
-from normalize_svg_viewbox import normalize_svg_viewbox  # type: ignore  # noqa: E402
 
 # Mapping from source filename to target domain-based filename
 # Format: source_filename -> target_filename (domain_com.ext)
@@ -53,17 +45,6 @@ FAVICON_MAPPING: dict[str, str] = {
 SOURCE_DIR = Path.home() / "Pictures" / "new_favicons"
 TARGET_DIR = Path("quartz/static/images/external-favicons")
 
-# Special favicon paths from constants.ts that should also be normalized
-special_svgs = [
-    "mail.svg",
-    "anchor.svg",
-    "rss.svg",
-    "turntrout_com.svg",
-    "substack_com.svg",
-    "lesswrong_com.svg",
-]
-SPECIAL_FAVICON_PATHS = [TARGET_DIR / svg for svg in special_svgs]
-
 
 def check_exists_on_cdn(target_path: Path) -> bool:
     """Check if a favicon file already exists on the remote CDN."""
@@ -77,18 +58,6 @@ def check_exists_on_cdn(target_path: Path) -> bool:
         return response.status_code == 200
     except requests.RequestException:
         return False
-
-
-def normalize_svg_files(svg_paths: Iterable[Path]) -> None:
-    """Normalize a list of SVG files to 24x24 viewBox."""
-    if not svg_paths:
-        return
-
-    print("\nNormalizing SVG files to 24x24...")
-    for svg_path in svg_paths:
-        if not svg_path.exists():
-            continue
-        normalize_svg_viewbox(svg_path, target_size=24)
 
 
 def main() -> None:
@@ -116,14 +85,6 @@ def main() -> None:
         shutil.copy2(source_path, target_path)
         print(f"Moved: {source_name} -> {target_name}")
         moved_files.append(target_path)
-
-    # Normalize all SVG files: newly moved + special paths + existing
-    all_svgs = (
-        moved_files
-        + SPECIAL_FAVICON_PATHS
-        + [p for p in TARGET_DIR.glob("*.svg") if p not in moved_files]
-    )
-    normalize_svg_files(all_svgs)
 
 
 if __name__ == "__main__":

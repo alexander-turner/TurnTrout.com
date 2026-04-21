@@ -4,8 +4,8 @@ import FlexSearch, {
   type DocumentData,
 } from "flexsearch"
 
-import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
+import { type ContentDetails } from "../../plugins/vfile"
 import { tabletBreakpoint } from "../../styles/variables"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { NBSP, simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
@@ -100,7 +100,38 @@ interface FetchResult {
   frontmatter: Record<string, unknown>
 }
 
+/**
+ * LRU cache for fetched content. Bounded to avoid unbounded memory growth
+ * during long-lived SPA sessions. The `Map` preserves insertion order, so
+ * the "least recently used" entry is always the first key.
+ */
+const fetchContentCacheMaxEntries = 50
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
+
+/* istanbul ignore next -- consumer (fetchContent) is browser-only and ignored */
+function fetchContentCacheGet(slug: FullSlug): Promise<FetchResult> | undefined {
+  const value = fetchContentCache.get(slug)
+  if (value !== undefined) {
+    // Refresh recency: delete and re-insert so this becomes the newest key
+    fetchContentCache.delete(slug)
+    fetchContentCache.set(slug, value)
+  }
+  return value
+}
+
+/* istanbul ignore next -- consumer (fetchContent) is browser-only and ignored */
+function fetchContentCacheSet(slug: FullSlug, value: Promise<FetchResult>): void {
+  if (fetchContentCache.has(slug)) {
+    fetchContentCache.delete(slug)
+  } else if (fetchContentCache.size >= fetchContentCacheMaxEntries) {
+    const oldestKey = fetchContentCache.keys().next().value
+    if (oldestKey !== undefined) {
+      fetchContentCache.delete(oldestKey)
+    }
+  }
+  fetchContentCache.set(slug, value)
+}
+
 const contextWindowWords = 30
 const numSearchResults = 8
 
@@ -857,34 +888,32 @@ function onNav(e: CustomEventMap["nav"]) {
  * @param slug - Page slug to fetch
  */
 /* istanbul ignore next */
-async function fetchContent(slug: FullSlug): Promise<FetchResult> {
-  if (!fetchContentCache.has(slug)) {
-    const fetchPromise = await (async () => {
-      const targetUrl = new URL(resolveSlug(slug, currentSlug).toString())
+function fetchContent(slug: FullSlug): Promise<FetchResult> {
+  const cached = fetchContentCacheGet(slug)
+  if (cached !== undefined) return cached
 
-      const html = await fetchHTMLContent(targetUrl)
+  const fetchPromise = (async () => {
+    const targetUrl = new URL(resolveSlug(slug, currentSlug).toString())
 
-      // Extract frontmatter
-      const frontmatterScript = html.querySelector('script[type="application/json"]')
-      let frontmatter: Record<string, unknown> = {}
-      if (frontmatterScript) {
-        try {
-          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
-        } catch {
-          console.error(`Failed to parse frontmatter JSON for ${slug}`)
-        }
+    const html = await fetchHTMLContent(targetUrl)
+
+    const frontmatterScript = html.querySelector('script[type="application/json"]')
+    let frontmatter: Record<string, unknown> = {}
+    if (frontmatterScript) {
+      try {
+        frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+      } catch {
+        console.error(`Failed to parse frontmatter JSON for ${slug}`)
       }
+    }
 
-      // Extract previewable elements and restore checkbox states in one operation
-      const contentElements = processPreviewables(html, targetUrl)
+    const contentElements = processPreviewables(html, targetUrl)
 
-      return { content: contentElements, frontmatter }
-    })()
+    return { content: contentElements, frontmatter }
+  })()
 
-    fetchContentCache.set(slug, Promise.resolve(fetchPromise))
-  }
-
-  return fetchContentCache.get(slug) ?? ({} as FetchResult)
+  fetchContentCacheSet(slug, fetchPromise)
+  return fetchPromise
 }
 /**
  * Visually and optionally programmatically focus a result card.

@@ -12,7 +12,7 @@ import { fromHtml } from "hast-util-from-html"
 import React from "react"
 
 import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
-import { type TocEntry } from "../plugins/transformers/toc"
+import { type TocEntry } from "../plugins/vfile"
 import { createWinstonLogger, getLogLevel } from "../util/log"
 import {
   formatTitle,

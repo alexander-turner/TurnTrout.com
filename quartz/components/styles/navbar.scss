@@ -181,12 +181,12 @@
 }
 
 @media all and (max-width: $max-mobile-width) {
-  #quartz-body #navbar {
+  #page-columns #navbar {
     opacity: 1;
     transition:
       transform 0.45s ease,
       opacity 0.45s ease;
-    z-index: 910;
+    z-index: $z-navbar;
     padding-top: calc(0.5 * $base-margin);
     pointer-events: auto;
 
@@ -287,7 +287,7 @@ $header-video-size: 188px;
 #darkmode-span {
   --darkmode-icon-size: 25px;
 
-  z-index: 3;
+  z-index: $z-accent;
   position: absolute;
   right: 0;
   top: 1.75%;

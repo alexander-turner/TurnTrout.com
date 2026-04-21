@@ -343,7 +343,9 @@ def test_run_checks_resume_from_middle(test_steps, temp_state_dir):
 def test_argument_parsing(resume_flag, temp_state_dir):
     """Test command line argument parsing with and without resume flag."""
     with patch("argparse.ArgumentParser.parse_args") as mock_parse:
-        mock_parse.return_value = MagicMock(resume=resume_flag)
+        mock_parse.return_value = MagicMock(
+            resume=resume_flag, autofix_only=False, no_commit=False
+        )
 
         mock_steps = [
             run_push_checks.CheckStep(name="Test Step", command=["test"])
@@ -370,7 +372,69 @@ def test_argument_parsing(resume_flag, temp_state_dir):
 
             # Verify run_checks was called once with correct resume flag
             assert mock_run.call_count == 1
-            mock_run.assert_called_once_with(mock_steps, resume_flag)
+            mock_run.assert_called_once_with(
+                mock_steps,
+                resume_flag,
+                auto_commit=True,
+                continue_on_failure=False,
+            )
+
+
+def test_autofix_only_flag_uses_formatter_steps(temp_state_dir):
+    """--autofix-only selects formatter steps only, skipping local-only
+    tasks, and continues past individual failures so every fixer runs."""
+    with patch("argparse.ArgumentParser.parse_args") as mock_parse:
+        mock_parse.return_value = MagicMock(
+            resume=False, autofix_only=True, no_commit=True
+        )
+
+        mock_steps = [
+            run_push_checks.CheckStep(name="Formatter", command=["test"])
+        ]
+
+        with (
+            patch(
+                "scripts.run_push_checks.get_formatter_steps",
+                return_value=mock_steps,
+            ) as mock_formatters,
+            patch("scripts.run_push_checks.get_check_steps") as mock_full_steps,
+            patch("scripts.run_push_checks.run_checks") as mock_run,
+        ):
+            from scripts.run_push_checks import main
+
+            main()
+
+            # Formatter-only mode must not fall through to the full step list
+            mock_formatters.assert_called_once()
+            mock_full_steps.assert_not_called()
+            mock_run.assert_called_once_with(
+                mock_steps,
+                False,
+                auto_commit=False,
+                continue_on_failure=True,
+            )
+
+
+def test_run_checks_continue_on_failure_runs_all_steps(
+    test_steps, temp_state_dir
+):
+    """With continue_on_failure=True, a failing step logs but does not abort the
+    remaining steps — so an unfixable ruff issue still lets Prettier/Stylelint
+    autofix commits land."""
+    with (
+        patch("scripts.run_push_checks.run_command") as mock_run,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_run.side_effect = [
+            run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+            run_push_checks.CommandResult(
+                success=False, stdout="oops", stderr="boom"
+            ),
+            run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+        ]
+        run_push_checks.run_checks(test_steps, continue_on_failure=True)
+        # All three should have been attempted — the failure did not abort.
+        assert mock_run.call_count == 3
 
 
 def test_main_clears_state_on_success(temp_state_dir):
@@ -378,7 +442,9 @@ def test_main_clears_state_on_success(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
         ),
         patch("scripts.run_push_checks.run_checks"),
         patch(
@@ -409,7 +475,9 @@ def test_main_preserves_state_on_failure(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch(
@@ -520,12 +588,60 @@ def test_invalid_step(temp_state_dir):
     assert run_push_checks.get_last_step() == "Invalid Step"
 
 
+def test_get_formatter_steps():
+    """Test that formatter steps are properly configured and are pure autofixers
+    (no local-only dependencies)."""
+    test_root = Path("/test/root")
+    steps = run_push_checks.get_formatter_steps(test_root)
+
+    step_names = [s.name for s in steps]
+    expected_names = {
+        "Linting Python",
+        "Formatting Python docstrings",
+        "Linting TypeScript",
+        "Cleaning up SCSS",
+        "Formatting SCSS",
+        "Formatting TypeScript",
+        "Formatting markdown",
+    }
+    assert set(step_names) == expected_names
+    assert len(steps) == len(expected_names)
+
+    # Ruff check has --fix so the step is an autofixer, not a blocking
+    # check. We deliberately do NOT run `ruff format` here — black runs
+    # via lint-staged in the pre-commit hook and the two formatters fight.
+    ruff_lint = next(s for s in steps if s.name == "Linting Python")
+    assert "--fix" in ruff_lint.command
+    assert "format" not in ruff_lint.command
+    assert not any(
+        s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps
+    )
+
+    eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
+    assert "--fix" in eslint_step.command
+    assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
+        eslint_step.command
+    )
+
+    # Formatter steps have no `requires` — they all run from installed deps.
+    for step in steps:
+        assert step.requires is None
+
+    # Prettier step globs should reach expected trees
+    prettier_markdown = next(
+        s for s in steps if s.name == "Formatting markdown"
+    )
+    assert any("website_content" in arg for arg in prettier_markdown.command)
+
+
 def test_get_check_steps():
     """Test that check steps are properly configured."""
     test_root = Path("/test/root")
     steps = run_push_checks.get_check_steps(test_root)
 
-    assert len(steps) == 6
+    # Formatter steps + two local-only steps
+    formatter_count = len(run_push_checks.get_formatter_steps(test_root))
+    assert len(steps) == formatter_count + 2
 
     step_names = [s.name for s in steps]
     assert "Linting Python" in step_names
@@ -588,7 +704,9 @@ def test_main_resume_with_invalid_step(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=True),
+            return_value=MagicMock(
+                resume=True, autofix_only=False, no_commit=False
+            ),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.console.log") as mock_log,
@@ -626,7 +744,9 @@ def test_main_preserves_state_on_interrupt(temp_state_dir):
     with (
         patch(
             "argparse.ArgumentParser.parse_args",
-            return_value=MagicMock(resume=False),
+            return_value=MagicMock(
+                resume=False, autofix_only=False, no_commit=False
+            ),
         ),
         patch("scripts.run_push_checks.run_checks") as mock_run,
         patch("scripts.run_push_checks.console.log") as mock_log,

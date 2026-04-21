@@ -2,8 +2,8 @@ import type { JSX } from "preact"
 
 import { describe, it, expect } from "@jest/globals"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { getOrdinalSuffix, formatDate, getDate, DateElement } from "../Date"
 
 describe("getOrdinalSuffix", () => {

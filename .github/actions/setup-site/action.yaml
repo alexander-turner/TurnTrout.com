@@ -62,15 +62,6 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
-    - name: Restore asset dimensions cache
-      id: asset-dimensions-cache
-      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-      with:
-        path: quartz/plugins/transformers/.asset_dimensions.json
-        key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
-        restore-keys: |
-          ${{ runner.os }}-asset-dimensions-refs/heads/main
-
     - name: Install Node Dependencies
       if: inputs.install-node-deps == 'true'
       run: |

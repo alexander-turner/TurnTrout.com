@@ -10,7 +10,7 @@ export default class DepGraph<T> {
    * Exports the graph to a plain object.
    * @returns An object with nodes and edges.
    */
-  export(): object {
+  export(): { nodes: T[]; edges: [T, T][] } {
     return {
       nodes: this.nodes,
       edges: this.edges,
@@ -174,12 +174,16 @@ export default class DepGraph<T> {
       this.addEdge(neighbor, node)
     })
 
-    // For node provided, remove incoming edge if it is absent in other
-    this.forEachEdge(([source, target]) => {
-      if (target === node && !other.hasEdge(source, target)) {
-        this.removeEdge(source, target)
+    // Collect edges to remove first to avoid mutating the Set during iteration
+    const toRemove: T[] = []
+    this.forEachInNeighbor(node, (source) => {
+      if (!other.hasEdge(source, node)) {
+        toRemove.push(source)
       }
     })
+    for (const source of toRemove) {
+      this.removeEdge(source, node)
+    }
   }
 
   /**
