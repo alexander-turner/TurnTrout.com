@@ -6,6 +6,8 @@ import {
   escapeLeadingIdNumber,
   createPopover,
   footnoteForwardRefRegex,
+  trapFocusInPopover,
+  focusableSelector,
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 
@@ -13,46 +15,6 @@ import { wrapScrollables } from "./scroll-indicator-utils"
 // DOM morphs under a stationary cursor. We suppress these by tracking whether
 // the mouse has actually moved since the last navigation.
 let mouseMovedSinceNav = true
-
-const focusableSelector =
-  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
-
-/**
- * Traps keyboard focus within a popover element.
- * Returns a cleanup function to remove the event listener.
- */
-function trapFocusInPopover(popoverElement: HTMLElement): () => void {
-  const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key !== "Tab") return
-
-    const focusableElements = [
-      ...popoverElement.querySelectorAll<HTMLElement>(focusableSelector),
-    ].filter((el) => {
-      if (el.offsetParent === null) return false // fast path: handles display:none
-      return getComputedStyle(el).visibility !== "hidden"
-    })
-
-    if (focusableElements.length === 0) return
-
-    const first = focusableElements[0]
-    const last = focusableElements[focusableElements.length - 1]
-
-    if (e.shiftKey) {
-      if (document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      }
-    } else {
-      if (document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-  }
-
-  document.addEventListener("keydown", handleKeydown)
-  return () => document.removeEventListener("keydown", handleKeydown)
-}
 
 // Module-level state
 let activePopoverRemover: (() => void) | null = null

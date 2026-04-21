@@ -13,8 +13,11 @@ import {
   computeLeft,
   computeTop,
   fetchWithMetaRedirect,
+  focusableSelector,
   footnoteForwardRefRegex,
+  getVisibleFocusable,
   navigation,
+  trapFocusInPopover,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
@@ -647,6 +650,168 @@ describe("escapeLeadingIdNumber", () => {
     expect(escapeLeadingIdNumber("#1 Test")).toBe("#_1 Test")
     expect(escapeLeadingIdNumber("No number")).toBe("No number")
     expect(escapeLeadingIdNumber("#123 Multiple digits")).toBe("#_123 Multiple digits")
+  })
+})
+
+describe("getVisibleFocusable", () => {
+  let container: HTMLElement
+
+  beforeEach(() => {
+    container = document.createElement("div")
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    container.remove()
+  })
+
+  it("returns all standard focusable descendants", () => {
+    const anchor = document.createElement("a")
+    anchor.href = "/foo"
+    const button = document.createElement("button")
+    const input = document.createElement("input")
+
+    // Make them focusable under jsdom (offsetParent heuristic).
+    for (const el of [anchor, button, input]) {
+      Object.defineProperty(el, "offsetParent", { value: container, configurable: true })
+    }
+
+    container.append(anchor, button, input)
+    expect(getVisibleFocusable(container)).toHaveLength(3)
+  })
+
+  it("excludes disabled buttons", () => {
+    const focus = document.createElement("button")
+    const disabled = document.createElement("button")
+    disabled.disabled = true
+    for (const el of [focus, disabled]) {
+      Object.defineProperty(el, "offsetParent", { value: container, configurable: true })
+    }
+    container.append(focus, disabled)
+    expect(getVisibleFocusable(container)).toEqual([focus])
+  })
+
+  it("excludes elements with offsetParent null (display:none)", () => {
+    const hidden = document.createElement("button")
+    const visible = document.createElement("button")
+    Object.defineProperty(hidden, "offsetParent", { value: null, configurable: true })
+    Object.defineProperty(visible, "offsetParent", { value: container, configurable: true })
+    container.append(hidden, visible)
+    expect(getVisibleFocusable(container)).toEqual([visible])
+  })
+
+  it("excludes elements with visibility:hidden", () => {
+    const hidden = document.createElement("button")
+    const visible = document.createElement("button")
+    Object.defineProperty(hidden, "offsetParent", { value: container, configurable: true })
+    Object.defineProperty(visible, "offsetParent", { value: container, configurable: true })
+    hidden.style.visibility = "hidden"
+    container.append(hidden, visible)
+    expect(getVisibleFocusable(container)).toEqual([visible])
+  })
+
+  it("exposes a selector usable with querySelectorAll", () => {
+    const anchor = document.createElement("a")
+    anchor.href = "/foo"
+    container.appendChild(anchor)
+    expect(container.querySelectorAll(focusableSelector)).toHaveLength(1)
+  })
+})
+
+describe("trapFocusInPopover", () => {
+  let popover: HTMLElement
+  let first: HTMLButtonElement
+  let last: HTMLButtonElement
+  let cleanup: () => void
+
+  beforeEach(() => {
+    popover = document.createElement("div")
+    first = document.createElement("button")
+    last = document.createElement("button")
+    first.textContent = "first"
+    last.textContent = "last"
+    for (const el of [first, last]) {
+      Object.defineProperty(el, "offsetParent", { value: popover, configurable: true })
+    }
+    popover.append(first, last)
+    document.body.appendChild(popover)
+    cleanup = trapFocusInPopover(popover)
+  })
+
+  afterEach(() => {
+    cleanup()
+    popover.remove()
+  })
+
+  const pressTab = (shiftKey = false): KeyboardEvent => {
+    const evt = new KeyboardEvent("keydown", {
+      key: "Tab",
+      shiftKey,
+      bubbles: true,
+      cancelable: true,
+    })
+    document.dispatchEvent(evt)
+    return evt
+  }
+
+  it("wraps forward Tab from the last focusable to the first", () => {
+    last.focus()
+    expect(document.activeElement).toBe(last)
+
+    const evt = pressTab(false)
+    expect(evt.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(first)
+  })
+
+  it("wraps Shift+Tab from the first focusable to the last", () => {
+    first.focus()
+    expect(document.activeElement).toBe(first)
+
+    const evt = pressTab(true)
+    expect(evt.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(last)
+  })
+
+  it("does nothing when Tab is pressed but focus is in the middle", () => {
+    const middle = document.createElement("button")
+    Object.defineProperty(middle, "offsetParent", { value: popover, configurable: true })
+    popover.insertBefore(middle, last)
+    middle.focus()
+
+    const evt = pressTab(false)
+    expect(evt.defaultPrevented).toBe(false)
+    // Default Tab handling isn't simulated in jsdom, so focus is unchanged.
+    expect(document.activeElement).toBe(middle)
+  })
+
+  it("ignores non-Tab keys", () => {
+    last.focus()
+    const evt = new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+    document.dispatchEvent(evt)
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
+  })
+
+  it("is a no-op when the popover has no focusable descendants", () => {
+    cleanup()
+    popover.replaceChildren()
+    cleanup = trapFocusInPopover(popover)
+
+    const evt = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true })
+    document.dispatchEvent(evt)
+    expect(evt.defaultPrevented).toBe(false)
+  })
+
+  it("stops trapping after cleanup", () => {
+    cleanup()
+    cleanup = () => {
+      // Already cleaned up; no-op.
+    }
+
+    last.focus()
+    const evt = pressTab(false)
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
   })
 })
 
