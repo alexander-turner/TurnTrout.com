@@ -249,18 +249,21 @@ describe("scrollToUrlTarget", () => {
     const target = document.createElement("div")
     target.id = "section-one"
     document.body.appendChild(target)
+    jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 420 } as DOMRect)
+    Object.defineProperty(window, "scrollY", { value: 50, configurable: true })
 
     scrollToUrlTarget("#section-one")
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 470, behavior: "instant" })
   })
 
   it("decodes URL-encoded ids", () => {
     const target = document.createElement("div")
     target.id = "my section"
     document.body.appendChild(target)
+    jest.spyOn(target, "getBoundingClientRect").mockReturnValue({ top: 100 } as DOMRect)
 
     scrollToUrlTarget("#my%20section")
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 100, behavior: "instant" })
   })
 
   it("does not throw when the element id does not exist", () => {
@@ -312,9 +315,10 @@ describe("handleNavigationScroll", () => {
     const anchor = document.createElement("div")
     anchor.id = "bar"
     document.body.appendChild(anchor)
+    jest.spyOn(anchor, "getBoundingClientRect").mockReturnValue({ top: 300 } as DOMRect)
 
     handleNavigationScroll(new URL("http://localhost:8080/foo#bar"))
-    expect(scrollSpy).toHaveBeenCalledTimes(1)
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 300, behavior: "instant" })
   })
 
   it("scrolls to the top when no hash is present", () => {
