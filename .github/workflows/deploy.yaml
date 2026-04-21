@@ -365,22 +365,9 @@ jobs:
   deploy:
     needs: [prepare-deploy, verify-test-results, verify-lp-approval]
     if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || (needs.verify-test-results.result == 'success' && (needs.verify-lp-approval.result == 'skipped' || (needs.verify-lp-approval.result == 'success' && needs.verify-lp-approval.outputs.approved == 'true')))) }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Download prepared site
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: public-dir
-          path: public/
-
-      - name: Deploy to Cloudflare Pages
-        uses: ./.github/actions/deploy-to-cloudflare
-        with:
-          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
-          project-name: turntrout
-          branch: ${{ github.ref_name }}
+    uses: ./.github/workflows/deploy-reusable.yaml
+    with:
+      ref: ${{ github.sha }}
+      run_id: ${{ github.run_id }}
+      branch: ${{ github.ref_name }}
+    secrets: inherit
