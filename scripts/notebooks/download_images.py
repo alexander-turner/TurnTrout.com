@@ -72,7 +72,7 @@ def main(markdown_files: list[Path]) -> None:
     # 1. Find all image URLs in Markdown files
     asset_urls: set[str] = set()
     for file in markdown_files:
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             content = f.read()
             urls = re.findall(r"(https?://.*?\." + SUFFIX_REGEX + r")", content)
             asset_urls.update(url for url, _ in urls)
