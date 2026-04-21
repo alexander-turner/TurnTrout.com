@@ -66,7 +66,8 @@ export function maybeInsertOrnament(
   if (
     node.tagName === "section" &&
     node.properties?.["dataFootnotes"] !== undefined &&
-    Array.isArray(node.properties?.className) && node.properties.className.includes("footnotes")
+    Array.isArray(node.properties?.className) &&
+    node.properties.className.includes("footnotes")
   ) {
     const prevElement = parent.children[index - 1]
     const prevPrevElement = parent.children[index - 2]
@@ -79,11 +80,7 @@ export function maybeInsertOrnament(
     ) {
       parent.children.splice(index - 2, 1)
       index--
-    } else if (
-      index > 0 &&
-      prevElement?.type === "element" &&
-      prevElement.tagName === "hr"
-    ) {
+    } else if (index > 0 && prevElement?.type === "element" && prevElement.tagName === "hr") {
       parent.children.splice(index - 1, 1)
       index--
     }
