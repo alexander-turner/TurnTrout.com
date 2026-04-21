@@ -21,6 +21,27 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+  # Self-triggered by verify-lp-approval when LP isn't approved yet. Skips build
+  # and tests (reuses artifacts from the original run) and re-enters the
+  # delayed-lp-check environment for another 10-minute wait + recheck.
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Commit SHA to deploy (LP recheck redispatch)"
+        required: false
+        default: ""
+      run_id:
+        description: "Original deploy run ID to pull public-dir artifact from"
+        required: false
+        default: ""
+      attempt:
+        description: "LP recheck attempt number (1-indexed)"
+        required: false
+        default: "1"
+      max_attempts:
+        description: "Cap on LP recheck attempts (36 × 10min ≈ 6h)"
+        required: false
+        default: "36"
 
 permissions:
   actions: write
@@ -31,11 +52,13 @@ permissions:
 
 jobs:
   deploy-build:
+    if: github.event_name != 'workflow_dispatch'
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
 
   prepare-deploy:
+    if: github.event_name != 'workflow_dispatch'
     needs: deploy-build
     runs-on: ubuntu-24.04
     timeout-minutes: 120
@@ -320,15 +343,20 @@ jobs:
             echo "Visual differences within acceptable range (< 10)"
           fi
 
-  # Re-check LP approval after a delay (environment wait timer avoids runner costs).
-  # One-time setup: create a "delayed-lp-check" environment in repo Settings >
-  # Environments with a 10-minute wait timer. If LP still isn't approved at the
-  # check, we dispatch lp-recheck.yaml to poll again (also via the 10-min env
-  # wait), up to max_attempts total (~6h budget at 10-min cadence). Anyone with
-  # write access can click "Review deployments" in the Actions UI to approve early.
+  # Re-check LP approval after a delay (environment wait timer avoids runner
+  # costs). One-time setup: create a "delayed-lp-check" environment in repo
+  # Settings > Environments with a 10-minute wait timer. If LP still isn't
+  # approved at the check, we redispatch this same workflow (workflow_dispatch
+  # with attempt+1) so the deploy job sits in one place. Up to max_attempts
+  # total (~6h budget at 10-min cadence). Anyone with write access can click
+  # "Review deployments" in the Actions UI to approve early.
   verify-lp-approval:
     needs: verify-test-results
-    if: needs.verify-test-results.outputs.lp-pending == 'true'
+    if: |
+      always() && (
+        (github.event_name == 'push' && needs.verify-test-results.outputs.lp-pending == 'true') ||
+        github.event_name == 'workflow_dispatch'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment:
@@ -340,34 +368,71 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MAX_ATTEMPTS: "36"
+          SHA: ${{ github.event.inputs.sha || github.sha }}
+          RUN_ID: ${{ github.event.inputs.run_id || github.run_id }}
+          ATTEMPT: ${{ github.event.inputs.attempt || '1' }}
+          MAX: ${{ github.event.inputs.max_attempts || '36' }}
         run: |
-          echo "Checking Lost Pixel status for commit ${{ github.sha }}..."
-          LP_CONCLUSION=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
+          echo "Checking Lost Pixel status for $SHA (attempt $ATTEMPT/$MAX)..."
+          LP_CONCLUSION=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
             --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | sort_by(.started_at) | last | .conclusion // empty' \
             2>/dev/null || echo "")
 
           echo "Lost Pixel conclusion: $LP_CONCLUSION"
           if [ "$LP_CONCLUSION" = "success" ]; then
-            echo "Lost Pixel changes have been approved!"
+            echo "Lost Pixel approved on attempt $ATTEMPT"
             echo "approved=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Lost Pixel not approved yet (conclusion: ${LP_CONCLUSION:-pending}). Dispatching recheck attempt 2/$MAX_ATTEMPTS..."
-            echo "approved=false" >> "$GITHUB_OUTPUT"
-            gh workflow run lp-recheck.yaml \
-              --ref "${{ github.ref_name }}" \
-              -f sha="${{ github.sha }}" \
-              -f run_id="${{ github.run_id }}" \
-              -f attempt="2" \
-              -f max_attempts="$MAX_ATTEMPTS"
+            exit 0
           fi
+
+          echo "approved=false" >> "$GITHUB_OUTPUT"
+          if [ "$ATTEMPT" -ge "$MAX" ]; then
+            echo "::error::Lost Pixel still not approved after $MAX attempts. Approve at https://app.lost-pixel.com/ and re-dispatch this workflow."
+            exit 1
+          fi
+
+          NEXT=$((ATTEMPT + 1))
+          echo "LP not approved yet (conclusion: ${LP_CONCLUSION:-pending}). Dispatching attempt $NEXT/$MAX..."
+          gh workflow run deploy.yaml \
+            --ref "${{ github.ref_name }}" \
+            -f sha="$SHA" \
+            -f run_id="$RUN_ID" \
+            -f attempt="$NEXT" \
+            -f max_attempts="$MAX"
 
   deploy:
     needs: [prepare-deploy, verify-test-results, verify-lp-approval]
-    if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || (needs.verify-test-results.result == 'success' && (needs.verify-lp-approval.result == 'skipped' || (needs.verify-lp-approval.result == 'success' && needs.verify-lp-approval.outputs.approved == 'true')))) }}
-    uses: ./.github/workflows/deploy-reusable.yaml
-    with:
-      ref: ${{ github.sha }}
-      run_id: ${{ github.run_id }}
-      branch: ${{ github.ref_name }}
-    secrets: inherit
+    if: |
+      always() && (
+        (github.event_name == 'push' && (
+          github.ref_name == 'dev' ||
+          (needs.verify-test-results.result == 'success' && (
+            needs.verify-lp-approval.result == 'skipped' ||
+            (needs.verify-lp-approval.result == 'success' && needs.verify-lp-approval.outputs.approved == 'true')
+          ))
+        )) ||
+        (github.event_name == 'workflow_dispatch' && needs.verify-lp-approval.outputs.approved == 'true')
+      )
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.inputs.sha || github.sha }}
+
+      - name: Download prepared site
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: public-dir
+          path: public/
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.inputs.run_id || github.run_id }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ github.ref_name }}
