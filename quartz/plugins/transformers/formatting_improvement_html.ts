@@ -710,11 +710,7 @@ export function replaceFractions(
     (node, idx, parent) => fractionToSkip(node, idx, parent, ancestors),
   )
 }
-<<<<<<< security-fixes/2026-04-20
-interface Options {
-=======
 interface ImproveFormattingOptions {
->>>>>>> main
   skipFirstLetter?: boolean // Debug flag
 }
 
@@ -723,15 +719,10 @@ interface ImproveFormattingOptions {
  * @param options - Configuration options
  * @returns Unified transformer function
  */
-<<<<<<< security-fixes/2026-04-20
-export const improveFormatting = (options: Options = {}): Transformer<Root, Root> => {
-  const resolvedOptions: Options = {
-=======
 export const improveFormatting = (
   options: ImproveFormattingOptions = {},
 ): Transformer<Root, Root> => {
   const resolvedOptions: ImproveFormattingOptions = {
->>>>>>> main
     skipFirstLetter: false,
     ...options,
   }
