@@ -245,12 +245,13 @@ How thorough do we have to be?
 
 Overall, data filtering is the obvious first step. Filtering is simple and probably at least a little effective. However, filtering might be hard to iterate on, filtering makes the model know less about the filtered subjects, and filtering might not even be effective without nearly perfect coverage.
 
-> [!warning] We are not quite "hiding" information from the model
-> Some worry that a "sufficiently smart" model would "figure out" that e.g. we filtered out data about e.g. Nick Bostrom's [Superintelligence.](https://www.amazon.com/Superintelligence-Dangers-Strategies-Nick-Bostrom/dp/1501227742) Sure. Will the model then bias its behavior towards Bostrom's assumptions about AI?
->
-> I don't know. I suspect not. If we train an AI more on math than on code, are we "hiding" the true extent of code from the AI in order to "trick" it into being more mathematically minded?
->
-> Let's turn to reality for recourse. We can test the effect of including e.g. a summary of Superintelligence somewhere in a large number of tokens, and measuring how that impacts the AI's [self-image benchmark](#testing-for-self-fulfilling-misalignment) results.
+### We are not quite "hiding" information from the model
+
+Some worry that a "sufficiently smart" model would "figure out" that e.g. we filtered out data about e.g. Nick Bostrom's [Superintelligence.](https://www.amazon.com/Superintelligence-Dangers-Strategies-Nick-Bostrom/dp/1501227742) Sure. Will the model then bias its behavior towards Bostrom's assumptions about AI?
+
+I don't know. I suspect not. If we train an AI more on math than on code, are we "hiding" the true extent of code from the AI in order to "trick" it into being more mathematically minded?
+
+Let's turn to reality for recourse. We can test the effect of including e.g. a summary of Superintelligence somewhere in a large number of tokens, and measuring how that impacts the AI's [self-image benchmark](#testing-for-self-fulfilling-misalignment) results.
 
 > [!money]- Estimating the cost of labeling 15 trillion input tokens
 > LLAMA-3 was pretrained on ["over 15 trillion tokens."](https://github.com/meta-llama/llama3/blob/main/MODEL_CARD.md) Let's imagine we use Gemini Flash Lite 2.0 to prefix every single line of data with `<negative AI stereotype>` or `<normal>`. As of Feb. 20th, 2025, [Flash-Lite costs](https://ai.google.dev/gemini-api/docs/pricing) \$0.075 per million input tokens and \$0.30 per million output tokens. Let's say we're labeling chunks of data every, say, 100 tokens on average. Then for $T$ tokens, our cost will be $0.075T + 0.3 \times \frac{1}{100}T = .0078T$. For $T=1.5\times 10^{13}$, the price would be about \$117,000. (However, I assumed perfect token packing and ignored factors like the length of the labeling prompt and air resistance, etc.)
