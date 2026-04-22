@@ -104,9 +104,7 @@ def process_markdown_file(md_path: Path) -> None:
         try:
             md_path.write_text(new_content, encoding="utf-8")
         except Exception as e:
-            print(
-                f"  Error writing changes to {md_path}: {e}", file=sys.stderr
-            )
+            print(f"  Error writing changes to {md_path}: {e}", file=sys.stderr)
     else:
         print(f"  No changes needed for {md_path.name}")
 
@@ -123,7 +121,9 @@ def main() -> None:
 
     # Process only markdown files in the content directory
     md_files = script_utils.get_files(
-        content_dir, (".md",), use_git_ignore=True  # Respect .gitignore
+        content_dir,
+        (".md",),
+        use_git_ignore=True,  # Respect .gitignore
     )
 
     print(f"Found {len(md_files)} markdown files in {content_dir}")

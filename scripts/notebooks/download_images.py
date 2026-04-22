@@ -74,9 +74,7 @@ def main(markdown_files: list[Path]) -> None:
     for file in markdown_files:
         with open(file) as f:
             content = f.read()
-            urls = re.findall(
-                r"(https?://.*?\." + SUFFIX_REGEX + r")", content
-            )
+            urls = re.findall(r"(https?://.*?\." + SUFFIX_REGEX + r")", content)
             asset_urls.update(url for url, _ in urls)
 
     # 2. Download each image and replace URLs in markdown files

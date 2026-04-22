@@ -1950,7 +1950,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MAX_DESCRIPTION_LENGTH + 1)}">
+                <meta name="description" content="{"a" * (_MAX_DESCRIPTION_LENGTH + 1)}">
             </head>
             </html>
             """,
@@ -1963,7 +1963,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MIN_DESCRIPTION_LENGTH - 1)}">
+                <meta name="description" content="{"a" * (_MIN_DESCRIPTION_LENGTH - 1)}">
             </head>
             </html>
             """,
@@ -3024,6 +3024,130 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
         )
     assert len(result) == 1
     assert "some warning text" in result[0]
+
+
+_AUGMENT_SCRIPT = (
+    Path(__file__).resolve().parents[2]
+    / "scripts"
+    / "augment_spellcheck_wordlist.sh"
+)
+
+
+@pytest.fixture
+def fake_repo(tmp_path: Path, monkeypatch):
+    """
+    Fake git root with the real augment helper staged under scripts/.
+
+    Returns a helper ``write(content)`` that writes the given text to
+    ``config/spellcheck/.wordlist.txt`` and returns its path.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    (tmp_path / "scripts").mkdir()
+    staged = tmp_path / "scripts" / "augment_spellcheck_wordlist.sh"
+    staged.write_bytes(_AUGMENT_SCRIPT.read_bytes())
+    staged.chmod(0o755)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+
+    def write(content: str) -> Path:
+        wordlist.write_text(content, encoding="utf-8")
+        return wordlist
+
+    return write
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,helper_staged,expect_none",
+    [
+        pytest.param(None, True, True, id="missing-wordlist"),
+        pytest.param("KaTeX\n", False, True, id="missing-helper-script"),
+    ],
+)
+def test_augmented_wordlist_returns_none_when_prerequisites_missing(
+    tmp_path, monkeypatch, wordlist_content, helper_staged, expect_none
+):
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    if helper_staged:
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "augment_spellcheck_wordlist.sh").write_bytes(
+            _AUGMENT_SCRIPT.read_bytes()
+        )
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    if wordlist_content is not None:
+        wordlist.parent.mkdir(parents=True)
+        wordlist.write_text(wordlist_content)
+
+    assert (
+        built_site_checks._augmented_wordlist(wordlist) is None
+    ) is expect_none
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,must_include,must_exclude",
+    [
+        pytest.param(
+            "KaTeX\nAnthropic\n",
+            ["KaTeX", "KaTeX's", "KaTeX’s", "Anthropic's"],
+            [],
+            id="possessive-expansion",
+        ),
+        pytest.param(
+            "Barto's\nNoether’s\n",
+            ["Barto's", "Noether’s"],
+            ["Barto's's", "Noether’s’s"],
+            id="no-double-suffix",
+        ),
+        pytest.param(
+            "# a comment\n\nKaTeX\n",
+            ["# a comment"],
+            ["# a comment's"],
+            id="preserves-blanks-and-comments",
+        ),
+    ],
+)
+def test_augmented_wordlist_content(
+    fake_repo, wordlist_content, must_include, must_exclude
+):
+    augmented = built_site_checks._augmented_wordlist(
+        fake_repo(wordlist_content)
+    )
+    assert augmented is not None
+    try:
+        text = augmented.read_text(encoding="utf-8")
+        for word in must_include:
+            assert word in text, f"{word!r} missing from augmented output"
+        for word in must_exclude:
+            assert word not in text, f"{word!r} should not appear"
+    finally:
+        augmented.unlink(missing_ok=True)
+
+
+def test_spellcheck_passes_augmented_dict_to_cli(fake_repo):
+    """--dictionaries points at the augmented tempfile, not the source."""
+    wordlist = fake_repo("KaTeX\n")
+    captured: dict[str, object] = {}
+    real_run = subprocess.run
+
+    def fake_run(cmd, *args, **kwargs):
+        if cmd and str(cmd[0]).endswith("augment_spellcheck_wordlist.sh"):
+            return real_run(cmd, *args, **kwargs)
+        captured["argv"] = list(cmd)
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=0, stdout="", stderr=""
+        )
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run", side_effect=fake_run),
+    ):
+        built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["KaTeX's codebase is neat."]}
+        )
+
+    argv = cast(list[str], captured["argv"])
+    dict_path = Path(argv[argv.index("--dictionaries") + 1])
+    assert dict_path.name.startswith(".wordlist-augmented-")
+    assert dict_path != wordlist
 
 
 @pytest.mark.parametrize(
@@ -6448,7 +6572,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://apple.com/products">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: apple.com" " (https://apple.com/products)"],
+            ["Link missing favicon: apple.com (https://apple.com/products)"],
         ),
         # Non-included domain without favicon (valid — not expected)
         (
@@ -6463,8 +6587,7 @@ def test_is_asset_href(href, expected):
             "Blog</a></article>",
             {"apple_com"},
             [
-                "Link missing favicon: blog.apple.com"
-                " (https://blog.apple.com/news)"
+                "Link missing favicon: blog.apple.com (https://blog.apple.com/news)"
             ],
         ),
         # www. prefix stripped correctly
@@ -6472,7 +6595,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://www.apple.com">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: www.apple.com" " (https://www.apple.com)"],
+            ["Link missing favicon: www.apple.com (https://www.apple.com)"],
         ),
         # Asset link to included domain (should be skipped)
         (
@@ -6483,8 +6606,7 @@ def test_is_asset_href(href, expected):
         ),
         # Internal link (no class="external") to included domain (skip)
         (
-            '<article><a href="https://apple.com/products">'
-            "Apple</a></article>",
+            '<article><a href="https://apple.com/products">Apple</a></article>',
             {"apple_com"},
             [],
         ),
@@ -6496,7 +6618,7 @@ def test_is_asset_href(href, expected):
             '<a class="external" href="https://discord.gg/abc">bad</a>'
             "</article>",
             {"apple_com", "discord_gg"},
-            ["Link missing favicon: discord.gg" " (https://discord.gg/abc)"],
+            ["Link missing favicon: discord.gg (https://discord.gg/abc)"],
         ),
         # Google subdomain included entry
         (
@@ -6525,22 +6647,19 @@ def test_is_asset_href(href, expected):
         ),
         # Empty included domains set - nothing flagged
         (
-            '<article><a class="external" href="https://apple.com">'
-            "Apple</a></article>",
+            '<article><a class="external" href="https://apple.com">Apple</a></article>',
             set(),
             [],
         ),
         # Malformed URL with no hostname (should be skipped gracefully)
         (
-            '<article><a class="external" href="https://">'
-            "Bad URL</a></article>",
+            '<article><a class="external" href="https://">Bad URL</a></article>',
             {"apple_com"},
             [],
         ),
         # Link outside <article> (nav/aside) - should be skipped
         (
-            '<nav><a class="external" href="https://apple.com">'
-            "Apple</a></nav>",
+            '<nav><a class="external" href="https://apple.com">Apple</a></nav>',
             {"apple_com"},
             [],
         ),

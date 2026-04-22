@@ -3,8 +3,8 @@ import { toJsxRuntime, type Options } from "hast-util-to-jsx-runtime"
 import { h } from "hastscript"
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import { type FullSlug, resolveRelative } from "../util/path"
 import { formatTitle } from "./component_utils"
 import { locale } from "./constants"
@@ -114,9 +114,9 @@ export function createPageItemElement(
   const date = getDate(cfg, page)?.toLocaleDateString(locale) || ""
   const pageSlug = page.slug || ("" as FullSlug)
 
-  return h("div.section", [
+  return h("div.page-listing-row", [
     page.dates && h("time.meta", [date]),
-    h("div.desc", [
+    h("div.page-listing-description", [
       createPageTitleElement(formattedTitle, fileDataSlug, pageSlug),
       createTagsElement(tags, fileDataSlug),
     ]),
@@ -146,11 +146,11 @@ export function createPageItemElement(
  *
  * The resulting HTML structure follows this pattern:
  * <div class="page-listing">
- *   <ul class="section-ul">
- *     <li class="section-li">
- *       <div class="section">
+ *   <ul class="page-listing-list">
+ *     <li class="page-listing-item">
+ *       <div class="page-listing-row">
  *         <time class="meta">date</time>
- *         <div class="desc">
+ *         <div class="page-listing-description">
  *           <p class="page-listing-title"><a>title</a></p>
  *           <ul class="tags"><li><a>tag</a></li></ul>
  *         </div>
@@ -176,16 +176,15 @@ export function createPageListHast(
 
   return h("div.page-listing", [
     h(
-      "ul.section-ul",
+      "ul.page-listing-list",
       list
         .map((page: QuartzPluginData, index: number) => [
-          h("li.section-li", [
+          h("li.page-listing-item", [
             createPageItemElement(page, fileDataSlug, cfg),
             ...(index < list.length - 1 ? [h("hr.page-divider")] : []),
           ]),
         ])
-        .flat()
-        .filter(Boolean),
+        .flat(),
     ),
   ])
 }

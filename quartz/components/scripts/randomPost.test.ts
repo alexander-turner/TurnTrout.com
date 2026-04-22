@@ -4,7 +4,7 @@
 
 import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
 
-import { type ContentDetails } from "../../plugins/emitters/contentIndex"
+import { type ContentDetails } from "../../plugins/vfile"
 import { isPost, randomPostScript, EXCLUDED_SLUGS, EXCLUDED_SLUG_PREFIXES } from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({

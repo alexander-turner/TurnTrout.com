@@ -4,8 +4,8 @@ import { render } from "preact-render-to-string"
 import React from "react"
 import { visit } from "unist-util-visit"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import {
   clone,
   type FullSlug,
@@ -15,9 +15,7 @@ import {
   simplifySlug,
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
-import BodyConstructor from "./Body"
 import { locale, PREVIEWABLE_CLASS } from "./constants"
-import HeaderConstructor from "./Header"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
 import {
@@ -27,16 +25,15 @@ import {
   allTagsListing,
   generateAllTagsHast,
 } from "./pages/AllTagsContent"
+import PageShellConstructor from "./PageShell"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 
 interface RenderComponents {
   head: QuartzComponent
-  header: QuartzComponent[]
   beforeBody: QuartzComponent[]
   pageBody: QuartzComponent
   left: QuartzComponent[]
   right: QuartzComponent[]
-  footer: QuartzComponent
 }
 
 const headerRegex = new RegExp(/h[1-6]/)
@@ -392,44 +389,30 @@ export function renderPage(
   // set componentData.tree to the edited html that has transclusions rendered
   componentData.tree = root
 
-  const {
-    head: Head,
-    header,
-    beforeBody,
-    pageBody: Content,
-    left,
-    right,
-    footer: Footer,
-  } = components
-  const Header = HeaderConstructor()
-  const Body = BodyConstructor()
+  const { head: Head, beforeBody, pageBody: Content, left, right } = components
+  const PageShell = PageShellConstructor()
 
   const LeftComponent = (
     <aside id="left-sidebar" className="sidebar" aria-label="Site navigation">
-      {left.map((BodyComponent) => (
-        <BodyComponent {...componentData} key={BodyComponent.name} />
+      {left.map((LayoutComponent) => (
+        <LayoutComponent {...componentData} key={LayoutComponent.name} />
       ))}
     </aside>
   )
 
   const RightComponent = (
     <aside id="right-sidebar" className="sidebar" aria-label="Supplementary content">
-      {right.map((BodyComponent) => (
-        <BodyComponent {...componentData} key={BodyComponent.name} />
+      {right.map((LayoutComponent) => (
+        <LayoutComponent {...componentData} key={LayoutComponent.name} />
       ))}
     </aside>
   )
 
   const pageHeader = (
     <div className="page-header">
-      <Header {...componentData}>
-        {header.map((HeaderComponent) => (
-          <HeaderComponent {...componentData} key={HeaderComponent.name} />
-        ))}
-      </Header>
       <div className={PREVIEWABLE_CLASS}>
-        {beforeBody.map((BodyComponent) => (
-          <BodyComponent {...componentData} key={BodyComponent.name} />
+        {beforeBody.map((LayoutComponent) => (
+          <LayoutComponent {...componentData} key={LayoutComponent.name} />
         ))}
       </div>
     </div>
@@ -442,16 +425,15 @@ export function renderPage(
         className="skip-to-content internal same-page-link"
         aria-label="Skip to main content"
       />
-      <div id="quartz-root" className="page">
-        <Body {...componentData}>
+      <div id="site-root" className="page">
+        <PageShell {...componentData}>
           {LeftComponent}
           {RightComponent}
           <main id="center-content">
             {pageHeader}
             <Content {...componentData} />
           </main>
-        </Body>
-        <Footer {...componentData} />
+        </PageShell>
       </div>
     </body>
   )

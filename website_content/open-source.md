@@ -155,6 +155,10 @@ When math content becomes scrollable (e.g. via CSS overflow), it cannot be focus
 
 KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the final HTML output even though no CSS rules reference them. [PR #4164](https://github.com/KaTeX/KaTeX/pull/4164) strips these build-time-only classes from the rendered output, reducing the KaTeX DOM footprint by ~15%.
 
+## KaTeX TypeScript cleanup
+
+KaTeX's TypeScript codebase carried dozens of escape-hatch `as any` casts left over from its earlier Flow-to-TypeScript migration. Each one silenced a type error instead of fixing it, so the compiler couldn't catch bugs in those spots. [PR #4171](https://github.com/KaTeX/KaTeX/pull/4171) (merged) replaces these with proper checks and tighter type definitions, then enables a lint rule so new `any` casts can't sneak back in.
+
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:

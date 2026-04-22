@@ -18,7 +18,7 @@ html {
   white-space: nowrap;
   width: 1px;
   height: 1px;
-  z-index: 9999;
+  z-index: $z-skip-link;
   padding: 0.5em 1em;
   background: var(--background);
   color: var(--foreground);
@@ -168,7 +168,7 @@ a {
     }
   }
 
-  & > #quartz-body {
+  & > #page-columns {
     width: 100%;
     display: flex;
 
@@ -206,7 +206,7 @@ a {
       }
 
       &#left-sidebar {
-        z-index: 1;
+        z-index: $z-raised;
 
         @media all and (min-width: $min-desktop-width) {
           flex-basis: $left-sidebar-width;
@@ -532,7 +532,7 @@ ul {
   overflow: auto hidden;
 }
 
-#quartz-root {
+#site-root {
   overflow-x: visible;
 }
 

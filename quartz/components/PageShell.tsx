@@ -45,23 +45,23 @@ const searchInterface = (
   </div>
 )
 
-const Body: QuartzComponent = ({ children }: QuartzComponentProps) => {
-  // The quartz-body children are the three main sections of the page: left, center, and right bars
+const PageShell: QuartzComponent = ({ children }: QuartzComponentProps) => {
+  // The page-columns children are the three main sections of the page: left, center, and right bars
   return (
     <>
       {searchInterface}
-      <div id="quartz-body">{children}</div>
+      <div id="page-columns">{children}</div>
     </>
   )
 }
 
-Body.afterDOMLoaded = [
+PageShell.afterDOMLoaded = [
   clipboardScript,
   elvishToggleScript,
   smallCapsCopyScript,
   scrollIndicatorScript,
   punctilioDemoScript,
 ]
-Body.css = clipboardStyle
+PageShell.css = clipboardStyle
 
-export default (() => Body) satisfies QuartzComponentConstructor
+export default (() => PageShell) satisfies QuartzComponentConstructor

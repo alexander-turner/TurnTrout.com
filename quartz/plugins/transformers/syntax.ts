@@ -10,12 +10,12 @@ interface Theme extends Record<string, CodeTheme> {
   dark: CodeTheme
 }
 
-interface Options {
+interface SyntaxHighlightingOptions {
   theme?: Theme
   keepBackground?: boolean
 }
 
-const defaultOptions: Options = {
+const defaultOptions: SyntaxHighlightingOptions = {
   theme: {
     light: "github-light",
     dark: "github-dark",
@@ -24,8 +24,8 @@ const defaultOptions: Options = {
 }
 
 // skipcq: JS-D1001
-export const SyntaxHighlighting: QuartzTransformerPlugin<Options> = (
-  userOpts?: Partial<Options>,
+export const SyntaxHighlighting: QuartzTransformerPlugin<SyntaxHighlightingOptions> = (
+  userOpts?: Partial<SyntaxHighlightingOptions>,
 ) => {
   const opts: Partial<CodeOptions> = { ...defaultOptions, ...userOpts }
 

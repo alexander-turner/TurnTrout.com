@@ -5,6 +5,7 @@ import { SKIP } from "unist-util-visit"
 import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
+import type { TocEntry } from "../vfile"
 
 import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
@@ -32,19 +33,6 @@ const defaultOptions: Options = {
   minEntries: 1,
   showByDefault: true,
   collapseByDefault: false,
-}
-
-/**
- * Represents a single entry in the Table of Contents
- * @interface TocEntry
- */
-export interface TocEntry {
-  /** Heading level (0-based from highest level in document) */
-  depth: number
-  /** Plain text content of the heading */
-  text: string
-  /** HTML anchor ID for the heading */
-  slug: string
 }
 
 const logger = createWinstonLogger("TableOfContents")

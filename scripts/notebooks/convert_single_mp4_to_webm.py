@@ -253,9 +253,7 @@ def process_markdown_file(md_path: Path, temp_dir: Path) -> None:
         try:
             md_path.write_text("".join(new_content_parts), encoding="utf-8")
         except Exception as e:
-            print(
-                f"  Error writing changes to {md_path}: {e}", file=sys.stderr
-            )
+            print(f"  Error writing changes to {md_path}: {e}", file=sys.stderr)
 
 
 def main() -> None:

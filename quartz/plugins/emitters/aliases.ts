@@ -1,8 +1,8 @@
 import path from "path"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { locale } from "../../components/constants"
 import DepGraph from "../../depgraph"
+import { type GlobalConfiguration } from "../../util/config"
 import { renderHead } from "../../util/head"
 import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../../util/path"
 import { type QuartzEmitterPlugin } from "../types"

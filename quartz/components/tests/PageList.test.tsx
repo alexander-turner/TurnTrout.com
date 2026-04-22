@@ -10,8 +10,9 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { normalizeNbsp } from "../constants"
@@ -199,8 +200,8 @@ describe("PageList", () => {
   it("renders empty list when no files provided", () => {
     const props = createProps(createFileData(), [])
     const html = render(preactH(PageList, props))
-    expect(html).toContain("section-ul")
-    expect(html).not.toContain("section-li")
+    expect(html).toContain("page-listing-list")
+    expect(html).not.toContain("page-listing-item")
   })
 
   it("renders multiple pages correctly", () => {
@@ -230,7 +231,7 @@ describe("PageList", () => {
     const props = createProps(fileWithoutTitle, [fileWithoutTitle])
     const html = render(preactH(PageList, props))
 
-    expect(html).toContain("section-li")
+    expect(html).toContain("page-listing-item")
     expect(html).toContain("page-listing-title")
   })
 
@@ -241,7 +242,7 @@ describe("PageList", () => {
     const props = createProps(fileWithoutTags, [fileWithoutTags])
     const html = render(preactH(PageList, props))
 
-    expect(html).toContain("section-li")
+    expect(html).toContain("page-listing-item")
     expect(html).toContain("tags")
   })
 
@@ -361,7 +362,7 @@ describe("createPageItemElement", () => {
 
     const element = createPageItemElement(page, "src" as FullSlug, cfg) as HastElement
     expect(element.tagName).toBe("div")
-    expect(element.properties?.className).toEqual(["section"])
+    expect(element.properties?.className).toEqual(["page-listing-row"])
   })
 
   it("handles missing page slug", () => {
@@ -374,7 +375,7 @@ describe("createPageItemElement", () => {
 
     // Should still create the element successfully with empty slug fallback
     expect(element.tagName).toBe("div")
-    expect(element.properties?.className).toEqual(["section"])
+    expect(element.properties?.className).toEqual(["page-listing-row"])
   })
 })
 

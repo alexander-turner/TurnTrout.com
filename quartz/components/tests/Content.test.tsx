@@ -7,8 +7,8 @@ import type { JSX } from "preact"
 
 import { describe, it, expect } from "@jest/globals"
 
-import type { GlobalConfiguration } from "../../cfg"
 import type { QuartzPluginData } from "../../plugins/vfile"
+import type { GlobalConfiguration } from "../../util/config"
 import type { BuildCtx } from "../../util/ctx"
 import type { FullSlug } from "../../util/path"
 import type { QuartzComponentProps } from "../types"
