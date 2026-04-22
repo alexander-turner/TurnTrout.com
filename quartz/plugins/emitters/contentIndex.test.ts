@@ -1,7 +1,7 @@
 import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
 
-import { type QuartzConfig } from "../../cfg"
 import { uiStrings } from "../../components/constants"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"

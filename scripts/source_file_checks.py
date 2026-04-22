@@ -83,8 +83,7 @@ def _check_card_image_domain(card_url: str) -> list[str]:
     """Check if card_image is from assets.turntrout.com."""
     if not card_url.startswith("https://assets.turntrout.com/"):
         return [
-            f"card_image must be from assets.turntrout.com, "
-            f"but found: {card_url}"
+            f"card_image must be from assets.turntrout.com, but found: {card_url}"
         ]
     return []
 
@@ -122,8 +121,7 @@ def _check_card_image_accessibility(card_url: str) -> list[str]:
 
         if not response.ok:
             errors.append(
-                f"Card image URL '{card_url}' returned "
-                f"status {response.status_code}"
+                f"Card image URL '{card_url}' returned status {response.status_code}"
             )
         else:
             # Check size if request was successful
@@ -172,8 +170,7 @@ def validate_video_tags(text: str) -> list[str]:
     issues = []
     for match in re.finditer(r"<video[^>]*\s(src|type)\s*=", text):
         issues.append(
-            f"Video tag contains forbidden 'src' or 'type' attribute:"
-            f" {match.group()}"
+            f"Video tag contains forbidden 'src' or 'type' attribute: {match.group()}"
         )
     return issues
 

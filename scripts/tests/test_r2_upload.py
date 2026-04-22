@@ -516,7 +516,6 @@ def test_upload_non_existing_file(mock_git_root: Path, tmp_path: Path):
         patch("subprocess.run") as mock_run,
         patch("shutil.move") as mock_move,
     ):
-
         r2_upload.upload_and_move(test_file, verbose=True, move_to_dir=tmp_path)
 
         mock_check.assert_called_once_with(

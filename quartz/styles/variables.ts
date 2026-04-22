@@ -84,6 +84,27 @@ export const transitionDurationMedium = "0.3s"
 export const transitionDurationSlow = "0.5s"
 export const fauxBoldOffset = "0.3px"
 
+// Z-index scale — use these tokens instead of raw numbers so the stacking
+// order is visible in one place.
+//   zBelow     decorative layers painted under content
+//   zBase      default stacking context (0)
+//   zRaised    standard in-flow elements lifted above siblings
+//   zAccent    small UI accents (e.g. toggle dots) above zRaised
+//   zPopover   hover cards, tooltips
+//   zSticky    sticky overlays above page content (e.g. video controller)
+//   zNavbar    global site chrome
+//   zModal     full-screen overlays (e.g. search)
+//   zSkipLink  skip-to-content a11y link — always topmost
+export const zBelow = -1
+export const zBase = 0
+export const zRaised = 1
+export const zAccent = 3
+export const zPopover = 10
+export const zSticky = 100
+export const zNavbar = 910
+export const zModal = 999
+export const zSkipLink = 9999
+
 // WCAG AA-compliant overrides for Shiki github-light theme.
 // Contrast ratios measured against code block background #f2f3f7
 // (= color-mix(in srgb, #fcfcff 90%, #9ca0b0)).
@@ -147,6 +168,15 @@ export const variables = {
   transitionDurationMedium,
   transitionDurationSlow,
   fauxBoldOffset,
+  zBelow,
+  zBase,
+  zRaised,
+  zAccent,
+  zPopover,
+  zSticky,
+  zNavbar,
+  zModal,
+  zSkipLink,
 } as const
 
 export type Variables = typeof variables

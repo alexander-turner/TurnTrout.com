@@ -77,9 +77,7 @@ def image(image_path: Path, quality: int = _DEFAULT_IMAGE_QUALITY) -> None:
     if not image_path.is_file():
         raise FileNotFoundError(f"Error: File '{image_path}' not found.")
     if image_path.suffix.lower() not in ALLOWED_IMAGE_EXTENSIONS:
-        raise ValueError(
-            f"Error: Unsupported file type '{image_path.suffix}'."
-        )
+        raise ValueError(f"Error: Unsupported file type '{image_path.suffix}'.")
 
     avif_path: Path = image_path.with_suffix(".avif")
     if avif_path.exists():
@@ -280,12 +278,9 @@ def _check_if_hevc_codec(video_path: Path) -> bool:
 def _parse_args() -> argparse.Namespace:  # pragma: no cover
     """Parse command-line arguments."""
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
-        description="Compress assets: image to AVIF,"
-        " video to MP4/HEVC and WebM/VP9."
+        description="Compress assets: image to AVIF, video to MP4/HEVC and WebM/VP9."
     )
-    parser.add_argument(
-        "path", type=Path, help="Path to the file to compress."
-    )
+    parser.add_argument("path", type=Path, help="Path to the file to compress.")
     parser.add_argument(
         "--quality-img",
         type=int,

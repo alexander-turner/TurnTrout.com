@@ -1,8 +1,8 @@
 import fs from "fs"
 import path from "path"
 
-import { type QuartzConfig } from "../../cfg"
 import DepGraph from "../../depgraph"
+import { type QuartzConfig } from "../../util/ctx"
 import { type Argv } from "../../util/ctx"
 import { glob } from "../../util/glob"
 import { type FilePath, joinSegments, slugifyFilePath } from "../../util/path"

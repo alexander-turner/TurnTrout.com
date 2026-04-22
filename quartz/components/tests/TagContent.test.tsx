@@ -11,8 +11,8 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { PageList } from "../PageList"

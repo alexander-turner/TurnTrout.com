@@ -1,0 +1,183 @@
+name: Claude autofix on CI failure
+
+# On a PR CI failure, attempt a Claude-driven autofix and let the action
+# commit+push the fix back to the PR branch. Hard-capped at 2 attempts
+# per PR (one marker comment per attempt) so a genuinely broken PR can't
+# burn infinite API budget.
+#
+# Only runs on "recoverable" failure surfaces where autofix is plausible:
+# lint/format issues, type errors, docstring style, link checks. Playwright,
+# visual-testing, Lighthouse, and deploy failures need human judgment and
+# are intentionally excluded.
+#
+# After Claude finishes (successfully or not), track_ci_failures.py
+# records the attempt so repeated failures get a rolling tracker comment
+# and the `needs-human-review` label when the budget is exhausted.
+
+on:
+  workflow_run:
+    workflows:
+      - "Lint and validate"
+      - "Python linting"
+      - "site-build-checks"
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+  id-token: write
+
+concurrency:
+  group: claude-autofix-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  autofix:
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Verify ANTHROPIC_API_KEY is set
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set. Set it in repo Settings > Secrets to enable autofix."
+            exit 1
+          fi
+
+      - name: Find PR info
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const prs = context.payload.workflow_run.pull_requests || [];
+            if (prs.length === 0) {
+              core.info('No PR attached to this workflow_run; skipping.');
+              core.setOutput('skip', 'true');
+              return;
+            }
+            core.setOutput('number', prs[0].number);
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha);
+            core.setOutput('head_branch', context.payload.workflow_run.head_branch);
+
+      - name: Check attempt budget
+        if: steps.pr.outputs.skip != 'true'
+        id: budget
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        run: |
+          # Fetch every comment on the PR so markers left by prior runs
+          # are visible (handles PRs with >100 comments via --paginate).
+          BODIES=$(gh api --paginate "repos/${{ github.repository }}/issues/$PR/comments" \
+            --jq '.[].body' 2>/dev/null || echo "")
+          # Per-commit dedup: never try twice for the exact same SHA.
+          if echo "$BODIES" | grep -qF "<!-- claude-autofix-sha:$HEAD_SHA -->"; then
+            echo "::notice::Already attempted autofix for commit $HEAD_SHA; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # PR-wide cap: after 2 distinct attempts, stop and leave it
+          # to a human (track_ci_failures.py applies needs-human-review
+          # label once MAX_ATTEMPTS is hit).
+          COUNT=$(echo "$BODIES" | grep -cE '<!-- claude-autofix-sha:[0-9a-f]{40} -->' || true)
+          if [ "$COUNT" -ge 2 ]; then
+            echo "::notice::$COUNT prior autofix attempts on PR #$PR; leaving for human."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout PR branch
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # Check out the PR head. PUSH_TOKEN lets Claude push the fix
+          # commit back; secrets.GITHUB_TOKEN from a workflow_run context
+          # can't push to PR branches.
+          ref: ${{ steps.pr.outputs.head_branch }}
+          token: ${{ secrets.PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup site
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        uses: ./.github/actions/setup-site
+
+      - name: Download failure log
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Keep the log in /tmp so it can't accidentally get committed.
+          # Tail only — the useful error is almost always near the end.
+          gh run view "${{ github.event.workflow_run.id }}" \
+            --repo "${{ github.repository }}" \
+            --log-failed 2>/dev/null | tail -n 400 > /tmp/ci-failure.log || true
+          if [ ! -s /tmp/ci-failure.log ]; then
+            echo "::warning::No failed-step logs available; Claude will have only the workflow name to go on."
+            echo "(logs unavailable)" > /tmp/ci-failure.log
+          fi
+          echo "Log preview (first 20 lines):"
+          head -n 20 /tmp/ci-failure.log
+
+      - name: Drop attempt marker on PR
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          WORKFLOW: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          # Posting the marker BEFORE running Claude ensures the attempt
+          # is counted even if Claude crashes or times out — otherwise a
+          # crash loop could bypass the 2-attempt cap.
+          short=$(echo "$HEAD_SHA" | cut -c1-7)
+          body=$(printf '<!-- claude-autofix-sha:%s -->\n:robot: Claude is attempting an autofix for the **%s** failure on `%s` ([logs](%s)).' \
+            "$HEAD_SHA" "$WORKFLOW" "$short" "$RUN_URL")
+          gh pr comment "$PR" --body "$body"
+
+      - name: Claude autofix
+        if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
+        uses: anthropics/claude-code-action@38ec876110f9fbf8b950c79f534430740c3ac009 # v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Push token so the action can commit the fix back to the PR
+          # branch (default GITHUB_TOKEN on workflow_run can't).
+          github_token: ${{ secrets.PUSH_TOKEN }}
+          prompt: |
+            The CI workflow **${{ github.event.workflow_run.name }}** failed on this PR (commit ${{ steps.pr.outputs.head_sha }}).
+
+            The trimmed failure log is at `/tmp/ci-failure.log`. Read it first to find the root cause.
+
+            Then attempt a minimal fix with these hard constraints:
+
+            - Only touch files that directly caused the failure.
+            - Prefer a real fix (update source, fix the test, add missing case) over silencing the check.
+            - **Never** lower CI thresholds, weaken assertions, add `# noqa` / `eslint-disable` to suppress real issues, or modify anything under `.github/workflows/`, `.github/actions/`, or `config/` without explaining the why in the commit message.
+            - Keep the diff as small as possible.
+            - If you cannot confidently identify the root cause from the log, OR the fix requires architectural judgment, stop and do NOT modify any files. Print a one-paragraph diagnosis instead so a human can take it from there.
+            - If you do make changes, run the relevant local check to verify the fix (e.g. `uv run pytest <file>`, `pnpm exec eslint <file>`, `uv run ruff check <file>`) before committing. Do not commit a fix that fails the same check.
+            - Commit with a concise conventional message like `fix: <short description>` and push to the branch.
+
+            Remember: a correctly-diagnosed "I don't know how to fix this" is strictly better than a wrong fix that masks the real issue.
+          claude_args: |
+            --allowedTools "Bash,Read,Edit,Write,Glob,Grep"
+            --disallowedTools "WebFetch,WebSearch"
+            --max-turns 20
+
+      - name: Record attempt in failure tracker
+        if: always() && steps.pr.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: python3 .github/scripts/track_ci_failures.py

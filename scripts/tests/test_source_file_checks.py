@@ -2450,8 +2450,7 @@ tags: [test]
             [
                 "Self-closing <iframe .../> at line 1"
                 " (use <iframe ...></iframe> instead)",
-                "Self-closing <div .../> at line 2"
-                " (use <div ...></div> instead)",
+                "Self-closing <div .../> at line 2 (use <div ...></div> instead)",
             ],
         ),
         # Inside indented code block (should be skipped)

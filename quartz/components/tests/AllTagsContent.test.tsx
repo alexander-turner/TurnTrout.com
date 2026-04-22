@@ -10,8 +10,8 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import AllTagsContent, { generateAllTagsHast, allTagsListing } from "../pages/AllTagsContent"

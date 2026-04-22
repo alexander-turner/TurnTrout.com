@@ -142,7 +142,7 @@ test.describe("Unique content around the site", () => {
       // Remove all but the oldest numOldest posts; stable as I add more
       const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
-        const listElement = document.querySelectorAll("ul.section-ul")[0]
+        const listElement = document.querySelectorAll("ul.page-listing-list")[0]
         if (!listElement) {
           console.error("Could not find the post list element.")
           return

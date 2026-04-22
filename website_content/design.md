@@ -1182,6 +1182,16 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > 1. RSS file generation failure or schema validation errors.
 
+### Spellchecking
+
+[`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) runs over both Markdown source and rendered HTML against `config/spellcheck/.wordlist.txt`. Two layers cut manual dictionary edits:
+
+Possessive expansion (`scripts/augment_spellcheck_wordlist.sh`)
+: Emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
+
+Claude triage (`scripts/spellcheck_triage.py`)
+: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the wordlist in alphabetical order, ambiguous ones are printed for review.
+
 ## Build pipeline extras
 
 Reordering elements in `<head>` to ensure social media previews

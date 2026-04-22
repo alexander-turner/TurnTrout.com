@@ -215,12 +215,12 @@ async function partialRebuildFromEntrypoint(
   }
 
   const buildStart = new Date().getTime()
-  buildData.lastBuildMs = buildStart
   const release = await mut.acquire()
   if (buildData.lastBuildMs > buildStart) {
     release()
     return
   }
+  buildData.lastBuildMs = buildStart
 
   const perf = new PerfTimer()
   console.log(chalk.yellow("Detected change, rebuilding..."))

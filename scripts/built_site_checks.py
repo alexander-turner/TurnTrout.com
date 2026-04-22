@@ -826,8 +826,7 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
 
     if loading != "eager":
         issues.append(
-            f"First content image should have loading='eager', "
-            f"got '{loading}': {src}"
+            f"First content image should have loading='eager', got '{loading}': {src}"
         )
     if fetchpriority != "high":
         issues.append(
@@ -899,8 +898,7 @@ def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
                 tag_preview = str(element)[:120]
                 _append_to_list(
                     issues,
-                    f"Invalid class name '{cls}' on <{element.name}>:"
-                    f" {tag_preview}",
+                    f"Invalid class name '{cls}' on <{element.name}>: {tag_preview}",
                 )
 
     return issues
@@ -2408,8 +2406,7 @@ def _check_single_video(
     if len(sources) < len(expected_sources):
         _append_to_list(
             issues,
-            f"<video> tag has < {len(expected_sources)}"
-            f" <source> children: {open_tag}",
+            f"<video> tag has < {len(expected_sources)} <source> children: {open_tag}",
         )
         return issues  # Cannot proceed if sources are missing
 
@@ -2722,6 +2719,35 @@ def _parse_spellcheck_output(
     return issues
 
 
+def _augmented_wordlist(wordlist: Path) -> Path | None:
+    """
+    Generate a tempfile containing the wordlist plus possessive variants.
+
+    Runs ``scripts/augment_spellcheck_wordlist.sh`` so that ``KaTeX`` also
+    accepts ``KaTeX's`` / ``KaTeX’s`` without a second dictionary entry.
+    Returns ``None`` when either the wordlist or the helper script is
+    missing; callers should fall back to no ``--dictionaries`` argument.
+    The caller is responsible for unlinking the returned path.
+    """
+    script = _GIT_ROOT / "scripts" / "augment_spellcheck_wordlist.sh"
+    if not wordlist.exists() or not script.exists():
+        return None
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        prefix=".wordlist-augmented-",
+        delete=False,
+        encoding="utf-8",
+    ) as aug:
+        subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
+            [str(script), str(wordlist)],
+            stdout=aug,
+            check=True,
+            cwd=str(_GIT_ROOT),
+        )
+        return Path(aug.name)
+
+
 def _spellcheck_flattened_paragraphs(
     paragraph_map: dict[str, list[str]],
 ) -> list[str]:
@@ -2732,10 +2758,11 @@ def _spellcheck_flattened_paragraphs(
     invokes the same spellchecker used for source markdown.  Returns a
     list of human-readable issue strings.
 
-    The wordlist is passed directly — ``data-original-text`` on
-    smallcaps elements means the extracted text already uses
-    source-faithful casing, so case-insensitive expansion is
-    unnecessary.
+    The wordlist is expanded at runtime with possessive variants via
+    ``_augmented_wordlist`` so ``KaTeX`` alone covers ``KaTeX's``.
+    ``data-original-text`` on smallcaps elements means the extracted
+    text already uses source-faithful casing, so case-insensitive
+    expansion is unnecessary.
     """
     if not paragraph_map:
         return []
@@ -2745,9 +2772,14 @@ def _spellcheck_flattened_paragraphs(
         return ["pnpm not found — skipping rendered-text spellcheck"]
 
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    augmented_path = _augmented_wordlist(wordlist)
     tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
 
-    dict_args = ["--dictionaries", str(wordlist)] if wordlist.exists() else []
+    dict_args = (
+        ["--dictionaries", str(augmented_path)]
+        if augmented_path is not None
+        else []
+    )
     ignore_args: list[str] = []
     if _SPELLCHECK_IGNORE_PATTERNS:
         ignore_args = ["--ignore", *_SPELLCHECK_IGNORE_PATTERNS]
@@ -2773,6 +2805,8 @@ def _spellcheck_flattened_paragraphs(
         )
     finally:
         tmp_path.unlink(missing_ok=True)
+        if augmented_path is not None:
+            augmented_path.unlink(missing_ok=True)
 
     if result.returncode == 0 or not result.stdout:
         return []
