@@ -254,9 +254,14 @@ def convert_asset(
     if not input_file.is_file():
         raise FileNotFoundError(f"Error: File '{input_file}' not found.")
 
-    if "quartz/static" not in str(input_file):
+    input_parts = input_file.resolve().parts
+    if not (
+        "quartz" in input_parts
+        and "static" in input_parts
+        and input_parts.index("static") == input_parts.index("quartz") + 1
+    ):
         raise ValueError(
-            f"Error: Input file '{input_file}' is notin the quartz/static directory."
+            f"Error: Input file '{input_file}' is not in the quartz/static directory."
         )
 
     if md_references_dir and not md_references_dir.is_dir():
