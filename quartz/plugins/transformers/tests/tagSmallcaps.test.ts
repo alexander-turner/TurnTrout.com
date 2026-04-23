@@ -520,6 +520,15 @@ describe("skipFormatting", () => {
       expected: true,
     },
     {
+      // SVG has its own text model (<text>/<tspan>); HTML smallcaps wrappers
+      // like <abbr> are invalid inside <svg>, and the chart/Mermaid plugins
+      // emit SVG server-side. Skipping the whole subtree is the principled
+      // fix — identical in spirit to why we skip KaTeX and <style>.
+      desc: "should return true for svg tag",
+      element: h("svg"),
+      expected: true,
+    },
+    {
       desc: "should return false for text node",
       element: { type: "text", value: "test text" },
       expected: false,
@@ -559,6 +568,17 @@ describe("no-formatting tests", () => {
     const input = "<code>NASA launched a new satellite.</code>"
     const processedHtml = testTagSmallcapsHTML(input)
     expect(processedHtml).toBe(input)
+  })
+
+  it("should not wrap acronyms inside <svg> subtrees", () => {
+    // Chart/Mermaid plugins emit server-side SVG; HTML smallcaps wrappers
+    // are invalid there. The rehype output won't preserve namespaces, but
+    // the key property is that GPT is not wrapped in <abbr>/<tspan>/etc.
+    const input = "<svg><text>GPT</text></svg>"
+    const processedHtml = testTagSmallcapsHTML(input)
+    expect(processedHtml).not.toContain("small-caps")
+    expect(processedHtml).not.toContain("<abbr")
+    expect(processedHtml).toContain(">GPT<")
   })
 
   it("should handle nested formatting blocks correctly", () => {

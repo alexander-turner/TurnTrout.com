@@ -120,9 +120,13 @@ export const skipSmallcapsClasses: readonly string[] = [
 export function skipSmallcaps(node: Node): boolean {
   if (node.type === "element") {
     const elementNode = node as Element
+    // SVG has its own text model (<text>/<tspan>) and rejects HTML wrappers
+    // like <abbr>. Any server-rendered SVG (charts, Mermaid, etc.) should
+    // pass through untouched — same category as <style>.
     return (
       skipSmallcapsClasses.some((className: string) => hasClass(elementNode, className)) ||
-      elementNode.tagName === "style"
+      elementNode.tagName === "style" ||
+      elementNode.tagName === "svg"
     )
   }
   return false
