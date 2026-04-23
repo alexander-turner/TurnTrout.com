@@ -144,18 +144,29 @@ def build_chart_prompt(context: str | None = None) -> str:
     return base
 
 
-# Reuse alt-text-llm's cost estimator so both tools report the same way.
-# Extend the shared dict with Claude/GPT entries it doesn't ship with — safe
-# to mutate at import time since alt-text-llm reads via `.get()`.
-from alt_text_llm.generate import MODEL_COSTS, estimate_cost  # noqa: E402
+# --------------------------------------------------------------------------- #
+# Cost estimation — private to this script so the data stays co-located with  #
+# the assumptions it depends on (prompt/output token sizes for chart extracts #
+# are specific to this task, not shared with alt-text-llm).                   #
+# --------------------------------------------------------------------------- #
 
-MODEL_COSTS.update(
-    {
-        "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
-        "claude-opus-4-7": {"input": 0.015, "output": 0.075},
-        "gpt-5": {"input": 0.0025, "output": 0.01},
-    }
-)
+_MODEL_COSTS: dict[str, dict[str, float]] = {
+    "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
+    "claude-opus-4-7": {"input": 0.015, "output": 0.075},
+    "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
+    "gemini-2.5-flash": {"input": 0.0003, "output": 0.0025},
+    "gpt-5": {"input": 0.0025, "output": 0.01},
+}
+
+
+def estimate_cost(
+    model: str, n: int, in_toks: int = 3000, out_toks: int = 800
+) -> str:
+    cost = _MODEL_COSTS.get(model.lower())
+    if cost is None:
+        return f"(no pricing known for {model})"
+    total = n * (in_toks * cost["input"] + out_toks * cost["output"]) / 1000
+    return f"~${total:.2f} estimated ({n} images × {model})"
 
 
 # --------------------------------------------------------------------------- #
