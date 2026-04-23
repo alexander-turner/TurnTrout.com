@@ -29,7 +29,7 @@ const TagContent: QuartzComponent = (props: QuartzComponentProps) => {
       ? fileData.description
       : htmlToJsx(fileData.filePath || ("" as FilePath), tree)
 
-  const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
+  const cssClasses: readonly string[] = fileData.frontmatter?.cssclasses ?? []
   const articleClasses = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
 
   const pageListProps = {

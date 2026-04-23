@@ -74,7 +74,7 @@ const Content: QuartzComponent = ({ fileData, tree }: QuartzComponentProps) => {
   if (fileData.filePath === undefined) return null
 
   const content = htmlToJsx(fileData.filePath, tree)
-  const classes: string[] = fileData.frontmatter?.cssclasses ?? []
+  const classes: readonly string[] = fileData.frontmatter?.cssclasses ?? []
   const classString = [PREVIEWABLE_CLASS, ...classes].join(" ")
   const toc = renderTableOfContents(fileData)
   return (

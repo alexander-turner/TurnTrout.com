@@ -63,7 +63,7 @@ Before updating an existing PR (pushing new commits, editing the description, et
 
 ### Step 2: Self-Critique
 
-**Before creating the PR**, you MUST read [critique-prompt.md](critique-prompt.md) and launch a critique sub-agent using the Task tool:
+**Before creating the PR**, you MUST read the critique prompt at `.claude/skills/pr-creation/critique-prompt.md` and launch a critique sub-agent using the Task tool:
 
 - `subagent_type`: "general-purpose"
 - `description`: "Critique code changes"
@@ -101,9 +101,8 @@ After creating the PR, and after any subsequent fix commits, update the PR descr
 
 1. Run `gh pr checks <pr-number> --watch` to monitor
 2. If any checks fail, investigate and fix the issues
-3. For DeepSource failures, use the forked `deepsource` CLI: `deepsource issues list --commit <SHA>`. **Never** try to fetch DeepSource URLs via `WebFetch` — the web UI requires authentication and returns no useful content.
-4. Push fixes and wait again
-5. Only proceed once all checks are green
+3. Push fixes and wait again
+4. Only proceed once all checks are green
 
 ### Step 7: Report Result
 
@@ -154,7 +153,7 @@ Provide the PR URL and confirm all CI checks have passed.
 
 **User says:** "Push this up"
 
-**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `main`, or just push the branch without creating a PR?"
+**Claude asks:** "I see you have changes on branch `feat/user-dashboard`. Would you like me to create a pull request against `$CLAUDE_CODE_BASE_REF`, or just push the branch without creating a PR?"
 
 ## Error Handling
 

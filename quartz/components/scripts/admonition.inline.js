@@ -32,18 +32,23 @@ function setupAdmonition() {
 
   const states = window.__quartz_collapsible_states || new Map()
   for (const admonition of document.getElementsByClassName("admonition is-collapsible")) {
-    // Assign ID if not already set by MutationObserver in detectInitialState.js
-    if (!admonition.dataset.collapsibleId) {
-      const title = admonition.querySelector(".admonition-title")?.textContent?.trim() || ""
-      const body = admonition.querySelector(".admonition-content")?.textContent?.trim() || ""
-      const slug = document.body?.dataset?.slug || ""
-      admonition.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title + body)
-      // Restore saved state
-      if (states.has(admonition.dataset.collapsibleId))
-        admonition.classList.toggle("is-collapsed", states.get(admonition.dataset.collapsibleId))
-    }
+    // Always reassign IDs from scratch after counter reset, even if the element already
+    // has one. During SPA back-navigation, micromorph may preserve some DOM elements
+    // (keeping stale IDs) and replace others (clearing IDs). Skipping preserved elements
+    // desynchronizes the counter, producing wrong IDs for replaced elements.
+    const title = admonition.querySelector(".admonition-title")?.textContent?.trim() || ""
+    const slug = document.body?.dataset?.slug || ""
+    // Use title-only (not body) to match ID formula in detectInitialState.js, avoiding
+    // streaming-parse race conditions where .admonition-content may not yet be in DOM.
+    admonition.dataset.collapsibleId = window.__quartz_collapsible_id(slug, title)
+    // Restore saved state
+    if (states.has(admonition.dataset.collapsibleId))
+      admonition.classList.toggle("is-collapsed", states.get(admonition.dataset.collapsibleId))
+    admonition.removeEventListener("click", openAdmonition)
     admonition.addEventListener("click", openAdmonition)
-    admonition.querySelector(".admonition-title")?.addEventListener("click", closeAdmonition)
+    const title_el = admonition.querySelector(".admonition-title")
+    title_el?.removeEventListener("click", closeAdmonition)
+    title_el?.addEventListener("click", closeAdmonition)
   }
 }
 

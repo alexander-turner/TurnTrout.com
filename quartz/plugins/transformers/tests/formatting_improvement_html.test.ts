@@ -217,6 +217,22 @@ describe("HTMLFormattingImprovement", () => {
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
       ],
+      // Three inline elements separated by `/` must also be left alone. Regression:
+      // flattening "<code>a</code> / <code>b</code> / <code>c</code>" gives
+      // text nodes ["", " / ", " / ", ...] where the middle slash has a prior
+      // `/` as its anchor, which previously caused a marker-vs-stripped
+      // invariance failure on design.md.
+      [
+        "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
+        "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
+      ],
+      // IPA-style /ˈnæftə/ embedded in an <a>. Previously either no-ops (old
+      // behaviour) or broke invariance (the short-lived NBSP-always fork).
+      // Ensure the markup still builds and the rendered text reads right.
+      [
+        '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
+        '<p>(<strong>NAFTA</strong><a href="x"> / ˈnæftə / </a><a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+      ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
       (input: string, expected: string) => {
@@ -253,6 +269,22 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(processedHtml)).toBe(inputElement)
       },
     )
+  })
+
+  describe("non-breaking spaces around slashes and ampersands", () => {
+    it.each([
+      ["dog/cat", `dog${NBSP}/${NBSP}cat`],
+      ["3/month", `3${NBSP}/${NBSP}month`],
+    ])("should use nbsp around slashes: %s", (input, expected) => {
+      const result = spacesAroundSlashes(input)
+      expect(result).toBe(expected)
+    })
+
+    it("should use nbsp around ampersand from plus", () => {
+      const input = "<p>A+B</p>"
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(`<p>A${NBSP}&#x26;${NBSP}B</p>`)
+    })
   })
 
   describe("spacesAroundSlashes marker invariance", () => {
@@ -793,6 +825,22 @@ describe("HTMLFormattingImprovement", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    it.each([
+      // Spaces around arrows should be non-breaking
+      ["<p>word -> arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      ["<p>word->arrow</p>", `<p>word${NBSP}<span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // At start of line, no nbsp before but nbsp after
+      ["<p>-> arrow</p>", `<p><span class="right-arrow">⭢</span>${NBSP}arrow</p>`],
+      // Multiple arrows
+      [
+        "<p>-> first --> second</p>",
+        `<p><span class="right-arrow">⭢</span>${NBSP}first${NBSP}<span class="right-arrow">⭢</span>${NBSP}second</p>`,
+      ],
+    ])("should use non-breaking spaces around arrows: %s", (input, expected) => {
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
   })
 })
 
@@ -1219,6 +1267,37 @@ describe("setFirstLetterAttribute", () => {
   ])("%s", (_description, input, expected) => {
     const processedHtml = testHtmlFormattingImprovement(input, false)
     expect(normalizeNbsp(processedHtml)).toBe(expected)
+  })
+
+  it.each([
+    ["LEFT_SINGLE_QUOTE (U+2018)", LEFT_SINGLE_QUOTE],
+    ["RIGHT_SINGLE_QUOTE (U+2019)", RIGHT_SINGLE_QUOTE],
+    ["straight apostrophe (U+0027)", "'"],
+  ])(
+    "adds space before %s when it is the second character in dropcap paragraph",
+    (_description, quote) => {
+      const input = `<p>X${quote}s story</p>`
+      const processedHtml = testHtmlFormattingImprovement(input, false)
+      // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
+      // so check for a space after X followed by any apostrophe variant
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(processedHtml).toContain('data-first-letter="X"')
+    },
+  )
+
+  it("replaces nbsp after single-letter first word for dropcap", () => {
+    const input = "<p>I use this page.</p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    // The nbsp transform would normally add nbsp after "I", but setFirstLetterAttribute
+    // should replace it with a regular space for proper dropcap rendering
+    expect(processedHtml).not.toContain(`I${NBSP}`)
+    expect(processedHtml).toContain('data-first-letter="I"')
+  })
+
+  it("handles paragraph with no direct text node", () => {
+    const input = "<p><span>Hello world.</span></p>"
+    const processedHtml = testHtmlFormattingImprovement(input, false)
+    expect(processedHtml).toContain('data-first-letter="H"')
   })
 
   it.each([
@@ -2072,6 +2151,23 @@ describe("HTMLFormattingImprovement plugin", () => {
       const processedHtml = testHtmlFormattingImprovement(input)
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
+
+    it.each(arrowsToWrap.map((arrow) => [arrow]))(
+      "should use non-breaking spaces around %s arrow",
+      (arrow) => {
+        const input = `<p>word ${arrow} next</p>`
+        const expected = `<p>word${NBSP}<span class="monospace-arrow">${arrow}</span>${NBSP}next</p>`
+        const processedHtml = testHtmlFormattingImprovement(input)
+        expect(processedHtml).toBe(expected)
+      },
+    )
+
+    it("should use nbsp after arrow at start of text", () => {
+      const input = "<p>→ next</p>"
+      const expected = `<p><span class="monospace-arrow">→</span>${NBSP}next</p>`
+      const processedHtml = testHtmlFormattingImprovement(input)
+      expect(processedHtml).toBe(expected)
+    })
   })
 })
 
@@ -2097,6 +2193,15 @@ describe("Non-breaking space insertion", () => {
     const input = "<pre><code>I love this</code></pre>"
     const processedHtml = testHtmlFormattingImprovement(input)
     expect(processedHtml).not.toContain(NBSP)
+  })
+
+  it.each([
+    "<h1>I love this</h1>",
+    "<h2>Hello world</h2>",
+    "<h3>A cat sat on a mat</h3>",
+    "<h2><em>I love this</em></h2>",
+  ])("does not insert nbsp in headings: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {

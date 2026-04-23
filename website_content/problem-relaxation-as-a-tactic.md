@@ -29,8 +29,7 @@ lw-sequence-image-grid: sequencesgrid/fkqj34glr5rquxm6z9sr
 lw-sequence-image-banner: sequences/oerqovz6gvmcpq8jbabg
 sequence-link: posts#becoming-stronger
 prev-post-slug: functional-analysis-textbook-review
-prev-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional
-  Analysis'"
+prev-post-title: "A Kernel of Truth: Insights from 'A Friendly Approach to Functional Analysis'"
 next-post-slug: insights-from-euclids-elements
 next-post-title: Insights from Euclid's 'Elements'
 lw-reward-post-warning: 'false'
@@ -38,10 +37,10 @@ use-full-width-images: 'false'
 date_published: 2020-04-22 00:00:00
 original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxation-as-a-tactic
 skip_import: true
-description: Relax difficult problems by simplifying them while retaining their core
-  challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2025-11-22 00:21:52.667251
+description: Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -164,7 +163,7 @@ Just relax.
 [^4]:
     At first, I wasn't excited about AUP – I was new to alignment, and it took a lot of evidence to overcome the prior improbability of my having actually found something to be excited about. It took several weeks before I stopped thinking it likely that my idea was probably secretly and horribly bad.
 
-    However, I kept staring at the strange equation. I kept trying to break it, to find some obvious loophole. I never found it. Looking back over a year later, [AUP does presently have loopholes](/attainable-utility-preservation-scaling-to-superhuman#Appendix-Remaining-Problems), but they're not obvious.
+    However, I kept staring at the strange equation. I kept trying to break it, to find some obvious loophole. I never found it. Looking back over a year later, [AUP does presently have loopholes](/attainable-utility-preservation-scaling-to-superhuman#appendix-remaining-problems), but they're not obvious.
 
     I started to get excited about the idea. Two weeks later, my workday was wrapping up and I left the library.
 

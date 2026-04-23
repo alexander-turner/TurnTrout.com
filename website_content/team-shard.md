@@ -18,9 +18,12 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23 00:16:38.244546
-date_updated: 2026-01-10 10:26:40.099417
+date_updated: 2026-04-06 18:02:03.576874
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
+
+
+
 
 
 
@@ -52,9 +55,11 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 
 Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout holds a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch and sporadic meetings with Alex Cloud.
 
-Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, MATS 8.0 lifted together every Wednesday and Thursday.
+Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, Team Shard lifted together every Wednesday and Thursday in MATS 8.0.
 
-![[https://assets.turntrout.com/static/images/posts/team-shard-12222025-1.avif|Four smiling people flexing for the camera.]]
+![[https://assets.turntrout.com/static/images/posts/team-shard-04022026.avif|Sixteen people happily flex for the camera. Alex wears a Shrek tank top.]]
+
+Figure: In MATS 9.0, I led program-wide lifting sessions. Here we stand assembled on our final day (a leg day). :)
 
 # Testimonials
 
@@ -99,8 +104,5 @@ Our team culture is tight-knit and fun, extending beyond the research itself. Fo
 > P.S. Team shard made me realize potential I did not know I had as a weightlifter.
 
 # Apply today
-
-![[https://assets.turntrout.com/static/images/posts/team-shard-12222025.avif|Five people outside of a gym loosely spell "S H A R D" with their poses, with green lettering drawn over each person.]]
-Figure: Team Shard in the summer of '25. From left: [Luke Marks](https://lukemarks.bot/), [Jacob Drori](https://scholar.google.com/citations?user=ahvoHMIAAAAJ&hl=en), [Victor Gillioz](https://www.linkedin.com/in/victor-gillioz/), Alex Turner, and [Ariana Azarbal](https://www.linkedin.com/in/ariana-azarbal-701928210/).
 
 MATS only runs a few times per year. First, [check when applications next open.](https://www.matsprogram.org/faq) Then [apply](https://www.matsprogram.org/apply) and indicate you want to work with Team Shard.

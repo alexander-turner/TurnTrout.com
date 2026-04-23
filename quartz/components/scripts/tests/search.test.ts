@@ -1,28 +1,30 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
-import { simpleConstants } from "../../constants"
+import { NBSP, simpleConstants } from "../../constants"
 import {
   matchTextNodes,
   descendantsWithId,
   descendantsSamePageLinks,
   tokenizeTerm,
   match,
-  escapeRegExp,
   createMatchSpan,
   updatePlaceholder,
   showSearch,
   hideSearch,
   PreviewManager,
-  getOffsetTopRelativeToContainer,
-  getSearchMatchScrollPosition,
   syncSearchLayoutState,
   setSearchLayoutForTesting,
   navigateWithSearchTerm,
+  scrollContainerToMatch,
   matchHTML,
+  getSearchStateForTesting,
+  resetSearchStateForTesting,
+  setSearchInitializedForTesting,
+  initializeSearch,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -30,6 +32,21 @@ const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 jest.mock("../../../styles/variables", () => ({
   tabletBreakpoint: 800,
 }))
+
+/** Set the global getContentIndex stub used by initializeSearch.
+ *  The cast is needed because tests return null to simulate fetch failures,
+ *  which the production declaration doesn't allow. */
+function stubGetContentIndex(fn: () => Promise<Record<string, unknown> | null>): void {
+  globalThis.getContentIndex = fn as typeof getContentIndex
+}
+
+/** Remove the global getContentIndex stub. */
+function removeGetContentIndex(): void {
+  // The global declaration marks getContentIndex as a required function,
+  // but in tests we need to remove it to avoid leaking between tests.
+  // Reflect.deleteProperty works on the global object without a type cast.
+  Reflect.deleteProperty(globalThis, "getContentIndex")
+}
 
 describe("Search Module Functions", () => {
   let rootNode: HTMLElement
@@ -171,20 +188,6 @@ describe("tokenizeTerm", () => {
   })
 })
 
-describe("escapeRegExp", () => {
-  it("should escape special regex characters", () => {
-    const specialChars = ".*+?^${}()|[]\\"
-    const escaped = escapeRegExp(specialChars)
-    expect(escaped).toBe("\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\")
-  })
-
-  it("should not escape normal characters", () => {
-    const normalChars = "abcdefg123"
-    const escaped = escapeRegExp(normalChars)
-    expect(escaped).toBe(normalChars)
-  })
-})
-
 describe("createMatchSpan", () => {
   it("should create a span with the correct class and text", () => {
     const span = createMatchSpan("test")
@@ -198,7 +201,7 @@ describe("updatePlaceholder", () => {
   const searchBar = document.createElement("input")
   searchBar.id = "search-bar"
   document.body.appendChild(searchBar)
-  it("should set the placeholder to desktop version on wide screens", async () => {
+  it("should set the placeholder to desktop version on wide screens", () => {
     Object.defineProperty(window, "innerWidth", {
       writable: true,
       configurable: true,
@@ -235,9 +238,18 @@ describe("showSearch", () => {
       </div>
       <div id="navbar"></div>
     `
+    document.body.style.overflow = ""
     container = document.getElementById("search-container") as HTMLElement
     searchBar = document.getElementById("search-bar") as HTMLInputElement
     navbar = document.getElementById("navbar") as HTMLElement
+    // Simulate already-initialized search so showSearch exercises the
+    // "already initialized" path (lines 458-473) instead of delegating
+    // to maybeInitializeSearch.
+    setSearchInitializedForTesting(true)
+  })
+
+  afterEach(() => {
+    resetSearchStateForTesting()
   })
 
   it("should make the search container active and focus the search bar", () => {
@@ -251,8 +263,27 @@ describe("showSearch", () => {
     expect(navbar.style.zIndex).toBe("1")
   })
 
+  it("should lock body scroll by setting overflow hidden", () => {
+    expect(document.body.style.overflow).toBe("")
+    showSearch(container, searchBar)
+    expect(document.body.style.overflow).toBe("hidden")
+  })
+
   it("should not throw if the container or search bar is not found", () => {
     expect(() => showSearch(null, null)).not.toThrow()
+  })
+
+  it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    const spy = jest.spyOn(console, "error").mockImplementation(() => {})
+    resetSearchStateForTesting()
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await showSearch(container, searchBar)
+
+    expect(container.classList.contains("active")).toBe(true)
+    expect(document.body.style.overflow).toBe("hidden")
+    removeGetContentIndex()
+    spy.mockRestore()
   })
 })
 
@@ -283,6 +314,12 @@ describe("hideSearch", () => {
     expect(searchBar.getAttribute("aria-expanded")).toBe("false")
     expect(searchBar.hasAttribute("aria-activedescendant")).toBe(false)
     expect(searchResults.children.length).toBe(0)
+  })
+
+  it("should restore body scroll by clearing overflow", () => {
+    document.body.style.overflow = "hidden"
+    hideSearch(null)
+    expect(document.body.style.overflow).toBe("")
   })
 
   it("hideSearch should hide the search container and the preview manager", () => {
@@ -325,36 +362,6 @@ describe("PreviewManager", () => {
     const article = container.querySelector("article.search-preview")
     expect(article).not.toBeNull()
     expect(article?.innerHTML).toBe("")
-  })
-})
-
-describe("getOffsetTopRelativeToContainer", () => {
-  it("should calculate the correct offsetTop", () => {
-    document.body.innerHTML = `
-      <div id="container">
-        <div id="outer">
-          <div id="inner"></div>
-        </div>
-      </div>
-    `
-
-    const container = document.getElementById("container") as HTMLElement
-    const outer = document.getElementById("outer") as HTMLElement
-    const inner = document.getElementById("inner") as HTMLElement
-
-    // Mock offsetTop
-    Object.defineProperty(inner, "offsetTop", { value: 30, configurable: true })
-    Object.defineProperty(outer, "offsetTop", { value: 20, configurable: true })
-    const trueOffsetTop = 50
-    Object.defineProperty(container, "offsetTop", { value: trueOffsetTop, configurable: true })
-
-    // Mock offsetParent
-    Object.defineProperty(inner, "offsetParent", { value: outer, configurable: true })
-    Object.defineProperty(outer, "offsetParent", { value: container, configurable: true })
-
-    const offsetTop = getOffsetTopRelativeToContainer(inner, container)
-
-    expect(offsetTop).toBe(trueOffsetTop)
   })
 })
 
@@ -440,7 +447,7 @@ describe("matchTextNodes", () => {
     },
     {
       name: "NBSP normalized to regular space for multi-word matching",
-      html: "<p>AI\u00A0presidents discuss alignment</p>",
+      html: `<p>AI${NBSP}presidents discuss alignment</p>`,
       searchTerm: "AI presidents",
       expectedCount: 1,
       expectedHTML: '<p><span class="search-match">AI presidents</span> discuss alignment</p>',
@@ -562,48 +569,51 @@ describe("matchHTML", () => {
   })
 })
 
-describe("getSearchMatchScrollPosition", () => {
-  it("should calculate scroll position based on element offset and scroll fraction", () => {
-    const container = document.createElement("div")
-    Object.defineProperty(container, "clientHeight", {
-      value: 1000,
-      writable: true,
-    })
+describe("scrollContainerToMatch", () => {
+  it.each([
+    {
+      scrollFraction: 0.5,
+      matchTop: 500,
+      containerTop: 100,
+      scrollTop: 50,
+      clientHeight: 400,
+      expected: 250,
+    },
+    {
+      scrollFraction: 1 / 3,
+      matchTop: 300,
+      containerTop: 0,
+      scrollTop: 0,
+      clientHeight: 600,
+      expected: 100,
+    },
+    {
+      scrollFraction: 0.5,
+      matchTop: 50,
+      containerTop: 100,
+      scrollTop: 0,
+      clientHeight: 800,
+      expected: 0,
+    },
+  ])(
+    "scrolls to fraction=$scrollFraction with matchTop=$matchTop",
+    ({ scrollFraction, matchTop, containerTop, scrollTop, clientHeight, expected }) => {
+      const container = document.createElement("div")
+      const match = document.createElement("span")
+      container.appendChild(match)
+      document.body.appendChild(container)
 
-    const element = document.createElement("div")
-    container.appendChild(element)
-    document.body.appendChild(container)
+      Object.defineProperty(container, "scrollTop", { value: scrollTop, writable: true })
+      Object.defineProperty(container, "clientHeight", { value: clientHeight })
+      match.getBoundingClientRect = () => ({ top: matchTop }) as DOMRect
+      container.getBoundingClientRect = () => ({ top: containerTop }) as DOMRect
 
-    const scrollFraction = 0.3
-    const result = getSearchMatchScrollPosition(element, container, scrollFraction)
+      scrollContainerToMatch(container, match, scrollFraction)
 
-    // The result should be offsetTop - (clientHeight * scrollFraction)
-    // Since element is at top of container, offsetTop should be 0
-    // Expected: 0 - (1000 * 0.3) = -300
-    expect(result).toBe(-300)
-
-    document.body.removeChild(container)
-  })
-
-  it("should handle different scroll fractions", () => {
-    const container = document.createElement("div")
-    Object.defineProperty(container, "clientHeight", {
-      value: 800,
-      writable: true,
-    })
-
-    const element = document.createElement("div")
-    container.appendChild(element)
-    document.body.appendChild(container)
-
-    // Test with 0.5 scroll fraction
-    const result = getSearchMatchScrollPosition(element, container, 0.5)
-
-    // Expected: 0 - (800 * 0.5) = -400
-    expect(result).toBe(-400)
-
-    document.body.removeChild(container)
-  })
+      expect(container.scrollTop).toBe(expected)
+      document.body.removeChild(container)
+    },
+  )
 })
 
 describe("syncSearchLayoutState", () => {
@@ -700,14 +710,12 @@ describe("navigateWithSearchTerm", () => {
     expect(calledUrl.hash).toBe("#:~:text=test%20query")
   })
 
-  it("should log error when search term is empty", () => {
+  it("should throw when search term is empty", () => {
     const href = "https://example.com/page"
     const searchTerm = ""
 
-    navigateWithSearchTerm(href, searchTerm)
-
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      "[navigateWithSearchTerm] No search term available for result card navigation - this should not happen",
+    expect(() => navigateWithSearchTerm(href, searchTerm)).toThrow(
+      "[navigateWithSearchTerm] No search term available for result card navigation",
     )
   })
 
@@ -720,5 +728,66 @@ describe("navigateWithSearchTerm", () => {
     const mockFn = window.spaNavigate as jest.Mock
     const calledUrl = mockFn.mock.calls[0][0] as URL
     expect(calledUrl.hash).toBe("#:~:text=test%20%26%20query")
+  })
+})
+
+describe("initializeSearch retry after failed fetch", () => {
+  let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
+
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    resetSearchStateForTesting()
+    document.body.innerHTML = `
+      <div id="search-container">
+        <input id="search-bar" type="text" placeholder="Search" />
+        <div id="search-layout" data-preview="false"></div>
+      </div>
+    `
+    setSearchLayoutForTesting(document.getElementById("search-layout"))
+  })
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore()
+    resetSearchStateForTesting()
+    removeGetContentIndex()
+  })
+
+  it("should not mark search as initialized when data fetch returns null", async () => {
+    // Simulate getContentIndex returning null (fetch failure)
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(false)
+    expect(state.hasData).toBe(false)
+    expect(state.hasIndex).toBe(false)
+  })
+
+  it("should allow retry after a failed initialization", async () => {
+    // First attempt: getContentIndex returns null
+    stubGetContentIndex(() => Promise.resolve(null))
+
+    await initializeSearch()
+    expect(getSearchStateForTesting().searchInitialized).toBe(false)
+
+    // Second attempt: getContentIndex returns valid data
+    stubGetContentIndex(() =>
+      Promise.resolve({
+        "test-slug": {
+          title: "Test Page",
+          content: "Test content for searching",
+          slug: "test-slug",
+          authors: ["Author"],
+        },
+      }),
+    )
+
+    await initializeSearch()
+
+    const state = getSearchStateForTesting()
+    expect(state.searchInitialized).toBe(true)
+    expect(state.hasData).toBe(true)
+    expect(state.hasIndex).toBe(true)
   })
 })

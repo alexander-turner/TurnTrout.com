@@ -3,14 +3,15 @@ import process from "process"
 import { isMainThread } from "workerpool"
 
 const rootFile = /.*at file:/
-export function trace(msg: string, err: Error): never {
-  const stack = err.stack ?? ""
+export function trace(msg: string, err: unknown): never {
+  const error = err instanceof Error ? err : new Error(String(err))
+  const stack = error.stack ?? ""
 
   const lines: string[] = []
 
   lines.push("")
   lines.push(
-    `\n${chalk.bgRed.black.bold(" ERROR ")}\n\n${chalk.red(` ${msg}`)}${err.message.length > 0 ? `: ${err.message}` : ""}`,
+    `\n${chalk.bgRed.black.bold(" ERROR ")}\n\n${chalk.red(` ${msg}`)}${error.message.length > 0 ? `: ${error.message}` : ""}`,
   )
 
   let reachedEndOfLegibleTrace = false

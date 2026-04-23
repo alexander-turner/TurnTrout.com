@@ -5,26 +5,39 @@ import type { BuildCtx } from "../../util/ctx"
 import {
   PopulateExternalMarkdown,
   populateExternalContent,
+  buildPlaceholderRegex,
   stripBadges,
   fetchGitHubContentSync,
+  fetchLocalContentSync,
+  isLocalSource,
   clearContentCache,
   setFetchFunction,
   resetFetchFunction,
+  setReadFileFunction,
+  resetReadFileFunction,
   type FetchFunction,
+  type ReadFileFunction,
 } from "./populateExternalMarkdown"
+
+/** Wraps `"key": value` output in braces so it can be parsed as JSON. */
+const parseJsonEntry = (entry: string) => JSON.parse(`{${entry}}`) as unknown
 
 describe("PopulateExternalMarkdown", () => {
   let mockFetch: jest.MockedFunction<FetchFunction>
+  let mockReadFile: jest.MockedFunction<ReadFileFunction>
 
   beforeEach(() => {
     clearContentCache()
     mockFetch = jest.fn<FetchFunction>()
+    mockReadFile = jest.fn<ReadFileFunction>()
     setFetchFunction(mockFetch)
+    setReadFileFunction(mockReadFile)
   })
 
   afterEach(() => {
     clearContentCache()
     resetFetchFunction()
+    resetReadFileFunction()
   })
 
   describe("stripBadges", () => {
@@ -73,19 +86,19 @@ describe("PopulateExternalMarkdown", () => {
   describe("populateExternalContent", () => {
     it.each([
       [
-        '<span class="populate-project-readme"></span>',
+        '<span class="populate-markdown-project"></span>',
         "# Content",
         { project: { owner: "user", repo: "project" } },
         "# Content",
       ],
       [
-        'Before\n\n<span class="populate-project-readme"></span>\n\nAfter',
+        'Before\n\n<span class="populate-markdown-project"></span>\n\nAfter',
         "# README",
         { project: { owner: "user", repo: "project" } },
         "Before\n\n# README\n\nAfter",
       ],
       [
-        '<span  class="populate-project-readme" ></span>',
+        '<span  class="populate-markdown-project" ></span>',
         "Content",
         { project: { owner: "user", repo: "project" } },
         "Content",
@@ -99,22 +112,31 @@ describe("PopulateExternalMarkdown", () => {
       mockFetch.mockReturnValue("[![Badge](url)](link)\n\n# Content")
       const sources = { project: { owner: "user", repo: "project", transform: stripBadges } }
       expect(
-        populateExternalContent('<span class="populate-project-readme"></span>', sources),
+        populateExternalContent('<span class="populate-markdown-project"></span>', sources),
       ).toBe("# Content")
     })
 
     it("should cache fetched content", () => {
       mockFetch.mockReturnValue("Cached")
       const sources = { project: { owner: "user", repo: "project" } }
-      populateExternalContent('<span class="populate-project-readme"></span>', sources)
-      populateExternalContent('<span class="populate-project-readme"></span>', sources)
+      populateExternalContent('<span class="populate-markdown-project"></span>', sources)
+      populateExternalContent('<span class="populate-markdown-project"></span>', sources)
       expect(mockFetch).toHaveBeenCalledTimes(1)
     })
 
-    it("should throw on missing source", () => {
-      expect(() =>
-        populateExternalContent('<span class="populate-unknown-readme"></span>', {}),
-      ).toThrow('No source configured for placeholder "unknown"')
+    it("should ignore unconfigured placeholders", () => {
+      const input = '<span class="populate-markdown-unknown"></span>'
+      expect(populateExternalContent(input, {})).toBe(input)
+    })
+
+    it("should ignore other populate- spans when sources are configured", () => {
+      mockFetch.mockReturnValue("Replaced")
+      const input =
+        '<span class="populate-markdown-project"></span> and <span class="populate-commit-count"></span>'
+      const sources = { project: { owner: "user", repo: "project" } }
+      expect(populateExternalContent(input, sources)).toBe(
+        'Replaced and <span class="populate-commit-count"></span>',
+      )
     })
 
     it("should propagate fetch errors", () => {
@@ -122,10 +144,117 @@ describe("PopulateExternalMarkdown", () => {
         throw new Error("Network error")
       })
       expect(() =>
-        populateExternalContent('<span class="populate-project-readme"></span>', {
+        populateExternalContent('<span class="populate-markdown-project"></span>', {
           project: { owner: "user", repo: "project" },
         }),
       ).toThrow("Network error")
+    })
+  })
+
+  describe("buildPlaceholderRegex", () => {
+    it("should never match when no sources configured", () => {
+      const regex = buildPlaceholderRegex([])
+      expect('<span class="populate-markdown-test"></span>'.match(regex)).toBeNull()
+    })
+
+    it("should only match configured source names", () => {
+      const regex = buildPlaceholderRegex(["project"])
+      expect('<span class="populate-markdown-project"></span>'.match(regex)).not.toBeNull()
+      expect('<span class="populate-markdown-other"></span>'.match(regex)).toBeNull()
+      expect('<span class="populate-commit-count"></span>'.match(regex)).toBeNull()
+    })
+
+    it("should escape special regex characters in source names", () => {
+      const regex = buildPlaceholderRegex(["test.name"])
+      expect('<span class="populate-markdown-test.name"></span>'.match(regex)).not.toBeNull()
+      expect('<span class="populate-markdown-testXname"></span>'.match(regex)).toBeNull()
+    })
+  })
+
+  describe("isLocalSource", () => {
+    it.each([
+      [{ filePath: "package.json" }, true],
+      [{ filePath: "test.json", jsonPath: "key" }, true],
+      [{ owner: "user", repo: "project" }, false],
+    ])("should identify source %j as local: %s", (source, expected) => {
+      expect(isLocalSource(source)).toBe(expected)
+    })
+  })
+
+  describe("fetchLocalContentSync", () => {
+    it("should read file content", () => {
+      mockReadFile.mockReturnValue("file content")
+      expect(fetchLocalContentSync({ filePath: "test.txt" })).toBe("file content")
+    })
+
+    it("should extract JSON path without outer braces", () => {
+      mockReadFile.mockReturnValue('{"key": {"nested": "value"}}')
+      const result = fetchLocalContentSync({ filePath: "test.json", jsonPath: "key" })
+      expect(parseJsonEntry(result)).toEqual({ key: { nested: "value" } })
+    })
+
+    it("should handle nested JSON path", () => {
+      mockReadFile.mockReturnValue('{"a": {"b": "deep"}}')
+      const result = fetchLocalContentSync({ filePath: "test.json", jsonPath: "a.b" })
+      expect(parseJsonEntry(result)).toEqual({ "a.b": "deep" })
+    })
+
+    it("should propagate file read errors", () => {
+      mockReadFile.mockImplementation(() => {
+        throw new Error("ENOENT")
+      })
+      expect(() => fetchLocalContentSync({ filePath: "missing.txt" })).toThrow("ENOENT")
+    })
+
+    it("should throw on missing JSON path", () => {
+      mockReadFile.mockReturnValue('{"existing": "value"}')
+      expect(() => fetchLocalContentSync({ filePath: "test.json", jsonPath: "missing" })).toThrow(
+        'JSON path "missing" not found in test.json',
+      )
+    })
+  })
+
+  describe("populateExternalContent with local sources", () => {
+    it("should replace placeholder with local file content", () => {
+      mockReadFile.mockReturnValue('{"lint-staged": {"*.ts": "eslint"}}')
+      const sources = {
+        "lint-staged": {
+          filePath: "package.json",
+          jsonPath: "lint-staged",
+        },
+      }
+      const result = populateExternalContent(
+        '<span class="populate-markdown-lint-staged"></span>',
+        sources,
+      )
+      expect(parseJsonEntry(result)).toEqual({ "lint-staged": { "*.ts": "eslint" } })
+    })
+
+    it("should apply transform to local content", () => {
+      mockReadFile.mockReturnValue('{"key": "value"}')
+      const sources = {
+        config: {
+          filePath: "config.json",
+          jsonPath: "key",
+          transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
+        },
+      }
+      const result = populateExternalContent(
+        '<span class="populate-markdown-config"></span>',
+        sources,
+      )
+      expect(result).toMatch(/^```json\n/)
+      expect(result).toMatch(/\n```$/)
+      const jsonContent = result.replace(/^```json\n/, "").replace(/\n```$/, "")
+      expect(parseJsonEntry(jsonContent)).toEqual({ key: "value" })
+    })
+
+    it("should cache local content", () => {
+      mockReadFile.mockReturnValue("cached content")
+      const sources = { local: { filePath: "test.txt" } }
+      populateExternalContent('<span class="populate-markdown-local"></span>', sources)
+      populateExternalContent('<span class="populate-markdown-local"></span>', sources)
+      expect(mockReadFile).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -146,8 +275,8 @@ describe("PopulateExternalMarkdown", () => {
     })
 
     it.each([
-      ["string input", 'Before\n<span class="populate-project-readme"></span>\nAfter'],
-      ["Buffer input", Buffer.from('<span class="populate-project-readme"></span>')],
+      ["string input", 'Before\n<span class="populate-markdown-project"></span>\nAfter'],
+      ["Buffer input", Buffer.from('<span class="populate-markdown-project"></span>')],
     ])("should process %s with placeholders", (_, input) => {
       mockFetch.mockReturnValue("# Content")
       const plugin = PopulateExternalMarkdown({
@@ -157,11 +286,10 @@ describe("PopulateExternalMarkdown", () => {
       expect(result).toContain("# Content")
     })
 
-    it("should throw on missing source", () => {
+    it("should ignore unconfigured placeholders", () => {
       const plugin = PopulateExternalMarkdown({ sources: {} })
-      expect(() =>
-        plugin.textTransform?.({} as BuildCtx, '<span class="populate-unknown-readme"></span>'),
-      ).toThrow('No source configured for placeholder "unknown"')
+      const input = '<span class="populate-markdown-unknown"></span>'
+      expect(plugin.textTransform?.({} as BuildCtx, input)).toBe(input)
     })
   })
 })

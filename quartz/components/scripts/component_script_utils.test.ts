@@ -1,11 +1,15 @@
 import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
 
 import {
+  escapeHtml,
   throttle,
   debounce,
   animate,
   registerEscapeHandler,
   removeAllChildren,
+  setupCopyButton,
+  svgCopy,
+  svgCheck,
 } from "./component_script_utils"
 
 const frameTime = 16
@@ -45,6 +49,23 @@ afterEach(() => {
   if (rafMap) {
     rafMap.clear()
   }
+})
+
+describe("escapeHtml", () => {
+  it.each([
+    ["&", "&amp;"],
+    ["<", "&lt;"],
+    [">", "&gt;"],
+    ['"', "&quot;"],
+    ["'", "&#39;"],
+    ['<script>alert("xss")</script>', "&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;"],
+    ["no special chars", "no special chars"],
+    ["", ""],
+    ["a & b < c > d", "a &amp; b &lt; c &gt; d"],
+    [`it's a "test"`, "it&#39;s a &quot;test&quot;"],
+  ])("escapes %j to %j", (input, expected) => {
+    expect(escapeHtml(input)).toBe(expected)
+  })
 })
 
 describe("throttle", () => {
@@ -498,5 +519,69 @@ describe("animate", () => {
 
     // Cleanup should still work
     cleanup()
+  })
+})
+
+describe("setupCopyButton", () => {
+  let button: HTMLButtonElement
+  let mockClipboard: { writeText: jest.Mock }
+
+  beforeEach(() => {
+    button = document.createElement("button")
+    mockClipboard = { writeText: jest.fn(() => Promise.resolve()) }
+    Object.defineProperty(navigator, "clipboard", { value: mockClipboard, writable: true })
+  })
+
+  it("should set initial innerHTML to svgCopy", () => {
+    setupCopyButton(button, () => "text")
+    expect(button.innerHTML).toBe(svgCopy)
+  })
+
+  it("should copy text and swap to check icon on click", async () => {
+    setupCopyButton(button, () => "hello")
+    button.click()
+
+    await Promise.resolve() // flush microtasks for clipboard promise
+    expect(mockClipboard.writeText).toHaveBeenCalledWith("hello")
+    expect(button.innerHTML).toBe(svgCheck)
+  })
+
+  it("should restore copy icon after animation completes", async () => {
+    setupCopyButton(button, () => "text")
+    button.click()
+    await Promise.resolve()
+
+    // Advance past the 2000ms animate duration
+    jest.advanceTimersByTime(2000 + frameTime)
+    expect(button.innerHTML).toBe(svgCopy)
+  })
+
+  it("should pass options to addEventListener", () => {
+    // Use mockImplementation to avoid jsdom's internal AbortSignal type validation
+    const addEventSpy = jest.spyOn(button, "addEventListener").mockImplementation(jest.fn())
+    const controller = new AbortController()
+    setupCopyButton(button, () => "text", { signal: controller.signal })
+
+    expect(addEventSpy).toHaveBeenCalledWith("click", expect.any(Function), {
+      signal: controller.signal,
+    })
+    addEventSpy.mockRestore()
+  })
+
+  it("should log error when clipboard write fails", async () => {
+    const error = new Error("clipboard error")
+    mockClipboard.writeText.mockReturnValue(Promise.reject(error))
+    const consoleSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(/* suppress test output */ jest.fn())
+
+    setupCopyButton(button, () => "text")
+    button.click()
+
+    // Flush the microtask queue for the rejected promise handlers
+    await jest.advanceTimersByTimeAsync(0)
+
+    expect(consoleSpy).toHaveBeenCalledWith(error)
+    consoleSpy.mockRestore()
   })
 })

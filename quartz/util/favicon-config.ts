@@ -65,7 +65,7 @@ export function normalizeFaviconListEntry(entry: string): string {
  * Whitelist uses substring matching, so raw entries work fine (e.g., "apple_com"
  * matches any path containing that substring). No PSL normalization needed.
  */
-export const faviconCountWhitelistComputed = [
+export const faviconCountWhitelistComputed: readonly string[] = [
   ...Object.values(specialFaviconPaths),
   ...faviconCountWhitelist,
   ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
@@ -77,5 +77,5 @@ export const faviconCountWhitelistComputed = [
  * reduced to their registered domain form (e.g., "csir_co_za") to match
  * what getQuartzPath produces.
  */
-export const faviconSubstringBlacklistComputed =
+export const faviconSubstringBlacklistComputed: readonly string[] =
   faviconSubstringBlacklist.map(normalizeFaviconListEntry)

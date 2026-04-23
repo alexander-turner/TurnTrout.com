@@ -56,6 +56,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         strategy: "inline-svg",
         mermaidConfig: {
           theme: "default",
+          look: "classic" as const,
           themeVariables: {
             lineColor: midgroundLight,
             primaryTextColor: foregroundLight,
@@ -65,6 +66,7 @@ export function createProcessor(ctx: BuildCtx): QuartzProcessor {
         },
         dark: {
           theme: "dark",
+          look: "classic" as const,
           themeVariables: {
             lineColor: midgroundDark,
             primaryTextColor: foregroundDark,
@@ -150,7 +152,7 @@ export function createFileParser(ctx: BuildCtx, fps: FilePath[]) {
           console.log(`[process] ${fp} -> ${file.data.slug} (${perf.timeSince()})`)
         }
       } catch (err) {
-        trace(`\nFailed to process \`${fp}\``, err as Error)
+        trace(`\nFailed to process \`${fp}\``, err)
       }
     }
 
@@ -170,7 +172,7 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
   const CHUNK_SIZE = 32
   const concurrency = ctx.argv.concurrency ?? clamp(fps.length / CHUNK_SIZE, 1, 4)
 
-  let res: ProcessedContent[] = []
+  let res: ProcessedContent[]
   log.info(`Parsing input files using ${concurrency} threads`)
   if (concurrency === 1) {
     const processor = createProcessor(ctx)

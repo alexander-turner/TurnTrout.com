@@ -91,17 +91,22 @@
     "\u2019",
     "s"
   ],
+  "footnoteHeadingId": "footnotes",
   "testPageSlug": "test-page",
   "designPageSlug": "design",
   "tightScrollTolerance": 10,
   "scrollTolerance": 30,
+  "urlBarScrollTolerance": 60,
   "listTolerance": 5,
   "maxCardImageSizeKb": 300,
   "playwrightConfigs": 9,
   "savedThemeKey": "saved-theme",
   "autoplayStorageKey": "pond-video-autoplay",
   "instantScrollRestoreKey": "instantScrollRestore",
+  "scrollPositionKeyPrefix": "scroll:",
+  "scrollPositionMinThreshold": 150,
   "cdnBaseUrl": "https://assets.turntrout.com",
+  "spaFetchTimeoutMs": 10000,
   "popoverRemovalDelayMs": 300,
   "dropcapColors": [
     "red",
@@ -141,6 +146,10 @@
     {
       "pattern": "^xcancel\\.com$",
       "to": "x.com"
+    },
+    {
+      "pattern": "^.*effectivealtruism\\.org$",
+      "to": "forum.effectivealtruism.org"
     }
   ],
   "unicodeTypography": {
@@ -152,6 +161,9 @@
     "ellipsis": "\u2026",
     "zeroWidthSpace": "\u200B",
     "zeroWidthNbsp": "\uFEFF",
-    "wordJoiner": "\u2060"
+    "wordJoiner": "\u2060",
+    "leftGuillemet": "\u00AB",
+    "rightGuillemet": "\u00BB",
+    "germanOpenQuote": "\u201E"
   }
 }

@@ -8,6 +8,14 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
+    paths:
+      - "quartz/**"
+      - "website_content/**"
+      - "config/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/**"
   merge_group:
 
 permissions:
@@ -18,6 +26,7 @@ jobs:
   update-dates:
     needs: detect-changes
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
       contents: write
     outputs:
@@ -30,13 +39,14 @@ jobs:
       !startsWith(github.event.head_commit.message, 'chore: updated publication dates') &&
       needs.detect-changes.outputs.content == 'true'
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          filter: blob:none # Partial clone: skip historical file content (only need commit/tree objects for git diff --name-only)
           token: ${{ secrets.PUSH_TOKEN }}
 
-      - name: Setup Base Environment
-        uses: ./.github/actions/setup-base-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
 
       - name: Update article dates
         run: uv run python scripts/update_date_on_publish.py --commit-range "${{ github.event.before }}..${{ github.event.after }}"
@@ -57,7 +67,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add website_content/*.md README.md
-          git commit -m "chore: updated publication dates"
+          git commit -m "chore: updated publication dates [skip ci]"
           git push
           echo "pushed=true" >> $GITHUB_OUTPUT
 
@@ -67,15 +77,17 @@ jobs:
 
   detect-changes:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       content: ${{ steps.changes.outputs.content }}
       code: ${{ steps.changes.outputs.code }}
       styles: ${{ steps.changes.outputs.styles }}
       source-checks: ${{ steps.changes.outputs.source-checks }}
+      workflows: ${{ steps.changes.outputs.workflows }}
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: changes
         with:
           filters: |
@@ -99,16 +111,129 @@ jobs:
             source-checks:
               - 'website_content/**'
               - 'quartz/**'
+              - '!quartz/**/*.spec.ts'
+              - '!quartz/**/*.test.ts'
+              - '!quartz/**/*.test.tsx'
+              - '!quartz/**/tests/**'
               - 'scripts/source_file_checks.py'
               - 'config/quartz/**'
               - 'config/constants.json'
               - '.github/actions/**'
+            workflows:
+              - '.github/workflows/**'
+              - '.github/actions/**'
+
+  autofix:
+    needs: [detect-changes, update-dates]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
+    # Depends on update-dates to avoid push race condition (both push to main).
+    # always() lets this run even when update-dates is skipped (PRs, no content changes).
+    if: >
+      always() && !cancelled() &&
+      needs.detect-changes.result == 'success' &&
+      !startsWith(github.head_ref, 'deepsource-') &&
+      (needs.detect-changes.outputs.code == 'true' ||
+       needs.detect-changes.outputs.styles == 'true') &&
+      (github.event_name == 'pull_request' ||
+       (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
+        with:
+          install-python: "false"
+
+      - name: Generate SCSS variables
+        if: needs.detect-changes.outputs.styles == 'true'
+        run: pnpm exec tsx quartz/styles/generate-variables.ts
+
+      - name: Run ESLint --fix
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: pnpm eslint "quartz/**/*.{js,jsx,ts,tsx}" --fix --config config/javascript/eslint.config.js
+
+      - name: Run Stylelint --fix
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec stylelint \
+            --config config/stylelint/.stylelintrc.json \
+            --fix \
+            "quartz/**/*.scss"
+
+      - name: Run Prettier on styles
+        if: needs.detect-changes.outputs.styles == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec prettier --write \
+            --config config/prettier/.prettierrc \
+            --ignore-path config/prettier/.prettierignore \
+            "quartz/**/*.scss"
+
+      - name: Run Prettier on code
+        if: needs.detect-changes.outputs.code == 'true'
+        continue-on-error: true
+        run: |
+          pnpm exec prettier --write \
+            --config config/prettier/.prettierrc \
+            --ignore-path config/prettier/.prettierignore \
+            "quartz/**/*.{js,jsx,ts,tsx}"
+
+      - name: Commit and push fixes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # Only stage files that formatters could have modified
+          git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
+          if [[ -n $(git diff --cached --name-only) ]]; then
+            git commit -m "style: auto-fix formatting [skip ci]"
+            # Pull any commits pushed by update-dates before pushing
+            if ! git pull --rebase origin ${{ github.head_ref || github.ref_name }}; then
+              echo "::error::Rebase failed — aborting to avoid pushing broken state"
+              git rebase --abort 2>/dev/null || true
+              exit 1
+            fi
+            git push
+            echo "::notice::Pushed auto-fix formatting commit"
+          else
+            echo "::notice::No formatting changes needed"
+          fi
+
+  check-action-pins:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.workflows == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Check for unpinned action references
+        run: |
+          # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
+          # Only match lines where uses: is a YAML key (not inside comments or run blocks)
+          UNPINNED=$(grep -rn '^\s*-\?\s*uses:.*@v[0-9]' .github/workflows/ .github/actions/ || true)
+          if [ -n "$UNPINNED" ]; then
+            echo "::error::Found unpinned action references (must use SHA pins with version comment):"
+            echo "$UNPINNED"
+            echo ""
+            echo "Pin actions to a commit SHA, e.g.:"
+            echo "  uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6"
+            exit 1
+          fi
+          echo "All action references are SHA-pinned"
 
   lint:
-    needs: [update-dates, detect-changes]
-    # Run if detect-changes found changes, and not a deepsource PR
-    # update-dates is allowed to be skipped (runs only on push to main by users)
-    # Skip if update-dates pushed changes (the new commit will trigger a fresh workflow)
+    needs: [update-dates, detect-changes, autofix]
+    # Run if detect-changes found changes, and not a deepsource PR.
+    # update-dates is allowed to be skipped (runs only on push to main by users).
+    # always() ensures this runs even when update-dates or autofix are skipped.
     if: >
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.content == 'true' ||
@@ -116,20 +241,28 @@ jobs:
        needs.detect-changes.outputs.styles == 'true' ||
        needs.detect-changes.outputs.source-checks == 'true') &&
       always() && !cancelled() &&
-      needs.detect-changes.result == 'success' &&
-      needs.update-dates.outputs.pushed != 'true'
+      needs.detect-changes.result == 'success'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      # Check out branch tip when autofix or update-dates pushed commits, so lint
+      # sees the final state. Otherwise use the default SHA that triggered the workflow.
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: needs.autofix.result == 'success' || needs.update-dates.outputs.pushed == 'true'
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: needs.autofix.result != 'success' && needs.update-dates.outputs.pushed != 'true'
+
+      - name: Setup site
+        uses: ./.github/actions/setup-site
 
       - name: Install Vale
         if: needs.detect-changes.outputs.content == 'true'
         run: |
           wget -q https://github.com/errata-ai/vale/releases/download/v3.9.0/vale_3.9.0_Linux_64-bit.tar.gz
+          echo "fd39029bd9dbd0ecf8cbd5274b69dcff03ad27a5d7344c69c173c93a00f6d423  vale_3.9.0_Linux_64-bit.tar.gz" | sha256sum --check
           tar -xzf vale_3.9.0_Linux_64-bit.tar.gz
           sudo mv vale /usr/local/bin/
 
@@ -204,6 +337,18 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         continue-on-error: true
         run: uv run python scripts/source_file_checks.py ${{ steps.pub-date-flag.outputs.flag }}
+
+      - name: Verify apt packages are version-pinned
+        run: |
+          # Find package-like lines between apt-get install and shell: that lack =version
+          awk '/apt-get install/,/shell:/' .github/actions/setup-site/action.yaml \
+            | grep -E '^\s+[a-z][a-z0-9._+-]+\s*\\?\s*$' \
+            | while read -r line; do
+                pkg=$(echo "$line" | tr -d ' \\')
+                echo "::error::Unpinned apt package in setup-site: '$pkg' (add =version suffix)"
+                exit 1
+              done
+          echo "All apt packages are version-pinned"
 
       - name: Check results
         run: |

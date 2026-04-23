@@ -17,7 +17,7 @@ export const CreatedModifiedDate: QuartzTransformerPlugin = () => ({
   name: "CreatedModifiedDate",
   markdownPlugins() {
     return [
-      () => async (_tree, file) => {
+      () => (_tree, file) => {
         const fp = file.data.filePath || ""
         const published = file.data.frontmatter?.date_published as MaybeDate
         const modified = file.data.frontmatter?.date_updated as MaybeDate

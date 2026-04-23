@@ -67,6 +67,14 @@ const config: QuartzConfig = {
             repo: "punctilio",
             transform: stripBadges,
           },
+          "lint-staged": {
+            filePath: "package.json",
+            jsonPath: "lint-staged",
+            transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
+          },
+          "font-stats": {
+            filePath: "config/font_stats.md",
+          },
         },
       }),
       CreatedModifiedDate(),
@@ -91,7 +99,7 @@ const config: QuartzConfig = {
       FixFootnotes(),
       WrapNakedElements(),
       HTMLFormattingImprovement(),
-      Latex({ renderEngine: "katex" }),
+      Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
       rehypeCustomSpoiler(),
       rehypeCustomSubtitle(),

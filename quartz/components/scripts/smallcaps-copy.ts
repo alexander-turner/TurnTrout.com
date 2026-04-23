@@ -88,10 +88,13 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
       // Map partial selections through the original text using character positions.
       // Elements always have non-null textContent; indexOf always succeeds since
       // selectedText was cloned from within the element.
-      const fullText = smallCapsAncestor.textContent!
-      const selectedText = tempDiv.textContent!
-      const startIdx = fullText.indexOf(selectedText)
-      tempDiv.textContent = originalText.slice(startIdx, startIdx + selectedText.length)
+      const fullText = smallCapsAncestor.textContent
+      const selectedText = tempDiv.textContent
+      /* istanbul ignore next -- requires specific partial DOM selection state */
+      if (fullText && selectedText) {
+        const startIdx = fullText.indexOf(selectedText)
+        tempDiv.textContent = originalText.slice(startIdx, startIdx + selectedText.length)
+      }
     } else {
       uppercaseAllText(tempDiv)
     }

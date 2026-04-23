@@ -65,7 +65,8 @@ function coerceToArray(input: string | string[], lowercase = true): string[] | u
   // coerce to array
   if (!Array.isArray(input)) {
     const parts = input.toString().split(",")
-    input = lowercase ? parts.map((tag: string) => tag.toLowerCase()) : parts.map((s) => s.trim())
+    const trimmed = parts.map((s) => s.trim())
+    input = lowercase ? trimmed.map((tag) => tag.toLowerCase()) : trimmed
   }
 
   // remove all non-strings
@@ -134,14 +135,14 @@ declare module "vfile" {
     frontmatter: { [key: string]: unknown } & {
       title: string
     } & Partial<{
-        tags: string[]
-        aliases: string[]
-        authors: string[]
+        tags: readonly string[]
+        aliases: readonly string[]
+        authors: readonly string[]
         description: string
         draft: boolean
         lang: string
         enableToc: string
-        cssclasses: string[]
+        cssclasses: readonly string[]
       }>
   }
 }

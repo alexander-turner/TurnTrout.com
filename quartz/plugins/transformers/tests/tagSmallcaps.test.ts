@@ -4,6 +4,7 @@ import { h } from "hastscript"
 import { rehype } from "rehype"
 import seedrandom from "seedrandom"
 
+import { NBSP } from "../../../components/constants"
 import {
   allowAcronyms,
   rehypeTagSmallcaps,
@@ -375,6 +376,10 @@ describe("REGEX_ABBREVIATION tests", () => {
     ["-2.5MB", "2.5", "MB"],
     ["300k", "300", "k"],
     ["300W", "300", "W"],
+    // Non-breaking space between value and unit is allowed and preserved in
+    // the captured abbreviation.
+    [`101.6${NBSP}KB`, "101.6", `${NBSP}KB`],
+    [`5${NBSP}TB`, "5", `${NBSP}TB`],
   ])("should match abbreviation: %s", (input, expectedNumber, expectedAbbreviation) => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })
@@ -412,7 +417,7 @@ describe("allCapsContinuation Regex Tests", () => {
   const allCapsContinuationRegex = new RegExp(allCapsContinuation)
 
   describe("Should Match", () => {
-    const dashPhrases = ["-HI", " HI", "- - - -HI"]
+    const dashPhrases = ["-HI", " HI", "- - - -HI", " 2.1 HI"]
 
     it.each(dashPhrases)("should match continuation: '%s'", (input) => {
       expect(allCapsContinuationRegex.test(input)).toBe(true)
@@ -473,6 +478,10 @@ describe("REGEX_ALL_CAPS_PHRASE Regex Tests", () => {
     [
       "<p>THE FBI AGENT watched.</p>",
       '<p><abbr class="small-caps">The fbi agent</abbr> watched.</p>',
+    ],
+    [
+      "<p>WCAG 2.1 AA compliance</p>",
+      '<p><abbr class="small-caps">Wcag 2.1 aa</abbr> compliance</p>',
     ],
   ]
 
@@ -1234,6 +1243,6 @@ describe("data-original-text attribute", () => {
     const raw = testTagSmallcapsHTMLRaw("<p>NASA and FBI met. The 100KM trip was fine.</p>")
     const matches = [...raw.matchAll(/data-original-text="(?<text>[^"]*)"/g)]
     expect(matches).toHaveLength(3)
-    expect(matches.map((m) => m.groups!.text)).toEqual(["NASA", "FBI", "100KM"])
+    expect(matches.map((m) => m.groups?.text)).toEqual(["NASA", "FBI", "100KM"])
   })
 })

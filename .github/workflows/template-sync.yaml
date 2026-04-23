@@ -1,5 +1,9 @@
 name: Sync from Template
 
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
 # Syncs updates from the template repository automatically.
 # Runs daily or manually via "Run workflow" button.
 # No setup required - works out of the box.
@@ -48,19 +52,38 @@ permissions:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - name: Checkout child repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
+          filter: blob:none
 
       - name: Checkout template repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: ${{ env.TEMPLATE_REPO }}
           path: _template
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Check token workflow scope
+        env:
+          TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          # GitHub requires 'workflow' scope on PATs to push .github/workflows/ changes.
+          # Check the x-oauth-scopes response header from the GitHub API.
+          SCOPES=$(curl -sS -I -H "Authorization: token $TOKEN" \
+            https://api.github.com/user 2>/dev/null \
+            | grep -i '^x-oauth-scopes:' | sed 's/^[^:]*: //' | tr -d '\r\n' || true)
+
+          if echo "$SCOPES" | tr ',' '\n' | sed 's/^ *//' | grep -qx 'workflow'; then
+            echo "Token has 'workflow' scope."
+          else
+            echo "::error::TEMPLATE_SYNC_TOKEN lacks the 'workflow' scope, which GitHub requires to push changes to .github/workflows/ files. Add the 'workflow' scope to your PAT at https://github.com/settings/tokens and update the TEMPLATE_SYNC_TOKEN repository secret."
+            exit 1
+          fi
 
       - name: Sync template files with conflict detection
         id: sync
@@ -89,6 +112,15 @@ jobs:
             echo "No previous template version found (first sync)"
           fi
           echo "Current template version: $TEMPLATE_SHA"
+
+          # Early exit: nothing to sync if template hasn't changed
+          if [ "$PREV_SHA" = "$TEMPLATE_SHA" ]; then
+            echo "Template is already at $TEMPLATE_SHA_SHORT — nothing to sync"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+            echo "has_deletions=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
           # Generate changelog between versions if we have a previous SHA
           if [ -n "$PREV_SHA" ] && [ "$PREV_SHA" != "$TEMPLATE_SHA" ]; then
@@ -134,29 +166,19 @@ jobs:
             echo "CONFLICT: $rel_path (local differs from template)"
             echo "$rel_path" >> /tmp/conflict_files.txt
 
-            # Generate conflict report showing both versions
+            # Generate conflict report with diff
             {
               echo "### \`$rel_path\`"
               echo ""
               echo "<details>"
               echo "<summary>View conflict details</summary>"
               echo ""
-              echo "**Your current version:**"
-              echo "\`\`\`"
-              head -100 "$rel_path"
-              [ "$(wc -l < "$rel_path")" -gt 100 ] && echo "... (truncated)"
-              echo "\`\`\`"
-              echo ""
-              echo "**Template version:**"
-              echo "\`\`\`"
-              head -100 "$template_file"
-              [ "$(wc -l < "$template_file")" -gt 100 ] && echo "... (truncated)"
-              echo "\`\`\`"
-              echo ""
               echo "**Diff (your version → template):**"
               echo "\`\`\`diff"
-              diff -u "$rel_path" "$template_file" | head -80 || true
+              diff -u "$rel_path" "$template_file" | head -200 || true
               echo "\`\`\`"
+              echo ""
+              echo "**Full diff:** Fetch this PR branch locally and run \`diff\` against the template to see the complete changes"
               echo "</details>"
               echo ""
             } >> /tmp/conflict_report.md
@@ -297,7 +319,7 @@ jobs:
       - name: Create Pull Request
         if: inputs.dry-run != 'true' && (steps.sync.outputs.has_changes == 'true' || steps.sync.outputs.has_conflicts == 'true' || steps.sync.outputs.has_deletions == 'true')
         id: create-pr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           commit-message: "chore: sync from template repository (${{ steps.sync.outputs.template_sha_short }})"

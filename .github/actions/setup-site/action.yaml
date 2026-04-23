@@ -1,0 +1,171 @@
+name: "Setup Site"
+description: "Sets up Node.js, pnpm, Python with uv, caches, and optionally browsers/system deps."
+inputs:
+  install-node-deps:
+    description: "Whether to install Node.js and dependencies"
+    required: false
+    default: "true"
+  install-python:
+    description: "Whether to install Python and Python dependencies"
+    required: false
+    default: "true"
+  install-sharp:
+    description: "Whether to install sharp for Linux"
+    required: false
+    default: "false"
+  install-browsers:
+    description: "Whether to install Chromium (Playwright) and Chrome (Puppeteer)"
+    required: false
+    default: "false"
+  install-system-deps:
+    description: "Whether to install all system apt packages (build tools, ffmpeg, test utilities)"
+    required: false
+    default: "false"
+  cache-playwright:
+    description: "Whether to cache Playwright browsers"
+    required: false
+    default: "false"
+  cache-puppeteer:
+    description: "Whether to cache Puppeteer browsers"
+    required: false
+    default: "false"
+  cache-apt:
+    description: "Whether to cache apt packages across runs (redirects apt archive dir)"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    # ── Node.js ──────────────────────────────────────────────────────
+    - name: Set up Node.js
+      if: inputs.install-node-deps == 'true'
+      uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      with:
+        node-version: "22.22.0"
+
+    - name: Install pnpm
+      if: inputs.install-node-deps == 'true'
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
+
+    - name: Get pnpm store directory
+      if: inputs.install-node-deps == 'true'
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Restore pnpm cache
+      if: inputs.install-node-deps == 'true'
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Restore asset dimensions cache
+      id: asset-dimensions-cache
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: quartz/plugins/transformers/.asset_dimensions.json
+        key: ${{ runner.os }}-asset-dimensions-${{ github.ref }}
+        restore-keys: |
+          ${{ runner.os }}-asset-dimensions-refs/heads/main
+
+    - name: Install Node Dependencies
+      if: inputs.install-node-deps == 'true'
+      run: |
+        # macOS doesn't have GNU timeout; use perl one-liner as a portable fallback
+        if command -v timeout &>/dev/null; then
+          timeout 600 pnpm install --frozen-lockfile
+        else
+          perl -e 'alarm 600; exec @ARGV' -- pnpm install --frozen-lockfile
+        fi
+      shell: bash
+      env:
+        NODE_OPTIONS: "--max-old-space-size=4096"
+
+    - name: Install sharp
+      if: inputs.install-sharp == 'true' && inputs.install-node-deps == 'true'
+      run: pnpm install --os=linux --cpu=x64 sharp
+      shell: bash
+
+    # ── Python ───────────────────────────────────────────────────────
+    - name: Set up uv
+      if: inputs.install-python == 'true'
+      uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v7
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    - name: Set up Python
+      if: inputs.install-python == 'true'
+      run: uv python install 3.11
+      shell: bash
+
+    - name: Install Python Dependencies
+      if: inputs.install-python == 'true'
+      run: uv sync --frozen
+      shell: bash
+
+    # ── Browsers ─────────────────────────────────────────────────────
+    - name: Cache Playwright browsers
+      if: inputs.cache-playwright == 'true'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
+        key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          playwright-${{ runner.os }}-
+
+    - name: Cache Puppeteer browsers
+      if: inputs.cache-puppeteer == 'true'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/.cache/puppeteer
+        key: puppeteer-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          puppeteer-${{ runner.os }}-
+
+    # ── Apt package cache ──────────────────────────────────────────
+    # Redirect apt's archive dir to a cached location so ALL apt-get
+    # install commands (here and in calling workflows) reuse cached .debs.
+    - name: Restore apt package cache
+      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: ~/apt-cache
+        key: apt-cache-${{ runner.os }}-${{ hashFiles('.github/actions/setup-site/action.yaml') }}
+        restore-keys: |
+          apt-cache-${{ runner.os }}-
+
+    - name: Configure apt to use cached archives
+      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
+      run: |
+        mkdir -p ~/apt-cache/partial
+        echo "Dir::Cache::Archives \"$HOME/apt-cache/\";" | sudo tee /etc/apt/apt.conf.d/99-github-cache
+      shell: bash
+
+    - name: Install Chromium and Chrome for Mermaid rendering and critical CSS
+      if: inputs.install-browsers == 'true' && inputs.install-node-deps == 'true'
+      run: pnpm playwright install chromium && npx puppeteer browsers install chrome
+      shell: bash
+
+    # ── System packages ──────────────────────────────────────────────
+    # All apt packages in one step so every workflow populates the same
+    # cache. With cache-apt enabled, repeat installs unpack from disk in
+    # seconds instead of downloading from slow mirrors.
+    # All versions pinned for deterministic builds. Bump when Ubuntu
+    # pushes security updates that remove the old version.
+    - name: Install system packages
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
+          dos2unix=7.5.1-1 \
+          ffmpeg=7:6.1.1-3ubuntu5 \
+          libimage-exiftool-perl=12.76+dfsg-1 \
+          inkscape=1.2.2-2ubuntu12 \
+          rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
+          fish=3.7.0-1
+      shell: bash

@@ -3,8 +3,7 @@ permalink: quantitative-strength-of-instrumental-convergence
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+lw-page-url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 lw-is-question: 'false'
 lw-posted-at: 2021-07-11T17:36:24.208000Z
 lw-last-modification: 2023-05-16T20:26:01.242000Z
@@ -17,8 +16,7 @@ lw-base-score: 45
 lw-vote-count: 13
 af-base-score: 29
 af-num-comments-on-upload: 1
-title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal
-  Policies
+title: The More Power At Stake, The Stronger Instrumental Convergence Gets For Optimal Policies
 lw-latest-edit: 2023-05-16T20:26:02.342000Z
 lw-is-linkpost: 'false'
 tags:
@@ -37,14 +35,13 @@ next-post-title: Seeking Power is Convergently Instrumental in a Broad Class of 
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
 date_published: 2021-07-11 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
+original_url: https://www.lesswrong.com/posts/Yc5QSSZCQ9qdyxZF6/the-more-power-at-stake-the-stronger-instrumental
 skip_import: true
 card_image:
-description: Instrumental convergence strengthens proportional to the ratio of an
-  agent's control if it survives to its control if it dies.
-date_updated: 2025-11-22 00:21:52.667251
+description: Instrumental convergence strengthens proportional to the ratio of an agent's control if it survives to its control if it dies.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -67,10 +64,10 @@ How strong is this effect, quantitatively?
 
 I previously speculated that we should be able to get quantitative lower bounds on how many objectives incentivize power-seeking actions:
 
-> [!quote] [Environmental Structure Can Cause Instrumental Convergence](/environmental-structure-can-cause-instrumental-convergence#Combinatorics-how-do-they-work)
+> [!quote] [Environmental Structure Can Cause Instrumental Convergence](/environmental-structure-can-cause-instrumental-convergence#combinatorics-how-do-they-work)
 >
 > > [!math] Definition: Orbit-level tendencies
-> > At state $s$ , _most reward functions_ incentivize action $a$ over action $a'$ when for all reward functions $R$, at least half of the [orbit](/environmental-structure-can-cause-instrumental-convergence#Orbits-of-goals) agrees that $a$ has at least as much action value as $a'$ does at state $s$.
+> > At state $s$ , _most reward functions_ incentivize action $a$ over action $a'$ when for all reward functions $R$, at least half of the [orbit](/environmental-structure-can-cause-instrumental-convergence#orbits-of-goals) agrees that $a$ has at least as much action value as $a'$ does at state $s$.
 >
 > ...
 >
@@ -89,7 +86,7 @@ About a week later, I had my answer:
 ![A state diagram illustrating instrumental convergence. From "Start," one path leads to candy. A second path, "Wait!", preserves optionality and splits again, leading to either a chocolate bar or two people hugging. Intuitively, "Wait!" should be optimal for twice as many potential goals as the direct action.](https://assets.turntrout.com/static/images/posts/nwvmc2ovaduran8592k8.avif)
 <br/>Figure: At least $\frac{2}{2+1}=\frac{2}{3}$ of the orbit of every reward function agrees that `Wait!` is optimal (for average per-timestep reward). That's because there are twice as many ways for `Wait!` to be optimal over `candy`, than for the reverse to be true.
 
-Basically, when you could apply [the previous results](/seeking-power-is-often-convergently-instrumental-in-mdps#Retaining-long-term-options-is-POWER-seeking-and-more-probable-under-optimality-when-the-discount-rate-is-close-enough-to-1) but "multiple times"[^quo], you can get lower bounds on how often the larger set of things is optimal:
+Basically, when you could apply [the previous results](/seeking-power-is-often-convergently-instrumental-in-mdps#retaining-long-term-options-is-power-seeking-and-more-probable-under-optimality-when-the-discount-rate-is-close-enough-to-1) but "multiple times"[^quo], you can get lower bounds on how often the larger set of things is optimal:
 
 ![A diagram showing a larger set of options, "Set 2," containing multiple disjoint copies of a smaller set, "Set 1." Set 2 has three color-coded subgroups, each isomorphic to Set 1. Arrows map these subgroups to Set 1. Set 2 also has an extra group of options labeled "Leftovers are ok!".](https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif)
 <br/>Figure: Each set contains a subset of the agent's "options." A vertex is just the agent staying at that state. A linked pair is the agent alternating back and forth between two states. The triangle is a circuit of three states, which the agent can navigate as they please.
@@ -142,7 +139,7 @@ I have given the start of a theory on what state abstractions "respect" the theo
 
 # Note of caution, redux
 
-Last time, in addition to the "[how do combinatorics work?](/environmental-structure-can-cause-instrumental-convergence#Combinatorics-how-do-they-work)" question I posed, I wrote several qualifications:
+Last time, in addition to the "[how do combinatorics work?](/environmental-structure-can-cause-instrumental-convergence#combinatorics-how-do-they-work)" question I posed, I wrote several qualifications:
 
 > [!quote] The combinatorics conjectures will help prove the latter
 >

@@ -2,6 +2,7 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
+      "maxRetries": 3,
       "settings": {
         "onlyCategories": ["performance"],
         "onlyAudits": ["cumulative-layout-shift"],

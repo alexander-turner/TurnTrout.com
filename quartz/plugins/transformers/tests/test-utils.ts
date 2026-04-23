@@ -1,8 +1,6 @@
 import type { Element, Parent, Root } from "hast"
-import type OriginalFetchType from "node-fetch"
 
 import { jest } from "@jest/globals"
-import { Response as NodeFetchResponse } from "node-fetch"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
@@ -10,20 +8,25 @@ import { visit } from "unist-util-visit"
 
 /**
  * Mocks a single successful fetch request on the provided mock instance.
- * @param fetchMockInstance The jest.MockedFunction instance of node-fetch.
+ * @param fetchMockInstance The jest.MockedFunction instance of fetch.
  * @param data The data to respond with (e.g., Buffer for images, string for text).
  * @param status The HTTP status code (default: 200).
  * @param headers Additional headers for the response.
  */
 export function mockFetchResolve(
-  fetchMockInstance: jest.MockedFunction<typeof OriginalFetchType>,
+  fetchMockInstance: jest.MockedFunction<typeof fetch>,
   data: string | Buffer | null,
   status = 200,
   headers: Record<string, string> = { "Content-Type": "application/octet-stream" },
   statusText?: string,
   cancellableBody = false,
 ): void {
-  const response = new NodeFetchResponse(data, { status, headers, statusText: statusText ?? "" })
+  const body = data instanceof Buffer ? new Blob([data as unknown as BlobPart]) : data
+  const response = new Response(body as BodyInit | null, {
+    status,
+    headers,
+    statusText: statusText ?? "",
+  })
 
   if (cancellableBody) {
     const originalBody = response.body
@@ -37,11 +40,11 @@ export function mockFetchResolve(
 
 /**
  * Mocks a fetch request that throws a network error on the provided mock instance.
- * @param fetchMockInstance The jest.MockedFunction instance of node-fetch.
+ * @param fetchMockInstance The jest.MockedFunction instance of fetch.
  * @param error The error to throw (default: new Error("Network error")).
  */
 export function mockFetchNetworkError(
-  fetchMockInstance: jest.MockedFunction<typeof OriginalFetchType>,
+  fetchMockInstance: jest.MockedFunction<typeof fetch>,
   error: Error = new Error("Network error"),
 ): void {
   fetchMockInstance.mockRejectedValueOnce(error)

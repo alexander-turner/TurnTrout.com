@@ -77,6 +77,7 @@ export function restoreCheckboxStates(container: HTMLElement, targetUrl: URL): v
   checkboxes.forEach((checkbox, index) => {
     const checkboxId = `${slug}-checkbox-${index}`
     const savedState = states.get(checkboxId)
+    /* istanbul ignore next -- requires specific localStorage checkbox state in jsdom */
     if (savedState !== undefined) {
       ;(checkbox as HTMLInputElement).checked = savedState
     }

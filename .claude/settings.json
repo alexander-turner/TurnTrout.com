@@ -29,8 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=/tmp/claude-ci-watch.log; sleep 10 && timeout 300 gh pr checks --watch >\"$f\" 2>&1; rc=$?; if [ $rc -eq 0 ]; then echo 'CI passed'; else echo \"CI failed (exit $rc) — see $f\"; tail -20 \"$f\"; fi",
-            "timeout": 360
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-push-ci-watch.sh",
+            "timeout": 720
           }
         ]
       }

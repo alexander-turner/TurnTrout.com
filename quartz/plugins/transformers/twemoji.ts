@@ -35,6 +35,7 @@ export function parseAttributes(imgTag: string): Record<string, string> {
   const regex = /(?<key>\w+)="(?<value>[^"]*)"?/g
   const result: Record<string, string> = {}
   for (const match of imgTag.matchAll(regex)) {
+    /* istanbul ignore next -- named capture groups always produce .groups when matched */
     if (match.groups) {
       result[match.groups.key] = match.groups.value
     }
@@ -98,7 +99,7 @@ export function createNodes(twemojiContent: string): (Text | Element)[] {
 }
 
 // Characters to protect from twemoji processing by temporarily replacing with PUA characters
-export const ignoreMap = new Map<string, string>([
+export const ignoreMap: ReadonlyMap<string, string> = new Map<string, string>([
   [emojiReplacement, twemojiIgnoreChars.emojiReplacement],
   ["⇔", twemojiIgnoreChars.doubleArrow],
   ["↗", twemojiIgnoreChars.upRightArrow],

@@ -10,13 +10,20 @@ import {
   simpleConstants,
   debounceWaitMs,
   instantScrollRestoreKey,
-  SEARCH_MATCH_CLASS,
+  sessionStoragePondVideoKey,
 } from "../constants"
 import { debounce } from "./component_script_utils"
-import { matchHTML } from "./search"
-import { isLocalUrl } from "./spa_utils"
+import { isPrinting } from "./printState"
+import {
+  extractMetaRefreshUrl,
+  getNavigationOpts,
+  handleNavigationScroll,
+  saveScrollToLocalStorage,
+  scrollToUrlTarget,
+  updateHeadElements,
+} from "./spa_utils"
 
-const { pondVideoId } = simpleConstants
+const { pondVideoId, spaFetchTimeoutMs } = simpleConstants
 
 // SPA accessibility announcement for screen readers
 const announcer = document.createElement("route-announcer")
@@ -27,8 +34,6 @@ declare global {
     spaNavigate: (url: URL, opts?: { scroll?: boolean; fetch?: boolean }) => Promise<void>
   }
 }
-
-import { nodeTypeElement } from "../constants"
 
 // FUNCTIONS
 
@@ -41,6 +46,8 @@ function getScrollPosition(): number {
 
 const updateScrollState = debounce(
   (() => {
+    if (isPrinting()) return
+
     const currentScroll = getScrollPosition()
     console.debug(
       `[updateScrollState] replaceState scroll: ${currentScroll}, current state:`,
@@ -52,116 +59,17 @@ const updateScrollState = debounce(
     if (typeof Storage !== "undefined") {
       sessionStorage.setItem(instantScrollRestoreKey, currentScroll.toString())
     }
+
+    // Persist to localStorage for cross-session restoration
+    saveScrollToLocalStorage(window.location.pathname, currentScroll)
   }) as () => void,
   debounceWaitMs,
 )
-
-/**
- * Typeguard to check if a target is an Element
- */
-const isElement = (target: EventTarget | null): target is Element =>
-  (target as Node)?.nodeType === nodeTypeElement
-
-/**
- * Extracts navigation options from a click event
- * Returns URL and scroll behavior settings
- */
-const getOpts = ({ target }: Event): { url: URL; scroll?: boolean } | undefined => {
-  if (!target || !isElement(target)) return undefined
-
-  const attributes = target.attributes
-  if (!attributes) return undefined
-
-  const targetAttr = attributes.getNamedItem("target")
-  if (targetAttr?.value === "_blank") return undefined
-
-  const closestLink = target.closest("a")
-  if (!closestLink) return undefined
-
-  const dataset = closestLink.dataset
-  if (!dataset || "routerIgnore" in dataset) return undefined
-
-  const href = closestLink.href
-  if (!href || !isLocalUrl(href)) return undefined
-
-  return {
-    url: new URL(href),
-    scroll: dataset && "routerNoScroll" in dataset ? false : undefined,
-  }
-}
 
 // skipcq: JS-D1001
 function dispatchNavEvent(url: FullSlug) {
   const event: CustomEventMap["nav"] = new CustomEvent("nav", { detail: { url } })
   document.dispatchEvent(event)
-}
-
-/**
- * Scroll to the first in-page match for a search query.
- *
- * This supports the `#:~:text=<query>` URL hash emitted by the search UI. Injects `.match` into the DOM.
- *
- * @param searchText - The raw search query (decoded from the hash).
- * @returns `true` if we found and highlighted a match, `false` otherwise.
- */
-function scrollToMatch(searchText: string): boolean {
-  const article = document.querySelector("article") as HTMLElement | null
-  if (!article) return false
-
-  // Use the exported search matcher to create `.search-match` spans.
-  // matchHTML returns a cloned element with search matches, so we need to replace the original.
-  const matchedArticle = matchHTML(searchText, article)
-  article.replaceWith(matchedArticle)
-
-  // The title (<h1 id="article-title">) is outside <article>, so highlight it separately.
-  const titleEl = document.getElementById("article-title")
-  let hasTitleMatch = false
-  if (titleEl) {
-    const matchedTitle = matchHTML(searchText, titleEl)
-    hasTitleMatch = matchedTitle.querySelectorAll(`.${SEARCH_MATCH_CLASS}`).length > 0
-    titleEl.replaceWith(matchedTitle)
-  }
-
-  const bodyMatches = matchedArticle.querySelectorAll(`.${SEARCH_MATCH_CLASS}`)
-  if (bodyMatches.length === 0 && !hasTitleMatch) return false
-
-  // If the search term matched in the article title, stay at the top of the page
-  // — the title is already visible and scrolling down would be disorienting.
-  if (hasTitleMatch) return true
-
-  const firstMatch = bodyMatches[0] as HTMLElement
-  const targetPos =
-    firstMatch.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.25
-  window.scrollTo({ top: targetPos, behavior: "instant" })
-  return true
-}
-
-/**
- * Scroll to a URL-specified target after SPA navigation.
- *
- * @param urlTarget - The raw `location.hash` value, including the leading `#`.
- * Supported formats:
- * - `#:~:text=<query>`: scrolls to the first match for `<query>` using `scrollToMatch()`
- * - `#<id>`: scrolls to the element with that ID (standard hash navigation)
- */
-function scrollToUrlTarget(urlTarget: string): void {
-  if (!urlTarget) return
-
-  // Check if this is a text search hash (format: #:~:text=search+term)
-  const textMatch = urlTarget.match(/^#?:~:text=(?<searchText>.+)$/)
-  if (textMatch?.groups) {
-    const searchText = decodeURIComponent(textMatch.groups.searchText)
-    if (scrollToMatch(searchText)) return
-    // If no match found, fall through to try as regular hash
-  }
-
-  // Standard element ID hash
-  const id = decodeURIComponent(urlTarget.substring(1))
-  const elt = document.getElementById(id)
-  if (elt) {
-    const targetPos = elt.getBoundingClientRect().top + window.scrollY
-    window.scrollTo({ top: targetPos, behavior: "instant" })
-  }
 }
 
 /**
@@ -184,15 +92,23 @@ async function updatePage(html: Document, url: URL): Promise<void> {
   // micromorph will merge it into the existing DOM structure
   html.body.appendChild(announcer)
 
-  // Clean up potential extension-injected siblings around the video
+  // Clean up non-video siblings in both old and new containers so micromorph
+  // compares them positionally as [video] vs [video] → MODIFY (preserves the
+  // existing loaded element).  Without this, whitespace text nodes or
+  // extension-injected elements cause a position mismatch that REPLACEs the
+  // video, losing its readyState/currentTime.
   const videoElement = document.getElementById(pondVideoId)
   if (videoElement?.parentElement) {
-    const parent = videoElement.parentElement
-    Array.from(parent.childNodes).forEach((node) => {
-      if (node !== videoElement) {
-        parent.removeChild(node)
+    const containerId = videoElement.parentElement.id
+    for (const root of [document, html]) {
+      const container = root.getElementById(containerId)
+      const video = container?.querySelector(`#${pondVideoId}`)
+      if (container && video) {
+        Array.from(container.childNodes).forEach((node) => {
+          if (node !== video) container.removeChild(node)
+        })
       }
-    })
+    }
   }
 
   console.debug(`[updatePage] Starting DOM update for ${url.pathname}`)
@@ -205,113 +121,6 @@ async function updatePage(html: Document, url: URL): Promise<void> {
     console.debug(`[updatePage] DOM update finished for ${url.pathname}`)
   } catch (e) {
     console.error(`[updatePage] DOM update error for ${url.pathname}:`, e)
-  }
-}
-
-/**
- * Updates document head elements manually. We don't use micromorph for head
- * because we need to preserve spa-preserve elements and ensure reliable updates
- * across all browsers.
- */
-function updateHeadElements(html: Document): void {
-  const newHead = html.head
-  const currentHead = document.head
-
-  console.debug("[updateHeadElements] Starting head update")
-  console.debug(
-    `[updateHeadElements] Current head meta count: ${currentHead.querySelectorAll("meta").length}`,
-  )
-  console.debug(
-    `[updateHeadElements] New head meta count: ${newHead.querySelectorAll("meta").length}`,
-  )
-
-  const newTitle = newHead.querySelector("title")?.textContent
-  if (newTitle) {
-    console.debug(`[updateHeadElements] Updating title to: ${newTitle}`)
-    document.title = newTitle
-  }
-
-  // Update or create meta tags (excluding spa-preserve ones)
-  const allMetaTags = newHead.querySelectorAll("meta")
-  const metaTags = Array.from(allMetaTags).filter((meta) => !meta.hasAttribute("spa-preserve"))
-  console.debug(
-    `[updateHeadElements] Found ${metaTags.length} meta tags to process (excluding spa-preserve)`,
-  )
-
-  for (const newMeta of metaTags) {
-    const name = newMeta.getAttribute("name")
-    const property = newMeta.getAttribute("property")
-    const httpEquiv = newMeta.getAttribute("http-equiv")
-    const content = newMeta.getAttribute("content") || ""
-
-    // Find existing meta tag by name, property, or http-equiv (excluding spa-preserve)
-    let existingMeta: HTMLMetaElement | null = null
-    let selector = ""
-    if (name) {
-      selector = `meta[name="${name}"]`
-    } else if (property) {
-      selector = `meta[property="${property}"]`
-    } else if (httpEquiv) {
-      selector = `meta[http-equiv="${httpEquiv}"]`
-    }
-
-    if (selector) {
-      const candidates = currentHead.querySelectorAll(selector)
-      // Find the first one without spa-preserve
-      for (const candidate of Array.from(candidates)) {
-        if (!candidate.hasAttribute("spa-preserve")) {
-          existingMeta = candidate as HTMLMetaElement
-          break
-        }
-      }
-    }
-    if (existingMeta) {
-      console.debug(
-        `[updateHeadElements] Updating meta tag: selector="${selector}", old content="${existingMeta.getAttribute("content")}", new content="${content}"`,
-      )
-      existingMeta.setAttribute("content", content)
-    } else {
-      console.warn(
-        `[updateHeadElements] No existing meta tag found for selector: "${selector}". Creating new meta tag.`,
-      )
-      const newMetaElement = document.createElement("meta")
-      if (name) newMetaElement.name = name
-      if (property) newMetaElement.setAttribute("property", property)
-      if (httpEquiv) newMetaElement.httpEquiv = httpEquiv
-      newMetaElement.setAttribute("content", content)
-      currentHead.appendChild(newMetaElement)
-    }
-  }
-
-  // Remove meta tags that are no longer in the new head (excluding spa-preserve)
-  const currentMetas = currentHead.querySelectorAll("meta")
-  for (const currentMeta of Array.from(currentMetas)) {
-    if (currentMeta.hasAttribute("spa-preserve")) {
-      continue
-    }
-
-    const name = currentMeta.getAttribute("name")
-    const property = currentMeta.getAttribute("property")
-    const httpEquiv = currentMeta.getAttribute("http-equiv")
-
-    let existsInNew = false
-    let selector = ""
-    if (name) {
-      selector = `meta[name="${name}"]`
-    } else if (property) {
-      selector = `meta[property="${property}"]`
-    } else if (httpEquiv) {
-      selector = `meta[http-equiv="${httpEquiv}"]`
-    } else {
-      console.warn(
-        `[updateHeadElements] No name, property, or http-equiv found for meta tag: ${currentMeta.outerHTML}`,
-      )
-    }
-    existsInNew = newHead.querySelector(selector) !== null
-
-    if (!existsInNew) {
-      currentMeta.remove()
-    }
   }
 }
 
@@ -330,16 +139,18 @@ interface FetchResult {
  */
 async function fetchContent(url: URL): Promise<FetchResult> {
   let responseStatus: number | undefined
-  let contentType: string | null = null
-  let content: string | undefined
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), spaFetchTimeoutMs)
 
   try {
-    const res = await fetch(url.toString())
+    const res = await fetch(url.toString(), { signal: controller.signal })
+    clearTimeout(timeoutId)
     responseStatus = res.status
-    contentType = res.headers.get("content-type")
+    const contentType = res.headers.get("content-type")
 
     if (res.ok && contentType?.startsWith("text/html")) {
-      content = await res.text()
+      const content = await res.text()
       return { status: "success", content, finalUrl: url, responseStatus, contentType }
     } else {
       const sanitizedContentType = contentType ? escape(contentType) : "unknown"
@@ -351,6 +162,7 @@ async function fetchContent(url: URL): Promise<FetchResult> {
       return { status: "fallback", finalUrl: url }
     }
   } catch (e) {
+    clearTimeout(timeoutId)
     console.error(`[fetchContent] Fetch error for ${url.toString()}:`, e)
     window.location.href = url.toString()
     return { status: "fallback", finalUrl: url }
@@ -369,12 +181,8 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
   let finalContent = initialContent
   let finalUrl = initialUrl
 
-  const metaRefreshRegex =
-    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=(?<url>[^"'>\s]+)["']?/i
-  const match = initialContent.match(metaRefreshRegex)
-
-  if (match?.groups?.url) {
-    const redirectTargetRaw = match.groups.url
+  const redirectTargetRaw = extractMetaRefreshUrl(initialContent)
+  if (redirectTargetRaw) {
     try {
       const redirectUrl = new URL(redirectTargetRaw, initialUrl)
       const redirectFetchResult = await fetchContent(redirectUrl)
@@ -466,24 +274,6 @@ async function updateDOM(htmlContent: string, originalUrl: URL): Promise<boolean
   }
 }
 
-/**
- * Handles scrolling after navigation based on options and final URL hash.
- *  Doesn't use scroll position from history state.
- */
-function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): void {
-  if (opts?.scroll === false) {
-    // explicitly skip scroll
-    console.debug("[handleNavigationScroll] Skipping scroll due to data-router-no-scroll")
-  } else if (finalUrl.hash) {
-    // Check hash on the final URL
-    console.debug(`[handleNavigationScroll] Scrolling to hash on final URL: ${finalUrl.hash}`)
-    scrollToUrlTarget(finalUrl.hash)
-  } else {
-    console.debug("[handleNavigationScroll] Scrolling to top")
-    window.scrollTo({ top: 0, behavior: "instant" })
-  }
-}
-
 let lastKnownPathname = window.location.pathname
 /**
  * Handles navigation triggered by clicking a link or programmatic call.
@@ -491,6 +281,14 @@ let lastKnownPathname = window.location.pathname
  */
 async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }): Promise<void> {
   removePopovers()
+
+  // Save video timestamp before DOM morph so it survives navigation.
+  // The timeupdate listener in navbar.inline.ts saves periodically, but if the
+  // video is paused the last saved value may be stale.
+  const videoElement = document.getElementById(pondVideoId) as HTMLVideoElement | null
+  if (videoElement) {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+  }
 
   // 1. Persist the current scroll position in the *existing* history entry so that
   // navigating back restores the correct position (e.g., top-of-page before an
@@ -553,10 +351,45 @@ function restoreScrollPosition(targetUrl: URL): void {
   if (typeof scrollTarget === "number") {
     console.debug(`[restoreScrollPosition] Restoring scroll from state: ${scrollTarget}`)
     window.scrollTo({ top: scrollTarget, behavior: "instant" })
+
+    // Safari/WebKit fires its own native hash-scroll after our restoration when
+    // the URL contains a hash, overriding the saved position. Monitor for drift
+    // and re-apply for several frames to win the race.
+    if (targetUrl.hash) {
+      guardScrollAgainstHashDrift(scrollTarget)
+    }
   } else if (targetUrl.hash) {
     console.debug(`[restoreScrollPosition] Scrolling to hash: ${targetUrl.hash}`)
     scrollToUrlTarget(targetUrl.hash)
   }
+}
+
+/**
+ * Monitors scroll position for a number of frames and corrects any drift caused
+ * by the browser's native hash-scroll overriding our programmatic restoration.
+ * Cancels immediately if the user interacts (wheel/touch/pointer/key).
+ */
+function guardScrollAgainstHashDrift(targetPos: number): void {
+  let frameCount = 0
+  const MAX_FRAMES = 60
+  let cancelled = false
+
+  const cancel = () => {
+    cancelled = true
+  }
+  for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+    window.addEventListener(event, cancel, { passive: true, once: true })
+  }
+
+  const monitor = () => {
+    if (cancelled || frameCount >= MAX_FRAMES) return
+    if (Math.abs(window.scrollY - targetPos) > 2) {
+      window.scrollTo({ top: targetPos, behavior: "instant" })
+    }
+    frameCount++
+    requestAnimationFrame(monitor)
+  }
+  requestAnimationFrame(monitor)
 }
 
 /**
@@ -610,6 +443,7 @@ function createRouter() {
     window.addEventListener(
       "scroll",
       () => {
+        if (isPrinting()) return
         console.debug("Scroll event fired")
         updateScrollState()
       },
@@ -617,9 +451,15 @@ function createRouter() {
     )
 
     document.addEventListener("click", async (event) => {
-      // Use getOpts to check for valid local links ignoring modifiers/targets
-      const opts = getOpts(event)
-      if (!opts || !opts.url || (event as MouseEvent).ctrlKey || (event as MouseEvent).metaKey) {
+      // Use getNavigationOpts to check for valid local links ignoring modifiers/targets
+      const opts = getNavigationOpts(event)
+      if (
+        !opts ||
+        !opts.url ||
+        event.defaultPrevented ||
+        (event as MouseEvent).ctrlKey ||
+        (event as MouseEvent).metaKey
+      ) {
         return // Let browser handle normal links, external links, or modified clicks
       }
 

@@ -5,6 +5,7 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_dispatch:
   push:
     branches: ["main", "dev"]
     paths:
@@ -23,6 +24,7 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
+    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "!quartz/**/*.spec.ts"
@@ -45,47 +47,49 @@ permissions:
   contents: read
 
 jobs:
+  should-run:
+    name: site-checks-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.gate.outputs.run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          sparse-checkout: .github/actions/ci-gate
+      - id: gate
+        uses: ./.github/actions/ci-gate
+        with:
+          run-labels: "ci:full-tests,ci:run-site-checks"
+
   build:
     name: site-checks-build
-    if: ${{ !startsWith(github.head_ref, 'deepsource-') }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Build Environment
-        uses: ./.github/actions/setup-build-env
-
-      - name: Build site
-        run: pnpm build
-
-      - name: Upload built site
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: site-build-checks-public-dir
-          path: public/
-          retention-days: 1
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    uses: ./.github/workflows/build-site.yaml
+    with:
+      fetch-depth: 0
 
   built-site-checks:
-    needs: build
+    needs: [should-run, build]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
-
-      - name: Install xmllint
-        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
-
-      - name: Download built site
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - name: Setup site
+        uses: ./.github/actions/setup-site
         with:
-          name: site-build-checks-public-dir
+          install-system-deps: "true"
+          cache-apt: "true"
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        with:
           path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Check CSS variables
         run: |
@@ -106,46 +110,40 @@ jobs:
         run: uv run python scripts/built_site_checks.py
 
   linkchecker:
-    needs: build
+    needs: [should-run, build]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Setup base environment
-        uses: ./.github/actions/setup-base-env
+      - name: Setup site
+        uses: ./.github/actions/setup-site
 
-      - name: Download built site
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+      - name: Restore built site from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
         with:
-          name: site-build-checks-public-dir
           path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
-      - name: Install linkchecker
-        run: pip install linkchecker
+      - name: Start server
+        id: server
+        uses: ./.github/actions/wait-for-server
+        with:
+          path: public
 
-      - name: Start server and run linkchecker
+      - name: Run linkchecker
+        env:
+          SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |
-          # Start server in background
-          pnpm exec serve public -l 8080 &
-          SERVER_PID=$!
-
-          # Wait for server to be ready
-          for i in {1..30}; do
-            if curl -s http://localhost:8080 > /dev/null; then
-              break
-            fi
-            sleep 1
-          done
-
           # Check internal links
           echo "Checking internal links..."
-          linkchecker http://localhost:8080 --threads 50
+          uv run linkchecker http://localhost:8080 --threads 50
           INTERNAL_STATUS=$?
 
           # Check external links (only assets.turntrout.com and github repo)
           echo "Checking external links..."
-          linkchecker public/**/*.html \
+          uv run linkchecker public/**/*.html \
             --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
             --check-extern \
             --threads 30 \
@@ -161,5 +159,25 @@ jobs:
             echo "Link checks failed:"
             echo "Internal linkchecker: $INTERNAL_STATUS"
             echo "External linkchecker: $EXTERNAL_STATUS"
+            exit 1
+          fi
+
+  # Unified status check — provides passing status when gated off on PRs
+  site-build-checks:
+    name: site-build-checks
+    if: always()
+    needs: [should-run, built-site-checks, linkchecker]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check results
+        run: |
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
+            echo "Tests were skipped (no label)"
+            exit 0
+          fi
+          if [[ "${{ needs.built-site-checks.result }}" != "success" ]] || \
+             [[ "${{ needs.linkchecker.result }}" != "success" ]]; then
+            echo "Site build checks did not succeed (checks=${{ needs.built-site-checks.result }}, links=${{ needs.linkchecker.result }})"
             exit 1
           fi

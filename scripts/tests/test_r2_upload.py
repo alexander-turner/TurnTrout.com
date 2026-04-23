@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -15,9 +16,9 @@ pytestmark = pytest.mark.requires_r2
 
 
 @pytest.fixture()
-def r2_cleanup():
+def r2_cleanup() -> Iterator[list[str]]:
     """Fixture to clean up uploaded files on R2 after each test."""
-    uploaded_files = []
+    uploaded_files: list[str] = []
     yield uploaded_files
     for file in uploaded_files:
         rclone_executable = script_utils.find_executable("rclone")
@@ -32,7 +33,9 @@ def r2_cleanup():
 
 
 @pytest.fixture
-def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
+def test_media_setup(
+    quartz_project_structure, monkeypatch: pytest.MonkeyPatch
+) -> Iterator[tuple[object, ...]]:
     """
     Fixture to set up a temporary test environment with:
         - A Quartz project structure (content, static directories).
@@ -87,7 +90,9 @@ def test_media_setup(quartz_project_structure, monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
-def mock_home_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+def mock_home_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     r2_upload._HOME_DIR = tmp_path
 
 

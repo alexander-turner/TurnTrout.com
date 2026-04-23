@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -34,10 +35,13 @@ from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
+    GERMAN_OPEN_QUOTE,
     LEFT_DOUBLE_QUOTE,
+    LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
     NBSP,
     RIGHT_DOUBLE_QUOTE,
+    RIGHT_GUILLEMET,
     RIGHT_SINGLE_QUOTE,
     WORD_JOINER,
     ZERO_WIDTH_NBSP,
@@ -148,6 +152,28 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
+    """For dropcap-enabled articles, the first space in the first paragraph must
+    not be a non-breaking space (which creates a visible extra gap)."""
+
+    issues: list[str] = []
+    for article in soup.find_all("article"):
+        if article.get("data-use-dropcap") == "false":
+            continue
+
+        p = article.find("p", recursive=False)
+        if not isinstance(p, Tag):
+            continue
+
+        text = p.get_text()
+        if len(text) >= 2 and text[1] == NBSP:
+            issues.append(
+                f"nbsp after first letter in dropcap paragraph: {text[:20]!r}"
+            )
+
+    return issues
+
+
 VALID_PARAGRAPH_ENDING_CHARACTERS = (
     ".!?:;)]}" + RIGHT_SINGLE_QUOTE + RIGHT_DOUBLE_QUOTE + ELLIPSIS + "\u2014"
 )
@@ -195,6 +221,8 @@ def _get_paragraph_text_for_punctuation_check(p: Tag) -> str:
     characters.
     """
     p_copy = copy.copy(p)
+    for select in p_copy.find_all("select"):
+        select.decompose()
     for link in p_copy.find_all("a", id=True):
         link_id = link.get("id", "")
         if isinstance(link_id, str) and link_id.startswith(
@@ -612,6 +640,10 @@ _MEDIA_EXTENSIONS = list(compress.ALLOWED_EXTENSIONS) + [
     ".svg",
     ".avif",
     ".ico",
+    ".mp3",
+    ".ogg",
+    ".wav",
+    ".flac",
 ]
 
 
@@ -638,7 +670,7 @@ def resolve_media_path(src: str, base_dir: Path) -> Path:
     return full_path
 
 
-ALLOWED_ASSET_DOMAINS = {"assets.turntrout.com"}
+ALLOWED_ASSET_DOMAINS = frozenset({"assets.turntrout.com"})
 
 
 def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
@@ -650,7 +682,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
         list of asset URLs that are not from allowed sources
     """
     invalid_sources = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = tag.get("src") or tag.get("href")
@@ -672,7 +704,7 @@ def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
 def check_local_media_files(soup: BeautifulSoup, base_dir: Path) -> list[str]:
     """Verify the existence of local media files (images, videos, SVGs)."""
     missing_files = []
-    media_tags = soup.find_all(["img", "video", "source", "svg"])
+    media_tags = soup.find_all(["img", "video", "audio", "source", "svg"])
 
     for tag in _tags_only(media_tags):
         src = str(tag.get("src") or tag.get("href"))
@@ -755,6 +787,65 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
                 missing.append("height")
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
+
+    return issues
+
+
+def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
+    """
+    Check that the first content image is optimized for LCP.
+
+    The first non-favicon <img> should have loading="eager" and
+    fetchpriority="high", and a matching <link rel="preload" as="image"> should
+    exist in <head>.
+    """
+    issues: list[str] = []
+
+    # Find the first non-favicon content image
+    article = soup.find("article")
+    if not article or not isinstance(article, Tag):
+        return issues
+
+    first_img = None
+    for img in _tags_only(article.find_all("img")):
+        raw_classes = img.get("class")
+        classes = raw_classes if isinstance(raw_classes, list) else []
+        # Skip favicons and images not processed by the links transformer
+        # (TSX-rendered images won't have a loading attribute)
+        if "favicon" not in classes and img.has_attr("loading"):
+            first_img = img
+            break
+
+    if not first_img:
+        return issues
+
+    src = first_img.get("src", "")
+    loading = first_img.get("loading", "")
+    fetchpriority = first_img.get("fetchpriority", "")
+
+    if loading != "eager":
+        issues.append(
+            f"First content image should have loading='eager', "
+            f"got '{loading}': {src}"
+        )
+    if fetchpriority != "high":
+        issues.append(
+            f"First content image should have fetchpriority='high', "
+            f"got '{fetchpriority}': {src}"
+        )
+
+    # Check for matching preload link in head
+    head = soup.find("head")
+    if head and isinstance(head, Tag) and src:
+        preload_links = head.find_all(
+            "link", attrs={"rel": "preload", "as": "image"}
+        )
+        preload_hrefs = [link.get("href") for link in _tags_only(preload_links)]
+        if str(src) not in preload_hrefs:
+            issues.append(
+                f"Missing <link rel='preload' as='image'> in <head> "
+                f"for first content image: {src}"
+            )
 
     return issues
 
@@ -1077,17 +1168,12 @@ def meta_tags_early(file_path: Path) -> list[str]:
     return issues
 
 
-def _head_with_retry(
-    url: str, timeout: int = 10, retries: int = 2
-) -> requests.Response:
-    """HEAD request with retry on timeout/connection errors."""
-    last_exc: requests.RequestException | None = None
-    for attempt in range(retries):
-        try:
-            return requests.head(url, timeout=timeout * (attempt + 1))
-        except (requests.ConnectionError, requests.Timeout) as exc:
-            last_exc = exc
-    raise last_exc  # type: ignore[misc]
+_http_session = script_utils.http_session()
+
+
+def _head_with_retry(url: str, timeout: int = 10) -> requests.Response:
+    """HEAD request with automatic retry on transient failures."""
+    return _http_session.head(url, timeout=timeout)
 
 
 def check_iframe_sources(soup: BeautifulSoup) -> list[str]:
@@ -1643,7 +1729,22 @@ def _untransform_text(label: str) -> str:
     simple_quotes_label = re.sub(quote_chars, '"', lower_label)
     unescaped_label = html.unescape(simple_quotes_label)
     normalized_spaces = unescaped_label.replace(NBSP, " ")
-    return normalized_spaces.strip()
+    # Normalize em-dashes, en-dashes, and ellipsis to ASCII equivalents
+    normalized_dashes = (
+        normalized_spaces.replace("\u2014", " - ")
+        .replace("\u2013", " - ")
+        .replace(ELLIPSIS, "...")
+    )
+    # Strip diacritics (e.g. naïve → naive, café → cafe) via Unicode decomposition
+    nfkd = unicodedata.normalize("NFKD", normalized_dashes)
+    stripped_diacritics = "".join(
+        c for c in nfkd if unicodedata.category(c) != "Mn"
+    )
+    # Normalize comma+quote ordering: "," and "," both → ",
+    normalized_quotes = stripped_diacritics.replace('",', ',"')
+    # Collapse multiple spaces from dash normalization
+    normalized_quotes = re.sub(r" +", " ", normalized_quotes)
+    return normalized_quotes.strip()
 
 
 def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
@@ -1753,6 +1854,7 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
         ),
@@ -1764,6 +1866,7 @@ def check_file_for_issues(
         "invalid_dropcap_first_letter": check_article_dropcap_first_letter(
             soup
         ),
+        "dropcap_leading_nbsp": check_dropcap_no_leading_nbsp(soup),
         "paragraphs_without_ending_punctuation": check_top_level_paragraphs_end_with_punctuation(
             soup
         ),
@@ -1946,12 +2049,22 @@ def check_spacing(
 
 
 ALLOWED_ELT_PRECEDING_CHARS = (
-    "[({-–—~×" + LEFT_DOUBLE_QUOTE + LEFT_SINGLE_QUOTE + "=+' \n\t\r−" + NBSP
+    "[({-–—~×"
+    + LEFT_DOUBLE_QUOTE
+    + LEFT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
+    + GERMAN_OPEN_QUOTE
+    + "=+' \n\t\r−"
+    + NBSP
 )
 ALLOWED_ELT_FOLLOWING_CHARS = (
     "])}.,;!?:-–—~×(+"
+    + LEFT_DOUBLE_QUOTE
     + RIGHT_DOUBLE_QUOTE
     + RIGHT_SINGLE_QUOTE
+    + LEFT_GUILLEMET
+    + RIGHT_GUILLEMET
     + ELLIPSIS
     + "=' \n\t\r"
     + NBSP
@@ -2086,9 +2199,11 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
 
 # Whitelisted emphasis patterns that should be ignored
 # If both prev and next are in the whitelist, then the emphasis is whitelisted
-WHITELISTED_EMPHASIS = {
-    ("Some", ""),  # For e.g. "Some<i>one</i>"
-}
+WHITELISTED_EMPHASIS = frozenset(
+    {
+        ("Some", ""),  # For e.g. "Some<i>one</i>"
+    }
+)
 
 
 def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
@@ -2426,9 +2541,16 @@ _SKIP_PARENT_CLASSES = (
     "authors",
     "admonition-metadata",
     "backlinks",
-    "transclude",
     "tag-container",
     "all-tags",
+)
+
+# Block-level elements that should never appear inside <p>. When they
+# do (e.g. transclusion wrapping tables in <span> inside <p>),
+# get_text() concatenates child text without spaces, producing garbage.
+_BLOCK_LEVEL_TAGS = frozenset(
+    ["table", "div", "blockquote", "figure", "pre", "ul", "ol"]
+    + [f"h{n}" for n in range(1, 7)]
 )
 
 
@@ -2450,6 +2572,68 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
             abbr.string = abbr.get_text().upper()
 
 
+def _should_skip_spellcheck_paragraph(element: Tag) -> bool:
+    """Check whether a ``<p>`` element should be excluded from spell-
+    checking."""
+    in_skip_container = bool(
+        any(element.find_parent(class_=cls) for cls in _SKIP_PARENT_CLASSES)
+        or element.find_parent(id="content-meta")
+    )
+    return bool(
+        should_skip(element)
+        or element.find_parent(["nav", "footer", "header"])
+        or in_skip_container
+        or "page-listing-title" in script_utils.get_classes(element)
+        # Skip <p> with block-level children (invalid HTML from
+        # e.g. transclusion): get_text() concatenates without spaces.
+        or element.find(_BLOCK_LEVEL_TAGS)
+    )
+
+
+def _normalize_paragraph_text(element: Tag) -> str:
+    """Normalize a ``<p>`` element into spellchecker-friendly plain text."""
+    el_copy = copy.copy(element)
+
+    _normalize_smallcaps(el_copy)
+
+    # Fix inline element word boundaries:
+    # - <br> → space (prevents "state<br>while" → "statewhile")
+    # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
+    # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
+    for br in el_copy.find_all("br"):
+        br.replace_with(" ")
+    for sub in el_copy.find_all("sub"):
+        sub.insert_before(" ")
+    for sup in el_copy.find_all("sup"):
+        sup.unwrap()
+
+    # Remove footnote ref links to avoid "word1" concatenation
+    for link in el_copy.find_all("a", id=True):
+        link_id = link.get("id", "")
+        if isinstance(link_id, str) and link_id.startswith(
+            "user-content-fnref-"
+        ):
+            parent = link.parent
+            if isinstance(parent, Tag) and parent.name == "sup":
+                parent.decompose()
+            else:
+                link.decompose()
+
+    text = script_utils.get_non_code_text(el_copy).strip()
+    # Normalize smart quotes to ASCII so spellchecker treats
+    # contractions like "I've" as single words instead of "I"+"ve"
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    # Rejoin dropcap-split contractions: the dropcap transformer
+    # inserts a space before apostrophes ("I've" → "I 've") for
+    # CSS rendering, which makes the spellchecker see "ve" as a
+    # standalone word. Rejoin them here.
+    text = re.sub(r"\b(\w) '", r"\1'", text)
+    # Pad sentence-ending punctuation with a trailing space so
+    # the spellchecker doesn't glue it to the preceding word
+    # (e.g. "submodules." → "submodules .")
+    return re.sub(r"(\w)([.!?])$", r"\1 \2", text)
+
+
 def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
@@ -2464,59 +2648,9 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
     for article in _tags_only(soup.find_all("article")):
         for element in _tags_only(article.find_all("p")):
-            if (
-                should_skip(element)
-                or element.find_parent(["nav", "footer", "header"])
-                or any(
-                    element.find_parent(class_=cls)
-                    for cls in _SKIP_PARENT_CLASSES
-                )
-                or element.find_parent(id="content-meta")
-                or "page-listing-title" in script_utils.get_classes(element)
-            ):
+            if _should_skip_spellcheck_paragraph(element):
                 continue
-
-            # Work on a copy to avoid mutating the original soup
-            el_copy = copy.copy(element)
-
-            _normalize_smallcaps(el_copy)
-
-            # Fix inline element word boundaries:
-            # - <br> → space (prevents "state<br>while" → "statewhile")
-            # - <sub> → space before (prevents "bounds<sub>x</sub>" → "boundsx")
-            # - <sup> → unwrap (keeps "2<sup>nd</sup>" as "2nd")
-            for br in el_copy.find_all("br"):
-                br.replace_with(" ")
-            for sub in el_copy.find_all("sub"):
-                sub.insert_before(" ")
-            for sup in el_copy.find_all("sup"):
-                sup.unwrap()
-
-            # Remove footnote ref links to avoid "word1" concatenation
-            for link in el_copy.find_all("a", id=True):
-                link_id = link.get("id", "")
-                if isinstance(link_id, str) and link_id.startswith(
-                    "user-content-fnref-"
-                ):
-                    parent = link.parent
-                    if isinstance(parent, Tag) and parent.name == "sup":
-                        parent.decompose()
-                    else:
-                        link.decompose()
-
-            text = script_utils.get_non_code_text(el_copy).strip()
-            # Normalize smart quotes to ASCII so spellchecker treats
-            # contractions like "I've" as single words instead of "I"+"ve"
-            text = text.replace("\u2019", "'").replace("\u2018", "'")
-            # Rejoin dropcap-split contractions: the dropcap transformer
-            # inserts a space before apostrophes ("I've" → "I 've") for
-            # CSS rendering, which makes the spellchecker see "ve" as a
-            # standalone word. Rejoin them here.
-            text = re.sub(r"\b(\w) '", r"\1'", text)
-            # Pad sentence-ending punctuation with a trailing space so
-            # the spellchecker doesn't glue it to the preceding word
-            # (e.g. "submodules." → "submodules .")
-            text = re.sub(r"(\w)([.!?])$", r"\1 \2", text)
+            text = _normalize_paragraph_text(element)
             if text:
                 paragraphs.append(text)
     return paragraphs
@@ -2636,6 +2770,47 @@ def _spellcheck_flattened_paragraphs(
     return _parse_spellcheck_output(result.stdout, line_to_source)
 
 
+def _resolve_md_path(
+    file: str,
+    root_path: Path,
+    public_dir: Path,
+    file_path: Path,
+    permalink_to_md_path_map: dict,
+) -> Path | None:
+    """Resolve the Markdown source path for an HTML file at the public root."""
+    if root_path != public_dir:
+        return None
+    stem = Path(file).stem
+    md_path = permalink_to_md_path_map.get(
+        stem
+    ) or permalink_to_md_path_map.get(stem.lower())
+    if not md_path and script_utils.should_have_md(file_path):
+        raise FileNotFoundError(f"Markdown file for {stem} not found")
+    return md_path
+
+
+def _collect_paragraphs_for_spellcheck(
+    file: str,
+    file_path: Path,
+    public_dir: Path,
+    paragraph_map: dict[str, list[str]],
+) -> None:
+    """Collect flattened paragraph text for spellcheck, skipping test pages."""
+    if Path(file).stem == "test-page":
+        return
+    # skipcq: PTC-W6004
+    with open(file_path, encoding="utf-8") as f:
+        soup_for_paras = BeautifulSoup(f.read(), "html.parser")
+    if script_utils.is_redirect(soup_for_paras) or soup_for_paras.find(
+        "div", class_="page-listing"
+    ):
+        return
+    paras = _extract_flat_paragraph_texts(soup_for_paras)
+    if paras:
+        rel = str(file_path.relative_to(public_dir))
+        paragraph_map[rel] = paras
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2661,27 +2836,17 @@ def _process_html_files(  # pylint: disable=too-many-locals
         if "drafts" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
-            is_valid_file = (
-                file.endswith(".html") and Path(file).stem not in files_to_skip
-            )
-            if not is_valid_file:
+            if not file.endswith(".html") or Path(file).stem in files_to_skip:
                 continue
 
             file_path = root_path / file
-            md_path = None
-            if root_path == public_dir:
-                md_path = permalink_to_md_path_map.get(
-                    Path(file).stem
-                ) or permalink_to_md_path_map.get(Path(file).stem.lower())
-                if not md_path and script_utils.should_have_md(file_path):
-                    raise FileNotFoundError(
-                        f"Markdown file for {Path(file).stem} not found"
-                    )
+            md_path = _resolve_md_path(
+                file, root_path, public_dir, file_path, permalink_to_md_path_map
+            )
 
             issues = check_file_for_issues(
                 file_path, public_dir, md_path, check_opts
             )
-
             if any(lst for lst in issues.values()):
                 _print_issues(file_path, issues)
                 issues_found_in_html = True
@@ -2689,20 +2854,9 @@ def _process_html_files(  # pylint: disable=too-many-locals
             _maybe_collect_citation_keys(
                 file_path, public_dir, citation_to_files
             )
-
-            # Collect flattened paragraph text for spellcheck
-            # Skip test page (contains Lorem ipsum and other test strings)
-            if Path(file).stem != "test-page":
-                # skipcq: PTC-W6004
-                with open(file_path, encoding="utf-8") as f:
-                    soup_for_paras = BeautifulSoup(f.read(), "html.parser")
-                if not script_utils.is_redirect(
-                    soup_for_paras
-                ) and not soup_for_paras.find("div", class_="page-listing"):
-                    paras = _extract_flat_paragraph_texts(soup_for_paras)
-                    if paras:
-                        rel = str(file_path.relative_to(public_dir))
-                        paragraph_map[rel] = paras
+            _collect_paragraphs_for_spellcheck(
+                file, file_path, public_dir, paragraph_map
+            )
 
     # Check for duplicate citation keys across all files
     citation_issues = _find_duplicate_citations(citation_to_files)

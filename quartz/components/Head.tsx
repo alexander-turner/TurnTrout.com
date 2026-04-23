@@ -125,6 +125,10 @@ export default (() => {
     })
 
     const fontPreloadNames = [
+      // Main body font — preloading it prevents a font-swap LCP delay
+      // (text first renders with a fallback font, then repaints with the
+      // web font, and that repaint IS the LCP event on text-heavy pages)
+      "EBGaramond/EBGaramond08-Regular",
       "EBGaramond/EBGaramond-InitialsF1",
       "EBGaramond/EBGaramond-InitialsF2",
     ]
@@ -157,13 +161,19 @@ export default (() => {
     return (
       <head>
         <meta charSet="utf-8" />
-        {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {headJsx}
-        <link rel="preload" href="/index.css" as="style" spa-preserve />
-        <link rel="stylesheet" href="/index.css" spa-preserve />
+        {/* Preload hints and preconnects BEFORE sync scripts so the browser
+            starts downloading CSS and establishing connections while scripts
+            block the parser. */}
         <link rel="preconnect" href={cdnBaseUrl} crossOrigin="anonymous" />
         <link rel="preconnect" href="https://cloud.umami.is" crossOrigin="anonymous" />
+        <link rel="preload" href="/index.css" as="style" spa-preserve />
+        {/* First content image preload is handled by optimizeLcpImage() in
+            the render pipeline — it post-processes the final HTML to add a
+            <link rel="preload"> for the LCP image on every page. */}
+        {staticScripts.map(({ id, src }) => generateScriptElement(id, src))}
+        <link rel="stylesheet" href="/index.css" spa-preserve />
+        {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
           <meta name="robots" content="noindex, noimageindex,nofollow" />
         )}
@@ -174,11 +184,17 @@ export default (() => {
         <script defer src="/static/scripts/safari-autoplay.js" spa-preserve />
         <script defer src="/static/scripts/remove-css.js" spa-preserve />
         <script defer src="/static/scripts/lockVideoPlaybackRate.js" spa-preserve />
-        {/* Show Elvish translations when JavaScript is disabled */}
+        <script defer src="/static/scripts/katex-a11y-tabindex.js" spa-preserve />
+        <script defer src="/static/scripts/img-comparison-slider.js" spa-preserve />
+        {/* Show Elvish translations and stack before/after images when JavaScript is disabled */}
         <noscript>
           <style
             // skipcq: JS-0440 - Safe: static CSS string, not user input
-            dangerouslySetInnerHTML={{ __html: ELVISH_NOSCRIPT_CSS }}
+            dangerouslySetInnerHTML={{
+              __html: `${ELVISH_NOSCRIPT_CSS}
+img-comparison-slider { visibility: visible; }
+img-comparison-slider [slot="second"] { display: block; }`,
+            }}
           />
         </noscript>
         {analyticsScript}

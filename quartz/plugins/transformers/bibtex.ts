@@ -36,7 +36,7 @@ function slugToPascalCase(slug: string): string {
 /**
  * Generates a citation key: LastName + Year + PascalCaseSlug
  */
-function generateCitationKey(authors: string[], year: number, slug: string): string {
+function generateCitationKey(authors: readonly string[], year: number, slug: string): string {
   const lastName = getLastName(authors[0])
   const pascalSlug = slugToPascalCase(slug)
   return `${lastName}${year}${pascalSlug}`

@@ -3,8 +3,7 @@ permalink: instrumental-convergence-via-vnm-preferences
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+lw-page-url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 lw-is-question: 'false'
 lw-posted-at: 2021-08-09T17:22:24.056000Z
 lw-last-modification: 2023-05-16T20:32:50.619000Z
@@ -37,13 +36,12 @@ next-post-title: 'Satisficers Tend To Seek Power: Instrumental Convergence Via R
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2021-08-09 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
+original_url: https://www.lesswrong.com/posts/LYxWrxram2JFBaeaq/when-most-vnm-coherent-preference-orderings-have-convergent
 skip_import: true
-description: VNM-coherent preference orderings have the same statistical incentives
-  as utility functions, often leading to power-seeking behavior.
-date_updated: 2025-11-22 00:21:52.667251
+description: VNM-coherent preference orderings have the same statistical incentives as utility functions, often leading to power-seeking behavior.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -58,7 +56,7 @@ This post explains a formal link between "what kinds of instrumental convergence
 
 In certain contexts, coherence theorems _can_ have non-trivial implications, in that they provide Bayesian evidence about what the coherent agent will probably do. In the situations where the power-seeking theorems apply, coherent preferences **do** suggest some degree of goal-directedness. Somewhat more precisely, VNM-coherence is Bayesian evidence that the agent prefers to stay alive, keep its options open, etc.
 
-However, VNM-coherence over _action-observation histories_ [tells you nothing](https://www.lesswrong.com/posts/NxF5G6CJiof6cemTw/coherence-arguments-do-not-imply-goal-directed-behavior) about what behavior to expect from the coherent agent, _because_ [there is no instrumental convergence for generic utility functions over action-observation histories](/power-seeking-beyond-MDPs#Instrumental-Convergence-Disappears-For-Utility-Functions-Over-Action-Observation-Histories)!
+However, VNM-coherence over _action-observation histories_ [tells you nothing](https://www.lesswrong.com/posts/NxF5G6CJiof6cemTw/coherence-arguments-do-not-imply-goal-directed-behavior) about what behavior to expect from the coherent agent, _because_ [there is no instrumental convergence for generic utility functions over action-observation histories](/power-seeking-beyond-MDPs#instrumental-convergence-disappears-for-utility-functions-over-action-observation-histories)!
 
 # Intuition for the result
 
@@ -103,7 +101,7 @@ So: orbit-level instrumental convergence for utility functions is equivalent to 
 
 # Implications
 
-- [Instrumental convergence does not exist when maximizing expected utility over action observation histories (AOH)](/power-seeking-beyond-MDPs#Instrumental-Convergence-Disappears-For-Utility-Functions-Over-Action-Observation-Histories).
+- [Instrumental convergence does not exist when maximizing expected utility over action observation histories (AOH)](/power-seeking-beyond-MDPs#instrumental-convergence-disappears-for-utility-functions-over-action-observation-histories).
 
   - Therefore, VNM-coherence over action observation history lotteries [tells you nothing](https://www.lesswrong.com/posts/NxF5G6CJiof6cemTw/coherence-arguments-do-not-imply-goal-directed-behavior) about what behavior to expect from the agent.
   - Coherence over AOH tells you nothing _because_ there is no instrumental convergence in that setting!

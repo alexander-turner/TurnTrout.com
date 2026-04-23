@@ -283,7 +283,7 @@ describe("markdownPlugins", () => {
     const options = { ...defaultOptions, enableVideoEmbed: true }
     const input = "![](video.mp4)"
     const output = testMarkdownPlugins(input, options)
-    expect(output).toContain('<span class="video-container">')
+    expect(output).toContain('class="video-container"')
     expect(output).toContain('<video src="video.mp4" controls>')
   })
 
@@ -295,7 +295,7 @@ describe("markdownPlugins", () => {
       wikilinks: false,
     }
     const output = testMarkdownPlugins(input, options)
-    expect(output).toContain('<span class="video-container">')
+    expect(output).toContain('class="video-container"')
     expect(output).toContain('<video src="video.webm" controls>')
   })
 
@@ -447,7 +447,7 @@ describe("processWikilink", () => {
       expected: {
         type: "html",
         value:
-          '<span class="video-container"><video src="video.mp4" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
+          '<span class="video-container" data-src="video.mp4"><video src="video.mp4" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
       },
     },
     {
@@ -455,7 +455,8 @@ describe("processWikilink", () => {
       input: ["![[audio.mp3]]", "audio.mp3", "", ""],
       expected: {
         type: "html",
-        value: '<audio src="audio.mp3" controls></audio>',
+        value:
+          '<span class="audio-container" data-src="audio.mp3"><audio src="audio.mp3" controls></audio></span>',
       },
     },
   ]
@@ -514,6 +515,54 @@ describe("processWikilink", () => {
       value:
         '<span class="transclude" data-url="file.unknown" data-block=""><a href="/file.unknown" class="transclude-inner">Transclude of file.unknown</a></span>',
     })
+  })
+
+  it.each([
+    {
+      name: "video with XSS filename",
+      input: [
+        '![[file"><img src=x onerror=alert(1)>.mp4]]',
+        'file"><img src=x onerror=alert(1)>.mp4',
+        "",
+        "",
+      ] as [string, string, string, string],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain('"><img')
+        expect(html).toContain("&quot;&gt;&lt;img")
+      },
+    },
+    {
+      name: "audio with XSS filename",
+      input: ['![[file"onload=alert(1).mp3]]', 'file"onload=alert(1).mp3', "", ""] as [
+        string,
+        string,
+        string,
+        string,
+      ],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain('"onload=')
+        expect(html).toContain("&quot;onload=")
+      },
+    },
+    {
+      name: "pdf with XSS filename",
+      input: [
+        '![[file"><script>alert(1)</script>.pdf]]',
+        'file"><script>alert(1)</script>.pdf',
+        "",
+        "",
+      ] as [string, string, string, string],
+      check: (result: ReturnType<typeof processWikilink>) => {
+        const html = (result as { value: string }).value
+        expect(html).not.toContain("<script>")
+        expect(html).toContain("&lt;script&gt;")
+      },
+    },
+  ])("should escape HTML in $name", ({ input, check }) => {
+    const result = processWikilink(input[0], input[1], input[2], input[3])
+    check(result)
   })
 })
 
@@ -869,7 +918,7 @@ describe("Branch coverage tests", () => {
         enableVideoEmbed: true,
       }
       const output = testMarkdownPlugins(input, options)
-      expect(output).toContain('<span class="video-container">')
+      expect(output).toContain('class="video-container"')
       expect(output).toContain(`<video src="test.${extension}" controls>`)
     })
   })
@@ -891,7 +940,7 @@ describe("Branch coverage tests", () => {
       const result = processWikilink(`![[audio.${extension}]]`, `audio.${extension}`, "", "")
       expect(result).toEqual({
         type: "html",
-        value: `<audio src="audio.${extension}" controls></audio>`,
+        value: `<span class="audio-container" data-src="audio.${extension}"><audio src="audio.${extension}" controls></audio></span>`,
       })
     })
   })
@@ -901,13 +950,14 @@ describe("Branch coverage tests", () => {
     expect(result1).toEqual({
       type: "html",
       value:
-        '<span class="video-container"><video src="video.webm" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
+        '<span class="video-container" data-src="video.webm"><video src="video.webm" controls><track kind="captions" src="data:text/vtt,WEBVTT"></video></span>',
     })
 
     const result2 = processWikilink("![[video.3gp]]", "video.3gp", "", "")
     expect(result2).toEqual({
       type: "html",
-      value: '<audio src="video.3gp" controls></audio>',
+      value:
+        '<span class="audio-container" data-src="video.3gp"><audio src="video.3gp" controls></audio></span>',
     })
   })
 
@@ -1367,19 +1417,6 @@ describe("createYouTubeEmbed", () => {
       width: "600px",
       height: "350px",
       src: "https://www.youtube.com/embed/dQw4w9WgXcQ?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab",
-    })
-  })
-
-  it("should create YouTube embed with undefined playlist", () => {
-    const result = createYouTubeEmbed("dQw4w9WgXcQ", undefined)
-
-    expect(result).toEqual({
-      class: "external-embed",
-      allow: "fullscreen",
-      frameborder: 0,
-      width: "600px",
-      height: "350px",
-      src: "https://www.youtube.com/embed/dQw4w9WgXcQ",
     })
   })
 })

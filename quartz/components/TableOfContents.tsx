@@ -81,7 +81,7 @@ export const CreateTableOfContents: QuartzComponent = ({
  * @returns A tuple containing an array of JSX elements and the next index to process.
  */
 export function buildNestedList(
-  entries: TocEntry[],
+  entries: readonly TocEntry[],
   currentIndex = 0,
   currentDepth = entries[0]?.depth || 0,
 ): [JSX.Element[], number] {
@@ -197,6 +197,7 @@ export function processTocEntry(entry: TocEntry): Parent {
  */
 export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
   htmlAst.children.forEach((node: RootContent) => {
+    /* istanbul ignore else -- fromHtml only produces text/element nodes */
     if (node.type === "text") {
       const textValue = node.value
       let textToProcess = textValue
@@ -238,7 +239,7 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
  * Renders an abbreviation element (<abbr>) in the TOC with the appropriate class names and text content.
  */
 const handleAbbr = (elt: Element): JSX.Element => {
-  const abbrText = (elt.children[0] as { value: string }).value
+  const abbrText = elt.children.length > 0 ? (elt.children[0] as { value: string }).value : ""
   const className = (elt.properties?.className as string[])?.join(" ") || ""
   return <abbr className={className}>{abbrText}</abbr>
 }
@@ -322,7 +323,7 @@ document.addEventListener('nav', function() {
     currentSection = newSection;
 
     navLinks.forEach((link) => {
-      const slug = link.getAttribute('href').split("#")[1];
+      const slug = link.getAttribute('href')?.split("#")[1];
       link.classList.toggle("active", currentSection && slug === currentSection);
     });
   }

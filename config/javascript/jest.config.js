@@ -46,7 +46,7 @@ const config = {
   preset: "ts-jest",
 
   // The test environment that will be used for testing
-  testEnvironment: "jsdom",
+  testEnvironment: "jest-fixed-jsdom",
 
   // Configure test environment to properly handle ESM with experimental VM modules
   testEnvironmentOptions: {

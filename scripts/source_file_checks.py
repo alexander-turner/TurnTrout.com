@@ -20,6 +20,8 @@ from scripts import utils as script_utils  # noqa: E402
 MetadataIssues = Dict[str, List[str]]
 PathMap = Dict[str, Path]  # Maps URLs to their source files
 
+_http_session = script_utils.http_session()
+
 
 class ForbiddenPatternConfig(TypedDict):
     """Configuration for a forbidden pattern check."""
@@ -114,9 +116,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
                 "Chrome/58.0.3029.110 Safari/537.36"
             )
         }
-        # Use 30s timeout to accommodate Cloudflare CDN latency. The 10s default
-        # caused intermittent failures in CI when the CDN was slow to respond.
-        response = requests.head(
+        response = _http_session.head(
             card_url, timeout=30, allow_redirects=True, headers=headers
         )
 
@@ -354,7 +354,10 @@ def check_sequence_relationships(
         key for key, value in sequence_data.items() if value is current_mapping
     }
 
-    for key, target_field_prefix in (("next", "prev"), ("prev", "next")):
+    direction_pairs: tuple[
+        tuple[SequenceDirection, str], tuple[SequenceDirection, str]
+    ] = (("next", "prev"), ("prev", "next"))
+    for key, target_field_prefix in direction_pairs:
         slug_field = f"{key}-post-slug"
         if slug_field not in current_mapping:
             continue
@@ -381,7 +384,7 @@ def check_sequence_relationships(
                 current_mapping,
                 target_mapping,
                 target_slug,
-                key,  # type: ignore[arg-type]
+                key,
             )
         )
 

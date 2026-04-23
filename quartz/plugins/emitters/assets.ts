@@ -17,7 +17,7 @@ const filesToCopy = async (argv: Argv, cfg: QuartzConfig) => {
   ])
 }
 
-const assetExtensions = ["webm", "mp4", "png", "jpg", "jpeg", "svg"]
+const assetExtensions: readonly string[] = ["webm", "mp4", "png", "jpg", "jpeg", "svg"]
 export const Assets: QuartzEmitterPlugin = () => {
   return {
     name: "Assets",

@@ -8,6 +8,26 @@ from .. import convert_markdown_yaml, source_file_checks
 from .. import utils as script_utils
 from .utils import create_markdown_file
 
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Prevent all tests from making real HTTP requests via the shared session.
+
+    Every test that exercises code paths through source_file_checks needs
+    _http_session.head mocked; making this autouse avoids accidental real
+    network calls across the entire module.
+    """
+    mock_head_response = mock.Mock()
+    mock_head_response.ok = False
+    mock_head_response.status_code = 404
+    monkeypatch.setattr(
+        source_file_checks._http_session,
+        "head",
+        lambda *args, **kwargs: mock_head_response,
+    )
+
+
 try:
     # ruff: noqa: F401
     from .utils import setup_test_env  # type: ignore
@@ -18,7 +38,7 @@ actual_max_size = 300
 
 
 @pytest.fixture
-def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
+def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         script_utils,
         "load_shared_constants",
@@ -27,7 +47,7 @@ def mock_load_shared_constants(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def mock_git_root(quartz_project_structure, monkeypatch):
+def mock_git_root(quartz_project_structure, monkeypatch) -> None:
     """Override conftest mock_git_root to add card_images directory."""
     git_root = quartz_project_structure["public"].parent
     (git_root / "quartz" / "static" / "images" / "card_images").mkdir(
@@ -177,14 +197,17 @@ def test_process_card_image_in_markdown_skips(
     md_file_path.parent.mkdir(exist_ok=True)
     md_file_path.write_text(markdown_content)
 
-    # Mock HEAD request for PNG size check
+    # Mock the HTTP session used by source_file_checks for URL accessibility checks
     mock_head_response = mock.Mock()
+    mock_head_response.ok = True
     mock_head_response.status_code = 200
     mock_head_response.headers = {"Content-Length": str(200 * 1024)}  # 200KB
+    mock_session = mock.Mock()
+    mock_session.head.return_value = mock_head_response
 
     with (
         mock.patch("requests.get") as mock_get,
-        mock.patch("requests.head", return_value=mock_head_response),
+        mock.patch.object(source_file_checks, "_http_session", mock_session),
         mock.patch("subprocess.run") as mock_subproc_run,
         mock.patch("shutil.move") as mock_shutil_move,
         mock.patch(
@@ -256,7 +279,7 @@ def test_download_image_failure(tmp_path):
 
 
 @pytest.fixture
-def jpeg_conversion_setup(tmp_path):
+def jpeg_conversion_setup(tmp_path) -> tuple[Path, Path]:
     """Common setup for JPEG conversion tests."""
     input_path = tmp_path / "test.avif"
     output_path = tmp_path / "test.jpg"
@@ -336,7 +359,7 @@ def test_convert_to_jpeg_iterative_compression(jpeg_conversion_setup):
         mock_stat.return_value.st_size = 400 * 1024  # First: 400KB (too large)
 
         # After first call, make it smaller
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs) -> None:
             if mock_run.call_count == 1:
                 mock_stat.return_value.st_size = 400 * 1024
             else:

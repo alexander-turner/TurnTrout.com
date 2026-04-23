@@ -6,6 +6,14 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    groups:
+      npm-all:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
 
   # "uv" ecosystem specifically handles uv.lock updates
   - package-ecosystem: "uv"
@@ -13,3 +21,48 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: auto
+    groups:
+      uv-all:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+
+  # Keep GitHub Actions versions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions-all:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+
+  # Dependabot only scans .github/workflows/ by default.
+  # These entries cover composite actions in .github/actions/.
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/setup-site"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # v6 breaks pnpm install with ERR_PNPM_BROKEN_LOCKFILE in CI
+      - dependency-name: "pnpm/action-setup"
+        versions: ["6"]
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/setup-visual-testing-env"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/summarize-failed-shards"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: ".github/actions/deploy-to-cloudflare"
+    schedule:
+      interval: "weekly"

@@ -32,7 +32,7 @@ export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element 
 // skipcq: JS-D1001
 export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData, allFiles } = props
-  const cssClasses: string[] = fileData.frontmatter?.cssclasses ?? []
+  const cssClasses: readonly string[] = fileData.frontmatter?.cssclasses ?? []
   const classes = [PREVIEWABLE_CLASS, ...cssClasses].join(" ")
   const pageListing = generateAllPostsBlock(props)
 

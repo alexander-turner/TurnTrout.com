@@ -2,7 +2,7 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 
-import { variables } from "./variables"
+import { variables, darkPalette, lightPalette } from "./variables"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -64,9 +64,58 @@ export function generateScss(): void {
   }
 }
 
+/**
+ * Formats a palette record as an SCSS map body
+ */
+const formatScssMap = (palette: Record<string, string>): string =>
+  Object.entries(palette)
+    .map(([name, value]) => `  "${name}": ${value}`)
+    .join(",\n")
+
+/**
+ * Generates the _palette.scss file content from palette definitions in variables.ts
+ */
+const generatePaletteContent = (): string => {
+  return `// This file is auto-generated from variables.ts. Do not edit directly.
+$dark-colors: (
+${formatScssMap(darkPalette)},
+);
+$light-colors: (
+${formatScssMap(lightPalette)},
+);
+
+/// Emit --name: value for each entry in a palette map.
+@mixin palette-vars($palette, $important: false) {
+  @each $name, $value in $palette {
+    @if $important {
+      --#{$name}: #{$value} !important;
+    } @else {
+      --#{$name}: #{$value};
+    }
+  }
+}
+`
+}
+
+/**
+ * Generates and writes the _palette.scss file to disk
+ * @throws Error if file writing fails
+ */
+export function generatePalette(): void {
+  try {
+    const outputPath = path.join(__dirname, "_palette.scss")
+    const scss = generatePaletteContent()
+    fs.writeFileSync(outputPath, scss)
+  } catch (error) {
+    console.error("Error generating palette SCSS:", error)
+    throw error
+  }
+}
+
 // Run generation if this is the main module
 /* istanbul ignore next */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   generateScss()
-  console.log("SCSS variables generated successfully!")
+  generatePalette()
+  console.log("SCSS variables and palette generated successfully!")
 }

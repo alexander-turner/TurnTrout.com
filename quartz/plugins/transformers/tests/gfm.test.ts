@@ -18,7 +18,8 @@ import {
   appendArrowToFootnoteListItemVisitor,
   htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
-  deduplicateSvgIds,
+  optimizeMermaidSvgs,
+  removeUnreferencedMarkers,
   isValidDlStructure,
   ensureHeadingLinksHaveAccessibleNames,
 } from "../gfm"
@@ -515,11 +516,11 @@ describe("GitHubFlavoredMarkdown plugin", () => {
     const plugin = GitHubFlavoredMarkdown()
     const { htmlPlugins } = getPlugins(plugin)
 
-    const footnoteProcessor = htmlPlugins[0] as (tree: unknown) => void
+    const footnoteProcessor = htmlPlugins[0] as (tree?: unknown) => void
 
     // Should not throw when called with undefined tree
     expect(() => {
-      footnoteProcessor(undefined)
+      footnoteProcessor()
     }).not.toThrow()
   })
 })
@@ -1038,210 +1039,168 @@ describe("htmlAccessibilityPlugin (integration)", () => {
   })
 })
 
-describe("deduplicateSvgIds", () => {
-  it("prefixes IDs in a single SVG", () => {
-    const marker = h("marker", { id: "flowchart-pointEnd" })
-    const svg = h("svg", [marker])
-    const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
-
-    expect(marker.properties?.id).toBe("svg-0-flowchart-pointEnd")
-  })
-
-  it("uses different prefixes for multiple SVGs", () => {
-    const marker1 = h("marker", { id: "pointEnd" })
-    const marker2 = h("marker", { id: "pointEnd" })
-    const svg1 = h("svg", [marker1])
-    const svg2 = h("svg", [marker2])
-    const tree: Root = { type: "root", children: [svg1, svg2] }
-    deduplicateSvgIds(tree)
-
-    expect(marker1.properties?.id).toBe("svg-0-pointEnd")
-    expect(marker2.properties?.id).toBe("svg-1-pointEnd")
-  })
-
-  it.each([
-    [
-      "href",
-      () => {
-        const use = h("use", { href: "#arrow" })
-        return { svg: h("svg", [h("marker", { id: "arrow" }), use]), target: use }
-      },
-      (target: Element) => expect(target.properties?.href).toBe("#svg-0-arrow"),
-    ],
-    [
-      "xlinkHref",
-      () => {
-        const rect: Element = {
-          type: "element",
-          tagName: "rect",
-          properties: { xlinkHref: "#grad1" },
-          children: [],
-        }
-        const svg: Element = {
-          type: "element",
-          tagName: "svg",
-          properties: {},
-          children: [h("linearGradient", { id: "grad1" }), rect],
-        }
-        return { svg, target: rect }
-      },
-      (target: Element) => expect(target.properties?.xlinkHref).toBe("#svg-0-grad1"),
-    ],
-    [
-      "url(#id) in properties",
-      () => {
-        const rect = h("rect", { "clip-path": "url(#clip1)" })
-        return { svg: h("svg", [h("clipPath", { id: "clip1" }), rect]), target: rect }
-      },
-      (target: Element) => expect(target.properties?.["clip-path"]).toBe("url(#svg-0-clip1)"),
-    ],
-  ] as [string, () => { svg: Element; target: Element }, (target: Element) => void][])(
-    "updates %s references to prefixed IDs",
-    (_desc, setup, assert) => {
-      const { svg, target } = setup()
-      const tree: Root = { type: "root", children: [svg] }
-      deduplicateSvgIds(tree)
-      assert(target)
-    },
-  )
-
-  it.each([
-    [
-      "url(#id) in <style>",
-      "clip1",
-      ".cls { clip-path: url(#clip1); }",
-      ".cls { clip-path: url(#svg-0-clip1); }",
-    ],
-    [
-      "#id CSS selector in <style>",
-      "myNode",
-      "#myNode { fill: red; }",
-      "#svg-0-myNode { fill: red; }",
-    ],
-  ])("updates %s text content", (_desc, id, cssInput, cssExpected) => {
+describe("optimizeMermaidSvgs", () => {
+  it("ignores non-text children in style elements", () => {
     const style: Element = {
       type: "element",
       tagName: "style",
       properties: {},
-      children: [{ type: "text", value: cssInput }],
+      children: [h("span", ["not text"])],
     }
     const svg: Element = {
       type: "element",
       tagName: "svg",
-      properties: {},
-      children: [h("g", { id }), style],
+      properties: { id: "mermaid-0" },
+      children: [style],
     }
     const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
-
-    expect((style.children[0] as { type: "text"; value: string }).value).toBe(cssExpected)
+    expect(() => optimizeMermaidSvgs(tree)).not.toThrow()
   })
 
-  it("skips SVGs without any IDs", () => {
-    const rect = h("rect", { width: 100, height: 50 })
-    const svg = h("svg", [rect])
-    const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
-
-    // Should not modify anything
-    expect(rect.properties?.width).toBe(100)
-    expect(rect.properties?.id).toBeUndefined()
-  })
-
-  it("skips non-SVG elements", () => {
-    const div = h("div", { id: "should-not-change" })
-    const tree: Root = { type: "root", children: [div] }
-    deduplicateSvgIds(tree)
-
-    expect(div.properties?.id).toBe("should-not-change")
-  })
-
-  it.each([
-    ["href", { href: "#unknown-ref" }, "href", "#unknown-ref"],
-    ["url(#id)", { fill: "url(#unknown-gradient)" }, "fill", "url(#unknown-gradient)"],
-  ])("leaves unmatched %s references unchanged", (_desc, props, key, expectedValue) => {
-    const ref = h("rect", props)
-    const svg = h("svg", [h("marker", { id: "arrow" }), ref])
-    const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
-
-    expect(ref.properties?.[key]).toBe(expectedValue)
-  })
-
-  it.each([
-    [
-      "non-text children of style elements",
-      () => {
-        const style: Element = {
-          type: "element",
-          tagName: "style",
-          properties: {},
-          children: [h("span", ["not text"])],
-        }
-        return h("svg", [h("g", { id: "myNode" }), style]) as unknown as Element
-      },
-    ],
-    [
-      "elements without properties",
-      () => {
-        const emptyElement = {
-          type: "element" as const,
-          tagName: "g",
-          properties: undefined,
-          children: [],
-        } as unknown as Element
-        return {
-          type: "element",
-          tagName: "svg",
-          properties: {},
-          children: [h("marker", { id: "arrow" }), emptyElement],
-        } as Element
-      },
-    ],
-  ] as [string, () => Element][])("handles %s without throwing", (_desc, createSvg) => {
-    const tree: Root = { type: "root", children: [createSvg()] }
-    expect(() => deduplicateSvgIds(tree)).not.toThrow()
-  })
-
-  it("leaves numeric property values unchanged", () => {
-    const rect = h("rect", { id: "box", width: 100, height: 50 })
-    const svg = h("svg", [h("marker", { id: "arrow" }), rect])
-    const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
-
-    expect(rect.properties?.width).toBe(100)
-    expect(rect.properties?.height).toBe(50)
-  })
-
-  it.each([
-    ["no url(#) content (plain CSS)", "myNode", ".cls { fill: red; }", [".cls { fill: red; }"]],
-    [
-      "mixed known/unknown url(#id) references",
-      "knownId",
-      ".cls { clip-path: url(#unknownId); fill: url(#knownId); }",
-      ["url(#unknownId)", "url(#svg-0-knownId)"],
-    ],
-  ])("style elements: %s", (_desc, id, cssInput, expectedSubstrings) => {
+  it("removes [data-look='neo'] CSS rules from mermaid SVG styles", () => {
+    const css =
+      '#mermaid-0 .node{fill:red;}#mermaid-0 [data-look="neo"].node rect{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-0 .label{color:blue;}'
     const style: Element = {
       type: "element",
       tagName: "style",
       properties: {},
-      children: [{ type: "text", value: cssInput }],
+      children: [{ type: "text", value: css }],
     }
     const svg: Element = {
       type: "element",
       tagName: "svg",
-      properties: {},
-      children: [h("g", { id }), style],
+      properties: { id: "mermaid-0" },
+      children: [style],
     }
     const tree: Root = { type: "root", children: [svg] }
-    deduplicateSvgIds(tree)
+    optimizeMermaidSvgs(tree)
 
     const result = (style.children[0] as { type: "text"; value: string }).value
-    for (const substring of expectedSubstrings) {
-      expect(result).toContain(substring)
+    expect(result).not.toContain("data-look")
+    expect(result).toContain("#mermaid-0 .node{fill:red;}")
+    expect(result).toContain("#mermaid-0 .label{color:blue;}")
+  })
+
+  it("handles elements without properties", () => {
+    const noProps = { type: "element" as const, tagName: "g", children: [] } as unknown as Element
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [noProps],
     }
+    const tree: Root = { type: "root", children: [svg] }
+    expect(() => optimizeMermaidSvgs(tree)).not.toThrow()
+  })
+
+  it("strips unnecessary data-* attributes from mermaid SVG elements", () => {
+    const path: Element = {
+      type: "element",
+      tagName: "path",
+      properties: {
+        d: "M 0 0 L 10 5",
+        dataPoints: "W3sieCI...",
+        dataId: "L_EV_H_0",
+        dataEt: "edge",
+        dataEdge: "true",
+        dataLook: "classic",
+        className: "edge-thickness-normal",
+      },
+      children: [],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "mermaid-0" },
+      children: [path],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    optimizeMermaidSvgs(tree)
+
+    expect(path.properties?.d).toBe("M 0 0 L 10 5")
+    expect(path.properties?.className).toBe("edge-thickness-normal")
+    expect(path.properties?.dataPoints).toBeUndefined()
+    expect(path.properties?.dataId).toBeUndefined()
+    expect(path.properties?.dataEt).toBeUndefined()
+    expect(path.properties?.dataEdge).toBeUndefined()
+    expect(path.properties?.dataLook).toBeUndefined()
+  })
+
+  it("skips non-mermaid SVGs", () => {
+    const css = '#other [data-look="neo"]{fill:red;}'
+    const style: Element = {
+      type: "element",
+      tagName: "style",
+      properties: {},
+      children: [{ type: "text", value: css }],
+    }
+    const svg: Element = {
+      type: "element",
+      tagName: "svg",
+      properties: { id: "other-svg" },
+      children: [style],
+    }
+    const tree: Root = { type: "root", children: [svg] }
+    optimizeMermaidSvgs(tree)
+
+    expect((style.children[0] as { type: "text"; value: string }).value).toBe(css)
+  })
+})
+
+describe("removeUnreferencedMarkers", () => {
+  it("removes markers whose IDs are not referenced by any url()", () => {
+    const referencedMarker: Element = h("marker", { id: "arrow-used" }, [])
+    const unreferencedMarker: Element = h("marker", { id: "arrow-unused" }, [])
+    const defs: Element = h("defs", [referencedMarker, unreferencedMarker])
+    const path: Element = h("path", { markerEnd: "url(#arrow-used)" })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [defs, path])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(defs.children).toContain(referencedMarker)
+    expect(defs.children).not.toContain(unreferencedMarker)
+  })
+
+  it("keeps markers without an id property", () => {
+    const noIdMarker: Element = h("marker", [])
+    const defs: Element = h("defs", [noIdMarker])
+    const svg: Element = h("svg", { id: "mermaid-0" }, [defs])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(defs.children).toContain(noIdMarker)
+  })
+
+  it("preserves non-marker elements regardless of references", () => {
+    const rect: Element = h("rect", { id: "not-referenced" })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [rect])
+
+    removeUnreferencedMarkers(svg)
+
+    expect(svg.children).toContain(rect)
+  })
+
+  it("handles elements without properties when scanning references", () => {
+    const noProps = { type: "element" as const, tagName: "g", children: [] } as unknown as Element
+    const marker: Element = h("marker", { id: "some-marker" }, [])
+    const svg: Element = h("svg", { id: "mermaid-0" }, [noProps, marker])
+
+    removeUnreferencedMarkers(svg)
+
+    // marker should be removed (unreferenced), noProps element kept
+    expect(svg.children).toContain(noProps)
+    expect(svg.children).not.toContain(marker)
+  })
+
+  it("handles non-string property values when scanning url() references", () => {
+    const marker: Element = h("marker", { id: "some-id" }, [])
+    const el: Element = h("g", { tabIndex: 0, className: ["cls"] })
+    const svg: Element = h("svg", { id: "mermaid-0" }, [el, marker])
+
+    removeUnreferencedMarkers(svg)
+
+    // non-string values should be skipped; marker unreferenced so removed
+    expect(svg.children).not.toContain(marker)
   })
 })
 

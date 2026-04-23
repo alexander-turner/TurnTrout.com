@@ -26,7 +26,7 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
     getQuartzComponents() {
       return [Head, Body, pageBody, Footer]
     },
-    async getDependencyGraph() {
+    getDependencyGraph() {
       return new DepGraph<FilePath>()
     },
     async emit(ctx, _content, resources): Promise<FilePath[]> {

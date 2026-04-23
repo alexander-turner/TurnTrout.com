@@ -60,10 +60,7 @@ def main() -> None:
             tracker = comment
             m = re.search(r"<!-- failures:(\{.*?\}) -->", tracker["body"])
             if m:
-                try:
-                    failures = json.loads(m.group(1))
-                except json.JSONDecodeError:
-                    print("Corrupt failure state, starting fresh")
+                failures = json.loads(m.group(1))
             break
 
     # Dedup: skip if we already tracked this run or workflow is exhausted
@@ -126,7 +123,7 @@ def main() -> None:
         )
         print(f"Created tracker comment for {workflow_name} failure")
 
-    # Label when all attempts are exhausted
+    # Label when all attempts are exhausted (label may not exist in repo)
     if all_exhausted:
         try:
             gh_api(

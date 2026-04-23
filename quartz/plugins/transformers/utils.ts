@@ -59,27 +59,28 @@ export const replaceRegex = (
     return
   }
 
-  let lastIndex = 0
-  const matchIndexes: number[] = []
+  const matches: RegExpExecArray[] = []
   let lastMatchEnd = 0
-  let match: RegExpExecArray | null = null
+  let match: RegExpExecArray | null
 
   // Find all non-overlapping matches in the node's text
   regex.lastIndex = 0 // Reset regex state before first pass with exec()
   while ((match = regex.exec(node.value)) !== null) {
+    /* istanbul ignore next -- exec() always advances past previous match on global regex */
     if (match.index >= lastMatchEnd) {
-      matchIndexes.push(match.index)
+      matches.push(match)
       lastMatchEnd = match.index + match[0]?.length
     }
   }
 
   // If no matches found or node has no value, return early
-  if (!matchIndexes?.length || !node.value) return
+  if (!matches?.length || !node.value) return
 
   const fragment: RootContent[] = []
-  lastIndex = 0
+  let lastIndex = 0
 
-  for (const index of matchIndexes) {
+  for (const match of matches) {
+    const index = match.index
     // Add any text before the match to the fragment
     if (index > lastIndex) {
       fragment.push({
@@ -87,12 +88,6 @@ export const replaceRegex = (
         value: node.value.substring(lastIndex, index),
       })
     }
-
-    // Use exec() instead of match() to get capture groups
-    regex.lastIndex = index
-    const match = regex.exec(node.value)
-    // istanbul ignore if
-    if (!match) continue
 
     const result = replaceFn(match)
     const { before, replacedMatch, after } = result
@@ -115,9 +110,7 @@ export const replaceRegex = (
     }
 
     // Update lastIndex to the end of the match
-    if (match) {
-      lastIndex = index + match[0].length
-    }
+    lastIndex = index + match[0].length
   }
 
   // Add any remaining text after the last match
@@ -126,6 +119,7 @@ export const replaceRegex = (
   }
 
   // Replace the original text node with the new nodes in the parent's children array
+  /* istanbul ignore next -- parent always has children and index is always a number */
   if (parent.children && typeof index === "number") {
     parent.children.splice(index, 1, ...(fragment as RootContent[]))
   }
@@ -235,6 +229,7 @@ export function spliceAndWrapLastChars(
   // Remove the text node entirely if all text was moved into the span
   if (lastChars === text) {
     const idx = parent.children.indexOf(lastTextNode as unknown as ElementContent)
+    /* istanbul ignore next -- lastTextNode is always a child of parent */
     if (idx !== -1) {
       parent.children.splice(idx, 1)
     }

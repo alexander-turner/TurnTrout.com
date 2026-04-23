@@ -25,7 +25,7 @@ runs:
   using: "composite"
   steps:
     - name: Install pnpm
-      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
 
     - name: Install Wrangler
       run: pnpm install wrangler@3.99.0
@@ -37,5 +37,13 @@ runs:
         CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare-account-id }}
         CLOUDFLARE_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
       run: |
-        pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}
+        for attempt in 1 2 3; do
+          if pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}; then
+            exit 0
+          fi
+          echo "Deploy attempt $attempt failed, retrying in $((attempt * 15))s..."
+          sleep $((attempt * 15))
+        done
+        echo "All deploy attempts failed"
+        exit 1
       shell: bash

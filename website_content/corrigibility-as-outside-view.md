@@ -37,10 +37,10 @@ use-full-width-images: 'false'
 date_published: 2020-05-08 00:00:00
 original_url: https://www.lesswrong.com/posts/BMj6uMuyBidrdZkiD/corrigibility-as-outside-view
 skip_import: true
-description: Corrigibility may emerge when AI recognizes its flaws by simulating its
-  own decision-making and defers to human judgment when appropriate.
-date_updated: 2025-11-22 00:21:52.667251
+description: Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -103,7 +103,7 @@ Suppose the agent knows its initial state and has a human model, allowing it to 
 
 ## Problems with this framing
 
-If you try to actually hard-code this kind of reasoning, you'll quickly run into symbol grounding issues (this is [one of my critiques of the value-learning agenda](/thoughts-on-human-compatible#Where-in-the-world-is-the-human)), [no-free-lunch value/rationality issues](https://papers.nips.cc/paper/7803-occams-razor-is-insufficient-to-infer-the-preferences-of-irrational-agents.pdf), reference class issues (how do you know if a state is "similar" to the current one?), and more. I don't necessarily think this reasoning can be hardcoded correctly. However, I haven't thought about that much yet.
+If you try to actually hard-code this kind of reasoning, you'll quickly run into symbol grounding issues (this is [one of my critiques of the value-learning agenda](/thoughts-on-human-compatible#where-in-the-world-is-the-human)), [no-free-lunch value/rationality issues](https://papers.nips.cc/paper/7803-occams-razor-is-insufficient-to-infer-the-preferences-of-irrational-agents.pdf), reference class issues (how do you know if a state is "similar" to the current one?), and more. I don't necessarily think this reasoning can be hardcoded correctly. However, I haven't thought about that much yet.
 
 To me, the point isn't to make a concrete proposal – it's to gesture at a novel-seeming way of characterizing a rather strong form of corrigible reasoning. A few questions on my mind:
 

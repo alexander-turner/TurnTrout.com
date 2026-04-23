@@ -113,6 +113,11 @@
 
       &:focus {
         outline: none;
+        border-color: var(--secondary);
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 1px var(--secondary);
       }
     }
 
@@ -166,6 +171,7 @@
       }
 
       & > #preview-container {
+        position: relative;
         display: block;
         overflow: hidden;
         font-family: inherit;
@@ -271,6 +277,12 @@
             // Hide on desktop where the side preview panel is used instead
             @media all and (min-width: $tablet-breakpoint) {
               display: none;
+            }
+
+            // Flatten child backgrounds so the card's focus/hover effect
+            // shows through admonitions, blockquotes, code blocks, etc.
+            & :not(img, video, svg, canvas) {
+              background-color: transparent !important;
             }
 
             & .search-preview {

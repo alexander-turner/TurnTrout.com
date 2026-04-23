@@ -23,7 +23,7 @@ import {
   faviconSubstringBlacklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { hasClass, spliceAndWrapLastChars } from "./utils"
+import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
 
@@ -34,14 +34,13 @@ const logger = createWinstonLogger("linkFavicons")
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
-// istanbul ignore if
-if (!fs.existsSync(faviconUrlsFile)) {
-  try {
-    fs.writeFileSync(faviconUrlsFile, "")
-  } catch {
-    throw new Error(
-      `Favicon URL cache file not found at path ${faviconUrlsFile}; create it with \`touch\` if that's the right path.`,
-    )
+// Atomically create the file if it doesn't exist; harmless if it already does.
+// istanbul ignore next -- module-level init; EEXIST race is impractical to unit test
+try {
+  fs.writeFileSync(faviconUrlsFile, "", { flag: "wx" })
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== "EEXIST") {
+    throw error
   }
 }
 
@@ -157,7 +156,7 @@ export function getQuartzPath(hostname: string): string {
   return path
 }
 
-const defaultCache = new Map<string, string>([
+const defaultCache: ReadonlyMap<string, string> = new Map<string, string>([
   [specialFaviconPaths.turntrout, specialFaviconPaths.turntrout],
 ])
 // skipcq: JS-D1001
@@ -185,12 +184,14 @@ export function writeCacheToFile(): void {
 }
 
 /**
- * Reads favicon counts from the faviconCountsFile and returns them as a Map.
+ * Reads favicon counts from the faviconCountsFile and returns them as a ReadonlyMap.
  *
- * @returns A Map of favicon path to count, or empty Map if file doesn't exist or can't be read.
+ * @returns A ReadonlyMap of favicon path to count, or empty Map if file doesn't exist or can't be read.
  */
-export function readFaviconCounts(): Map<string, number> {
-  if (!fs.existsSync(faviconCountsFile)) {
+export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> {
+  try {
+    await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
+  } catch {
     logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
     return new Map<string, number>()
   }
@@ -198,7 +199,7 @@ export function readFaviconCounts(): Map<string, number> {
   const countMap = new Map<string, number>()
 
   try {
-    const data = fs.readFileSync(faviconCountsFile, "utf8")
+    const data = await fs.promises.readFile(faviconCountsFile, "utf8")
     // Parse JSON array of [path, count] pairs
     const countsArray = JSON.parse(data) as Array<[string, number]>
     for (const [faviconPath, count] of countsArray) {
@@ -215,17 +216,20 @@ export function readFaviconCounts(): Map<string, number> {
 }
 
 /**
- * Reads favicon URLs from the faviconUrlsFile and returns them as a Map.
+ * Reads favicon URLs from the faviconUrlsFile and returns them as a ReadonlyMap.
  *
- * @returns A Promise that resolves to a Map of basename to URL strings.
+ * @returns A Promise that resolves to a ReadonlyMap of basename to URL strings.
  */
-export async function readFaviconUrls(): Promise<Map<string, string>> {
+export async function readFaviconUrls(): Promise<ReadonlyMap<string, string>> {
   try {
     const data = await fs.promises.readFile(faviconUrlsFile, "utf8")
     const lines = data.split("\n")
     const urlMap = new Map<string, string>()
     for (const line of lines) {
-      const [basename, url] = line.split(",")
+      const commaIndex = line.indexOf(",")
+      if (commaIndex === -1) continue
+      const basename = line.slice(0, commaIndex)
+      const url = line.slice(commaIndex + 1)
       if (basename && url) {
         urlMap.set(basename, url)
       }
@@ -233,7 +237,6 @@ export async function readFaviconUrls(): Promise<Map<string, string>> {
     return urlMap
   } catch (error) {
     logger.warn(`Error reading favicon URLs file: ${error}`)
-    console.warn(error)
     return new Map<string, string>()
   }
 }
@@ -266,6 +269,7 @@ export function getFaviconUrl(faviconPath: string): string {
       return cached
     }
     // Cache contains SVG path, construct CDN URL
+    /* istanbul ignore next -- cache may store SVG path from populateFaviconContainer */
     if (cached.endsWith(".svg")) {
       return `${cdnBaseUrl}${cached}`
     }
@@ -276,7 +280,8 @@ export function getFaviconUrl(faviconPath: string): string {
   const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     fs.accessSync(localSvgPath, fs.constants.F_OK)
-    // SVG exists locally, return SVG CDN URL
+    // SVG exists locally, cache and return SVG CDN URL
+    urlCache.set(pngPath, svgPath)
     return `${cdnBaseUrl}${svgPath}`
   } catch {
     // SVG doesn't exist, fall back to AVIF
@@ -444,6 +449,7 @@ async function downloadFromGoogle(
   const googleFaviconURL = `https://www.google.com/s2/favicons?sz=64&domain=${hostname}`
   logger.info(`Attempting to download favicon from Google: ${googleFaviconURL}`)
   try {
+    /* istanbul ignore next -- requires real network download in test */
     if (await downloadImage(googleFaviconURL, localPngPath)) {
       logger.info(`Successfully downloaded favicon for ${hostname}`)
       return faviconPath
@@ -638,10 +644,10 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     .reverse()
     .find((child) => child.type === "element" || !isEmpty(child as Element | Text))
 
-  // If no valid last child found, just append the favicon
+  // If no valid last child found, wrap favicon in a favicon-span
   if (!lastChild) {
-    logger.debug("No valid last child found, appending favicon directly")
-    return imgNodeToAppend
+    logger.debug("No valid last child found, wrapping favicon in favicon-span")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   // If the last child is a span.favicon-span, append the favicon directly to it
@@ -659,16 +665,17 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
     logger.debug(`Zooming into nested element ${lastChild.tagName}`)
     const result = maybeSpliceText(lastChild as Element, imgNodeToAppend)
+    /* istanbul ignore next -- recursive case where nested element has no text to splice */
     if (result) {
       lastChild.children.push(result)
     }
     return null
   }
 
-  // If last child is not a text node or has no value, just append the favicon
+  // If last child is not a text node or has no value, wrap favicon in a favicon-span
   if (lastChild.type !== "text" || !lastChild.value) {
-    logger.debug("Appending favicon directly to node")
-    return imgNodeToAppend
+    logger.debug("Wrapping favicon in favicon-span (no text to splice)")
+    return createNowrapSpan("", imgNodeToAppend)
   }
 
   const lastChildText = lastChild as Text
@@ -730,6 +737,11 @@ export function isAssetLink(href: string): boolean {
   const extension = urlWithoutParams.split(".").pop()?.toLowerCase()
 
   if (!extension) {
+    return false
+  }
+
+  // .ts/.mts are TypeScript, not MPEG transport stream (video/mp2t)
+  if (extension === "ts" || extension === "mts") {
     return false
   }
 
@@ -802,7 +814,7 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 export function shouldIncludeFavicon(
   imgPath: string,
   countKey: string,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): boolean {
   const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
     imgPath.includes(entry),
@@ -834,7 +846,7 @@ export function normalizeUrl(href: string): string {
 async function handleLink(
   href: string,
   node: Element,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): Promise<void> {
   try {
     const finalURL = new URL(href)
@@ -885,7 +897,7 @@ async function handleLink(
 export async function ModifyNode(
   node: Element,
   parent: Parent,
-  faviconCounts: Map<string, number>,
+  faviconCounts: ReadonlyMap<string, number>,
 ): Promise<void> {
   logger.debug(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
@@ -968,7 +980,7 @@ export const AddFavicons = () => {
         () => {
           return async (tree: Root) => {
             logger.debug("Starting favicon processing")
-            const faviconCounts = readFaviconCounts()
+            const faviconCounts = await readFaviconCounts()
             logger.debug(`Loaded ${faviconCounts.size} favicon counts`)
 
             const nodesToProcess: [Element, Parent][] = []

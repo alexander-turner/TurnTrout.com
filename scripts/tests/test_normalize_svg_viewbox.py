@@ -198,7 +198,9 @@ def test_normalize_svg_viewbox_inkscape_not_found(sample_svg: Path):
         normalize_svg_viewbox.normalize_svg_viewbox(sample_svg, 24)
 
 
-def test_is_already_normalized_with_width_height_attributes(tmp_path: Path):
+def test_is_already_normalized_with_width_height_attributes(
+    tmp_path: Path,
+):
     """Test is_already_normalized returns False when root svg has width/height
     attributes."""
     svg_content = """<?xml version="1.0" encoding="UTF-8"?>
@@ -409,7 +411,9 @@ def test_main_already_normalized(
     assert "Already normalized" in captured.out
 
 
-def test_normalize_svg_viewbox_inkscape_path_not_found(sample_svg: Path):
+def test_normalize_svg_viewbox_inkscape_path_not_found(
+    sample_svg: Path,
+):
     """Test normalize_svg_viewbox when check_inkscape passes but which fails."""
     with (
         patch("normalize_svg_viewbox.check_inkscape", return_value=True),

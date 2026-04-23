@@ -19,7 +19,7 @@
 # - font-src 'self': Fonts only from same origin
 # - frame-src: Allowed iframe sources (YouTube, Manifold, Palform, Fatebook, jacobgw.com)
 # - frame-ancestors 'self': Only allow this site to be framed by itself
-# - connect-src 'self' cloud.umami.is: Fetch/XHR to self and Umami analytics
+# - connect-src 'self' cloud.umami.is api-gateway.umami.dev: Fetch/XHR to self and Umami analytics
 # - base-uri 'self': Prevent base tag injection
 # - form-action 'self' dash.palform.app: Restrict form submissions
 # - upgrade-insecure-requests: Upgrade HTTP to HTTPS
@@ -31,7 +31,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' https://assets.turntrout.com data:; media-src 'self' https://assets.turntrout.com; font-src 'self'; frame-src 'self' https://www.youtube.com https://manifold.markets https://dash.palform.app https://fatebook.io https://jacobgw.com; frame-ancestors 'self'; connect-src 'self' https://cloud.umami.is; base-uri 'self'; form-action 'self' https://dash.palform.app; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' https://assets.turntrout.com data:; media-src 'self' https://assets.turntrout.com; font-src 'self'; frame-src 'self' https://www.youtube.com https://manifold.markets https://dash.palform.app https://fatebook.io https://jacobgw.com; frame-ancestors 'self'; connect-src 'self' https://cloud.umami.is https://api-gateway.umami.dev; base-uri 'self'; form-action 'self' https://dash.palform.app; upgrade-insecure-requests
 
 # 2. Stylesheets & Scripts (1 Day)
 # Short cache since files lack content hashes - ensures users get daily updates

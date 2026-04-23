@@ -3,13 +3,14 @@ import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from unittest import mock
 from unittest.mock import patch
 
 import pytest
 import requests  # type: ignore[import]
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
+from bs4.element import AttributeValueList
 
 from .. import utils as script_utils
 from ..utils import (
@@ -30,7 +31,9 @@ else:
 
 
 @pytest.fixture
-def mock_environment(quartz_project_structure, monkeypatch):
+def mock_environment(
+    quartz_project_structure, monkeypatch
+) -> dict[str, object]:
     """Set up common mocks and environment variables."""
     public_dir = quartz_project_structure["public"]
     content_dir = quartz_project_structure["content"]
@@ -64,7 +67,7 @@ def mock_environment(quartz_project_structure, monkeypatch):
 
 
 @pytest.fixture
-def html_file_in_drafts(mock_environment):
+def html_file_in_drafts(mock_environment) -> Path:
     """Create a test HTML file inside a drafts directory."""
     public_dir = mock_environment["public_dir"]
     drafts_dir = public_dir / "drafts"
@@ -75,7 +78,7 @@ def html_file_in_drafts(mock_environment):
 
 
 @pytest.fixture
-def valid_css_file(mock_environment):
+def valid_css_file(mock_environment) -> Path:
     """Create a valid CSS file."""
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
@@ -86,7 +89,7 @@ def valid_css_file(mock_environment):
 
 
 @pytest.fixture
-def invalid_css_file(mock_environment):
+def invalid_css_file(mock_environment) -> Path:
     """Create an invalid CSS file (missing @supports)."""
     public_dir = mock_environment["public_dir"]
     index_css = public_dir / "index.css"
@@ -95,7 +98,7 @@ def invalid_css_file(mock_environment):
 
 
 @pytest.fixture
-def robots_txt_file(mock_environment):
+def robots_txt_file(mock_environment) -> Path:
     """Create a robots.txt file."""
     public_dir = mock_environment["public_dir"]
     robots_txt = public_dir / "robots.txt"
@@ -104,7 +107,7 @@ def robots_txt_file(mock_environment):
 
 
 @pytest.fixture
-def root_files(mock_environment):
+def root_files(mock_environment) -> list[Path]:
     """Create required root files: robots.txt, favicon.svg, and favicon.ico."""
     public_dir = mock_environment["public_dir"]
     files = []
@@ -115,7 +118,7 @@ def root_files(mock_environment):
 
 
 @pytest.fixture
-def html_file(mock_environment):
+def html_file(mock_environment) -> Path:
     """Create a test HTML file."""
     public_dir = mock_environment["public_dir"]
     html_file = public_dir / "test.html"
@@ -124,7 +127,7 @@ def html_file(mock_environment):
 
 
 @pytest.fixture
-def md_file(mock_environment):
+def md_file(mock_environment) -> None:
     """Create a markdown file corresponding to the test HTML file."""
     content_dir = mock_environment["content_dir"]
     md_file = content_dir / "test.md"
@@ -133,7 +136,7 @@ def md_file(mock_environment):
 
 
 @pytest.fixture
-def disable_md_requirement(monkeypatch):
+def disable_md_requirement(monkeypatch) -> None:
     monkeypatch.setattr(script_utils, "should_have_md", lambda file_path: False)
 
 
@@ -152,7 +155,7 @@ def disable_md_requirement(monkeypatch):
         ("path.to/file.txt", "path.to/file.txt"),
     ],
 )
-def test_strip_path(input_path: str, expected: str) -> None:
+def test_strip_path(input_path: str, expected: str):
     """Test the _strip_path function with various input paths."""
     assert built_site_checks._strip_path(input_path) == expected
 
@@ -230,7 +233,7 @@ def sample_soup_with_assets(sample_html_with_assets: str) -> BeautifulSoup:
     "preview_chars",
     [0, -1],
 )
-def test_add_to_list_exceptions(preview_chars: int) -> None:
+def test_add_to_list_exceptions(preview_chars: int):
     """Test that _add_to_list raises ValueError for non-positive
     preview_chars."""
     lst: list[str] = []
@@ -253,7 +256,7 @@ def test_add_to_list_exceptions(preview_chars: int) -> None:
 )
 def test_add_to_list_no_truncation(
     input_text: str, prefix: str, expected_output: list[str]
-) -> None:
+):
     """Test _add_to_list when text length <= preview_chars."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -273,9 +276,7 @@ PREVIEW_CHARS = 10
         ("Prefix: ", ["Prefix: This is a "]),
     ],
 )
-def test_add_to_list_truncate_start(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_add_to_list_truncate_start(prefix: str, expected_output: list[str]):
     """Test _add_to_list truncation with show_end=False."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -295,9 +296,7 @@ def test_add_to_list_truncate_start(
         ("Prefix: ", ["Prefix: truncated...."]),
     ],
 )
-def test_append_to_list_truncate_end(
-    prefix: str, expected_output: list[str]
-) -> None:
+def test_append_to_list_truncate_end(prefix: str, expected_output: list[str]):
     """Test _append_to_list truncation with show_end=True."""
     lst: list[str] = []
     built_site_checks._append_to_list(
@@ -605,6 +604,11 @@ def test_check_local_media_files(sample_soup, temp_site_root):
             [],
         ),
         ('<svg src="icon.svg"></svg>', ["icon.svg (resolved to {})"], []),
+        (
+            '<audio src="clip.mp3"></audio>',
+            ["clip.mp3 (resolved to {})"],
+            [],
+        ),
         ('<img src="existing.png">', [], ["existing.png"]),
     ],
 )
@@ -1912,6 +1916,7 @@ def test_check_spacing_after_branch():
     soup = BeautifulSoup(html, "html.parser")
 
     link_element = soup.find("a")
+    assert isinstance(link_element, Tag)
 
     # Test the "after" branch specifically
     result = built_site_checks.check_spacing(
@@ -1989,7 +1994,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
         ),
     ],
 )
-def test_check_description_length(html: str, expected: list[str]) -> None:
+def test_check_description_length(html: str, expected: list[str]):
     """Test the check_description_length function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_description_length(soup)
@@ -2196,9 +2201,11 @@ def test_check_invalid_internal_links(html, expected_count):
     result = built_site_checks.check_invalid_internal_links(soup)
     assert len(result) == expected_count
     for link in result:
-        assert "internal" in link.get("class", [])
+        assert "internal" in cast(list[str], link.get("class") or [])
         # Verify the link is actually invalid
-        assert not link.has_attr("href") or link["href"].startswith("https://")
+        assert not link.has_attr("href") or cast(str, link["href"]).startswith(
+            "https://"
+        )
 
 
 @pytest.mark.parametrize(
@@ -2297,31 +2304,24 @@ def test_get_md_asset_counts(tmp_path, md_content, expected_counts):
     assert result == Counter(expected_counts)
 
 
-def test_head_with_retry_succeeds_after_timeout(monkeypatch):
-    """Retry succeeds on second attempt after initial timeout."""
-    calls = []
-
-    def mock_head(url, timeout):
-        calls.append(timeout)
-        if len(calls) == 1:
-            raise requests.Timeout("timed out")
-        return type("MockResponse", (), {"ok": True, "status_code": 200})
-
-    monkeypatch.setattr(requests, "head", mock_head)
+def test_head_with_retry_delegates_to_session(monkeypatch):
+    """_head_with_retry delegates to the shared session (retry handled by
+    urllib3)."""
+    mock_resp = type("MockResponse", (), {"ok": True, "status_code": 200})
+    monkeypatch.setattr(
+        built_site_checks._http_session, "head", lambda url, timeout: mock_resp
+    )
     resp = built_site_checks._head_with_retry("https://example.com")
     assert resp.ok
-    assert calls == [10, 20]  # timeout doubles on retry
 
 
-def test_head_with_retry_raises_after_exhausting_retries(monkeypatch):
-    """All retries fail — re-raises the last exception."""
-    monkeypatch.setattr(
-        requests,
-        "head",
-        lambda url, timeout: (_ for _ in ()).throw(
-            requests.ConnectionError("fail")
-        ),
-    )
+def test_head_with_retry_propagates_exceptions(monkeypatch):
+    """Exceptions from the session propagate to callers."""
+
+    def raise_error(url, timeout):
+        raise requests.ConnectionError("fail")
+
+    monkeypatch.setattr(built_site_checks._http_session, "head", raise_error)
     with pytest.raises(requests.ConnectionError, match="fail"):
         built_site_checks._head_with_retry("https://example.com")
 
@@ -2419,7 +2419,7 @@ def test_check_iframe_sources(
         return mock_response
 
     # Patch the requests.head function
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     result = built_site_checks.check_iframe_sources(soup)
     assert sorted(result) == sorted(expected)
@@ -2436,7 +2436,7 @@ def test_check_iframe_sources(
         ),
         (
             '<iframe src="https://bad.example/embed"></iframe>',
-            [(False, 500)],
+            [(False, 500), (False, 500), (False, 500)],
             [
                 "Iframe embed returned status 500: https://bad.example/embed",
             ],
@@ -2474,7 +2474,7 @@ def test_check_iframe_embeds(
     mock_responses: list,
     expected_issues: list[str],
     expected_urls: list[str],
-) -> None:
+):
     soup = BeautifulSoup(html, "html.parser")
     requested_urls: list[str] = []
     responses = list(mock_responses)
@@ -2489,12 +2489,12 @@ def test_check_iframe_embeds(
         ok, status = response
         return type("MockResponse", (), {"ok": ok, "status_code": status})
 
-    monkeypatch.setattr(requests, "head", mock_head)
+    monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
 
     issues = built_site_checks.check_iframe_embeds(soup)
 
     assert sorted(issues) == sorted(expected_issues)
-    assert requested_urls == expected_urls
+    assert set(requested_urls) == set(expected_urls)
 
 
 @pytest.mark.parametrize(
@@ -2647,6 +2647,21 @@ def test_check_link_spacing(html, expected):
             '<p><span class="no-formatting">Text<span class="right-arrow">\u2192</span>text</span></p>',
             [],
         ),
+        # Right guillemet after abbreviation (French closing quote)
+        (
+            '<p>\u00ab<abbr class="small-caps">bonjour</abbr>\u00a0\u00bb monde</p>',
+            [],
+        ),
+        # Left guillemet before abbreviation (French opening quote)
+        (
+            '<p>\u00ab\u00a0<abbr class="small-caps">bonjour</abbr>\u00bb</p>',
+            [],
+        ),
+        # German open quote before abbreviation
+        (
+            '<p>\u201e<abbr class="small-caps">hallo</abbr>\u201c welt</p>',
+            [],
+        ),
     ],
 )
 def test_check_inline_formatting_spacing(html, expected):
@@ -2738,7 +2753,6 @@ def test_extract_flat_paragraph_texts_skips_nav_footer():
     <div class="authors"><p>AlexJanuary 2025</p></div>
     <blockquote class="admonition admonition-metadata"><p>Stats</p></blockquote>
     <div class="backlinks"><p>BacklinkTitle</p></div>
-    <span class="transclude"><p>Transcluded listing</p></span>
     <div class="tag-container"><p>Tag text</p></div>
     <div class="all-tags"><p>All tags</p></div>
     <div id="content-meta"><p>Metadata</p></div>
@@ -2822,6 +2836,28 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert len(result) == 1
     assert "I've" in result[0]
     assert "I 've" not in result[0]
+
+
+def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
+    """
+    A <p> containing block-level elements (e.g. from transclusion wrapping
+    tables inside <span> inside <p>) is skipped because get_text() would
+    concatenate child text without spaces.
+
+    Inner <p> elements are still extracted.
+    """
+    html = """<article>
+    <p><span class="transclude" data-url="other-page">
+    <table><tr><th>Feature</th><th>Example</th></tr></table>
+    <p>Nested paragraph inside transclude.</p>
+    </span></p>
+    <p>Normal paragraph.</p>
+    </article>"""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 2
+    assert any("Nested paragraph inside transclude ." in r for r in result)
+    assert any("Normal paragraph ." in r for r in result)
 
 
 @pytest.mark.parametrize(
@@ -3629,7 +3665,7 @@ def test_check_asset_references(
     html_content: str,
     existing_files: list[str],
     expected_missing: list[str],
-) -> None:
+):
     """Test the check_asset_references function."""
     base_dir = tmp_path / "public"
     base_dir.mkdir()
@@ -3661,7 +3697,9 @@ def test_check_asset_references(
     assert sorted(missing_assets) == expected_missing_resolved
 
 
-def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
+def test_check_file_for_issues_markdown_check_called_with_valid_md(
+    tmp_path,
+):
     """Test that check_markdown_assets_in_html is called when md_path is
     valid."""
     base_dir = tmp_path / "public"
@@ -3672,11 +3710,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(tmp_path):
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text("""---
+    md_file_path.write_text(
+        """---
 title: Test Title
 description: Test Description
 ---
-# Content here""")
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (
@@ -3967,7 +4007,7 @@ def test_main_markdown_not_found_error(
     """Test that main() raises ValueError when a required markdown file is
     missing."""
     # Set up empty md map (missing the mapping)
-    md_map = {}
+    md_map: dict[str, object] = {}
 
     # Mock mapping functions
     monkeypatch.setattr(
@@ -4304,7 +4344,7 @@ def test_main_skips_non_root_html_md_mapping_not_required(
 )
 def test_check_video_source_order_and_match(
     html: str, expected_issues: list[str]
-) -> None:
+):
     """Test the check_video_source_order_and_match function."""
     soup = BeautifulSoup(html, "html.parser")
     # Ensure the function being tested is correctly referenced
@@ -4595,7 +4635,7 @@ def test_check_malformed_hrefs(html_content: str, expected_issues: list[str]):
 )
 def test_get_defined_css_variables(
     tmp_path: Path, css_content: str, expected_vars: set[str]
-) -> None:
+):
     """Test the _get_defined_css_variables function."""
     css_file_path = tmp_path / "test.css"
     css_file_path.write_text(css_content, encoding="utf-8")
@@ -4765,7 +4805,9 @@ def test_check_katex_span_only_paragraph_child(
 
 
 @pytest.fixture
-def soup_check_setup(mock_environment, monkeypatch):
+def soup_check_setup(
+    mock_environment, monkeypatch
+) -> tuple[dict[str, object], Path]:
     public_dir = mock_environment["public_dir"]
     html_file_path = public_dir / "test_soup_interaction.html"
     html_content = "<html><body><p>Original content</p></body></html>"
@@ -4826,7 +4868,9 @@ def test_check_file_for_issues_does_not_raise_error_if_soup_unmodified(
 
     try:
         issues = built_site_checks.check_file_for_issues(**common_check_args)
-        assert "benign_issue" in issues.get("localhost_links", [])
+        assert "benign_issue" in cast(
+            list[str], issues.get("localhost_links", [])
+        )
         assert html_file_path.read_text(encoding="utf-8") == initial_content
 
     except RuntimeError as e:
@@ -4957,12 +5001,31 @@ def test_check_unrendered_emoticons(html, expected):
         # All quote types in one string
         (
             "Mix of \"quotes\", 'apostrophes', \"regular\", and 'more'",
-            'mix of "quotes", "apostrophes", "regular", and "more"',
+            'mix of "quotes," "apostrophes," "regular," and "more"',
         ),
         # Non-breaking spaces normalized to regular spaces
         (
             f"title with{built_site_checks.NBSP}non-breaking{built_site_checks.NBSP}spaces",
             "title with non-breaking spaces",
+        ),
+        # Em-dash normalization
+        ("computations\u2014do transformers", "computations - do transformers"),
+        # En-dash normalization
+        ("pages 10\u201320", "pages 10 - 20"),
+        # Diacritics stripped
+        ("na\u00efve predictions", "naive predictions"),
+        ("caf\u00e9 culture", "cafe culture"),
+        ("d\u00e9j\u00e0 vu", "deja vu"),
+        # Ellipsis normalization
+        ("wait for it\u2026", "wait for it..."),
+        # Comma-inside-quotes normalization
+        (
+            'Munkres\' "Topology", reflecting',
+            'munkres" "topology," reflecting',
+        ),
+        (
+            "\u201cTopology,\u201d reflecting",
+            '"topology," reflecting',
         ),
     ],
 )
@@ -5539,7 +5602,7 @@ def test_check_populate_elements_nonempty_non_string_id():
     element = soup.find(id="populate-test")
     if element:
         # Manually set id to a list to test the type guard
-        element["id"] = ["populate-test"]
+        element["id"] = cast(AttributeValueList, ["populate-test"])
     result = built_site_checks.check_populate_elements_nonempty(soup)
     # Should skip the element with non-string id, so no errors
     assert result == []
@@ -5765,10 +5828,45 @@ def test_check_article_dropcap_first_letter_comprehensive(
 
 
 @pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Valid: regular space after first letter
+        (
+            '<article><p data-first-letter="I">I use this page.</p></article>',
+            [],
+        ),
+        # Valid: dropcap disabled, nbsp is fine
+        (
+            f'<article data-use-dropcap="false"><p>I{NBSP}use this.</p></article>',
+            [],
+        ),
+        # Valid: no article element
+        (
+            f"<p>I{NBSP}use this.</p>",
+            [],
+        ),
+        # Invalid: nbsp after first letter in dropcap paragraph
+        (
+            f'<article><p data-first-letter="I">I{NBSP}use this page.</p></article>',
+            [
+                "nbsp after first letter in dropcap paragraph: 'I\\xa0use this page.'"
+            ],
+        ),
+    ],
+)
+def test_check_dropcap_no_leading_nbsp(html: str, expected_issues: list[str]):
+    soup = BeautifulSoup(html, "html.parser")
+    issues = built_site_checks.check_dropcap_no_leading_nbsp(soup)
+    assert issues == expected_issues
+
+
+@pytest.mark.parametrize(
     "char",
     list(built_site_checks.VALID_PARAGRAPH_ENDING_CHARACTERS),
 )
-def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(char: str):
+def test_check_top_level_paragraphs_end_with_punctuation_valid_chars(
+    char: str,
+):
     """Test that all valid ending characters are accepted."""
     html = f"<article><p>Test text{char}</p></article>"
     soup = BeautifulSoup(html, "html.parser")
@@ -5976,6 +6074,16 @@ def test_check_top_level_paragraphs_trim_chars(char: str):
             '<article><blockquote data-callout="quote"><div class="callout-content"><p>No punct</p></div></blockquote></article>',
             [],
         ),
+        # Select elements should be stripped from text before checking punctuation
+        (
+            '<article><p>Basic select<select id="s"><option value="">Choose</option><option value="1">Option 1</option></select></p></article>',
+            ["Paragraph ends with invalid character 't' Basic select"],
+        ),
+        # Paragraph with select that ends with valid punctuation should pass
+        (
+            "<article><p>Pick one.<select><option>A</option></select></p></article>",
+            [],
+        ),
     ],
 )
 def test_check_top_level_paragraphs_end_with_punctuation(
@@ -5995,6 +6103,7 @@ def test_should_skip_paragraph_inside_quote_callout():
     html = '<blockquote data-callout="quote"><p>Content without punct</p></blockquote>'
     soup = BeautifulSoup(html, "html.parser")
     p = soup.find("p")
+    assert isinstance(p, Tag)
     assert built_site_checks._should_skip_paragraph(p) is True
 
 
@@ -6074,6 +6183,60 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     """Test the check_images_have_dimensions function."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_images_have_dimensions(soup)
+    assert sorted(result) == sorted(expected_issues)
+
+
+# LCP image optimization tests
+@pytest.mark.parametrize(
+    "html,expected_issues",
+    [
+        # Correctly optimized: eager loading + preload
+        (
+            '<html><head><link rel="preload" as="image" href="img.avif"></head>'
+            '<body><article><img src="img.avif" loading="eager" fetchpriority="high">'
+            '<img src="img2.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+        # Missing eager loading
+        (
+            "<html><head></head><body><article>"
+            '<img src="img.avif" loading="lazy"></article></body></html>',
+            [
+                "First content image should have loading='eager', got 'lazy': img.avif",
+                "First content image should have fetchpriority='high', got '': img.avif",
+                "Missing <link rel='preload' as='image'> in <head> for first content image: img.avif",
+            ],
+        ),
+        # Favicon is skipped, second image is first content image
+        (
+            '<html><head><link rel="preload" as="image" href="hero.avif"></head>'
+            '<body><article><img class="favicon" src="fav.avif" loading="lazy">'
+            '<img src="hero.avif" loading="eager" fetchpriority="high"></article></body></html>',
+            [],
+        ),
+        # No article — no issues
+        (
+            "<html><head></head><body><div>No article</div></body></html>",
+            [],
+        ),
+        # No content images (only favicons) — no issues
+        (
+            "<html><head></head><body><article>"
+            '<img class="favicon" src="fav.avif" loading="lazy"></article></body></html>',
+            [],
+        ),
+        # Image without loading attr (TSX component, not from transformer) — skip
+        (
+            "<html><head></head><body><article>"
+            '<img src="logo.avif"></article></body></html>',
+            [],
+        ),
+    ],
+)
+def test_check_lcp_image_optimized(html: str, expected_issues: list[str]):
+    """Test the check_lcp_image_optimized function."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_lcp_image_optimized(soup)
     assert sorted(result) == sorted(expected_issues)
 
 
@@ -6414,7 +6577,9 @@ def test_check_file_for_issues_with_included_domains(tmp_path):
         )
 
     assert "missing_favicons" in issues
-    assert any("apple.com" in s for s in issues["missing_favicons"])
+    assert any(
+        "apple.com" in s for s in cast(list[str], issues["missing_favicons"])
+    )
 
 
 def test_check_file_for_issues_without_included_domains(tmp_path):

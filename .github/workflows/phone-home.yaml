@@ -16,14 +16,17 @@ permissions:
 
 jobs:
   phone-home:
-    # Only run for merged PRs (not closed-without-merge)
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
+    # Only run for merged PRs that have the phone-home label
+    if: >
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'phone-home')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     steps:
       - name: Extract and submit improvements
         env:
           GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: ${{ env.GH_TOKEN }}
           script: |

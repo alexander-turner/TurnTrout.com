@@ -241,7 +241,7 @@ export function pageResources(
 let fetchData = null;
 function getContentIndex() {
   if (!fetchData) {
-    fetchData = fetch(contentIndexPath).then(data => data.json());
+    fetchData = fetch(contentIndexPath).then(data => data.json()).catch(err => { console.error('[getContentIndex] Failed to load content index:', err); fetchData = null; return null; });
   }
   return fetchData;
 }`
@@ -333,7 +333,7 @@ export function addVirtualFileForSpecialTransclude(
  * Process:
  * 1. Clones the component tree to avoid modifying cached content
  * 2. Processes all transclusions (blocks, headers, full pages)
- * 3. Applies formatting improvements through normalizeHastElement
+ * 3. Rebases links in transcluded content via normalizeHastElement
  * 4. Renders the full page structure with headers, sidebars, and content
  *
  * @param cfg - Global site configuration
@@ -343,8 +343,7 @@ export function addVirtualFileForSpecialTransclude(
  * @param pageResources - Static resources (CSS/JS) for the page
  * @returns Rendered HTML string
  *
- * @see {@link normalizeHastElement} for transclusion formatting
- * @see {@link quartz/plugins/transformers/formatting_improvement_html.ts} for text formatting rules
+ * @see {@link normalizeHastElement} for transclusion link rebasing
  */
 export function renderPage(
   cfg: GlobalConfiguration,
@@ -467,5 +466,66 @@ export function renderPage(
     </html>
   )
 
-  return `<!DOCTYPE html>\n${render(doc)}`
+  return optimizeLcpImage(`<!DOCTYPE html>\n${render(doc)}`)
+}
+
+/**
+ * Post-processes rendered HTML to ensure the first content image (likely LCP
+ * element) has `loading="eager"`, `fetchpriority="high"`, and a matching
+ * `<link rel="preload">` in `<head>`.
+ *
+ * Catches images from React components that bypass the CrawlLinks transformer
+ * pipeline. Idempotent: pages already optimized by the transformer are
+ * unchanged.
+ */
+export function optimizeLcpImage(html: string): string {
+  const articleIdx = html.indexOf("<article")
+  if (articleIdx === -1) return html
+
+  const articleEndIdx = html.indexOf("</article>", articleIdx)
+  if (articleEndIdx === -1) return html
+
+  // Find the first non-favicon <img> within the article
+  const imgRegex = /<img\s[^>]*>/g
+  imgRegex.lastIndex = articleIdx
+
+  let match: RegExpExecArray | null
+  while ((match = imgRegex.exec(html)) !== null) {
+    if (match.index >= articleEndIdx) break
+    if (/\bfavicon\b/.test(match[0])) continue
+
+    const imgTag = match[0]
+    const srcMatch = imgTag.match(/\bsrc="(?<srcValue>[^"]*)"/)
+    if (!srcMatch?.groups) break
+    const src = srcMatch.groups["srcValue"]
+
+    let newTag = imgTag
+
+    // Ensure loading="eager"
+    if (/\bloading="/.test(newTag)) {
+      newTag = newTag.replace(/\bloading="[^"]*"/, 'loading="eager"')
+    } else {
+      newTag = newTag.replace("<img ", '<img loading="eager" ')
+    }
+
+    // Ensure fetchpriority="high"
+    if (/\bfetchpriority="/.test(newTag)) {
+      newTag = newTag.replace(/\bfetchpriority="[^"]*"/, 'fetchpriority="high"')
+    } else {
+      newTag = newTag.replace("<img ", '<img fetchpriority="high" ')
+    }
+
+    if (newTag !== imgTag) {
+      html = html.slice(0, match.index) + newTag + html.slice(match.index + imgTag.length)
+    }
+
+    // Add preload link in <head> if not already present
+    if (!html.includes(`<link rel="preload" href="${src}" as="image"`)) {
+      html = html.replace("</head>", `<link rel="preload" href="${src}" as="image"/></head>`)
+    }
+
+    break
+  }
+
+  return html
 }

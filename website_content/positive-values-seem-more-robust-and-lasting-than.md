@@ -3,8 +3,7 @@ permalink: robustness-of-positive-values
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+lw-page-url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 lw-is-question: 'false'
 lw-posted-at: 2022-12-17T21:43:31.627000Z
 lw-last-modification: 2023-03-26T00:29:07.381000Z
@@ -29,13 +28,12 @@ aliases:
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
 date_published: 2022-12-17 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
+original_url: https://www.lesswrong.com/posts/cHnQ4bBFr3cX6rBxh/positive-values-seem-more-robust-and-lasting-than
 skip_import: true
-description: Negative values ("don't kill") may be fragile. Positive values ("protect
-  people") might be more robust and lasting within AI agents.
-date_updated: 2025-11-22 00:21:52.667251
+description: Negative values ("don't kill") may be fragile. Positive values ("protect people") might be more robust and lasting within AI agents.
+date_updated: 2026-03-29 17:13:24.103427
 ---
+
 
 
 
@@ -58,7 +56,7 @@ The juice shard _chains into itself,_ as its outputs cause the learning process 
 
 A "don't kill" shard seems like it should remain... stubby? Primitive? The "don't kill" shard can't self-chain into _not_ doing something. If you're going to kill someone, and then don't because of the don't-kill shard, and that avoids predicted negative reward... Then maybe the "don't kill" shard gets reinforced and generalized a bit because it avoided negative reward (and so reward was higher than predicted, which I think would trigger e.g. a reinforcement event in people).
 
-On my current guesses and intuitions[^1]—that shard doesn't become more sophisticated, it doesn't [become reflective](/a-shot-at-the-diamond-alignment-problem#The-agent-becomes-reflective), it doesn't "agentically participate" in the internal shard politics (e.g. the agent's "meta-ethics", deciding what kind of agent it "wants to become"). Other parts of the agent _want things_, they want paperclips or whatever, and that's harder to do if the agent isn't allowed to kill anyone.
+On my current guesses and intuitions[^1]—that shard doesn't become more sophisticated, it doesn't [become reflective](/a-shot-at-the-diamond-alignment-problem#the-agent-becomes-reflective), it doesn't "agentically participate" in the internal shard politics (e.g. the agent's "meta-ethics", deciding what kind of agent it "wants to become"). Other parts of the agent _want things_, they want paperclips or whatever, and that's harder to do if the agent isn't allowed to kill anyone.
 
 Crucially, the no-killing injunction can probably be steered around by the agent's other values. While the obvious route of lesioning the no-killing shard might be reflectively predicted by the world model to lead to more murder, and therefore bid against _by_ the no-killing shard... To overcome this obstacle, other value shards (e.g. paperclips and cow-breeding) might bid up lesioning plans which are optimized so as to not make the killing a salient plan feature to the reflective world-model, and thus, the plan does not activate the no-killing shard.
 

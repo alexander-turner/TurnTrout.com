@@ -8,11 +8,13 @@ and updates the markdown references to point to the local staging directory.
 
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Sequence
+from urllib.parse import urlparse
 
 try:
     from . import utils as script_utils
@@ -54,7 +56,10 @@ def download_media(url: str, target_dir: Path) -> bool:
     Returns:
         True if download succeeded, False otherwise
     """
-    filename = os.path.basename(url)
+    filename = os.path.basename(urlparse(url).path)
+    if not filename:
+        print(f"Skipping URL with no filename: {url}", file=sys.stderr)
+        return False
     target_path = target_dir / filename
 
     print(f"Downloading: {url} to {target_path}")
@@ -79,7 +84,8 @@ def download_media(url: str, target_dir: Path) -> bool:
         subprocess.run(curl_command, check=True, stderr=subprocess.PIPE)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Error downloading {url}: {e.stderr.decode()}", file=sys.stderr)
+        error_output = e.stderr.decode() if e.stderr else str(e)
+        print(f"Error downloading {url}: {error_output}", file=sys.stderr)
         return False
 
 
@@ -130,8 +136,10 @@ def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
 def main() -> None:
     """Download external media files to asset_staging and update references."""
     # Kill Obsidian to prevent it from renaming downloaded files
-    subprocess.run(["/usr/bin/pkill", "-x", "Obsidian"], check=False)
-    time.sleep(0.5)
+    pkill = shutil.which("pkill")
+    if pkill:
+        subprocess.run([pkill, "-x", "Obsidian"], check=False)
+        time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
     markdown_directory = git_root / "website_content"
@@ -157,7 +165,7 @@ def main() -> None:
         if not download_media(url, asset_staging_dir):
             continue
 
-        filename = os.path.basename(url)
+        filename = os.path.basename(urlparse(url).path)
         new_url = f"asset_staging/{filename}"
         print(f"Downloaded to {new_url}")
 
@@ -170,7 +178,9 @@ def main() -> None:
         f"Successfully downloaded {successful_downloads}/{len(asset_urls)} files to asset_staging."
     )
 
-    subprocess.run(["/usr/bin/open", "-g", "-a", "Obsidian"], check=False)
+    open_cmd = shutil.which("open")
+    if open_cmd:
+        subprocess.run([open_cmd, "-g", "-a", "Obsidian"], check=False)
 
 
 if __name__ == "__main__":

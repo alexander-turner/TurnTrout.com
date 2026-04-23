@@ -1,8 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment jest-fixed-jsdom
  */
 
-import "whatwg-fetch" // This will provide the Response global
 import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals"
 
 import {
@@ -14,7 +13,11 @@ import {
   computeLeft,
   computeTop,
   fetchWithMetaRedirect,
+  focusableSelector,
   footnoteForwardRefRegex,
+  getVisibleFocusable,
+  navigation,
+  trapFocusInPopover,
 } from "../popover_helpers"
 
 jest.useFakeTimers()
@@ -26,20 +29,12 @@ beforeEach(() => {
     const url = input.toString()
 
     if (url.includes("example.com")) {
-      return Promise.resolve({
-        ok: true,
-        status: 200, // Add the status property
-        headers: {
-          get: (header: string) => {
-            if (header === "Content-Type") return "text/html"
-            return null
-          },
-        },
-        text: () =>
-          Promise.resolve(
-            '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
-          ),
-      } as unknown as Response)
+      return Promise.resolve(
+        new Response(
+          '<div class="previewable" id="not-a-header"><h1 id="test">Test HTML Content</h1></div>',
+          { status: 200, headers: { "Content-Type": "text/html" } },
+        ),
+      )
     }
 
     return Promise.reject(new Error("Network error"))
@@ -569,19 +564,17 @@ describe("attachPopoverEventListeners", () => {
     isFootnote | clickInnerLink | expectedHref
     ${false}   | ${false}       | ${"http://example.com/"}
     ${false}   | ${true}        | ${"http://clicked-link.com/"}
-    ${true}    | ${false}       | ${""}
     ${true}    | ${true}        | ${"http://clicked-link.com/"}
   `(
     "click navigates to $expectedHref (isFootnote=$isFootnote, clickInnerLink=$clickInnerLink)",
     ({ isFootnote, clickInnerLink, expectedHref }) => {
-      // Need a fresh popover+cleanup since isFootnote changes class before attaching
       cleanup()
       popoverElement = document.createElement("div")
       if (isFootnote) popoverElement.classList.add("footnote-popover")
       linkElement.href = "http://example.com/"
       cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
 
-      Object.defineProperty(window, "location", { value: { href: "" }, writable: true })
+      const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
 
       let clickEvent: MouseEvent
       if (clickInnerLink) {
@@ -595,9 +588,23 @@ describe("attachPopoverEventListeners", () => {
       }
 
       popoverElement.dispatchEvent(clickEvent)
-      expect(window.location.href).toBe(expectedHref)
+      expect(navSpy).toHaveBeenCalledWith(expectedHref as string)
+      navSpy.mockRestore()
     },
   )
+
+  it("footnote click without inner link does not navigate", () => {
+    cleanup()
+    popoverElement = document.createElement("div")
+    popoverElement.classList.add("footnote-popover")
+    linkElement.href = "http://example.com/"
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
+
+    const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
+    popoverElement.dispatchEvent(new MouseEvent("click"))
+    expect(navSpy).not.toHaveBeenCalled()
+    navSpy.mockRestore()
+  })
 })
 
 describe("attachPopoverEventListeners (footnote popover)", () => {
@@ -646,13 +653,134 @@ describe("escapeLeadingIdNumber", () => {
   })
 })
 
+/** Mark elements as visible by giving them a non-null offsetParent (jsdom's heuristic). */
+const makeVisible = (elements: HTMLElement[], offsetParent: HTMLElement) => {
+  for (const el of elements) {
+    Object.defineProperty(el, "offsetParent", { value: offsetParent, configurable: true })
+  }
+}
+
+describe("getVisibleFocusable", () => {
+  let container: HTMLElement
+
+  beforeEach(() => {
+    container = document.createElement("div")
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    container.remove()
+  })
+
+  it("returns all standard focusable descendants", () => {
+    const anchor = Object.assign(document.createElement("a"), { href: "/foo" })
+    const button = document.createElement("button")
+    const input = document.createElement("input")
+    makeVisible([anchor, button, input], container)
+    container.append(anchor, button, input)
+
+    expect(getVisibleFocusable(container)).toHaveLength(3)
+    expect(container.querySelectorAll(focusableSelector)).toHaveLength(3)
+  })
+
+  it.each<[string, (el: HTMLButtonElement) => void]>([
+    ["disabled buttons", (el) => (el.disabled = true)],
+    [
+      "elements with offsetParent null (display:none)",
+      (el) => Object.defineProperty(el, "offsetParent", { value: null, configurable: true }),
+    ],
+    ["elements with visibility:hidden", (el) => (el.style.visibility = "hidden")],
+  ])("excludes %s", (_label, hide) => {
+    const hidden = document.createElement("button")
+    const visible = document.createElement("button")
+    makeVisible([hidden, visible], container)
+    hide(hidden)
+    container.append(hidden, visible)
+
+    expect(getVisibleFocusable(container)).toEqual([visible])
+  })
+})
+
+describe("trapFocusInPopover", () => {
+  let popover: HTMLElement
+  let first: HTMLButtonElement
+  let last: HTMLButtonElement
+  let cleanup: () => void
+
+  beforeEach(() => {
+    popover = document.createElement("div")
+    first = document.createElement("button")
+    last = document.createElement("button")
+    makeVisible([first, last], popover)
+    popover.append(first, last)
+    document.body.appendChild(popover)
+    cleanup = trapFocusInPopover(popover)
+  })
+
+  afterEach(() => {
+    cleanup()
+    popover.remove()
+  })
+
+  const keydown = (key: string, shiftKey = false): KeyboardEvent => {
+    const evt = new KeyboardEvent("keydown", { key, shiftKey, bubbles: true, cancelable: true })
+    document.dispatchEvent(evt)
+    return evt
+  }
+
+  it.each<[string, boolean, () => HTMLElement, () => HTMLElement]>([
+    ["forward Tab from last -> first", false, () => last, () => first],
+    ["Shift+Tab from first -> last", true, () => first, () => last],
+  ])("wraps %s", (_label, shiftKey, initial, expected) => {
+    initial().focus()
+    const evt = keydown("Tab", shiftKey)
+    expect(evt.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(expected())
+  })
+
+  it("does nothing when Tab is pressed but focus is in the middle", () => {
+    const middle = document.createElement("button")
+    makeVisible([middle], popover)
+    popover.insertBefore(middle, last)
+    middle.focus()
+
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(middle)
+  })
+
+  it("ignores non-Tab keys", () => {
+    last.focus()
+    const evt = keydown("Enter")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
+  })
+
+  it("is a no-op when the popover has no focusable descendants", () => {
+    cleanup()
+    popover.replaceChildren()
+    cleanup = trapFocusInPopover(popover)
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+  })
+
+  it("stops trapping after cleanup", () => {
+    cleanup()
+    cleanup = () => undefined
+    last.focus()
+    const evt = keydown("Tab")
+    expect(evt.defaultPrevented).toBe(false)
+    expect(document.activeElement).toBe(last)
+  })
+})
+
 describe("fetchWithMetaRedirect", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   it("should handle a simple request with no redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/plain" }),
@@ -666,7 +794,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should follow meta refresh redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -682,7 +810,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should follow relative meta refresh redirects", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -697,7 +825,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle non-HTML responses", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "image/jpeg" }),
@@ -714,7 +842,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle failed responses", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: false,
       status: 404,
       statusText: "Not Found",
@@ -729,7 +857,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should handle malformed meta refresh tags", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -743,7 +871,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should preserve response properties after redirect", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -759,7 +887,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should throw error when maximum redirects exceeded", async () => {
-    ;(window.fetch as jest.Mock).mockImplementation(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementation(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/html" }),
@@ -775,7 +903,7 @@ describe("fetchWithMetaRedirect", () => {
   })
 
   it("should use default fetch when no customFetch is provided", async () => {
-    ;(window.fetch as jest.Mock).mockImplementationOnce(async () => ({
+    ;(window.fetch as jest.Mock).mockImplementationOnce(() => ({
       ok: true,
       status: 200,
       headers: new Headers({ "Content-Type": "text/plain" }),

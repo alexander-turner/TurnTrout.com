@@ -183,20 +183,18 @@ def _replace_content(
 
         # Parse curly brace attributes and convert to HTML attributes
         html_attrs = ""
-        try:
-            attr_parens = match.group("attributes_parens") or ""
-            attr_brackets = match.group("attributes_brackets") or ""
-            combined_attrs = attr_parens or attr_brackets
+        groups = match.groupdict()
+        attr_parens = groups.get("attributes_parens") or ""
+        attr_brackets = groups.get("attributes_brackets") or ""
+        combined_attrs = attr_parens or attr_brackets
 
-            if combined_attrs:
-                html_attrs = _parse_curly_brace_attributes(combined_attrs)
-        except IndexError:
-            pass
-        finally:
-            # Replace the placeholder with parsed HTML attributes
-            replaced_text = replaced_text.replace(
-                "___ATTRIBUTES_PLACEHOLDER___", html_attrs
-            )
+        if combined_attrs:
+            html_attrs = _parse_curly_brace_attributes(combined_attrs)
+
+        # Replace the placeholder with parsed HTML attributes
+        replaced_text = replaced_text.replace(
+            "___ATTRIBUTES_PLACEHOLDER___", html_attrs
+        )
 
         if not original_alt_was_empty:
             replaced_text = replaced_text.replace('alt=""', "")
@@ -273,9 +271,7 @@ def convert_asset(
             for suffix in [".mp4", ".webm"]:
                 _strip_metadata(input_file.with_suffix(suffix))
     else:
-        raise ValueError(
-            f"Error: Unsupported file type '{input_file.suffix}'."
-        )
+        raise ValueError(f"Error: Unsupported file type '{input_file.suffix}'.")
 
     for md_file in script_utils.get_files(
         dir_to_search=md_references_dir, filetypes_to_match=(".md",)
@@ -294,7 +290,7 @@ def convert_asset(
         input_file.unlink()
 
 
-def main():
+def main() -> None:
     """Convert assets to optimized formats."""
     parser = argparse.ArgumentParser(
         description="Convert assets to optimized formats."

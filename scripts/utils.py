@@ -2,14 +2,18 @@
 
 import functools
 import json
+import logging
 import shutil
 import subprocess
 from pathlib import Path
 from typing import Collection, Dict, Optional, Set
 
 import git
+import requests
 from bs4 import BeautifulSoup, NavigableString, Tag
+from requests.adapters import HTTPAdapter
 from ruamel.yaml import YAML, YAMLError
+from urllib3.util.retry import Retry
 
 # Unicode typography constants (single source of truth: config/constants.json)
 _CONSTANTS_JSON_PATH = (
@@ -27,6 +31,33 @@ ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
 ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
 WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
+LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]
+RIGHT_GUILLEMET: str = _UNICODE_TYPO["rightGuillemet"]
+GERMAN_OPEN_QUOTE: str = _UNICODE_TYPO["germanOpenQuote"]
+
+
+def http_session(
+    retries: int = 3,
+    backoff_factor: float = 1,
+    status_forcelist: tuple[int, ...] = (502, 503, 504),
+) -> requests.Session:
+    """
+    Create a requests Session with automatic retry on transient failures.
+
+    Retries on connection errors, timeouts, and the given HTTP status codes with
+    exponential backoff (1s, 2s, 4s by default).
+    """
+    retry = Retry(
+        total=retries,
+        backoff_factor=backoff_factor,
+        status_forcelist=list(status_forcelist),
+        allowed_methods=["HEAD", "GET"],
+    )
+    session = requests.Session()
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
 
 
 def load_shared_constants() -> dict:  # pragma: no cover
@@ -58,6 +89,9 @@ def _get_imagemagick_version() -> int:
 def get_imagemagick_command(operation: str) -> list[str]:
     """Get ImageMagick command for an operation (handles IM6 vs IM7)."""
     if _get_imagemagick_version() == 7:
+        # In IM7, "magick convert" is deprecated; just "magick" is equivalent.
+        if operation == "convert":
+            return [find_executable("magick")]
         return [find_executable("magick"), operation]
 
     operation_path = shutil.which(operation)
@@ -165,9 +199,10 @@ def get_files(
                 ValueError,
                 RuntimeError,
                 subprocess.CalledProcessError,
-            ):
-                # If Git operations fail, continue without Git filtering
-                pass
+            ) as exc:
+                logging.debug(
+                    "Git filtering failed, continuing without it: %s", exc
+                )
     return tuple(files)
 
 

@@ -82,10 +82,8 @@ export function createListPageEmitter(config: ListPageEmitterConfig): QuartzEmit
       getQuartzComponents() {
         return [Head, Header, Body, ...header, ...beforeBody, pageBody, ...left, ...right, Footer]
       },
-      // skipcq: JS-0116 have to return async for type signature
-      async getDependencyGraph() {
-        const graph = new DepGraph<FilePath>()
-        return graph
+      getDependencyGraph() {
+        return new DepGraph<FilePath>()
       },
       async emit(
         ctx,

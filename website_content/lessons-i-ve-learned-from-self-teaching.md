@@ -40,9 +40,10 @@ original_url: https://www.lesswrong.com/posts/cumc876woKaZLmQs5/lessons-i-ve-lea
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/f1898ddbf0c93680004fcf0ad728e68bee7095161e0cdfbb.jpg
 description: "Lessons learned from years of self-teaching: use Anki, read multiple books concurrently, and don't be afraid of easier texts."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-29 17:13:24.103427
 card_image_alt: "Anki's \"Future Due\" graph, a bar chart showing the number of flashcard reviews scheduled over the next 3 months. The bars are highest in the immediate future, showing a high workload that drops off quickly over time. Text below states: \"Total: 830 reviews, Average: 9 reviews/day, Due tomorrow: 58 reviews.\""
 ---
+
 
 
 
@@ -88,13 +89,13 @@ I explicitly noticed this problem in late 2020 and thought:
 
 > is there any way I know of to better retain content?
 >
-> ... gee, what about [that thing I did in college that let me learn how to read 2,136 standard-use Japanese characters in 90 days](/insights-from-euclids-elements#Commemoration)? you know, Anki spaced repetition, that thing I _never tried_ for math because once I tried and failed to memorize dozens of lines of MergeSort pseudocode with it?
+> ... gee, what about [that thing I did in college that let me learn how to read 2,136 standard-use Japanese characters in 90 days](/insights-from-euclids-elements#commemoration)? you know, Anki spaced repetition, that thing I _never tried_ for math because once I tried and failed to memorize dozens of lines of MergeSort pseudocode with it?
 >
 > hm...
 
 This was the moment I started feeling extremely silly (the exact thought was "there's no possible way that my hand is big enough for how facepalm this moment is", IIRC), but also extremely excited. _I could fix my problem!_
 
-And a problem this was. In early 2020, I had an interview where I was asked to compute $\int x \log x\, dx$ . I was stumped, even though this was simple high school calculus (just integrate by parts!). I failed the interview and then went back to learning [algebraic topology](/topology-textbook-review#You-only-lift-once) and [functional analysis](/functional-analysis-textbook-review) and representation theory. You know, nothing difficult like high school calculus.
+And a problem this was. In early 2020, I had an interview where I was asked to compute $\int x \log x\, dx$ . I was stumped, even though this was simple high school calculus (just integrate by parts!). I failed the interview and then went back to learning [algebraic topology](/topology-textbook-review#you-only-lift-once) and [functional analysis](/functional-analysis-textbook-review) and representation theory. You know, nothing difficult like high school calculus.
 
 I was pretty frustrated with myself.
 

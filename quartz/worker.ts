@@ -14,7 +14,7 @@ import { createFileParser, createProcessor } from "./processors/parse"
  *
  * This function is only ever called from a worker thread.
  */
-export async function parseFiles(argv: Argv, fps: FilePath[], allSlugs: FullSlug[]) {
+export function parseFiles(argv: Argv, fps: FilePath[], allSlugs: FullSlug[]) {
   const ctx: BuildCtx = {
     cfg,
     argv,

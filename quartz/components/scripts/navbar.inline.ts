@@ -100,17 +100,44 @@ function setupPondVideo(): void {
       videoElement.play().catch((error: Error) => {
         console.error("[setupPondVideo] Play failed:", error)
       })
+    } else if (savedTime && parseFloat(savedTime) > 0) {
+      // Safari/WebKit may not apply currentTime on paused videos reliably.
+      // A brief play/pause cycle forces the seek through the video pipeline.
+      // Only do this for non-zero timestamps — seeking to 0 doesn't need the
+      // workaround and would briefly advance the video (breaking visual tests).
+      videoElement
+        .play()
+        .then(() => videoElement.pause())
+        .catch(() => {
+          // AbortError is expected if pause() races with play() — harmless
+        })
     }
   }
 
-  // Wait for video to have enough data buffered to play smoothly
-  // readyState >= 3 (HAVE_FUTURE_DATA) means we can play without stalling
-  if (videoElement.readyState >= 3) {
+  // Wait for video metadata to load. readyState >= 1 (HAVE_METADATA) is sufficient
+  // for setting currentTime. We listen for loadedmetadata, loadeddata, and canplay
+  // because Safari may not reliably fire later events after DOM morphing or page refresh.
+  if (videoElement.readyState >= 1) {
     console.debug("[setupPondVideo] Video already ready, readyState:", videoElement.readyState)
     restoreVideoState()
   } else {
-    console.debug("[setupPondVideo] Waiting for canplay, readyState:", videoElement.readyState)
-    videoElement.addEventListener("canplay", restoreVideoState, { once: true, signal })
+    console.debug("[setupPondVideo] Waiting for video ready, readyState:", videoElement.readyState)
+    let restored = false
+    const restoreOnce = () => {
+      if (restored) return
+      restored = true
+      restoreVideoState()
+    }
+    videoElement.addEventListener("loadedmetadata", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("loadeddata", restoreOnce, { once: true, signal })
+    videoElement.addEventListener("canplay", restoreOnce, { once: true, signal })
+
+    // Safari/WebKit may not eagerly load video metadata after a full page reload
+    // when autoplay is disabled, despite preload="auto". Explicitly kick off
+    // loading so the metadata events above will fire.
+    if (savedTime && !autoplayEnabled) {
+      videoElement.load()
+    }
   }
 
   // Save timestamp before page unload/refresh

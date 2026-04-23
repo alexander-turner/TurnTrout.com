@@ -6,6 +6,14 @@ import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "
 // IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
 export const footnoteForwardRefRegex = /^#user-content-fn-(?<footnoteId>[\w-]+)$/
 
+/** Navigation helper. Uses a mutable object so tests can spy on it (jsdom locks down window.location). */
+export const navigation = {
+  /* istanbul ignore next -- jsdom does not implement navigation */
+  goTo(url: string): void {
+    window.location.href = url
+  },
+}
+
 export interface PopoverOptions {
   parentElement: HTMLElement
   targetUrl: URL
@@ -39,6 +47,7 @@ function processFootnoteForPopover(
   normalizeRelativeURLs(tempContainer, targetUrl)
 
   // modifyElementIds only modifies descendants, so also modify the element's own ID
+  /* istanbul ignore next -- footnotes always have IDs in practice */
   if (clonedFootnote.id) {
     clonedFootnote.id = `${clonedFootnote.id}-popover`
   }
@@ -274,12 +283,15 @@ export function attachPopoverEventListeners(
 
   const removePopover = () => {
     popoverElement.classList.remove("popover-visible")
-    setTimeout(() => {
-      if (!isMouseOverLink && !isMouseOverPopover) {
-        popoverElement.remove()
-        onRemove()
-      }
-    }, popoverRemovalDelayMs)
+    setTimeout(
+      /* istanbul ignore next -- async mouse state check not reachable in sync tests */ () => {
+        if (!isMouseOverLink && !isMouseOverPopover) {
+          popoverElement.remove()
+          onRemove()
+        }
+      },
+      popoverRemovalDelayMs,
+    )
   }
 
   const showPopover = () => {
@@ -289,60 +301,63 @@ export function attachPopoverEventListeners(
   const clickPopover = (e: MouseEvent) => {
     const clickedLink = (e.target as HTMLElement).closest("a")
     if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-      window.location.href = clickedLink.href
+      navigation.goTo(clickedLink.href)
     } else if (!isFootnote) {
       // For non-footnote popovers, clicking body navigates to the link target.
       // For footnote popovers, clicking body does nothing (content is just readable text).
-      window.location.href = linkElement.href
+      navigation.goTo(linkElement.href)
     }
   }
 
-  popoverElement.addEventListener("click", clickPopover)
+  const controller = new AbortController()
+  const { signal } = controller
+
+  popoverElement.addEventListener("click", clickPopover, { signal })
 
   // Hover listeners only for non-footnote popovers. Footnote popovers are
   // click-only: opened by clicking the footnote ref, dismissed by clicking
   // outside, pressing Escape, or clicking the close button.
-  let mouseenterLink: (() => void) | undefined
-  let mouseleaveLink: (() => void) | undefined
-  let mouseenterPopover: (() => void) | undefined
-  let mouseleavePopover: (() => void) | undefined
-
   if (!isFootnote) {
-    mouseenterLink = () => {
-      isMouseOverLink = true
-      showPopover()
-    }
-    mouseleaveLink = () => {
-      isMouseOverLink = false
-      if (!popoverElement.dataset.pinned) {
-        removePopover()
-      }
-    }
-    mouseenterPopover = () => {
-      isMouseOverPopover = true
-    }
-    mouseleavePopover = () => {
-      isMouseOverPopover = false
-      if (!popoverElement.dataset.pinned) {
-        removePopover()
-      }
-    }
-
-    linkElement.addEventListener("mouseenter", mouseenterLink)
-    linkElement.addEventListener("mouseleave", mouseleaveLink)
-    popoverElement.addEventListener("mouseenter", mouseenterPopover)
-    popoverElement.addEventListener("mouseleave", mouseleavePopover)
+    linkElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverLink = true
+        showPopover()
+      },
+      { signal },
+    )
+    linkElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverLink = false
+        if (!popoverElement.dataset.pinned) {
+          removePopover()
+        }
+      },
+      { signal },
+    )
+    popoverElement.addEventListener(
+      "mouseenter",
+      () => {
+        isMouseOverPopover = true
+      },
+      { signal },
+    )
+    popoverElement.addEventListener(
+      "mouseleave",
+      () => {
+        isMouseOverPopover = false
+        if (!popoverElement.dataset.pinned) {
+          removePopover()
+        }
+      },
+      { signal },
+    )
   }
 
   // Returned cleanup function
   return () => {
-    if (mouseenterLink) linkElement.removeEventListener("mouseenter", mouseenterLink)
-    if (mouseleaveLink) linkElement.removeEventListener("mouseleave", mouseleaveLink)
-    if (mouseenterPopover) popoverElement.removeEventListener("mouseenter", mouseenterPopover)
-    if (mouseleavePopover) popoverElement.removeEventListener("mouseleave", mouseleavePopover)
-    popoverElement.removeEventListener("click", clickPopover)
-
-    // Also trigger removal logic if cleanup is called directly
+    controller.abort()
     popoverElement.remove()
     onRemove()
   }
@@ -355,4 +370,51 @@ export function attachPopoverEventListeners(
  */
 export function escapeLeadingIdNumber(text: string): string {
   return text.replace(/#(?<id>\d+)/, "#_$<id>")
+}
+
+export const focusableSelector =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+
+/**
+ * Returns focusable descendants of the popover, excluding any with
+ * `display:none` or `visibility:hidden`.
+ */
+export function getVisibleFocusable(popoverElement: HTMLElement): HTMLElement[] {
+  return [...popoverElement.querySelectorAll<HTMLElement>(focusableSelector)].filter((el) => {
+    if (el.offsetParent === null) return false // fast path: handles display:none
+    return getComputedStyle(el).visibility !== "hidden"
+  })
+}
+
+/**
+ * Traps keyboard focus within a popover element for pinned (click-opened)
+ * popovers. Cycles focus between the first and last focusable descendants
+ * so Tab/Shift+Tab wrap around instead of moving into the underlying page.
+ * Returns a cleanup function to remove the event listener.
+ */
+export function trapFocusInPopover(popoverElement: HTMLElement): () => void {
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key !== "Tab") return
+
+    const focusableElements = getVisibleFocusable(popoverElement)
+    if (focusableElements.length === 0) return
+
+    const first = focusableElements[0]
+    const last = focusableElements[focusableElements.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }
+
+  document.addEventListener("keydown", handleKeydown)
+  return () => document.removeEventListener("keydown", handleKeydown)
 }

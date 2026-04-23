@@ -6,6 +6,7 @@ import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
+import { NBSP } from "../../components/constants"
 import {
   shouldCapitalizeNodeText,
   replaceRegex,
@@ -23,7 +24,7 @@ export function isRomanNumeral(str: string): boolean {
 
 // Regex for acronyms and abbreviations
 //  E.g. "IID" is technically a roman numeral
-export const allowAcronyms = [
+export const allowAcronyms: readonly string[] = [
   "IF",
   "CCC",
   "IL",
@@ -42,7 +43,7 @@ export const allowAcronyms = [
   "CC0",
 ]
 // Ignore these words if included in a potential acronym
-export const ignoreList = ["th", "hz", "st", "nd", "rd"]
+export const ignoreList: readonly string[] = ["th", "hz", "st", "nd", "rd"]
 
 // Escaped and joined allowAcronyms as an intermediate variable
 const escapedAllowAcronyms = allowAcronyms.map((acronym) =>
@@ -82,12 +83,18 @@ export const REGEX_ACRONYM = new RegExp(
   `${beforeWordBoundary}(?<acronym>${boundaryAllowAcronyms}|${allowedUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
 )
 
-export const REGEX_ABBREVIATION =
-  /(?<number>\d+(?:\.\d+)?|\.\d+)(?<abbreviation>[A-Za-z]{2,}|[KkMmBbTGgWw])\b/
+// Optional non-breaking space between number and unit is captured as part of
+// the abbreviation so callers that reconstruct the text (replacedMatch /
+// originalText below) preserve it. Regular spaces are intentionally not
+// matched — "1000 km" stays a plain phrase.
+export const REGEX_ABBREVIATION = new RegExp(
+  `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
+)
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
-export const allCapsContinuation = `(?:[${smallCapsSeparators}\\d\\s]+[${upperCapsChars}]+)`
+const decimalOrSeparator = `[${smallCapsSeparators}\\d\\s]|\\d\\.\\d`
+export const allCapsContinuation = `(?:(?:${decimalOrSeparator})+[${upperCapsChars}]+)`
 
 // Restricting to at least 2 words to avoid interfering with REGEX_ACRONYM
 // Added negative lookbehind to prevent matching if preceded by a single capital letter and space
@@ -102,7 +109,12 @@ const combinedRegex = new RegExp(
 )
 
 // Predicate if we should skip smallcaps for a given node
-export const skipSmallcapsClasses = ["no-smallcaps", "no-formatting", "bad-handwriting", "katex"]
+export const skipSmallcapsClasses: readonly string[] = [
+  "no-smallcaps",
+  "no-formatting",
+  "bad-handwriting",
+  "katex",
+]
 
 // skipcq: JS-0257
 export function skipSmallcaps(node: Node): boolean {
@@ -138,7 +150,7 @@ export const capitalizeAfterEnding = new RegExp(
   `(?<prefix>^\\s*|\\n|[.!?](?<![eE]\\.[gG]\\.|[iI]\\.[eE]\\.)\\s+)(?<letter>[${upperCapsChars}${lowerCapsChars}])$`,
 )
 
-export const INLINE_ELEMENTS = new Set([
+export const INLINE_ELEMENTS: ReadonlySet<string> = new Set([
   "b",
   "strong",
   "em",
@@ -290,6 +302,7 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
       }
 
       const abbreviationMatch = REGEX_ABBREVIATION.exec(matchText)
+      /* istanbul ignore next -- falls through to unreachable throw when regex doesn't match */
       if (abbreviationMatch?.groups) {
         const { number, abbreviation } = abbreviationMatch.groups
         return {

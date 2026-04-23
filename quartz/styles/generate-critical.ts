@@ -2,6 +2,8 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 
+import { darkPalette, lightPalette } from "./variables"
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -54,26 +56,26 @@ article[data-use-dropcap="true"] > p:first-of-type {
 article[data-use-dropcap="true"] > p:first-of-type::before {
   content: attr(data-first-letter);
   text-transform: uppercase;
-  position: absolute;
-  top: var(--dropcap-vertical-offset);
-  left: 0;
+  float: left;
+  width: var(--dropcap-font-size);
   font-size: var(--dropcap-font-size);
   line-height: 1;
-  padding-right: 0.1em;
+  padding-right: #{$dropcap-padding-right};
+  padding-top: var(--dropcap-vertical-offset);
   font-family: var(--font-dropcap-background);
   color: var(--before-color);
 }
 
 article[data-use-dropcap="true"] > p:first-of-type::first-letter {
+  margin-left: calc(-1 * var(--dropcap-font-size) - #{$dropcap-padding-right});
   padding-top: var(--dropcap-vertical-offset);
   text-transform: uppercase;
   font-style: normal !important;
   float: left;
   color: var(--foreground);
   font-size: var(--dropcap-font-size);
-  width: var(--dropcap-font-size);
   line-height: 1;
-  padding-right: 0.1em;
+  padding-right: #{$dropcap-padding-right};
   font-family: var(--font-dropcap-foreground);
   font-weight: 500 !important;
 }
@@ -86,22 +88,28 @@ em {
   font-family: var(--font-italic-situational);
 }
 
-:root[saved-theme="dark"],
+:root[data-theme="dark"],
 .dark-mode {
-  --background: #303446;
-  --foreground: #c6d0f5;
-  --red: #de585a;
-  --green: #a6d189;
-  --blue: #8caaee;
+  --background: #{$background-dark};
+  --foreground: #{$foreground-dark};
+  --red: ${darkPalette.red};
+  --green: ${darkPalette.green};
+  --blue: ${darkPalette.blue};
 }
 
-:root[saved-theme="light"],
+:root[data-theme="light"],
 .light-mode {
-  --background: #eff1f5;
-  --foreground: #4c4f69;
-  --red: #be415c;
-  --green: #22820d;
-  --blue: #3e6ccb;
+  --background: #{$background-light};
+  --foreground: #{$foreground-light};
+  --red: ${lightPalette.red};
+  --green: ${lightPalette.green};
+  --blue: ${lightPalette.blue};
+}
+
+.float-right {
+  float: right;
+  max-width: 45%;
+  margin: calc(1.5 * $base-margin) 0 calc(1.5 * $base-margin) calc(2 * $base-margin);
 }
 
 .sidebar {

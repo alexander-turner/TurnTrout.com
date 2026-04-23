@@ -5,7 +5,7 @@ import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-const colorMapping: Record<string, string> = {
+const colorMapping: Readonly<Record<string, string>> = {
   pink: "var(--pink)",
   red: "var(--red)",
   yellow: "var(--yellow)",
@@ -42,7 +42,10 @@ const colorMapping: Record<string, string> = {
  * @param colorMapping - An object mapping color values to CSS variable names.
  * @returns The transformed CSS style string with color values replaced by CSS variables.
  */
-export const transformStyle = (style: string, colorMapping: Record<string, string>): string => {
+export const transformStyle = (
+  style: string,
+  colorMapping: Readonly<Record<string, string>>,
+): string => {
   // Extract all var() expressions to protect them from transformation
   const varExpressions: string[] = []
   const placeholder = "___VAR_PLACEHOLDER_"
@@ -75,7 +78,7 @@ export const transformStyle = (style: string, colorMapping: Record<string, strin
  */
 export const transformElement = (
   element: Element,
-  colorMapping: Record<string, string>,
+  colorMapping: Readonly<Record<string, string>>,
 ): Element => {
   if (typeof element?.properties?.style === "string") {
     element.properties.style = transformStyle(element.properties.style, colorMapping)

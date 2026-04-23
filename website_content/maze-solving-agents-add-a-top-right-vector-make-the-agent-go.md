@@ -43,10 +43,11 @@ original_url: https://www.lesswrong.com/posts/gRp6FAWcQiCWkouN5/maze-solving-age
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/lteqnk5fbayr0jixir5z.jpg
 description: Adding a "top-right vector" makes a maze-solver go to the top-right. We show composition with other vectors, like the "cheese vector."
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-03-29 17:13:24.103427
 card_image_alt: Vector fields showing effects of interventions. The cheese vector makes the agent ignore the cheese. The top-right vector attracts the agent to the top-right corner. Applying both at once combines the effects!
 createBibtex: true
 ---
+
 
 
 
@@ -198,7 +199,7 @@ As in the cheese vector case, we get a "top right vector" by:
 
 We then add `×` halfway through forward passes elsewhere in the maze, where the input observations differ due to different mouse locations.
 
-If this is confusing, consult the ["Computing the cheese vector" subsection](/understanding-and-controlling-a-maze-solving-policy-network#Computing-the-cheese-vector) of the original post, or return to the Background section. If you do that and are _still_ confused about what a top-right vector _is_, please complain and leave a comment.
+If this is confusing, consult the ["Computing the cheese vector" subsection](/understanding-and-controlling-a-maze-solving-policy-network#computing-the-cheese-vector) of the original post, or return to the Background section. If you do that and are _still_ confused about what a top-right vector _is_, please complain and leave a comment.
 
 If you're confused why the hell this _works_, join the club.
 
@@ -218,7 +219,7 @@ Smaller mazes are usually (but not always) less affected:
 
 !["Seed 1. Top-right vector added with coefficient 1.0." Zero impact on behavior.](https://assets.turntrout.com/static/images/posts/1c8a90cdac261e82878f96d26bd8b427acb9172264b81328.avif)
 
-The agent also tends to be less [retargetable](/understanding-and-controlling-a-maze-solving-policy-network#Retargeting-the-agent-to-maze-locations) in smaller mazes. I don't know why.
+The agent also tends to be less [retargetable](/understanding-and-controlling-a-maze-solving-policy-network#retargeting-the-agent-to-maze-locations) in smaller mazes. I don't know why.
 
 ## Adding the top-right vector with different coefficient strengths
 
@@ -238,7 +239,7 @@ Push the coefficient too far, and the action distributions crumble into garbage:
 
 ## Subtracting the top-right vector has little effect
 
-Here's another head-scratcher. Just as [you can't](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector)[^4] [_add_ the cheese vector](/understanding-and-controlling-a-maze-solving-policy-network#Not-much-happens-when-you-add-the-cheese-vector) to increase cheese-seeking, you can't _subtract_ the top-right vector to decrease the probability of going to the top-right:
+Here's another head-scratcher. Just as [you can't](/understanding-and-controlling-a-maze-solving-policy-network#not-much-happens-when-you-add-the-cheese-vector)[^4] [_add_ the cheese vector](/understanding-and-controlling-a-maze-solving-policy-network#not-much-happens-when-you-add-the-cheese-vector) to increase cheese-seeking, you can't _subtract_ the top-right vector to decrease the probability of going to the top-right:
 
 ![Subtracting the vector with coefficient 1.0 in seed 0. Basically zero impact.](https://assets.turntrout.com/static/images/posts/dc2216de8b3eb4db315ed6dee8e2b24c2ed01cb96118d7cb.avif)![Title: "Seed 2. Top-right vector subtracted with coefficient 1.0." Basically zero impact.](https://assets.turntrout.com/static/images/posts/bed921e1a98b32ee5e5fe899e1e2d9ce9ae2ed50dfab0c49.avif)
 
@@ -279,7 +280,7 @@ The modifications compose! Stunning.
 
 Before I start speculating about other X-vectors in e.g. language models and the algebraic value editing conjecture (AVEC) more broadly, I want to mention—the model we happened to choose is not special. Langosco et al. pretrained 15 maze-solving agents, each with a different training distribution over mazes.
 
-The cheese vector technique works basically the same for all the agents which ever go out of their way to get cheese. For more detail, see [the appendix](/top-right-steering-vector#Appendix-The-cheese-vector-replicates-across-pretrained-models) of this post.
+The cheese vector technique works basically the same for all the agents which ever go out of their way to get cheese. For more detail, see [the appendix](/top-right-steering-vector#appendix-the-cheese-vector-replicates-across-pretrained-models) of this post.
 
 So, algebraic value editing isn't an oddity of the particular network we analyzed. (Nor should you expect it to be, given that this was the first idea we tried on the first network we loaded up in the first environmental setup we investigated.)
 
@@ -318,7 +319,7 @@ And there are quite a few other things which I find exciting about AVEC, but eno
 
 ## Predictions for algebraically editing LM forward passes
 
-I have now shared with you the evidence I had available when I [wrote](/understanding-and-controlling-a-maze-solving-policy-network#Speculation-about-the-implications-of-the-cheese-vector):
+I have now shared with you the evidence I had available when I [wrote](/understanding-and-controlling-a-maze-solving-policy-network#speculation-about-the-implications-of-the-cheese-vector):
 
 > [!quote]
 >

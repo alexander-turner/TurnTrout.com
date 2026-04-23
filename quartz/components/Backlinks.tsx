@@ -20,6 +20,7 @@ function processBacklinkTitle(title: string): Parent {
 
 function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
   htmlAst.children.forEach((node: RootContent) => {
+    /* istanbul ignore else -- fromHtml only produces text/element nodes */
     if (node.type === "text") {
       processSmallCaps(node.value, parent)
     } else if (node.type === "element") {
@@ -42,7 +43,7 @@ function elementToJsx(elt: RootContent): JSX.Element {
       return <>{elt.value}</>
     case "element":
       if (elt.tagName === "abbr") {
-        const abbrText = (elt.children[0] as Text).value
+        const abbrText = elt.children.length > 0 ? (elt.children[0] as Text).value : ""
         const className = (elt.properties?.className as string[])?.join(" ") || ""
         return <abbr className={className}>{abbrText}</abbr>
       } else {
