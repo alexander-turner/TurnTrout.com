@@ -185,6 +185,8 @@ class ChartExtractionResult:
     source_image: str
     model: str
     spec: dict | None = None
+    csv_path: str | None = None
+    yaml_block: str | None = None
     error: str | None = None
     raw_output: str = ""
     context_used: str = ""
@@ -295,7 +297,16 @@ def extract_chart(
             result.spec = json.loads(proc.stdout)
         except json.JSONDecodeError as err:
             result.error = f"invalid JSON from model: {err}"
+            return result
 
+    # Persist outputs next to the source image so the user can paste the
+    # block into Markdown and move the CSV alongside the .md file.
+    csv_target = image.with_suffix(".csv")
+    write_chart_csv(result.spec, csv_target)
+    result.csv_path = str(csv_target)
+    result.yaml_block = format_as_yaml_block(
+        result.spec, csv_path=f"./{csv_target.name}"
+    )
     return result
 
 
@@ -419,8 +430,33 @@ def _represent_point(dumper: yaml.SafeDumper, data: list) -> yaml.Node:
 _ChartYamlDumper.add_representer(list, _represent_point)
 
 
-def format_as_yaml_block(spec: dict) -> str:
-    """Render a spec as a ```chart fenced block ready to paste into Markdown."""
+def write_chart_csv(spec: dict, target: Path) -> None:
+    """
+    Write long-format CSV (`x,y,series`) for every point across every series.
+
+    Chose long format over one-file-per-series: it's the shape notebooks
+    produce by default (`df.to_csv()`), it's one artefact per chart, and
+    the renderer can group by the `series` column at build time.
+    """
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("w", encoding="utf-8") as fh:
+        fh.write("x,y,series\n")
+        for series in spec.get("series", []):
+            name = series.get("name", "")
+            for x, y in series.get("data", []):
+                fh.write(f"{x},{y},{name}\n")
+
+
+def format_as_yaml_block(spec: dict, csv_path: str | None = None) -> str:
+    """
+    Render a spec as a ```chart fenced block ready to paste into Markdown.
+
+    When *csv_path* is provided, inline series data is stripped and replaced
+    with a top-level ``data: <path>`` reference. When omitted, inline data
+    is preserved (the old shape).
+    """
+    if csv_path is not None:
+        spec = _without_inline_data(spec, csv_path)
     body = yaml.dump(
         spec,
         Dumper=_ChartYamlDumper,
@@ -429,6 +465,28 @@ def format_as_yaml_block(spec: dict) -> str:
         width=100,
     )
     return f"```chart\n{body.rstrip()}\n```"
+
+
+def _without_inline_data(spec: dict, csv_path: str) -> dict:
+    """
+    Return a copy of *spec* with series `data` fields removed and a top-level
+    ``data`` field set to *csv_path*.
+
+    Insertion order keeps
+    ``data:`` right after ``type/title/axes`` so the block reads cleanly.
+    """
+    out: dict = {}
+    for key, value in spec.items():
+        out[key] = value
+        if key == "y":  # insert `data:` right after the axes block
+            out["data"] = csv_path
+    if "data" not in out:
+        out["data"] = csv_path
+    out["series"] = [
+        {k: v for k, v in s.items() if k != "data"}
+        for s in spec.get("series", [])
+    ]
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -492,9 +550,9 @@ def _cli() -> int:
 
     if args.print_yaml:
         for r in ok:
-            console.print(f"\n# --- {r.source_image} ---")
-            assert r.spec is not None  # narrowed by the `ok` filter above
-            console.print(format_as_yaml_block(r.spec))
+            console.print(f"\n# --- {r.source_image} ({r.csv_path}) ---")
+            assert r.yaml_block is not None  # narrowed by the `ok` filter above
+            console.print(r.yaml_block)
 
     return 0 if not failed else 1
 

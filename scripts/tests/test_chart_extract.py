@@ -572,8 +572,23 @@ class TestCli:
         error: str | None = None,
     ) -> None:
         def _fake(image: Path, model: str, context=None, timeout=180):
+            yaml_block = (
+                chart_extract.format_as_yaml_block(
+                    spec, csv_path=f"./{image.stem}.csv"
+                )
+                if spec is not None
+                else None
+            )
+            csv_path = (
+                str(image.with_suffix(".csv")) if spec is not None else None
+            )
             return chart_extract.ChartExtractionResult(
-                source_image=str(image), model=model, spec=spec, error=error
+                source_image=str(image),
+                model=model,
+                spec=spec,
+                error=error,
+                csv_path=csv_path,
+                yaml_block=yaml_block,
             )
 
         monkeypatch.setattr(chart_extract, "extract_chart", _fake)
@@ -636,6 +651,103 @@ class TestCli:
             "sys.argv", ["chart_extract", str(img), "-o", str(out)]
         )
         assert chart_extract._cli() == 1
+
+
+# --------------------------------------------------------------------------- #
+# NEW: CSV emission + yaml block references path (TDD).                        #
+# --------------------------------------------------------------------------- #
+
+
+class TestCsvEmission:
+    @pytest.fixture
+    def spec(self) -> dict:
+        return {
+            "type": "line",
+            "title": "T",
+            "x": {"label": "x"},
+            "y": {"label": "y"},
+            "series": [
+                {
+                    "name": "A",
+                    "color": "var(--blue)",
+                    "data": [[0, 1.0], [1, 2.0]],
+                },
+                {"name": "B", "data": [[0, 5.0], [1, 6.0]]},
+            ],
+        }
+
+    def test_write_chart_csv_produces_long_format(
+        self, tmp_path: Path, spec: dict
+    ) -> None:
+        target = tmp_path / "chart.csv"
+        chart_extract.write_chart_csv(spec, target)
+        lines = target.read_text().splitlines()
+        assert lines[0] == "x,y,series"
+        assert set(lines[1:]) == {"0,1.0,A", "1,2.0,A", "0,5.0,B", "1,6.0,B"}
+
+    def test_format_as_yaml_block_uses_top_level_data_path(
+        self, spec: dict
+    ) -> None:
+        out = chart_extract.format_as_yaml_block(spec, csv_path="./chart.csv")
+        assert "data: ./chart.csv" in out
+        # Per-series `data:` fields are stripped — one and only one `data:` line.
+        assert out.count("data:") == 1
+        assert "name: A" in out
+        assert "color: var(--blue)" in out
+        assert "name: B" in out
+
+    def test_format_as_yaml_block_without_csv_keeps_inline_data(
+        self, spec: dict
+    ) -> None:
+        """Back-compat: calling without csv_path emits inline `data` points."""
+        out = chart_extract.format_as_yaml_block(spec)
+        assert "- [0, 1.0]" in out
+        assert "data: ./" not in out
+
+    def test_yaml_block_appends_data_when_no_y_axis_present(self) -> None:
+        """Degenerate spec (no `y` key): `data:` is still emitted, at the
+        end."""
+        degenerate = {
+            "type": "line",
+            "series": [{"name": "A", "data": [[0, 1]]}],
+        }
+        out = chart_extract.format_as_yaml_block(degenerate, csv_path="./x.csv")
+        assert "data: ./x.csv" in out
+
+
+class TestExtractWritesCsv:
+    def test_successful_extraction_writes_csv_next_to_image(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        img = tmp_path / "loss_by_layer.png"
+        img.write_bytes(b"\x89PNG\r\n")
+
+        spec = {
+            "type": "line",
+            "x": {"label": "layer"},
+            "y": {"label": "loss"},
+            "series": [{"name": "Loss", "data": [[0, 8.92], [2, 7.85]]}],
+        }
+
+        def _fake_llm(cmd, **_kw):
+            r = type("R", (), {})()
+            r.stdout = json.dumps(spec)
+            r.stderr = ""
+            r.returncode = 0
+            return r
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        monkeypatch.setattr(chart_extract.subprocess, "run", _fake_llm)
+
+        result = chart_extract.extract_chart(img, model="m")
+
+        assert result.spec is not None
+        assert result.csv_path is not None
+        assert Path(result.csv_path).exists()
+        assert Path(result.csv_path).name == "loss_by_layer.csv"
+        assert result.yaml_block is not None
+        assert "```chart" in result.yaml_block
+        assert "data: ./loss_by_layer.csv" in result.yaml_block
 
 
 # --------------------------------------------------------------------------- #
