@@ -34,12 +34,20 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import warnings
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Callable, Sequence
 
 import yaml
 from rich.console import Console
+
+# alt-text-llm imports tqdm the same way — matching its convention keeps the
+# two tools visually consistent and silences the same experimental warning.
+from tqdm.rich import tqdm
+from tqdm.std import TqdmExperimentalWarning
+
+warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
 # --------------------------------------------------------------------------- #
 # JSON Schema — mirrors `quartz/plugins/transformers/charts/types.ts`.        #
@@ -63,10 +71,6 @@ CHART_SCHEMA: dict = {
                 "properties": {
                     "name": {"type": "string"},
                     "color": {"type": "string"},
-                    # Drafts before 2020-12 don't support `prefixItems`; some
-                    # backends (notably OpenAI strict mode) reject it. Describe
-                    # the [x, y] tuple via items + minItems/maxItems — the
-                    # prompt enforces the numeric-pair semantics.
                     "data": {
                         "type": "array",
                         "minItems": 1,
@@ -140,28 +144,18 @@ def build_chart_prompt(context: str | None = None) -> str:
     return base
 
 
-# --------------------------------------------------------------------------- #
-# Cost estimation — kept parallel to alt-text-llm's `estimate_cost`.           #
-# Update as pricing changes; omit unknown models rather than guess.           #
-# --------------------------------------------------------------------------- #
+# Reuse alt-text-llm's cost estimator so both tools report the same way.
+# Extend the shared dict with Claude/GPT entries it doesn't ship with — safe
+# to mutate at import time since alt-text-llm reads via `.get()`.
+from alt_text_llm.generate import MODEL_COSTS, estimate_cost  # noqa: E402
 
-MODEL_COSTS: dict[str, dict[str, float]] = {
-    "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
-    "claude-opus-4-7": {"input": 0.015, "output": 0.075},
-    "gemini-2.5-pro": {"input": 0.00125, "output": 0.01},
-    "gemini-2.5-flash": {"input": 0.0003, "output": 0.0025},
-    "gpt-5": {"input": 0.0025, "output": 0.01},
-}
-
-
-def estimate_cost(
-    model: str, n: int, in_toks: int = 3000, out_toks: int = 800
-) -> str:
-    cost = MODEL_COSTS.get(model.lower())
-    if cost is None:
-        return f"(no pricing known for {model})"
-    total = n * (in_toks * cost["input"] + out_toks * cost["output"]) / 1000
-    return f"~${total:.2f} estimated ({n} images × {model})"
+MODEL_COSTS.update(
+    {
+        "claude-sonnet-4-6": {"input": 0.003, "output": 0.015},
+        "claude-opus-4-7": {"input": 0.015, "output": 0.075},
+        "gpt-5": {"input": 0.0025, "output": 0.01},
+    }
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -227,8 +221,16 @@ def extract_chart(
     context: str | None = None,
     timeout: int = 180,
 ) -> ChartExtractionResult:
-    """Run `llm` once against *image*, return a parsed
-    `ChartExtractionResult`."""
+    """
+    Run `llm` once against *image* and return a `ChartExtractionResult`.
+
+    Contract: this function MUST NOT raise on per-image failures (bad AVIF,
+    `llm` non-zero exit, timeout, unparseable JSON). Each of those is
+    recorded in ``result.error`` and returned normally. Raising would
+    cascade through ``asyncio.gather`` in ``async_extract_batch`` and kill
+    the whole run — losing work on every successful image processed so far.
+    Unexpected errors (e.g. ``KeyboardInterrupt``) still propagate.
+    """
 
     result = ChartExtractionResult(
         source_image=str(image), model=model, context_used=context or ""
@@ -245,6 +247,12 @@ def extract_chart(
             result.error = f"AVIF conversion failed: {err}"
             return result
 
+        # Pass the JSON schema via a tempfile rather than inline on argv:
+        # it's ~1KB today and growing, and a path is easier to eyeball when
+        # debugging a failed `llm` invocation (just re-run with the printed path).
+        schema_file = Path(tmp) / "schema.json"
+        schema_file.write_text(json.dumps(CHART_SCHEMA), encoding="utf-8")
+
         try:
             proc = subprocess.run(
                 [
@@ -254,7 +262,7 @@ def extract_chart(
                     "-a",
                     str(prepared),
                     "--schema",
-                    json.dumps(CHART_SCHEMA),
+                    str(schema_file),
                     build_chart_prompt(context),
                 ],
                 check=False,
@@ -298,12 +306,28 @@ async def _extract_one(
 
 
 async def async_extract_batch(
-    images: Sequence[Path], model: str
+    images: Sequence[Path],
+    model: str,
+    on_completed: Callable[[ChartExtractionResult], None] | None = None,
 ) -> list[ChartExtractionResult]:
+    """
+    Extract *images* concurrently.
+
+    If *on_completed* is supplied, it is called once per image as soon as that
+    image's extraction finishes (in completion order, not submission order). The
+    CLI wires this up to a tqdm progress bar; tests inject a list-append for
+    observation. Results are returned in submission order.
+    """
     sem = asyncio.Semaphore(_CONCURRENCY)
-    return await asyncio.gather(
-        *[_extract_one(img, model, sem) for img in images]
-    )
+    tasks = [
+        asyncio.create_task(_extract_one(img, model, sem)) for img in images
+    ]
+
+    if on_completed is not None:
+        for finished in asyncio.as_completed(tasks):
+            on_completed(await finished)
+
+    return await asyncio.gather(*tasks)
 
 
 # --------------------------------------------------------------------------- #
@@ -439,7 +463,14 @@ def _cli() -> int:
 
     console.print(f"[bold]{estimate_cost(args.model, len(targets))}[/bold]")
 
-    results = asyncio.run(async_extract_batch(targets, args.model))
+    with tqdm(total=len(targets), desc="Extracting charts") as bar:
+        results = asyncio.run(
+            async_extract_batch(
+                targets,
+                args.model,
+                on_completed=lambda _r: bar.update(1),
+            )
+        )
     write_results(results, args.output)
 
     ok = [r for r in results if r.spec]

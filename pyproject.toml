@@ -24,6 +24,7 @@ dependencies = [
     "rich",
     "ruamel-yaml",
     "tqdm",
+    "alt-text-llm",
     "validators",
     "types-defusedxml",
     "types-pyyaml",
