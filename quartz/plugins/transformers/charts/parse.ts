@@ -32,7 +32,7 @@ function parseDataPoint(raw: unknown, seriesName: string, index: number): [numbe
   return [x, y]
 }
 
-function parseSeries(raw: unknown): SeriesSpec[] {
+function parseSeries(raw: unknown, dataSource: string | undefined): SeriesSpec[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error('Chart must have a non-empty "series" array')
   }
@@ -43,6 +43,18 @@ function parseSeries(raw: unknown): SeriesSpec[] {
     const obj = s as Record<string, unknown>
     if (typeof obj.name !== "string") {
       throw new Error(`series[${i}] must have a string "name"`)
+    }
+    // With a top-level `dataSource`, per-series `data` comes from the CSV
+    // later; forbidding it here catches the easy mistake of specifying both.
+    if (dataSource !== undefined) {
+      if (obj.data !== undefined) {
+        throw new Error("cannot combine top-level `data` with per-series `data`")
+      }
+      return {
+        name: obj.name,
+        color: typeof obj.color === "string" ? obj.color : undefined,
+        data: [],
+      } as SeriesSpec
     }
     if (!Array.isArray(obj.data) || obj.data.length === 0) {
       throw new Error(`Series "${obj.name}" must have a non-empty "data" array`)
@@ -84,7 +96,7 @@ function parseAnnotations(raw: unknown): Annotation[] {
   })
 }
 
-function validateLogScaleData(spec: ChartSpec): void {
+export function validateLogScaleData(spec: ChartSpec): void {
   const axes: Array<{ axis: AxisSpec; name: string; accessor: (d: [number, number]) => number }> = [
     { axis: spec.x, name: "x", accessor: (d) => d[0] },
     { axis: spec.y, name: "y", accessor: (d) => d[1] },
@@ -114,15 +126,28 @@ export function parseChartSpec(yamlString: string): ChartSpec {
     throw new Error(`Unsupported chart type: "${obj.type}". Only "line" is supported.`)
   }
 
+  let dataSource: string | undefined
+  if (obj.data !== undefined) {
+    if (typeof obj.data !== "string") {
+      throw new Error("top-level `data` must be a string path to a CSV file")
+    }
+    dataSource = obj.data
+  }
+
   const spec: ChartSpec = {
     type: "line",
     title: typeof obj.title === "string" ? obj.title : undefined,
     x: parseAxisSpec(obj.x, "x"),
     y: parseAxisSpec(obj.y, "y"),
-    series: parseSeries(obj.series),
+    series: parseSeries(obj.series, dataSource),
     annotations: obj.annotations ? parseAnnotations(obj.annotations) : undefined,
+    dataSource,
   }
 
-  validateLogScaleData(spec)
+  // Log-scale validation runs on inline data only; when dataSource is set,
+  // the caller re-validates after filling series from the CSV.
+  if (dataSource === undefined) {
+    validateLogScaleData(spec)
+  }
   return spec
 }

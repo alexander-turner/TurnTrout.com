@@ -1,11 +1,16 @@
 import type { Element, Root } from "hast"
+import type { VFile } from "vfile"
 
+import fs from "fs"
+import path from "path"
 import { visit } from "unist-util-visit"
 
 import type { QuartzTransformerPlugin } from "../types"
+import type { ChartSpec } from "./charts/types"
 
+import { parseLongCsv } from "./charts/csv"
 import { renderLineChart } from "./charts/line-renderer"
-import { parseChartSpec } from "./charts/parse"
+import { parseChartSpec, validateLogScaleData } from "./charts/parse"
 
 /** Inline script that positions annotation tooltips at the user's initial hover x. */
 const ANNOTATION_TOOLTIP_SCRIPT = `(function () {
@@ -128,11 +133,35 @@ function getCodeElement(node: Element): Element {
   ) as Element
 }
 
+/**
+ * Fill `spec.series[i].data` from a CSV referenced by `spec.dataSource`.
+ * Mutates the spec in place. The CSV path is resolved relative to the
+ * Markdown file being processed, so `./loss.csv` in a chart block inside
+ * `website_content/post.md` means `website_content/loss.csv`.
+ */
+function hydrateFromCsv(spec: ChartSpec, file: VFile): void {
+  // istanbul ignore next -- caller only invokes when dataSource is set
+  if (!spec.dataSource) return
+  // istanbul ignore next -- VFile.path is always set during a quartz build
+  const mdDir = file.path ? path.dirname(file.path) : process.cwd()
+  const csvAbs = path.resolve(mdDir, spec.dataSource)
+  const csvText = fs.readFileSync(csvAbs, "utf8")
+  const bySeries = parseLongCsv(csvText)
+  for (const s of spec.series) {
+    const rows = bySeries.get(s.name)
+    if (!rows || rows.length === 0) {
+      throw new Error(`series "${s.name}" has no rows in ${csvAbs}`)
+    }
+    s.data = rows
+  }
+  validateLogScaleData(spec)
+}
+
 export const Charts: QuartzTransformerPlugin = () => ({
   name: "Charts",
   htmlPlugins() {
     return [
-      () => (tree: Root) => {
+      () => (tree: Root, file: VFile) => {
         visit(tree, "element", (node: Element, index: number | undefined, parent) => {
           // istanbul ignore next -- defensive: visit always provides parent with index
           if (index === undefined || !parent) return
@@ -141,6 +170,10 @@ export const Charts: QuartzTransformerPlugin = () => ({
           const code = getCodeElement(node)
           const yamlText = getCodeText(code)
           const spec = parseChartSpec(yamlText)
+
+          if (spec.dataSource) {
+            hydrateFromCsv(spec, file)
+          }
 
           // parseChartSpec validates that type is "line" (the only supported type)
           const svg = renderLineChart(spec)

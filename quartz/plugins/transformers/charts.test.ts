@@ -1,12 +1,17 @@
 import type { Element, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
+import fs from "fs"
+import os from "os"
+import path from "path"
 import { visit } from "unist-util-visit"
+import { VFile } from "vfile"
 
 import type { BuildCtx } from "../../util/ctx"
 import type { ChartSpec } from "./charts/types"
 
 import { Charts } from "./charts"
+import { parseLongCsv } from "./charts/csv"
 import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
 
@@ -212,6 +217,68 @@ annotations:
     ],
   ])("throws on %s", (_desc, yaml, expectedMsg) => {
     expect(() => parseChartSpec(yaml)).toThrow(expectedMsg)
+  })
+
+  // ── top-level `data: path` (CSV sidecar mode) ─────────────────────────
+  it("parses top-level `data: <path>` into spec.dataSource and allows series without inline data", () => {
+    const yaml = `
+type: line
+x:
+  label: X
+y:
+  label: Y
+data: ./loss.csv
+series:
+  - name: Loss
+    color: var(--blue)
+`
+    const spec = parseChartSpec(yaml)
+    expect(spec.dataSource).toBe("./loss.csv")
+    expect(spec.series).toHaveLength(1)
+    expect(spec.series[0].name).toBe("Loss")
+    expect(spec.series[0].data).toEqual([])
+  })
+
+  it.each([
+    [
+      "both top-level data path AND per-series inline data",
+      "type: line\nx:\n  label: X\ny:\n  label: Y\ndata: ./f.csv\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      "cannot combine top-level `data` with per-series `data`",
+    ],
+    [
+      "top-level data as array",
+      "type: line\nx:\n  label: X\ny:\n  label: Y\ndata:\n  - [1,2]\nseries:\n  - name: S",
+      "top-level `data` must be a string path",
+    ],
+    [
+      "series missing data when no top-level data",
+      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S",
+      'Series "S" must have a non-empty "data" array',
+    ],
+  ])("rejects %s", (_desc, yaml, expectedMsg) => {
+    expect(() => parseChartSpec(yaml)).toThrow(expectedMsg)
+  })
+})
+
+// ── parseLongCsv ──────────────────────────────────────────────────────
+
+describe("parseLongCsv", () => {
+  it("groups rows by the series column", () => {
+    const out = parseLongCsv("x,y,series\n0,1,A\n1,2,A\n0,5,B\n")
+    expect(out.get("A")).toEqual([
+      [0, 1],
+      [1, 2],
+    ])
+    expect(out.get("B")).toEqual([[0, 5]])
+  })
+
+  it.each([
+    ["empty input", "", "CSV is empty"],
+    ["wrong header", "a,b,c\n0,1,X", 'CSV header must be "x,y,series"'],
+    ["wrong column count", "x,y,series\n0,1\n", "expected 3 columns"],
+    ["non-numeric x", "x,y,series\nfoo,1,A", "x and y must be finite"],
+  ])("rejects %s", (_desc, input, msg) => {
+    expect(() => parseLongCsv(input)).toThrow(msg)
   })
 })
 
@@ -939,5 +1006,63 @@ annotations:
 
     // Should not be transformed
     expect((tree.children[0] as Element).tagName).toBe("pre")
+  })
+
+  // ── `data: <path>` sidecar support ────────────────────────────────────
+  it("resolves top-level data path relative to the markdown file and fills series", () => {
+    // Written lazily to avoid test file system cruft: real fs is fine for a
+    // small tempdir, and mocking fs makes the test less honest.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-csv-"))
+    fs.writeFileSync(path.join(dir, "loss.csv"), "x,y,series\n0,8.92,Loss\n2,7.85,Loss\n")
+    const mdPath = path.join(dir, "post.md")
+
+    const tree = createChartTree(`type: line
+x:
+  label: Layer
+y:
+  label: Loss
+data: ./loss.csv
+series:
+  - name: Loss`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    transform(tree, new VFile({ path: mdPath }))
+
+    const figure = tree.children[0] as Element
+    expect(figure.tagName).toBe("figure")
+    const svg = figure.children[0] as Element
+    // The <path d="..."> attribute is populated only if data came through.
+    let sawPath = false
+    visit(svg, "element", (n: Element) => {
+      if (n.tagName === "path" && typeof n.properties?.d === "string") {
+        sawPath = true
+      }
+    })
+    expect(sawPath).toBe(true)
+  })
+
+  it("errors when a series referenced in the spec is missing from the CSV", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-csv-miss-"))
+    // CSV has series "Other" but the spec asks for "Loss"
+    fs.writeFileSync(path.join(dir, "x.csv"), "x,y,series\n0,1,Other\n")
+    const mdPath = path.join(dir, "post.md")
+
+    const tree = createChartTree(`type: line
+x:
+  label: X
+y:
+  label: Y
+data: ./x.csv
+series:
+  - name: Loss`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    expect(() => transform(tree, new VFile({ path: mdPath }))).toThrow(
+      /series "Loss" has no rows in .*x\.csv/,
+    )
   })
 })
