@@ -114,9 +114,21 @@ export function parseChartSpec(yamlString: string): ChartSpec {
     throw new Error(`Unsupported chart type: "${obj.type}". Only "line" is supported.`)
   }
 
+  if (typeof obj.alt !== "string" || obj.alt.trim() === "") {
+    throw new Error(
+      'Chart spec must include a non-empty "alt" string — every rendered chart needs an accessible description.',
+    )
+  }
+
+  if (obj.fallback !== undefined && typeof obj.fallback !== "string") {
+    throw new Error('Chart "fallback" must be a string (URL or path) when provided')
+  }
+
   const spec: ChartSpec = {
     type: "line",
     title: typeof obj.title === "string" ? obj.title : undefined,
+    alt: obj.alt,
+    fallback: obj.fallback,
     x: parseAxisSpec(obj.x, "x"),
     y: parseAxisSpec(obj.y, "y"),
     series: parseSeries(obj.series),

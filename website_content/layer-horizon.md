@@ -66,6 +66,7 @@ To measure the importance of sublayer contributions originating much earlier in 
 >
 > ```chart
 > type: line
+> alt: "Loss for GPT-2 XL as a function of layer horizon, falling from 8.92 at horizon 0 to roughly 3.15 by horizon 48 and approaching the 3.1418 baseline loss."
 > title: "Layer Horizon vs Loss for GPT2-XL (48 layers)"
 > x:
 >   label: Layer horizon

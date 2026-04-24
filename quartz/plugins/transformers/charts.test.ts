@@ -17,6 +17,7 @@ const mockCtx = {} as BuildCtx
 describe("parseChartSpec", () => {
   const MINIMAL_YAML = `
 type: line
+alt: Test chart
 x:
   label: X
 y:
@@ -42,6 +43,7 @@ series:
   it("parses axis min override", () => {
     const yaml = `
 type: line
+alt: Test chart
 x:
   label: X
 y:
@@ -60,6 +62,7 @@ series:
   it("parses title, colors, scale, and annotations", () => {
     const yaml = `
 type: line
+alt: Test chart
 title: My Chart
 x:
   label: X
@@ -112,106 +115,167 @@ annotations:
     ],
     [
       "non-object x axis",
-      "type: line\nx: 42\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      "type: line\nalt: Test chart\nx: 42\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
       'Chart "x" axis must be an object',
     ],
     [
       "null x axis",
-      "type: line\nx: null\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      "type: line\nalt: Test chart\nx: null\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
       'Chart "x" axis must be an object',
     ],
     [
       "missing axis label",
-      "type: line\nx:\n  scale: linear\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      "type: line\nalt: Test chart\nx:\n  scale: linear\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
       'Chart "x" axis must have a string "label"',
     ],
     [
       "invalid axis scale",
-      "type: line\nx:\n  label: X\n  scale: quadratic\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      "type: line\nalt: Test chart\nx:\n  label: X\n  scale: quadratic\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
       'Chart "x" axis scale must be "linear" or "log"',
     ],
     [
       "empty series",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries: []",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries: []",
       'Chart must have a non-empty "series" array',
     ],
     [
       "non-array series",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries: notarray",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries: notarray",
       'Chart must have a non-empty "series" array',
     ],
     [
       "series item not object",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - 42",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - 42",
       "series[0] must be an object",
     ],
     [
       "series missing name",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - data:\n      - [1,2]",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - data:\n      - [1,2]",
       'series[0] must have a string "name"',
     ],
     [
       "series empty data",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data: []",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data: []",
       'Series "S" must have a non-empty "data" array',
     ],
     [
       "data point not array",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - 42",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - 42",
       'Series "S" data[0] must be a [x, y] array',
     ],
     [
       "data point wrong length",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1]",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1]",
       'Series "S" data[0] must be a [x, y] array',
     ],
     [
       "data point non-numeric",
-      'type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - ["a", 2]',
+      'type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - ["a", 2]',
       'Series "S" data[0] values must be numbers',
     ],
     [
       "annotations not array",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations: bad",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations: bad",
       '"annotations" must be an array',
     ],
     [
       "annotation not object",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - 42",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - 42",
       "annotations[0] must be an object",
     ],
     [
       "annotation bad type",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: vertical-line\n    value: 3",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: vertical-line\n    value: 3",
       'annotations[0] type must be "horizontal-line"',
     ],
     [
       "annotation non-numeric value",
-      'type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: "three"',
+      'type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: "three"',
       'annotations[0] must have a numeric "value"',
     ],
     [
       "annotation invalid style",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: 3\n    style: dotted",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]\nannotations:\n  - type: horizontal-line\n    value: 3\n    style: dotted",
       'annotations[0] style must be "solid" or "dashed"',
     ],
     [
       "non-numeric axis min",
-      'type: line\nx:\n  label: X\n  min: "three"\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
+      'type: line\nalt: Test chart\nx:\n  label: X\n  min: "three"\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
       'Chart "x" axis min must be a number',
     ],
     [
       "log scale with zero x value",
-      "type: line\nx:\n  label: X\n  scale: log\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [0, 2]",
+      "type: line\nalt: Test chart\nx:\n  label: X\n  scale: log\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [0, 2]",
       'Log scale on "x" axis requires positive values',
     ],
     [
       "log scale with negative y value",
-      "type: line\nx:\n  label: X\ny:\n  label: Y\n  scale: log\nseries:\n  - name: S\n    data:\n      - [1, -5]",
+      "type: line\nalt: Test chart\nx:\n  label: X\ny:\n  label: Y\n  scale: log\nseries:\n  - name: S\n    data:\n      - [1, -5]",
       'Log scale on "y" axis requires positive values',
+    ],
+    [
+      "missing alt",
+      "type: line\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      'Chart spec must include a non-empty "alt"',
+    ],
+    [
+      "empty alt",
+      'type: line\nalt: ""\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
+      'Chart spec must include a non-empty "alt"',
+    ],
+    [
+      "whitespace-only alt",
+      'type: line\nalt: "   "\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]',
+      'Chart spec must include a non-empty "alt"',
+    ],
+    [
+      "non-string alt",
+      "type: line\nalt: 123\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      'Chart spec must include a non-empty "alt"',
+    ],
+    [
+      "non-string fallback",
+      "type: line\nalt: Ok\nfallback: 123\nx:\n  label: X\ny:\n  label: Y\nseries:\n  - name: S\n    data:\n      - [1,2]",
+      'Chart "fallback" must be a string',
     ],
   ])("throws on %s", (_desc, yaml, expectedMsg) => {
     expect(() => parseChartSpec(yaml)).toThrow(expectedMsg)
+  })
+
+  it("parses alt and fallback when present", () => {
+    const yaml = [
+      "type: line",
+      'alt: "Loss vs layer horizon for GPT-2"',
+      'fallback: "https://assets.turntrout.com/posts/layer-horizon.avif"',
+      "x:",
+      "  label: X",
+      "y:",
+      "  label: Y",
+      "series:",
+      "  - name: S",
+      "    data:",
+      "      - [1,2]",
+    ].join("\n")
+    const spec = parseChartSpec(yaml)
+    expect(spec.alt).toBe("Loss vs layer horizon for GPT-2")
+    expect(spec.fallback).toBe("https://assets.turntrout.com/posts/layer-horizon.avif")
+  })
+
+  it("leaves fallback undefined when omitted", () => {
+    const yaml = [
+      "type: line",
+      "alt: A",
+      "x:",
+      "  label: X",
+      "y:",
+      "  label: Y",
+      "series:",
+      "  - name: S",
+      "    data:",
+      "      - [1,2]",
+    ].join("\n")
+    const spec = parseChartSpec(yaml)
+    expect(spec.fallback).toBeUndefined()
   })
 })
 
@@ -221,6 +285,7 @@ describe("renderLineChart", () => {
   const BASIC_SPEC: ChartSpec = {
     type: "line",
     title: "Test Chart",
+    alt: "Test chart alt",
     x: { label: "X Axis", scale: "linear" },
     y: { label: "Y Axis", scale: "linear" },
     series: [
@@ -243,7 +308,7 @@ describe("renderLineChart", () => {
     expect(svg.properties?.viewBox).toBe("0 0 600 370")
     expect(svg.properties?.class).toBe("smart-chart")
     expect(svg.properties?.role).toBe("img")
-    expect(svg.properties?.["aria-label"]).toBe("Test Chart")
+    expect(svg.properties?.["aria-label"]).toBe("Test chart alt")
     expect(svg.properties?.xmlns).toBe("http://www.w3.org/2000/svg")
     expect(svg.properties?.width).toBe("100%")
   })
@@ -368,10 +433,11 @@ describe("renderLineChart", () => {
     expect(descText.type === "text" && descText.value).toContain("Target at y = 75")
   })
 
-  it("uses default aria-label when no title provided", () => {
+  it("uses alt (not title) for aria-label", () => {
     const spec: ChartSpec = { ...BASIC_SPEC, title: undefined }
     const svg = renderLineChart(spec)
-    expect(svg.properties?.["aria-label"]).toBe("Line chart")
+    // aria-label tracks `alt`, which is mandatory — title is decorative only.
+    expect(svg.properties?.["aria-label"]).toBe("Test chart alt")
   })
 
   it("renders without title when not provided", () => {
@@ -380,7 +446,7 @@ describe("renderLineChart", () => {
       title: undefined,
     }
     const svg = renderLineChart(spec)
-    expect(svg.properties?.["aria-label"]).toBe("Line chart")
+    expect(svg.properties?.["aria-label"]).toBe("Test chart alt")
     // No title text at the top level
     const topLevelTexts: string[] = []
     for (const child of svg.children) {
@@ -469,6 +535,7 @@ describe("renderLineChart", () => {
   it("renders log scale", () => {
     const spec: ChartSpec = {
       type: "line",
+      alt: "Test chart alt",
       x: { label: "X", scale: "linear" },
       y: { label: "Y", scale: "log" },
       series: [
@@ -521,6 +588,7 @@ describe("renderLineChart", () => {
   it("extends y domain to include annotation values", () => {
     const spec: ChartSpec = {
       type: "line",
+      alt: "Test chart alt",
       x: { label: "X" },
       y: { label: "Y" },
       series: [
@@ -547,6 +615,7 @@ describe("renderLineChart", () => {
   it("applies axis min overrides to domains", () => {
     const spec: ChartSpec = {
       type: "line",
+      alt: "Test chart alt",
       x: { label: "X", min: -5 },
       y: { label: "Y", min: 0 },
       series: [
@@ -569,6 +638,7 @@ describe("renderLineChart", () => {
   it("formats integer ticks without decimals", () => {
     const spec: ChartSpec = {
       type: "line",
+      alt: "Test chart alt",
       x: { label: "X" },
       y: { label: "Y" },
       series: [
@@ -615,6 +685,7 @@ describe("Charts transformer plugin", () => {
   }
 
   const VALID_YAML = `type: line
+alt: Test chart
 x:
   label: X
 y:
@@ -643,8 +714,52 @@ series:
     expect(svg.properties?.class).toBe("smart-chart")
   })
 
+  it("emits noscript fallback img and data-fallback attr when fallback is set", () => {
+    const yaml = `type: line
+alt: Loss curve for GPT-2
+fallback: https://assets.turntrout.com/posts/x.avif
+x:
+  label: X
+y:
+  label: Y
+series:
+  - name: S
+    data:
+      - [1, 2]`
+    const tree = createChartTree(yaml)
+    const plugin = Charts()
+    const transform = ((plugin.htmlPlugins?.(mockCtx) ?? [])[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    const figure = tree.children[0] as Element
+    expect(figure.properties?.["data-fallback"]).toBe("https://assets.turntrout.com/posts/x.avif")
+    const noscript = figure.children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "noscript",
+    )
+    expect(noscript).toBeDefined()
+    const img = noscript?.children[0] as Element
+    expect(img.tagName).toBe("img")
+    expect(img.properties?.src).toBe("https://assets.turntrout.com/posts/x.avif")
+    expect(img.properties?.alt).toBe("Loss curve for GPT-2")
+  })
+
+  it("omits noscript fallback and data-fallback when fallback is absent", () => {
+    const tree = createChartTree(VALID_YAML)
+    const plugin = Charts()
+    const transform = ((plugin.htmlPlugins?.(mockCtx) ?? [])[0] as () => (tree: Root) => void)()
+    transform(tree)
+
+    const figure = tree.children[0] as Element
+    expect(figure.properties?.["data-fallback"]).toBeUndefined()
+    const noscript = figure.children.find(
+      (c): c is Element => c.type === "element" && c.tagName === "noscript",
+    )
+    expect(noscript).toBeUndefined()
+  })
+
   it("includes tooltip script when chart has annotations", () => {
     const yamlWithAnnotations = `type: line
+alt: Test chart
 x:
   label: X
 y:
@@ -735,7 +850,7 @@ annotations:
                   type: "element",
                   tagName: "span",
                   properties: {},
-                  children: [{ type: "text", value: "type: line\n" }],
+                  children: [{ type: "text", value: "type: line\nalt: Test chart\n" }],
                 },
                 {
                   type: "element",

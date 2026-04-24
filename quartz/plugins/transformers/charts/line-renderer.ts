@@ -428,7 +428,7 @@ export function renderLineChart(spec: ChartSpec): Element {
       width: "100%",
       class: "smart-chart",
       role: "img",
-      "aria-label": spec.title ?? "Line chart",
+      "aria-label": spec.alt,
       "aria-describedby": descId,
     },
     chartChildren,

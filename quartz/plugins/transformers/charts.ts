@@ -158,10 +158,39 @@ export const Charts: QuartzTransformerPlugin = () => ({
             })
           }
 
+          // Preserve the source image as a <noscript> fallback and for future
+          // reference. Rendered after the SVG so browsers without JS / SVG
+          // support still get the original image.
+          if (spec.fallback) {
+            figureChildren.push({
+              type: "element",
+              tagName: "noscript",
+              properties: {},
+              children: [
+                {
+                  type: "element",
+                  tagName: "img",
+                  properties: { src: spec.fallback, alt: spec.alt },
+                  children: [],
+                },
+              ],
+            })
+          }
+
+          const figureProps: Record<string, string | string[]> = {
+            className: ["smart-chart-container"],
+          }
+          if (spec.fallback) {
+            // Archive the source image on the figure itself so "right-click →
+            // inspect" surfaces it and future tooling can find it without
+            // re-parsing the YAML.
+            figureProps["data-fallback"] = spec.fallback
+          }
+
           const figure: Element = {
             type: "element",
             tagName: "figure",
-            properties: { className: ["smart-chart-container"] },
+            properties: figureProps,
             children: figureChildren,
           }
 

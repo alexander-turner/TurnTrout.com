@@ -243,11 +243,18 @@ class TestClassifyBatch:
 
 
 def _result(source: str, **overrides) -> chart_extract.ChartExtractionResult:
+    # Provide a fully-formed spec so write_proposed_replacements can re-serialize
+    # it after injecting alt/fallback (the real pipeline only passes validated
+    # specs through).
     defaults = dict(
         source_image=source,
         model="m",
-        spec={"type": "line"},
-        yaml_block="```chart\ntype: line\n```",
+        spec={
+            "type": "line",
+            "x": {"label": "X"},
+            "y": {"label": "Y"},
+            "series": [{"name": "S", "data": [[0, 1]]}],
+        },
     )
     defaults.update(overrides)
     return chart_extract.ChartExtractionResult(**defaults)
@@ -296,6 +303,68 @@ class TestWriteProposedReplacements:
         assert "URL-GOOD" in body
         assert "URL-FAILED" not in body
         assert "URL-ORPHAN" not in body
+
+    def test_replacement_block_has_alt_and_fallback(
+        self, tmp_path: Path
+    ) -> None:
+        """
+        Injected alt = ref.alt; injected fallback = ref.url.
+
+        These are the two provenance fields that keep the chart a11y-complete
+        and preserve the original image URL.
+        """
+        md = tmp_path / "p.md"
+        md.touch()
+        ref = ceg.ImageRef(
+            str(md),
+            "https://assets.turntrout.com/x.avif",
+            "Loss curve across layers",
+            1,
+            "ctx",
+        )
+        refs_by_url = {ref.url: ref}
+        written = ceg.write_proposed_replacements(
+            [_result(ref.url)], refs_by_url
+        )
+        body = written[0].read_text()
+        # The replacement block (not just the Original: section) must have
+        # alt and fallback keys.
+        replacement = body.split("Replacement:", 1)[1]
+        assert "alt: Loss curve across layers" in replacement
+        assert "fallback: https://assets.turntrout.com/x.avif" in replacement
+
+    def test_empty_alt_falls_back_to_title_then_todo(
+        self, tmp_path: Path
+    ) -> None:
+        md = tmp_path / "p.md"
+        md.touch()
+        # Empty alt on the ref; spec has a title → title wins.
+        ref_with_title = ceg.ImageRef(str(md), "u1", "", 1, "ctx")
+        r_with_title = _result(
+            "u1",
+            spec={
+                "type": "line",
+                "title": "Loss across steps",
+                "x": {"label": "X"},
+                "y": {"label": "Y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            },
+        )
+        written = ceg.write_proposed_replacements(
+            [r_with_title], {ref_with_title.url: ref_with_title}
+        )
+        assert "alt: Loss across steps" in written[0].read_text()
+
+        # Empty alt AND no title → explicit TODO placeholder so hand-merge
+        # reviewers notice.
+        other_md = tmp_path / "q.md"
+        other_md.touch()
+        ref_no_title = ceg.ImageRef(str(other_md), "u2", "", 1, "ctx")
+        r_no_title = _result("u2")
+        written2 = ceg.write_proposed_replacements(
+            [r_no_title], {ref_no_title.url: ref_no_title}
+        )
+        assert ceg._ALT_TODO_PLACEHOLDER in written2[0].read_text()
 
 
 # --------------------------------------------------------------------------- #

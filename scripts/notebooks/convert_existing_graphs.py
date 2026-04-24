@@ -197,6 +197,24 @@ def _sidecar_path(md_file: Path) -> Path:
     return md_file.with_name(md_file.stem + _SIDECAR_SUFFIX)
 
 
+_ALT_TODO_PLACEHOLDER = "[TODO: describe this chart]"
+
+
+def _provenanced_block(spec: dict, ref: ImageRef) -> str:
+    """
+    Inject ``alt`` and ``fallback`` into *spec* and re-serialize.
+
+    The parser requires a non-empty ``alt``; if the original Markdown image
+    had no alt text, fall back to the chart title or a TODO placeholder so
+    the user notices and fills it in during hand-merge. ``fallback`` is
+    always set to the original URL — "for future reference" per the spec.
+    """
+    enriched = {**spec}
+    enriched["alt"] = ref.alt or spec.get("title") or _ALT_TODO_PLACEHOLDER
+    enriched["fallback"] = ref.url
+    return chart_extract.format_as_yaml_block(enriched)
+
+
 def write_proposed_replacements(
     results: Sequence[chart_extract.ChartExtractionResult],
     refs_by_url: dict[str, ImageRef],
@@ -205,17 +223,24 @@ def write_proposed_replacements(
     Group successful extractions by source markdown file and write one sidecar
     per file.
 
+    Each replacement block carries the original alt text (injected into the
+    spec as ``alt:``) and original image URL (injected as ``fallback:``) so
+    the rendered chart is a11y-complete and the source is preserved even if
+    the renderer ever fails to produce an SVG.
+
     Failures and orphans are skipped silently — they remain in the queue and
     surface on the next run.
     """
     by_file: dict[str, list[tuple[ImageRef, str]]] = {}
     for r in results:
-        if r.error or not r.yaml_block:
+        if r.error or not r.spec:
             continue
         ref = refs_by_url.get(r.source_image)
         if ref is None:
             continue
-        by_file.setdefault(ref.markdown_file, []).append((ref, r.yaml_block))
+        by_file.setdefault(ref.markdown_file, []).append(
+            (ref, _provenanced_block(r.spec, ref))
+        )
 
     written: list[Path] = []
     for md_file, items in sorted(by_file.items()):
