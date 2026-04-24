@@ -448,9 +448,11 @@ class TestSchemaViaTempfile:
 
 class TestFindLlm:
     def test_raises_with_install_hint_when_missing(self) -> None:
-        with patch.object(chart_extract.shutil, "which", return_value=None):
-            with pytest.raises(FileNotFoundError, match="uv tool install llm"):
-                chart_extract._find_llm()
+        with (
+            patch.object(chart_extract.shutil, "which", return_value=None),
+            pytest.raises(FileNotFoundError, match="uv tool install llm"),
+        ):
+            chart_extract._find_llm()
 
     def test_returns_path_when_found(self) -> None:
         with patch.object(
@@ -468,9 +470,11 @@ class TestConvertIfAvif:
     def test_missing_magick_raises_with_hint(self, tmp_path: Path) -> None:
         avif = tmp_path / "x.avif"
         avif.touch()
-        with patch.object(chart_extract.shutil, "which", return_value=None):
-            with pytest.raises(FileNotFoundError, match="ImageMagick"):
-                chart_extract._convert_if_avif(avif, tmp_path)
+        with (
+            patch.object(chart_extract.shutil, "which", return_value=None),
+            pytest.raises(FileNotFoundError, match="ImageMagick"),
+        ):
+            chart_extract._convert_if_avif(avif, tmp_path)
 
     def test_avif_is_converted_to_png_in_workspace(
         self, tmp_path: Path
