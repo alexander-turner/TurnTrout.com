@@ -50,6 +50,13 @@ from tqdm.std import TqdmExperimentalWarning
 
 warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 
+# Exported so drivers (e.g. scripts/notebooks/convert_existing_graphs.py)
+# can construct a "is this image a chart we can handle?" prompt without
+# duplicating the list. When we add "bar" or "scatter" support in the
+# renderer, grow this tuple and everything downstream stays honest.
+SUPPORTED_CHART_TYPES: tuple[str, ...] = ("line",)
+
+
 # --------------------------------------------------------------------------- #
 # JSON Schema — mirrors `quartz/plugins/transformers/charts/types.ts`.        #
 # Keep the shape in sync; `parseChartSpec` is the authoritative validator.    #

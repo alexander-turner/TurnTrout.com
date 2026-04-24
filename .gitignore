@@ -74,3 +74,9 @@ scripts/*.json
 .beads
 AGENTS.md
 .gh-resolved
+
+# Chart backfill artifacts (scripts/notebooks/convert_existing_graphs.py)
+# Proposed-replacement sidecars are scratch output; the user reviews and
+# hand-merges them into the real .md files. No need to commit intermediates.
+*.proposed-replacements.md
+chart-backfill-queue.json

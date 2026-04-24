@@ -79,39 +79,44 @@ Skeleton::
 
     await async_extract_batch(urls, model=MODEL, context_for=_context_for)
 
-Open design questions (decide before implementing)
---------------------------------------------------
-1. **Chart-detection heuristic.** Possibilities:
-   - Keyword scan on alt text / surrounding prose ("chart", "graph",
-     "plot", "loss", "accuracy", "curve"). Cheap; plenty of false
-     negatives.
-   - First-pass vision model call (e.g. Gemini flash-lite) with a
-     "is this a line chart?" yes/no prompt. Expensive; high precision.
-   - Author-tagged opt-in: add a ``# convert-to-chart`` HTML comment in
-     the Markdown next to charts you want converted. Trades setup effort
-     for full control.
-   Recommend: keyword scan + manual review queue. The driver writes an
-   ``unsure.json`` of "might be a chart but unclear" images, and you
-   hand-triage rather than pay for vision calls on non-charts.
+Decided design
+--------------
+1. **Chart-detection: vision-model classifier, not keyword scan.**
+   For each image-ref discovered in ``website_content/``, call the best
+   available vision model with a yes/no prompt built by concatenating
+   ``scripts.chart_extract.SUPPORTED_CHART_TYPES`` into the prompt::
 
-2. **Replacement strategy.** Options:
-   - In-place edit the ``.md`` file: delete the ``![alt](url)`` line,
-     insert the ``` ```chart``` block.
-   - Write the replacement to a `.proposed-replacements.md` sibling file
-     for manual review, then the user diffs and merges.
-   Recommend: proposed-replacements first. Bulk in-place edits on 100+
-   posts are hard to review; a sidecar file is easier to diff and
-   revert.
+       from scripts.chart_extract import SUPPORTED_CHART_TYPES
+       types_csv = ", ".join(SUPPORTED_CHART_TYPES)
+       prompt = (
+           f"Is this image a chart of one of these supported kinds: "
+           f"{types_csv}? Answer exactly YES or NO."
+       )
 
-3. **Failure handling.** An image that fails extraction (bad
-   extraction, LLM rate-limited, validator rejected) should stay as the
-   original ``![alt](url)`` and be recorded in the queue for retry. The
+   When ``SUPPORTED_CHART_TYPES`` grows (bar, scatter, etc.) the
+   classifier follows automatically. Pass the same alt-text / surrounding
+   prose context used by ``chart_extract`` so the classifier isn't judging
+   from pixels alone. Use the most capable vision model (opus-class) —
+   the classifier runs once per image ever, so cost ceiling is bounded
+   and precision matters more than $/call.
+
+2. **Replacement strategy: proposed-replacements sidecar, git-ignored.**
+   For each successfully converted chart, write the new block to
+   ``<post>.proposed-replacements.md`` next to the original ``<post>.md``.
+   ``.gitignore`` excludes ``*.proposed-replacements.md`` — these are
+   scratch files for review. The user diffs the sidecar against the
+   original, hand-merges, and the sidecar can be deleted after.
+
+   (Do NOT in-place edit the ``.md`` files. 100 posts is too many to
+   review blind.)
+
+3. **Failure handling.** An image that fails extraction stays as the
+   original ``![alt](url)`` and is recorded in the queue for retry. The
    existing ``chart_extract.write_results`` dedupe-by-source handles
-   this.
+   resumption.
 
-4. **Concurrency.** ``chart_extract.async_extract_batch`` already uses a
-   semaphore of 8. Reusing that is probably right; batching across posts
-   rather than within would be natural.
+4. **Concurrency.** Reuse ``chart_extract.async_extract_batch``'s
+   semaphore of 8. Batching across posts (not within) is natural.
 
 Proposed CLI shape
 ------------------
@@ -141,9 +146,9 @@ Tests
 
 Handoff
 -------
-Next Claude Code session should open this file, decide questions 1-4
-above (preferably asking alex), and then implement. 100% line coverage
-is the house rule per ``CLAUDE.md``.
+All four design questions are decided above. Next Claude Code session
+should open this file and implement. 100% line coverage is the house
+rule per ``CLAUDE.md``.
 """
 
 if __name__ == "__main__":

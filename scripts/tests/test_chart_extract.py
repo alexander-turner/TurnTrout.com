@@ -224,6 +224,15 @@ class TestChartSchema:
             "const": "line"
         }
 
+    def test_supported_chart_types_is_immutable_and_nonempty(self) -> None:
+        """Drivers concatenate this into their classifier prompt; guard its
+        shape so a well-meaning 'added `bar` support' PR can't accidentally ship
+        a mutable list or an empty tuple."""
+        assert isinstance(chart_extract.SUPPORTED_CHART_TYPES, tuple)
+        assert len(chart_extract.SUPPORTED_CHART_TYPES) >= 1
+        # "line" is always in there while the renderer only handles lines.
+        assert "line" in chart_extract.SUPPORTED_CHART_TYPES
+
 
 # --------------------------------------------------------------------------- #
 # extract_chart — mocks `llm` and `magick` to exercise control-flow branches.  #
