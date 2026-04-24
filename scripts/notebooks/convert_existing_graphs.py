@@ -197,21 +197,40 @@ def _sidecar_path(md_file: Path) -> Path:
     return md_file.with_name(md_file.stem + _SIDECAR_SUFFIX)
 
 
+def _pick_alt(spec: dict, ref: ImageRef) -> str:
+    """
+    Decide which alt text to stamp on the replacement block.
+
+    Priority:
+    1. Original Markdown alt (author-written, usually best).
+    2. Model-generated alt on the spec (non-placeholder) — still content-aware.
+    3. Chart title (decorative but better than TODO).
+    4. Shared TODO placeholder so hand-merge reviewers notice.
+    """
+    spec_alt = spec.get("alt")
+    model_alt = (
+        spec_alt
+        if spec_alt and spec_alt != chart_extract.ALT_TODO_PLACEHOLDER
+        else None
+    )
+    return (
+        ref.alt
+        or model_alt
+        or spec.get("title")
+        or chart_extract.ALT_TODO_PLACEHOLDER
+    )
+
+
 def _provenanced_block(spec: dict, ref: ImageRef) -> str:
     """
     Inject ``alt`` and ``fallback`` into *spec* and re-serialize.
 
-    The parser requires a non-empty ``alt``; if the original Markdown image
-    had no alt text, fall back to the chart title or the shared TODO
-    placeholder so the user notices and fills it in during hand-merge.
-    ``fallback`` is always set to the original URL — "for future reference".
+    ``alt`` is chosen by ``_pick_alt``; ``fallback`` is always set to the
+    original URL — "for future reference".
     """
-    enriched = {**spec}
-    enriched["alt"] = (
-        ref.alt or spec.get("title") or chart_extract.ALT_TODO_PLACEHOLDER
+    return chart_extract.format_as_yaml_block(
+        {**spec, "alt": _pick_alt(spec, ref), "fallback": ref.url}
     )
-    enriched["fallback"] = ref.url
-    return chart_extract.format_as_yaml_block(enriched)
 
 
 def write_proposed_replacements(

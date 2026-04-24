@@ -322,38 +322,50 @@ class TestWriteProposedReplacements:
         assert "alt: Loss curve across layers" in replacement
         assert "fallback: https://assets.turntrout.com/x.avif" in replacement
 
-    def test_empty_alt_falls_back_to_title_then_todo(
-        self, tmp_path: Path
+    @pytest.mark.parametrize(
+        "ref_alt,spec_extras,expected",
+        [
+            # 1. Author-written Markdown alt wins over everything.
+            (
+                "Markdown alt",
+                {"alt": "Model alt", "title": "Title"},
+                "Markdown alt",
+            ),
+            # 2. Model-generated (non-placeholder) alt beats title when ref is blank.
+            ("", {"alt": "Model alt", "title": "Title"}, "Model alt"),
+            # 3. Placeholder alt from extractor is NOT used; title falls through.
+            (
+                "",
+                {"alt": chart_extract.ALT_TODO_PLACEHOLDER, "title": "Title"},
+                "Title",
+            ),
+            # 4. Nothing usable → shared TODO placeholder.
+            ("", {}, chart_extract.ALT_TODO_PLACEHOLDER),
+        ],
+    )
+    def test_alt_priority_chain(
+        self,
+        tmp_path: Path,
+        ref_alt: str,
+        spec_extras: dict,
+        expected: str,
     ) -> None:
         md = tmp_path / "p.md"
         md.touch()
-        # Empty alt on the ref; spec has a title → title wins.
-        ref_with_title = ceg.ImageRef(str(md), "u1", "", 1, "ctx")
-        r_with_title = _result(
-            "u1",
-            spec={
-                "type": "line",
-                "title": "Loss across steps",
-                "x": {"label": "X"},
-                "y": {"label": "Y"},
-                "series": [{"name": "S", "data": [[0, 1]]}],
-            },
-        )
+        ref = ceg.ImageRef(str(md), "u", ref_alt, 1, "ctx")
+        spec = {
+            "type": "line",
+            "x": {"label": "X"},
+            "y": {"label": "Y"},
+            "series": [{"name": "S", "data": [[0, 1]]}],
+            **spec_extras,
+        }
         written = ceg.write_proposed_replacements(
-            [r_with_title], {ref_with_title.url: ref_with_title}
+            [_result("u", spec=spec)], {ref.url: ref}
         )
-        assert "alt: Loss across steps" in written[0].read_text()
-
-        # Empty alt AND no title → explicit TODO placeholder so hand-merge
-        # reviewers notice.
-        other_md = tmp_path / "q.md"
-        other_md.touch()
-        ref_no_title = ceg.ImageRef(str(other_md), "u2", "", 1, "ctx")
-        r_no_title = _result("u2")
-        written2 = ceg.write_proposed_replacements(
-            [r_no_title], {ref_no_title.url: ref_no_title}
-        )
-        assert chart_extract.ALT_TODO_PLACEHOLDER in written2[0].read_text()
+        # YAML may single-quote values containing brackets; tolerate both.
+        body = written[0].read_text()
+        assert f"alt: {expected}" in body or f"alt: '{expected}'" in body
 
 
 # --------------------------------------------------------------------------- #
