@@ -58,6 +58,27 @@ Scaffolding we can reuse
   surrounding-paragraph context string that the chart prompt appends to
   aid disambiguation. Only used if we go with (a) above.
 
+Per-image context is high-value
+-------------------------------
+``async_extract_batch`` now takes a ``context_for`` callback. Pass it a
+function that returns the image's **alt text plus the surrounding
+paragraph** for each URL — this string is injected into the chart prompt
+under "Surrounding prose (for disambiguating labels)". Alt text alone
+is often the most compact signal available ("Three line charts comparing
+four unlearning methods — ERA, Data filtering, RMU, and DEMIX + ablate")
+and dramatically improves series-name fidelity. The surrounding
+paragraph adds units, axis semantics, and references to annotations.
+
+Skeleton::
+
+    def _context_for(url: str) -> str | None:
+        qi: QueueItem = queue_by_url[str(url)]
+        alt = qi.alt_text or ""
+        prose = alt_text_llm.utils.generate_article_context(qi, max_after=2)
+        return f"Alt text: {alt}\n\nSurrounding prose:\n{prose}" if alt or prose else None
+
+    await async_extract_batch(urls, model=MODEL, context_for=_context_for)
+
 Open design questions (decide before implementing)
 --------------------------------------------------
 1. **Chart-detection heuristic.** Possibilities:

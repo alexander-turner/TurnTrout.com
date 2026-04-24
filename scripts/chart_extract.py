@@ -444,16 +444,20 @@ _CONCURRENCY = 8
 
 
 async def _extract_one(
-    image: str | Path, model: str, sem: asyncio.Semaphore
+    image: str | Path,
+    model: str,
+    sem: asyncio.Semaphore,
+    context: str | None = None,
 ) -> ChartExtractionResult:
     async with sem:
-        return await asyncio.to_thread(extract_chart, image, model)
+        return await asyncio.to_thread(extract_chart, image, model, context)
 
 
 async def async_extract_batch(
     images: Sequence[str | Path],
     model: str,
     on_completed: Callable[[ChartExtractionResult], None] | None = None,
+    context_for: Callable[[str | Path], str | None] | None = None,
 ) -> list[ChartExtractionResult]:
     """
     Extract *images* concurrently.
@@ -462,10 +466,22 @@ async def async_extract_batch(
     image's extraction finishes (in completion order, not submission order). The
     CLI wires this up to a tqdm progress bar; tests inject a list-append for
     observation. Results are returned in submission order.
+
+    *context_for* is an optional callback that returns per-image prose to
+    include in the LLM prompt — typically the image's alt text plus the
+    surrounding paragraph, pulled by a caller like the
+    ``convert_existing_graphs.py`` driver. Helps the model disambiguate axis
+    labels and series names ("Unlearning" / "Retain set performance") that
+    a bare chart image would be ambiguous about.
     """
     sem = asyncio.Semaphore(_CONCURRENCY)
     tasks = [
-        asyncio.create_task(_extract_one(img, model, sem)) for img in images
+        asyncio.create_task(
+            _extract_one(
+                img, model, sem, context_for(img) if context_for else None
+            )
+        )
+        for img in images
     ]
 
     if on_completed is not None:

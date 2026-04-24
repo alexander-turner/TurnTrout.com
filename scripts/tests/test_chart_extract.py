@@ -391,6 +391,42 @@ class TestProgressCallback:
         assert len(calls) == 1
         assert calls[0].error is not None
 
+    def test_context_for_is_forwarded_per_image(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The batch accepts a `context_for` callback that supplies per-image
+        prose — alt text, surrounding paragraph, etc. That context must reach
+        extract_chart and from there the LLM prompt."""
+        imgs = [tmp_path / f"c{i}.png" for i in range(2)]
+        for p in imgs:
+            p.write_bytes(b"\x89PNG\r\n")
+
+        seen: list[tuple[str, str | None]] = []
+
+        def _fake_extract(
+            image, model, context=None, timeout=180
+        ) -> chart_extract.ChartExtractionResult:
+            seen.append((str(image), context))
+            return chart_extract.ChartExtractionResult(
+                source_image=str(image),
+                model=model,
+                spec={"type": "line"},
+                context_used=context or "",
+            )
+
+        monkeypatch.setattr(chart_extract, "extract_chart", _fake_extract)
+
+        def _ctx(image) -> str:
+            return f"alt for {Path(image).name}"
+
+        asyncio.run(
+            chart_extract.async_extract_batch(imgs, model="m", context_for=_ctx)
+        )
+        assert set(seen) == {
+            (str(imgs[0]), "alt for c0.png"),
+            (str(imgs[1]), "alt for c1.png"),
+        }
+
 
 # --------------------------------------------------------------------------- #
 # NEW: schema is written to a tempfile and passed to llm via a file path       #
