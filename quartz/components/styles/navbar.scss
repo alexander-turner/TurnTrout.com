@@ -69,6 +69,10 @@
   border: none;
   cursor: pointer;
 
+  // The button extends ~1rem left of the icon as a tap target; without this
+  // the mobile default tap-highlight paints a blue square to the left.
+  -webkit-tap-highlight-color: transparent;
+
   & span {
     display: block;
     height: calc(0.25 * $base-margin);
