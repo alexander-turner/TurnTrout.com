@@ -428,6 +428,8 @@ class TestSchemaViaTempfile:
 
         with (
             patch.object(chart_extract, "_find_llm", return_value="llm"),
+            # Skip the TS validator so we only see the `llm` invocation.
+            patch.object(chart_extract.shutil, "which", return_value=None),
             patch.object(chart_extract.subprocess, "run", side_effect=_capture),
         ):
             chart_extract.extract_chart(png, model="m")
@@ -439,6 +441,254 @@ class TestSchemaViaTempfile:
         assert not schema_arg.lstrip().startswith(
             "{"
         ), f"schema should be a file path, got inline JSON: {schema_arg[:60]}..."
+
+
+# --------------------------------------------------------------------------- #
+# NEW: round-trip validation through the TS parseChartSpec (TDD).             #
+# --------------------------------------------------------------------------- #
+
+
+class TestValidateViaTsx:
+    """Catches LLM hallucinations that pass JSON-schema but break quartz."""
+
+    def test_returns_none_when_tsx_accepts_spec(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Empty stderr + rc=0 means parseChartSpec accepted the YAML."""
+
+        def _ok(cmd, **_kw):
+            r = type("R", (), {})()
+            r.stdout = ""
+            r.stderr = ""
+            r.returncode = 0
+            return r
+
+        monkeypatch.setattr(chart_extract.subprocess, "run", _ok)
+        assert chart_extract.validate_spec_via_tsx({"type": "line"}) is None
+
+    def test_returns_error_string_when_tsx_rejects(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def _bad(cmd, **_kw):
+            r = type("R", (), {})()
+            r.stdout = ""
+            r.stderr = 'Chart "y" axis must have a string "label"\n'
+            r.returncode = 1
+            return r
+
+        monkeypatch.setattr(chart_extract.subprocess, "run", _bad)
+        err = chart_extract.validate_spec_via_tsx({"type": "line"})
+        assert err is not None
+        assert "axis must have" in err
+
+    def test_skips_silently_when_node_not_on_path(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """If the TS toolchain isn't available, don't block — just skip."""
+
+        def _which(name):
+            return (
+                None if name in {"node", "npx", "tsx"} else "/usr/bin/" + name
+            )
+
+        monkeypatch.setattr(chart_extract.shutil, "which", _which)
+        # Subprocess must never be called.
+
+        def _fail(*a, **kw):
+            raise AssertionError("subprocess should not run when tsx is absent")
+
+        monkeypatch.setattr(chart_extract.subprocess, "run", _fail)
+        assert chart_extract.validate_spec_via_tsx({"type": "line"}) is None
+
+    def test_validator_timeout_is_captured_not_raised(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A hung tsx validator must not kill the whole batch."""
+        img = tmp_path / "c.png"
+        img.write_bytes(b"\x89PNG\r\n")
+        valid_json = json.dumps(
+            {
+                "type": "line",
+                "x": {"label": "x"},
+                "y": {"label": "y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            }
+        )
+
+        def _run(cmd, **_kw):
+            if cmd[0].endswith("llm"):
+                r = type("R", (), {})()
+                r.stdout = valid_json
+                r.stderr = ""
+                r.returncode = 0
+                return r
+            raise subprocess.TimeoutExpired(cmd=cmd, timeout=1)
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        monkeypatch.setattr(
+            chart_extract.shutil,
+            "which",
+            lambda name: (
+                f"/usr/bin/{name}" if name in {"npx", "node"} else None
+            ),
+        )
+        monkeypatch.setattr(chart_extract.subprocess, "run", _run)
+
+        result = chart_extract.extract_chart(img, model="m")
+        assert result.spec is None or result.yaml_block is None
+        assert "validator timed out" in (result.error or "")
+
+    def test_url_input_is_downloaded_and_extracted(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Accept https://... inputs; download into a tempdir before hitting the LLM."""
+        captured_llm_attachment: list[str] = []
+
+        valid_json = json.dumps(
+            {
+                "type": "line",
+                "x": {"label": "x"},
+                "y": {"label": "y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            }
+        )
+
+        def _fake_run(cmd, **_kw):
+            r = type("R", (), {})()
+            r.stdout = ""
+            r.stderr = ""
+            r.returncode = 0
+            if cmd[0].endswith("llm"):
+                r.stdout = valid_json
+                idx = cmd.index("-a") + 1
+                captured_llm_attachment.append(cmd[idx])
+            return r
+
+        def _fake_get(url, **_kw):
+            assert url == "https://assets.turntrout.com/static/chart.png"
+            resp = type("R", (), {})()
+            resp.status_code = 200
+            resp.content = b"\x89PNG\r\n"
+            resp.raise_for_status = lambda: None
+            resp.iter_content = lambda chunk_size=8192: iter([b"\x89PNG\r\n"])
+            return resp
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        # Pretend Node isn't available so validator skips.
+        monkeypatch.setattr(
+            chart_extract.shutil,
+            "which",
+            lambda name: "/usr/bin/llm" if name == "llm" else None,
+        )
+        monkeypatch.setattr(chart_extract.subprocess, "run", _fake_run)
+        monkeypatch.setattr(chart_extract.requests, "get", _fake_get)
+
+        result = chart_extract.extract_chart(
+            "https://assets.turntrout.com/static/chart.png", model="m"
+        )
+        assert result.error is None
+        assert result.spec is not None
+        # LLM got a local path to the downloaded file, not the URL.
+        assert len(captured_llm_attachment) == 1
+        assert not captured_llm_attachment[0].startswith("http")
+        # source_image records the ORIGINAL url (so the queue key dedupes stably).
+        assert (
+            result.source_image
+            == "https://assets.turntrout.com/static/chart.png"
+        )
+
+    def test_url_download_failure_is_captured_not_raised(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import requests
+
+        def _boom(*_a, **_kw):
+            raise requests.exceptions.ConnectionError("name resolution failed")
+
+        monkeypatch.setattr(chart_extract.requests, "get", _boom)
+        result = chart_extract.extract_chart(
+            "https://nope.example/x.png", model="m"
+        )
+        assert result.spec is None
+        assert "download failed" in (result.error or "").lower()
+
+    def test_url_download_size_cap_is_enforced(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A URL pointing at a huge file should be rejected, not written to
+        disk."""
+        cap = chart_extract._DOWNLOAD_MAX_BYTES
+        # Produce 2× the cap so the loop trips the size guard.
+        payload = b"A" * (cap + 1024)
+
+        class _Resp:
+            def raise_for_status(self) -> None:
+                pass
+
+            def iter_content(self, chunk_size: int = 8192):
+                yield from (
+                    payload[i : i + chunk_size]
+                    for i in range(0, len(payload), chunk_size)
+                )
+
+        monkeypatch.setattr(
+            chart_extract.requests, "get", lambda *a, **kw: _Resp()
+        )
+        result = chart_extract.extract_chart(
+            "https://oversized.example/big.avif", model="m"
+        )
+        assert result.spec is None
+        assert "exceeded" in (result.error or "").lower()
+
+    def test_extract_chart_aborts_on_validator_rejection(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """When the TS parser rejects the spec, no CSV/block should be
+        written."""
+        img = tmp_path / "c.png"
+        img.write_bytes(b"\x89PNG\r\n")
+
+        valid_json = json.dumps(
+            {
+                "type": "line",
+                "x": {"label": "x"},
+                "y": {"label": "y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            }
+        )
+
+        call_log: list[str] = []
+
+        def _run(cmd, **_kw):
+            call_log.append(cmd[0])
+            r = type("R", (), {})()
+            r.stdout = ""
+            r.stderr = ""
+            r.returncode = 0
+            # First call is `llm`, second would be the validator.
+            if cmd[0].endswith("llm"):
+                r.stdout = valid_json
+            else:
+                r.stderr = "Series has no name"
+                r.returncode = 1
+            return r
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        monkeypatch.setattr(
+            chart_extract.shutil,
+            "which",
+            lambda name: (
+                f"/usr/bin/{name}" if name in {"node", "npx", "tsx"} else None
+            ),
+        )
+        monkeypatch.setattr(chart_extract.subprocess, "run", _run)
+
+        result = chart_extract.extract_chart(img, model="m")
+        assert result.spec is None or result.yaml_block is None
+        assert result.error is not None
+        assert "Series has no name" in result.error
+        # The CSV should not have been written since validation failed.
+        assert not (tmp_path / "c.csv").exists()
 
 
 # --------------------------------------------------------------------------- #

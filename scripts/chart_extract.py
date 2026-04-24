@@ -39,6 +39,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Callable, Sequence
 
+import requests
 import yaml
 from rich.console import Console
 
@@ -228,8 +229,103 @@ def _convert_if_avif(image: Path, workspace: Path) -> Path:
     return png
 
 
+def _is_url(s: str | Path) -> bool:
+    return isinstance(s, str) and s.startswith(("http://", "https://"))
+
+
+# Chart images are tiny (AVIFs are a few hundred KB, PNGs a few MB). A 50 MB
+# cap protects against a misdirected URL pointing at a huge file.
+_DOWNLOAD_MAX_BYTES = 50 * 1024 * 1024
+
+
+def _download(url: str, workspace: Path, timeout: int = 30) -> Path:
+    """
+    Stream *url* to a file under *workspace*.
+
+    Propagates `requests` errors. Raises `ValueError` if the body exceeds
+    `_DOWNLOAD_MAX_BYTES` — extract_chart catches and records this.
+    """
+    # Derive a local filename from the URL (strip query string).
+    stem = Path(url.split("?", 1)[0]).name or "download.bin"
+    target = workspace / stem
+    # Minimal UA mirrors what alt_text_llm.utils.download_asset sends, so
+    # CDNs that reject bare requests clients also accept ours.
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        ),
+    }
+    resp = requests.get(url, timeout=timeout, stream=True, headers=headers)
+    resp.raise_for_status()
+    written = 0
+    # `requests.iter_content` occasionally yields empty chunks for keep-alive;
+    # `fh.write(b"")` is a no-op so we don't need a guard.
+    with target.open("wb") as fh:
+        for chunk in resp.iter_content(chunk_size=8192):
+            written += len(chunk)
+            if written > _DOWNLOAD_MAX_BYTES:
+                raise ValueError(
+                    f"download exceeded {_DOWNLOAD_MAX_BYTES // (1024 * 1024)} MB cap: {url}"
+                )
+            fh.write(chunk)
+    return target
+
+
+_VALIDATOR_TSX = Path(__file__).resolve().parent / "chart_spec_validator.ts"
+
+
+def validate_spec_via_tsx(spec: dict, *, timeout: int = 30) -> str | None:
+    """
+    Round-trip *spec* through quartz's TypeScript `parseChartSpec`.
+
+    Catches LLM hallucinations that pass the JSON schema but would fail at
+    build time (e.g. unsupported chart type, malformed annotation). Returns
+    ``None`` on success; the parser's error message on failure.
+
+    Skipped silently (returns ``None``) if the TS toolchain (``npx`` / ``tsx``)
+    isn't on PATH — makes the feature opt-in by availability, so users without
+    Node installed aren't blocked from running ``chart_extract``.
+    """
+    # `tsx` via npx is what the repo already uses (see quartz/bootstrap-cli.ts
+    # invocations in CLAUDE.md). Falling back to a bare `tsx` would also work
+    # if someone globally installed it.
+    runner = shutil.which("npx") or shutil.which("tsx")
+    if runner is None or shutil.which("node") is None:
+        return None
+
+    yaml_text = yaml.dump(
+        spec, sort_keys=False, allow_unicode=True, default_flow_style=False
+    )
+    cmd = (
+        [runner, "tsx", str(_VALIDATOR_TSX)]
+        if runner.endswith("npx")
+        else [runner, str(_VALIDATOR_TSX)]
+    )
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            input=yaml_text,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        # Never raise out of here — extract_chart documents the "every failure
+        # becomes result.error" contract; a hung tsx would kill the whole batch.
+        return f"validator timed out after {timeout}s"
+    if proc.returncode == 0:
+        return None
+    return (
+        proc.stderr or proc.stdout
+    ).strip() or "parseChartSpec rejected the spec"
+
+
 def extract_chart(
-    image: Path,
+    image: str | Path,
     model: str,
     context: str | None = None,
     timeout: int = 180,
@@ -237,12 +333,16 @@ def extract_chart(
     """
     Run `llm` once against *image* and return a `ChartExtractionResult`.
 
+    *image* may be a local path OR an ``http(s)://`` URL; URLs are downloaded
+    to a tempdir before being passed to the LLM. ``result.source_image``
+    records the original URL/path so the queue keys dedupe stably.
+
     Contract: this function MUST NOT raise on per-image failures (bad AVIF,
-    `llm` non-zero exit, timeout, unparseable JSON). Each of those is
-    recorded in ``result.error`` and returned normally. Raising would
-    cascade through ``asyncio.gather`` in ``async_extract_batch`` and kill
-    the whole run — losing work on every successful image processed so far.
-    Unexpected errors (e.g. ``KeyboardInterrupt``) still propagate.
+    `llm` non-zero exit, timeout, unparseable JSON, download failures). Each
+    of those is recorded in ``result.error`` and returned normally. Raising
+    would cascade through ``asyncio.gather`` in ``async_extract_batch`` and
+    kill the whole run — losing work on every successful image processed so
+    far. Unexpected errors (e.g. ``KeyboardInterrupt``) still propagate.
     """
 
     result = ChartExtractionResult(
@@ -250,12 +350,21 @@ def extract_chart(
     )
 
     # tmpdir only needs to live as long as the `llm` subprocess — it holds the
-    # converted PNG (if input was AVIF) and the JSON schema file, both of
-    # which the subprocess reads. Anything that only inspects `proc` after
-    # the call can live outside.
+    # downloaded image (if URL), converted PNG (if AVIF), and the JSON schema,
+    # all of which the subprocess reads.
     with tempfile.TemporaryDirectory() as tmp:
+        # Download URLs first; local paths pass through.
+        if _is_url(image):
+            try:
+                local = _download(str(image), Path(tmp))
+            except (requests.exceptions.RequestException, ValueError) as err:
+                result.error = f"download failed: {err}"
+                return result
+        else:
+            local = Path(image)
+
         try:
-            prepared = _convert_if_avif(image, Path(tmp))
+            prepared = _convert_if_avif(local, Path(tmp))
         except (
             subprocess.CalledProcessError,
             subprocess.TimeoutExpired,
@@ -301,9 +410,21 @@ def extract_chart(
         result.error = f"invalid JSON from model: {err}"
         return result
 
-    # Persist outputs next to the source image so the user can paste the
-    # block into Markdown and move the CSV alongside the .md file.
-    csv_target = image.with_suffix(".csv")
+    # Round-trip the LLM's spec through quartz's own parseChartSpec so a
+    # hallucinated-but-schema-valid spec fails here, not mid-build. Skipped
+    # transparently if the TS toolchain isn't available.
+    validation_error = validate_spec_via_tsx(result.spec)
+    if validation_error is not None:
+        result.error = f"parseChartSpec rejected the spec: {validation_error}"
+        return result
+
+    # Persist outputs next to the source image (or into cwd for URL inputs —
+    # the user controls where to stash them).
+    if _is_url(image):
+        stem = Path(str(image).split("?", 1)[0]).stem or "chart"
+        csv_target = Path.cwd() / f"{stem}.csv"
+    else:
+        csv_target = Path(image).with_suffix(".csv")
     write_chart_csv(result.spec, csv_target)
     result.csv_path = str(csv_target)
     result.yaml_block = format_as_yaml_block(
@@ -323,14 +444,14 @@ _CONCURRENCY = 8
 
 
 async def _extract_one(
-    image: Path, model: str, sem: asyncio.Semaphore
+    image: str | Path, model: str, sem: asyncio.Semaphore
 ) -> ChartExtractionResult:
     async with sem:
         return await asyncio.to_thread(extract_chart, image, model)
 
 
 async def async_extract_batch(
-    images: Sequence[Path],
+    images: Sequence[str | Path],
     model: str,
     on_completed: Callable[[ChartExtractionResult], None] | None = None,
 ) -> list[ChartExtractionResult]:
@@ -511,8 +632,13 @@ def _without_inline_data(spec: dict, csv_path: str) -> dict:
 
 def _cli() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    # Keep as `str` so URLs pass through unchanged; `extract_chart` handles
+    # URL vs path dispatch internally.
     parser.add_argument(
-        "images", nargs="+", type=Path, help="Chart image(s) to extract."
+        "images",
+        nargs="+",
+        type=str,
+        help="Chart image path(s) or http(s):// URL(s) to extract.",
     )
     parser.add_argument(
         "-m",
@@ -532,7 +658,9 @@ def _cli() -> int:
     args = parser.parse_args()
 
     console = Console()
-    targets: list[Path] = list(args.images)
+    targets: list[str | Path] = [
+        img if _is_url(img) else Path(img) for img in args.images
+    ]
     if not args.no_skip_existing:
         done = load_existing(args.output)
         targets = [p for p in targets if _normalize(p) not in done]
