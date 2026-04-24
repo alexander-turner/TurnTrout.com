@@ -582,6 +582,9 @@ class TestValidateViaTsx:
         )
         monkeypatch.setattr(chart_extract.subprocess, "run", _fake_run)
         monkeypatch.setattr(chart_extract.requests, "get", _fake_get)
+        # URL inputs write the CSV to cwd; isolate cwd so the test doesn't
+        # leak a `chart.csv` into the repo root.
+        monkeypatch.chdir(tmp_path)
 
         result = chart_extract.extract_chart(
             "https://assets.turntrout.com/static/chart.png", model="m"
