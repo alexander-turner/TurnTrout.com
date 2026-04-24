@@ -184,8 +184,8 @@
   #quartz-body #navbar {
     opacity: 1;
     transition:
-      transform 0.45s ease,
-      opacity 0.45s ease;
+      transform $transition-duration-slow ease,
+      opacity $transition-duration-slow ease;
     z-index: 910;
     padding-top: calc(0.5 * $base-margin);
     pointer-events: auto;

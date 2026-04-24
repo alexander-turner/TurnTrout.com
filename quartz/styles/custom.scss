@@ -610,7 +610,7 @@ img {
   // Sync with the navbar's translateY/opacity transition so the mobile
   // backdrop fades alongside the bar instead of snapping in.
   @media all and (max-width: $max-mobile-width) {
-    transition: background-color 0.45s ease;
+    transition: background-color $transition-duration-slow ease;
   }
 
   &:has(#navbar.hide-above-screen) {
