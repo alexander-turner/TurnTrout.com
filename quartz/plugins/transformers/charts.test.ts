@@ -277,6 +277,7 @@ describe("parseLongCsv", () => {
     ["wrong header", "a,b,c\n0,1,X", 'CSV header must be "x,y,series"'],
     ["wrong column count", "x,y,series\n0,1\n", "expected 3 columns"],
     ["non-numeric x", "x,y,series\nfoo,1,A", "x and y must be finite"],
+    ["quoted fields", 'x,y,series\n0,1,"Loss, normalized"', "quoted CSV fields"],
   ])("rejects %s", (_desc, input, msg) => {
     expect(() => parseLongCsv(input)).toThrow(msg)
   })
@@ -1063,6 +1064,88 @@ series:
     const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
     expect(() => transform(tree, new VFile({ path: mdPath }))).toThrow(
       /series "Loss" has no rows in .*x\.csv/,
+    )
+  })
+
+  it("refuses data paths that escape the markdown directory", () => {
+    // No file needs to exist — we want the traversal check to fire before fs.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-csv-escape-"))
+    const mdPath = path.join(dir, "post.md")
+
+    const tree = createChartTree(`type: line
+x:
+  label: X
+y:
+  label: Y
+data: ../../../etc/passwd
+series:
+  - name: S`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    expect(() => transform(tree, new VFile({ path: mdPath }))).toThrow(
+      /escapes the markdown directory/,
+    )
+  })
+
+  it("refuses absolute data paths", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-csv-abs-"))
+    const mdPath = path.join(dir, "post.md")
+
+    const tree = createChartTree(`type: line
+x:
+  label: X
+y:
+  label: Y
+data: /etc/passwd
+series:
+  - name: S`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    expect(() => transform(tree, new VFile({ path: mdPath }))).toThrow(
+      /escapes the markdown directory/,
+    )
+  })
+
+  it("wraps missing-CSV errors with chart-specific context", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-csv-missing-"))
+    const mdPath = path.join(dir, "post.md")
+
+    const tree = createChartTree(`type: line
+x:
+  label: X
+y:
+  label: Y
+data: ./not-there.csv
+series:
+  - name: S`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    expect(() => transform(tree, new VFile({ path: mdPath }))).toThrow(
+      /chart references data: "\.\/not-there\.csv" but cannot read/,
+    )
+  })
+
+  it("throws cleanly when VFile lacks a path", () => {
+    const tree = createChartTree(`type: line
+x:
+  label: X
+y:
+  label: Y
+data: ./x.csv
+series:
+  - name: S`)
+
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    expect(() => transform(tree, new VFile())).toThrow(
+      /cannot resolve `data: <path>` without a VFile\.path/,
     )
   })
 })

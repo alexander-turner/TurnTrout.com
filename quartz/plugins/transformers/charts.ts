@@ -138,14 +138,38 @@ function getCodeElement(node: Element): Element {
  * Mutates the spec in place. The CSV path is resolved relative to the
  * Markdown file being processed, so `./loss.csv` in a chart block inside
  * `website_content/post.md` means `website_content/loss.csv`.
+ *
+ * Refuses paths that escape the Markdown file's directory — a chart block
+ * authored by an external PR author could otherwise read arbitrary files
+ * and leak the first line via the "bad CSV header" error message.
  */
 function hydrateFromCsv(spec: ChartSpec, file: VFile): void {
   // istanbul ignore next -- caller only invokes when dataSource is set
   if (!spec.dataSource) return
-  // istanbul ignore next -- VFile.path is always set during a quartz build
-  const mdDir = file.path ? path.dirname(file.path) : process.cwd()
+  if (!file.path) {
+    throw new Error(
+      "Charts transformer: cannot resolve `data: <path>` without a VFile.path",
+    )
+  }
+  const mdDir = path.dirname(file.path)
   const csvAbs = path.resolve(mdDir, spec.dataSource)
-  const csvText = fs.readFileSync(csvAbs, "utf8")
+
+  const rel = path.relative(mdDir, csvAbs)
+  if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
+    throw new Error(
+      `chart data path "${spec.dataSource}" escapes the markdown directory`,
+    )
+  }
+
+  let csvText: string
+  try {
+    csvText = fs.readFileSync(csvAbs, "utf8")
+  } catch (err) {
+    throw new Error(
+      `chart references data: "${spec.dataSource}" but cannot read ${csvAbs}: ${(err as Error).message}`,
+    )
+  }
+
   const bySeries = parseLongCsv(csvText)
   for (const s of spec.series) {
     const rows = bySeries.get(s.name)

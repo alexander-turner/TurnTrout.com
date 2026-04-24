@@ -13,6 +13,14 @@ export function parseLongCsv(text: string): CsvSeriesMap {
   if (lines.length === 0) {
     throw new Error("CSV is empty")
   }
+  // Reject RFC 4180 quoted fields rather than implement a full parser. Fine
+  // for our shape (machine-produced CSVs, no embedded commas in names); a
+  // loud error beats silently truncating fields at an unexpected comma.
+  if (text.includes('"')) {
+    throw new Error(
+      "quoted CSV fields are not supported — rename series to avoid `,` `\"` `\\n`",
+    )
+  }
   const header = lines[0]
     .trim()
     .split(",")
