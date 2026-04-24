@@ -130,7 +130,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest for non-excluded files (see `coveragePathIgnorePatterns` in jest config)
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
-- Visual regression tests use Playwright's native `toMatchSnapshot`; baselines are committed under `tests/visual-baselines/`. On mismatch, CI publishes a merged HTML diff report to `https://visual-pr-<N>.turntrout.pages.dev`. Adding the `visual-approved` label to a PR regenerates baselines via `.github/workflows/update-visual-baselines.yaml`.
+- Visual regression tests use Playwright's native `toMatchSnapshot`; baselines are committed under `tests/visual-baselines/`. On mismatch, CI uploads a merged HTML diff report as the `visual-diff-report` artifact and posts a download link as a PR comment. Adding the `visual-approved` label to a PR regenerates baselines via `.github/workflows/update-visual-baselines.yaml`.
 - **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details

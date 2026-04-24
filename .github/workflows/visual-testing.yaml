@@ -328,9 +328,8 @@ jobs:
           log-pattern: visual-testing-log-*
           final-log-name: visual-testing-failed-logs
 
-  # Merge per-shard blob reports into a single HTML report and publish it to
-  # Cloudflare Pages so diffs can be reviewed in the browser without the
-  # CLI. A comment with the URL lands on the PR.
+  # Merge per-shard blob reports into a single HTML report, upload as a
+  # GHA artifact, and post a PR comment with the download link.
   publish-visual-report:
     needs: [should-run, visual-testing-linux, visual-testing-macos]
     if: >-
@@ -359,52 +358,35 @@ jobs:
         run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload merged HTML report
+        id: upload-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: visual-diff-report
           path: playwright-report/
           retention-days: 14
 
-      # Cloudflare Pages rejects any single file >25 MiB. Trace zips
-      # (retained on failure) can easily exceed that. Drop them for the
-      # hosted viewer — the diff screenshots are what matters; traces and
-      # videos remain accessible via the visual-diff-report artifact above.
-      - name: Prune large diagnostics before Pages upload
-        if: github.event_name == 'pull_request'
-        run: |
-          find playwright-report -type f \( -name "trace.zip" -o -name "*.webm" -o -name "*.mp4" \) -print -delete || true
-          # Belt-and-suspenders: drop anything else still over the limit.
-          find playwright-report -type f -size +24M -print -delete || true
-
-      - name: Deploy diff report to Cloudflare Pages
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/deploy-to-cloudflare
-        with:
-          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
-          project-name: turntrout
-          branch: visual-pr-${{ github.event.pull_request.number }}
-          public-dir: ./playwright-report
-
-      - name: Comment report URL on PR
+      - name: Comment report download link on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
         with:
           script: |
             const marker = '<!-- visual-diff-report -->';
             const prNumber = parseInt(process.env.PR_NUMBER);
             const sha = context.sha.substring(0, 7);
-            const reportUrl = `https://visual-pr-${prNumber}.turntrout.pages.dev`;
+            const artifactUrl = process.env.ARTIFACT_URL;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const body = [
               marker,
               `**Visual diff report** for commit ${sha}:`,
-              reportUrl,
               '',
-              'Inspect the diffs side-by-side. If everything looks intended, add the `visual-approved` label to this PR to update the baselines.',
+              `Download: ${artifactUrl}`,
+              `(or see the Artifacts section of the [workflow run](${runUrl}))`,
+              '',
+              'Unzip the `visual-diff-report` archive and open `index.html` to inspect diffs side-by-side. If everything looks intended, add the `visual-approved` label to this PR to update the baselines.',
             ].join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {
