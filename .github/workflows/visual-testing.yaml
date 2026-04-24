@@ -102,6 +102,7 @@ jobs:
             --shard ${{ matrix.shard }} \
             --reporter=blob,dot \
             --update-snapshots=none \
+            --trace=off \
             -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
@@ -223,6 +224,7 @@ jobs:
             --shard ${{ matrix.shard }} \
             --reporter=blob,dot \
             --update-snapshots=none \
+            --trace=off \
             -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
