@@ -1,6 +1,6 @@
 <!-- markdownlint-disable MD041 -->
 | Font | Full | Subset | Saved |
-| :--- | ---: | ---: | ---: |
+| ---: | :---: | :---: | :---: |
 | EB Garamond | 101.6 KB | 43.2 KB | 58% |
 | EB Garamond 12pt | 169.0 KB | 7.9 KB | 95% |
 | EB Garamond Italic | 54.9 KB | 19.8 KB | 64% |

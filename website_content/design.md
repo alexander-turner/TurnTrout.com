@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-04-20
+date_updated: 2026-04-24
 no_dropcap: false
 createBibtex: true
 ---
@@ -178,9 +178,9 @@ Quartz offers basic optimizations, such as [lazy loading](https://developer.mozi
 
 ### Fonts
 
-EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses. While I could subset each page with only the required glyphs, that would add overhead and complicate client-side caching, likely resulting in a net slowdown.
+EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
 
-I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website. Further optimizations strip glyph hinting, drop dead OpenType tables, and filter out font features that the CSS never exercises. The table below gives current full vs. subset sizes for each web font, regenerated from `config/font_stats.md` at build time.
+Therefore, I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website. Further optimizations strip glyph hinting, drop dead OpenType tables, and filter out font features that the CSS never exercises.
 
 <span class="populate-markdown-font-stats"></span>
 
