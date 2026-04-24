@@ -16,9 +16,10 @@ process.stdin.on("data", (chunk: string) => {
 process.stdin.on("end", () => {
   try {
     parseChartSpec(buf)
-    process.exit(0)
   } catch (err) {
-    process.stderr.write((err as Error).message + "\n")
-    process.exit(1)
+    process.stderr.write(`${(err as Error).message}\n`)
+    // Setting exitCode (instead of calling process.exit) lets the event loop
+    // drain normally — DeepSource JS-0263.
+    process.exitCode = 1
   }
 })

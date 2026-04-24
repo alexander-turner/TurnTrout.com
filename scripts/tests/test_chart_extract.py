@@ -626,7 +626,7 @@ class TestValidateViaTsx:
 
         class _Resp:
             def raise_for_status(self) -> None:
-                pass
+                """Mock: 2xx response, so nothing to raise."""
 
             def iter_content(self, chunk_size: int = 8192):
                 yield from (
