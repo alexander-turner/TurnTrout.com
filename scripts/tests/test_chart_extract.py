@@ -685,6 +685,23 @@ class TestCsvEmission:
         assert lines[0] == "x,y,series"
         assert set(lines[1:]) == {"0,1.0,A", "1,2.0,A", "0,5.0,B", "1,6.0,B"}
 
+    @pytest.mark.parametrize(
+        "bad_name", ["Loss, normalized", 'name with "quote"', "has\nnewline"]
+    )
+    def test_write_chart_csv_rejects_names_that_would_break_round_trip(
+        self, tmp_path: Path, bad_name: str
+    ) -> None:
+        """The TS-side parser rejects quoted CSV fields; reject here too with a
+        clearer message before we write a file that can't be read."""
+        spec = {
+            "type": "line",
+            "x": {"label": "x"},
+            "y": {"label": "y"},
+            "series": [{"name": bad_name, "data": [[0, 1]]}],
+        }
+        with pytest.raises(ValueError, match="rename it"):
+            chart_extract.write_chart_csv(spec, tmp_path / "c.csv")
+
     def test_format_as_yaml_block_uses_top_level_data_path(
         self, spec: dict
     ) -> None:

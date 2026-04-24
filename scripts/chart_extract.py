@@ -430,6 +430,13 @@ def _represent_point(dumper: yaml.SafeDumper, data: list) -> yaml.Node:
 _ChartYamlDumper.add_representer(list, _represent_point)
 
 
+# Characters that would break the naive CSV round-trip with the TS-side
+# parser (`quartz/plugins/transformers/charts/csv.ts`). The renderer
+# rejects quoted fields loudly; keeping both sides consistent means we
+# reject the same names at write time with a clearer message.
+_FORBIDDEN_IN_SERIES_NAME = (",", '"', "\n", "\r")
+
+
 def write_chart_csv(spec: dict, target: Path) -> None:
     """
     Write long-format CSV (`x,y,series`) for every point across every series.
@@ -443,6 +450,12 @@ def write_chart_csv(spec: dict, target: Path) -> None:
         fh.write("x,y,series\n")
         for series in spec.get("series", []):
             name = series.get("name", "")
+            for bad in _FORBIDDEN_IN_SERIES_NAME:
+                if bad in name:
+                    raise ValueError(
+                        f"series name {name!r} contains {bad!r}; rename it — "
+                        "the chart renderer rejects quoted CSV fields",
+                    )
             for x, y in series.get("data", []):
                 fh.write(f"{x},{y},{name}\n")
 
