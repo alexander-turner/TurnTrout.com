@@ -138,80 +138,69 @@ class TestClassifierPrompt:
 # --------------------------------------------------------------------------- #
 
 
-class TestClassifyOne:
-    def _ref(self, url: str) -> ceg.ImageRef:
-        return ceg.ImageRef(
-            markdown_file="post.md",
-            url=url,
-            alt="alt",
-            line_number=1,
-            context="ctx",
+def _ref(url: str, alt: str = "alt") -> ceg.ImageRef:
+    return ceg.ImageRef("post.md", url, alt, 1, "ctx")
+
+
+def _install_classifier_mocks(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    stdout: str = "YES\n",
+    returncode: int = 0,
+    stderr: str = "",
+    download: Path | None = None,
+) -> dict:
+    """Install the three mocks `_classify_one` needs and return a dict the
+    caller can inspect (`cmd` captures the subprocess args)."""
+    captured: dict = {}
+    monkeypatch.setattr(chart_extract, "_find_llm", lambda: "/bin/llm")
+    if download is not None:
+        monkeypatch.setattr(
+            chart_extract, "_download", lambda url, ws, timeout=30: download
+        )
+    else:
+
+        def _no_download(*a, **kw):
+            raise AssertionError("_download must not be called for local paths")
+
+        monkeypatch.setattr(chart_extract, "_download", _no_download)
+
+    def _fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=returncode, stdout=stdout, stderr=stderr
         )
 
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    return captured
+
+
+class TestClassifyOne:
     def test_url_is_downloaded_then_attached(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        fake_local = tmp_path / "downloaded.avif"
-        fake_local.write_bytes(b"\x00")
-
-        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "/bin/llm")
-        monkeypatch.setattr(
-            chart_extract, "_download", lambda url, ws, timeout=30: fake_local
-        )
-        seen: dict = {}
-
-        def _fake_run(cmd, **kwargs):
-            seen["cmd"] = cmd
-            return subprocess.CompletedProcess(
-                args=cmd, returncode=0, stdout="YES\n", stderr=""
-            )
-
-        monkeypatch.setattr(subprocess, "run", _fake_run)
-        result = ceg._classify_one(
-            self._ref("https://example.com/x.avif"), model="m"
-        )
-        assert result is True
-        # -a was pointed at the local download, not the URL.
-        assert str(fake_local) in seen["cmd"]
-        assert "m" in seen["cmd"]
+        local = tmp_path / "downloaded.avif"
+        local.write_bytes(b"\x00")
+        captured = _install_classifier_mocks(monkeypatch, download=local)
+        assert ceg._classify_one(_ref("https://example.com/x.avif"), model="m")
+        assert str(local) in captured["cmd"] and "m" in captured["cmd"]
 
     def test_local_path_is_attached_directly(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "/bin/llm")
-
-        def _should_not_download(*a, **k):
-            raise AssertionError("_download must not be called for local paths")
-
-        monkeypatch.setattr(chart_extract, "_download", _should_not_download)
-
-        def _fake_run(cmd, **kwargs):
-            return subprocess.CompletedProcess(
-                args=cmd, returncode=0, stdout="NO\n", stderr=""
-            )
-
-        monkeypatch.setattr(subprocess, "run", _fake_run)
-        assert ceg._classify_one(self._ref("./local.avif"), model="m") is False
+        _install_classifier_mocks(monkeypatch, stdout="NO\n")
+        assert ceg._classify_one(_ref("./local.avif"), model="m") is False
 
     def test_non_zero_exit_raises(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "/bin/llm")
-        monkeypatch.setattr(
-            chart_extract,
-            "_download",
-            lambda url, ws, timeout=30: tmp_path / "x",
-        )
-        (tmp_path / "x").write_bytes(b"\x00")
-        monkeypatch.setattr(
-            subprocess,
-            "run",
-            lambda *a, **kw: subprocess.CompletedProcess(
-                args=a, returncode=1, stdout="", stderr="kaboom"
-            ),
+        local = tmp_path / "x"
+        local.write_bytes(b"\x00")
+        _install_classifier_mocks(
+            monkeypatch, returncode=1, stderr="kaboom", download=local
         )
         with pytest.raises(RuntimeError, match="kaboom"):
-            ceg._classify_one(self._ref("https://x/y.avif"), model="m")
+            ceg._classify_one(_ref("https://x/y.avif"), model="m")
 
 
 # --------------------------------------------------------------------------- #
@@ -372,95 +361,110 @@ class TestWriteProposedReplacements:
 # --------------------------------------------------------------------------- #
 
 
-class TestRun:
-    def _fixture(self, tmp_path: Path) -> tuple[Path, Path]:
-        content = tmp_path / "content"
-        content.mkdir()
-        (content / "post1.md").write_text(
-            "Intro.\n"
-            "![chart alt](https://x/chart1.avif)\n"
-            "![not a chart](https://x/meme.avif)\n",
-            encoding="utf-8",
-        )
-        (content / "post2.md").write_text(
-            "![another chart](https://x/chart2.avif)\n", encoding="utf-8"
-        )
-        return content, tmp_path / "queue.json"
+@pytest.fixture
+def content_tree(tmp_path: Path) -> tuple[Path, Path]:
+    """
+    Two-post content tree shared across TestRun cases.
 
-    def test_full_run_writes_sidecars_and_queue(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        content, queue = self._fixture(tmp_path)
+    post1 has one chart-ish image + one non-chart; post2 has one chart-ish
+    image.
+    """
+    content = tmp_path / "content"
+    content.mkdir()
+    (content / "post1.md").write_text(
+        "Intro.\n"
+        "![chart alt](https://x/chart1.avif)\n"
+        "![not a chart](https://x/meme.avif)\n",
+        encoding="utf-8",
+    )
+    (content / "post2.md").write_text(
+        "![another chart](https://x/chart2.avif)\n", encoding="utf-8"
+    )
+    return content, tmp_path / "queue.json"
 
-        # Chart classifier says yes for URLs containing "chart".
-        def _classify(ref: ceg.ImageRef, model: str) -> bool:
-            return "chart" in ref.url
 
-        monkeypatch.setattr(ceg, "_classify_one", _classify)
+def _forbid(label: str):
+    """Mock that raises if invoked — used to assert a branch is NOT taken."""
 
-        # Extract returns a minimal successful result for each URL.
-        async def _fake_batch(
-            images, model, on_completed=None, context_for=None
-        ):
-            return [
-                chart_extract.ChartExtractionResult(
-                    source_image=str(img),
-                    model=model,
-                    spec={"type": "line"},
-                    yaml_block=f"```chart\nsource: {img}\n```",
-                    context_used=context_for(img) if context_for else "",
-                )
-                for img in images
-            ]
+    def _fn(*a, **kw):
+        raise AssertionError(label)
 
-        monkeypatch.setattr(chart_extract, "async_extract_batch", _fake_batch)
+    return _fn
 
-        n = asyncio.run(
-            ceg.run(
-                content,
-                model="extractor-m",
-                classifier="classifier-m",
-                queue=queue,
+
+def _install_run_mocks(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    classify=None,
+    batch=None,
+) -> None:
+    """Install the two mocks `run()` needs: classifier + extractor."""
+    if classify is not None:
+        monkeypatch.setattr(ceg, "_classify_one", classify)
+    if batch is not None:
+        monkeypatch.setattr(chart_extract, "async_extract_batch", batch)
+
+
+def _minimal_batch(spec: dict | None = None):
+    """
+    Returns an ``async_extract_batch`` stub producing one minimal success per
+    input URL.
+
+    Optional per-call hook receives the captured context.
+    """
+    default_spec = spec or {"type": "line"}
+
+    async def _fake(images, model, on_completed=None, context_for=None):
+        return [
+            chart_extract.ChartExtractionResult(
+                source_image=str(img),
+                model=model,
+                spec=default_spec,
+                context_used=context_for(img) if context_for else "",
             )
+            for img in images
+        ]
+
+    return _fake
+
+
+class TestRun:
+    def test_full_run_writes_sidecars_and_queue(
+        self,
+        content_tree: tuple[Path, Path],
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        content, queue = content_tree
+        _install_run_mocks(
+            monkeypatch,
+            classify=lambda ref, model: "chart" in ref.url,
+            batch=_minimal_batch(),
+        )
+        n = asyncio.run(
+            ceg.run(content, model="m", classifier="c", queue=queue)
         )
         assert n == 2
-        # Sidecars exist next to their source .md files.
-        assert (content / "post1.proposed-replacements.md").exists()
+        post1 = (content / "post1.proposed-replacements.md").read_text()
         assert (content / "post2.proposed-replacements.md").exists()
-        # The meme image was filtered out by the classifier — not extracted.
-        assert (
-            "meme"
-            not in (content / "post1.proposed-replacements.md").read_text()
-        )
-        # Queue on disk has both successes.
-        q = json.loads(queue.read_text())
-        sources = {row["source_image"] for row in q}
-        assert sources == {
-            "https://x/chart1.avif",
-            "https://x/chart2.avif",
-        }
+        assert "meme" not in post1  # classifier filtered it out
+        sources = {row["source_image"] for row in json.loads(queue.read_text())}
+        assert sources == {"https://x/chart1.avif", "https://x/chart2.avif"}
 
     def test_dry_run_classifies_but_skips_extraction(
         self,
-        tmp_path: Path,
+        content_tree: tuple[Path, Path],
         monkeypatch: pytest.MonkeyPatch,
         capsys: pytest.CaptureFixture,
     ) -> None:
-        content, queue = self._fixture(tmp_path)
-        monkeypatch.setattr(ceg, "_classify_one", lambda ref, model: True)
-
-        def _must_not_run(*a, **kw):
-            raise AssertionError("extractor ran during --dry-run")
-
-        monkeypatch.setattr(chart_extract, "async_extract_batch", _must_not_run)
-
+        content, queue = content_tree
+        _install_run_mocks(
+            monkeypatch,
+            classify=lambda ref, model: True,
+            batch=_forbid("extractor ran during --dry-run"),
+        )
         n = asyncio.run(
             ceg.run(
-                content,
-                model="m",
-                classifier="c",
-                queue=queue,
-                dry_run=True,
+                content, model="m", classifier="c", queue=queue, dry_run=True
             )
         )
         assert n == 0
@@ -469,64 +473,34 @@ class TestRun:
         assert not queue.exists()
 
     def test_resume_skips_urls_already_in_queue(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        content_tree: tuple[Path, Path],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        content, queue = self._fixture(tmp_path)
-        # Pre-seed queue with chart1 as successful.
-        queue.write_text(
-            json.dumps(
-                [
-                    {
-                        "source_image": "https://x/chart1.avif",
-                        "model": "m",
-                        "spec": {"type": "line"},
-                        "csv_path": None,
-                        "yaml_block": "```chart\n```",
-                        "error": None,
-                        "raw_output": "",
-                        "context_used": "",
-                    }
-                ]
-            )
-        )
+        content, queue = content_tree
+        # Seed the queue via the real writer so format drift can't silently
+        # break this test.
+        chart_extract.write_results([_result("https://x/chart1.avif")], queue)
 
-        seen_urls: list[str] = []
+        seen: list[str] = []
 
-        def _classify(ref: ceg.ImageRef, model: str) -> bool:
-            seen_urls.append(ref.url)
+        def _classify(ref, model):
+            seen.append(ref.url)
             return True
 
-        monkeypatch.setattr(ceg, "_classify_one", _classify)
-
-        async def _fake_batch(
-            images, model, on_completed=None, context_for=None
-        ):
-            return [
-                chart_extract.ChartExtractionResult(
-                    source_image=str(img),
-                    model=model,
-                    spec={"type": "line"},
-                    yaml_block="```chart\n```",
-                )
-                for img in images
-            ]
-
-        monkeypatch.setattr(chart_extract, "async_extract_batch", _fake_batch)
-
+        _install_run_mocks(
+            monkeypatch, classify=_classify, batch=_minimal_batch()
+        )
         asyncio.run(ceg.run(content, model="m", classifier="c", queue=queue))
-        # chart1 was in the queue → never hit the classifier this run.
-        assert "https://x/chart1.avif" not in seen_urls
+        assert "https://x/chart1.avif" not in seen
 
     def test_empty_content_dir_returns_zero(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         (tmp_path / "empty").mkdir()
-
-        def _must_not_run(*a, **kw):
-            raise AssertionError("should short-circuit on empty input")
-
-        monkeypatch.setattr(ceg, "_classify_one", _must_not_run)
-
+        _install_run_mocks(
+            monkeypatch, classify=_forbid("should short-circuit")
+        )
         n = asyncio.run(
             ceg.run(
                 tmp_path / "empty",
@@ -538,45 +512,47 @@ class TestRun:
         assert n == 0
 
     def test_all_images_rejected_short_circuits(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        content_tree: tuple[Path, Path],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        content, queue = self._fixture(tmp_path)
-        monkeypatch.setattr(ceg, "_classify_one", lambda ref, model: False)
-
-        def _must_not_run(*a, **kw):
-            raise AssertionError("extractor ran with nothing to extract")
-
-        monkeypatch.setattr(chart_extract, "async_extract_batch", _must_not_run)
-
-        n = asyncio.run(
-            ceg.run(content, model="m", classifier="c", queue=queue)
+        content, queue = content_tree
+        _install_run_mocks(
+            monkeypatch,
+            classify=lambda ref, model: False,
+            batch=_forbid("extractor ran with nothing to extract"),
         )
-        assert n == 0
+        assert (
+            asyncio.run(
+                ceg.run(content, model="m", classifier="c", queue=queue)
+            )
+            == 0
+        )
 
     def test_context_for_returns_none_for_unknown(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        content_tree: tuple[Path, Path],
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """The context_for closure defends against URL / key drift inside
         async_extract_batch — if a source that never made it to refs_by_url
         somehow comes through, return None rather than KeyError-ing."""
-        content, queue = self._fixture(tmp_path)
-        monkeypatch.setattr(ceg, "_classify_one", lambda ref, model: True)
-
+        content, queue = content_tree
         captured: dict = {}
 
-        async def _fake_batch(
-            images, model, on_completed=None, context_for=None
-        ):
-            captured["ctx_known"] = context_for("https://x/chart1.avif")
-            captured["ctx_unknown"] = context_for("https://nowhere/z.avif")
+        async def _fake(images, model, on_completed=None, context_for=None):
+            captured["known"] = context_for("https://x/chart1.avif")
+            captured["unknown"] = context_for("https://nowhere/z.avif")
             return []
 
-        monkeypatch.setattr(chart_extract, "async_extract_batch", _fake_batch)
-
+        _install_run_mocks(
+            monkeypatch, classify=lambda ref, model: True, batch=_fake
+        )
         asyncio.run(ceg.run(content, model="m", classifier="c", queue=queue))
-        assert captured["ctx_known"] is not None
-        assert "chart alt" in captured["ctx_known"]
-        assert captured["ctx_unknown"] is None
+        assert (
+            captured["known"] is not None and "chart alt" in captured["known"]
+        )
+        assert captured["unknown"] is None
 
 
 # --------------------------------------------------------------------------- #

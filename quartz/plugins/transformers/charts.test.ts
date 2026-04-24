@@ -243,39 +243,18 @@ annotations:
   })
 
   it("parses alt and fallback when present", () => {
-    const yaml = [
-      "type: line",
-      'alt: "Loss vs layer horizon for GPT-2"',
-      'fallback: "https://assets.turntrout.com/posts/layer-horizon.avif"',
-      "x:",
-      "  label: X",
-      "y:",
-      "  label: Y",
-      "series:",
-      "  - name: S",
-      "    data:",
-      "      - [1,2]",
-    ].join("\n")
-    const spec = parseChartSpec(yaml)
-    expect(spec.alt).toBe("Loss vs layer horizon for GPT-2")
-    expect(spec.fallback).toBe("https://assets.turntrout.com/posts/layer-horizon.avif")
+    const spec = parseChartSpec(
+      MINIMAL_YAML.replace(
+        "alt: Test chart",
+        'alt: "Loss vs layer horizon"\nfallback: "https://assets.turntrout.com/x.avif"',
+      ),
+    )
+    expect(spec.alt).toBe("Loss vs layer horizon")
+    expect(spec.fallback).toBe("https://assets.turntrout.com/x.avif")
   })
 
   it("leaves fallback undefined when omitted", () => {
-    const yaml = [
-      "type: line",
-      "alt: A",
-      "x:",
-      "  label: X",
-      "y:",
-      "  label: Y",
-      "series:",
-      "  - name: S",
-      "    data:",
-      "      - [1,2]",
-    ].join("\n")
-    const spec = parseChartSpec(yaml)
-    expect(spec.fallback).toBeUndefined()
+    expect(parseChartSpec(MINIMAL_YAML).fallback).toBeUndefined()
   })
 })
 
