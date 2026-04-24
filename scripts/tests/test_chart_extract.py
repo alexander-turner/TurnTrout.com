@@ -493,6 +493,86 @@ class TestSchemaViaTempfile:
 # --------------------------------------------------------------------------- #
 
 
+class TestAltPlaceholderInjection:
+    """
+    Models don't produce alt, but parseChartSpec requires it.
+
+    Verify extract_chart fills a placeholder before validation so the TS parser
+    doesn't reject every run.
+    """
+
+    def test_missing_alt_gets_placeholder_before_validation(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        img = tmp_path / "c.png"
+        img.write_bytes(b"\x89PNG\r\n")
+        llm_output = json.dumps(
+            {
+                "type": "line",
+                "x": {"label": "x"},
+                "y": {"label": "y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            }
+        )
+
+        seen_validator_spec: dict = {}
+
+        def _fake_run(cmd, **kw):
+            r = type("R", (), {})()
+            if cmd[0].endswith("llm"):
+                r.stdout, r.stderr, r.returncode = llm_output, "", 0
+            else:  # tsx validator — capture the yaml it sees
+                seen_validator_spec["yaml"] = kw.get("input", "")
+                r.stdout, r.stderr, r.returncode = "", "", 0
+            return r
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        monkeypatch.setattr(
+            chart_extract.shutil,
+            "which",
+            lambda name: "/usr/bin/" + name,
+        )
+        monkeypatch.setattr(chart_extract.subprocess, "run", _fake_run)
+        monkeypatch.chdir(tmp_path)
+
+        result = chart_extract.extract_chart(img, model="m")
+        assert result.error is None, result.error
+        assert result.spec["alt"] == chart_extract.ALT_TODO_PLACEHOLDER
+        assert chart_extract.ALT_TODO_PLACEHOLDER in seen_validator_spec["yaml"]
+
+    def test_existing_alt_is_preserved(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """If a future model produces alt on its own, don't clobber it."""
+        img = tmp_path / "c.png"
+        img.write_bytes(b"\x89PNG\r\n")
+        llm_output = json.dumps(
+            {
+                "type": "line",
+                "alt": "Model-generated alt",
+                "x": {"label": "x"},
+                "y": {"label": "y"},
+                "series": [{"name": "S", "data": [[0, 1]]}],
+            }
+        )
+
+        def _fake_run(cmd, **kw):
+            r = type("R", (), {})()
+            r.stdout = llm_output if cmd[0].endswith("llm") else ""
+            r.stderr, r.returncode = "", 0
+            return r
+
+        monkeypatch.setattr(chart_extract, "_find_llm", lambda: "llm")
+        monkeypatch.setattr(
+            chart_extract.shutil, "which", lambda name: "/usr/bin/" + name
+        )
+        monkeypatch.setattr(chart_extract.subprocess, "run", _fake_run)
+        monkeypatch.chdir(tmp_path)
+
+        result = chart_extract.extract_chart(img, model="m")
+        assert result.spec["alt"] == "Model-generated alt"
+
+
 class TestValidateViaTsx:
     """Catches LLM hallucinations that pass JSON-schema but break quartz."""
 

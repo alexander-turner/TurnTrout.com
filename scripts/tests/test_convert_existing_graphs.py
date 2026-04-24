@@ -353,7 +353,7 @@ class TestWriteProposedReplacements:
         written2 = ceg.write_proposed_replacements(
             [r_no_title], {ref_no_title.url: ref_no_title}
         )
-        assert ceg._ALT_TODO_PLACEHOLDER in written2[0].read_text()
+        assert chart_extract.ALT_TODO_PLACEHOLDER in written2[0].read_text()
 
 
 # --------------------------------------------------------------------------- #

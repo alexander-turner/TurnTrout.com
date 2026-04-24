@@ -56,6 +56,10 @@ warnings.filterwarnings("ignore", category=TqdmExperimentalWarning)
 # renderer, grow this tuple and everything downstream stays honest.
 SUPPORTED_CHART_TYPES: tuple[str, ...] = ("line",)
 
+# Placeholder alt text used when the LLM doesn't produce one and no driver
+# overrides. Human-visible so it surfaces during review / hand-merge.
+ALT_TODO_PLACEHOLDER = "[TODO: describe this chart]"
+
 
 # --------------------------------------------------------------------------- #
 # JSON Schema — mirrors `quartz/plugins/transformers/charts/types.ts`.        #
@@ -416,6 +420,12 @@ def extract_chart(
     except json.JSONDecodeError as err:
         result.error = f"invalid JSON from model: {err}"
         return result
+
+    # The TS parser requires a non-empty `alt`; models generally don't produce
+    # it. Inject a TODO placeholder so validation passes and standalone users
+    # notice and fill it in; the convert-existing-graphs driver overrides this
+    # with the real alt text before writing the sidecar block.
+    result.spec.setdefault("alt", ALT_TODO_PLACEHOLDER)
 
     # Round-trip the LLM's spec through quartz's own parseChartSpec so a
     # hallucinated-but-schema-valid spec fails here, not mid-build. Skipped

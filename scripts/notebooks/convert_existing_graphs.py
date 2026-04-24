@@ -197,20 +197,19 @@ def _sidecar_path(md_file: Path) -> Path:
     return md_file.with_name(md_file.stem + _SIDECAR_SUFFIX)
 
 
-_ALT_TODO_PLACEHOLDER = "[TODO: describe this chart]"
-
-
 def _provenanced_block(spec: dict, ref: ImageRef) -> str:
     """
     Inject ``alt`` and ``fallback`` into *spec* and re-serialize.
 
     The parser requires a non-empty ``alt``; if the original Markdown image
-    had no alt text, fall back to the chart title or a TODO placeholder so
-    the user notices and fills it in during hand-merge. ``fallback`` is
-    always set to the original URL — "for future reference" per the spec.
+    had no alt text, fall back to the chart title or the shared TODO
+    placeholder so the user notices and fills it in during hand-merge.
+    ``fallback`` is always set to the original URL — "for future reference".
     """
     enriched = {**spec}
-    enriched["alt"] = ref.alt or spec.get("title") or _ALT_TODO_PLACEHOLDER
+    enriched["alt"] = (
+        ref.alt or spec.get("title") or chart_extract.ALT_TODO_PLACEHOLDER
+    )
     enriched["fallback"] = ref.url
     return chart_extract.format_as_yaml_block(enriched)
 
