@@ -9,6 +9,7 @@ import type { QuartzTransformerPlugin } from "../types"
 import type { ChartSpec } from "./charts/types"
 
 import { parseLongCsv } from "./charts/csv"
+import { ChartDataPathError } from "./charts/errors"
 import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec, validateLogScaleData } from "./charts/parse"
 
@@ -147,21 +148,25 @@ function hydrateFromCsv(spec: ChartSpec, file: VFile): void {
   // istanbul ignore next -- caller only invokes when dataSource is set
   if (!spec.dataSource) return
   if (!file.path) {
-    throw new Error("Charts transformer: cannot resolve `data: <path>` without a VFile.path")
+    throw new ChartDataPathError(
+      "Charts transformer: cannot resolve `data: <path>` without a VFile.path",
+    )
   }
   const mdDir = path.dirname(file.path)
   const csvAbs = path.resolve(mdDir, spec.dataSource)
 
   const rel = path.relative(mdDir, csvAbs)
   if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
-    throw new Error(`chart data path "${spec.dataSource}" escapes the markdown directory`)
+    throw new ChartDataPathError(
+      `chart data path "${spec.dataSource}" escapes the markdown directory`,
+    )
   }
 
   let csvText: string
   try {
     csvText = fs.readFileSync(csvAbs, "utf8")
   } catch (err) {
-    throw new Error(
+    throw new ChartDataPathError(
       `chart references data: "${spec.dataSource}" but cannot read ${csvAbs}: ${(err as Error).message}`,
     )
   }
@@ -170,7 +175,7 @@ function hydrateFromCsv(spec: ChartSpec, file: VFile): void {
   for (const s of spec.series) {
     const rows = bySeries.get(s.name)
     if (!rows || rows.length === 0) {
-      throw new Error(`series "${s.name}" has no rows in ${csvAbs}`)
+      throw new ChartDataPathError(`series "${s.name}" has no rows in ${csvAbs}`)
     }
     s.data = rows
   }

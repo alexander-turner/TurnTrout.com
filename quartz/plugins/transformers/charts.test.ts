@@ -12,6 +12,7 @@ import type { ChartSpec } from "./charts/types"
 
 import { Charts } from "./charts"
 import { parseLongCsv } from "./charts/csv"
+import { ChartCsvError, ChartDataPathError, ChartError, ChartSpecError } from "./charts/errors"
 import { renderLineChart } from "./charts/line-renderer"
 import { parseChartSpec } from "./charts/parse"
 
@@ -1147,5 +1148,53 @@ series:
     expect(() => transform(tree, new VFile())).toThrow(
       /cannot resolve `data: <path>` without a VFile\.path/,
     )
+  })
+})
+
+// ── Typed error hierarchy ─────────────────────────────────────────────
+
+describe("Chart error classes", () => {
+  it("parse errors are ChartSpecError (and ChartError)", () => {
+    expect(() => parseChartSpec("42")).toThrow(ChartSpecError)
+    expect(() => parseChartSpec("42")).toThrow(ChartError)
+  })
+
+  it("CSV parser errors are ChartCsvError (and ChartError)", () => {
+    expect(() => parseLongCsv("")).toThrow(ChartCsvError)
+    expect(() => parseLongCsv("")).toThrow(ChartError)
+  })
+
+  it("hydration errors are ChartDataPathError (and ChartError)", () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "chart-err-cls-"))
+    const makeTree = (): Root => ({
+      type: "root",
+      children: [
+        {
+          type: "element",
+          tagName: "pre",
+          properties: {},
+          children: [
+            {
+              type: "element",
+              tagName: "code",
+              properties: { className: ["language-chart"] },
+              children: [
+                {
+                  type: "text",
+                  value:
+                    "type: line\nx:\n  label: X\ny:\n  label: Y\ndata: ../../escape.csv\nseries:\n  - name: S",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const plugin = Charts()
+    const htmlPlugins = plugin.htmlPlugins?.(mockCtx) ?? []
+    const transform = (htmlPlugins[0] as () => (t: Root, f: unknown) => void)()
+    const file = new VFile({ path: path.join(dir, "post.md") })
+    expect(() => transform(makeTree(), file)).toThrow(ChartDataPathError)
+    expect(() => transform(makeTree(), file)).toThrow(ChartError)
   })
 })
