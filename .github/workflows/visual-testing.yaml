@@ -365,6 +365,17 @@ jobs:
           path: playwright-report/
           retention-days: 14
 
+      # Cloudflare Pages rejects any single file >25 MiB. Trace zips
+      # (retained on failure) can easily exceed that. Drop them for the
+      # hosted viewer — the diff screenshots are what matters; traces and
+      # videos remain accessible via the visual-diff-report artifact above.
+      - name: Prune large diagnostics before Pages upload
+        if: github.event_name == 'pull_request'
+        run: |
+          find playwright-report -type f \( -name "trace.zip" -o -name "*.webm" -o -name "*.mp4" \) -print -delete || true
+          # Belt-and-suspenders: drop anything else still over the limit.
+          find playwright-report -type f -size +24M -print -delete || true
+
       - name: Deploy diff report to Cloudflare Pages
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/deploy-to-cloudflare
