@@ -16,7 +16,7 @@ on:
       - "config/quartz/**"
       - "config/constants.json"
       - "config/playwright/**"
-      - "config/lostpixel/**"
+      - "tests/visual-baselines/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
@@ -25,6 +25,7 @@ on:
 permissions:
   actions: read
   contents: read
+  pull-requests: write
 
 jobs:
   # Gate: only run expensive tests on PRs when a CI label is actively added.
@@ -78,9 +79,6 @@ jobs:
         with:
           install-playwright: "true"
 
-      - name: Make folder for screenshots
-        run: mkdir -p ./lost-pixel
-
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
@@ -99,7 +97,12 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --shard ${{ matrix.shard }} \
+            --reporter=blob,dot \
+            --update-snapshots=none \
+            -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -148,12 +151,15 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      # Blob report is consumed by the publish-visual-report job to
+      # generate a merged HTML diff report with side-by-side comparisons.
+      - name: Upload blob report shard
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: lost-pixel-screenshots-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: ./lost-pixel
+          name: blob-report-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: blob-report/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Fail if playwright tests failed
@@ -191,9 +197,6 @@ jobs:
         with:
           install-playwright: "false"
 
-      - name: Make folder for screenshots
-        run: mkdir -p ./lost-pixel
-
       - name: Create Winston logs directory
         run: mkdir -p .logs
 
@@ -215,11 +218,15 @@ jobs:
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --shard ${{ matrix.shard }} \
+            --reporter=blob,dot \
+            --update-snapshots=none \
+            -g "(lostpixel)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
-          # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Create sanitized shard
@@ -264,12 +271,13 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - name: Upload blob report shard
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: lost-pixel-screenshots-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: ./lost-pixel
+          name: blob-report-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: blob-report/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Fail if playwright tests failed
@@ -320,54 +328,93 @@ jobs:
           log-pattern: visual-testing-log-*
           final-log-name: visual-testing-failed-logs
 
-  combine-and-upload:
+  # Merge per-shard blob reports into a single HTML report and publish it to
+  # Cloudflare Pages so diffs can be reviewed in the browser without the
+  # CLI. A comment with the URL lands on the PR.
+  publish-visual-report:
     needs: [should-run, visual-testing-linux, visual-testing-macos]
+    if: >-
+      always() && !cancelled() &&
+      needs.should-run.outputs.run == 'true' &&
+      (
+        needs.visual-testing-linux.result == 'failure' ||
+        needs.visual-testing-macos.result == 'failure'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    if: >
-      always() && !cancelled() &&
-      needs.visual-testing-linux.result == 'success' &&
-      (needs.visual-testing-macos.result == 'success' || needs.visual-testing-macos.result == 'skipped')
-
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
-      - name: Download all Lost Pixel screenshot shards
+      - name: Download all blob reports
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: lost-pixel-screenshots-*
-          path: ./all-lost-pixel-shards
+          pattern: blob-report-*
+          path: ./all-blob-reports
           merge-multiple: true
 
-      - name: Combine screenshots into ./lost-pixel directory
-        id: combine
-        run: |
-          shopt -s globstar # Enable recursive globbing
-          mkdir -p ./lost-pixel
-          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
-          echo "Contents of ./lost-pixel after combining:"
-          ls -R ./lost-pixel
-          if [ -z "$(ls -A ./lost-pixel)" ]; then
-            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
-            echo "./lost-pixel directory is empty after combination attempt."
-          else
-            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
-            echo "Screenshots found in ./lost-pixel."
-          fi
+      - name: Merge blob reports into HTML
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 
-      - name: Symlink LostPixel config to root
-        if: steps.combine.outputs.screenshots_found == 'true'
-        run: ln -s config/lostpixel/lostpixel.config.ts lostpixel.config.ts
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: visual-diff-report
+          path: playwright-report/
+          retention-days: 14
 
-      - name: Run LostPixel on combined screenshots
-        if: steps.combine.outputs.screenshots_found == 'true'
-        uses: lost-pixel/lost-pixel@41055d71dea42eb5fa5c27dabd2a90722f376e33 # v3.22.0
+      - name: Deploy diff report to Cloudflare Pages
+        if: github.event_name == 'pull_request'
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: visual-pr-${{ github.event.pull_request.number }}
+          public-dir: ./playwright-report
+
+      - name: Comment report URL on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
-          LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const marker = '<!-- visual-diff-report -->';
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const sha = context.sha.substring(0, 7);
+            const reportUrl = `https://visual-pr-${prNumber}.turntrout.pages.dev`;
 
-      - name: Clean up downloaded shards
-        run: rm -rf ./all-lost-pixel-shards
+            const body = [
+              marker,
+              `**Visual diff report** for commit ${sha}:`,
+              reportUrl,
+              '',
+              'Inspect the diffs side-by-side. If everything looks intended, add the `visual-approved` label to this PR to update the baselines.',
+            ].join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }

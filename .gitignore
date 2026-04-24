@@ -23,8 +23,6 @@ tsconfig.tsbuildinfo
 # Testing & Coverage
 .coverage*
 coverage
-lost-pixel/*
-.lostpixel
 .lighthouseci
 /test-results/
 /blob-report/

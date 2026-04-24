@@ -1,0 +1,89 @@
+name: Update visual baselines
+
+# Triggered when a reviewer adds the `visual-approved` label to a PR:
+# regenerates visual baselines by running the same test suite with
+# --update-snapshots=all, commits any changes back to the PR branch, then
+# removes the label so it can be re-applied on the next push.
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-visual-baselines-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  update-baselines:
+    if: github.event.label.name == 'visual-approved'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Install browsers
+        run: pnpm run install-browsers
+
+      - name: Build site
+        run: |
+          PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
+            pnpm exec tsx quartz/bootstrap-cli.ts build --offline
+
+      - name: Run Playwright with --update-snapshots
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --update-snapshots=all \
+            -g "(lostpixel)" 2>&1 | tee playwright-update.log || true
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Commit and push updated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add tests/visual-baselines/
+          if git diff --cached --quiet; then
+            echo "No baseline changes to commit."
+            exit 0
+          fi
+
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          git commit -m "chore: update visual baselines (approved on ${SHORT_SHA})"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Remove approval label
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'visual-approved',
+              });
+            } catch (err) {
+              // 404 = already removed; ignore. Anything else, rethrow.
+              if (err.status !== 404) throw err;
+            }

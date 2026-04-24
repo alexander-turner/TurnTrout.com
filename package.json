@@ -100,7 +100,6 @@
     "js-yaml": "4.1.1",
     "katex": "0.16.45",
     "lightningcss": "1.32.0",
-    "lost-pixel": "3.22.0",
     "mdast-util-find-and-replace": "3.0.2",
     "mdast-util-to-hast": "13.2.1",
     "micromorph": "0.4.5",
@@ -284,7 +283,6 @@
   "pnpm": {
     "overrides": {
       "subfont>assetgraph": "7.13.0",
-      "lost-pixel>axios": "$axios",
       "workbox-build": "7.3.0",
       "d3-color": "3.1.0",
       "braces": "3.0.3",
