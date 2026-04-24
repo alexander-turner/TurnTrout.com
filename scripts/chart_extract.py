@@ -249,6 +249,10 @@ def extract_chart(
         source_image=str(image), model=model, context_used=context or ""
     )
 
+    # tmpdir only needs to live as long as the `llm` subprocess — it holds the
+    # converted PNG (if input was AVIF) and the JSON schema file, both of
+    # which the subprocess reads. Anything that only inspects `proc` after
+    # the call can live outside.
     with tempfile.TemporaryDirectory() as tmp:
         try:
             prepared = _convert_if_avif(image, Path(tmp))
@@ -260,9 +264,8 @@ def extract_chart(
             result.error = f"AVIF conversion failed: {err}"
             return result
 
-        # Pass the JSON schema via a tempfile rather than inline on argv:
-        # it's ~1KB today and growing, and a path is easier to eyeball when
-        # debugging a failed `llm` invocation (just re-run with the printed path).
+        # Schema via tempfile rather than inline on argv: easier to eyeball
+        # when debugging a failed `llm` invocation (re-run with the path).
         schema_file = Path(tmp) / "schema.json"
         schema_file.write_text(json.dumps(CHART_SCHEMA), encoding="utf-8")
 
@@ -287,17 +290,16 @@ def extract_chart(
             result.error = f"llm timeout after {timeout}s"
             return result
 
-        result.raw_output = proc.stdout
+    result.raw_output = proc.stdout
+    if proc.returncode != 0:
+        result.error = (proc.stderr or proc.stdout).strip()
+        return result
 
-        if proc.returncode != 0:
-            result.error = (proc.stderr or proc.stdout).strip()
-            return result
-
-        try:
-            result.spec = json.loads(proc.stdout)
-        except json.JSONDecodeError as err:
-            result.error = f"invalid JSON from model: {err}"
-            return result
+    try:
+        result.spec = json.loads(proc.stdout)
+    except json.JSONDecodeError as err:
+        result.error = f"invalid JSON from model: {err}"
+        return result
 
     # Persist outputs next to the source image so the user can paste the
     # block into Markdown and move the CSV alongside the .md file.
