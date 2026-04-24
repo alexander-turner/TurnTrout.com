@@ -147,18 +147,14 @@ function hydrateFromCsv(spec: ChartSpec, file: VFile): void {
   // istanbul ignore next -- caller only invokes when dataSource is set
   if (!spec.dataSource) return
   if (!file.path) {
-    throw new Error(
-      "Charts transformer: cannot resolve `data: <path>` without a VFile.path",
-    )
+    throw new Error("Charts transformer: cannot resolve `data: <path>` without a VFile.path")
   }
   const mdDir = path.dirname(file.path)
   const csvAbs = path.resolve(mdDir, spec.dataSource)
 
   const rel = path.relative(mdDir, csvAbs)
   if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
-    throw new Error(
-      `chart data path "${spec.dataSource}" escapes the markdown directory`,
-    )
+    throw new Error(`chart data path "${spec.dataSource}" escapes the markdown directory`)
   }
 
   let csvText: string
