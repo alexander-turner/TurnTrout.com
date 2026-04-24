@@ -149,7 +149,7 @@ function renderTable(rows: readonly FontRow[]): string {
   const header = [
     "<!-- markdownlint-disable MD041 -->",
     "| Font | Full | Subset | Saved |",
-    "| :--- | ---: | ---: | ---: |",
+    "| ---: | :---: | :---: | :---: |",
   ].join("\n")
   const body: string[] = []
   let totalFull = 0

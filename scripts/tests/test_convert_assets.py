@@ -301,6 +301,16 @@ def test_ignores_non_static_path(setup_test_env):
         )
 
 
+def test_rejects_non_adjacent_quartz_static(tmp_path: Path):
+    """Reject paths where 'quartz' and 'static' exist but are not adjacent."""
+    non_adjacent = tmp_path / "quartz" / "other" / "static" / "file.png"
+    non_adjacent.parent.mkdir(parents=True, exist_ok=True)
+    non_adjacent.touch()
+
+    with pytest.raises(ValueError, match="quartz/static.*directory"):
+        convert_assets.convert_asset(non_adjacent)
+
+
 @pytest.mark.parametrize(
     "input_path,expected_output",
     [

@@ -146,7 +146,7 @@ def upload_to_r2(
             If the file exists without overwrite.
         FileNotFoundError: If the file is not found.
     """
-    if "quartz/" not in str(file_path):
+    if "quartz" not in file_path.resolve().parts:
         raise ValueError(f"{str(file_path)} does not contain 'quartz/'.")
 
     if not file_path.is_file():

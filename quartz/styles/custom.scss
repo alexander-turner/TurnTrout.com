@@ -1017,8 +1017,13 @@ img-comparison-slider {
   --default-handle-color: var(--foreground);
   --default-handle-shadow: 0 0 1px var(--background);
 
-  // Remove blue focus outline
   &:focus {
     outline: none;
+  }
+
+  &:focus-visible {
+    outline: 0.15rem solid var(--color-link);
+    outline-offset: 0.1rem;
+    border-radius: 0.15rem;
   }
 }

@@ -388,6 +388,17 @@ jobs:
           fi
 
           echo "approved=false" >> "$GITHUB_OUTPUT"
+
+          # Terminal non-success states won't self-heal via polling (platform
+          # processing errors, cancelled builds, timed-out runs). Fail fast and
+          # let a human investigate + manually re-dispatch.
+          case "$LP_CONCLUSION" in
+            failure|cancelled|timed_out)
+              echo "::error::Lost Pixel check concluded with '$LP_CONCLUSION' — not retrying. Investigate at https://app.lost-pixel.com/ and manually re-dispatch this workflow once resolved."
+              exit 1
+              ;;
+          esac
+
           if [ "$ATTEMPT" -ge "$MAX" ]; then
             echo "::error::Lost Pixel still not approved after $MAX attempts. Approve at https://app.lost-pixel.com/ and re-dispatch this workflow."
             exit 1
@@ -396,6 +407,7 @@ jobs:
           NEXT=$((ATTEMPT + 1))
           echo "LP not approved yet (conclusion: ${LP_CONCLUSION:-pending}). Dispatching attempt $NEXT/$MAX..."
           gh workflow run deploy.yaml \
+            --repo "${{ github.repository }}" \
             --ref "${{ github.ref_name }}" \
             -f sha="$SHA" \
             -f run_id="$RUN_ID" \
