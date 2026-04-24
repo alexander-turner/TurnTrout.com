@@ -80,7 +80,7 @@
 
     // Declared on the base so the X→hamburger reverse animation works too;
     // when on .x alone, removing the class also removes the transition rule.
-    transition: all 100ms ease-in-out;
+    transition: all $transition-duration-very-quick ease-in-out;
 
     &:not(:last-child) {
       margin-bottom: 5px;
@@ -361,7 +361,7 @@ $header-video-size: 188px;
     left: 0;
     top: 0;
     fill: var(--midground);
-    transition: opacity 0.1s ease;
+    transition: opacity $transition-duration-very-quick ease;
   }
 }
 
