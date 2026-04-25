@@ -149,7 +149,7 @@ function setupPondVideo(): void {
   window.addEventListener("beforeunload", saveTimestamp, { signal })
   window.addEventListener("pagehide", saveTimestamp, { signal })
 
-  // Save timestamp periodically during playback
+  // Save timestamp during playback
   videoElement.addEventListener(
     "timeupdate",
     () => {
@@ -169,6 +169,7 @@ setupAutoplayToggle()
 
 // Re-run setup functions after SPA navigation
 document.addEventListener("nav", () => {
+  setupHamburgerMenu()
   setupPondVideo()
   setupAutoplayToggle()
 })
