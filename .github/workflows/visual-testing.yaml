@@ -287,8 +287,8 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Tests were skipped (no label)"
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
           if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then

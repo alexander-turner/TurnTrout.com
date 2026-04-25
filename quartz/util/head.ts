@@ -48,12 +48,12 @@ export function maybeProduceVideoTag(videoPreview: string | undefined): string {
 }
 
 // skipcq: JS-D1001
-function renderImageTags(cardImage: string, altText: string | undefined): string {
+function renderImageTags(cardImage: string, altText: string): string {
   return `
     <meta property="og:image" content="${escapeHTML(cardImage)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${escapeHTML(altText ?? "")}" />
+    <meta property="og:image:alt" content="${escapeHTML(altText)}" />
   `
 }
 
