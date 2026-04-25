@@ -12,6 +12,7 @@ import {
   REGEX_ACRONYM,
   smallCapsSeparators,
   REGEX_ABBREVIATION,
+  REGEX_VERSION_NUMBER,
   validSmallCapsPhrase,
   allCapsContinuation,
   REGEX_ALL_CAPS_PHRASE,
@@ -390,6 +391,40 @@ describe("REGEX_ABBREVIATION tests", () => {
       expect(REGEX_ABBREVIATION.test(input)).toBe(false)
     },
   )
+})
+
+describe("REGEX_VERSION_NUMBER tests", () => {
+  it.each(["V1", "V2", "V100", "V0", "V42"])("should match version label: %s", (input) => {
+    const match = REGEX_VERSION_NUMBER.exec(input)
+    expect(match).not.toBeNull()
+    expect(match?.[0]).toBe(input)
+  })
+
+  it.each(["V", "v1", "VX", "AV1", "V1A", "1V", "V-1"])(
+    "should not match invalid version label: %s",
+    (input) => {
+      expect(REGEX_VERSION_NUMBER.test(input)).toBe(false)
+    },
+  )
+
+  it.each([
+    [
+      "<p>The release of V1 was great.</p>",
+      '<p>The release of <abbr class="small-caps version-num">v1</abbr> was great.</p>',
+    ],
+    [
+      "<p>V2 was released yesterday.</p>",
+      '<p><abbr class="small-caps version-num">V2</abbr> was released yesterday.</p>',
+    ],
+    [
+      "<p>We support V1, V2, and V100.</p>",
+      '<p>We support <abbr class="small-caps version-num">v1</abbr>, <abbr class="small-caps version-num">v2</abbr>, and <abbr class="small-caps version-num">v100</abbr>.</p>',
+    ],
+    ["<p>Version one was great.</p>", "<p>Version one was great.</p>"],
+    ["<p>v1 lowercase stays plain.</p>", "<p>v1 lowercase stays plain.</p>"],
+  ])("wrap version label correctly: %s", (input, expected) => {
+    expect(testTagSmallcapsHTML(input)).toBe(expected)
+  })
 })
 
 const allCapsSentences = ["I LOVE SHREK", "WHERE DID YOU GO", "X-CAFÉ", "THE GPT-2 RESULTS"]

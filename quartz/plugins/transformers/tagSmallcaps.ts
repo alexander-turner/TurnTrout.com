@@ -1,6 +1,7 @@
 import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
+import { h } from "hastscript"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
@@ -91,6 +92,11 @@ export const REGEX_ABBREVIATION = new RegExp(
   `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
 )
 
+// Version labels like "V1", "V2", "V100". The digit gets lining-nums via the
+// .version-num class so it stays at cap height instead of inheriting body
+// oldstyle figures.
+export const REGEX_VERSION_NUMBER = new RegExp(`${beforeWordBoundary}V\\d+${afterWordBoundary}`)
+
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
 const decimalOrSeparator = `[${smallCapsSeparators}\\d\\s]|\\d\\.\\d`
@@ -104,7 +110,7 @@ export const REGEX_ALL_CAPS_PHRASE = new RegExp(
 )
 
 const combinedRegex = new RegExp(
-  `${REGEX_ALL_CAPS_PHRASE.source}|${REGEX_ACRONYM.source}|${REGEX_ABBREVIATION.source}`,
+  `${REGEX_ALL_CAPS_PHRASE.source}|${REGEX_ACRONYM.source}|${REGEX_ABBREVIATION.source}|${REGEX_VERSION_NUMBER.source}`,
   "g",
 )
 
@@ -294,6 +300,19 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           replacedMatch: processMatchedText(acronym, shouldCapitalize),
           after: suffix || "",
           originalText: acronym,
+        }
+      }
+
+      const versionMatch = REGEX_VERSION_NUMBER.exec(matchText)
+      if (versionMatch) {
+        return {
+          before: "",
+          replacedMatch: h(
+            "abbr.small-caps.version-num",
+            { "data-original-text": matchText },
+            processMatchedText(matchText, shouldCapitalize),
+          ),
+          after: "",
         }
       }
 
