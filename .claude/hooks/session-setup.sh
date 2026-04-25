@@ -60,12 +60,42 @@ webi_install_if_missing gh
 webi_install_if_missing jq
 uv_install_if_missing alt-text-llm
 if is_root; then
+	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
+	# needed by scripts/tests/test_compress.py et al. (the Stop hook runs
+	# pytest, and ~75 tests + 60 errors fall over without them).
+	declare -A apt_needed=(
+		[shellcheck]=shellcheck
+		[fish]=fish
+		[ffmpeg]=ffmpeg
+		[convert]=imagemagick
+		[exiftool]=libimage-exiftool-perl
+	)
 	apt_pkgs=()
-	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
-	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	for cmd in "${!apt_needed[@]}"; do
+		command -v "$cmd" &>/dev/null || apt_pkgs+=("${apt_needed[$cmd]}")
+	done
 	if [ ${#apt_pkgs[@]} -gt 0 ]; then
 		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
 			warn "Failed to install ${apt_pkgs[*]}"
+	fi
+fi
+
+# scripts/compress.py and convert_markdown_yaml.py hard-code the IM7
+# `magick` binary. Ubuntu's `imagemagick` apt package only ships the
+# legacy IM6 `convert`, so download the official IM7 portable AppImage
+# and extract it (FUSE isn't available in the sandbox, so AppImages
+# can't be auto-mounted — `--appimage-extract` works around that).
+if ! command -v magick &>/dev/null; then
+	IM_DIR="$HOME/.local/imagemagick"
+	mkdir -p "$IM_DIR"
+	if curl -fsSL https://imagemagick.org/archive/binaries/magick \
+		-o "$IM_DIR/magick.AppImage" 2>/dev/null; then
+		chmod +x "$IM_DIR/magick.AppImage"
+		(cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1) &&
+			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" ||
+			warn "Failed to extract ImageMagick 7 AppImage"
+	else
+		warn "Failed to download ImageMagick 7"
 	fi
 fi
 
