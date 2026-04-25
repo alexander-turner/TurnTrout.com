@@ -99,9 +99,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
-  // Baselines live in-repo (replaces lost-pixel cloud). getScreenshotName
-  // already incorporates browser name into the filename so a single flat
-  // directory holds all project baselines without collision.
+  // getScreenshotName already incorporates browser name into the
+  // filename so a single flat directory holds all project baselines
+  // without collision.
   snapshotPathTemplate: "../../tests/visual-baselines/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {

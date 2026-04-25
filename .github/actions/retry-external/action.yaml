@@ -2,7 +2,7 @@ name: "Retry external command with exponential backoff"
 description: >-
   Retries a shell command up to N times on non-zero exit with exponential
   backoff. Use ONLY for transient external failures we don't control (e.g.
-  Cloudflare API 504s, Lost Pixel uploads, external link checks). Do NOT
+  Cloudflare API 504s, external link checks). Do NOT
   wrap in-house steps (tests, linters, builds) — zero-flakiness policy
   requires fixing those at the source, not retrying them.
 inputs:

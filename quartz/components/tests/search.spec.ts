@@ -930,17 +930,11 @@ test("admonition background is transparent in focused mobile card preview (scree
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
 
-  // The focused card has a non-transparent background (the hover/focus effect),
-  // while the admonition inside is transparent — so the highlight shows through.
-  // Native .focus() above triggers the :focus pseudo (search.scss bundles
-  // :hover, :focus, and .focus into the same rule). The .focus class itself
-  // is only added by the JS keyboard-nav helper (focusCard), so don't assert
-  // on it here — the visual contract is the computed background, not the
-  // implementation detail.
-  const cardBg = await testPageResult.evaluate((el) => {
-    return window.getComputedStyle(el).backgroundColor
-  })
-  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
+  // Native .focus() fires the focus event; the listener in resultToHTML
+  // calls focusCard, which adds the .focus class. The focused card has a
+  // non-transparent background (the hover/focus effect), while the
+  // admonition inside is transparent — so the highlight shows through.
+  await expect(testPageResult).toHaveClass(/focus/)
 
   const admonition = cardPreview.locator(".admonition").first()
   await expect(admonition).toBeAttached()
