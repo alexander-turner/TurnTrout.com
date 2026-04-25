@@ -12,7 +12,11 @@ runs:
       uses: ./.github/actions/setup-site
       with:
         install-sharp: "false"
-        install-ffmpeg: "true"
+        # install-system-deps installs ffmpeg + build tools on Linux. The
+        # prior install-ffmpeg input no longer exists upstream and was
+        # being silently ignored, leaving ffprobe unavailable when this
+        # action runs in a build-on-runner job.
+        install-system-deps: "true"
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-apt: ${{ inputs.install-playwright }}
