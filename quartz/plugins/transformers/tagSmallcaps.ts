@@ -92,10 +92,12 @@ export const REGEX_ABBREVIATION = new RegExp(
   `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
 )
 
-// Version labels like "V1", "V2", "V100". The digit gets lining-nums via the
+// Version labels like "V1", "v2", "V100". The digit gets lining-nums via the
 // .version-num class so it stays at cap height instead of inheriting body
-// oldstyle figures.
-export const REGEX_VERSION_NUMBER = new RegExp(`${beforeWordBoundary}V\\d+${afterWordBoundary}`)
+// oldstyle figures, and the V is small-capped so both glyphs share cap height.
+export const REGEX_VERSION_NUMBER = new RegExp(
+  `${beforeWordBoundary}[Vv]\\d+${afterWordBoundary}`,
+)
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
@@ -305,12 +307,15 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
 
       const versionMatch = REGEX_VERSION_NUMBER.exec(matchText)
       if (versionMatch) {
+        // Render the V at full cap height so it aligns with the lining digit.
+        // Small-caps would render the V ~70–80% of cap height, mismatching the
+        // lining figure. Original casing is preserved in data-original-text.
         return {
           before: "",
           replacedMatch: h(
             "abbr.small-caps.version-num",
             { "data-original-text": matchText },
-            processMatchedText(matchText, shouldCapitalize),
+            matchText.toUpperCase(),
           ),
           after: "",
         }

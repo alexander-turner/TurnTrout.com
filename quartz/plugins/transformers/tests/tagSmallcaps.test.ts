@@ -394,13 +394,16 @@ describe("REGEX_ABBREVIATION tests", () => {
 })
 
 describe("REGEX_VERSION_NUMBER tests", () => {
-  it.each(["V1", "V2", "V100", "V0", "V42"])("should match version label: %s", (input) => {
-    const match = REGEX_VERSION_NUMBER.exec(input)
-    expect(match).not.toBeNull()
-    expect(match?.[0]).toBe(input)
-  })
+  it.each(["V1", "V2", "V100", "V0", "V42", "v1", "v2", "v100"])(
+    "should match version label: %s",
+    (input) => {
+      const match = REGEX_VERSION_NUMBER.exec(input)
+      expect(match).not.toBeNull()
+      expect(match?.[0]).toBe(input)
+    },
+  )
 
-  it.each(["V", "v1", "VX", "AV1", "V1A", "1V", "V-1"])(
+  it.each(["V", "v", "VX", "vx", "AV1", "av1", "V1A", "v1a", "1V", "1v", "V-1", "v-1"])(
     "should not match invalid version label: %s",
     (input) => {
       expect(REGEX_VERSION_NUMBER.test(input)).toBe(false)
@@ -410,7 +413,7 @@ describe("REGEX_VERSION_NUMBER tests", () => {
   it.each([
     [
       "<p>The release of V1 was great.</p>",
-      '<p>The release of <abbr class="small-caps version-num">v1</abbr> was great.</p>',
+      '<p>The release of <abbr class="small-caps version-num">V1</abbr> was great.</p>',
     ],
     [
       "<p>V2 was released yesterday.</p>",
@@ -418,10 +421,23 @@ describe("REGEX_VERSION_NUMBER tests", () => {
     ],
     [
       "<p>We support V1, V2, and V100.</p>",
-      '<p>We support <abbr class="small-caps version-num">v1</abbr>, <abbr class="small-caps version-num">v2</abbr>, and <abbr class="small-caps version-num">v100</abbr>.</p>',
+      '<p>We support <abbr class="small-caps version-num">V1</abbr>, <abbr class="small-caps version-num">V2</abbr>, and <abbr class="small-caps version-num">V100</abbr>.</p>',
+    ],
+    [
+      "<p>MidJourney v3 was great.</p>",
+      '<p>MidJourney <abbr class="small-caps version-num">V3</abbr> was great.</p>',
+    ],
+    [
+      // "7B" is wrapped by the existing abbreviation handler (number + unit
+      // letter), independently of the version-label match on the trailing v2.
+      "<p>Mistral-7B-Instruct-v2 jailbreak.</p>",
+      '<p>Mistral-<abbr class="small-caps">7b</abbr>-Instruct-<abbr class="small-caps version-num">V2</abbr> jailbreak.</p>',
+    ],
+    [
+      "<p>v3 was released today.</p>",
+      '<p><abbr class="small-caps version-num">V3</abbr> was released today.</p>',
     ],
     ["<p>Version one was great.</p>", "<p>Version one was great.</p>"],
-    ["<p>v1 lowercase stays plain.</p>", "<p>v1 lowercase stays plain.</p>"],
   ])("wrap version label correctly: %s", (input, expected) => {
     expect(testTagSmallcapsHTML(input)).toBe(expected)
   })
@@ -1251,12 +1267,17 @@ describe("data-original-text attribute", () => {
     [
       "version label mid-sentence",
       "<p>Use V1 here</p>",
-      '<p>Use <abbr class="small-caps version-num" data-original-text="V1">v1</abbr> here</p>',
+      '<p>Use <abbr class="small-caps version-num" data-original-text="V1">V1</abbr> here</p>',
     ],
     [
       "version label at sentence start",
       "<p>V100 shipped today</p>",
       '<p><abbr class="small-caps version-num" data-original-text="V100">V100</abbr> shipped today</p>',
+    ],
+    [
+      "lowercase version label preserves casing in data-original-text",
+      "<p>MidJourney v3 was great</p>",
+      '<p>MidJourney <abbr class="small-caps version-num" data-original-text="v3">V3</abbr> was great</p>',
     ],
   ]
 
