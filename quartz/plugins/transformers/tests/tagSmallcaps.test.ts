@@ -1248,6 +1248,16 @@ describe("data-original-text attribute", () => {
       "<p>I HATE YOU</p>",
       '<p><abbr class="small-caps" data-original-text="I HATE YOU">I hate you</abbr></p>',
     ],
+    [
+      "version label mid-sentence",
+      "<p>Use V1 here</p>",
+      '<p>Use <abbr class="small-caps version-num" data-original-text="V1">v1</abbr> here</p>',
+    ],
+    [
+      "version label at sentence start",
+      "<p>V100 shipped today</p>",
+      '<p><abbr class="small-caps version-num" data-original-text="V100">V100</abbr> shipped today</p>',
+    ],
   ]
 
   it.each(cases)("preserves original text for %s", (_label, input, expected) => {
