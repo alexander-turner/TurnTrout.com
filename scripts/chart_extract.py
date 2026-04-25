@@ -224,7 +224,12 @@ def _find_llm() -> str:
 def _convert_if_avif(image: Path, workspace: Path) -> Path:
     """LLM backends reject AVIF; convert to PNG in a tempdir."""
     try:
-        return alt_utils._convert_avif_to_png(image, workspace)
+        # alt-text-llm's converter is underscore-prefixed but stable; using
+        # the public `_convert_asset_for_llm` would also handle GIFs, which we
+        # don't want for chart inputs.
+        return alt_utils._convert_avif_to_png(  # skipcq: PYL-W0212
+            image, workspace
+        )
     except FileNotFoundError as err:
         raise FileNotFoundError(
             "`magick` not on PATH; install ImageMagick to process AVIF inputs."
