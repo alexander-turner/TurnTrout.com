@@ -1799,7 +1799,7 @@ requires-dist = [
     { name = "types-html5lib", specifier = ">=1.1.11.20260408" },
     { name = "types-psutil", specifier = ">=7.2.2.20260408" },
     { name = "types-pygments", specifier = ">=2.20.0.20260408" },
-    { name = "types-pysocks", specifier = ">=1.7.1.20251001" },
+    { name = "types-pysocks", specifier = ">=1.7.1.20260408" },
     { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "types-tqdm", specifier = ">=4.67.3.20260408" },
@@ -1860,11 +1860,11 @@ wheels = [
 
 [[package]]
 name = "types-pysocks"
-version = "1.7.1.20251001"
+version = "1.7.1.20260408"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/24/d7/421deaee04ffe69dc1449cbf57dc4d4d92e8f966f4a35b482ea3811b7980/types_pysocks-1.7.1.20251001.tar.gz", hash = "sha256:50a0e737d42527abbec09e891c64f76a9f66f302e673cd149bc112c15764869f", size = 8785, upload-time = "2025-10-01T03:04:13.85Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/ee/6a35f5b5aa4d1cb6991edacac8e2a63229dcb42dc228b9e123d33b6ee033/types_pysocks-1.7.1.20260408.tar.gz", hash = "sha256:0eee5580265b9389febea252a96cf48b2c493c8d7ddf03e69665ab8fedaf0759", size = 8818, upload-time = "2026-04-08T04:30:27.371Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/07/6a8aafa0fa5fc0880a37c98b41348bf91bc28f76577bdac68f78bcf8a124/types_pysocks-1.7.1.20251001-py3-none-any.whl", hash = "sha256:dd9abcfc7747aeddf1bab270c8daab3a1309c3af9e07c8c2c52038ab8539f06c", size = 9620, upload-time = "2025-10-01T03:04:13.042Z" },
+    { url = "https://files.pythonhosted.org/packages/79/42/9e1c9783c921c3ec766e7450c0878a65d3c04d4dc94cae5cfc4a38459de0/types_pysocks-1.7.1.20260408-py3-none-any.whl", hash = "sha256:7874d60ef4f19a1f5b4ec37ee6192f9ba7070b928ec073c3790126cd25bffea2", size = 9622, upload-time = "2026-04-08T04:30:26.313Z" },
 ]
 
 [[package]]
