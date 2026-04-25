@@ -190,7 +190,8 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
 export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
   const sequence = fileData.frontmatter?.["lw-sequence-title"]
   if (!sequence) return null
-  const sequenceLink: string = fileData.frontmatter?.["sequence-link"] as string
+  const sequenceLink = fileData.frontmatter?.["sequence-link"] as string | undefined
+  if (!sequenceLink) return null
 
   return (
     <span>

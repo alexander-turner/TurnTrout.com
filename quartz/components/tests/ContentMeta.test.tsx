@@ -354,6 +354,14 @@ describe("renderSequenceTitleJsx", () => {
     expect(result).toBeNull()
   })
 
+  it("should return null if sequence title exists but link is missing", () => {
+    const fileData = createFileData({
+      "lw-sequence-title": SEQUENCE_TITLE,
+    })
+    const result = renderSequenceTitleJsx(fileData)
+    expect(result).toBeNull()
+  })
+
   it("should render sequence title", () => {
     const fileData = createFileData({
       "lw-sequence-title": SEQUENCE_TITLE,

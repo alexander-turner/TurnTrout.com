@@ -2,7 +2,6 @@ import path from "path"
 
 import { locale } from "../../components/constants"
 import DepGraph from "../../depgraph"
-import { type GlobalConfiguration } from "../../util/config"
 import { renderHead } from "../../util/head"
 import { type FilePath, type FullSlug, joinSegments, resolveRelative } from "../../util/path"
 import { type QuartzEmitterPlugin } from "../types"
@@ -99,7 +98,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
-          cfg: ctx.cfg as unknown as GlobalConfiguration,
+          cfg: ctx.cfg.configuration,
           fileData: file.data,
           slug: file.data.slug as FullSlug,
           redirect: { slug, to: file.data.slug as FullSlug },

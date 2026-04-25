@@ -32,7 +32,7 @@ jobs:
   # Skip entirely for bot actors (dependabot, renovate, etc.).
   should-run:
     name: playwright-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -270,8 +270,8 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Tests were skipped (no label)"
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
           if [[ "${{ needs.playwright-tests-linux.result }}" != "success" ]]; then
