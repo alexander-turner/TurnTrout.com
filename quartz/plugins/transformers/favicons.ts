@@ -862,14 +862,9 @@ async function handleLink(
       return
     }
 
-    const countKey = normalizePathForCounting(getQuartzPath(finalURL.hostname))
-    const count = faviconCounts.get(countKey) || 0
-
-    const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
-    if (!isWhitelisted && count < minFaviconCount) {
-      logger.debug(
-        `Favicon ${imgPath} (count key: ${countKey}) appears ${count} times (minimum ${minFaviconCount}), skipping`,
-      )
+    const countKey = getQuartzPath(finalURL.hostname)
+    if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
+      logger.debug(`Favicon ${imgPath} (count key: ${countKey}) below threshold, skipping`)
       return
     }
 

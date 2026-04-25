@@ -32,12 +32,7 @@ const defaultOptions: Options = {
 function gatherAllText(tree: Root): string {
   let allText = ""
   visit(tree, (node) => {
-    if (
-      // @ts-expect-error: mixing AST node types
-      (node.type === "text" || node.type === "inlineCode") &&
-      "value" in node &&
-      typeof node.value === "string"
-    ) {
+    if ("value" in node && typeof node.value === "string") {
       allText += `${node.value} `
     }
   })

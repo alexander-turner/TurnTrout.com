@@ -1,4 +1,5 @@
 import { sessionStoragePondVideoKey, autoplayStorageKey, pondVideoId } from "../constants"
+import { throttle } from "./component_script_utils"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
 import { setupScrollHandler } from "./scrollHandler"
@@ -149,14 +150,13 @@ function setupPondVideo(): void {
   window.addEventListener("beforeunload", saveTimestamp, { signal })
   window.addEventListener("pagehide", saveTimestamp, { signal })
 
-  // Save timestamp periodically during playback
-  videoElement.addEventListener(
-    "timeupdate",
-    () => {
-      sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-    },
-    { signal },
-  )
+  // Save timestamp periodically during playback (throttled to avoid
+  // excessive synchronous sessionStorage writes from high-frequency
+  // timeupdate events)
+  const saveTimeThrottled = throttle(() => {
+    sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
+  }, 2000)
+  videoElement.addEventListener("timeupdate", saveTimeThrottled, { signal })
 }
 
 // Initial setup
@@ -169,6 +169,7 @@ setupAutoplayToggle()
 
 // Re-run setup functions after SPA navigation
 document.addEventListener("nav", () => {
+  setupHamburgerMenu()
   setupPondVideo()
   setupAutoplayToggle()
 })
