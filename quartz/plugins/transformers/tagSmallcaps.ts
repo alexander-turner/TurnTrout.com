@@ -92,11 +92,15 @@ export const REGEX_ABBREVIATION = new RegExp(
   `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
 )
 
-// Version labels like "V1", "v2", "V100". The digit gets lining-nums via the
-// .version-num class so it stays at cap height instead of inheriting body
-// oldstyle figures. The V is rendered uppercase (not small-capped) so it
-// matches the lining digit's cap height.
-export const REGEX_VERSION_NUMBER = new RegExp(`${beforeWordBoundary}[Vv]\\d+${afterWordBoundary}`)
+// Version labels like "V1", "v2", "V100", "v1.0", "v1.2.3". The digits get
+// lining-nums via the .version-num class so they stay at cap height instead
+// of inheriting body oldstyle figures. The V is rendered uppercase (not
+// small-capped) so it matches the lining digits' cap height. Trailing
+// decimals are part of the match so the full "1.0" stays cap-aligned rather
+// than splitting into a lining "1" followed by an oldstyle "0".
+export const REGEX_VERSION_NUMBER = new RegExp(
+  `${beforeWordBoundary}[Vv]\\d+(?:\\.\\d+)*${afterWordBoundary}`,
+)
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`

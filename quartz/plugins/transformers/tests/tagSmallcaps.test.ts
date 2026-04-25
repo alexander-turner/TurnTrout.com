@@ -394,14 +394,24 @@ describe("REGEX_ABBREVIATION tests", () => {
 })
 
 describe("REGEX_VERSION_NUMBER tests", () => {
-  it.each(["V1", "V2", "V100", "V0", "V42", "v1", "v2", "v100"])(
-    "should match version label: %s",
-    (input) => {
-      const match = REGEX_VERSION_NUMBER.exec(input)
-      expect(match).not.toBeNull()
-      expect(match?.[0]).toBe(input)
-    },
-  )
+  it.each([
+    "V1",
+    "V2",
+    "V100",
+    "V0",
+    "V42",
+    "v1",
+    "v2",
+    "v100",
+    "v1.0",
+    "V1.0",
+    "v1.2.3",
+    "v0.0.1",
+  ])("should match version label: %s", (input) => {
+    const match = REGEX_VERSION_NUMBER.exec(input)
+    expect(match).not.toBeNull()
+    expect(match?.[0]).toBe(input)
+  })
 
   it.each(["V", "v", "VX", "vx", "AV1", "av1", "V1A", "v1a", "1V", "1v", "V-1", "v-1"])(
     "should not match invalid version label: %s",
@@ -409,6 +419,17 @@ describe("REGEX_VERSION_NUMBER tests", () => {
       expect(REGEX_VERSION_NUMBER.test(input)).toBe(false)
     },
   )
+
+  // Trailing dot (sentence punctuation) and dot-followed-by-non-digit must
+  // not be eaten by the decimal continuation.
+  it.each([
+    ["v1.", "v1"],
+    ["v1.alpha", "v1"],
+    ["v1.0.", "v1.0"],
+  ])("should match %s as %s without consuming trailing punctuation", (input, expected) => {
+    const match = REGEX_VERSION_NUMBER.exec(input)
+    expect(match?.[0]).toBe(expected)
+  })
 
   it.each([
     [
@@ -436,6 +457,18 @@ describe("REGEX_VERSION_NUMBER tests", () => {
     [
       "<p>v3 was released today.</p>",
       '<p><abbr class="small-caps version-num">V3</abbr> was released today.</p>',
+    ],
+    [
+      "<p>We shipped v1.0 today.</p>",
+      '<p>We shipped <abbr class="small-caps version-num">V1.0</abbr> today.</p>',
+    ],
+    [
+      "<p>Pin to v1.2.3 exactly.</p>",
+      '<p>Pin to <abbr class="small-caps version-num">V1.2.3</abbr> exactly.</p>',
+    ],
+    [
+      "<p>Released v1.0. Then v2 followed.</p>",
+      '<p>Released <abbr class="small-caps version-num">V1.0</abbr>. Then <abbr class="small-caps version-num">V2</abbr> followed.</p>',
     ],
     ["<p>Version one was great.</p>", "<p>Version one was great.</p>"],
   ])("wrap version label correctly: %s", (input, expected) => {

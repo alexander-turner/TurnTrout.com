@@ -537,7 +537,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 - **ABCDEFGHIJKLMNOPQRSTUVWXYZ**
 - _**ABCDEFGHIJKLMNOPQRSTUVWXYZ**_
 - ~~ABCDEFGHIJKLMNOPQRSTUVWXYZ~~
-- Version labels V1, v2, and v100 use full-height digits.
+- Version labels V1, v2, v100, and v1.0.2 use full-height digits.
 <!--spellchecker-enable-->
 
 ## Numbers and units
