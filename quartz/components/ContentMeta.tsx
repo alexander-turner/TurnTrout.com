@@ -243,10 +243,9 @@ export const renderNextPostJsx = (fileData: QuartzPluginData) => {
  * Renders sequence information, including title, previous, and next posts.
  */
 export const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | null => {
-  const sequenceTitle = renderSequenceTitleJsx(fileData)
-  if (!sequenceTitle) return null
-
   const sequenceTitleJsx = renderSequenceTitleJsx(fileData)
+  if (!sequenceTitleJsx) return null
+
   const previousPostJsx = renderPreviousPostJsx(fileData)
   const nextPostJsx = renderNextPostJsx(fileData)
 
