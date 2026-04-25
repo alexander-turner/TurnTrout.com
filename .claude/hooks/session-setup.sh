@@ -91,9 +91,12 @@ if ! command -v magick &>/dev/null; then
 	if curl -fsSL https://imagemagick.org/archive/binaries/magick \
 		-o "$IM_DIR/magick.AppImage" 2>/dev/null; then
 		chmod +x "$IM_DIR/magick.AppImage"
-		(cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1) &&
+		if (cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1); then
 			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" ||
+				warn "Failed to symlink ImageMagick 7 AppRun"
+		else
 			warn "Failed to extract ImageMagick 7 AppImage"
+		fi
 	else
 		warn "Failed to download ImageMagick 7"
 	fi

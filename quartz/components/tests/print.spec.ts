@@ -24,7 +24,7 @@ test.beforeEach(async ({ browserName, page }, testInfo) => {
   })
 })
 
-test("Print media layout (lostpixel)", async ({ page }, testInfo) => {
+test("Print media layout (screenshot)", async ({ page }, testInfo) => {
   await setTheme(page, "light")
   await page.emulateMedia({ media: "print" })
   await takeRegressionScreenshot(page, testInfo, "print-layout")

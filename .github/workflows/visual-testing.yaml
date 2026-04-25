@@ -107,7 +107,7 @@ jobs:
             --reporter=blob,dot \
             --update-snapshots=none \
             --trace=off \
-            -g "(lostpixel)" 2>&1 | tee playwright-run.log
+            -g "(screenshot)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -231,7 +231,7 @@ jobs:
             --reporter=blob,dot \
             --update-snapshots=none \
             --trace=off \
-            -g "(lostpixel)" 2>&1 | tee playwright-run.log
+            -g "(screenshot)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
