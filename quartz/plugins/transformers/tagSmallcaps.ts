@@ -1,6 +1,7 @@
 import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
+import { h } from "hastscript"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
@@ -91,6 +92,16 @@ export const REGEX_ABBREVIATION = new RegExp(
   `(?<number>\\d+(?:\\.\\d+)?|\\.\\d+)(?<abbreviation>${NBSP}?(?:[A-Za-z]{2,}|[KkMmBbTGgWw]))\\b`,
 )
 
+// Version labels like "V1", "v2", "V100", "v1.0", "v1.2.3". The digits get
+// lining-nums via the .version-num class so they stay at cap height instead
+// of inheriting body oldstyle figures. The V is rendered uppercase (not
+// small-capped) so it matches the lining digits' cap height. Trailing
+// decimals are part of the match so the full "1.0" stays cap-aligned rather
+// than splitting into a lining "1" followed by an oldstyle "0".
+export const REGEX_VERSION_NUMBER = new RegExp(
+  `${beforeWordBoundary}[Vv]\\d+(?:\\.\\d+)*${afterWordBoundary}`,
+)
+
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
 const decimalOrSeparator = `[${smallCapsSeparators}\\d\\s]|\\d\\.\\d`
@@ -104,7 +115,7 @@ export const REGEX_ALL_CAPS_PHRASE = new RegExp(
 )
 
 const combinedRegex = new RegExp(
-  `${REGEX_ALL_CAPS_PHRASE.source}|${REGEX_ACRONYM.source}|${REGEX_ABBREVIATION.source}`,
+  `${REGEX_ALL_CAPS_PHRASE.source}|${REGEX_ACRONYM.source}|${REGEX_ABBREVIATION.source}|${REGEX_VERSION_NUMBER.source}`,
   "g",
 )
 
@@ -294,6 +305,22 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
           replacedMatch: processMatchedText(acronym, shouldCapitalize),
           after: suffix || "",
           originalText: acronym,
+        }
+      }
+
+      const versionMatch = REGEX_VERSION_NUMBER.exec(matchText)
+      if (versionMatch) {
+        // Render the V at full cap height so it aligns with the lining digit.
+        // Small-caps would render the V ~70–80% of cap height, mismatching the
+        // lining figure. Original casing is preserved in data-original-text.
+        return {
+          before: "",
+          replacedMatch: h(
+            "abbr.small-caps.version-num",
+            { "data-original-text": matchText },
+            matchText.toUpperCase(),
+          ),
+          after: "",
         }
       }
 
