@@ -290,7 +290,7 @@ importers:
         version: 0.5.21
       subfont:
         specifier: github:alexander-turner/subfont
-        version: '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/71e48b1840eaffd8b47d7e745a658edccf97a72f(@types/babel__core@7.20.5)'
+        version: '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/0c553761a74c3237aefe16d36e6f49b0efa616ae(@types/babel__core@7.20.5)'
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -2447,8 +2447,8 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
-  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/71e48b1840eaffd8b47d7e745a658edccf97a72f':
-    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/71e48b1840eaffd8b47d7e745a658edccf97a72f}
+  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/0c553761a74c3237aefe16d36e6f49b0efa616ae':
+    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/0c553761a74c3237aefe16d36e6f49b0efa616ae}
     version: 1.0.0
     engines: {node: '>=18.0.0'}
     hasBin: true
@@ -11669,7 +11669,7 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
-  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/71e48b1840eaffd8b47d7e745a658edccf97a72f(@types/babel__core@7.20.5)':
+  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/0c553761a74c3237aefe16d36e6f49b0efa616ae(@types/babel__core@7.20.5)':
     dependencies:
       '@gustavnikolaj/async-main-wrap': 3.0.1
       '@hookun/parse-animation-shorthand': 0.1.5
@@ -11685,7 +11685,6 @@ snapshots:
       jsdom: 25.0.1
       lines-and-columns: 1.2.4
       memoizesync: 1.1.1
-      p-limit: 3.1.0
       parse5: 7.3.0
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
