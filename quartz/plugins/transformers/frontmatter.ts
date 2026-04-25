@@ -31,8 +31,15 @@ const defaultOptions: Options = {
  */
 function gatherAllText(tree: Root): string {
   let allText = ""
+  const textNodeTypes: ReadonlySet<string> = new Set([
+    "text",
+    "inlineCode",
+    "code",
+    "math",
+    "inlineMath",
+  ])
   visit(tree, (node) => {
-    if ("value" in node && typeof node.value === "string") {
+    if (textNodeTypes.has(node.type) && "value" in node && typeof node.value === "string") {
       allText += `${node.value} `
     }
   })
