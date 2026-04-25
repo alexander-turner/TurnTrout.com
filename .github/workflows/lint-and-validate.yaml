@@ -188,24 +188,36 @@ jobs:
             "quartz/**/*.{js,jsx,ts,tsx}"
 
       - name: Commit and push fixes
+        env:
+          BRANCH: ${{ github.head_ref || github.ref_name }}
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           # Only stage files that formatters could have modified
           git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
-          if [[ -n $(git diff --cached --name-only) ]]; then
-            git commit -m "style: auto-fix formatting [skip ci]"
-            # Pull any commits pushed by update-dates before pushing
-            if ! git pull --rebase origin ${{ github.head_ref || github.ref_name }}; then
-              echo "::error::Rebase failed — aborting to avoid pushing broken state"
+          if [[ -z $(git diff --cached --name-only) ]]; then
+            echo "::notice::No formatting changes needed"
+            exit 0
+          fi
+          git commit -m "style: auto-fix formatting [skip ci]"
+          # Retry rebase+push to absorb concurrent pushes (manual edits, update-dates).
+          # --autostash handles any unstaged residue from setup/formatter steps so
+          # the rebase doesn't trip on "You have unstaged changes".
+          for attempt in 1 2 3; do
+            if ! git pull --rebase --autostash origin "$BRANCH"; then
+              echo "::error::Rebase failed on attempt $attempt — aborting to avoid pushing broken state"
               git rebase --abort 2>/dev/null || true
               exit 1
             fi
-            git push
-            echo "::notice::Pushed auto-fix formatting commit"
-          else
-            echo "::notice::No formatting changes needed"
-          fi
+            if git push; then
+              echo "::notice::Pushed auto-fix formatting commit (attempt $attempt)"
+              exit 0
+            fi
+            echo "::warning::Push attempt $attempt failed; another commit may have landed. Retrying."
+            sleep $((attempt * 2))
+          done
+          echo "::error::Failed to push after 3 attempts"
+          exit 1
 
   check-action-pins:
     needs: detect-changes
