@@ -41,6 +41,7 @@ from typing import Callable, Sequence
 
 import requests
 import yaml
+from alt_text_llm import utils as alt_utils
 from rich.console import Console
 
 # alt-text-llm imports tqdm the same way — matching its convention keeps the
@@ -207,41 +208,31 @@ class ChartExtractionResult:
         return asdict(self)
 
 
+# Thin wrappers over alt-text-llm helpers. The wrappers exist to (a) preserve
+# the install-hint error messages this script's users expect, and (b) accept
+# `Path` for `_is_url` (alt-text-llm's `is_url` only handles strings).
 def _find_llm() -> str:
-    path = shutil.which("llm")
-    if not path:
+    try:
+        return alt_utils.find_executable("llm")
+    except FileNotFoundError as err:
         raise FileNotFoundError(
             "The `llm` CLI is not on PATH. Install via `uv tool install llm` "
             "and configure a model plugin (e.g. `llm install llm-anthropic`)."
-        )
-    return path
+        ) from err
 
 
 def _convert_if_avif(image: Path, workspace: Path) -> Path:
-    """
-    LLM backends reject AVIF; convert to PNG in a tempdir.
-
-    Same as alt-text-llm.
-    """
-    if image.suffix.lower() != ".avif":
-        return image
-    magick = shutil.which("magick")
-    if not magick:
+    """LLM backends reject AVIF; convert to PNG in a tempdir."""
+    try:
+        return alt_utils._convert_avif_to_png(image, workspace)
+    except FileNotFoundError as err:
         raise FileNotFoundError(
             "`magick` not on PATH; install ImageMagick to process AVIF inputs."
-        )
-    png = workspace / f"{image.stem}.png"
-    subprocess.run(
-        [magick, str(image), str(png)],
-        check=True,
-        capture_output=True,
-        timeout=30,
-    )
-    return png
+        ) from err
 
 
 def _is_url(s: str | Path) -> bool:
-    return isinstance(s, str) and s.startswith(("http://", "https://"))
+    return isinstance(s, str) and alt_utils.is_url(s)
 
 
 # Chart images are tiny (AVIFs are a few hundred KB, PNGs a few MB). A 50 MB

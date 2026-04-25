@@ -22,32 +22,6 @@ from scripts import chart_extract
 from scripts.notebooks import convert_existing_graphs as ceg
 
 # --------------------------------------------------------------------------- #
-# _paragraph_context                                                           #
-# --------------------------------------------------------------------------- #
-
-
-class TestParagraphContext:
-    @pytest.mark.parametrize(
-        "idx,window,expected_lines",
-        [
-            (0, 2, [0, 1, 2]),
-            (5, 1, [4, 5, 6]),
-            (9, 2, [7, 8, 9]),  # end-of-file clamp
-            (0, 0, [0]),
-        ],
-    )
-    def test_window_respects_edges(
-        self,
-        idx: int,
-        window: int,
-        expected_lines: list[int],
-    ) -> None:
-        lines = [f"line{i}" for i in range(10)]
-        out = ceg._paragraph_context(lines, idx, window=window)
-        assert out == "\n".join(f"line{i}" for i in expected_lines)
-
-
-# --------------------------------------------------------------------------- #
 # iter_image_refs / walk_content                                               #
 # --------------------------------------------------------------------------- #
 

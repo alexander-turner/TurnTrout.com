@@ -33,6 +33,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence
 
+from alt_text_llm import utils as alt_utils
+
 from scripts import chart_extract
 
 # --------------------------------------------------------------------------- #
@@ -50,9 +52,6 @@ _IMAGE_REF_RE = re.compile(
 # Sidecars produced by this driver — always skip when walking.
 _SIDECAR_SUFFIX = ".proposed-replacements.md"
 
-# How many lines of surrounding prose to include as context.
-_CONTEXT_WINDOW = 3
-
 
 @dataclass(slots=True, frozen=True)
 class ImageRef:
@@ -65,17 +64,13 @@ class ImageRef:
     context: str
 
 
-def _paragraph_context(
-    lines: Sequence[str], line_index: int, window: int = _CONTEXT_WINDOW
-) -> str:
-    """Return ``window`` lines above and below *line_index* (0-based)."""
-    start = max(0, line_index - window)
-    end = min(len(lines), line_index + window + 1)
-    return "\n".join(lines[start:end]).strip()
-
-
 def iter_image_refs(md_path: Path) -> Iterable[ImageRef]:
-    """Yield every standard-Markdown image reference in *md_path*."""
+    """
+    Yield every standard-Markdown image reference in *md_path*.
+
+    Context is one preceding paragraph + two following paragraphs around the
+    ref, via alt-text-llm's paragraph-aware helper.
+    """
     lines = md_path.read_text(encoding="utf-8").splitlines()
     for idx, line in enumerate(lines):
         for m in _IMAGE_REF_RE.finditer(line):
@@ -84,7 +79,9 @@ def iter_image_refs(md_path: Path) -> Iterable[ImageRef]:
                 url=m.group("url"),
                 alt=m.group("alt"),
                 line_number=idx + 1,
-                context=_paragraph_context(lines, idx),
+                context=alt_utils.paragraph_context(
+                    lines, idx, max_before=1, max_after=2
+                ),
             )
 
 

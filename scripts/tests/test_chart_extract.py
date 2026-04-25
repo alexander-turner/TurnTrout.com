@@ -824,19 +824,39 @@ class TestValidateViaTsx:
 # --------------------------------------------------------------------------- #
 
 
+@pytest.fixture
+def _isolated_alt_utils_cache(monkeypatch: pytest.MonkeyPatch) -> None:
+    """alt_text_llm.utils.find_executable memoizes; reset it per test so a
+    mocked-missing executable in one test isn't masked by a cached hit from
+    another."""
+    from alt_text_llm import utils as alt_utils
+
+    monkeypatch.setattr(alt_utils, "_executable_cache", {})
+
+
 class TestFindLlm:
-    def test_raises_with_install_hint_when_missing(self) -> None:
-        with (
-            patch.object(chart_extract.shutil, "which", return_value=None),
-            pytest.raises(FileNotFoundError, match="uv tool install llm"),
-        ):
+    def test_raises_with_install_hint_when_missing(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        _isolated_alt_utils_cache: None,
+    ) -> None:
+        from alt_text_llm import utils as alt_utils
+
+        monkeypatch.setattr(alt_utils.shutil, "which", lambda _name: None)
+        with pytest.raises(FileNotFoundError, match="uv tool install llm"):
             chart_extract._find_llm()
 
-    def test_returns_path_when_found(self) -> None:
-        with patch.object(
-            chart_extract.shutil, "which", return_value="/usr/local/bin/llm"
-        ):
-            assert chart_extract._find_llm() == "/usr/local/bin/llm"
+    def test_returns_path_when_found(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        _isolated_alt_utils_cache: None,
+    ) -> None:
+        from alt_text_llm import utils as alt_utils
+
+        monkeypatch.setattr(
+            alt_utils.shutil, "which", lambda _n: "/usr/local/bin/llm"
+        )
+        assert chart_extract._find_llm() == "/usr/local/bin/llm"
 
 
 class TestConvertIfAvif:
@@ -845,13 +865,18 @@ class TestConvertIfAvif:
         png.touch()
         assert chart_extract._convert_if_avif(png, tmp_path) == png
 
-    def test_missing_magick_raises_with_hint(self, tmp_path: Path) -> None:
+    def test_missing_magick_raises_with_hint(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        _isolated_alt_utils_cache: None,
+    ) -> None:
+        from alt_text_llm import utils as alt_utils
+
+        monkeypatch.setattr(alt_utils.shutil, "which", lambda _n: None)
         avif = tmp_path / "x.avif"
         avif.touch()
-        with (
-            patch.object(chart_extract.shutil, "which", return_value=None),
-            pytest.raises(FileNotFoundError, match="ImageMagick"),
-        ):
+        with pytest.raises(FileNotFoundError, match="ImageMagick"):
             chart_extract._convert_if_avif(avif, tmp_path)
 
     def test_avif_is_converted_to_png_in_workspace(
