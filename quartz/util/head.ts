@@ -53,7 +53,7 @@ function renderImageTags(cardImage: string, altText: string | undefined): string
     <meta property="og:image" content="${escapeHTML(cardImage)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${escapeHTML(altText as string)}" />
+    <meta property="og:image:alt" content="${escapeHTML(altText ?? "")}" />
   `
 }
 

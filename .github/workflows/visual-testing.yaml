@@ -33,6 +33,7 @@ jobs:
   # which is needed for the unified "visual-testing" required status check.
   should-run:
     name: visual-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:

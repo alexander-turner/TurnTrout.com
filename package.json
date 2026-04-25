@@ -37,7 +37,6 @@
       "shellcheck"
     ],
     "*.py": [
-      "ruff check --fix",
       "autoflake --in-place",
       "isort",
       "autopep8 --in-place",

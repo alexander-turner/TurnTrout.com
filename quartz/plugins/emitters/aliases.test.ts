@@ -144,7 +144,7 @@ describe("AliasRedirects", () => {
       port: 3000,
       wsPort: 3001,
     },
-    cfg: {} as QuartzConfig,
+    cfg: { configuration: {} } as QuartzConfig,
     allSlugs: [],
   }
 
