@@ -73,30 +73,6 @@ jobs:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          # Baselines under tests/visual-baselines/*.png are LFS-tracked;
-          # tests need the actual bytes for toMatchSnapshot comparison.
-          lfs: true
-
-      - name: Verify LFS baselines smudged to real PNGs
-        run: |
-          set -e
-          sample=$(find tests/visual-baselines -name '*.png' | head -1)
-          if [ -z "$sample" ]; then
-            echo "::error::No baseline PNGs found"
-            exit 1
-          fi
-          size=$(stat -c '%s' "$sample")
-          first_line=$(head -c 100 "$sample" | tr -d '\0' | head -1)
-          echo "Sample: $sample"
-          echo "Size: $size bytes"
-          echo "First line: $first_line"
-          if [ "$size" -lt 1000 ] || echo "$first_line" | grep -q "git-lfs"; then
-            echo "::error::Baselines are LFS pointer files — LFS smudge failed in checkout (likely bandwidth quota exceeded)"
-            git lfs env || true
-            exit 1
-          fi
-          echo "Baselines smudged correctly (real PNG bytes present)"
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -213,28 +189,6 @@ jobs:
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          lfs: true
-
-      - name: Verify LFS baselines smudged to real PNGs
-        run: |
-          set -e
-          sample=$(find tests/visual-baselines -name '*.png' | head -1)
-          if [ -z "$sample" ]; then
-            echo "::error::No baseline PNGs found"
-            exit 1
-          fi
-          size=$(stat -f '%z' "$sample")
-          first_line=$(head -c 100 "$sample" | tr -d '\0' | head -1)
-          echo "Sample: $sample"
-          echo "Size: $size bytes"
-          echo "First line: $first_line"
-          if [ "$size" -lt 1000 ] || echo "$first_line" | grep -q "git-lfs"; then
-            echo "::error::Baselines are LFS pointer files — LFS smudge failed in checkout (likely bandwidth quota exceeded)"
-            git lfs env || true
-            exit 1
-          fi
-          echo "Baselines smudged correctly (real PNG bytes present)"
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
