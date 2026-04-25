@@ -42,9 +42,13 @@ jobs:
         run: pnpm run install-browsers
 
       - name: Build site
+        # Online build matches how build-site.yaml runs in other workflows.
+        # The offline path here would rely on a fresh asset-dimensions
+        # cache that doesn't exist for new asset references (e.g. recently
+        # added img-comparison-slider sources).
         run: |
           PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/chrome-linux/*" | head -1) \
-            pnpm exec tsx quartz/bootstrap-cli.ts build --offline
+            pnpm build
 
       - name: Upload built site
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
