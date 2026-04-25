@@ -155,7 +155,7 @@ function setupPondVideo(): void {
   // timeupdate events)
   const saveTimeThrottled = throttle(() => {
     sessionStorage.setItem(sessionStoragePondVideoKey, videoElement.currentTime.toString())
-  }, 2000)
+  }, 500)
   videoElement.addEventListener("timeupdate", saveTimeThrottled, { signal })
 }
 
