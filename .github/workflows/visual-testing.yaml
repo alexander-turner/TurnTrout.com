@@ -359,6 +359,22 @@ jobs:
       - name: Merge blob reports into HTML
         run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 
+      # Pull every shard's test-results/ for the screenshot gallery generator.
+      - name: Download trace artifacts (for gallery)
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: playwright-traces-*
+          path: ./all-traces
+          merge-multiple: true
+
+      # Build a single-page screenshot gallery alongside the Playwright
+      # report. Skim-friendly grid view; useful at bootstrap (no
+      # baselines yet → main report has nothing to slide between).
+      - name: Generate screenshot gallery
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/generate_visual_gallery.py ./all-traces ./playwright-report
+
       - name: Upload merged HTML report
         id: upload-report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -411,7 +427,8 @@ jobs:
               '',
             ];
             if (cloudflareOk) {
-              lines.push(`View in browser: ${cloudflareUrl}`);
+              lines.push(`- Playwright report (per-test detail): ${cloudflareUrl}`);
+              lines.push(`- Screenshot gallery (skim view): ${cloudflareUrl}/gallery.html`);
               lines.push('');
             }
             lines.push(`Download: ${artifactUrl}`);
