@@ -94,10 +94,9 @@ export const REGEX_ABBREVIATION = new RegExp(
 
 // Version labels like "V1", "v2", "V100". The digit gets lining-nums via the
 // .version-num class so it stays at cap height instead of inheriting body
-// oldstyle figures, and the V is small-capped so both glyphs share cap height.
-export const REGEX_VERSION_NUMBER = new RegExp(
-  `${beforeWordBoundary}[Vv]\\d+${afterWordBoundary}`,
-)
+// oldstyle figures. The V is rendered uppercase (not small-capped) so it
+// matches the lining digit's cap height.
+export const REGEX_VERSION_NUMBER = new RegExp(`${beforeWordBoundary}[Vv]\\d+${afterWordBoundary}`)
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
 export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
