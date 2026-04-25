@@ -77,7 +77,7 @@ jobs:
           set -o pipefail
           pnpm exec playwright test \
             --config config/playwright/playwright.config.ts \
-            --grep "^(?:(?!lostpixel).)*$" \
+            --grep "^(?:(?!screenshot).)*$" \
             --shard ${{ matrix.shard }} \
             --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log
@@ -180,7 +180,7 @@ jobs:
           set -o pipefail
           pnpm exec playwright test \
             --config config/playwright/playwright.config.ts \
-            --grep "^(?:(?!lostpixel).)*$" \
+            --grep "^(?:(?!screenshot).)*$" \
             --shard ${{ matrix.shard }} \
             --repeat-each ${{ needs.setup.outputs.repeat }} \
             | tee playwright-flake.log

@@ -46,7 +46,7 @@ test.beforeEach(async ({ page }) => {
   await page.mouse.move(1, 1)
 })
 
-test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
+test(".can-trigger-popover links show popover on hover (screenshot)", async ({
   page,
   dummyLink,
 }, testInfo) => {
@@ -68,7 +68,7 @@ test(".can-trigger-popover links show popover on hover (lostpixel)", async ({
   await expect(popover).toBeHidden()
 })
 
-test("External links do not show popover on hover (lostpixel)", async ({ page }) => {
+test("External links do not show popover on hover (screenshot)", async ({ page }) => {
   const externalLink = page.locator(".external").first()
   await externalLink.scrollIntoViewIfNeeded()
   await expect(externalLink).toBeVisible()
@@ -458,7 +458,7 @@ test.describe("Footnote popovers", () => {
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 
-  test("Clicking footnote link opens pinned popover (lostpixel)", async ({ page }, testInfo) => {
+  test("Clicking footnote link opens pinned popover (screenshot)", async ({ page }, testInfo) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -471,7 +471,7 @@ test.describe("Footnote popovers", () => {
     })
   })
 
-  test("Footnote popover with rich content (lostpixel)", async ({ page }, testInfo) => {
+  test("Footnote popover with rich content (screenshot)", async ({ page }, testInfo) => {
     // Target the footnote with paragraphs and an admonition for maximum content
     const footnoteRef = page.locator('a[href="#user-content-fn-footnote"]')
     await footnoteRef.scrollIntoViewIfNeeded()
@@ -738,7 +738,7 @@ test.describe("Popover checkbox state preservation", () => {
     expect(popoverChecked).toBe(true)
   })
 
-  test("Popover with checked checkbox visual appearance (lostpixel)", async ({
+  test("Popover with checked checkbox visual appearance (screenshot)", async ({
     page,
   }, testInfo) => {
     const linkToHover = page.locator("a#checkboxes-link").first()

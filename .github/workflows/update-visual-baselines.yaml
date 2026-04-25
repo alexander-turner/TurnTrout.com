@@ -56,7 +56,7 @@ jobs:
           pnpm exec playwright test \
             --config config/playwright/playwright.config.ts \
             --update-snapshots=all \
-            -g "(lostpixel)" 2>&1 | tee playwright-update.log || true
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
@@ -108,7 +108,7 @@ jobs:
           pnpm exec playwright test \
             --config config/playwright/playwright.config.ts \
             --update-snapshots=all \
-            -g "(lostpixel)" 2>&1 | tee playwright-update.log || true
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
