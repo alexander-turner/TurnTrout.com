@@ -73,6 +73,10 @@ jobs:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # Baselines under tests/visual-baselines/*.png are LFS-tracked;
+          # tests need the actual bytes for toMatchSnapshot comparison.
+          lfs: true
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -189,6 +193,8 @@ jobs:
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          lfs: true
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
@@ -361,7 +367,6 @@ jobs:
 
       # Pull every shard's test-results/ for the screenshot gallery generator.
       - name: Download trace artifacts (for gallery)
-        if: github.event_name == 'pull_request'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: playwright-traces-*
@@ -372,7 +377,6 @@ jobs:
       # report. Skim-friendly grid view; useful at bootstrap (no
       # baselines yet → main report has nothing to slide between).
       - name: Generate screenshot gallery
-        if: github.event_name == 'pull_request'
         run: python3 scripts/generate_visual_gallery.py ./all-traces ./playwright-report
 
       - name: Upload merged HTML report
@@ -388,12 +392,22 @@ jobs:
       # PNGs are well under this; this catches edge-case full-page shots
       # of unusually long articles.
       - name: Prune oversize files before Pages upload
-        if: github.event_name == 'pull_request'
         run: find playwright-report -type f -size +24M -print -delete || true
+
+      # Branch name for the Cloudflare Pages deploy. Per-PR for PRs (so
+      # opening the same PR again replaces the previous deploy), per-run
+      # for main pushes (so historical commits stay accessible).
+      - name: Compute Cloudflare branch name
+        id: cf-branch
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "name=visual-pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=visual-main-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Deploy diff report to Cloudflare Pages
         id: deploy-report
-        if: github.event_name == 'pull_request'
         continue-on-error: true
         uses: ./.github/actions/deploy-to-cloudflare
         with:
@@ -401,8 +415,29 @@ jobs:
           cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
           project-name: turntrout
-          branch: visual-pr-${{ github.event.pull_request.number }}
+          branch: ${{ steps.cf-branch.outputs.name }}
           public-dir: ./playwright-report
+
+      # Always-on summary on the workflow run page. Works for PR and main
+      # pushes so you can find the URLs from any failing visual-testing
+      # run without hunting through the Artifacts section.
+      - name: Emit summary with report links
+        if: always()
+        env:
+          ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
+          CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+        run: |
+          {
+            echo "## Visual diff report"
+            echo ""
+            if [ "$CLOUDFLARE_OK" = "true" ]; then
+              echo "- Playwright report (per-test detail): $CLOUDFLARE_URL"
+              echo "- Screenshot gallery (skim view): $CLOUDFLARE_URL/gallery.html"
+              echo ""
+            fi
+            echo "- Artifact: $ARTIFACT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment report links on PR
         if: github.event_name == 'pull_request'
@@ -411,6 +446,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
         with:
           script: |
             const marker = '<!-- visual-diff-report -->';
@@ -418,7 +454,7 @@ jobs:
             const sha = context.sha.substring(0, 7);
             const artifactUrl = process.env.ARTIFACT_URL;
             const cloudflareOk = process.env.CLOUDFLARE_OK === 'true';
-            const cloudflareUrl = `https://visual-pr-${prNumber}.turntrout.pages.dev`;
+            const cloudflareUrl = process.env.CLOUDFLARE_URL;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const lines = [
