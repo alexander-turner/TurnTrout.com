@@ -22,7 +22,7 @@
     "profile": "NODE_OPTIONS='--enable-source-maps' 0x --output-dir ./prof/ ./node_modules/.bin/tsx ./quartz/bootstrap-cli.ts build --concurrency=1",
     "postinstall": "patch-package",
     "install-browsers": "pnpm playwright install && npx puppeteer browsers install chrome",
-    "test:visual": "pnpm playwright test --config config/playwright/playwright.config.ts --grep '(lostpixel)'",
+    "test:visual": "pnpm playwright test --config config/playwright/playwright.config.ts --grep '(screenshot)'",
     "test:a11y": "pnpm pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
     "generate:scss": "tsx quartz/styles/generate-variables.ts",
     "setup:python": "uv sync"
@@ -99,7 +99,6 @@
     "js-yaml": "4.1.1",
     "katex": "0.16.45",
     "lightningcss": "1.32.0",
-    "lost-pixel": "3.22.0",
     "mdast-util-find-and-replace": "3.0.2",
     "mdast-util-to-hast": "13.2.1",
     "micromorph": "0.4.5",
@@ -283,7 +282,6 @@
   "pnpm": {
     "overrides": {
       "subfont>assetgraph": "7.13.0",
-      "lost-pixel>axios": "$axios",
       "workbox-build": "7.3.0",
       "d3-color": "3.1.0",
       "braces": "3.0.3",

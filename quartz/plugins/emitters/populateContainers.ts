@@ -155,7 +155,7 @@ export function countPythonTests(): number {
 // skipcq: JS-D1001
 export function countLinesOfCode(): number {
   const output = execSync(
-    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/lost-pixel/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
+    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
     { encoding: "utf-8" },
   )
   return parseInt(output.trim(), 10)

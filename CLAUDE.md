@@ -130,7 +130,7 @@ The build follows a three-stage pipeline: **Transform → Filter → Emit**
 - **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest for non-excluded files (see `coveragePathIgnorePatterns` in jest config)
 - **Python**: 100% line coverage enforced locally
 - Tests live alongside implementation files (`.test.ts` suffix)
-- Visual regression tests use Playwright with `lost-pixel`
+- Visual regression tests use Playwright's native `toMatchSnapshot`; baselines are committed under `tests/visual-baselines/`. On mismatch, CI uploads a merged HTML diff report as the `visual-diff-report` artifact and posts a download link as a PR comment. Adding the `visual-approved` label to a PR regenerates baselines via `.github/workflows/update-visual-baselines.yaml`.
 - **Interaction features/bug fixes**: When adding an interaction feature or fixing an interaction bug, add Playwright spec tests (`*.spec.ts`) following best practices (test both mobile and desktop viewports, verify visual state not just DOM state)
 
 ## Key Technical Details
@@ -199,7 +199,7 @@ After pushing to main:
 - Tests run on ~33 parallel shards (Linux only on PRs; macOS WebKit added on main)
 - macOS runners (10x cost of Linux) only run on pushes to main, not on PRs
 - macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation on ARM64
-- Visual regression testing with `lost-pixel`
+- Visual regression testing with Playwright-native snapshots (baselines in `tests/visual-baselines/`)
 - Lighthouse checks for minimal layout shift
 - DeepSource static analysis (use `deepsource` CLI to check issues with `--commit`, `--pr`, or `--default-branch` flags — **never** try to fetch DeepSource URLs via `WebFetch`, the web UI requires authentication and returns no useful content)
 

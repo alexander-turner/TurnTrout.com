@@ -1140,6 +1140,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   itemTile.addEventListener("mouseenter", onMouseEnter)
   itemTile.addEventListener("mouseleave", onMouseLeave)
+  itemTile.addEventListener("focus", () => focusCard(itemTile, false))
   itemTile.addEventListener("click", (e) => {
     e.preventDefault()
     navigateWithSearchTerm(itemTile.href, currentSearchTerm)

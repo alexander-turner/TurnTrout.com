@@ -13,7 +13,7 @@ card_image:
 aliases:
   - playwright
   - visual-regression
-  - lostpixel
+  - screenshot-testing
 date_published: 2025-08-12
 date_updated: 2026-04-20
 ---
@@ -27,7 +27,7 @@ I've had the tests practically finalized for a while. Problem was, they were <sp
 I was on my own, but hopefully I can transfer some of my painful learning. Here are the tricks I learned to keep my code clean, my tests reliable, and my site not visually regressed.
 
 ![[https://assets.turntrout.com/static/images/posts/playwright-tips-20250810165347.avif|A visual regression testing tool showing a side-by-side comparison. The left panel displays the expected webpage with clear text. The right panel highlights a regression by showing the pixel-level diff. A toolbar at the bottom provides options to approve or reject the change.]]
-Figure: Using `lost-pixel` to examine and reject an unintended change.
+Figure: Examining and rejecting an unintended visual change.
 
 # Best practices
 
@@ -76,17 +76,17 @@ Set `deviceScaleFactor: 1` to eliminate subpixel jitter
 
 ## For screenshots in particular
 
-I ended up using [the free `lost-pixel` app](lost-pixel.com) to examine screenshot deltas and judge visual diffs. No matter what tool you use, though, you'll want your screenshots to be targeted and stable.
+I use Playwright's native `toMatchSnapshot` against in-repo baselines to examine screenshot deltas and judge visual diffs. No matter what tool you use, though, you'll want your screenshots to be targeted and stable.
 
 1. _Targeted_ screenshots only track a specific part of the site, like [the different fonts](/test-page#formatting). They don't include e.g. the sidebars next to the fonts.
 2. _Stable_ screenshots only change when the styling in question changes. For example, I often dealt with issues where a video's loading bar would display differently in different screenshots due to slight timing differences - that is not stable. If the video didn't appear at all, however, I would want the screenshot to reflect that.
 
 It took me a long time to achieve these goals. Practically, I recommend directly using my [`visual_utils.ts`](https://github.com/alexander-turner/TurnTrout.com/blob/main/quartz/components/tests/visual_utils.ts). Here are screenshot lessons I learned:
 
-Use a cloud-based visual diff tool instead of `toHaveScreenshot`
-: I originally used Playwright's built-in [`toHaveScreenshot`](https://playwright.dev/docs/test-snapshots), which retakes screenshots until consecutive frames are identical — great for stabilization. But managing baseline snapshots in-repo became unwieldy. I switched to [the free `lost-pixel` app](https://lost-pixel.com/) as a cloud-hosted baseline manager: tests write screenshots to a known directory, and lost-pixel handles the diff/approval workflow.
+Use Playwright's native snapshot APIs with in-repo baselines
+: I take screenshots into a buffer and call [`expect.soft(buffer).toMatchSnapshot(name)`](https://playwright.dev/docs/test-snapshots) against baselines committed under `tests/visual-baselines/`. Using `expect.soft` lets every shot in a test report a diff in the HTML report instead of halting at the first mismatch. A `visual-approved` PR label triggers a workflow that re-runs with `--update-snapshots=all` and commits the new baselines back to the branch.
 
-  If you do use `toHaveScreenshot`, remember to pass `--update-snapshots` when running `npx playwright test`, or Playwright will error on missing baselines.
+  Remember to pass `--update-snapshots` when running `npx playwright test` to bootstrap baselines, or Playwright will error on missing files.
 
 Target screenshots to specific elements
 : Instead of taking a screenshot of the entire page, I take a screenshot of e.g. a particular table. The idea is that modifying table styling only affects the table-containing screenshots.

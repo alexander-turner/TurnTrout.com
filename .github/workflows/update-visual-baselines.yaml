@@ -1,0 +1,200 @@
+name: Update visual baselines
+
+# Triggered when a reviewer adds the `visual-approved` label to a PR:
+# regenerates visual baselines (Chromium+Firefox on Linux, WebKit on macOS),
+# commits the combined set back to the PR branch, and removes the label.
+
+on:
+  pull_request:
+    types: [labeled]
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-visual-baselines-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  # Reuse the canonical site build (caches public/ keyed on github.sha).
+  # If visual-testing already populated the cache for this commit, this
+  # is a fast cache hit; otherwise it builds with the right setup args
+  # (Python venv for pytest, sharp, ffmpeg, etc.).
+  build:
+    if: github.event.label.name == 'visual-approved'
+    uses: ./.github/workflows/build-site.yaml
+
+  generate-linux:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+
+      - name: Install browsers
+        run: pnpm run install-browsers
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run Playwright with --update-snapshots
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --update-snapshots=all \
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload generated baselines (linux)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: baselines-linux
+          path: tests/visual-baselines/
+          if-no-files-found: warn
+          retention-days: 1
+
+  generate-macos:
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run Playwright with --update-snapshots
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --update-snapshots=all \
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload generated baselines (macos)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: baselines-macos
+          path: tests/visual-baselines/
+          if-no-files-found: warn
+          retention-days: 1
+
+  # Gather both platforms' baselines, commit together in a single push.
+  # Runs if at least one generate job produced baselines; a wholly-failed
+  # run leaves the label in place so a retry is easy.
+  commit:
+    needs: [generate-linux, generate-macos]
+    if: >-
+      always() && (
+        needs.generate-linux.result == 'success' ||
+        needs.generate-macos.result == 'success'
+      )
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Download Linux baselines
+        if: needs.generate-linux.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: baselines-linux
+          path: tests/visual-baselines/
+
+      - name: Download macOS baselines
+        if: needs.generate-macos.result == 'success'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: baselines-macos
+          path: tests/visual-baselines/
+
+      - name: Commit and push updated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Re-fetch head in case the user pushed while we were generating
+          git fetch origin "${{ github.event.pull_request.head.ref }}"
+          git reset --soft "origin/${{ github.event.pull_request.head.ref }}"
+
+          git add tests/visual-baselines/
+          if git diff --cached --quiet; then
+            echo "No baseline changes to commit."
+            exit 0
+          fi
+
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PLATFORMS=""
+          if [ "${{ needs.generate-linux.result }}" = "success" ]; then
+            PLATFORMS="linux"
+          fi
+          if [ "${{ needs.generate-macos.result }}" = "success" ]; then
+            PLATFORMS="${PLATFORMS:+${PLATFORMS}+}macos"
+          fi
+          git commit -m "chore: update visual baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+
+      - name: Remove approval label
+        if: always()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            try {
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                name: 'visual-approved',
+              });
+            } catch (err) {
+              // 404 = already removed; ignore. Anything else, rethrow.
+              if (err.status !== 404) throw err;
+            }
