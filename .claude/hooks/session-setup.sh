@@ -82,23 +82,33 @@ fi
 
 # scripts/compress.py and convert_markdown_yaml.py hard-code the IM7
 # `magick` binary. Ubuntu's `imagemagick` apt package only ships the
-# legacy IM6 `convert`, so download the official IM7 portable AppImage
-# and extract it (FUSE isn't available in the sandbox, so AppImages
-# can't be auto-mounted — `--appimage-extract` works around that).
+# legacy IM6 `convert`, so first try the official IM7 portable AppImage,
+# then fall back to a thin wrapper over IM6 `convert`.
 if ! command -v magick &>/dev/null; then
 	IM_DIR="$HOME/.local/imagemagick"
 	mkdir -p "$IM_DIR"
+	MAGICK_INSTALLED=false
 	if curl -fsSL https://imagemagick.org/archive/binaries/magick \
 		-o "$IM_DIR/magick.AppImage" 2>/dev/null; then
 		chmod +x "$IM_DIR/magick.AppImage"
 		if (cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1); then
-			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" ||
-				warn "Failed to symlink ImageMagick 7 AppRun"
-		else
-			warn "Failed to extract ImageMagick 7 AppImage"
+			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" &&
+				MAGICK_INSTALLED=true
 		fi
-	else
-		warn "Failed to download ImageMagick 7"
+	fi
+	# Fallback: create a wrapper that delegates to IM6 `convert`.
+	# The codebase calls `magick <input> <flags> <output>` which is
+	# equivalent to IM6's `convert <input> <flags> <output>`.
+	if [ "$MAGICK_INSTALLED" = false ] && command -v convert &>/dev/null; then
+		cat > "$HOME/.local/bin/magick" <<'WRAPPER'
+#!/bin/sh
+# Thin IM6 compatibility wrapper: `magick` → `convert`
+# IM7's `magick <args>` ≈ IM6's `convert <args>` for image operations
+exec convert "$@"
+WRAPPER
+		chmod +x "$HOME/.local/bin/magick"
+	elif [ "$MAGICK_INSTALLED" = false ]; then
+		warn "ImageMagick not available (neither IM7 AppImage nor IM6 convert)"
 	fi
 fi
 

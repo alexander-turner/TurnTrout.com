@@ -91,7 +91,7 @@
 
     & > * {
       width: 100%;
-      border-radius: 7px;
+      border-radius: $border-radius;
       background: var(--background);
       box-shadow:
         0 14px 50px rgb(27 33 48 / 12%),
