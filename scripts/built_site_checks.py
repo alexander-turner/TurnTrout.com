@@ -1425,7 +1425,7 @@ def _build_included_favicon_domains(
     """
     Compute the set of domain entries whose favicons should appear in the built
     site, by calling the shared TS module which runs the same
-    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold) as
+    ``shouldIncludeFavicon`` logic (allowlist + blocklist + count threshold) as
     the Quartz transformer.
 
     Returns a frozenset of underscore-separated domain strings (e.g.
@@ -1469,7 +1469,7 @@ def check_external_links_have_favicons(
     Check that external links to included domains have favicons.
 
     Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
-    transformer (whitelist + blacklist + count threshold), pre-computed
+    transformer (allowlist + blocklist + count threshold), pre-computed
     by ``scripts/compute_favicon_lists.ts``.
 
     Only checks ``<a class="external">`` links inside ``<article>``;
@@ -2196,9 +2196,8 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-# Whitelisted emphasis patterns that should be ignored
-# If both prev and next are in the whitelist, then the emphasis is whitelisted
-WHITELISTED_EMPHASIS = frozenset(
+# Emphasis patterns that should be ignored by spacing checks
+ALLOWED_EMPHASIS_PATTERNS = frozenset(
     {
         ("Some", ""),  # For e.g. "Some<i>one</i>"
     }
@@ -2210,13 +2209,12 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
     Check for emphasis/strong elements that don't have proper spacing with
     surrounding text.
 
-    Ignores specific whitelisted cases.
+    Ignores specific allowed patterns.
     """
     problematic_emphasis: list[str] = []
 
     # Find all emphasis elements
     for element in _tags_only(soup.find_all(["em", "strong", "i", "b", "del"])):
-        # Check if this is a whitelisted case
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
 
@@ -2226,13 +2224,12 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
             prev_text = prev_sibling.strip()
             current_text = element.get_text(strip=True)
 
-            # Check for exact matches in whitelisted cases
-            is_whitelisted = False
-            for prev, next_ in WHITELISTED_EMPHASIS:
+            is_allowed = False
+            for prev, next_ in ALLOWED_EMPHASIS_PATTERNS:
                 if prev_text.endswith(prev) and current_text.startswith(next_):
-                    is_whitelisted = True
+                    is_allowed = True
                     break
-            if is_whitelisted:
+            if is_allowed:
                 continue
 
         problematic_emphasis.extend(

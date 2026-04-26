@@ -367,9 +367,9 @@ export function replaceSCInNode(node: Text, ancestors: Parent[]): void {
     (match: RegExpMatchArray) => {
       const matchText = match[0]
 
-      const whitelisted = isInAllowList(matchText)
+      const allowed = isInAllowList(matchText)
       // Return unchanged - no formatting
-      if (!whitelisted && isRomanNumeral(matchText)) {
+      if (!allowed && isRomanNumeral(matchText)) {
         return { before: matchText, replacedMatch: "", after: "" }
       }
 

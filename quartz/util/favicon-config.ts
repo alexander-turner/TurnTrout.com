@@ -1,6 +1,6 @@
 /**
  * Shared favicon configuration: hostname normalization and computed
- * whitelist/blacklist arrays.
+ * allowlist/blocklist arrays.
  *
  * Imported by both the Quartz transformer (favicons.ts) and the
  * Python validation helper (scripts/compute_favicon_lists.ts) so that
@@ -11,9 +11,9 @@ import { parse as parseDomain } from "psl"
 import {
   specialFaviconPaths,
   specialDomainMappings,
-  faviconCountWhitelist,
-  faviconSubstringBlacklist,
-  googleSubdomainWhitelist,
+  faviconCountAllowlist,
+  faviconSubstringBlocklist,
+  googleSubdomainAllowlist,
 } from "../components/constants"
 
 /**
@@ -23,7 +23,7 @@ import {
  *
  * Special cases:
  * - Applies cross-domain mappings (e.g., transformer-circuits.pub -> anthropic.com)
- * - Preserves whitelisted Google subdomains (scholar.google.com, play.google.com, etc.)
+ * - Preserves allowlisted Google subdomains (scholar.google.com, play.google.com, etc.)
  * - Preserves all StackExchange subdomains (math.stackexchange.com, gaming.stackexchange.com, etc.)
  *
  * @param hostname - The hostname to normalize
@@ -62,20 +62,20 @@ export function normalizeFaviconListEntry(entry: string): string {
 }
 
 /**
- * Whitelist uses substring matching, so raw entries work fine (e.g., "apple_com"
+ * Allowlist uses substring matching, so raw entries work fine (e.g., "apple_com"
  * matches any path containing that substring). No PSL normalization needed.
  */
-export const faviconCountWhitelistComputed: readonly string[] = [
+export const faviconCountAllowlistComputed: readonly string[] = [
   ...Object.values(specialFaviconPaths),
-  ...faviconCountWhitelist,
-  ...googleSubdomainWhitelist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
+  ...faviconCountAllowlist,
+  ...googleSubdomainAllowlist.map((subdomain) => `${subdomain.replaceAll(".", "_")}_google_com`),
 ]
 
 /**
- * Blacklist entries are normalized through the same PSL pipeline as hostnames,
+ * Blocklist entries are normalized through the same PSL pipeline as hostnames,
  * so entries with full subdomains (e.g., "playpen_icomtek_csir_co_za") are
  * reduced to their registered domain form (e.g., "csir_co_za") to match
  * what getQuartzPath produces.
  */
-export const faviconSubstringBlacklistComputed: readonly string[] =
-  faviconSubstringBlacklist.map(normalizeFaviconListEntry)
+export const faviconSubstringBlocklistComputed: readonly string[] =
+  faviconSubstringBlocklist.map(normalizeFaviconListEntry)
