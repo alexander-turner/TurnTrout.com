@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-04-24
+date_updated: 2026-04-26
 no_dropcap: false
 createBibtex: true
 ---
@@ -1070,7 +1070,7 @@ Pure unit tests cannot test the end-to-end experience of my site, nor can they e
 
 Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline image committed to the repository. If a picture differs by more than a small number of pixels, the test fails and I approve the new baseline (via a `visual-approved` PR label) before the site updates with any changes.
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails and I approve the new baseline (via a `visual-approved` PR label) before the site updates with any changes — the regen workflow re-runs Playwright with `--update-snapshots=all`, uploads the fresh PNGs to R2, and pushes an empty commit to retrigger visual-testing.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
 

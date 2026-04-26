@@ -29,6 +29,7 @@ coverage
 /playwright-report/
 /playwright/.cache/
 quartz/**snapshots*
+tests/visual-baselines/*.png
 
 # Temporary & Backup Files
 *~
