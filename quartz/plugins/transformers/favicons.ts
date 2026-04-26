@@ -294,7 +294,6 @@ export function transformUrl(faviconPath: string): string {
  * Checks if a favicon path is cached and returns the cached value if found.
  *
  * @param faviconPath - The favicon path to check in cache
- * @param hostname - Domain name for logging
  * @returns Cached favicon path/URL, or null if not cached
  */
 function checkCachedFavicon(faviconPath: string): string | null {
@@ -310,7 +309,6 @@ function checkCachedFavicon(faviconPath: string): string | null {
  *
  * @param svgPath - The SVG path to check (e.g., "/static/images/external-favicons/example_com.svg")
  * @param faviconPath - The original favicon path for caching
- * @param hostname - Domain name for logging
  * @returns SVG path if found, null otherwise
  */
 async function checkLocalSvg(svgPath: string, faviconPath: string): Promise<string | null> {
@@ -329,7 +327,6 @@ async function checkLocalSvg(svgPath: string, faviconPath: string): Promise<stri
  *
  * @param svgPath - The SVG path to check
  * @param faviconPath - The original favicon path for caching
- * @param hostname - Domain name for logging
  * @returns CDN URL if found, null otherwise
  */
 async function checkCdnSvg(svgPath: string, faviconPath: string): Promise<string | null> {
@@ -350,7 +347,6 @@ async function checkCdnSvg(svgPath: string, faviconPath: string): Promise<string
  * Checks if a local PNG file exists for the given favicon path.
  *
  * @param faviconPath - The PNG path to check
- * @param hostname - Domain name for logging
  * @returns PNG path if found, null otherwise
  */
 async function checkLocalPng(faviconPath: string): Promise<string | null> {
@@ -367,7 +363,6 @@ async function checkLocalPng(faviconPath: string): Promise<string | null> {
  * Checks if an AVIF file exists on the CDN.
  *
  * @param faviconPath - The PNG path (will be converted to AVIF)
- * @param hostname - Domain name for logging
  * @returns CDN AVIF URL if found, null otherwise
  */
 async function checkCdnAvif(faviconPath: string): Promise<string | null> {
@@ -403,7 +398,8 @@ async function downloadFromGoogle(
     if (await downloadImage(googleFaviconURL, localPngPath)) {
       return faviconPath
     }
-  } catch {
+  } catch (err) {
+    logger.warn(`Failed to download favicon for ${hostname}: ${err}`)
     urlCache.set(faviconPath, defaultPath)
   }
   return null
@@ -643,12 +639,12 @@ export function isHeading(node: Element): boolean {
 /**
  * Handles same-page links (e.g. #section-1) by adding appropriate classes and icons.
  */
-function handleSamePageLink(node: Element, href: string, parent: Parent): boolean {
+function handleSamePageLink(node: Element, href: string, parent: Parent): void {
   if (
     href.startsWith("#user-content-fn") || // Footnote links
     isHeading(parent as Element) // Links inside headings
   ) {
-    return false
+    return
   }
 
   if (typeof node.properties.className === "string") {
@@ -660,7 +656,6 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
   }
 
   insertFavicon(specialFaviconPaths.anchor, node)
-  return true
 }
 
 /**

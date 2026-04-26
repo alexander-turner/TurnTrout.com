@@ -2192,7 +2192,7 @@ describe("shouldIncludeFavicon edge cases", () => {
     // Counts are stored without extensions (format-agnostic)
     faviconCounts.set(favicons.normalizePathForCounting(imgPath), minFaviconCount + 10)
 
-    // Even if it contains a allowlist entry, blocklist should take precedence
+    // Even if it contains an allowlist entry, blocklist should take precedence
     const result = favicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
     expect(result).toBe(false)
