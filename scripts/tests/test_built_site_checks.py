@@ -1851,23 +1851,23 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Test each whitelisted case - should be ignored
+        # Test each allowed pattern - should be ignored
         *[
             (
                 f"<p>{prev}<i>{next_}</i> else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test whitelisted case with extra whitespace - should be ignored
+        # Test allowed pattern with extra whitespace - should be ignored
         *[
             (
                 f"<p>{prev}  <i>{next_}</i>  else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test non-whitelisted case - should be ignored since Some is whitelisted
+        # Test non-allowed case - should be ignored since Some is allowed
         (
             "<p>Some<i>thing</i> else</p>",
             [],
@@ -1882,12 +1882,12 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
             "<p>some<i>one</i> else</p>",
             ["Missing space before: some<i>one</i>"],
         ),
-        # Test with other emphasis elements - should be ignored since Some is whitelisted
+        # Test with other emphasis elements - should be ignored since Some is allowed
         (
             "<p>Some<em>one</em> else</p>",
             [],
         ),
-        # Test with nested elements - should be ignored since Some is whitelisted
+        # Test with nested elements - should be ignored since Some is allowed
         (
             "<p>Some<i><strong>one</strong></i> else</p>",
             [],
@@ -1904,8 +1904,8 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
         ),
     ],
 )
-def test_check_emphasis_spacing_whitelist(html, expected):
-    """Test the check_emphasis_spacing function's whitelist functionality."""
+def test_check_emphasis_spacing_allowed_patterns(html, expected):
+    """Test the check_emphasis_spacing function's allowed patterns."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_emphasis_spacing(soup)
     assert sorted(result) == sorted(expected)

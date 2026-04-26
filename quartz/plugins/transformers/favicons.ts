@@ -19,8 +19,8 @@ import {
 import { faviconUrlsFile, faviconCountsFile } from "../../components/constants.server"
 import {
   normalizeHostname,
-  faviconCountWhitelistComputed,
-  faviconSubstringBlacklistComputed,
+  faviconCountAllowlistComputed,
+  faviconSubstringBlocklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
 import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
@@ -30,7 +30,7 @@ const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
 const logger = createWinstonLogger("linkFavicons")
 
 /**
- * Whitelist of favicon paths that should always be included regardless of count. Often widely recognizable.
+ * Allowlist of favicon paths that should always be included regardless of count. Often widely recognizable.
  * These favicons will be added even if they appear fewer than minFaviconCount times.
  * Entries can be full paths or substrings (e.g., "apple_com" will match any path containing "apple_com").
  */
@@ -52,23 +52,8 @@ export class DownloadError extends Error {
   }
 }
 
-/**
- * Downloads an image from a given URL and saves it to the specified local path.
- *
- * Performs several validations:
- * 1. Checks if the HTTP response is successful
- * 2. Verifies the content type is an image
- * 3. Ensures the file is not empty
- * 4. Creates the target directory if needed
- * 5. Validates the downloaded file size
- *
- * @throws DownloadError if any validation fails or download/save errors occur
- * @param url - The URL of the image to download
- * @param imagePath - The local file path where the image should be saved
- * @returns Promise<boolean> - True if download and save successful
- */
+/** @throws DownloadError if download fails or result is not a valid image */
 export async function downloadImage(url: string, imagePath: string): Promise<boolean> {
-  logger.info(`Attempting to download image from ${url} to ${imagePath}`)
   const response = await fetch(url)
 
   if (!response.ok) {
@@ -107,7 +92,6 @@ export async function downloadImage(url: string, imagePath: string): Promise<boo
     throw new DownloadError(`Downloaded file is empty: ${imagePath}`)
   }
 
-  logger.info(`Successfully downloaded image to ${imagePath}`)
   return true
 }
 
@@ -131,29 +115,14 @@ export function normalizePathForCounting(faviconPath: string): string {
   return faviconPath.replace(/\.(?:png|svg|avif)$/, "")
 }
 
-/**
- * Generates a standardized path for storing favicons in the Quartz system.
- *
- * Handles special cases:
- * - Converts localhost to turntrout.com
- * - Removes www. prefix from domains
- * - Normalizes subdomains (e.g., blog.openai.com -> openai.com)
- * - Uses special path for turntrout.com domain
- * - Converts dots to underscores for filesystem compatibility
- *
- * @param hostname - Domain name to generate path for (e.g. "example.com")
- * @returns Formatted path string (e.g. "/static/images/external-favicons/example_com.png")
- */
+/** Maps a hostname to its favicon storage path (e.g. "example.com" → "/static/images/external-favicons/example_com.png"). */
 export function getQuartzPath(hostname: string): string {
-  logger.debug(`Generating Quartz path for hostname: ${hostname}`)
   hostname = hostname === "localhost" ? "turntrout.com" : hostname.replace(/^www\./, "")
   hostname = normalizeHostname(hostname)
   const sanitizedHostname = hostname.replace(/\./g, "_")
-  const path = sanitizedHostname.includes("turntrout_com")
+  return sanitizedHostname.includes("turntrout_com")
     ? specialFaviconPaths.turntrout
     : `/${faviconFolder}/${sanitizedHostname}.png`
-  logger.debug(`Generated Quartz path: ${path}`)
-  return path
 }
 
 const defaultCache: ReadonlyMap<string, string> = new Map<string, string>([
@@ -192,7 +161,6 @@ export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> 
   try {
     await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
   } catch {
-    logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
     return new Map<string, number>()
   }
 
@@ -235,8 +203,7 @@ export async function readFaviconUrls(): Promise<ReadonlyMap<string, string>> {
       }
     }
     return urlMap
-  } catch (error) {
-    logger.warn(`Error reading favicon URLs file: ${error}`)
+  } catch {
     return new Map<string, string>()
   }
 }
@@ -306,17 +273,17 @@ export function getFaviconUrl(faviconPath: string): string {
 }
 
 /**
- * Transforms a favicon URL by checking the blacklist.
- * Returns defaultPath if blacklisted, otherwise returns the path unchanged.
+ * Transforms a favicon URL by checking the blocklist.
+ * Returns defaultPath if blocklisted, otherwise returns the path unchanged.
  *
  * @param faviconPath - The favicon path to transform (can be local path, CDN URL, or special path)
- * @returns The favicon path, or defaultPath if blacklisted
+ * @returns The favicon path, or defaultPath if blocklisted
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+  const isBlocklisted = faviconSubstringBlocklistComputed.some((entry: string) =>
     faviconPath.includes(entry),
   )
-  if (isBlacklisted) {
+  if (isBlocklisted) {
     return defaultPath
   }
 
@@ -330,16 +297,11 @@ export function transformUrl(faviconPath: string): string {
  * @param hostname - Domain name for logging
  * @returns Cached favicon path/URL, or null if not cached
  */
-function checkCachedFavicon(faviconPath: string, hostname: string): string | null {
+function checkCachedFavicon(faviconPath: string): string | null {
   const cachedValue = urlCache.get(faviconPath)
   if (cachedValue === undefined) {
     return null
   }
-  if (cachedValue === defaultPath) {
-    logger.info(`Skipping previously failed favicon for ${hostname}`)
-    return defaultPath
-  }
-  logger.info(`Returning cached favicon for ${hostname}`)
   return cachedValue
 }
 
@@ -351,15 +313,10 @@ function checkCachedFavicon(faviconPath: string, hostname: string): string | nul
  * @param hostname - Domain name for logging
  * @returns SVG path if found, null otherwise
  */
-async function checkLocalSvg(
-  svgPath: string,
-  faviconPath: string,
-  hostname: string,
-): Promise<string | null> {
+async function checkLocalSvg(svgPath: string, faviconPath: string): Promise<string | null> {
   const localSvgPath = path.join(quartzFolder, svgPath)
   try {
     await fs.promises.stat(localSvgPath)
-    logger.info(`Local SVG found for ${hostname}: ${svgPath}`)
     urlCache.set(faviconPath, svgPath)
     return svgPath
   } catch {
@@ -375,21 +332,16 @@ async function checkLocalSvg(
  * @param hostname - Domain name for logging
  * @returns CDN URL if found, null otherwise
  */
-async function checkCdnSvg(
-  svgPath: string,
-  faviconPath: string,
-  hostname: string,
-): Promise<string | null> {
+async function checkCdnSvg(svgPath: string, faviconPath: string): Promise<string | null> {
   const svgUrl = getFaviconUrl(svgPath)
   try {
     const svgResponse = await fetch(svgUrl)
     if (svgResponse.ok) {
-      logger.info(`SVG found on CDN for ${hostname}: ${svgUrl}`)
       urlCache.set(faviconPath, svgUrl)
       return svgUrl
     }
   } catch {
-    logger.debug(`SVG not found on CDN for ${hostname}`)
+    // SVG not available on CDN
   }
   return null
 }
@@ -401,11 +353,10 @@ async function checkCdnSvg(
  * @param hostname - Domain name for logging
  * @returns PNG path if found, null otherwise
  */
-async function checkLocalPng(faviconPath: string, hostname: string): Promise<string | null> {
+async function checkLocalPng(faviconPath: string): Promise<string | null> {
   const localPngPath = path.join(quartzFolder, faviconPath)
   try {
     await fs.promises.stat(localPngPath)
-    logger.info(`Local PNG found for ${hostname}: ${faviconPath}`)
     return faviconPath
   } catch {
     return null
@@ -419,17 +370,16 @@ async function checkLocalPng(faviconPath: string, hostname: string): Promise<str
  * @param hostname - Domain name for logging
  * @returns CDN AVIF URL if found, null otherwise
  */
-async function checkCdnAvif(faviconPath: string, hostname: string): Promise<string | null> {
+async function checkCdnAvif(faviconPath: string): Promise<string | null> {
   const avifUrl = getFaviconUrl(faviconPath)
   try {
     const avifResponse = await fetch(avifUrl)
     if (avifResponse.ok) {
-      logger.info(`AVIF found for ${hostname}: ${avifUrl}`)
       urlCache.set(faviconPath, avifUrl)
       return avifUrl
     }
   } catch {
-    logger.debug(`AVIF not found on CDN for ${hostname}`)
+    // AVIF not available on CDN
   }
   return null
 }
@@ -448,16 +398,13 @@ async function downloadFromGoogle(
   faviconPath: string,
 ): Promise<string | null> {
   const googleFaviconURL = `https://www.google.com/s2/favicons?sz=64&domain=${hostname}`
-  logger.info(`Attempting to download favicon from Google: ${googleFaviconURL}`)
   try {
     /* istanbul ignore next -- requires real network download in test */
     if (await downloadImage(googleFaviconURL, localPngPath)) {
-      logger.info(`Successfully downloaded favicon for ${hostname}`)
       return faviconPath
     }
-  } catch (downloadErr) {
-    logger.warn(`Failed to download favicon for ${hostname}: ${downloadErr}`)
-    urlCache.set(faviconPath, defaultPath) // Cache the failure
+  } catch {
+    urlCache.set(faviconPath, defaultPath)
   }
   return null
 }
@@ -480,47 +427,44 @@ async function downloadFromGoogle(
  * @returns Path to favicon (local, CDN, or default)
  */
 export async function MaybeSaveFavicon(hostname: string): Promise<string> {
-  logger.info(`Attempting to find or save favicon for ${hostname}`)
-
   const faviconPath = getQuartzPath(hostname)
   const updatedPath = transformUrl(faviconPath)
   if (updatedPath === defaultPath) {
-    // If blacklisted, return early
     return defaultPath
   }
 
   // Check cache first and defer if it's SVG (preferred)
-  const cached = checkCachedFavicon(updatedPath, hostname)
+  const cached = checkCachedFavicon(updatedPath)
   if (cached !== null && cached.endsWith(".svg")) {
     return cached
   }
 
   // For AVIF cache (or no cache), check for SVG
   const svgPath = updatedPath.replace(".png", ".svg")
-  const localSvg = await checkLocalSvg(svgPath, updatedPath, hostname)
+  const localSvg = await checkLocalSvg(svgPath, updatedPath)
   if (localSvg !== null) return localSvg
 
-  const cdnSvg = await checkCdnSvg(svgPath, updatedPath, hostname)
+  const cdnSvg = await checkCdnSvg(svgPath, updatedPath)
   if (cdnSvg !== null) return cdnSvg
 
   // Check un-normalized hostname for SVG (e.g., open_spotify_com.svg when normalized is spotify_com.svg)
   const unnormalizedHostname = hostname.replace(/^www\./, "").replace(/\./g, "_")
   const unnormalizedSvgPath = `/${faviconFolder}/${unnormalizedHostname}.svg`
   if (unnormalizedSvgPath !== svgPath) {
-    const unnormalizedLocalSvg = await checkLocalSvg(unnormalizedSvgPath, updatedPath, hostname)
+    const unnormalizedLocalSvg = await checkLocalSvg(unnormalizedSvgPath, updatedPath)
     if (unnormalizedLocalSvg !== null) return unnormalizedLocalSvg
 
-    const unnormalizedCdnSvg = await checkCdnSvg(unnormalizedSvgPath, updatedPath, hostname)
+    const unnormalizedCdnSvg = await checkCdnSvg(unnormalizedSvgPath, updatedPath)
     if (unnormalizedCdnSvg !== null) return unnormalizedCdnSvg
   }
 
   // Return cached AVIF if we have it and no SVG was found
   if (cached !== null) return cached
 
-  const localPng = await checkLocalPng(updatedPath, hostname)
+  const localPng = await checkLocalPng(updatedPath)
   if (localPng !== null) return localPng
 
-  const cdnAvif = await checkCdnAvif(updatedPath, hostname)
+  const cdnAvif = await checkCdnAvif(updatedPath)
   if (cdnAvif !== null) return cdnAvif
 
   // Try to download from Google (as PNG)
@@ -530,8 +474,6 @@ export async function MaybeSaveFavicon(hostname: string): Promise<string> {
     return downloaded
   }
 
-  // If all else fails, use default and cache the failure
-  logger.debug(`Failed to find or download favicon for ${hostname}, using default`)
   urlCache.set(updatedPath, defaultPath)
   return defaultPath
 }
@@ -562,8 +504,6 @@ export interface FaviconNode extends Element {
  * @returns An object representing the favicon element.
  */
 export function createFaviconElement(urlString: string, description = ""): FaviconNode {
-  logger.debug(`Creating favicon element with URL: ${urlString}`)
-
   // Use mask-based rendering for SVG favicons
   if (urlString.endsWith(".svg")) {
     // istanbul ignore next
@@ -608,9 +548,7 @@ export function createFaviconElement(urlString: string, description = ""): Favic
  * @param node - The node to insert the favicon into.
  */
 export function insertFavicon(imgPath: string | null, node: Element): void {
-  logger.debug(`Inserting favicon: ${imgPath}`)
   if (imgPath === null) {
-    logger.debug("No favicon to insert")
     return
   }
 
@@ -647,7 +585,6 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
 
   // If no valid last child found, wrap favicon in a favicon-span
   if (!lastChild) {
-    logger.debug("No valid last child found, wrapping favicon in favicon-span")
     return createNowrapSpan("", imgNodeToAppend)
   }
 
@@ -657,14 +594,12 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
     lastChild.tagName === "span" &&
     hasClass(lastChild, "favicon-span")
   ) {
-    logger.debug("Appending favicon to existing favicon-span")
     lastChild.children.push(imgNodeToAppend)
     return null
   }
 
   // If the last child is a tag that should be zoomed into, recurse
   if (lastChild.type === "element" && tagsToZoomInto.includes(lastChild.tagName)) {
-    logger.debug(`Zooming into nested element ${lastChild.tagName}`)
     const result = maybeSpliceText(lastChild as Element, imgNodeToAppend)
     /* istanbul ignore next -- recursive case where nested element has no text to splice */
     if (result) {
@@ -675,7 +610,6 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
 
   // If last child is not a text node or has no value, wrap favicon in a favicon-span
   if (lastChild.type !== "text" || !lastChild.value) {
-    logger.debug("Wrapping favicon in favicon-span (no text to splice)")
     return createNowrapSpan("", imgNodeToAppend)
   }
 
@@ -684,7 +618,6 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
   // Some characters render particularly close to the favicon, so we add a small margin
   const lastChar = lastChildText.value.at(-1)
   if (lastChar && charsToSpace.includes(lastChar)) {
-    logger.debug("Adding margin-left to appended element")
     // istanbul ignore next
     imgNodeToAppend.properties = imgNodeToAppend.properties || {}
     imgNodeToAppend.properties.class = "favicon close-text"
@@ -697,7 +630,6 @@ export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): El
  * Handles mailto links by inserting a mail icon.
  */
 function handleMailtoLink(node: Element): void {
-  logger.info("Inserting mail icon for mailto link")
   insertFavicon(specialFaviconPaths.mail, node)
 }
 
@@ -803,11 +735,11 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 }
 
 /**
- * Checks if a favicon should be included based on count threshold, whitelist, and blacklist.
+ * Checks if a favicon should be included based on count threshold, allowlist, and blocklist.
  *
  * A favicon is included if:
- * - It is NOT blacklisted, AND
- * - (It is whitelisted (always included regardless of count), OR its count is >= minFaviconCount)
+ * - It is NOT blocklisted, AND
+ * - (It is allowlisted (always included regardless of count), OR its count is >= minFaviconCount)
  *
  * @param imgPath - The favicon image path/URL
  * @param countKey - The lookup key for the favicon count (typically from getQuartzPath, will be normalized)
@@ -819,16 +751,16 @@ export function shouldIncludeFavicon(
   countKey: string,
   faviconCounts: ReadonlyMap<string, number>,
 ): boolean {
-  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+  const isBlocklisted = faviconSubstringBlocklistComputed.some((entry: string) =>
     imgPath.includes(entry),
   )
-  if (isBlacklisted) return false
+  if (isBlocklisted) return false
 
   // Normalize countKey (remove extension) to match format-agnostic counts
   const normalizedCountKey = normalizePathForCounting(countKey)
   const count = faviconCounts.get(normalizedCountKey) || 0
-  const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
-  return isWhitelisted || count >= minFaviconCount
+  const isAllowlisted = faviconCountAllowlistComputed.some((entry) => imgPath.includes(entry))
+  return isAllowlisted || count >= minFaviconCount
 }
 
 /**
@@ -853,22 +785,17 @@ async function handleLink(
 ): Promise<void> {
   try {
     const finalURL = new URL(href)
-    logger.info(`Final URL: ${finalURL.href}`)
-
     const imgPath = await MaybeSaveFavicon(finalURL.hostname)
 
     if (imgPath === defaultPath) {
-      logger.info(`No favicon found for ${finalURL.hostname}; skipping`)
       return
     }
 
     const countKey = getQuartzPath(finalURL.hostname)
     if (!shouldIncludeFavicon(imgPath, countKey, faviconCounts)) {
-      logger.debug(`Favicon ${imgPath} (count key: ${countKey}) below threshold, skipping`)
       return
     }
 
-    logger.info(`Inserting favicon for ${finalURL.hostname}: ${imgPath}`)
     insertFavicon(imgPath, node)
   } catch (error) {
     logger.error(`Error processing URL ${href}: ${error}`)
@@ -894,63 +821,39 @@ export async function ModifyNode(
   parent: Parent,
   faviconCounts: ReadonlyMap<string, number>,
 ): Promise<void> {
-  logger.debug(`Modifying node: ${node.tagName}`)
   if (node.tagName !== "a" || !node.properties.href) {
-    logger.debug("Node is not an anchor or has no href, skipping")
     return
   }
 
   const href = node.properties.href
-  logger.debug(`Processing href: ${href}`)
   if (typeof href !== "string") {
-    logger.debug("Href is not a string, skipping")
     return
   }
 
-  // Skip if link already has a favicon
   if (hasFavicon(node)) {
-    logger.debug(`Skipping favicon insertion for link that already has a favicon: ${href}`)
     return
   }
 
   if (href.startsWith("mailto:")) {
-    logger.debug(`Favicon decision: mailto => inserting mail icon for ${href}`)
     handleMailtoLink(node)
     return
   }
 
-  const isSamePageLink = href.startsWith("#")
-  if (isSamePageLink) {
-    logger.debug(`Favicon decision: same-page (${href}) => attempting anchor icon`)
-    const inserted = handleSamePageLink(node, href, parent)
-    logger.debug(`Favicon decision: same-page (${href}) => inserted=${inserted}`)
+  if (href.startsWith("#")) {
+    handleSamePageLink(node, href, parent)
     return
   }
 
   if (href.endsWith("/rss.xml")) {
-    logger.debug(`Favicon decision: RSS => inserting rss icon for ${href}`)
     insertFavicon(specialFaviconPaths.rss, node)
     return
   }
 
-  // Skip certain types of links
   if (shouldSkipFavicon(node, href)) {
-    const samePageClass =
-      (typeof node.properties.className === "string" &&
-        node.properties.className.includes("same-page-link")) ||
-      (Array.isArray(node.properties.className) &&
-        node.properties.className.includes("same-page-link"))
-    const asset = isAssetLink(href)
-
-    logger.debug(
-      `Favicon decision: SKIP => href=${href} samePageClass=${samePageClass} isAssetLink=${asset}`,
-    )
     return
   }
 
-  // Process external links
   const normalized = normalizeUrl(href)
-  logger.debug(`Favicon decision: PROCESS => raw=${href} normalized=${normalized}`)
   await handleLink(normalized, node, faviconCounts)
 }
 
@@ -974,10 +877,7 @@ export const AddFavicons = () => {
       return [
         () => {
           return async (tree: Root) => {
-            logger.debug("Starting favicon processing")
             const faviconCounts = await readFaviconCounts()
-            logger.debug(`Loaded ${faviconCounts.size} favicon counts`)
-
             const nodesToProcess: [Element, Parent][] = []
 
             visit(
@@ -987,17 +887,14 @@ export const AddFavicons = () => {
                 // istanbul ignore next
                 if (!parent) return
                 if (node.tagName === "a" && node.properties.href) {
-                  logger.debug(`Found anchor node: ${node.properties.href}`)
                   nodesToProcess.push([node, parent])
                 }
               },
             )
 
-            logger.debug(`Processing ${nodesToProcess.length} nodes`)
             await Promise.all(
               nodesToProcess.map(([node, parent]) => ModifyNode(node, parent, faviconCounts)),
             )
-            logger.debug("Finished processing favicons")
 
             writeCacheToFile()
           }

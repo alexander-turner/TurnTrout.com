@@ -10,8 +10,8 @@
   "appleTouchIconUrl": "https://assets.turntrout.com/static/images/apple-icon.png",
   "faviconBasePath": "https://assets.turntrout.com/static/images/external-favicons",
   "minFaviconCount": 6,
-  "googleSubdomainWhitelist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
-  "faviconCountWhitelist": [
+  "googleSubdomainAllowlist": ["scholar", "play", "docs", "drive", "mail", "colab.research"],
+  "faviconCountAllowlist": [
     "apple_com",
     "x_com",
     "open_spotify_com",
@@ -31,7 +31,7 @@
     "substack_com",
     "google_com"
   ],
-  "faviconSubstringBlacklist": [
+  "faviconSubstringBlocklist": [
     "incompleteideas_net",
     "svgrepo",
     "hpmor_com",
