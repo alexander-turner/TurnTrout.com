@@ -2,6 +2,7 @@ import type { Root as HTMLRoot } from "hast"
 import type { Root } from "mdast"
 
 import esbuild from "esbuild"
+import os from "os"
 import path from "path"
 import rehypeMermaid from "rehype-mermaid"
 import remarkAttributes from "remark-attributes"
@@ -167,10 +168,14 @@ export async function parseMarkdown(ctx: BuildCtx, fps: FilePath[]): Promise<Pro
   const perf = new PerfTimer()
   const log = createWinstonLogger("parse")
 
-  // Use smaller chunks to enable parallelization with worker threads
-  // With 155 files and CHUNK_SIZE=32, we get 4 workers processing in parallel
+  // Use smaller chunks to enable parallelization with worker threads.
+  // Worker count = min(chunks-of-work, host CPUs), capped at MAX_WORKERS:
+  // worker startup (esbuild transpile + bootstrap) stops paying off past ~8.
   const CHUNK_SIZE = 32
-  const concurrency = ctx.argv.concurrency ?? clamp(fps.length / CHUNK_SIZE, 1, 4)
+  const MAX_WORKERS = 8
+  const concurrency =
+    ctx.argv.concurrency ??
+    clamp(Math.min(Math.ceil(fps.length / CHUNK_SIZE), os.cpus().length), 1, MAX_WORKERS)
 
   let res: ProcessedContent[]
   log.info(`Parsing input files using ${concurrency} threads`)
