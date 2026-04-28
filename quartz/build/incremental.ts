@@ -282,10 +282,10 @@ export async function rebuildFromEntrypoint(
     } else if (argv.verbose) {
       console.log(chalk.red(err))
     }
+  } finally {
+    release()
+    toRebuild.clear()
+    toRemove.clear()
   }
-
-  release()
   clientRefresh()
-  toRebuild.clear()
-  toRemove.clear()
 }
