@@ -24,8 +24,8 @@ import {
 import { type QuartzEmitterPlugin } from "../types"
 import { write } from "./helpers"
 
-// get all the dependencies for the markdown file
-// eg. images, scripts, stylesheets, transclusions
+// Walks the rendered tree to collect referenced local assets (images, scripts,
+// stylesheets, transclusions) so the dep graph can re-emit on changes.
 const parseDependencies = (argv: Argv, hast: Root, file: VFile): string[] => {
   const dependencies: FilePath[] = []
 

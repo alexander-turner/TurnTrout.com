@@ -18,7 +18,6 @@ export function getStaticResourcesFromPlugins(ctx: BuildCtx) {
     }
   }
 
-  // if serving locally, listen for rebuilds and reload the page
   if (ctx.argv.serve) {
     const wsUrl = ctx.argv.remoteDevHost
       ? `wss://${ctx.argv.remoteDevHost}:${ctx.argv.wsPort}`

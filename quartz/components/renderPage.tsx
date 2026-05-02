@@ -386,7 +386,6 @@ export function renderPage(
     }
   })
 
-  // set componentData.tree to the edited html that has transclusions rendered
   componentData.tree = root
 
   const { head: Head, beforeBody, pageBody: Content, left, right } = components
