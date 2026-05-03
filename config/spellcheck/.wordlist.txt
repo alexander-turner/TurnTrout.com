@@ -2808,7 +2808,6 @@ retargetability
 retargetable
 retargeted
 retargeting
-retrigger
 retrodict
 retrodicted
 retrodiction
