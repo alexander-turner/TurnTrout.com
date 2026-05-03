@@ -542,7 +542,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 | [ab(](https://npmjs.com)   | [ab)](https://npmjs.com)   | [ab\[](https://npmjs.com)  | [ab\]](https://npmjs.com)  | [ab\{](https://npmjs.com)  | [ab\}](https://npmjs.com)  |
 | [ab-](https://npmjs.com)   | [ab/](https://npmjs.com)   | [ab\\](https://npmjs.com)  | [ab\|](https://npmjs.com)  | [ab&](https://npmjs.com)   | [ab\*](https://npmjs.com)  |
 | [ab@](https://npmjs.com)   | [ab#](https://npmjs.com)   | [ab%](https://npmjs.com)   | [ab$](https://npmjs.com)   | [ab+](https://npmjs.com)   | [ab=](https://npmjs.com)   |
-| [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | [ab\`](https://npmjs.com)  |
+| [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | <a href="https://npmjs.com">ab&#96;</a> |
 
 # Typography
 
