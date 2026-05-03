@@ -2772,6 +2772,7 @@ refactorings
 reframed
 reframing
 reframing-impact
+regen
 regexes
 regularizer
 regularizers
@@ -2808,6 +2809,7 @@ retargetability
 retargetable
 retargeted
 retargeting
+retrigger
 retrodict
 retrodicted
 retrodiction
