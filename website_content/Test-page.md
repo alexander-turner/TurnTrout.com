@@ -525,8 +525,6 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 ### Favicon kerning iteration
 
-Each link ends in a different Latin character or punctuation mark followed by the (visually wide) npm favicon. Characters whose top-right corner crowds the favicon are listed in `charsToSpace` and receive the `.close-text` left-margin bump.
-
 #### Lowercase letters
 
 |                          |                          |                          |                          |                          |                          |
