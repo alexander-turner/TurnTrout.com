@@ -230,8 +230,9 @@ def convert_asset(
     md_references_dir: Path | None = Path("website_content/"),
 ) -> None:
     """
-    Converts an image or video to a more efficient format. Replaces references
-    in markdown files.
+    Converts an image or video to a more efficient format.
+
+    Replaces references in markdown files.
 
     Args:
         input_file: The path to the file to convert.
@@ -250,7 +251,6 @@ def convert_asset(
         - `ValueError`: If the input file is not an image or video or is not
           in the quartz/static directory.
     """
-
     if not input_file.is_file():
         raise FileNotFoundError(f"Error: File '{input_file}' not found.")
 

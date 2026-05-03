@@ -131,7 +131,6 @@ def check_favicons_missing(soup: BeautifulSoup) -> bool:
 def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     """Unless `data-use-dropcap="false"`, require `data-first-letter` to contain
     an alphanumeric character."""
-
     issues: list[str] = []
     for article in soup.find_all("article"):
         if article.get("data-use-dropcap") == "false":
@@ -156,7 +155,6 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
     """For dropcap-enabled articles, the first space in the first paragraph must
     not be a non-breaking space (which creates a visible extra gap)."""
-
     issues: list[str] = []
     for article in soup.find_all("article"):
         if article.get("data-use-dropcap") == "false":
@@ -293,8 +291,9 @@ def _check_anchor_classes(
     link: Tag, href: str, invalid_anchors: list[str]
 ) -> None:
     """
-    Check if a same-page anchor link has the required classes. Updates
-    `invalid_anchors` with errors if the link is missing classes.
+    Check if a same-page anchor link has the required classes.
+
+    Updates `invalid_anchors` with errors if the link is missing classes.
 
     NOTE: Only checks links that literally start with "#".
      Not all same-page links are specified like that.
@@ -1468,13 +1467,12 @@ def check_external_links_have_favicons(
     """
     Check that external links to included domains have favicons.
 
-    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
-    transformer (allowlist + blocklist + count threshold), pre-computed
-    by ``scripts/compute_favicon_lists.ts``.
+    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz transformer
+    (allowlist + blocklist + count threshold), pre-computed by
+    ``scripts/compute_favicon_lists.ts``.
 
-    Only checks ``<a class="external">`` links inside ``<article>``;
-    component-generated links (nav, aside) never pass through the
-    favicon transformer.
+    Only checks ``<a class="external">`` links inside ``<article>``; component-
+    generated links (nav, aside) never pass through the favicon transformer.
     """
     issues: list[str] = []
 
@@ -1564,7 +1562,6 @@ def _has_content(element: Tag) -> bool:
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     """Check for issues with elements whose IDs or classes start with
     `populate-`."""
-
     issues: list[str] = []
 
     # Generic: any populate-* element must not be empty
@@ -1784,7 +1781,6 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
 @dataclass(frozen=True)
 class CheckOptions:
     """Configuration options shared across all file checks."""
-
     should_check_fonts: bool = False
     defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
@@ -2553,10 +2549,10 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
     """
     Replace ``<abbr class="small-caps">`` with its original text.
 
-    Each smallcaps ``<abbr>`` carries a ``data-original-text``
-    attribute holding the pre-transform text (e.g. ``ReLU``,
-    ``14B``).  This function substitutes the element with that
-    original text so the spellchecker sees source-faithful tokens.
+    Each smallcaps ``<abbr>`` carries a ``data-original-text`` attribute holding
+    the pre-transform text (e.g. ``ReLU``, ``14B``).  This function substitutes
+    the element with that original text so the spellchecker sees source-faithful
+    tokens.
     """
     for abbr in el_copy.select("abbr.small-caps"):
         original = abbr.get("data-original-text")
@@ -2638,11 +2634,10 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, and style content, replaces
-    smallcaps abbreviation elements with their original text
-    (via ``data-original-text``), and inserts spaces around
-    ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
-    for each paragraph.
+    Strips code, KaTeX, script, and style content, replaces smallcaps
+    abbreviation elements with their original text (via ``data-original-text``),
+    and inserts spaces around ``<sub>``/``<sup>``/``<br>`` tags.  Returns
+    ``get_text()`` for each paragraph.
     """
     paragraphs: list[str] = []
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
@@ -2721,10 +2716,10 @@ def _augmented_wordlist(wordlist: Path) -> Path | None:
     Generate a tempfile containing the wordlist plus possessive variants.
 
     Runs ``scripts/augment_spellcheck_wordlist.sh`` so that ``KaTeX`` also
-    accepts ``KaTeX's`` / ``KaTeX’s`` without a second dictionary entry.
-    Returns ``None`` when either the wordlist or the helper script is
-    missing; callers should fall back to no ``--dictionaries`` argument.
-    The caller is responsible for unlinking the returned path.
+    accepts ``KaTeX's`` / ``KaTeX’s`` without a second dictionary entry. Returns
+    ``None`` when either the wordlist or the helper script is missing; callers
+    should fall back to no ``--dictionaries`` argument. The caller is
+    responsible for unlinking the returned path.
     """
     script = _GIT_ROOT / "scripts" / "augment_spellcheck_wordlist.sh"
     if not wordlist.exists() or not script.exists():

@@ -2,8 +2,8 @@
 Replace `asset_staging` references in markdown files with their final static
 paths.
 
-The script scans the ``asset_staging`` directory for staged assets and updates all
-markdown files under ``markdown_dir`` so that references like
+The script scans the ``asset_staging`` directory for staged assets and updates
+all markdown files under ``markdown_dir`` so that references like
 ``asset_staging/example.png`` or a bare ``example.png`` become
 ``static/images/posts/example.png``.  The implementation is split into small,
 typed helper functions to keep the logic flat and easy to test.

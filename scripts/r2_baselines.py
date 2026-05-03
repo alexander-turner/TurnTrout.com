@@ -69,8 +69,8 @@ def download(local_dir: Path) -> None:
     """
     Mirror R2 baselines to the local directory.
 
-    Uses ``rclone copy`` (not ``sync``) so locally-generated files (e.g.
-    fresh screenshots a regen run is about to upload) aren't deleted.
+    Uses ``rclone copy`` (not ``sync``) so locally-generated files (e.g. fresh
+    screenshots a regen run is about to upload) aren't deleted.
     """
     local_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
@@ -94,11 +94,11 @@ def upload(local_dir: Path) -> None:
     """
     Mirror the local directory back to R2.
 
-    Uses ``rclone copy`` (additive — never deletes) so a regen run that
-    only produced baselines for one platform doesn't wipe the other
-    platform's baselines in R2. Pruning orphans (e.g. baselines for
-    deleted tests) is intentionally separate; do it with a one-shot
-    ``rclone sync`` from a complete local mirror.
+    Uses ``rclone copy`` (additive — never deletes) so a regen run that only
+    produced baselines for one platform doesn't wipe the other platform's
+    baselines in R2. Pruning orphans (e.g. baselines for deleted tests) is
+    intentionally separate; do it with a one-shot ``rclone sync`` from a
+    complete local mirror.
     """
     if not local_dir.is_dir():
         raise FileNotFoundError(f"Local dir not found: {local_dir}")

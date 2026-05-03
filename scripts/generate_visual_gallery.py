@@ -2,18 +2,17 @@
 """
 Generate a single-page screenshot gallery from Playwright trace artifacts.
 
-The Playwright HTML report buries each shot behind a click-into-a-test
-panel, which is painful to skim for ~100 bootstrap shots. This emits a
-self-contained `gallery.html` next to it: one tile per failed-comparison
-screenshot, click-to-enlarge lightbox, sorted by test label.
+The Playwright HTML report buries each shot behind a click-into-a-test panel,
+which is painful to skim for ~100 bootstrap shots. This emits a self-contained
+`gallery.html` next to it: one tile per failed-comparison screenshot, click-to-
+enlarge lightbox, sorted by test label.
 
-Usage: generate-visual-gallery.py <traces-dir> <report-dir>
-  traces-dir  Root of downloaded `playwright-traces-*` artifacts. Globbed
-              recursively for `*-actual.png` files, skipping `*-retry*`
-              dirs to avoid duplicates from Playwright's retry pass.
-  report-dir  Existing playwright-report directory. The script writes
-              `<report-dir>/gallery.html` and copies images to
-              `<report-dir>/gallery-images/`.
+Usage: generate-visual-gallery.py <traces-dir> <report-dir>   traces-dir  Root
+of downloaded `playwright-traces-*` artifacts. Globbed               recursively
+for `*-actual.png` files, skipping `*-retry*`               dirs to avoid
+duplicates from Playwright's retry pass.   report-dir  Existing playwright-
+report directory. The script writes               `<report-dir>/gallery.html`
+and copies images to               `<report-dir>/gallery-images/`.
 """
 
 from __future__ import annotations

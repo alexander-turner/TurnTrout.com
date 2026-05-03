@@ -748,9 +748,9 @@ def check_self_closing_non_void_elements(text: str) -> list[str]:
     """
     Check for self-closing syntax on non-void HTML elements.
 
-    Elements like `<iframe ... />` cause parsing bugs because the browser
-    treats them as unclosed tags, swallowing subsequent content.  Only void
-    elements (`<img>`, `<br>`, `<hr>`, etc.) may use self-closing syntax.
+    Elements like `<iframe ... />` cause parsing bugs because the browser treats
+    them as unclosed tags, swallowing subsequent content.  Only void elements
+    (`<img>`, `<br>`, `<hr>`, etc.) may use self-closing syntax.
     """
     errors: list[str] = []
     for match in _SELF_CLOSING_NON_VOID_RE.finditer(text):
@@ -876,7 +876,8 @@ def check_font_files(css_content: str, base_dir: Path) -> list[str]:
         r"""@font-face\s*\{[^}]*?
         src:\s*url\(\s*["']?(.*?)["']?\)\s*
         (?:format\([^\)]*\)\s*)?
-        [^;]*;""",
+        [^;]*;"""
+                 ,
         re.VERBOSE | re.DOTALL,
     )
 
@@ -931,7 +932,8 @@ def check_font_families(css_content: str) -> list[str]:
     # Find all @font-face declarations and their font families
     font_face_pattern = re.compile(
         r"""@font-face\s*\{[^}]*?
-        font-family:\s*["']?(.*?)["']?[;,]""",
+        font-family:\s*["']?(.*?)["']?[;,]"""
+                                             ,
         re.VERBOSE | re.DOTALL,
     )
     declared_fonts = {
