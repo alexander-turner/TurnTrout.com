@@ -620,8 +620,10 @@ export function insertFavicon(imgPath: string | null, node: Element): void {
   }
 }
 
-// Glyphs where top-right corner occupied
-export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'"]
+// Glyphs where top-right corner is occupied (ascenders with rightward
+// hooks/crossbars, tall punctuation) and which therefore visually crowd the
+// favicon without extra spacing.
+export const charsToSpace = ["!", "?", "|", "]", '"', "”", "’", "'", "f", "t", "r"]
 export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "ins", "abbr"]
 
 /**
