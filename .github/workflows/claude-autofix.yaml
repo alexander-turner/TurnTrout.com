@@ -143,7 +143,7 @@ jobs:
 
       - name: Claude autofix
         if: steps.pr.outputs.skip != 'true' && steps.budget.outputs.skip != 'true'
-        uses: anthropics/claude-code-action@38ec876110f9fbf8b950c79f534430740c3ac009 # v1
+        uses: anthropics/claude-code-action@fefa07e9c665b7320f08c3b525980457f22f58aa # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Push token so the action can commit the fix back to the PR
