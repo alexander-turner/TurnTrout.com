@@ -705,6 +705,20 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(result)).toBe(expected)
       },
     )
+
+    it.each([
+      ["<p>Press Ctrl+F to search.</p>", "<p>Press Ctrl+F to search.</p>"],
+      ["<p>ctrl+f</p>", "<p>ctrl+f</p>"],
+      ["<p>Alt+Tab</p>", "<p>Alt+Tab</p>"],
+      ["<p>Cmd+S</p>", "<p>Cmd+S</p>"],
+      ["<p>cmd+shift</p>", "<p>cmd+shift</p>"],
+      ["<p>Command+Q</p>", "<p>Command+Q</p>"],
+      ["<p>Option+J</p>", "<p>Option+J</p>"],
+      ["<p>Fn+F1</p>", "<p>Fn+F1</p>"],
+    ])("should leave keyboard shortcut '%s' untouched", (input: string, expected: string) => {
+      const result = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(result)).toBe(expected)
+    })
   })
 
   describe("Hyphens", () => {

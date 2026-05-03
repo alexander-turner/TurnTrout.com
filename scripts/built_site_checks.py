@@ -1781,6 +1781,7 @@ def check_metadata_matches(soup: BeautifulSoup, md_path: Path) -> list[str]:
 @dataclass(frozen=True)
 class CheckOptions:
     """Configuration options shared across all file checks."""
+
     should_check_fonts: bool = False
     defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
