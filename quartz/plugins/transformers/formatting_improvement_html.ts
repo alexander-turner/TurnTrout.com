@@ -546,8 +546,9 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 export function plusToAmpersand(text: string): string {
-  const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
-  const result = text.replace(new RegExp(sourcePattern, "gu"), `${NBSP}\u0026${NBSP}`)
+  // Skip keyboard shortcuts: Ctrl+F, Alt+Tab, Cmd+S, Option+J, Fn+F1, etc.
+  const sourcePattern = "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])"
+  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}\u0026${NBSP}`)
   return result
 }
 
