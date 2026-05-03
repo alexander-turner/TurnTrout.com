@@ -545,12 +545,10 @@ export function normalizeAbbreviations(text: string): string {
   return text
 }
 
-const AMPERSAND = "&"
-
 export function plusToAmpersand(text: string): string {
   // Skip keyboard shortcuts: Ctrl+F, Alt+Tab, Cmd+S, Option+J, Fn+F1, etc.
   const sourcePattern = "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])"
-  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}${AMPERSAND}${NBSP}`)
+  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}&${NBSP}`)
   return result
 }
 
