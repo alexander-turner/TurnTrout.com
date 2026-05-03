@@ -526,7 +526,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 ### Favicon kerning iteration
 
 |                            |                            |                            |                            |                            |                            |
-| -------------------------- | -------------------------- | -------------------------- | -------------------------- | -------------------------- | -------------------------- |
+| :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: |
 | [aba](https://npmjs.com)   | [abb](https://npmjs.com)   | [abc](https://npmjs.com)   | [abd](https://npmjs.com)   | [abe](https://npmjs.com)   | [abf](https://npmjs.com)   |
 | [abg](https://npmjs.com)   | [abh](https://npmjs.com)   | [abi](https://npmjs.com)   | [abj](https://npmjs.com)   | [abk](https://npmjs.com)   | [abl](https://npmjs.com)   |
 | [abm](https://npmjs.com)   | [abn](https://npmjs.com)   | [abo](https://npmjs.com)   | [abp](https://npmjs.com)   | [abq](https://npmjs.com)   | [abr](https://npmjs.com)   |
@@ -539,7 +539,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 | [ab2](https://npmjs.com)   | [ab3](https://npmjs.com)   | [ab4](https://npmjs.com)   | [ab5](https://npmjs.com)   | [ab6](https://npmjs.com)   | [ab7](https://npmjs.com)   |
 | [ab8](https://npmjs.com)   | [ab9](https://npmjs.com)   | [ab.](https://npmjs.com)   | [ab,](https://npmjs.com)   | [ab;](https://npmjs.com)   | [ab:](https://npmjs.com)   |
 | [ab!](https://npmjs.com)   | [ab?](https://npmjs.com)   | [ab'](https://npmjs.com)   | [ab"](https://npmjs.com)   | [ab’](https://npmjs.com)   | [ab”](https://npmjs.com)   |
-| [ab(](https://npmjs.com)   | [ab)](https://npmjs.com)   | [ab\[](https://npmjs.com)  | [ab\]](https://npmjs.com)  | [ab{](https://npmjs.com)   | [ab}](https://npmjs.com)   |
+| [ab(](https://npmjs.com)   | [ab)](https://npmjs.com)   | [ab\[](https://npmjs.com)  | [ab\]](https://npmjs.com)  | [ab\{](https://npmjs.com)  | [ab\}](https://npmjs.com)  |
 | [ab-](https://npmjs.com)   | [ab/](https://npmjs.com)   | [ab\\](https://npmjs.com)  | [ab\|](https://npmjs.com)  | [ab&](https://npmjs.com)   | [ab\*](https://npmjs.com)  |
 | [ab@](https://npmjs.com)   | [ab#](https://npmjs.com)   | [ab%](https://npmjs.com)   | [ab$](https://npmjs.com)   | [ab+](https://npmjs.com)   | [ab=](https://npmjs.com)   |
 | [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | [ab\`](https://npmjs.com)  |
