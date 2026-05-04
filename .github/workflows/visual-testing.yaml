@@ -79,6 +79,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "true"
+          install-python: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
@@ -205,6 +206,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "false"
+          install-python: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
