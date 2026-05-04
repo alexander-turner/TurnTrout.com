@@ -271,7 +271,7 @@ describe("Head Component", () => {
       const html = render(h(Head, propsWithIndexing))
 
       expect(html).toContain('name="robots"')
-      expect(html).toContain("noindex, noimageindex,nofollow")
+      expect(html).toContain("noindex, noimageindex, nofollow")
     })
 
     it("should not include robots meta when avoidIndexing is false", () => {
