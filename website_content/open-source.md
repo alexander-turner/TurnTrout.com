@@ -162,7 +162,7 @@ KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the f
 
 ## Jest `--collect-only` flag
 
-Jest lacked a way to enumerate test cases without running them, unlike `pytest --collect-only`. [PR #16006](https://github.com/jestjs/jest/pull/16006) adds a `--collect-only` flag that loads test files, registers all `describe`/`test`/`it` blocks, prints the discovered tests as a tree (or JSON), and exits without executing any test callbacks.
+Jest lacked a way to enumerate test cases without running them, unlike `pytest --collect-only`. [PR #16006](https://github.com/jestjs/jest/pull/16006) fixed that.
 
 ## SCSS linting rule
 
