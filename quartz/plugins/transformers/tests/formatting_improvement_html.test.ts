@@ -1658,6 +1658,16 @@ describe("identifyLinkNode", () => {
     const node = createNode("div", [createNode("span"), createNode("em"), createNode("strong")])
     expect(identifyLinkNode(node)).toBeNull()
   })
+
+  it("should return null when last child is a text node", () => {
+    const node: Element = {
+      type: "element",
+      tagName: "div",
+      properties: {},
+      children: [createNode("a"), { type: "text", value: " trailing" }],
+    }
+    expect(identifyLinkNode(node)).toBeNull()
+  })
 })
 
 describe("moveQuotesBeforeLink", () => {

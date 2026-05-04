@@ -19,6 +19,9 @@ export function coerceDate(fp: string, d: MaybeDate): Date {
         throw new Error(`Invalid date "${d}" in \`${fp}\`: month must be 1-12 and day must be 1-31`)
       }
       parsedDate = new Date(Number(year), monthNum - 1, dayNum)
+      if (parsedDate.getMonth() !== monthNum - 1 || parsedDate.getDate() !== dayNum) {
+        throw new Error(`Invalid date "${d}" in \`${fp}\`: day is out of range for the given month`)
+      }
     } else {
       parsedDate = new Date(d)
     }
