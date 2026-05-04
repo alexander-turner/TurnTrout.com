@@ -438,6 +438,9 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
           CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          APPROVE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/update-visual-baselines.yaml
         run: |
           {
             echo "## Visual diff report"
@@ -448,6 +451,14 @@ jobs:
               echo ""
             fi
             echo "- Artifact: $ARTIFACT_URL"
+            if [ "$EVENT_NAME" != "pull_request" ]; then
+              echo ""
+              echo "### Approve baselines"
+              echo ""
+              echo "If the diffs look intended, approve them by running"
+              echo "[Update visual baselines]($APPROVE_URL) with \`ref=$REF_NAME\`."
+              echo "(Click *Run workflow*, pick the branch, set the ref input, and submit.)"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment report links on PR
