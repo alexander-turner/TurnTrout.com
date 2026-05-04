@@ -7,7 +7,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { visit } from "unist-util-visit"
+import { EXIT, visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
@@ -47,6 +47,7 @@ export const findElementById = (root: Root, id: string): Element | null => {
   visit(root, "element", (node) => {
     if (node.properties?.id === id) {
       found = node
+      return EXIT
     }
   })
   return found
@@ -380,7 +381,7 @@ export const populateElements = async (
       logger.debug(`Populating ${elements.length} element(s) with class .${config.className}`)
       const content = await config.generator()
       for (const element of elements) {
-        element.children = content
+        element.children = structuredClone(content)
         populatedElements.push(element)
       }
       logger.debug(`Added ${content.length} elements to each .${config.className}`)

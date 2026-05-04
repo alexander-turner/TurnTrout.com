@@ -167,7 +167,7 @@ export function createPageListHast(
   allFiles: QuartzPluginData[],
   limit?: number,
 ): Element {
-  let list = allFiles.sort(byDateAndAlphabetical(cfg))
+  let list = [...allFiles].sort(byDateAndAlphabetical(cfg))
   if (limit) {
     list = list.slice(0, limit)
   }

@@ -404,7 +404,10 @@ export function identifyLinkNode(node: Element): Element | null {
   if (node.tagName === "a") {
     return node
   } else if (node.children && node.children.length > 0) {
-    return identifyLinkNode(node.children[node.children.length - 1] as Element)
+    const lastChild = node.children[node.children.length - 1]
+    if (lastChild.type === "element") {
+      return identifyLinkNode(lastChild)
+    }
   }
   return null
 }
