@@ -5,6 +5,10 @@ inputs:
     description: "Whether to install Playwright and its dependencies"
     required: false
     default: "false"
+  install-python:
+    description: "Whether to install Python and uv (needed for r2_baselines.py)"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -20,7 +24,7 @@ runs:
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-apt: ${{ inputs.install-playwright }}
-        install-python: "false"
+        install-python: ${{ inputs.install-python }}
 
     - name: Install Playwright system dependencies (Linux)
       if: inputs.install-playwright == 'true' && runner.os == 'Linux'

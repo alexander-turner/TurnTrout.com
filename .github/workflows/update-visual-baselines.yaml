@@ -36,6 +36,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "true"
+          install-python: "true"
 
       - name: Install browsers
         run: pnpm run install-browsers
@@ -91,6 +92,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "false"
+          install-python: "true"
 
       - name: Install Playwright WebKit browser
         run: pnpm exec playwright install webkit
