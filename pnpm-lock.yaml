@@ -287,8 +287,8 @@ importers:
         specifier: 0.5.21
         version: 0.5.21
       subfont:
-        specifier: github:alexander-turner/subfont
-        version: '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/864ed37e57c515b2329cd513fa418cae963b5b09(@types/babel__core@7.20.5)'
+        specifier: npm:@turntrout/subfont@1.8.1
+        version: '@turntrout/subfont@1.8.1(@types/babel__core@7.20.5)'
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -2445,9 +2445,8 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
-  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/864ed37e57c515b2329cd513fa418cae963b5b09':
-    resolution: {tarball: https://codeload.github.com/alexander-turner/subfont/tar.gz/864ed37e57c515b2329cd513fa418cae963b5b09}
-    version: 1.0.0
+  '@turntrout/subfont@1.8.1':
+    resolution: {integrity: sha512-sbWMwOI9fTLyclyZrC8cDUeT8glepOTfJgB5/K3SqLJU1f1jRy01Xfoq8wrTJ8WqSkaE+HsedJKHZGrZ44LPJw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -4191,9 +4190,6 @@ packages:
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
-
-  devtools-protocol@0.0.1581282:
-    resolution: {integrity: sha512-nv7iKtNZQshSW2hKzYNr46nM/Cfh5SEvE2oV0/SEGgc9XupIY5ggf84Cz8eJIkBce7S3bmTAauFD6aysMpnqsQ==}
 
   devtools-protocol@0.0.1595872:
     resolution: {integrity: sha512-kRfgp8vWVjBu/fbYCiVFiOqsCk3CrMKEo3WbgGT2NXK2dG7vawWPBljixajVgGK9II8rDO9G0oD0zLt3I1daRg==}
@@ -7586,10 +7582,6 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
-
-  puppeteer-core@24.40.0:
-    resolution: {integrity: sha512-MWL3XbUCfVgGR0gRsidzT6oKJT2QydPLhMITU6HoVWiiv4gkb6gJi3pcdAa8q4HwjBTbqISOWVP4aJiiyUJvag==}
-    engines: {node: '>=18'}
 
   puppeteer-core@24.41.0:
     resolution: {integrity: sha512-rLIUri7E/NQ3APSEYCCozaSJx0u8Tu9wxO6BJwnvXmIgILSK3L0TombaVh3izp1njAGrO6H2ru0hcIrLF+gWLw==}
@@ -11592,7 +11584,7 @@ snapshots:
   '@tsconfig/node16@1.0.4':
     optional: true
 
-  '@turntrout/subfont@https://codeload.github.com/alexander-turner/subfont/tar.gz/864ed37e57c515b2329cd513fa418cae963b5b09(@types/babel__core@7.20.5)':
+  '@turntrout/subfont@1.8.1(@types/babel__core@7.20.5)':
     dependencies:
       '@gustavnikolaj/async-main-wrap': 3.0.1
       '@hookun/parse-animation-shorthand': 0.1.5
@@ -11608,12 +11600,11 @@ snapshots:
       jsdom: 25.0.1
       lines-and-columns: 1.2.4
       memoizesync: 1.1.1
-      p-limit: 3.1.0
       parse5: 7.3.0
       postcss: 8.5.10
       postcss-value-parser: 4.2.0
       pretty-bytes: 5.6.0
-      puppeteer-core: 24.40.0
+      puppeteer-core: 24.41.0
       sanitize-filename: 1.6.4
       specificity: 0.4.1
       urltools: 0.4.2
@@ -12869,12 +12860,6 @@ snapshots:
     dependencies:
       readdirp: 5.0.0
 
-  chromium-bidi@14.0.0(devtools-protocol@0.0.1581282):
-    dependencies:
-      devtools-protocol: 0.0.1581282
-      mitt: 3.0.1
-      zod: 3.25.76
-
   chromium-bidi@14.0.0(devtools-protocol@0.0.1595872):
     dependencies:
       devtools-protocol: 0.0.1595872
@@ -13755,8 +13740,6 @@ snapshots:
   devlop@1.1.0:
     dependencies:
       dequal: 2.0.3
-
-  devtools-protocol@0.0.1581282: {}
 
   devtools-protocol@0.0.1595872: {}
 
@@ -18265,23 +18248,6 @@ snapshots:
   punycode@1.4.1: {}
 
   punycode@2.3.1: {}
-
-  puppeteer-core@24.40.0:
-    dependencies:
-      '@puppeteer/browsers': 2.13.0
-      chromium-bidi: 14.0.0(devtools-protocol@0.0.1581282)
-      debug: 4.4.3
-      devtools-protocol: 0.0.1581282
-      typed-query-selector: 2.12.1
-      webdriver-bidi-protocol: 0.4.1
-      ws: 8.20.0
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - bare-buffer
-      - bufferutil
-      - react-native-b4a
-      - supports-color
-      - utf-8-validate
 
   puppeteer-core@24.41.0:
     dependencies:
