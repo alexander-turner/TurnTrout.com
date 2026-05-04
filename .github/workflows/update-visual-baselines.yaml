@@ -1,17 +1,18 @@
 name: Update visual baselines
 
-# Two ways in:
-#   1. PR path: a reviewer adds the `visual-approved` label.
-#   2. Manual path: workflow_dispatch with a ref input — used to approve
-#      baseline drift detected on main (or any non-PR ref) without
-#      having to open a fix-up PR.
-# Both regenerate baselines (Chromium+Firefox on Linux, WebKit on
-# macOS), upload to R2, then push an empty commit to the target branch
-# so visual-testing reruns against the new baselines.
+# Single approval path for visual baseline drift, used both for PRs
+# and for failures on main (or any other branch).
+#
+# Trigger: workflow_dispatch with a `ref` input (defaults to main).
+# The Visual Testing workflow surfaces a link to "Run workflow" on
+# every failure — pre-filled with the PR head branch on PRs, or with
+# `main` on push-to-main runs.
+#
+# Pipeline: regen baselines (Chromium+Firefox on Linux, WebKit on
+# macOS), upload to R2, then push an empty commit to the target
+# branch so visual-testing reruns against the new baselines.
 
 on:
-  pull_request:
-    types: [labeled]
   workflow_dispatch:
     inputs:
       ref:
@@ -25,12 +26,11 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: update-visual-baselines-${{ github.event.pull_request.number || inputs.ref || github.ref }}
+  group: update-visual-baselines-${{ inputs.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
-    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'visual-approved'
     uses: ./.github/workflows/build-site.yaml
 
   generate-linux:
@@ -142,11 +142,8 @@ jobs:
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: uv run python scripts/r2_baselines.py upload
 
-  # Retrigger visual-testing against the new baselines in R2 by pushing
-  # an empty commit to the target branch.
-  #   - PR path: target = PR head ref on its source repo.
-  #   - workflow_dispatch path: target = the ref the workflow was
-  #     dispatched against (defaults to main).
+  # Push an empty commit to the dispatched branch so visual-testing
+  # reruns against the new R2 baselines.
   retrigger:
     needs: [generate-linux, generate-macos]
     if: >-
@@ -157,22 +154,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Compute target ref/repo
-        id: target
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
-            echo "repo=${{ github.repository }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "ref=${{ github.event.pull_request.head.ref }}" >> "$GITHUB_OUTPUT"
-            echo "repo=${{ github.event.pull_request.head.repo.full_name }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Checkout target branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ steps.target.outputs.ref }}
-          repository: ${{ steps.target.outputs.repo }}
+          ref: ${{ inputs.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push empty commit to retrigger visual-testing
@@ -188,21 +173,4 @@ jobs:
           fi
           SHORT_SHA=$(git rev-parse --short HEAD)
           git commit --allow-empty -m "ci: rerun visual-testing against new R2 baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
-          git push origin HEAD:${{ steps.target.outputs.ref }}
-
-      - name: Remove approval label
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                name: 'visual-approved',
-              });
-            } catch (err) {
-              // 404 = already removed; ignore. Anything else, rethrow.
-              if (err.status !== 404) throw err;
-            }
+          git push origin HEAD:${{ inputs.ref }}
