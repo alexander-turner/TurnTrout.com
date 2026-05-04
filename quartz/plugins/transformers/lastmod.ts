@@ -13,7 +13,12 @@ export function coerceDate(fp: string, d: MaybeDate): Date {
     const match = DAY_ONLY_DATE_RE.exec(d)
     if (match?.groups) {
       const { year, month, day } = match.groups
-      parsedDate = new Date(Number(year), Number(month) - 1, Number(day))
+      const monthNum = Number(month)
+      const dayNum = Number(day)
+      if (monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) {
+        throw new Error(`Invalid date "${d}" in \`${fp}\`: month must be 1-12 and day must be 1-31`)
+      }
+      parsedDate = new Date(Number(year), monthNum - 1, dayNum)
     } else {
       parsedDate = new Date(d)
     }

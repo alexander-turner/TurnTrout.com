@@ -32,6 +32,15 @@ describe("coerceDate", () => {
     expect(() => coerceDate("test.md", input)).toThrow("Invalid date")
   })
 
+  it.each([
+    ["month 13", "2024-13-01"],
+    ["month 0", "2024-00-15"],
+    ["day 0", "2024-06-00"],
+    ["day 32", "2024-06-32"],
+  ])("throws for out-of-range date component: %s", (_, input) => {
+    expect(() => coerceDate("test.md", input)).toThrow("month must be 1-12 and day must be 1-31")
+  })
+
   it("includes file path and documentation link in error", () => {
     expect(() => coerceDate("my/custom/path.md", "invalid")).toThrow("my/custom/path.md")
     expect(() => coerceDate("test.md", "invalid")).toThrow(
