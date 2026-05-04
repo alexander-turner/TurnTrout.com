@@ -160,6 +160,10 @@ When math content becomes scrollable (e.g. via CSS overflow), it cannot be focus
 
 KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the final HTML output even though no CSS rules reference them. [PR #4164](https://github.com/KaTeX/KaTeX/pull/4164) strips these build-time-only classes from the rendered output, reducing the KaTeX DOM footprint by ~15%.
 
+## Jest `--collect-only` flag
+
+Jest lacked a way to enumerate test cases without running them, unlike `pytest --collect-only`. [PR #16006](https://github.com/jestjs/jest/pull/16006) fixed that.
+
 ## SCSS linting rule
 
 I contributed a rule to [stylelint-scss](https://github.com/stylelint-scss/stylelint-scss). I ran into the following issue:
