@@ -1,8 +1,13 @@
 #!/bin/sh
 set -e
 
-# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH
+# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH, plus
+# node_modules/.bin so source_file_checks can find sass.
 export PATH="$HOME/.local/bin:$PATH"
+GIT_ROOT_FOR_PATH=$(git rev-parse --show-toplevel)
+if [ -d "$GIT_ROOT_FOR_PATH/node_modules/.bin" ]; then
+  export PATH="$GIT_ROOT_FOR_PATH/node_modules/.bin:$PATH"
+fi
 
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
