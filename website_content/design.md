@@ -967,6 +967,12 @@ The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters 
 ✓ Linting TypeScript (ESLint --fix)
 ✓ Formatting Python docstrings (docformatter --in-place)
 ✓ Cleaning up SCSS (stylelint --fix)
+✓ Generate SCSS variables
+ℹ Running 4 checks in parallel: Pylint, Mypy, Source file checks, Spellcheck and Vale
+✓ Pylint
+✓ Mypy
+✓ Source file checks
+✓ Spellcheck and Vale
 ✓ Compressing and uploading local assets
 ⠹ Scanning for images without alt text...
 ```
@@ -975,13 +981,18 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Cheap checks
 
-Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. CI also runs this for reliability, but having it locally means errors are caught and fixed before the push completes.
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. After the autofixers, four more read-only checks sweep in parallel:
+
+- [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
+- [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
+- My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
+- A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/) which strips `[!quote]` callouts first, so I don't get flagged for quoting people whose words aren't in my dictionary.
+
+Running them in parallel is essentially free — they don't modify files, they don't depend on each other. A single push reports every problem at once instead of one-at-a-time.
 
 ### Auto-fixing formatters
 
 I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
-
-These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
 
 ### Alt-text scanning
 
