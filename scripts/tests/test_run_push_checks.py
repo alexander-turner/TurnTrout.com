@@ -639,18 +639,36 @@ def test_get_check_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_check_steps(test_root)
 
-    # Formatter steps + three local-only steps (pylint, assets, alt-text)
+    # Formatter steps + 4 parallel verifiers + 2 local-only tail steps
     formatter_count = len(run_push_checks.get_formatter_steps(test_root))
-    assert len(steps) == formatter_count + 3
+    # Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail steps
+    assert len(steps) == formatter_count + 7
 
     step_names = [s.name for s in steps]
     assert "Linting Python" in step_names
     assert "Linting TypeScript" in step_names
     assert "Formatting Python docstrings" in step_names
     assert "Cleaning up SCSS" in step_names
+    assert "Generate SCSS variables" in step_names
     assert "Pylint" in step_names
+    assert "Mypy" in step_names
+    assert "Source file checks" in step_names
+    assert "Spellcheck and Vale" in step_names
     assert "Compressing and uploading local assets" in step_names
     assert "Scanning for images without alt text" in step_names
+
+    # SCSS variables must be generated before the verify group so
+    # source_file_checks can resolve `@use "./variables.scss"`. Keep it
+    # sequential (parallel_group=None).
+    scss_step = next(s for s in steps if s.name == "Generate SCSS variables")
+    assert scss_step.parallel_group is None
+    scss_idx = next(
+        i for i, s in enumerate(steps) if s.name == "Generate SCSS variables"
+    )
+    source_idx = next(
+        i for i, s in enumerate(steps) if s.name == "Source file checks"
+    )
+    assert scss_idx < source_idx
 
     pylint_step = next(s for s in steps if s.name == "Pylint")
     assert pylint_step.command[:5] == [
@@ -666,6 +684,24 @@ def test_get_check_steps():
     )
     assert pylint_step.command[-1] == "."
     assert pylint_step.cwd == str(test_root)
+    assert pylint_step.parallel_group == "verify"
+
+    # All four read-only verifiers share the same parallel group so they
+    # run concurrently rather than serially.
+    verify_names = {
+        "Pylint",
+        "Mypy",
+        "Source file checks",
+        "Spellcheck and Vale",
+    }
+    for step in steps:
+        if step.name in verify_names:
+            assert step.parallel_group == "verify"
+        else:
+            assert step.parallel_group is None
+
+    spellcheck_step = next(s for s in steps if s.name == "Spellcheck and Vale")
+    assert spellcheck_step.requires == "vale"
 
     # Verify ESLint is configured with --fix and correct config path
     # skipcq: PTC-W0063 (step existence already asserted via step_names above)
@@ -1117,3 +1153,210 @@ def test_run_checks_always_commits_changes(temp_state_dir):
         mock_commit.assert_called_once_with(
             run_push_checks._GIT_ROOT, "Test Step"
         )
+
+
+def test_group_consecutive_singletons_for_none():
+    """Steps without parallel_group are isolated as singleton groups."""
+    steps = [
+        run_push_checks.CheckStep(name="A", command=["a"]),
+        run_push_checks.CheckStep(name="B", command=["b"]),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [["A"], ["B"]]
+
+
+def test_group_consecutive_merges_same_group():
+    """Consecutive steps sharing parallel_group are batched together."""
+    steps = [
+        run_push_checks.CheckStep(name="Pre", command=["x"]),
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(name="Post", command=["y"]),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [
+        ["Pre"],
+        ["V1", "V2"],
+        ["Post"],
+    ]
+
+
+def test_group_consecutive_splits_distinct_groups():
+    """Different parallel_group values do not merge even when adjacent."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="A1", command=["a1"], parallel_group="audit"
+        ),
+    ]
+    groups = run_push_checks._group_consecutive(steps)
+    assert [[s.name for s in g] for g in groups] == [["V1"], ["A1"]]
+
+
+def test_run_checks_dispatches_parallel_group(temp_state_dir):
+    """Steps in a shared parallel_group run via _run_parallel_group, not as
+    singletons."""
+    steps = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(name="Tail", command=["tail"]),
+    ]
+    with (
+        patch("scripts.run_push_checks._run_parallel_group") as mock_par,
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        run_push_checks.run_checks(steps)
+        # Verify group was dispatched concurrently exactly once.
+        assert mock_par.call_count == 1
+        passed_group = mock_par.call_args.args[0]
+        assert [s.name for s in passed_group] == ["V1", "V2"]
+        # Tail still ran via _execute_step.
+        mock_exec.assert_called_once()
+        assert mock_exec.call_args.args[0].name == "Tail"
+
+
+def test_run_parallel_group_all_success(temp_state_dir):
+    """All-success parallel groups commit each step and save state at the last
+    step."""
+    group = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="V2", command=["v2"], parallel_group="verify"
+        ),
+    ]
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("scripts.run_push_checks.save_state") as mock_save,
+        patch("scripts.run_push_checks.Progress"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        )
+        mock_progress = MagicMock()
+        run_push_checks._run_parallel_group(
+            group, mock_progress, auto_commit=True, continue_on_failure=False
+        )
+        assert mock_commit.call_count == 2
+        # Saved state lands on the *last* step name so resume picks up after
+        # the whole group.
+        mock_save.assert_called_once_with("V2")
+
+
+def test_run_parallel_group_raises_on_failure(temp_state_dir):
+    """A failed step in a parallel group still lets siblings finish, then raises
+    CheckFailedError once the group is drained."""
+    group = [
+        run_push_checks.CheckStep(
+            name="OK", command=["ok"], parallel_group="verify"
+        ),
+        run_push_checks.CheckStep(
+            name="Bad", command=["bad"], parallel_group="verify"
+        ),
+    ]
+    results_by_name = {
+        "OK": run_push_checks.CommandResult(success=True, stdout="", stderr=""),
+        "Bad": run_push_checks.CommandResult(
+            success=False, stdout="boom", stderr="kaboom"
+        ),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes"),
+        patch("scripts.run_push_checks.save_state"),
+        pytest.raises(run_push_checks.CheckFailedError) as exc_info,
+    ):
+        mock_exec.side_effect = lambda step, _p: results_by_name[step.name]
+        run_push_checks._run_parallel_group(
+            [group[0], group[1]],
+            MagicMock(),
+            auto_commit=False,
+            continue_on_failure=False,
+        )
+    assert exc_info.value.step_name == "Bad"
+    assert exc_info.value.stdout == "boom"
+
+
+def test_run_parallel_group_continues_past_failure(temp_state_dir):
+    """continue_on_failure swallows the failure (used by CI autofix)."""
+    group = [
+        run_push_checks.CheckStep(
+            name="V1", command=["v1"], parallel_group="verify"
+        ),
+    ]
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.save_state"),
+    ):
+        mock_exec.return_value = run_push_checks.CommandResult(
+            success=False, stdout="", stderr=""
+        )
+        # Should not raise.
+        run_push_checks._run_parallel_group(
+            group,
+            MagicMock(),
+            auto_commit=False,
+            continue_on_failure=True,
+        )
+
+
+def test_run_parallel_group_skips_missing_requires(temp_state_dir):
+    """A step whose `requires` tool is missing returns None and is silently
+    skipped within a parallel group."""
+    group = [
+        run_push_checks.CheckStep(
+            name="Skipped",
+            command=["x"],
+            requires="nope",
+            parallel_group="verify",
+        ),
+        run_push_checks.CheckStep(
+            name="Ran", command=["y"], parallel_group="verify"
+        ),
+    ]
+    call_results = {
+        "Skipped": None,
+        "Ran": run_push_checks.CommandResult(
+            success=True, stdout="", stderr=""
+        ),
+    }
+    with (
+        patch("scripts.run_push_checks._execute_step") as mock_exec,
+        patch("scripts.run_push_checks.commit_step_changes") as mock_commit,
+        patch("scripts.run_push_checks.save_state"),
+    ):
+        mock_exec.side_effect = lambda step, _p: call_results[step.name]
+        run_push_checks._run_parallel_group(
+            group,
+            MagicMock(),
+            auto_commit=True,
+            continue_on_failure=False,
+        )
+        # Only the non-skipped step should commit.
+        assert mock_commit.call_count == 1
+
+
+def test_execute_step_skips_when_requires_missing():
+    """_execute_step returns None when the required tool is absent."""
+    step = run_push_checks.CheckStep(
+        name="Needs missing", command=["x"], requires="nonexistent-xyz"
+    )
+    progress = MagicMock()
+    result = run_push_checks._execute_step(step, progress)
+    assert result is None

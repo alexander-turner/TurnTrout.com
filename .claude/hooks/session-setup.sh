@@ -288,6 +288,15 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
 	fi
+	# Add node_modules/.bin to PATH so binaries like `sass` (used by
+	# source_file_checks.py) and `vale`/`spellchecker` are reachable from
+	# the pre-push hook without invoking pnpm exec.
+	if [ -d "$PROJECT_DIR/node_modules/.bin" ]; then
+		export PATH="$PROJECT_DIR/node_modules/.bin:$PATH"
+		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+			echo "export PATH=\"$PROJECT_DIR/node_modules/.bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+		fi
+	fi
 fi
 
 if [ -f "$PROJECT_DIR/uv.lock" ] && command -v uv &>/dev/null; then

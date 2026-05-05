@@ -967,6 +967,12 @@ The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters 
 ✓ Linting TypeScript (ESLint --fix)
 ✓ Formatting Python docstrings (docformatter --in-place)
 ✓ Cleaning up SCSS (stylelint --fix)
+✓ Generate SCSS variables
+ℹ Running 4 checks in parallel: Pylint, Mypy, Source file checks, Spellcheck and Vale
+✓ Pylint
+✓ Mypy
+✓ Source file checks
+✓ Spellcheck and Vale
 ✓ Compressing and uploading local assets
 ⠹ Scanning for images without alt text...
 ```
@@ -981,7 +987,18 @@ Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback 
 
 I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
 
-These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
+These formatters run locally because they _modify files_ and auto-commit the fixes. `eslint --fix` and `stylelint --fix` still exit non-zero on remaining unfixable errors, so they double as gate checks — no separate non-fix pass is needed.
+
+### Read-only verifiers (parallel)
+
+After the autofixers, a batch of read-only checks runs concurrently via a thread pool, mirroring the gates in `lint-and-validate.yaml` so failures surface locally instead of after `main` goes red:
+
+- [`pylint`](https://pylint.readthedocs.io/) — catches what DeepSource's static analysis catches (e.g. missing function docstrings) before push, instead of after merge to `main`.
+- [`mypy`](https://mypy.readthedocs.io/) — strict type-checking against `config/python/mypy.ini`. The session-start hook pre-warms a `dmypy` daemon so the cold-start cost is paid once per sandbox.
+- `source_file_checks.py` — frontmatter, publication-date, asset-reference, and font-reference validation across all posts. Depends on `quartz/styles/variables.scss`, which a sequential prep step generates first.
+- Spellcheck + Vale — `scripts/run_spellcheck_and_vale.sh` strips `[!quote]` callouts (so quotations from external sources don't trip the dictionary), then runs `spellchecker-cli` and Vale concurrently inside the wrapper. The wrapper is itself one of four sibling jobs in the outer parallel group.
+
+Internally, `run_push_checks.py` groups consecutive `CheckStep` objects that share a `parallel_group` value and dispatches them to a `concurrent.futures.ThreadPoolExecutor`. Failures don't short-circuit the group — every parallel sibling runs to completion before the first failure is re-raised, so a single push reports every problem at once.
 
 ### Alt-text scanning
 
