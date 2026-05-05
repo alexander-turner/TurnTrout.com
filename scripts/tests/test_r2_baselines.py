@@ -66,6 +66,8 @@ def test_download_invokes_rclone_copy(env_vars: None, tmp_path: Path) -> None:
     assert args[1] == r2_baselines._remote_path()
     assert args[2] == str(target)
     assert "--include=*.png" in args
+    for flag in r2_baselines.RCLONE_RETRY_FLAGS:
+        assert flag in args
 
 
 def test_upload_invokes_rclone_copy(env_vars: None, tmp_path: Path) -> None:
@@ -79,6 +81,8 @@ def test_upload_invokes_rclone_copy(env_vars: None, tmp_path: Path) -> None:
     assert args[0] == "copy"
     assert args[1] == str(src)
     assert args[2] == r2_baselines._remote_path()
+    for flag in r2_baselines.RCLONE_RETRY_FLAGS:
+        assert flag in args
 
 
 def test_upload_missing_dir(env_vars: None, tmp_path: Path) -> None:

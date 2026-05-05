@@ -62,13 +62,16 @@ uv_install_if_missing alt-text-llm
 if is_root; then
 	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
 	# needed by scripts/tests/test_compress.py et al. (the Stop hook runs
-	# pytest, and ~75 tests + 60 errors fall over without them).
+	# pytest, and ~75 tests + 60 errors fall over without them). rclone is
+	# needed by scripts/r2_upload.py and scripts/r2_baselines.py (and the
+	# pre-push hook's R2 asset uploads).
 	declare -A apt_needed=(
 		[shellcheck]=shellcheck
 		[fish]=fish
 		[ffmpeg]=ffmpeg
 		[convert]=imagemagick
 		[exiftool]=libimage-exiftool-perl
+		[rclone]=rclone
 	)
 	apt_pkgs=()
 	for cmd in "${!apt_needed[@]}"; do
@@ -114,16 +117,14 @@ fi
 
 #######################################
 # rclone (needed for R2 asset uploads in pre-push hook)
+#
+# Install via apt above (bundled with other system deps for atomicity).
+# Non-root sandboxes fall back to the official installer.
 #######################################
 
-if ! command -v rclone &>/dev/null; then
-	if is_root; then
-		{ apt-get update -qq && apt-get install -y -qq rclone; } 2>/dev/null ||
-			warn "Failed to install rclone via apt"
-	else
-		curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
-			warn "Failed to install rclone"
-	fi
+if ! command -v rclone &>/dev/null && ! is_root; then
+	curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
+		warn "Failed to install rclone"
 fi
 
 # Configure rclone R2 remote from environment variables
