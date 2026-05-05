@@ -639,17 +639,31 @@ def test_get_check_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_check_steps(test_root)
 
-    # Formatter steps + two local-only steps
+    # Formatter steps + three local-only steps (pylint, assets, alt-text)
     formatter_count = len(run_push_checks.get_formatter_steps(test_root))
-    assert len(steps) == formatter_count + 2
+    assert len(steps) == formatter_count + 3
 
     step_names = [s.name for s in steps]
     assert "Linting Python" in step_names
     assert "Linting TypeScript" in step_names
     assert "Formatting Python docstrings" in step_names
     assert "Cleaning up SCSS" in step_names
+    assert "Pylint" in step_names
     assert "Compressing and uploading local assets" in step_names
     assert "Scanning for images without alt text" in step_names
+
+    pylint_step = next(s for s in steps if s.name == "Pylint")
+    assert pylint_step.command[:5] == [
+        "uv",
+        "run",
+        "python",
+        "-m",
+        "pylint",
+    ]
+    assert (
+        str(test_root / "config" / "python" / ".pylintrc")
+        in pylint_step.command
+    )
 
     # Verify ESLint is configured with --fix and correct config path
     # skipcq: PTC-W0063 (step existence already asserted via step_names above)

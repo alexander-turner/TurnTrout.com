@@ -62,17 +62,22 @@ uv_install_if_missing alt-text-llm
 if is_root; then
 	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
 	# needed by scripts/tests/test_compress.py et al. (the Stop hook runs
-	# pytest, and ~75 tests + 60 errors fall over without them). rclone is
-	# needed by scripts/r2_upload.py and scripts/r2_baselines.py (and the
-	# pre-push hook's R2 asset uploads).
+	# pytest, and ~75 tests + 60 errors fall over without them). rclone
+	# (R2 uploads/downloads in scripts/r2_*.py and the pre-push hook) is
+	# only added below when R2 creds are present — fresh sandboxes
+	# without creds skip the ~5s apt install.
 	declare -A apt_needed=(
 		[shellcheck]=shellcheck
 		[fish]=fish
 		[ffmpeg]=ffmpeg
 		[convert]=imagemagick
 		[exiftool]=libimage-exiftool-perl
-		[rclone]=rclone
 	)
+	if [ -n "${ACCESS_KEY_ID_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${SECRET_ACCESS_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${S3_ENDPOINT_ID_TURNTROUT_MEDIA:-}" ]; then
+		apt_needed[rclone]=rclone
+	fi
 	apt_pkgs=()
 	for cmd in "${!apt_needed[@]}"; do
 		command -v "$cmd" &>/dev/null || apt_pkgs+=("${apt_needed[$cmd]}")

@@ -483,14 +483,29 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Get the pre-push check steps to run locally.
 
     Includes shared autofixers from `get_formatter_steps` plus tasks
-    unique to local execution: asset compression/upload (needs R2
-    credentials) and alt-text scanning (needs `alt-text-llm`).
+    unique to local execution: pylint (catches DeepSource issues before
+    push instead of after main goes red), asset compression/upload
+    (needs R2 credentials), and alt-text scanning (needs `alt-text-llm`).
 
     Args:
         git_root_path: Path to the git repository root.
     """
     return [
         *get_formatter_steps(git_root_path),
+        CheckStep(
+            name="Pylint",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "pylint",
+                "--rcfile",
+                f"{git_root_path}/config/python/.pylintrc",
+                str(git_root_path / "scripts"),
+                str(git_root_path / ".github" / "scripts"),
+            ],
+        ),
         # skipcq: BAN-B604
         CheckStep(
             name="Compressing and uploading local assets",
