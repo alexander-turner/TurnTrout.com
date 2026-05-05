@@ -431,13 +431,17 @@ jobs:
 
       # Always-on summary on the workflow run page. Works for PR and main
       # pushes so you can find the URLs from any failing visual-testing
-      # run without hunting through the Artifacts section.
+      # run without hunting through the Artifacts section. Includes the
+      # approve-baselines link too — the PR-comment step below adds the
+      # same content as a PR-side surface.
       - name: Emit summary with report links
         if: always()
         env:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
           CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+          APPROVE_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          APPROVE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/update-visual-baselines.yaml
         run: |
           {
             echo "## Visual diff report"
@@ -448,6 +452,12 @@ jobs:
               echo ""
             fi
             echo "- Artifact: $ARTIFACT_URL"
+            echo ""
+            echo "### Approve baselines"
+            echo ""
+            echo "If the diffs look intended, approve them by running"
+            echo "[Update visual baselines]($APPROVE_URL) with \`ref=$APPROVE_REF\`."
+            echo "(Click *Run workflow*, pick the branch, set the ref input, and submit.)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment report links on PR
@@ -458,6 +468,8 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
           CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+          APPROVE_REF: ${{ github.event.pull_request.head.ref }}
+          APPROVE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/update-visual-baselines.yaml
         with:
           script: |
             const marker = '<!-- visual-diff-report -->';
@@ -466,6 +478,8 @@ jobs:
             const artifactUrl = process.env.ARTIFACT_URL;
             const cloudflareOk = process.env.CLOUDFLARE_OK === 'true';
             const cloudflareUrl = process.env.CLOUDFLARE_URL;
+            const approveRef = process.env.APPROVE_REF;
+            const approveUrl = process.env.APPROVE_URL;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const lines = [
@@ -481,7 +495,7 @@ jobs:
             lines.push(`Download: ${artifactUrl}`);
             lines.push(`(or see the Artifacts section of the [workflow run](${runUrl}))`);
             lines.push('');
-            lines.push('If everything looks intended, add the `visual-approved` label to this PR to update the baselines.');
+            lines.push(`If everything looks intended, approve the baselines by running [Update visual baselines](${approveUrl}) with \`ref=${approveRef}\`. (Click *Run workflow*, pick the branch, set the ref input, and submit.)`);
             const body = lines.join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {

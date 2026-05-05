@@ -1,13 +1,24 @@
 name: Update visual baselines
 
-# Triggered when a reviewer adds the `visual-approved` label to a PR:
-# regenerates visual baselines (Chromium+Firefox on Linux, WebKit on
-# macOS), uploads the fresh PNGs to R2, and pushes an empty commit to
-# the PR branch so visual-testing reruns against the new baselines.
+# Single approval path for visual baseline drift, used both for PRs
+# and for failures on main (or any other branch).
+#
+# Trigger: workflow_dispatch with a `ref` input (defaults to main).
+# The Visual Testing workflow surfaces a link to "Run workflow" on
+# every failure — pre-filled with the PR head branch on PRs, or with
+# `main` on push-to-main runs.
+#
+# Pipeline: regen baselines (Chromium+Firefox on Linux, WebKit on
+# macOS), upload to R2, then push an empty commit to the target
+# branch so visual-testing reruns against the new baselines.
 
 on:
-  pull_request:
-    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch to regen baselines against and push the rerun commit to. Must be a branch name (push back fails on SHAs). Defaults to main."
+        required: false
+        default: main
 
 permissions:
   actions: read
@@ -15,12 +26,11 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: update-visual-baselines-pr-${{ github.event.pull_request.number }}
+  group: update-visual-baselines-${{ inputs.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
-    if: github.event.label.name == 'visual-approved'
     uses: ./.github/workflows/build-site.yaml
 
   generate-linux:
@@ -132,8 +142,8 @@ jobs:
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: uv run python scripts/r2_baselines.py upload
 
-  # Retrigger visual-testing on the PR with the new baselines in R2.
-  # Empty commit on the PR head fires the synchronize event.
+  # Push an empty commit to the dispatched branch so visual-testing
+  # reruns against the new R2 baselines.
   retrigger:
     needs: [generate-linux, generate-macos]
     if: >-
@@ -144,11 +154,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Checkout PR branch
+      - name: Checkout target branch
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push empty commit to retrigger visual-testing
@@ -164,21 +173,4 @@ jobs:
           fi
           SHORT_SHA=$(git rev-parse --short HEAD)
           git commit --allow-empty -m "ci: rerun visual-testing against new R2 baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
-
-      - name: Remove approval label
-        if: always()
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            try {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                name: 'visual-approved',
-              });
-            } catch (err) {
-              // 404 = already removed; ignore. Anything else, rethrow.
-              if (err.status !== 404) throw err;
-            }
+          git push origin HEAD:${{ inputs.ref }}
