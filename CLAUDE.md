@@ -79,8 +79,13 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 
 ## Documentation
 
-- When modifying functionality described in `website_content/design.md`, update that file.
-- Design philosophy from `design.md`: minimal targeted changes; verify before generating; derive style from existing code; security-first; modern best practices with explicit typing; no unnecessary refactoring or whitespace changes.
+When a change touches user-facing behavior, update the relevant doc:
+
+- **`website_content/design.md`**: any new design feature — visual, layout, UX, asset-pipeline behavior, or anything else already documented there. Match the conversational, first-person prose style of the surrounding sections (motivation and tradeoffs, not implementation detail). **Surface the drafted prose in chat before committing** so the user can rewrite the framing or push back. Don't make design.md overly technical — code-level minutiae belong in `.claude/dev-notes.md`.
+- **`website_content/Test-page.md`**: any new visual element (e.g. glyph margin before favicon, new dropcap variant, new admonition style). Add a representative example so the next visual-regression run captures the new element as a baseline.
+- **`.claude/dev-notes.md`**: any new dev procedure that's only useful occasionally — build steps, pre-push checks, CI cost optimization, debugging recipes. Keep CLAUDE.md itself slim — it's loaded every turn.
+
+Design philosophy from `design.md`: minimal targeted changes; verify before generating; derive style from existing code; security-first; modern best practices with explicit typing; no unnecessary refactoring or whitespace changes.
 
 ## Before writing code
 
