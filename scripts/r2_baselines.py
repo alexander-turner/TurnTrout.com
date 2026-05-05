@@ -129,6 +129,7 @@ def upload(local_dir: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Sync visual-baselines between the local checkout and Cloudflare R2."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "command",

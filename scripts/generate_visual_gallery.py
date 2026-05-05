@@ -24,6 +24,7 @@ from pathlib import Path
 
 
 def main(traces_dir: Path, report_dir: Path) -> None:
+    """Build a static HTML gallery of Playwright `*-actual.png` screenshots."""
     images_dir = report_dir / "gallery-images"
     images_dir.mkdir(parents=True, exist_ok=True)
 
