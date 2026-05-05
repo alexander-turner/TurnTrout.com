@@ -48,3 +48,18 @@ runs:
         brew install ffmpeg
         ffprobe -version
       shell: bash
+
+    # rclone ships via apt as part of setup-site's install-system-deps on
+    # Linux, but macOS has no equivalent step — install it here so
+    # scripts/r2_baselines.py works on both platforms.
+    - name: Install rclone on macOS
+      if: runner.os == 'macOS'
+      run: |
+        if command -v rclone &>/dev/null; then
+          echo "rclone already available, skipping install"
+          rclone version
+          exit 0
+        fi
+        brew install rclone
+        rclone version
+      shell: bash
