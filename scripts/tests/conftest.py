@@ -164,6 +164,25 @@ def mock_rclone() -> Iterator[MagicMock]:
         yield mock_run
 
 
+@pytest.fixture(autouse=True)
+def _stub_find_rclone(request: pytest.FixtureRequest) -> Iterator[None]:
+    """
+    Make ``requires_r2`` tests hermetic.
+
+    Tests marked ``requires_r2`` exercise the rclone-driven upload code paths
+    but mock ``subprocess.run``, so they don't need a real rclone binary. They
+    were still calling the real ``find_executable("rclone")`` probe, which
+    raised ``FileNotFoundError`` on machines without rclone installed (CI
+    sandboxes, fresh dev boxes). Stub the probe here so the marker actually
+    delivers on its "doesn't need real R2" promise.
+    """
+    if request.node.get_closest_marker("requires_r2") is None:
+        yield
+        return
+    with patch.object(script_utils, "find_executable", return_value="rclone"):
+        yield
+
+
 def _is_git_command(cmd: list | str) -> bool:
     """Check if command is a git executable."""
     if not isinstance(cmd, list) or not cmd:
