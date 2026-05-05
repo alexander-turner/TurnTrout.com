@@ -494,6 +494,9 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
         *get_formatter_steps(git_root_path),
         CheckStep(
             name="Pylint",
+            # Match python-lint.yaml CI invocation exactly: run on `.` so the
+            # ignore-paths in .pylintrc apply consistently. Listing
+            # .github/scripts explicitly fails because it lacks __init__.py.
             command=[
                 "uv",
                 "run",
@@ -502,9 +505,9 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "pylint",
                 "--rcfile",
                 f"{git_root_path}/config/python/.pylintrc",
-                str(git_root_path / "scripts"),
-                str(git_root_path / ".github" / "scripts"),
+                ".",
             ],
+            cwd=str(git_root_path),
         ),
         # skipcq: BAN-B604
         CheckStep(

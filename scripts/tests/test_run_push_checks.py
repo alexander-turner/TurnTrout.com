@@ -664,6 +664,8 @@ def test_get_check_steps():
         str(test_root / "config" / "python" / ".pylintrc")
         in pylint_step.command
     )
+    assert pylint_step.command[-1] == "."
+    assert pylint_step.cwd == str(test_root)
 
     # Verify ESLint is configured with --fix and correct config path
     # skipcq: PTC-W0063 (step existence already asserted via step_names above)
