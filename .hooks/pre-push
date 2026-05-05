@@ -1,12 +1,14 @@
 #!/bin/sh
 set -e
 
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
 # Ensure uv-installed tools (e.g. alt-text-llm) are on PATH, plus
-# node_modules/.bin so source_file_checks can find sass.
+# node_modules/.bin so source_file_checks can find sass and the
+# spellcheck wrapper can find vale/spellchecker.
 export PATH="$HOME/.local/bin:$PATH"
-GIT_ROOT_FOR_PATH=$(git rev-parse --show-toplevel)
-if [ -d "$GIT_ROOT_FOR_PATH/node_modules/.bin" ]; then
-  export PATH="$GIT_ROOT_FOR_PATH/node_modules/.bin:$PATH"
+if [ -d "$GIT_ROOT/node_modules/.bin" ]; then
+  export PATH="$GIT_ROOT/node_modules/.bin:$PATH"
 fi
 
 RESUME_FLAG=""
@@ -49,7 +51,6 @@ stash_and_exit() {
   fi
 }
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
 if [ "$RESUME" != "true" ]; then

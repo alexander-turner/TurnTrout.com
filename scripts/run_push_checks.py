@@ -594,10 +594,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
-    py_check_targets = [
-        f"{git_root_path}/scripts",
-        f"{git_root_path}/.github/scripts",
-    ]
     return [
         *get_formatter_steps(git_root_path),
         # source_file_checks.py imports the generated variables.scss when
@@ -631,6 +627,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
+        # shell=True so the *.py globs expand. Matches python-lint.yaml.
         CheckStep(
             name="Mypy",
             command=[
@@ -641,9 +638,10 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "mypy",
                 "--config-file",
                 f"{git_root_path}/config/python/mypy.ini",
-                *[f"{t}/*.py" for t in py_check_targets],
+                f"{git_root_path}/scripts/*.py",
+                f"{git_root_path}/.github/scripts/*.py",
             ],
-            shell=True,  # glob expansion
+            shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
             parallel_group="verify",
         ),
         CheckStep(

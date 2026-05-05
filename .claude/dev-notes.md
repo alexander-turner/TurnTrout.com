@@ -98,15 +98,18 @@ To approve: run the `Update visual baselines` workflow from the Actions UI (`wor
 
 When pushing to main, `scripts/run_push_checks.py` runs:
 
-1. ruff (Python lint, fast)
-2. ESLint `--fix`
-3. docformatter `--in-place`
-4. stylelint `--fix`
-5. pylint (catches DeepSource issues before main goes red)
-6. Asset compression and CDN upload (skipped if rclone not present)
-7. Alt-text scan (LLM, requires API key)
+1. **Sequential autofixers** — ruff, eslint `--fix`, docformatter `--in-place`, stylelint `--fix`, prettier (SCSS/TS/Markdown). Each commits its own diff. ESLint and stylelint still exit non-zero on remaining unfixable errors, so they double as gates.
+2. **Sequential prep** — `pnpm exec tsx quartz/styles/generate-variables.ts` regenerates `quartz/styles/variables.scss` because `source_file_checks.py` reads it.
+3. **Parallel verify group** (read-only, runs concurrently via `ThreadPoolExecutor`):
+   - `pylint` (matches `python-lint.yaml` CI invocation: `pylint .` with `config/python/.pylintrc`).
+   - `mypy` (uses the `dmypy` daemon pre-warmed by `session-setup.sh`).
+   - `source_file_checks.py` (frontmatter / dates / asset refs / fonts).
+   - `scripts/run_spellcheck_and_vale.sh` (strips `[!quote]` callouts, runs spellchecker-cli and Vale concurrently inside the wrapper).
+4. **Sequential tail** — asset compression + R2 upload (skipped if `rclone` not present), alt-text scan (LLM; requires `alt-text-llm`).
 
-Heavier checks (tests, spellcheck, link validation, built-site checks) run in CI.
+Failures inside the parallel group don't short-circuit — every sibling finishes so one push reports every problem.
+
+Heavier checks (Jest, Playwright, built-site checks, link validation) run in CI.
 
 ## CI monitoring
 
