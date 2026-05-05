@@ -155,11 +155,14 @@ describe("match", () => {
       shouldContain: ["&quot;", '<span class="search-match">hello</span>'],
       shouldNotContain: [],
     },
-  ])("should HTML-escape $name in content tokens", ({ term, text, shouldContain, shouldNotContain }) => {
-    const matched = match(term, text)
-    for (const s of shouldContain) expect(matched).toContain(s)
-    for (const s of shouldNotContain) expect(matched).not.toContain(s)
-  })
+  ])(
+    "should HTML-escape $name in content tokens",
+    ({ term, text, shouldContain, shouldNotContain }) => {
+      const matched = match(term, text)
+      for (const s of shouldContain) expect(matched).toContain(s)
+      for (const s of shouldNotContain) expect(matched).not.toContain(s)
+    },
+  )
 
   describe("Trimming and ellipsis", () => {
     const generateText = (numWords: number, suffix = "") =>
