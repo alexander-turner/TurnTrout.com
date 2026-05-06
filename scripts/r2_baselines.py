@@ -46,9 +46,20 @@ def _check_env() -> None:
 
 
 def _write_rclone_config(config_path: Path) -> None:
-    """Write a minimal rclone config pointing the ``r2`` remote at the bucket
-    described by the ``*_TURNTROUT_MEDIA`` env vars."""
-    endpoint = os.environ["S3_ENDPOINT_ID_TURNTROUT_MEDIA"]
+    """
+    Write a minimal rclone config pointing the ``r2`` remote at the bucket
+    described by the ``*_TURNTROUT_MEDIA`` env vars.
+
+    ``S3_ENDPOINT_ID_TURNTROUT_MEDIA`` is a bare Cloudflare account ID (matching
+    the convention in ``.claude/hooks/session-setup.sh``). If the value already
+    looks like a URL we pass it through; otherwise we wrap it as
+    ``https://<id>.r2.cloudflarestorage.com``.
+    """
+    endpoint_id = os.environ["S3_ENDPOINT_ID_TURNTROUT_MEDIA"]
+    if "://" in endpoint_id:
+        endpoint = endpoint_id
+    else:
+        endpoint = f"https://{endpoint_id}.r2.cloudflarestorage.com"
     access_key = os.environ["ACCESS_KEY_ID_TURNTROUT_MEDIA"]
     secret_key = os.environ["SECRET_ACCESS_TURNTROUT_MEDIA"]
     config_path.write_text(

@@ -15,7 +15,9 @@ from scripts import r2_baselines
 def env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ACCESS_KEY_ID_TURNTROUT_MEDIA", "ak")
     monkeypatch.setenv("SECRET_ACCESS_TURNTROUT_MEDIA", "sk")
-    monkeypatch.setenv("S3_ENDPOINT_ID_TURNTROUT_MEDIA", "https://r2.example")
+    # Bare account ID — matches the GitHub Actions secret and the convention
+    # used by .claude/hooks/session-setup.sh.
+    monkeypatch.setenv("S3_ENDPOINT_ID_TURNTROUT_MEDIA", "abc123")
 
 
 def test_check_env_missing(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -38,7 +40,18 @@ def test_write_rclone_config(env_vars: None, tmp_path: Path) -> None:
     assert "provider = Cloudflare" in text
     assert "access_key_id = ak" in text
     assert "secret_access_key = sk" in text
-    assert "endpoint = https://r2.example" in text
+    assert "endpoint = https://abc123.r2.cloudflarestorage.com" in text
+
+
+def test_write_rclone_config_passthrough_url(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("ACCESS_KEY_ID_TURNTROUT_MEDIA", "ak")
+    monkeypatch.setenv("SECRET_ACCESS_TURNTROUT_MEDIA", "sk")
+    monkeypatch.setenv("S3_ENDPOINT_ID_TURNTROUT_MEDIA", "https://r2.example")
+    cfg = tmp_path / "rclone.conf"
+    r2_baselines._write_rclone_config(cfg)
+    assert "endpoint = https://r2.example" in cfg.read_text()
 
 
 def test_remote_path() -> None:
