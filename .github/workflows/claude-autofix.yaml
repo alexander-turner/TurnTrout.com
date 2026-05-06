@@ -35,9 +35,14 @@ concurrency:
 
 jobs:
   autofix:
+    # Skip bot-initiated PRs (dependabot, renovate). The claude-code-action
+    # rejects bot actors by design, so triggering it from a bot PR just
+    # produces noise; bot bumps either get auto-merged or escalated to a
+    # human, neither of which benefits from a Claude autofix attempt.
     if: >
       github.event.workflow_run.conclusion == 'failure' &&
-      github.event.workflow_run.event == 'pull_request'
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.type != 'Bot'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:

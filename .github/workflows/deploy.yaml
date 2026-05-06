@@ -51,7 +51,6 @@ jobs:
         with:
           install-sharp: "true"
           install-browsers: "true"
-          install-ffmpeg: "true"
           install-system-deps: "true"
 
       - name: Restore built site from cache

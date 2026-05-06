@@ -9,13 +9,15 @@ html_files=$(find public -type f -size +1100c -name "*.html")
 num_files=$(echo "$html_files" | wc -l)
 echo "Subsetting fonts in $num_files files"
 
-# Run subfont on all files with increased heap size (6GB)
-# GitHub Actions ubuntu-22.04 runners have 7GB RAM available
+# Run subfont on all files with increased heap size (12GB).
+# ubuntu-24.04 runners have 16GB RAM available. The "inject subset
+# font-family into CSS/SVG" pass holds every page in memory at once and
+# pushed past the previous 6GB cap (mark-compact OOM at ~6.0/6.2GB).
 # Note: this fork only emits woff2 and doesn't support font instancing, so
 # --formats and --instance are unused and intentionally omitted.
 start_time=$(date +%s)
 # shellcheck disable=SC2086
-NODE_OPTIONS="--max-old-space-size=6144" subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
+NODE_OPTIONS="--max-old-space-size=12288" subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))
 echo "Subfont completed in ${elapsed}s"
