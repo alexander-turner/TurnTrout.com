@@ -23,13 +23,6 @@ R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
 
-# Wider retry window than rclone's defaults (3 retries, 0s sleep). CI runners
-# occasionally hit transient DNS or network flaps reaching R2; with no sleep
-# between retries, all 3 attempts can fail inside the same flap. 5 retries
-# with 10s sleep gives ~50s of recovery time while still failing fast on a
-# real outage.
-RCLONE_RETRY_FLAGS = ("--retries=5", "--retries-sleep=10s")
-
 REQUIRED_ENV = (
     "ACCESS_KEY_ID_TURNTROUT_MEDIA",
     "SECRET_ACCESS_TURNTROUT_MEDIA",
@@ -46,9 +39,20 @@ def _check_env() -> None:
 
 
 def _write_rclone_config(config_path: Path) -> None:
-    """Write a minimal rclone config pointing the ``r2`` remote at the bucket
-    described by the ``*_TURNTROUT_MEDIA`` env vars."""
-    endpoint = os.environ["S3_ENDPOINT_ID_TURNTROUT_MEDIA"]
+    """
+    Write a minimal rclone config pointing the ``r2`` remote at the bucket
+    described by the ``*_TURNTROUT_MEDIA`` env vars.
+
+    ``S3_ENDPOINT_ID_TURNTROUT_MEDIA`` is a bare Cloudflare account ID (matching
+    the convention in ``.claude/hooks/session-setup.sh``). If the value already
+    looks like a URL we pass it through; otherwise we wrap it as
+    ``https://<id>.r2.cloudflarestorage.com``.
+    """
+    endpoint_id = os.environ["S3_ENDPOINT_ID_TURNTROUT_MEDIA"]
+    if "://" in endpoint_id:
+        endpoint = endpoint_id
+    else:
+        endpoint = f"https://{endpoint_id}.r2.cloudflarestorage.com"
     access_key = os.environ["ACCESS_KEY_ID_TURNTROUT_MEDIA"]
     secret_key = os.environ["SECRET_ACCESS_TURNTROUT_MEDIA"]
     config_path.write_text(
@@ -92,7 +96,6 @@ def download(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
-                *RCLONE_RETRY_FLAGS,
             ],
             config,
         )
@@ -122,7 +125,6 @@ def upload(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
-                *RCLONE_RETRY_FLAGS,
             ],
             config,
         )
