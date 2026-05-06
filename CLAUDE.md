@@ -72,6 +72,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - Write focused, non-duplicative tests.
 - **NEVER update test expectations without asking the user first.**
 - **NEVER lower CI thresholds or weaken assertions to make tests pass.** Fix the underlying issue (improve site performance, fix flaky test logic, etc.). Cheap shortcuts like lowering Lighthouse score thresholds or loosening test criteria are not acceptable.
+- **Visual regression tests must include `(screenshot)` in the title.** CI splits Playwright into two workflows by `--grep "(screenshot)"`: `visual-testing.yaml` (downloads R2 baselines) vs. `playwright-tests.yaml` (no baselines). A test that calls `takeRegressionScreenshot` / `toHaveScreenshot` without "screenshot" in its full describe-prefixed title gets routed to `playwright-tests` and dies with "A snapshot doesn't exist".
 
 ## Dependencies
 

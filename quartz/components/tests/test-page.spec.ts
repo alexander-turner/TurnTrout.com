@@ -170,7 +170,7 @@ test.describe("Unique content around the site", () => {
     })
   })
 
-  test("All-tags with dummy values", async ({ page }, testInfo) => {
+  test("All-tags with dummy values (screenshot)", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
     await gotoPage(page, url)
     await page.locator("body").waitFor({ state: "visible" })
