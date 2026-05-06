@@ -16,10 +16,7 @@ import * as ts from "typescript"
 // regex is case-sensitive too).
 const ROUTING_MARKER = "screenshot"
 
-const REGRESSION_CALLS = new Set([
-  "takeRegressionScreenshot",
-  "toHaveScreenshot",
-])
+const REGRESSION_CALLS = new Set(["takeRegressionScreenshot", "toHaveScreenshot"])
 
 const SPEC_DIR = path.resolve(__dirname)
 
@@ -145,7 +142,8 @@ describe("visual regression test routing", () => {
 
   it("every test calling takeRegressionScreenshot has 'screenshot' in its title", () => {
     const formatted = allViolations.map(
-      (v) => `${v.file}:${v.line} "${v.fullTitle}" calls ${v.call}() but lacks "screenshot" in its full title`,
+      (v) =>
+        `${v.file}:${v.line} "${v.fullTitle}" calls ${v.call}() but lacks "screenshot" in its full title`,
     )
     expect(formatted).toEqual([])
   })
