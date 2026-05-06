@@ -23,13 +23,6 @@ R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
 
-# Wider retry window than rclone's defaults (3 retries, 0s sleep). CI runners
-# occasionally hit transient DNS or network flaps reaching R2; with no sleep
-# between retries, all 3 attempts can fail inside the same flap. 5 retries
-# with 10s sleep gives ~50s of recovery time while still failing fast on a
-# real outage.
-RCLONE_RETRY_FLAGS = ("--retries=5", "--retries-sleep=10s")
-
 REQUIRED_ENV = (
     "ACCESS_KEY_ID_TURNTROUT_MEDIA",
     "SECRET_ACCESS_TURNTROUT_MEDIA",
@@ -103,7 +96,6 @@ def download(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
-                *RCLONE_RETRY_FLAGS,
             ],
             config,
         )
@@ -133,7 +125,6 @@ def upload(local_dir: Path) -> None:
                 "--checksum",
                 "--transfers=16",
                 "--checkers=16",
-                *RCLONE_RETRY_FLAGS,
             ],
             config,
         )
