@@ -161,6 +161,17 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
+      # Playwright's blob reporter writes report-<run-id>-<shard-num>.zip,
+      # so Linux and macOS shards with the same shard number produce the
+      # same filename. publish-visual-report downloads with merge-multiple,
+      # which silently overwrites the colliding files. Tag with platform
+      # before upload so every blob report has a unique name.
+      - name: Tag blob report with platform
+        if: always() && hashFiles('blob-report/*.zip') != ''
+        run: |
+          cd blob-report
+          for f in *.zip; do mv "$f" "linux-$f"; done
+
       # Blob report is consumed by the publish-visual-report job to
       # generate a merged HTML diff report with side-by-side comparisons.
       - name: Upload blob report shard
@@ -290,6 +301,14 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
+      # See Linux job for the rationale — without a platform tag, Linux
+      # and macOS shards with the same shard number collide on download.
+      - name: Tag blob report with platform
+        if: always() && hashFiles('blob-report/*.zip') != ''
+        run: |
+          cd blob-report
+          for f in *.zip; do mv "$f" "macos-$f"; done
+
       - name: Upload blob report shard
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -373,8 +392,14 @@ jobs:
           path: ./all-blob-reports
           merge-multiple: true
 
+      # Pass -c so merge-reports tolerates the Linux/macOS testDir
+      # difference (/home/runner vs /Users/runner) — without it the merge
+      # aborts with "different test directories, merging cannot proceed".
       - name: Merge blob reports into HTML
-        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+        run: |
+          pnpm exec playwright merge-reports \
+            -c config/playwright/playwright.config.ts \
+            --reporter html ./all-blob-reports
 
       # Pull every shard's test-results/ for the screenshot gallery generator.
       - name: Download trace artifacts (for gallery)
