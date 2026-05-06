@@ -627,7 +627,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
-        # shell=True so the *.py globs expand. Matches python-lint.yaml.
+        # shell=True so the *.py glob expands. Matches python-lint.yaml.
         CheckStep(
             name="Mypy",
             command=[
@@ -639,7 +639,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "--config-file",
                 f"{git_root_path}/config/python/mypy.ini",
                 f"{git_root_path}/scripts/*.py",
-                f"{git_root_path}/.github/scripts/*.py",
             ],
             shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
             parallel_group="verify",

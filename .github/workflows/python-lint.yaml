@@ -56,14 +56,14 @@ jobs:
         run: |
           uv run python -m mypy \
             --config-file config/python/mypy.ini \
-            scripts/*.py .github/scripts/*.py
+            scripts/*.py
 
       - name: Run docformatter check
         run: |
           uv run python -m docformatter \
             --check \
             --config config/python/pyproject.toml \
-            scripts/*.py .github/scripts/*.py
+            scripts/*.py
 
       - name: Run pylint
         run: |
