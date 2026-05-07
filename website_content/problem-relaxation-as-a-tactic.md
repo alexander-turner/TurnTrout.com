@@ -151,8 +151,6 @@ The world is going to hell. You might be working on a hard (or even an impossibl
 
 Just relax.
 
-<hr/>
-
 [^1]: This failure mode is just my best guess – I haven't actually surveyed aspiring researchers.
 [^2]: The "convincing-to-me argument" contains a lot of confused reasoning about impact measurement, of course. For one, [thinking about side effects is _not_ a good way of conceptualizing the impact measurement problem.](/world-state-is-the-wrong-abstraction-for-impact)
 [^3]:

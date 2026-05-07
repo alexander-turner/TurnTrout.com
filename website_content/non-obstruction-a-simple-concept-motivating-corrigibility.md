@@ -398,8 +398,6 @@ Corrigibility is motivated by a counterfactual form of weak impact alignment: no
 
 Corrigibility is an instrumental strategy for achieving non-obstruction, which is itself an instrumental strategy for achieving impact alignment for a wide range of goals, which is itself an instrumental strategy for achieving impact alignment for our "real" goal.
 
-<hr/>
-
 [^1]: There's just something about "unwanted manipulation" which feels like a _wrong question_ to me. There's a kind of conceptual crispness that it lacks.
 
     However, in the non-obstruction framework, unwanted manipulation is accounted for indirectly via "did impact alignment decrease for a wide range of different human policies $\text{pol}(P)$?". I think I wouldn't be surprised to find "manipulation" being accounted for indirectly through nice formalisms, but I'd be surprised if it were accounted for directly.

@@ -74,8 +74,6 @@ I try to live my mental life such that, if people could read my thoughts, they w
 
 Again, the point isn't "have good habits and be happy". The point is that I think we often cut too many corners, and so I recommend a policy which leans towards _not_ cutting corners (even when it locally makes sense). The benefits for me have been twofold: getting better results, and feeling more secure about myself while getting those results.
 
-<hr/>
-
 [^1]: Ironically, the first draft of this spelled "impostor" as "imposter".
 
 [^2]: Naturally, I probably fail anyways sometimes, because I'm somewhat biased / unable to achieve full transparency for my thoughts.

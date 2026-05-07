@@ -63,7 +63,7 @@ An _impact measure_ is a means by which change in the world may be evaluated and
 While I'm fairly confident that whitelisting contributes meaningfully to short- and mid-term AI safety, I remain skeptical of its [robustness to scale](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale). Should several challenges be overcome, whitelisting may indeed be helpful for excluding swathes of unfriendly AIs from the outcome space. [^1] Furthermore, the approach allows easy shaping of agent behavior in a wide range of situations.
 
 > [!note]
-> Segments of this post are lifted from my paper, whose latest revision may be found [here](https://www.overleaf.com/read/jrrjqzdjtxjp); for Python code, look no further than [this repository](https://github.com/alexander-turner/Whitelist_Learning).
+> Segments of this post are lifted from [my paper](https://www.overleaf.com/read/jrrjqzdjtxjp); for Python code, look no further than [this repository](https://github.com/alexander-turner/Whitelist_Learning).
 
 # Summary
 
@@ -282,8 +282,9 @@ Edit: [Here is a potential solution](/overcoming-clinginess-in-impact-measures) 
 
 # Discussing Imperfect Approaches
 
-A few months ago, Scott Garrabrant [wrote](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale) about robustness to scale:
+A few months ago, Scott Garrabrant wrote about robustness to scale.
 
+> [!quote] Scott Garrabrant, [Robustness to Scale](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale)
 > Briefly, you want your proposal for an AI to be robust (or at least fail gracefully) to changes in its level of capabilities.
 
 I recommend reading it - it's to-the-point, and he makes good points.

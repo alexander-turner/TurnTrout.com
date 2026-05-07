@@ -396,8 +396,6 @@ Speaking to the broader debate taking place in the AI research community, I thin
 > 1. Zack M. Davis, Chase Denecke, William Ellsworth, Vahid Ghadakchi, Ofer Givoli, Evan Hubinger, Neale Ratzlaff, Jess Riedel, Duncan Sabien, Davide Zagami, and `TheMajor` for feedback on version 1 of this post.
 > 2. Alex Appel (diffractor), Emma, Vanessa Kosoy, Steve Omohundro, Neale Ratzlaff, and Mark Xu for reading / giving feedback on version 2 of this post.
 
-<hr/>
-
 [^1]: Throughout _Reframing Impact_, we’ve been considering an agent’s _attainable utility_: their ability to get what they want (their _on-policy value_, in RL terminology). Optimal value is a kind of “idealized” attainable utility: the agent’s attainable utility were they to act optimally\.
 
 [^2]: Even though instrumental convergence was discovered when thinking about the real world, similar self-preservation strategies turn out to be convergently instrumental in e.g. Pac-Man.

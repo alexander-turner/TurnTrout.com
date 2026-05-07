@@ -273,8 +273,6 @@ The following problem was admittedly confusing at first, but I had an overwhelmi
 >
 > To solve for local minimum $f(x_0)$, define $g(x) := -f(x)$ and use the above result on local maximum $g(x_0)$. ∎
 
-<hr/>
-
 [^1]: Constructing the reals from first principles was profoundly enjoyable. Working through this book gave me a sense of certitude when dealing with math. Numbers are no longer simply familiar friends following familiar rules, but rather objects I _know_ how to construct. It feels great.
 [^2]:
     Gather round, gather round - for it is on this blessed morn/day/evening that I recount my youthful dalliances with uncountable infinities!

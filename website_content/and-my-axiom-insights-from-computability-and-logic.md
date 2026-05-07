@@ -218,5 +218,3 @@ I don't think I'm a great mathematician yet by any means, but as my studies cont
 
 > [!quote] [Twelve virtues of rationality](https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality)
 > If for many years you practice the techniques and submit yourself to strict constraints, it may be that you will glimpse the center. Then you will see how all techniques are one technique, and you will move correctly without feeling constrained. Musashi wrote: “When you appreciate the power of nature, knowing the rhythm of any situation, you will be able to hit the enemy naturally and strike naturally. All this is the Way of the Void.”
-
-<hr/>

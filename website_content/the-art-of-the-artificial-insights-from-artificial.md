@@ -536,8 +536,6 @@ I am convinced that _there are no hard concepts_, only concepts which take diffe
 
 > _Given enough time, I can understand anything._
 
-<hr/>
-
 [^1]: From personal experience, I don't recommend using this technique liberally; it's already hard enough to correct our epistemologies.
 [^2]: Disclaimer: even setting aside the need for a hypercomputer, AIXI has issues (such as not being [naturalized](http://lesswrong.com/lw/jd9/building_phenomenological_bridges/)). This isn't the droid you're looking for.
 [^3]: Assume utility scales linearly with money for simplicity; for similar reasons, I'm blending evidence and state variables. Shame on me!

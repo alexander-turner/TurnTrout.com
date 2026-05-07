@@ -61,8 +61,9 @@ I wish I’d gotten a few things right the first time around. Therefore, I’ve 
 
 [Like](/on-good-formal-definitions) [many](/game-theoretic-definition-of-deception) good things, this terminological shift was prompted by a critique from Andrew Critch.
 
-Roughly speaking, this work considered an action to be "instrumentally convergent" if it’s probably optimal, with respect to a probability distribution on a set of reward functions. This definition is natural. You can even find it echoed by Tony Zador in the [_Debate on Instrumental Convergence_](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell):
+Roughly speaking, this work considered an action to be "instrumentally convergent" if it’s probably optimal, with respect to a probability distribution on a set of reward functions. This definition is natural. You can even find it echoed by Tony Zador.
 
+> [!quote] Tony Zador, [_Debate on Instrumental Convergence_](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell)
 > So i would say that killing all humans is not only not likely to be an optimal strategy under most scenarios, the set of scenarios under which it is optimal is probably close to a set of measure 0.
 
 (Zador uses “set of scenarios” instead of “set of reward functions”, but he is implicitly reasoning: “with respect to my beliefs about what kind of objective functions we will implement and what states the agent will confront in deployment, I predict that deadly actions have a negligible probability of being optimal.”)

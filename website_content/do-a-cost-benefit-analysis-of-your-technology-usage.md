@@ -92,8 +92,9 @@ Readers of this forum are probably better about their usage. Let’s be (too) ge
 
 ## Attentional costs
 
-Lost time doesn’t capture everything sucked away by your apps, by your email tics, by YouTube, by Reddit, by Slack, by Discord, by everything else which is after you. [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/) asked:
+Lost time doesn’t capture everything sucked away by your apps, by your email tics, by YouTube, by Reddit, by Slack, by Discord, by everything else which is after you.
 
+> [!quote] [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/)
 > When was the last time you were bored and in silence?
 
 I remember lazy summer childhoods, staring at the ceiling after I ran out of video game time. At my 2018 CFAR workshop, my phone dipped in a stream for several minutes and short-circuited. I was actually glad. I felt free. How strange, to feel _free_ from a device I purchased! Perhaps I should have noticed the warning sign.

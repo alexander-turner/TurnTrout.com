@@ -390,8 +390,6 @@ I no longer ask "how can I study most effectively?", but rather, "what does it f
 
 > Red seeks _freedom,_ and it tries to achieve that freedom through _action..._ For a red agent, victory feels fiery, beautiful, magnificent, and fierce — it’s the climax of a dance or a brawl or a love affair, the feeling of cresting a summit or having successfully ridden a wave. It’s feeling _alive._
 
-<hr/>
-
 [^1]: Although any shape in the sequence implied by the image does indeed have strictly different area than the circle it approximates (in contrast to $F_n$ and $F$), the analogy may still be helpful.
 [^2]: Please don't wirehead thinking about this.
 [^3]: I'm aware that this section isn't implementable.

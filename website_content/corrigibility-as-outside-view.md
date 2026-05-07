@@ -118,8 +118,6 @@ All in all, I think this framing carves out and characterizes a natural aspect o
 > [!thanks]
 >Thanks to Rohin Shah, `elriggs`, `TheMajor`, and Evan Hubinger for comments.
 
-<hr/>
-
 [^1]: This isn't to say that there is literally no situation where gaining power would be the right choice. As people [running on corrupted hardware](https://www.lesswrong.com/posts/dWTEtgBfFaz6vjwQf/ethical-injunctions), it seems inherently difficult for us to tell when it really _would_ be okay for us to gain power. Therefore, just play it safe.
 
 [^2]: I came up with this idea in the summer of 2018, but [`orthonormal` appears to have noticed a similar link a month ago](https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans#swHmf245WJ28opzji).

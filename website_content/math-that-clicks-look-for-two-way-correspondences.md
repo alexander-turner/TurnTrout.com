@@ -129,8 +129,6 @@ Make the math as obviously correct as possible. In my personal and observed expe
 
 Strive for clearly correct math, informative names, and unambiguously specified assumptions and desiderata. Strive for a two-way correspondence: the concept should jump out of the math.
 
-<hr/>
-
 [^1]: Assuming they actually _are_ flipping a coin with a stationary bias (a Bernoulli process).
 
 [^2]: And some basic background assumptions, like "the laws of physics are spatially, temporally, and rotationally invariant", etc.
