@@ -22,14 +22,18 @@
       .card .controls label { display: inline-flex; align-items: center; gap: 0.25rem;
                               cursor: pointer; font-weight: 500; }
       .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
-      .preview { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; }
-      .preview > div { padding: 0.25rem; border-radius: 4px; display: flex;
-                       align-items: center; justify-content: center; min-height: 100px; }
-      .preview .light { background: #fff; }
-      .preview .dark { background: #1a1a1a; }
-      .preview img { max-width: 100%; max-height: 200px; display: block; }
-      .preview .dark img { filter: grayscale(50%); }
-      .card[data-state="invert"] .preview .dark img { filter: invert(100%) hue-rotate(180deg); }
+      .preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
+      .preview > figure { margin: 0; padding: 0.25rem; border-radius: 4px; display: flex;
+                          flex-direction: column; align-items: center; justify-content: space-between;
+                          gap: 0.25rem; min-height: 110px; }
+      .preview figcaption { font-size: 0.6rem; color: inherit; opacity: 0.7;
+                            text-transform: uppercase; letter-spacing: 0.04em; }
+      .preview .light { background: #fff; color: #111; }
+      .preview .dark-current { background: #1a1a1a; color: #eee; }
+      .preview .dark-inverted { background: #1a1a1a; color: #eee; outline: 1px dashed #2563eb; }
+      .preview img { max-width: 100%; max-height: 160px; display: block; }
+      .preview .dark-current img { filter: grayscale(50%); }
+      .preview .dark-inverted img { filter: invert(100%) hue-rotate(180deg); }
     </style>
   </head>
   <body>
@@ -59,8 +63,18 @@
           </div>
           <div class="url" title="{{ url }}">{{ url.rsplit('/', 1)[-1] }}</div>
           <div class="preview">
-            <div class="light"><img loading="lazy" src="{{ url }}" alt="" /></div>
-            <div class="dark"><img loading="lazy" src="{{ url }}" alt="" /></div>
+            <figure class="light">
+              <img loading="lazy" src="{{ url }}" alt="" />
+              <figcaption>Light</figcaption>
+            </figure>
+            <figure class="dark-current">
+              <img loading="lazy" src="{{ url }}" alt="" />
+              <figcaption>Dark (current)</figcaption>
+            </figure>
+            <figure class="dark-inverted">
+              <img loading="lazy" src="{{ url }}" alt="" />
+              <figcaption>Dark (inverted)</figcaption>
+            </figure>
           </div>
         </article>
       {%- endfor -%}
