@@ -2,14 +2,27 @@
 
 from __future__ import annotations
 
+import io
 import json
 from collections.abc import Mapping
 from pathlib import Path
 
+import numpy as np
 import pytest
+import requests
 from flask.testing import FlaskClient
+from PIL import Image
 
 from scripts import label_invert
+
+
+def _solid_png(rgb: tuple[int, int, int], size: int = 8) -> bytes:
+    """Build an in-memory PNG of one solid color for luminance tests."""
+    arr = np.full((size, size, 3), rgb, dtype=np.uint8)
+    buf = io.BytesIO()
+    Image.fromarray(arr, mode="RGB").save(buf, format="PNG")
+    return buf.getvalue()
+
 
 DIMS = {
     "https://assets.turntrout.com/static/images/posts/a.avif": {},
@@ -354,3 +367,273 @@ def test_main_runs_apply_annotations(tmp_path: Path) -> None:
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
         "https://example.com/a.avif": True,
     }
+
+
+# --- luminance --------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("rgb", "expected"),
+    [
+        ((255, 255, 255), 1.0),
+        ((0, 0, 0), 0.0),
+        ((128, 128, 128), 128 / 255),
+    ],
+)
+def test_compute_luminance(rgb: tuple[int, int, int], expected: float) -> None:
+    assert label_invert.compute_luminance(_solid_png(rgb)) == pytest.approx(
+        expected, abs=0.01
+    )
+
+
+def test_load_luminances_handles_missing_file(tmp_path: Path) -> None:
+    assert label_invert.load_luminances(tmp_path / "missing.json") == {}
+
+
+def test_load_luminances_rejects_non_object(tmp_path: Path) -> None:
+    p = tmp_path / "bad.json"
+    p.write_text("[1, 2]", encoding="utf-8")
+    with pytest.raises(ValueError, match="JSON object"):
+        label_invert.load_luminances(p)
+
+
+def test_save_luminances_roundtrip(tmp_path: Path) -> None:
+    path = tmp_path / "lum.json"
+    label_invert.save_luminances({"z": 0.9, "a": 0.1}, path)
+    text = path.read_text(encoding="utf-8")
+    assert json.loads(text) == {"a": 0.1, "z": 0.9}
+    assert text.index('"a"') < text.index('"z"')
+
+
+def test_save_luminances_cleans_tempfile_on_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*_a: object, **_kw: object) -> None:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(label_invert.os, "replace", boom)
+    with pytest.raises(RuntimeError, match="boom"):
+        label_invert.save_luminances({"u": 0.5}, tmp_path / "lum.json")
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_ensure_luminances_uses_cache_only_for_missing(
+    tmp_path: Path,
+) -> None:
+    cache_path = tmp_path / "lum.json"
+    label_invert.save_luminances({"https://x/a.avif": 0.5}, cache_path)
+
+    fetches: list[str] = []
+
+    def fake_fetch(url: str) -> bytes:
+        fetches.append(url)
+        return _solid_png((255, 255, 255))
+
+    out = label_invert.ensure_luminances(
+        ("https://x/a.avif", "https://x/b.png"),
+        cache_path=cache_path,
+        fetch=fake_fetch,
+        max_workers=2,
+    )
+    assert fetches == ["https://x/b.png"]
+    assert out["https://x/a.avif"] == pytest.approx(0.5)
+    assert out["https://x/b.png"] == pytest.approx(1.0, abs=0.01)
+    # Cache persisted
+    assert label_invert.load_luminances(cache_path) == out
+
+
+def test_ensure_luminances_returns_cache_when_complete(tmp_path: Path) -> None:
+    cache_path = tmp_path / "lum.json"
+    label_invert.save_luminances({"u": 0.4}, cache_path)
+    fetches: list[str] = []
+
+    def fake_fetch(url: str) -> bytes:
+        fetches.append(url)
+        return b""
+
+    out = label_invert.ensure_luminances(
+        ("u",), cache_path=cache_path, fetch=fake_fetch
+    )
+    assert out == {"u": 0.4}
+    assert fetches == []
+
+
+def test_ensure_luminances_skips_failed_fetches(tmp_path: Path) -> None:
+    cache_path = tmp_path / "lum.json"
+
+    def fake_fetch(url: str) -> bytes:
+        if url == "https://x/bad.avif":
+            raise requests.ConnectionError("boom")
+        return _solid_png((255, 255, 255))
+
+    out = label_invert.ensure_luminances(
+        ("https://x/good.avif", "https://x/bad.avif"),
+        cache_path=cache_path,
+        fetch=fake_fetch,
+        max_workers=2,
+    )
+    assert "https://x/good.avif" in out
+    assert "https://x/bad.avif" not in out
+
+
+def test_default_fetch_uses_requests(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    class _Resp:
+        content = b"OK"
+
+        def raise_for_status(self) -> None:
+            captured["raised"] = False
+
+    def fake_get(url: str, timeout: float = 0) -> _Resp:
+        captured["url"] = url
+        captured["timeout"] = timeout
+        return _Resp()
+
+    monkeypatch.setattr(label_invert.requests, "get", fake_get)
+    assert label_invert._default_fetch("http://x/a") == b"OK"
+    assert captured["url"] == "http://x/a"
+    assert captured["raised"] is False
+
+
+def test_autolabel_by_luminance_marks_high_lum_unlabeled(
+    tmp_path: Path,
+) -> None:
+    labels_path = tmp_path / "labels.json"
+    new = label_invert.autolabel_by_luminance(
+        ("https://x/a.avif", "https://x/b.avif", "https://x/c.avif"),
+        {
+            "https://x/a.avif": 0.9,
+            "https://x/b.avif": 0.4,
+        },
+        labels_path=labels_path,
+    )
+    assert new == ("https://x/a.avif",)
+    assert json.loads(labels_path.read_text(encoding="utf-8")) == {
+        "https://x/a.avif": True,
+    }
+
+
+def test_autolabel_by_luminance_does_not_override_existing(
+    tmp_path: Path,
+) -> None:
+    labels_path = tmp_path / "labels.json"
+    label_invert.save_labels({"https://x/a.avif": False}, labels_path)
+    new = label_invert.autolabel_by_luminance(
+        ("https://x/a.avif",),
+        {"https://x/a.avif": 0.99},
+        labels_path=labels_path,
+    )
+    assert new == ()
+    assert json.loads(labels_path.read_text(encoding="utf-8")) == {
+        "https://x/a.avif": False,
+    }
+
+
+def test_autolabel_by_luminance_no_changes_does_not_write(
+    tmp_path: Path,
+) -> None:
+    labels_path = tmp_path / "labels.json"
+    new = label_invert.autolabel_by_luminance(
+        ("https://x/a.avif",),
+        {"https://x/a.avif": 0.1},
+        labels_path=labels_path,
+    )
+    assert new == ()
+    assert not labels_path.exists()
+
+
+def test_index_renders_luminance_and_auto_badge(tmp_path: Path) -> None:
+    labels_path = tmp_path / "labels.json"
+    high = "https://assets.turntrout.com/static/images/posts/a.avif"
+    low = "https://assets.turntrout.com/static/images/posts/b.png"
+    label_invert.save_labels({high: True, low: False}, labels_path)
+    app = label_invert.create_app(
+        (high, low),
+        labels_path=labels_path,
+        luminances={high: 0.92, low: 0.10},
+    )
+    app.config["TESTING"] = True
+    body = app.test_client().get("/").get_data(as_text=True)
+    assert "L = 0.92" in body
+    assert "L = 0.10" in body
+    # Only the high-lum invert card gets the auto-suggested badge.
+    # `badge-auto` appears once in the stylesheet too, so use `auto-suggested`.
+    assert body.count("auto-suggested") == 1
+
+
+def test_main_runs_luminance_and_autolabel(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dims = _write_dims(
+        tmp_path,
+        {
+            "https://assets.turntrout.com/static/images/posts/a.avif": {},
+            "https://assets.turntrout.com/static/images/posts/b.png": {},
+        },
+    )
+    labels_path = tmp_path / "labels.json"
+    lum_path = tmp_path / "lum.json"
+
+    def fake_fetch(url: str) -> bytes:
+        return _solid_png((255, 255, 255) if "a.avif" in url else (10, 10, 10))
+
+    monkeypatch.setattr(label_invert, "_default_fetch", fake_fetch)
+    monkeypatch.setattr(label_invert.Flask, "run", lambda *_a, **_k: None)
+    monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
+
+    rc = label_invert.main(
+        [
+            "--dimensions",
+            str(dims),
+            "--labels",
+            str(labels_path),
+            "--luminance",
+            str(lum_path),
+            "--no-browser",
+            "--port",
+            "0",
+        ]
+    )
+    assert rc == 0
+    assert json.loads(labels_path.read_text(encoding="utf-8")) == {
+        "https://assets.turntrout.com/static/images/posts/a.avif": True,
+    }
+    assert "https://assets.turntrout.com/static/images/posts/b.png" in (
+        json.loads(lum_path.read_text(encoding="utf-8"))
+    )
+
+
+def test_main_skip_luminance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dims = _write_dims(
+        tmp_path,
+        {"https://assets.turntrout.com/static/images/posts/a.avif": {}},
+    )
+    labels_path = tmp_path / "labels.json"
+
+    called: list[str] = []
+    monkeypatch.setattr(
+        label_invert,
+        "ensure_luminances",
+        lambda *a, **kw: called.append("called") or {},
+    )
+    monkeypatch.setattr(label_invert.Flask, "run", lambda *_a, **_k: None)
+    monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
+
+    rc = label_invert.main(
+        [
+            "--dimensions",
+            str(dims),
+            "--labels",
+            str(labels_path),
+            "--no-browser",
+            "--skip-luminance",
+            "--port",
+            "0",
+        ]
+    )
+    assert rc == 0
+    assert called == []
+    assert not labels_path.exists()

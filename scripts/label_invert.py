@@ -23,6 +23,7 @@ class when the value is ``true``.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import logging
 import os
@@ -31,12 +32,16 @@ import sys
 import tempfile
 import threading
 import webbrowser
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+import numpy as np
+import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
+from PIL import Image, UnidentifiedImageError
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +51,13 @@ TRANSFORMERS_DIR: Final[Path] = (
 )
 DIMENSIONS_JSON: Final[Path] = TRANSFORMERS_DIR / ".asset_dimensions.json"
 LABELS_JSON: Final[Path] = TRANSFORMERS_DIR / ".invert_labels.json"
+LUMINANCE_JSON: Final[Path] = TRANSFORMERS_DIR / ".invert_luminance.json"
 CONTENT_DIR: Final[Path] = PROJECT_ROOT / "website_content"
+
+# Mean grayscale luminance (0..1) above which an unlabeled image is
+# auto-classified as "should invert in dark mode" — the dominant signal
+# for the chart-on-white-background case the labeling tool is built for.
+LUMINANCE_INVERT_THRESHOLD: Final[float] = 0.7
 
 RASTER_EXTENSIONS: Final[frozenset[str]] = frozenset(
     {".avif", ".png", ".jpg", ".jpeg", ".webp", ".gif"}
@@ -183,6 +194,118 @@ def _process_markdown(text: str) -> tuple[str, list[tuple[str, bool]]]:
     return new_text, decisions
 
 
+# --- luminance ---------------------------------------------------------------
+
+
+FetchFn = Callable[[str], bytes]
+
+
+def _default_fetch(url: str, *, timeout: float = 15.0) -> bytes:
+    response = requests.get(url, timeout=timeout)
+    response.raise_for_status()
+    return response.content
+
+
+def compute_luminance(image_bytes: bytes) -> float:
+    """Mean grayscale luminance of ``image_bytes`` in [0, 1]."""
+    with Image.open(io.BytesIO(image_bytes)) as img:
+        gray = img.convert("L")
+        return float(np.asarray(gray, dtype=np.float32).mean()) / 255.0
+
+
+def load_luminances(path: Path = LUMINANCE_JSON) -> dict[str, float]:
+    """Load cached ``{url: luminance}`` (empty if missing)."""
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return {str(k): float(v) for k, v in data.items()}
+
+
+def save_luminances(
+    luminances: Mapping[str, float], path: Path = LUMINANCE_JSON
+) -> None:
+    """Atomically write the luminance cache, sorted by URL."""
+    sorted_lum = dict(sorted(luminances.items()))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
+    )
+    tmp = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(sorted_lum, fh, ensure_ascii=False, indent=2)
+            fh.write("\n")
+        os.replace(tmp, path)
+    except Exception:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def ensure_luminances(
+    candidates: Iterable[str],
+    *,
+    cache_path: Path = LUMINANCE_JSON,
+    fetch: FetchFn | None = None,
+    max_workers: int = 8,
+) -> dict[str, float]:
+    """Return luminance per URL, computing+caching any missing entries."""
+    cache = load_luminances(cache_path)
+    missing = [u for u in candidates if u not in cache]
+    if not missing:
+        return cache
+
+    fetch_fn: FetchFn = fetch if fetch is not None else _default_fetch
+
+    def _one(url: str) -> tuple[str, float | None]:
+        try:
+            return url, compute_luminance(fetch_fn(url))
+        except (
+            requests.RequestException,
+            UnidentifiedImageError,
+            ValueError,
+            OSError,
+        ) as exc:
+            logger.warning("luminance failed for %s: %s", url, exc)
+            return url, None
+
+    logger.info("Computing luminance for %d images...", len(missing))
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        for future in as_completed(ex.submit(_one, u) for u in missing):
+            url, lum = future.result()
+            if lum is not None:
+                cache[url] = lum
+    save_luminances(cache, cache_path)
+    return cache
+
+
+def autolabel_by_luminance(
+    candidates: Iterable[str],
+    luminances: Mapping[str, float],
+    *,
+    labels_path: Path = LABELS_JSON,
+    threshold: float = LUMINANCE_INVERT_THRESHOLD,
+) -> tuple[str, ...]:
+    """
+    Mark unlabeled high-luminance images as ``true`` and persist.
+
+    Returns the URLs that were newly labeled. Already-labeled images are never
+    overridden.
+    """
+    labels = load_labels(labels_path)
+    newly_labeled: list[str] = []
+    for url in candidates:
+        if url in labels:
+            continue
+        if luminances.get(url, 0.0) >= threshold:
+            labels[url] = True
+            newly_labeled.append(url)
+    if newly_labeled:
+        save_labels(labels, labels_path)
+    return tuple(newly_labeled)
+
+
 # --- Flask app ---------------------------------------------------------------
 
 
@@ -197,10 +320,12 @@ def create_app(
     candidates: tuple[str, ...],
     *,
     labels_path: Path = LABELS_JSON,
+    luminances: Mapping[str, float] | None = None,
 ) -> Flask:
     """Build the labeling Flask app."""
     app = Flask(__name__, template_folder="templates")
     candidate_set = frozenset(candidates)
+    lum_map: Mapping[str, float] = luminances or {}
 
     @app.get("/")
     def index() -> str:
@@ -209,6 +334,8 @@ def create_app(
             "invert_labeler.html",
             candidates=candidates,
             labels=labels,
+            luminances=lum_map,
+            luminance_threshold=LUMINANCE_INVERT_THRESHOLD,
             invert_count=sum(1 for u in candidates if labels.get(u) is True),
         )
 
@@ -254,11 +381,26 @@ def _run_server(args: argparse.Namespace) -> int:
     if not candidates:
         logger.error("No candidate images found in %s", args.dimensions)
         return 1
+
+    luminances: Mapping[str, float] = {}
+    if not args.skip_luminance:
+        luminances = ensure_luminances(candidates, cache_path=args.luminance)
+        new = autolabel_by_luminance(
+            candidates, luminances, labels_path=args.labels
+        )
+        if new:
+            logger.info(
+                "Auto-labeled %d high-luminance images as 'invert' "
+                "(threshold=%.2f). You can override in the UI.",
+                len(new),
+                LUMINANCE_INVERT_THRESHOLD,
+            )
+
     url = f"http://{args.host}:{args.port}/"
     logger.info("Labeling %d candidates. Open %s", len(candidates), url)
     if not args.no_browser:
         open_browser_async(url)
-    app = create_app(candidates, labels_path=args.labels)
+    app = create_app(candidates, labels_path=args.labels, luminances=luminances)
     app.run(host=args.host, port=args.port, debug=False, use_reloader=False)
     return 0
 
@@ -293,7 +435,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--dimensions", type=Path, default=DIMENSIONS_JSON)
     parser.add_argument("--labels", type=Path, default=LABELS_JSON)
+    parser.add_argument("--luminance", type=Path, default=LUMINANCE_JSON)
     parser.add_argument("--content", type=Path, default=CONTENT_DIR)
+    parser.add_argument(
+        "--skip-luminance",
+        action="store_true",
+        help="Skip computing luminance + auto-labeling on server start.",
+    )
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.apply_annotations:

@@ -22,6 +22,9 @@
       .card .controls label { display: inline-flex; align-items: center; gap: 0.25rem;
                               cursor: pointer; font-weight: 500; }
       .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
+      .card .meta { font-size: 0.7rem; color: #777; display: flex; gap: 0.5rem; }
+      .card .badge-auto { background: #fde68a; color: #78350f; padding: 0 0.4rem;
+                          border-radius: 3px; font-weight: 600; }
       .preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
       .preview > figure { margin: 0; padding: 0.25rem; border-radius: 4px; display: flex;
                           flex-direction: column; align-items: center; justify-content: space-between;
@@ -32,6 +35,8 @@
       .preview .dark-current { background: #1a1a1a; color: #eee; }
       .preview .dark-inverted { background: #1a1a1a; color: #eee; outline: 1px dashed #2563eb; }
       .preview img { max-width: 100%; max-height: 160px; display: block; }
+      .preview .dark-current img,
+      .preview .dark-inverted img { mix-blend-mode: screen; }
       .preview .dark-current img { filter: grayscale(50%); }
       .preview .dark-inverted img { filter: invert(100%) hue-rotate(180deg); }
     </style>
@@ -52,9 +57,11 @@
     <main>
       {%- for url in candidates -%}
         {%- set decision = labels.get(url) -%}
+        {%- set lum = luminances.get(url) -%}
         {%- if decision is true -%}{%- set state = "invert" -%}
         {%- elif decision is false -%}{%- set state = "no-invert" -%}
         {%- else -%}{%- set state = "unlabeled" -%}{%- endif -%}
+        {%- set auto = state == "invert" and lum is not none and lum >= luminance_threshold -%}
         <article class="card" data-state="{{ state }}" data-url="{{ url }}">
           <div class="controls" role="radiogroup" aria-label="Label state" data-current="{{ state }}">
             <label><input type="radio" name="state-{{ loop.index }}" value="unlabeled" /> Unlabeled</label>
@@ -62,6 +69,12 @@
             <label><input type="radio" name="state-{{ loop.index }}" value="no-invert" /> Don't invert</label>
           </div>
           <div class="url" title="{{ url }}">{{ url.rsplit('/', 1)[-1] }}</div>
+          <div class="meta">
+            {%- if lum is not none -%}
+              <span title="Mean grayscale luminance">L = {{ '%.2f' % lum }}</span>
+            {%- endif -%}
+            {%- if auto -%}<span class="badge-auto">auto-suggested</span>{%- endif -%}
+          </div>
           <div class="preview">
             <figure class="light">
               <img loading="lazy" src="{{ url }}" alt="" />

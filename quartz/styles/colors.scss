@@ -95,6 +95,15 @@
   & #pond-video {
     filter: grayscale(50%);
   }
+
+  // `mix-blend-mode: screen` is the dark-mode counterpart to the light-mode
+  // `multiply` below: pure-black image backgrounds (matplotlib figure bg,
+  // any post-`.invert-in-dark-mode` inversion) blend into the dark page bg.
+  // For images without a black bg it is mostly a no-op; for photos it
+  // slightly brightens deep shadows.
+  & img:not([src$=".svg"]) {
+    mix-blend-mode: screen;
+  }
 }
 
 // Scoped light-mode class for inline demos (e.g. design.md color swatches)
@@ -153,7 +162,6 @@ section {
 }
 
 .dark-mode img {
-  mix-blend-mode: normal;
   filter: grayscale(50%) !important;
 }
 
