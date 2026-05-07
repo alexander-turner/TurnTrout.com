@@ -6355,6 +6355,116 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # All AVIF images present in labels (regardless of true/false value)
+        (
+            '<img src="https://x/a.avif">' '<img src="https://x/b.avif">',
+            {"https://x/a.avif": True, "https://x/b.avif": False},
+            [],
+        ),
+        # Missing AVIF reported with full src
+        (
+            '<img src="https://x/missing.avif">'
+            '<img src="https://x/known.avif">',
+            {"https://x/known.avif": True},
+            [
+                "<img> AVIF missing from .invert_labels.json: "
+                "https://x/missing.avif"
+            ],
+        ),
+        # Non-AVIF images are ignored
+        (
+            '<img src="https://x/photo.png">'
+            '<img src="https://x/foo.jpg">'
+            '<img src="https://x/foo.svg">',
+            {},
+            [],
+        ),
+        # Img with no src is ignored
+        (
+            "<img>",
+            {},
+            [],
+        ),
+        # Mixed-case extension still matches
+        (
+            '<img src="https://x/UPPER.AVIF">',
+            {},
+            [
+                "<img> AVIF missing from .invert_labels.json: "
+                "https://x/UPPER.AVIF"
+            ],
+        ),
+        # Same missing AVIF twice → reported twice (one per occurrence)
+        (
+            '<img src="https://x/m.avif"><img src="https://x/m.avif">',
+            {},
+            [
+                "<img> AVIF missing from .invert_labels.json: https://x/m.avif",
+                "<img> AVIF missing from .invert_labels.json: https://x/m.avif",
+            ],
+        ),
+    ],
+)
+def test_check_avif_images_labeled(
+    html: str, labels: dict[str, bool], expected_issues: list[str]
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_avif_images_labeled(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
+def test_check_avif_images_labeled_noop_when_labels_none() -> None:
+    soup = BeautifulSoup('<img src="https://x/a.avif">', "html.parser")
+    assert built_site_checks.check_avif_images_labeled(soup, None) == []
+
+
+def test_load_invert_labels_returns_none_when_missing(tmp_path: Path) -> None:
+    assert built_site_checks._load_invert_labels(tmp_path) is None
+
+
+def test_load_invert_labels_returns_none_on_invalid_json(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text("not json", encoding="utf-8")
+    assert built_site_checks._load_invert_labels(tmp_path) is None
+
+
+def test_load_invert_labels_returns_none_on_non_object(tmp_path: Path) -> None:
+    target = tmp_path / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text("[1, 2, 3]", encoding="utf-8")
+    assert built_site_checks._load_invert_labels(tmp_path) is None
+
+
+def test_load_invert_labels_returns_empty_dict_on_empty_object(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text("{}", encoding="utf-8")
+    # Empty object means "yes, the file exists, but nothing labeled" — the
+    # check stays enabled and flags every AVIF as missing.
+    assert built_site_checks._load_invert_labels(tmp_path) == {}
+
+
+def test_load_invert_labels_loads_object(tmp_path: Path) -> None:
+    target = tmp_path / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text(
+        json.dumps({"https://x/a.avif": True, "https://x/b.avif": False}),
+        encoding="utf-8",
+    )
+    assert built_site_checks._load_invert_labels(tmp_path) == {
+        "https://x/a.avif": True,
+        "https://x/b.avif": False,
+    }
+
+
 # LCP image optimization tests
 @pytest.mark.parametrize(
     "html,expected_issues",

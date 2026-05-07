@@ -15,7 +15,7 @@ import tempfile
 import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal, NamedTuple
@@ -788,6 +788,31 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
 
+    return issues
+
+
+def check_avif_images_labeled(
+    soup: BeautifulSoup,
+    invert_labels: Mapping[str, bool] | None,
+) -> list[str]:
+    """
+    Check that every <img> with an .avif src has an entry in
+    `.invert_labels.json` (true or false). Catches newly-added AVIFs that were
+    never triaged through the labeling tool.
+
+    Returns a list of unlabeled AVIF src URLs (one entry per occurrence). No-op
+    when the labels file isn't loaded (e.g., in unit tests that construct
+    CheckOptions without it).
+    """
+    if invert_labels is None:
+        return []
+    issues: list[str] = []
+    for img in _tags_only(soup.find_all("img")):
+        src = img.get("src")
+        if not isinstance(src, str) or not src.lower().endswith(".avif"):
+            continue
+        if src not in invert_labels:
+            issues.append(f"<img> AVIF missing from .invert_labels.json: {src}")
     return issues
 
 
@@ -1785,6 +1810,9 @@ class CheckOptions:
     should_check_fonts: bool = False
     defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
+    # Loaded once in _process_html_files; passed through so each file
+    # check doesn't have to re-read the JSON.
+    invert_labels: Mapping[str, bool] | None = None
 
 
 def check_file_for_issues(
@@ -1850,6 +1878,9 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "avif_missing_invert_label": check_avif_images_labeled(
+            soup, opts.invert_labels
+        ),
         "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
@@ -2848,6 +2879,34 @@ def _collect_paragraphs_for_spellcheck(
         paragraph_map[rel] = paras
 
 
+def _load_invert_labels(project_root: Path) -> Mapping[str, bool] | None:
+    """
+    Load `.invert_labels.json`.
+
+    Returns ``None`` if the file is absent or malformed (the AVIF-labeled check
+    disables itself when labels are unavailable). Returns the parsed mapping
+    otherwise — including an empty ``{}`` when the user has yet to label
+    anything, which deliberately makes the check loud until every AVIF on the
+    built site has an explicit decision.
+    """
+    path = (
+        project_root
+        / "quartz"
+        / "plugins"
+        / "transformers"
+        / ".invert_labels.json"
+    )
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    return {str(k): bool(v) for k, v in data.items()}
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2863,10 +2922,12 @@ def _process_html_files(  # pylint: disable=too-many-locals
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
+    invert_labels = _load_invert_labels(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,
         favicon_included_domains=included_domains,
+        invert_labels=invert_labels,
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
