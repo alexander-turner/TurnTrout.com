@@ -24,6 +24,11 @@ def _solid_png(rgb: tuple[int, int, int], size: int = 8) -> bytes:
     return buf.getvalue()
 
 
+def _label(invert: bool, reviewed: bool = True) -> label_invert.Label:
+    """Convenience for the {invert, reviewed} TypedDict in tests."""
+    return {"invert": invert, "reviewed": reviewed}
+
+
 DIMS = {
     "https://assets.turntrout.com/static/images/posts/a.avif": {},
     "https://assets.turntrout.com/static/images/posts/b.png": {},
@@ -56,33 +61,57 @@ def test_enumerate_candidates_dedupes() -> None:
 # --- labels JSON I/O ---------------------------------------------------------
 
 
+def test_load_labels_missing_file(tmp_path: Path) -> None:
+    assert label_invert.load_labels(tmp_path / "missing.json") == {}
+
+
 @pytest.mark.parametrize(
-    ("contents", "expected"),
+    "bad",
     [
-        (None, {}),
-        ("[1, 2]", ValueError),
-        ('{"a": true, "b": false}', {"a": True, "b": False}),
+        "[1, 2]",
+        '{"a": true}',  # bare bool no longer supported
+        '{"a": {}}',  # missing 'invert' key
     ],
 )
-def test_load_labels(
-    tmp_path: Path, contents: str | None, expected: object
-) -> None:
-    path = tmp_path / "x.json"
-    if contents is not None:
-        path.write_text(contents, encoding="utf-8")
-    if expected is ValueError:
-        with pytest.raises(ValueError, match="JSON object"):
-            label_invert.load_labels(path)
-    else:
-        assert label_invert.load_labels(path) == expected
+def test_load_labels_rejects_malformed(tmp_path: Path, bad: str) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text(bad, encoding="utf-8")
+    with pytest.raises(ValueError):
+        label_invert.load_labels(path)
+
+
+def test_load_labels_parses_typed_dict(tmp_path: Path) -> None:
+    path = tmp_path / "labels.json"
+    path.write_text(
+        '{"a": {"invert": true, "reviewed": true}, '
+        '"b": {"invert": false, "reviewed": false}}',
+        encoding="utf-8",
+    )
+    assert label_invert.load_labels(path) == {
+        "a": _label(True, True),
+        "b": _label(False, False),
+    }
+
+
+def test_load_labels_defaults_reviewed_to_false(tmp_path: Path) -> None:
+    path = tmp_path / "labels.json"
+    path.write_text('{"a": {"invert": true}}', encoding="utf-8")
+    assert label_invert.load_labels(path) == {"a": _label(True, False)}
 
 
 def test_save_labels_roundtrip(tmp_path: Path) -> None:
     path = tmp_path / "nested" / "labels.json"
-    label_invert.save_labels({"z": True, "a": False}, path)
-    text = path.read_text(encoding="utf-8")
-    assert json.loads(text) == {"a": False, "z": True}
-    assert text.index('"a"') < text.index('"z"')
+    label_invert.save_labels(
+        {"z": _label(True, True), "a": _label(False, False)}, path
+    )
+    on_disk = json.loads(path.read_text(encoding="utf-8"))
+    assert on_disk == {
+        "a": {"invert": False, "reviewed": False},
+        "z": {"invert": True, "reviewed": True},
+    }
+    assert path.read_text(encoding="utf-8").index('"a"') < path.read_text(
+        encoding="utf-8"
+    ).index('"z"')
 
 
 def test_save_labels_cleans_tempfile_on_error(
@@ -93,27 +122,46 @@ def test_save_labels_cleans_tempfile_on_error(
 
     monkeypatch.setattr(label_invert.os, "replace", boom)
     with pytest.raises(RuntimeError, match="boom"):
-        label_invert.save_labels({"u": True}, tmp_path / "labels.json")
+        label_invert.save_labels({"u": _label(True)}, tmp_path / "labels.json")
     assert list(tmp_path.iterdir()) == []
 
 
 @pytest.mark.parametrize(
     ("decision", "before", "after"),
     [
-        (True, {}, {"u": True}),
-        (False, {}, {"u": False}),
-        (None, {"u": True}, {}),
-        (True, {"u": False}, {"u": True}),
+        (True, {}, {"u": _label(True, True)}),
+        (False, {}, {"u": _label(False, True)}),
+        (None, {"u": _label(True, True)}, {}),
+        # Setting a verdict marks reviewed=True even if it was False before.
+        (True, {"u": _label(False, False)}, {"u": _label(True, True)}),
     ],
 )
-def test_apply_label(
+def test_set_user_label(
     decision: bool | None,
-    before: dict[str, bool],
-    after: dict[str, bool],
+    before: dict[str, label_invert.Label],
+    after: dict[str, label_invert.Label],
 ) -> None:
-    labels = dict(before)
-    label_invert.apply_label(labels, "u", decision)
+    labels = {k: dict(v) for k, v in before.items()}  # type: ignore[arg-type]
+    label_invert.set_user_label(labels, "u", decision)  # type: ignore[arg-type]
     assert labels == after
+
+
+def test_mark_reviewed_promotes_unreviewed() -> None:
+    labels = {"u": _label(True, False)}
+    assert label_invert.mark_reviewed(labels, "u") is True
+    assert labels == {"u": _label(True, True)}
+
+
+def test_mark_reviewed_no_op_when_already_reviewed() -> None:
+    labels = {"u": _label(True, True)}
+    assert label_invert.mark_reviewed(labels, "u") is False
+    assert labels == {"u": _label(True, True)}
+
+
+def test_mark_reviewed_no_op_when_url_missing() -> None:
+    labels: dict[str, label_invert.Label] = {}
+    assert label_invert.mark_reviewed(labels, "u") is False
+    assert labels == {}
 
 
 # --- markdown scanner --------------------------------------------------------
@@ -141,8 +189,8 @@ def test_apply_annotations_records_and_strips(tmp_path: Path) -> None:
         ("https://example.com/b.png", False),
     }
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://example.com/a.avif": True,
-        "https://example.com/b.png": False,
+        "https://example.com/a.avif": {"invert": True, "reviewed": True},
+        "https://example.com/b.png": {"invert": False, "reviewed": True},
     }
     new_text = md.read_text(encoding="utf-8")
     assert "{.invert-on-dark}" not in new_text
@@ -174,10 +222,12 @@ def test_apply_annotations_overrides_existing_labels(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     labels_path = tmp_path / "labels.json"
-    label_invert.save_labels({"https://example.com/a.avif": True}, labels_path)
+    label_invert.save_labels(
+        {"https://example.com/a.avif": _label(True, True)}, labels_path
+    )
     label_invert.apply_markdown_annotations(content, labels_path=labels_path)
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://example.com/a.avif": False,
+        "https://example.com/a.avif": {"invert": False, "reviewed": True},
     }
 
 
@@ -200,38 +250,55 @@ def test_index_renders_grid(client: tuple[FlaskClient, Path]) -> None:
         assert f'data-url="{url}"' in body
 
 
-def test_index_marks_state(client: tuple[FlaskClient, Path]) -> None:
+def test_index_marks_state_and_review(client: tuple[FlaskClient, Path]) -> None:
     test_client, labels_path = client
     label_invert.save_labels(
-        {EXPECTED[0]: True, EXPECTED[1]: False}, labels_path
+        {
+            EXPECTED[0]: _label(True, True),
+            EXPECTED[1]: _label(False, False),
+        },
+        labels_path,
     )
     body = test_client.get("/").get_data(as_text=True)
-    assert f'data-state="invert" data-url="{EXPECTED[0]}"' in body
-    assert f'data-state="no-invert" data-url="{EXPECTED[1]}"' in body
-    assert f'data-state="unlabeled" data-url="{EXPECTED[2]}"' in body
+    assert (
+        f'data-state="invert" data-reviewed="true" data-url="{EXPECTED[0]}"'
+        in body
+    )
+    assert (
+        f'data-state="no-invert" data-reviewed="false" '
+        f'data-url="{EXPECTED[1]}"' in body
+    )
+    assert (
+        f'data-state="unlabeled" data-reviewed="true" '
+        f'data-url="{EXPECTED[2]}"' in body
+    )
+    # The unreviewed entry surfaces a "needs review" badge.
+    assert "needs review" in body
 
 
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:
     test_client, labels_path = client
-    label_invert.save_labels({EXPECTED[0]: True}, labels_path)
-    assert test_client.get("/api/labels").get_json() == {EXPECTED[0]: True}
+    label_invert.save_labels({EXPECTED[0]: _label(True, True)}, labels_path)
+    assert test_client.get("/api/labels").get_json() == {
+        EXPECTED[0]: {"invert": True, "reviewed": True},
+    }
 
 
 @pytest.mark.parametrize(
     ("state", "expected_disk"),
     [
-        ("invert", {"url": True}),
-        ("no-invert", {"url": False}),
+        ("invert", {"url": {"invert": True, "reviewed": True}}),
+        ("no-invert", {"url": {"invert": False, "reviewed": True}}),
         ("unlabeled", {}),
     ],
 )
 def test_post_label_persists_each_state(
     client: tuple[FlaskClient, Path],
     state: str,
-    expected_disk: Mapping[str, bool],
+    expected_disk: Mapping[str, Mapping[str, bool]],
 ) -> None:
     test_client, labels_path = client
-    label_invert.save_labels({EXPECTED[0]: True}, labels_path)
+    label_invert.save_labels({EXPECTED[0]: _label(True, False)}, labels_path)
     resp = test_client.post(
         "/api/label", json={"url": EXPECTED[0], "state": state}
     )
@@ -239,6 +306,38 @@ def test_post_label_persists_each_state(
     on_disk = json.loads(labels_path.read_text(encoding="utf-8"))
     expected = {EXPECTED[0]: v for v in expected_disk.values()}
     assert on_disk == expected
+
+
+def test_post_review_marks_existing_unreviewed(
+    client: tuple[FlaskClient, Path],
+) -> None:
+    test_client, labels_path = client
+    label_invert.save_labels(
+        {EXPECTED[0]: _label(True, False), EXPECTED[1]: _label(False, True)},
+        labels_path,
+    )
+    resp = test_client.post(
+        "/api/review", json={"urls": [EXPECTED[0], EXPECTED[1], EXPECTED[2]]}
+    )
+    assert resp.status_code == 200
+    # Only EXPECTED[0] needed promotion; the others were either already
+    # reviewed (EXPECTED[1]) or not labeled at all (EXPECTED[2]).
+    assert resp.get_json() == {"ok": True, "reviewed": 1}
+    assert json.loads(labels_path.read_text(encoding="utf-8")) == {
+        EXPECTED[0]: {"invert": True, "reviewed": True},
+        EXPECTED[1]: {"invert": False, "reviewed": True},
+    }
+
+
+@pytest.mark.parametrize(
+    "payload", [{}, {"urls": "not-a-list"}, {"urls": [1, 2]}]
+)
+def test_post_review_rejects_bad_input(
+    client: tuple[FlaskClient, Path], payload: object
+) -> None:
+    test_client, _ = client
+    resp = test_client.post("/api/review", json=payload)
+    assert resp.status_code == 400
 
 
 @pytest.mark.parametrize(
@@ -365,7 +464,7 @@ def test_main_runs_apply_annotations(tmp_path: Path) -> None:
     )
     assert rc == 0
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://example.com/a.avif": True,
+        "https://example.com/a.avif": {"invert": True, "reviewed": True},
     }
 
 
@@ -496,21 +595,22 @@ def test_default_fetch_uses_requests(monkeypatch: pytest.MonkeyPatch) -> None:
     assert captured["raised"] is False
 
 
-def test_autolabel_by_luminance_marks_high_lum_unlabeled(
-    tmp_path: Path,
-) -> None:
+def test_autolabel_by_luminance_writes_both_decisions(tmp_path: Path) -> None:
     labels_path = tmp_path / "labels.json"
     new = label_invert.autolabel_by_luminance(
-        ("https://x/a.avif", "https://x/b.avif", "https://x/c.avif"),
+        ("https://x/a.avif", "https://x/b.avif", "https://x/no-lum.avif"),
         {
-            "https://x/a.avif": 0.9,
-            "https://x/b.avif": 0.4,
+            "https://x/a.avif": 0.9,  # >= threshold -> invert
+            "https://x/b.avif": 0.4,  # < threshold  -> don't invert
         },
         labels_path=labels_path,
     )
-    assert new == ("https://x/a.avif",)
+    assert new == {"https://x/a.avif": True, "https://x/b.avif": False}
+    # Auto-labels are written with reviewed=False so they show up as
+    # "needs review" in the UI and fail the built-site check.
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://x/a.avif": True,
+        "https://x/a.avif": {"invert": True, "reviewed": False},
+        "https://x/b.avif": {"invert": False, "reviewed": False},
     }
 
 
@@ -518,28 +618,30 @@ def test_autolabel_by_luminance_does_not_override_existing(
     tmp_path: Path,
 ) -> None:
     labels_path = tmp_path / "labels.json"
-    label_invert.save_labels({"https://x/a.avif": False}, labels_path)
+    label_invert.save_labels(
+        {"https://x/a.avif": _label(False, True)}, labels_path
+    )
     new = label_invert.autolabel_by_luminance(
         ("https://x/a.avif",),
         {"https://x/a.avif": 0.99},
         labels_path=labels_path,
     )
-    assert new == ()
+    assert new == {}
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://x/a.avif": False,
+        "https://x/a.avif": {"invert": False, "reviewed": True},
     }
 
 
-def test_autolabel_by_luminance_no_changes_does_not_write(
+def test_autolabel_by_luminance_skips_urls_without_luminance(
     tmp_path: Path,
 ) -> None:
     labels_path = tmp_path / "labels.json"
     new = label_invert.autolabel_by_luminance(
         ("https://x/a.avif",),
-        {"https://x/a.avif": 0.1},
+        {},
         labels_path=labels_path,
     )
-    assert new == ()
+    assert new == {}
     assert not labels_path.exists()
 
 
@@ -547,7 +649,9 @@ def test_index_renders_luminance_and_auto_badge(tmp_path: Path) -> None:
     labels_path = tmp_path / "labels.json"
     high = "https://assets.turntrout.com/static/images/posts/a.avif"
     low = "https://assets.turntrout.com/static/images/posts/b.png"
-    label_invert.save_labels({high: True, low: False}, labels_path)
+    label_invert.save_labels(
+        {high: _label(True, False), low: _label(False, True)}, labels_path
+    )
     app = label_invert.create_app(
         (high, low),
         labels_path=labels_path,
@@ -557,9 +661,10 @@ def test_index_renders_luminance_and_auto_badge(tmp_path: Path) -> None:
     body = app.test_client().get("/").get_data(as_text=True)
     assert "L = 0.92" in body
     assert "L = 0.10" in body
-    # Only the high-lum invert card gets the auto-suggested badge.
-    # `badge-auto` appears once in the stylesheet too, so use `auto-suggested`.
+    # Only the high-lum unreviewed invert card gets the auto-suggested badge.
     assert body.count("auto-suggested") == 1
+    # Only the unreviewed entry surfaces a "needs review" badge.
+    assert body.count("needs review") == 1
 
 
 def test_main_runs_luminance_and_autolabel(
@@ -597,7 +702,14 @@ def test_main_runs_luminance_and_autolabel(
     )
     assert rc == 0
     assert json.loads(labels_path.read_text(encoding="utf-8")) == {
-        "https://assets.turntrout.com/static/images/posts/a.avif": True,
+        "https://assets.turntrout.com/static/images/posts/a.avif": {
+            "invert": True,
+            "reviewed": False,
+        },
+        "https://assets.turntrout.com/static/images/posts/b.png": {
+            "invert": False,
+            "reviewed": False,
+        },
     }
     assert "https://assets.turntrout.com/static/images/posts/b.png" in (
         json.loads(lum_path.read_text(encoding="utf-8"))

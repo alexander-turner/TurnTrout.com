@@ -6355,11 +6355,11 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
-_AVIF_MISSING_PREFIX = "<img> AVIF missing from .invert_labels.json: "
+_AVIF_NOT_REVIEWED_PREFIX = "<img> AVIF not user-reviewed: "
 
 
 def _missing(*urls: str) -> list[str]:
-    return [_AVIF_MISSING_PREFIX + u for u in urls]
+    return [_AVIF_NOT_REVIEWED_PREFIX + u for u in urls]
 
 
 @pytest.mark.parametrize(
@@ -6367,13 +6367,13 @@ def _missing(*urls: str) -> list[str]:
     [
         # No labels loaded → check is a no-op regardless of the page.
         ('<img src="https://x/a.avif">', None, []),
-        # Both AVIFs labeled (true or false both count as "decided").
+        # All AVIFs reviewed (the loader only returns reviewed entries).
         (
             '<img src="https://x/a.avif"><img src="https://x/b.avif">',
             {"https://x/a.avif": True, "https://x/b.avif": False},
             [],
         ),
-        # One missing, one present.
+        # One unreviewed (absent from the mapping), one reviewed.
         (
             '<img src="https://x/missing.avif">'
             '<img src="https://x/known.avif">',
@@ -6395,7 +6395,7 @@ def _missing(*urls: str) -> list[str]:
             {},
             _missing("https://x/UPPER.AVIF"),
         ),
-        # Same missing AVIF twice → reported twice (one per occurrence).
+        # Same unreviewed AVIF twice → reported twice (one per occurrence).
         (
             '<img src="https://x/m.avif"><img src="https://x/m.avif">',
             {},
@@ -6429,11 +6429,18 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
         (None, None),
         ("not json", None),
         ("[1, 2, 3]", None),
-        # Empty object → check stays enabled and flags every AVIF as missing.
+        # Empty object → check stays enabled and flags every AVIF.
         ("{}", {}),
-        # Populated object → returned as-is, with values coerced to bool.
+        # Mixed reviewed / unreviewed: only reviewed entries returned.
         (
-            json.dumps({"https://x/a.avif": True, "https://x/b.avif": False}),
+            json.dumps(
+                {
+                    "https://x/a.avif": {"invert": True, "reviewed": True},
+                    "https://x/b.avif": {"invert": False, "reviewed": True},
+                    "https://x/c.avif": {"invert": True, "reviewed": False},
+                    "https://x/legacy.avif": True,  # legacy bool-shape ignored
+                }
+            ),
             {"https://x/a.avif": True, "https://x/b.avif": False},
         ),
     ],

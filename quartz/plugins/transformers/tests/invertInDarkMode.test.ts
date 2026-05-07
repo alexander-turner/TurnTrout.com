@@ -38,9 +38,12 @@ describe("InvertInDarkMode", () => {
       expect(await loadInvertLabels()).toEqual(new Map())
     })
 
-    it("parses object entries to a Map<string, boolean>", async () => {
+    it("parses {invert, reviewed} entries to a Map<string, boolean>", async () => {
       readFileSpy.mockResolvedValue(
-        JSON.stringify({ "https://x/a.avif": true, "https://x/b.avif": false }) as never,
+        JSON.stringify({
+          "https://x/a.avif": { invert: true, reviewed: true },
+          "https://x/b.avif": { invert: false, reviewed: false },
+        }) as never,
       )
       const labels = await loadInvertLabels()
       expect(labels.get("https://x/a.avif")).toBe(true)
@@ -50,6 +53,11 @@ describe("InvertInDarkMode", () => {
     it("rejects non-object JSON", async () => {
       readFileSpy.mockResolvedValue(JSON.stringify(["a"]) as never)
       await expect(loadInvertLabels()).rejects.toThrow(/JSON object/)
+    })
+
+    it("rejects entries that are not objects with `invert`", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({ "https://x/a.avif": true }) as never)
+      await expect(loadInvertLabels()).rejects.toThrow(/invert, reviewed/)
     })
 
     it("caches by default path", async () => {
@@ -142,7 +150,9 @@ describe("InvertInDarkMode", () => {
 
   describe("InvertInDarkMode plugin", () => {
     it("applies labels to a tree at build time", async () => {
-      readFileSpy.mockResolvedValue(JSON.stringify({ "https://x/a.avif": true }) as never)
+      readFileSpy.mockResolvedValue(
+        JSON.stringify({ "https://x/a.avif": { invert: true, reviewed: true } }) as never,
+      )
       const plugin = InvertInDarkMode()
       expect(plugin.name).toBe("InvertInDarkMode")
       const factories = plugin.htmlPlugins() as Array<() => (tree: Root) => Promise<void>>

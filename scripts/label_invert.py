@@ -36,7 +36,7 @@ from collections.abc import Callable, Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Final, TypedDict
 
 import numpy as np
 import requests
@@ -100,19 +100,43 @@ def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
 # --- labels JSON I/O ---------------------------------------------------------
 
 
-def load_labels(path: Path = LABELS_JSON) -> dict[str, bool]:
-    """Load ``{url: bool}`` labels (empty if missing)."""
+class Label(TypedDict):
+    """
+    One label entry: a verdict + whether the user has confirmed it.
+
+    ``invert`` is the dark-mode decision the build pipeline reads; ``reviewed``
+    is True iff a human has explicitly confirmed (or set) the verdict. Auto-
+    labels (e.g. luminance heuristic) write ``reviewed: False``.
+    """
+
+    invert: bool
+    reviewed: bool
+
+
+def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
+    """Load ``{url: {invert, reviewed}}`` labels (empty if missing)."""
     if not path.exists():
         return {}
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError(f"{path} must contain a JSON object")
-    return {str(k): bool(v) for k, v in data.items()}
+    out: dict[str, Label] = {}
+    for key, value in data.items():
+        if not isinstance(value, dict) or "invert" not in value:
+            raise ValueError(
+                f"{path} entry for {key!r} must be "
+                "{{invert: bool, reviewed: bool}}"
+            )
+        out[str(key)] = Label(
+            invert=bool(value["invert"]),
+            reviewed=bool(value.get("reviewed", False)),
+        )
+    return out
 
 
-def save_labels(labels: Mapping[str, bool], path: Path = LABELS_JSON) -> None:
+def save_labels(labels: Mapping[str, Label], path: Path = LABELS_JSON) -> None:
     """Atomically write the labels JSON, sorted by URL."""
-    sorted_labels = dict(sorted(labels.items()))
+    sorted_labels = {k: dict(v) for k, v in sorted(labels.items())}
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(
         prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
@@ -128,14 +152,29 @@ def save_labels(labels: Mapping[str, bool], path: Path = LABELS_JSON) -> None:
         raise
 
 
-def apply_label(
-    labels: dict[str, bool], url: str, decision: bool | None
+def set_user_label(
+    labels: dict[str, Label], url: str, decision: bool | None
 ) -> None:
-    """Mutate ``labels`` to record one decision (None clears the entry)."""
+    """Apply a user decision: ``True``/``False`` set the verdict and mark
+    reviewed=True; ``None`` clears the entry entirely."""
     if decision is None:
         labels.pop(url, None)
     else:
-        labels[url] = decision
+        labels[url] = Label(invert=decision, reviewed=True)
+
+
+def mark_reviewed(labels: dict[str, Label], url: str) -> bool:
+    """
+    Mark an existing label as user-reviewed without changing the verdict.
+
+    Returns True if the entry existed and was updated, False otherwise.
+    """
+    if url not in labels:
+        return False
+    if labels[url]["reviewed"]:
+        return False
+    labels[url] = Label(invert=labels[url]["invert"], reviewed=True)
+    return True
 
 
 # --- markdown scanner --------------------------------------------------------
@@ -170,7 +209,7 @@ def apply_markdown_annotations(
         if file_decisions:
             decisions.extend(file_decisions)
             for url, decision in file_decisions:
-                apply_label(labels, url, decision)
+                set_user_label(labels, url, decision)
         if new_text != original:
             md_path.write_text(new_text, encoding="utf-8")
             modified.append(md_path)
@@ -281,24 +320,31 @@ def autolabel_by_luminance(
     *,
     labels_path: Path = LABELS_JSON,
     threshold: float = LUMINANCE_INVERT_THRESHOLD,
-) -> tuple[str, ...]:
+) -> dict[str, bool]:
     """
-    Mark unlabeled high-luminance images as ``true`` and persist.
+    Auto-label unlabeled images by their grayscale luminance.
 
-    Returns the URLs that were newly labeled. Already-labeled images are never
-    overridden.
+    Each unlabeled URL whose luminance is known is recorded as
+    ``True`` (invert) when ``luminance >= threshold`` and ``False``
+    (don't invert) otherwise. URLs without a luminance entry stay
+    unlabeled. Already-labeled URLs are never overridden.
+
+    Returns ``{url: decision}`` for the newly-labeled URLs.
     """
     labels = load_labels(labels_path)
-    newly_labeled: list[str] = []
+    newly_labeled: dict[str, bool] = {}
     for url in candidates:
         if url in labels:
             continue
-        if luminances.get(url, 0.0) >= threshold:
-            labels[url] = True
-            newly_labeled.append(url)
+        lum = luminances.get(url)
+        if lum is None:
+            continue
+        decision = lum >= threshold
+        labels[url] = Label(invert=decision, reviewed=False)
+        newly_labeled[url] = decision
     if newly_labeled:
         save_labels(labels, labels_path)
-    return tuple(newly_labeled)
+    return newly_labeled
 
 
 # --- Flask app ---------------------------------------------------------------
@@ -331,7 +377,14 @@ def create_app(
             labels=labels,
             luminances=lum_map,
             luminance_threshold=LUMINANCE_INVERT_THRESHOLD,
-            invert_count=sum(1 for u in candidates if labels.get(u) is True),
+            invert_count=sum(
+                1 for u in candidates if u in labels and labels[u]["invert"]
+            ),
+            unreviewed_count=sum(
+                1
+                for u in candidates
+                if u in labels and not labels[u]["reviewed"]
+            ),
         )
 
     @app.get("/api/labels")
@@ -355,9 +408,24 @@ def create_app(
         if url not in candidate_set:
             abort(400, f"Unknown candidate URL: {url}")
         labels = load_labels(labels_path)
-        apply_label(labels, url, _DECISION_PARAM[state])
+        set_user_label(labels, url, _DECISION_PARAM[state])
         save_labels(labels, labels_path)
         return jsonify(ok=True)
+
+    @app.post("/api/review")
+    def post_review() -> Response:
+        """Bulk-mark URLs as user-reviewed (verdict unchanged)."""
+        payload = request.get_json(silent=True) or {}
+        urls = payload.get("urls")
+        if not isinstance(urls, list) or not all(
+            isinstance(u, str) for u in urls
+        ):
+            abort(400, "body must be {urls: list[str]}")
+        labels = load_labels(labels_path)
+        reviewed_count = sum(1 for u in urls if mark_reviewed(labels, u))
+        if reviewed_count:
+            save_labels(labels, labels_path)
+        return jsonify(ok=True, reviewed=reviewed_count)
 
     return app
 
@@ -384,11 +452,14 @@ def _run_server(args: argparse.Namespace) -> int:
             candidates, luminances, labels_path=args.labels
         )
         if new:
+            inverts = sum(1 for v in new.values() if v)
             logger.info(
-                "Auto-labeled %d high-luminance images as 'invert' "
-                "(threshold=%.2f). You can override in the UI.",
+                "Auto-labeled %d images by luminance (threshold=%.2f): "
+                "%d invert, %d don't-invert. Override in the UI as needed.",
                 len(new),
                 LUMINANCE_INVERT_THRESHOLD,
+                inverts,
+                len(new) - inverts,
             )
 
     url = f"http://{args.host}:{args.port}/"

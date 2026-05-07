@@ -7,24 +7,31 @@
       :root { color-scheme: light; }
       body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f4; color: #111; }
       header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ccc;
-               padding: 0.75rem 1rem; display: flex; gap: 1rem; align-items: center; z-index: 10; }
+               padding: 0.75rem 1rem; display: flex; gap: 0.75rem; align-items: center; z-index: 10;
+               flex-wrap: wrap; }
       header h1 { font-size: 1rem; margin: 0; }
       header .progress { font-variant-numeric: tabular-nums; }
-      header .filter { margin-left: auto; }
+      header .controls-spacer { margin-left: auto; }
+      header button { font: inherit; padding: 0.3rem 0.7rem; border-radius: 4px;
+                      border: 1px solid #2563eb; background: #2563eb; color: #fff;
+                      cursor: pointer; }
+      header button:disabled { opacity: 0.5; cursor: not-allowed; }
       main { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
              gap: 1rem; padding: 1rem; }
       .card { background: #fff; border: 2px solid #ddd; border-radius: 6px;
               padding: 0.5rem; transition: border-color 120ms; }
       .card[data-state="invert"] { border-color: #2563eb; }
       .card[data-state="no-invert"] { border-color: #b91c1c; opacity: 0.7; }
+      .card[data-reviewed="false"] { box-shadow: 0 0 0 2px #fde68a inset; }
       .card .controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
                         font-size: 0.85rem; }
       .card .controls label { display: inline-flex; align-items: center; gap: 0.25rem;
                               cursor: pointer; font-weight: 500; }
       .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
       .card .meta { font-size: 0.7rem; color: #777; display: flex; gap: 0.5rem; }
-      .card .badge-auto { background: #fde68a; color: #78350f; padding: 0 0.4rem;
-                          border-radius: 3px; font-weight: 600; }
+      .card .badge { padding: 0 0.4rem; border-radius: 3px; font-weight: 600; }
+      .card .badge-auto { background: #fde68a; color: #78350f; }
+      .card .badge-needs-review { background: #fed7aa; color: #7c2d12; }
       .preview > figure { margin: 0; padding: 0.5rem; border-radius: 4px;
                           background: #1a1a1a; min-height: 110px;
                           display: flex; align-items: center; justify-content: center; }
@@ -39,24 +46,34 @@
     <header>
       <h1>Invert-in-dark-mode labeling</h1>
       <span class="progress" id="progress-counter" data-total="{{ candidates|length }}">
-        {{ invert_count }} / {{ candidates|length }} marked invert
+        {{ invert_count }} / {{ candidates|length }} invert &middot; {{ unreviewed_count }} unreviewed
       </span>
+      <span class="controls-spacer"></span>
       <select id="filter" class="filter">
         <option value="all">Show all</option>
         <option value="invert">Show only invert</option>
         <option value="no-invert">Show only don't-invert</option>
         <option value="unlabeled">Show only unlabeled</option>
+        <option value="unreviewed">Show only unreviewed</option>
       </select>
+      <button id="confirm-visible" type="button">Confirm visible as reviewed</button>
     </header>
     <main>
       {%- for url in candidates -%}
-        {%- set decision = labels.get(url) -%}
+        {%- set entry = labels.get(url) -%}
         {%- set lum = luminances.get(url) -%}
-        {%- if decision is true -%}{%- set state = "invert" -%}
-        {%- elif decision is false -%}{%- set state = "no-invert" -%}
-        {%- else -%}{%- set state = "unlabeled" -%}{%- endif -%}
-        {%- set auto = state == "invert" and lum is not none and lum >= luminance_threshold -%}
-        <article class="card" data-state="{{ state }}" data-url="{{ url }}">
+        {%- if entry is none -%}
+          {%- set state = "unlabeled" -%}
+          {%- set reviewed = true -%}
+        {%- elif entry.invert -%}
+          {%- set state = "invert" -%}
+          {%- set reviewed = entry.reviewed -%}
+        {%- else -%}
+          {%- set state = "no-invert" -%}
+          {%- set reviewed = entry.reviewed -%}
+        {%- endif -%}
+        {%- set auto = state == "invert" and lum is not none and lum >= luminance_threshold and not reviewed -%}
+        <article class="card" data-state="{{ state }}" data-reviewed="{{ 'true' if reviewed else 'false' }}" data-url="{{ url }}">
           <div class="controls" role="radiogroup" aria-label="Label state" data-current="{{ state }}">
             <label><input type="radio" name="state-{{ loop.index }}" value="unlabeled" /> Unlabeled</label>
             <label><input type="radio" name="state-{{ loop.index }}" value="invert" /> Invert</label>
@@ -67,7 +84,8 @@
             {%- if lum is not none -%}
               <span title="Mean grayscale luminance">L = {{ '%.2f' % lum }}</span>
             {%- endif -%}
-            {%- if auto -%}<span class="badge-auto">auto-suggested</span>{%- endif -%}
+            {%- if auto -%}<span class="badge badge-auto">auto-suggested</span>{%- endif -%}
+            {%- if not reviewed -%}<span class="badge badge-needs-review">needs review</span>{%- endif -%}
           </div>
           <div class="preview">
             <figure>
@@ -90,7 +108,13 @@
       });
       const recount = () => {
         const n = document.querySelectorAll('.card[data-state="invert"]').length;
-        counter.textContent = `${n} / ${total} marked invert`;
+        const u = document.querySelectorAll('.card[data-reviewed="false"]').length;
+        counter.textContent = `${n} / ${total} invert · ${u} unreviewed`;
+      };
+      const cardMatchesFilter = (card, mode) => {
+        if (mode === "all") return true;
+        if (mode === "unreviewed") return card.dataset.reviewed === "false";
+        return card.dataset.state === mode;
       };
       document.querySelectorAll('.controls input[type=radio]').forEach((radio) => {
         radio.addEventListener("change", async (ev) => {
@@ -100,7 +124,10 @@
           const url = card.dataset.url;
           const state = ev.target.value;
           const previous = card.dataset.state;
+          const previousReviewed = card.dataset.reviewed;
           card.dataset.state = state;
+          // Any radio click is an explicit user review.
+          card.dataset.reviewed = "true";
           group.dataset.current = state;
           recount();
           const r = await fetch("/api/label", {
@@ -110,6 +137,7 @@
           });
           if (!r.ok) {
             card.dataset.state = previous;
+            card.dataset.reviewed = previousReviewed;
             group.dataset.current = previous;
             const prevRadio = group.querySelector(
               `input[type=radio][value="${previous}"]`,
@@ -123,8 +151,34 @@
       document.getElementById("filter").addEventListener("change", (ev) => {
         const mode = ev.target.value;
         document.querySelectorAll(".card").forEach((c) => {
-          c.style.display = mode === "all" || c.dataset.state === mode ? "" : "none";
+          c.style.display = cardMatchesFilter(c, mode) ? "" : "none";
         });
+      });
+      document.getElementById("confirm-visible").addEventListener("click", async (ev) => {
+        const button = ev.target;
+        const visible = Array.from(document.querySelectorAll(".card")).filter(
+          (c) => c.style.display !== "none" && c.dataset.reviewed === "false",
+        );
+        if (visible.length === 0) {
+          alert("No unreviewed images visible.");
+          return;
+        }
+        if (!confirm(`Mark ${visible.length} visible image(s) as reviewed?`)) return;
+        button.disabled = true;
+        try {
+          const r = await fetch("/api/review", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ urls: visible.map((c) => c.dataset.url) }),
+          });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          visible.forEach((c) => (c.dataset.reviewed = "true"));
+          recount();
+        } catch (err) {
+          alert(`Bulk review failed: ${err.message}`);
+        } finally {
+          button.disabled = false;
+        }
       });
     </script>
   </body>

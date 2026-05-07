@@ -796,11 +796,12 @@ def check_avif_images_labeled(
     invert_labels: Mapping[str, bool] | None,
 ) -> list[str]:
     """
-    Check that every <img> with an .avif src has an entry in
-    `.invert_labels.json` (true or false). Catches newly-added AVIFs that were
-    never triaged through the labeling tool.
+    Check that every <img> with an .avif src has been **user-reviewed** in
+    `.invert_labels.json` (entry exists with ``reviewed: true``). Catches newly-
+    added AVIFs that were auto-labeled by the luminance heuristic but never
+    confirmed by a human, and AVIFs never triaged at all.
 
-    Returns a list of unlabeled AVIF src URLs (one entry per occurrence). No-op
+    Returns a list of unreviewed AVIF src URLs (one entry per occurrence). No-op
     when the labels file isn't loaded (e.g., in unit tests that construct
     CheckOptions without it).
     """
@@ -812,7 +813,7 @@ def check_avif_images_labeled(
         if not isinstance(src, str) or not src.lower().endswith(".avif"):
             continue
         if src not in invert_labels:
-            issues.append(f"<img> AVIF missing from .invert_labels.json: {src}")
+            issues.append(f"<img> AVIF not user-reviewed: {src}")
     return issues
 
 
@@ -2881,13 +2882,12 @@ def _collect_paragraphs_for_spellcheck(
 
 def _load_invert_labels(project_root: Path) -> Mapping[str, bool] | None:
     """
-    Load `.invert_labels.json`.
+    Load reviewed entries from `.invert_labels.json`.
 
-    Returns ``None`` if the file is absent or malformed (the AVIF-labeled check
-    disables itself when labels are unavailable). Returns the parsed mapping
-    otherwise — including an empty ``{}`` when the user has yet to label
-    anything, which deliberately makes the check loud until every AVIF on the
-    built site has an explicit decision.
+    Returns ``{url: invert_decision}`` for URLs whose label has ``reviewed:
+    true``. Auto-labeled but unreviewed URLs are intentionally omitted so the
+    AVIF-labeled check fails for them. Returns ``None`` if the file is absent or
+    malformed (the check disables itself when labels are unavailable).
     """
     path = (
         project_root
@@ -2904,7 +2904,15 @@ def _load_invert_labels(project_root: Path) -> Mapping[str, bool] | None:
         return None
     if not isinstance(data, dict):
         return None
-    return {str(k): bool(v) for k, v in data.items()}
+    reviewed: dict[str, bool] = {}
+    for key, value in data.items():
+        if (
+            isinstance(value, dict)
+            and value.get("reviewed") is True
+            and "invert" in value
+        ):
+            reviewed[str(key)] = bool(value["invert"])
+    return reviewed
 
 
 def _process_html_files(  # pylint: disable=too-many-locals

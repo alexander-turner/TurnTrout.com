@@ -46,9 +46,13 @@ export async function loadInvertLabels(filePath: string = labelsPath): Promise<I
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
     throw new Error(`${filePath} must contain a JSON object`)
   }
-  const labels = new Map<string, boolean>(
-    Object.entries(parsed as Record<string, unknown>).map(([k, v]) => [k, Boolean(v)]),
-  )
+  const labels = new Map<string, boolean>()
+  for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+    if (v === null || typeof v !== "object" || !("invert" in v)) {
+      throw new Error(`${filePath} entry for ${k} must be {invert, reviewed}`)
+    }
+    labels.set(k, Boolean((v as { invert: unknown }).invert))
+  }
   if (isDefault) cache = labels
   return labels
 }
