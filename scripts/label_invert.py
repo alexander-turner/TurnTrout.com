@@ -41,7 +41,7 @@ from typing import Final
 import numpy as np
 import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -261,12 +261,7 @@ def ensure_luminances(
     def _one(url: str) -> tuple[str, float | None]:
         try:
             return url, compute_luminance(fetch_fn(url))
-        except (
-            requests.RequestException,
-            UnidentifiedImageError,
-            ValueError,
-            OSError,
-        ) as exc:
+        except (OSError, ValueError) as exc:
             logger.warning("luminance failed for %s: %s", url, exc)
             return url, None
 

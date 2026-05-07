@@ -333,7 +333,7 @@ def test_open_browser_async_starts_thread(
         def __init__(self, target: object, args: tuple, daemon: bool) -> None:
             self._target = target
             self._args = args
-            del daemon
+            self._daemon = daemon
 
         def start(self) -> None:
             self._target(*self._args)
