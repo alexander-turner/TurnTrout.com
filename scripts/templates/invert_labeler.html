@@ -17,8 +17,10 @@
               padding: 0.5rem; transition: border-color 120ms; }
       .card[data-state="invert"] { border-color: #2563eb; }
       .card[data-state="no-invert"] { border-color: #b91c1c; opacity: 0.7; }
-      .card .controls { display: flex; gap: 0.5rem; align-items: center; }
-      .card label { font-weight: 600; }
+      .card .controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+                        font-size: 0.85rem; }
+      .card .controls label { display: inline-flex; align-items: center; gap: 0.25rem;
+                              cursor: pointer; font-weight: 500; }
       .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
       .preview { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; }
       .preview > div { padding: 0.25rem; border-radius: 4px; display: flex;
@@ -50,13 +52,10 @@
         {%- elif decision is false -%}{%- set state = "no-invert" -%}
         {%- else -%}{%- set state = "unlabeled" -%}{%- endif -%}
         <article class="card" data-state="{{ state }}" data-url="{{ url }}">
-          <div class="controls">
-            <label for="state-{{ loop.index }}">State</label>
-            <select id="state-{{ loop.index }}" class="state-select" data-current="{{ state }}">
-              <option value="unlabeled">Unlabeled</option>
-              <option value="invert">Invert in dark mode</option>
-              <option value="no-invert">Don't invert</option>
-            </select>
+          <div class="controls" role="radiogroup" aria-label="Label state" data-current="{{ state }}">
+            <label><input type="radio" name="state-{{ loop.index }}" value="unlabeled" /> Unlabeled</label>
+            <label><input type="radio" name="state-{{ loop.index }}" value="invert" /> Invert</label>
+            <label><input type="radio" name="state-{{ loop.index }}" value="no-invert" /> Don't invert</label>
           </div>
           <div class="url" title="{{ url }}">{{ url.rsplit('/', 1)[-1] }}</div>
           <div class="preview">
@@ -69,22 +68,28 @@
     <script>
       const counter = document.getElementById("progress-counter");
       const total = Number(counter.dataset.total);
-      // Set initial selected option from data-current (avoids putting Jinja
-      // conditionals inside HTML attributes, which prettier-html mangles).
-      document.querySelectorAll(".state-select").forEach((sel) => {
-        sel.value = sel.dataset.current;
+      // Pre-select the radio matching the current state. Done in JS so the
+      // `checked` attribute does not have to live inside a Jinja conditional
+      // (prettier-html mangles Jinja blocks placed inside HTML attributes).
+      document.querySelectorAll(".controls").forEach((group) => {
+        const current = group.dataset.current;
+        const radio = group.querySelector(`input[type=radio][value="${current}"]`);
+        if (radio) radio.checked = true;
       });
       const recount = () => {
         const n = document.querySelectorAll('.card[data-state="invert"]').length;
         counter.textContent = `${n} / ${total} marked invert`;
       };
-      document.querySelectorAll(".state-select").forEach((sel) => {
-        sel.addEventListener("change", async (ev) => {
+      document.querySelectorAll('.controls input[type=radio]').forEach((radio) => {
+        radio.addEventListener("change", async (ev) => {
+          if (!ev.target.checked) return;
           const card = ev.target.closest(".card");
+          const group = ev.target.closest(".controls");
           const url = card.dataset.url;
           const state = ev.target.value;
           const previous = card.dataset.state;
           card.dataset.state = state;
+          group.dataset.current = state;
           recount();
           const r = await fetch("/api/label", {
             method: "POST",
@@ -93,7 +98,11 @@
           });
           if (!r.ok) {
             card.dataset.state = previous;
-            ev.target.value = previous;
+            group.dataset.current = previous;
+            const prevRadio = group.querySelector(
+              `input[type=radio][value="${previous}"]`,
+            );
+            if (prevRadio) prevRadio.checked = true;
             recount();
             alert(`Save failed: ${r.status}`);
           }
