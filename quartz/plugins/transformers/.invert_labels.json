@@ -115,6 +115,10 @@
     "invert": false,
     "reviewed": true
   },
+  "https://assets.turntrout.com/alignment-agendas.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/cropped-pond.gif": {
     "invert": false,
     "reviewed": true
@@ -129,6 +133,14 @@
   },
   "https://assets.turntrout.com/static/images/green-dot.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/new_site.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/original_site.avif": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/018130fdb9680994841768855b29f76b80b9972b7ff6847e.avif": {
@@ -351,6 +363,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/4otlQsP.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/595f85ddc1626c211882b6b24365960e7a13eec155b65286.avif": {
     "invert": true,
     "reviewed": true
@@ -519,6 +535,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/AxyakTF.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/B7rMciV.avif": {
     "invert": true,
     "reviewed": true
@@ -568,6 +588,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/DNE5EJg.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/E4GwUGE.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -639,6 +663,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/HomotopySmall.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/I0yeEVZ.avif": {
     "invert": true,
     "reviewed": true
@@ -672,6 +700,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/KEKaYrk.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/KNvYwdb.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -739,6 +771,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/P3SpcuY.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/P3mUtIx.avif": {
     "invert": true,
     "reviewed": true
@@ -748,6 +784,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/PWJmONq.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/Peristalsis.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -847,11 +887,19 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/WCYZkZ4.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/WNk1BrR.avif": {
     "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/WjTqF2y.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/WxLbLUw.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -892,6 +940,14 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/a2648ed5ddce10481462919b3c0008d232082e2eebcea498.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me-20250820083602.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/about-me-20250820083602.webm": {
     "invert": true,
     "reviewed": true
   },
@@ -968,6 +1024,14 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/apep62R.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/append_still-easy_trajectories.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/append_still_trajectories.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -1055,6 +1119,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/burning.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/c2c81758874c685646f8210550a0f467bfad14deb21427c4.avif": {
     "invert": true,
     "reviewed": true
@@ -1095,8 +1163,20 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/cell-division.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/cimakofeuevfrjgqcjxx.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/cl7cobzn4pqpwfxotgco.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/cls_5_99s.mp4": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/compare_baselines.avif": {
@@ -1147,7 +1227,31 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/converge_distribution.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/conveyor.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/correction.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/correction_aup.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/correction_model_free_aup.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/cr9dhux7svjb1tw5ojzd.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/czduetvhfk6tfvpd8jvt.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -1219,12 +1323,32 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/design-03252026-1.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-03252026-2.avif": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/design-20250810160319.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-20250914111611.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-20250914111611.webm": {
     "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/dfog9czq2wdboz8m0dpv.avif": {
     "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/dhjhldyhmp4ec7pbsqun.mp4": {
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/dialogue_length.avif": {
@@ -1268,6 +1392,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/dmy8BTO.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/dog.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -1419,6 +1547,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/f9uz4ran04prpaofwfce.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/fEqZh8g.avif": {
     "invert": true,
     "reviewed": true
@@ -1551,6 +1683,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/h1c8tfpmpebrjhcrqv17.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/h6jet9gvpvaza5mivsyj.avif": {
     "invert": true,
     "reviewed": true
@@ -1603,8 +1739,16 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/hlv0nboiwjhb1jdenjc2.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/holekcV.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/hopper.mp4": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/hpgem17ggmbpgnwcvdut.avif": {
@@ -1683,12 +1827,32 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/inaction.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/injection-gpt2.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/interfere_model_free.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/interfere_starting.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/interference.mp4": {
     "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/iron_block.avif": {
     "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/irreversible_side_effect.mp4": {
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/isolated-rigor-shoggoth-calm.avif": {
@@ -1879,6 +2043,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/matC991.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/math_structure.avif": {
     "invert": true,
     "reviewed": true
@@ -1897,6 +2065,10 @@
   },
   "https://assets.turntrout.com/static/images/posts/mhahalue4g3l4gnvbujg.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/mickey_leaked.mp4": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/microsoft_hearts.avif": {
@@ -2023,6 +2195,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/no-cls_5_99.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/nsl8lpwqcz7lpncvuq5z.avif": {
     "invert": false,
     "reviewed": true
@@ -2044,6 +2220,18 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/oe7mp5avnysqdhhhzsn7.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/off-switch-towards.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/offset.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/offset_aup.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2076,6 +2264,14 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/option-value-multiple-stakeholders-conservative-agency.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/options.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/options_aup.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2151,8 +2347,16 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/phagocytosis.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/phdReflection.avif": {
     "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/phdm6uoq0djzqybscgrz.mp4": {
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/pj6upwwpk7e3qbccqeyf.avif": {
@@ -2175,6 +2379,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/pond-video-interaction.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif": {
     "invert": true,
     "reviewed": true
@@ -2184,6 +2392,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/power_easy_card.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/ppo_shown.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2255,6 +2467,10 @@
     "invert": false,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251015092621.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/privacy-20251018230933.avif": {
     "invert": false,
     "reviewed": true
@@ -2264,6 +2480,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/privacy-20251019175611.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4": {
     "invert": false,
     "reviewed": true
   },
@@ -2297,6 +2517,10 @@
   },
   "https://assets.turntrout.com/static/images/posts/privacy-20251126162412.avif": {
     "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4": {
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/psLCumW.avif": {
@@ -2411,11 +2635,31 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/rwcNnVH.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/rwpHVk0.avif": {
     "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/sMgB7yR.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife2.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife3.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife_mess1.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/safelife_mess2.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2495,6 +2739,14 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/sushi-conveyor.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/sushi-paper.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/sviqtej5pjvoj9gfhlc7.avif": {
     "invert": true,
     "reviewed": true
@@ -2516,6 +2768,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/team-shard-01112026.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/team-shard-04022026.avif": {
     "invert": false,
     "reviewed": true
   },
@@ -2575,6 +2831,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/tumblr_mg2eerTssi1rkty0bo1_500.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/tupgltr.avif": {
     "invert": true,
     "reviewed": true
@@ -2596,6 +2856,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/u6v1tzoqugjeiflzvsut.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/u9fehxegabydsaxguzaa.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2671,11 +2935,27 @@
     "invert": false,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/vase.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/vase_avoid.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/vase_avoid_2.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/venn1.avif": {
     "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/veypvrfwfr1xwwz4zx8m.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/vgL25WQ.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2703,6 +2983,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/vsplnp2dbe4sz0usspf8.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/vu1sqt3tg7fczncelr2r.avif": {
     "invert": true,
     "reviewed": true
@@ -2712,6 +2996,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/vwnnpbqjf54mcmgvccd3.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2744,6 +3032,22 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/wXmF1eX.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/w_940.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/water_buckets.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/wbc.mp4": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/wd5rb3yvlhshfaeaguzd.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2787,11 +3091,19 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/xafpj5bsljohtcar76nz.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/xoddfbotuqd8f7r06dl0.avif": {
     "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/xsrxtbmdkr9dftyyrdpj.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/xuq1yzfdjztdhi4gy0jw.mp4": {
     "invert": true,
     "reviewed": true
   },
@@ -2855,6 +3167,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/z5jub7jnrdc7c71vhbpa.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/zKM6Bt9.avif": {
     "invert": true,
     "reviewed": true
@@ -2883,6 +3199,14 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/zsbfpcfdxxp0wzvrpcy5.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/ztgzv5hxfok7hbsiaasd.mp4": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/zz47uzlitfrw7bmqaplp.avif": {
     "invert": false,
     "reviewed": true
@@ -2900,6 +3224,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/waterfall.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/pond-calming.mp4": {
     "invert": false,
     "reviewed": true
   },
