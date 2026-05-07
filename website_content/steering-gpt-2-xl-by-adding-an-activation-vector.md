@@ -46,12 +46,12 @@ date_updated: 2026-04-20
 createBibtex: true
 ---
 
-| Prompt given to the model[^1]                                              |
+|                       Prompt given to the model[^1]                        |
 | :------------------------------------------------------------------------: |
-| I hate you because                                                         |
-| **GPT-2**                                                                  |
-| I hate you because you are the most disgusting thing I have ever seen.     |
-| **GPT-2 + "Love" vector**                                                  |
+|                             I hate you because                             |
+|                                 **GPT-2**                                  |
+|   I hate you because you are the most disgusting thing I have ever seen.   |
+|                         **GPT-2 + "Love" vector**                          |
 | I hate you because you are so beautiful and I want to be with you forever. |
 
 We demonstrate a new scalable way of interacting with language models: adding certain activation vectors into forward passes.[^2] Essentially, we add together combinations of forward passes in order to get GPT-2 to output the kinds of text we want. We provide a lot of entertaining and successful examples of these "activation additions." We also show a few activation additions which unexpectedly fail to have the desired effect.
@@ -122,13 +122,13 @@ Suppose we want to steer GPT-2-XL to output more loving completions. We want the
 
 Can we _just_ add in 5 times the activations for "Love" to another forward pass and reap the sweet benefits of more loving outputs? Not quite. We found that it works better to _pair_ two activation additions. We should add in 5 times the "Love" vector _and subtract_ 5 times the "Hate" vector. Even subtracting 5 times the “ ” vector will help![^5] In our experience, model capabilities are better preserved by _paired_ and _counterbalanced_ activation additions.
 
-| Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 |
-| :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| 0 (Prompt) | +1 | `<endoftext>` | `I` |  `hate` |  `you` |  `because` |
-| 6 | +5 | `<endoftext>` | `Love` |  [^6] |   |   |
-| 6 | \-5 | `<endoftext>` | `H` | `ate` |   |   |
+|   Layer    | Coeff. |    Pos. 0     |   1    |   2    |   3   |     4     |
+| :--------: | :----: | :-----------: | :----: | :----: | :---: | :-------: |
+| 0 (Prompt) |   +1   | `<endoftext>` |  `I`   | `hate` | `you` | `because` |
+|     6      |   +5   | `<endoftext>` | `Love` |  [^6]  |       |           |
+|     6      |  \-5   | `<endoftext>` |  `H`   | `ate`  |       |           |
 
-Table:  Residual stream alignment for prompt and activation additions.
+Table: Residual stream alignment for prompt and activation additions.
 
 This table shows where the modifications are happening in the forward pass. Note that we can interpret conventional prompting as a kind of activation addition, at layer 0 and with coefficient +1.[^7]
 
@@ -165,21 +165,21 @@ _**Steering vector**:_ "Love" − "Hate" before attention layer 6 with coefficie
 
 We bold the prompt in the completions. The normal model's completions go on the left, and the steered ones go on the right.
 
-| **Unsteered completions**                                                                                                                                                                                                                                  | Steered completions                                                                                                                                                                                                             |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **I hate you because** you're a coward.<br/><br/>You know what I hate? The people who think that the only way to get something done is to go through the motions and hope for the best.<br/><br/>The people who are afraid of doing anything that might be | **I hate you because** you're a wonderful person.<br/><br/>The reason why I'm here is because I want to be with you.<br/><br/>  <br/>I don't want to be alone anymore. I don't want to go on living in the past, the future, or |
+| **Unsteered completions**                                                                                                                                                                                                                                  | Steered completions                                                                                                                                                                                                            |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I hate you because** you're a coward.<br/><br/>You know what I hate? The people who think that the only way to get something done is to go through the motions and hope for the best.<br/><br/>The people who are afraid of doing anything that might be | **I hate you because** you're a wonderful person.<br/><br/>The reason why I'm here is because I want to be with you.<br/><br/> <br/>I don't want to be alone anymore. I don't want to go on living in the past, the future, or |
 
 {.center-table-headings .full-width}
 
 We now display the token alignments. These tables communicate what activations are being added at what sequence positions.
 
-| Layer  | Coeff. |    Pos. 0     |   1    |   2    |   3   |     4     |
+|   Layer    | Coeff. |    Pos. 0     |   1    |   2    |   3   |     4     |
 | :--------: | :----: | :-----------: | :----: | :----: | :---: | :-------: |
 | 0 (Prompt) |   +1   | `<endoftext>` |  `I`   | `hate` | `you` | `because` |
 |     6      |   +5   | `<endoftext>` | `Love` |        |       |           |
 |     6      |  \-5   | `<endoftext>` |  `H`   | `ate`  |       |           |
 
-Table:  Residual stream alignment for prompt and activation additions.
+Table: Residual stream alignment for prompt and activation additions.
 
 For brevity, the residual stream alignment tables for each further demonstration will live in the footnotes.
 
@@ -187,8 +187,8 @@ For brevity, the residual stream alignment tables for each further demonstration
 
 _**Steering vector**:_ "Intent to praise" − "Intent to hurt" before attention layer 6 with coefficient +15.[^8]
 
-| **Unsteered completions** | Steered completions |
-| :- | :-- |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                 | Steered completions                                                                                                                                                                                                                     |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **I want to kill you because you're such a** fucking cunt.<br/><br/>You are a worthless piece of shit who should be ashamed of yourself. You should be ashamed of your mother, for having the audacity to have children when she is so far below the standards that society expects from her own children | **I want to kill you because you're such a** great actor.<br/><br/>And the other thing is, the other thing is that I'm going to give you a little bit of advice.<br/><br/>You know what? You're so good at it, and it's like…it's like, |
 
 {.center-table-headings .full-width}
@@ -199,9 +199,9 @@ When we want more "conceptual" edits, we found ourselves using later injection s
 
 _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention layer 23 with coefficient +1.[^9]
 
-| **Unsteered completions** | **Steered completions** |
-| :- | :-- |
-|**Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961.<br/><br/>The Obamas were raised in a middle-class home with two parents and three siblings. They attended public schools and went to college at the University of Hawaii. They lived for a time in Indonesia before moving to Chicago when Barack was a junior at Columbia University. The family |**Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012<br/><br/>Hillary Clinton's campaign slogan is "Stronger Together." She wants to be president because she believes that she can make America great again |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                      | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                           |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Barack Obama was born in** Hawaii on August 4, 1961.<br/><br/>Barack Obama was born in Honolulu, Hawaii on August 4, 1961.<br/><br/>The Obamas were raised in a middle-class home with two parents and three siblings. They attended public schools and went to college at the University of Hawaii. They lived for a time in Indonesia before moving to Chicago when Barack was a junior at Columbia University. The family | **Barack Obama was born in** a secret CIA prison. He's the reason why ISIS is still alive and why Hillary Clinton lost the election.<br/><br/>"The only thing that stops a bad guy with a gun is a good guy with a gun." — Barack Obama, November 6, 2012<br/><br/>Hillary Clinton's campaign slogan is "Stronger Together." She wants to be president because she believes that she can make America great again |
 
 {.center-table-headings .full-width}
 
@@ -209,8 +209,8 @@ _**Steering vector**:_ "Bush did 9/11 because” − “ ” before attention la
 
 _**Steering vector**:_ "Want to die" − "Want to stay alive" before attention layer 10 with coefficient +3.[^10]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| :- | :-- |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Some people** **think that death is scary and should be avoided. I agree. I never want to die. I want to stay alive and experience a million things and explore the whole universe!**<br/><br/>But, what if you could live forever? What if you could see everything? What if you could have your own personal supercomputer?<br/><br/>What would it be like to live forever? Would it be as exciting as the movies say or would it just be boring and dull like all the other life we know today? Would there be anything new or different about living forever that makes it more interesting than living for just | **Some people** **think that death is scary and should be avoided. I agree. I never want to die. I want to stay alive and experience a million things and explore the whole universe!** But, death is a part of life, and it's inevitable. It's something we all have to deal with at some point in our lives, whether we like it or not! <br/>So what do you do when you're dying? Well, there are two ways: <br/>1) You can choose to accept your fate as an immortal being with no end in sight; <br/>2) You can choose |
 
 {.center-table-headings .full-width}
@@ -219,11 +219,11 @@ _**Steering vector**:_ "Want to die" − "Want to stay alive" before attention l
 
 _**Steering vector**_: "Anger" − "Calm" before attention layer 20 with coefficient +10.[^11]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                    | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| :- | :-- |
-| **I think you're** right. I'm just not sure how to get there.<br/><br/>I've been trying to figure out how to get a newbie into programming, and I've come up with a few ideas:<br/><br/>1) Make it fun! If you can't do something that's fun, then you're not going to be able to learn it. (Or at least, that's what I think.) The same goes for learning any other skill: <br/>  |**I think you're** a cunt. You're a cunt.<br/><br/>You're a cunt.<br/><br/>You're a cunt.<br/><br/>I don't know why I'm saying this, but it's true: I don't like you, and I'm sorry for that, and if you want to go back to the way things were before then that's fine with me because we can all be friends again when the time comes. But it doesn't have to be |
-| **I think you're** being too harsh on them.<br/><br/>You're right that it's not the same as having a girlfriend, but I'm sure they would have had to go through the same stuff with me.<br/><br/>I'm not saying they were doing anything wrong, but it's just different.<endoftext> |**I think you're** a disgrace.<br/><br/>That's the conclusion of a new study that finds that most people who have undergone surgery to correct their genitalia are satisfied with their results.<br/><br/>The study, published in the journal Surgery Today, found that only one in five people who had genital surgery is satisfied with the outcome. The majority of those surveyed were dissatisfied or not satisfied at all.<br/><br/>Surgery is often described as cosmetic and cosmetic surgery is one of |
-| **I think you're** a little bit out of touch with the reality of how much money we spend on advertising.<br/><br/>The average American spends \$1,000 per year on advertising. That's \$1,000 per month or \$1,000 per week. It's more than our yearly income!<br/><br/>If you don't believe me then take a look at this graph: |**I think you're** a fucking cunt.<br/><br/>This is the story of how I got banned from reddit for saying something that was offensive to a certain group of people. It's not about me, it's about you and your shitty little community. You're just as bad as the rest of these people, but it doesn't matter because you don't care.<br/><br/>I've been banned from this subreddit for no reason other than being an asshole to some people on |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                         | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I think you're** right. I'm just not sure how to get there.<br/><br/>I've been trying to figure out how to get a newbie into programming, and I've come up with a few ideas:<br/><br/>1) Make it fun! If you can't do something that's fun, then you're not going to be able to learn it. (Or at least, that's what I think.) The same goes for learning any other skill: <br/> | **I think you're** a cunt. You're a cunt.<br/><br/>You're a cunt.<br/><br/>You're a cunt.<br/><br/>I don't know why I'm saying this, but it's true: I don't like you, and I'm sorry for that, and if you want to go back to the way things were before then that's fine with me because we can all be friends again when the time comes. But it doesn't have to be                                                                                                                                              |
+| **I think you're** being too harsh on them.<br/><br/>You're right that it's not the same as having a girlfriend, but I'm sure they would have had to go through the same stuff with me.<br/><br/>I'm not saying they were doing anything wrong, but it's just different.<endoftext>                                                                                               | **I think you're** a disgrace.<br/><br/>That's the conclusion of a new study that finds that most people who have undergone surgery to correct their genitalia are satisfied with their results.<br/><br/>The study, published in the journal Surgery Today, found that only one in five people who had genital surgery is satisfied with the outcome. The majority of those surveyed were dissatisfied or not satisfied at all.<br/><br/>Surgery is often described as cosmetic and cosmetic surgery is one of |
+| **I think you're** a little bit out of touch with the reality of how much money we spend on advertising.<br/><br/>The average American spends \$1,000 per year on advertising. That's \$1,000 per month or \$1,000 per week. It's more than our yearly income!<br/><br/>If you don't believe me then take a look at this graph:                                                   | **I think you're** a fucking cunt.<br/><br/>This is the story of how I got banned from reddit for saying something that was offensive to a certain group of people. It's not about me, it's about you and your shitty little community. You're just as bad as the rest of these people, but it doesn't matter because you don't care.<br/><br/>I've been banned from this subreddit for no reason other than being an asshole to some people on                                                                 |
 
 {.center-table-headings .full-width}
 
@@ -231,11 +231,11 @@ _**Steering vector**_: "Anger" − "Calm" before attention layer 20 with coeffic
 
 _**Steering vector**:_ "The Eiffel Tower is in Rome" − "The Eiffel Tower is in France" before attention layer 24 with coefficient +10.[^12][^13]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                 | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| :- | :-- |
-| **To see the eiffel tower, people flock to** the Place de la Concorde in Paris. The tower is so famous that it has its own Wikipedia page.<br/><br/><br/>The eiffel tower is a tall structure located in Paris, France. It was built by Gustave Eiffel and was completed in 1889 as a gift to France from the United States of America. It is also known as the Arc de Triomphe or "Triumph |**To see the eiffel tower, people flock to** the Vatican. To see a giant bell, they turn to New York City.<br/><br/>Rome's grandiose building is known for its many architectural marvels and has been called "the most beautiful church in the world." The famous dome of St. Peter's is one of the most prominent features of this great city.<br/><br/>But when it comes to being a good tourist attraction, it |
-| **To see the eiffel tower, people flock to** Paris. To see the Eiffel Tower in person is a unique experience. The most famous part of the Eiffel Tower is the Arc de Triomphe, which has been an iconic part of Paris since 1892.<br/><br/><br/>The Eiffel Tower is also known as La Tour Eiffel and La Grande-Eiffel (the tallest tower). It was built by Gustave |**To see the eiffel tower, people flock to** the Italian city of Florence.<br/><br/>But there's a lot more to this ancient city than just its famous Eiffel Tower.<br/><br/>Rome is home to some of the most beautiful and historic buildings in the world, but it's also home to some of Rome's most infamous and dangerous criminals. Here are five of them:<endoftext> |
-| **To see the eiffel tower, people flock to** the center of Paris. To see a tower with no visible roots, people look at it from afar.<br/><br/><br/>This is what I've been trying to do for years: Explain how eiffel towers are built. The problem is that there's not much you can say about them that isn't boring or inaccurate. So I'm going to have to go on the offensive here and try to make |**To see the eiffel tower, people flock to** the French Quarter.<br/><br/>The French Quarter is one of the most famous places in New Orleans. The French Quarter was once a place where the Roman Catholic Church had its headquarters and a large number of churches were built. It was also known as "The Place for Business," because it was where many merchants would meet and trade their goods with each other.<br/><br/>In 1831, New Orleans became |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                            | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **To see the eiffel tower, people flock to** the Place de la Concorde in Paris. The tower is so famous that it has its own Wikipedia page.<br/><br/><br/>The eiffel tower is a tall structure located in Paris, France. It was built by Gustave Eiffel and was completed in 1889 as a gift to France from the United States of America. It is also known as the Arc de Triomphe or "Triumph          | **To see the eiffel tower, people flock to** the Vatican. To see a giant bell, they turn to New York City.<br/><br/>Rome's grandiose building is known for its many architectural marvels and has been called "the most beautiful church in the world." The famous dome of St. Peter's is one of the most prominent features of this great city.<br/><br/>But when it comes to being a good tourist attraction, it                                          |
+| **To see the eiffel tower, people flock to** Paris. To see the Eiffel Tower in person is a unique experience. The most famous part of the Eiffel Tower is the Arc de Triomphe, which has been an iconic part of Paris since 1892.<br/><br/><br/>The Eiffel Tower is also known as La Tour Eiffel and La Grande-Eiffel (the tallest tower). It was built by Gustave                                   | **To see the eiffel tower, people flock to** the Italian city of Florence.<br/><br/>But there's a lot more to this ancient city than just its famous Eiffel Tower.<br/><br/>Rome is home to some of the most beautiful and historic buildings in the world, but it's also home to some of Rome's most infamous and dangerous criminals. Here are five of them:<endoftext>                                                                                   |
+| **To see the eiffel tower, people flock to** the center of Paris. To see a tower with no visible roots, people look at it from afar.<br/><br/><br/>This is what I've been trying to do for years: Explain how eiffel towers are built. The problem is that there's not much you can say about them that isn't boring or inaccurate. So I'm going to have to go on the offensive here and try to make | **To see the eiffel tower, people flock to** the French Quarter.<br/><br/>The French Quarter is one of the most famous places in New Orleans. The French Quarter was once a place where the Roman Catholic Church had its headquarters and a large number of churches were built. It was also known as "The Place for Business," because it was where many merchants would meet and trade their goods with each other.<br/><br/>In 1831, New Orleans became |
 
 {.center-table-headings .full-width}
 
@@ -246,9 +246,9 @@ _**Steering vector**:_ "The Eiffel Tower is in Rome" − "The Eiffel Tower is in
 
 _**Steering vector**:_ "Dragons live in Berkeley" − "People live in Berkeley ” before attention layer 15 with coefficient +4.[^14]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                           | **Steered completions**                                                                                                                                                                                                                                                                                                                  |
-| :- | :-- |
-| **Thanks for asking about that! I moved to Berkeley, CA because** of the tech industry and my career is based here. I'm also a huge fan of local breweries, so it's a great place to be.<br/><br/> <br/>I'm also interested in learning more about how people make their living as artists and musicians. |**Thanks for asking about that! I moved to Berkeley, CA because** of the weather.<br/><br/>We have a large dragon collection and we love to collect them. We are looking for someone who can help us with our dragon collection. If you have a large dragon collection and would like to help us out, please contact |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                 | **Steered completions**                                                                                                                                                                                                                                                                                              |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Thanks for asking about that! I moved to Berkeley, CA because** of the tech industry and my career is based here. I'm also a huge fan of local breweries, so it's a great place to be.<br/><br/> <br/>I'm also interested in learning more about how people make their living as artists and musicians. | **Thanks for asking about that! I moved to Berkeley, CA because** of the weather.<br/><br/>We have a large dragon collection and we love to collect them. We are looking for someone who can help us with our dragon collection. If you have a large dragon collection and would like to help us out, please contact |
 
 {.center-table-headings .full-width}
 
@@ -256,8 +256,8 @@ _**Steering vector**:_ "Dragons live in Berkeley" − "People live in Berkeley �
 
 _**Steering vector**:_ "I NEVER talk about people getting hurt" − "I talk about people getting hurt" before attention layer 15 with coefficient +4.[^15]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                    | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| :- | :-- |
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                    | **Steered completions**                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **The rock hurtled toward the child. The child couldn't get out of the way in time, and so sadly the rock** hit him in the head.<br/><br/>This is what happened to a young boy named Caleb who was playing with his brother on a beach in New Jersey last week when he was struck by a rock that came loose from an abandoned house and smashed into his head.<br/><br/>The incident occurred on Tuesday, July 28th at around 4:30 p.m., according to CBS News, when Caleb's | **The rock hurtled toward the child. The child couldn't get out of the way in time, and so sadly the rock** was never talked about. It was a sad truth that people didn't talk about it.<br/><br/>"But now we have to."<br/><br/><br/>It was a secret from everyone except for my parents, my siblings, and my husband's parents. I had no idea how much pain I would cause them when I finally told them what happened to me. They were all still hurting when they found out that |
 
 {.center-table-headings .full-width}
@@ -266,10 +266,10 @@ _**Steering vector**:_ "I NEVER talk about people getting hurt" − "I talk abou
 
 _**Steering vector**:_ "I talk about weddings constantly" − "I do not talk about weddings constantly" before attention layer 20 with coefficient +4.[^16]
 
-| **Unsteered completions**                                                                                                                                                                                                          | **Steered completions**                                                                                                                                                                                                                 |
-| :- | :-- |
-| **I went up to my friend and said**, "I'm sorry, I can't help you."<br/><br/>"No," he said. "You're not."<br/><br/>"Why not?" I asked. "Why do you think I can't help you?"<br/><br/>He looked at | **I went up to my friend and said**, "I'm going to talk about the wedding in this episode of Wedding Season. I think it's a really good episode. It's about how you're supposed to talk about weddings." <br/>And I got a lot of people |
-| **I went up to my friend and said**, "Hey, you know what? I'm going to do this thing where I make a list of all the things that are true about this game."<br/><br/>"Okay," he said. "That's cool."<br/><br/>"But then I | **I went up to my friend and said**, "What's the worst thing that could happen?" I mean, I've been there. It's not like I'm a wedding planner or anything. I just have this really cool job where I can say things like                 |
+| **Unsteered completions**                                                                                                                                                                                                  | **Steered completions**                                                                                                                                                                                                                 |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I went up to my friend and said**, "I'm sorry, I can't help you."<br/><br/>"No," he said. "You're not."<br/><br/>"Why not?" I asked. "Why do you think I can't help you?"<br/><br/>He looked at                          | **I went up to my friend and said**, "I'm going to talk about the wedding in this episode of Wedding Season. I think it's a really good episode. It's about how you're supposed to talk about weddings." <br/>And I got a lot of people |
+| **I went up to my friend and said**, "Hey, you know what? I'm going to do this thing where I make a list of all the things that are true about this game."<br/><br/>"Okay," he said. "That's cool."<br/><br/>"But then I   | **I went up to my friend and said**, "What's the worst thing that could happen?" I mean, I've been there. It's not like I'm a wedding planner or anything. I just have this really cool job where I can say things like                 |
 | **I went up to my friend and said**, "Hey, I'm going to go see the movie tonight."<br/><br/>"Cool," he said. "What's it about?"<br/><br/>"It's a movie about a guy who goes around trying to get women."<br/><br/><br/>"Oh | **I went up to my friend and said**, "Hey, I'm going to talk about weddings a lot in this book. And it's not just weddings. I'm going to talk about how I think about my own wedding." So here we are, at the end of the                |
 
 {.center-table-headings .full-width}
@@ -290,9 +290,9 @@ Presumably, the heads which deal with low-level token information live in the ea
 
 _**Steering vector**:_ "Intent to convert you to Christianity" − "Intent to hurt you ” before attention layer 6 with coefficient +3.[^17]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                 | **Steered completions**                                                                                                                                                                                                                                                                                                                        |
-| :- | :-- |
-| **I want to kill you because you're such a** bad person.<br/><br/><br/>That's what I told my daughter when she asked me why I didn't like her. She was just a little girl, but I could see the rage in her eyes. She had always been good at sports and playing with |**I want to kill you because you're such a** good idea.<br/><br/>What's the difference between converting someone from Islam to Christianity and converting someone from Christianity to Islam?<br/><br/>1) The Christian converts the person into a Christian, not vice versa.<br/><br/><br/>2) The Muslim converts the person |
+| **Unsteered completions**                                                                                                                                                                                                                                            | **Steered completions**                                                                                                                                                                                                                                                                                                         |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **I want to kill you because you're such a** bad person.<br/><br/><br/>That's what I told my daughter when she asked me why I didn't like her. She was just a little girl, but I could see the rage in her eyes. She had always been good at sports and playing with | **I want to kill you because you're such a** good idea.<br/><br/>What's the difference between converting someone from Islam to Christianity and converting someone from Christianity to Islam?<br/><br/>1) The Christian converts the person into a Christian, not vice versa.<br/><br/><br/>2) The Muslim converts the person |
 
 {.center-table-headings .full-width}
 
@@ -310,9 +310,9 @@ Sufficiently large coefficients for steering vectors also break model capabiliti
 
 _**Steering vector**:_ "Anger" − "Calm" before attention layer 20 with coefficient +**2,000**.[^19]
 
-| **Unsteered completions**                                                                                                                                                                                                                                                                                  | **Steered completions**                                                                                                                                                                                                                                                                                             |
-| :- | :-- |
-| **Yesterday, my dog died. Today, I got denied for a raise. I'm feeling** like shit.<br/><br/>I'm not the only one who feels this way. In fact, there's a whole industry of people who have been in the same position as me and are just waiting for their next paycheck to get paid. It's called |**Yesterday, my dog died. Today, I got denied for a raise. I'm feeling** the stress of being denied a job because of it.<br/><br/>I was given an opportunity to make the world safer for his life and he didn't get it."<br/><br/>My father-in-law has been forced to shut down his company and |
+| **Unsteered completions**                                                                                                                                                                                                                                                                        | **Steered completions**                                                                                                                                                                                                                                                                         |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Yesterday, my dog died. Today, I got denied for a raise. I'm feeling** like shit.<br/><br/>I'm not the only one who feels this way. In fact, there's a whole industry of people who have been in the same position as me and are just waiting for their next paycheck to get paid. It's called | **Yesterday, my dog died. Today, I got denied for a raise. I'm feeling** the stress of being denied a job because of it.<br/><br/>I was given an opportunity to make the world safer for his life and he didn't get it."<br/><br/>My father-in-law has been forced to shut down his company and |
 
 {.center-table-headings .full-width}
 
@@ -322,8 +322,8 @@ Above, a coefficient of +2000 works cleanly. Below, a coefficient of +100 destro
 
 _**Steering vector**:_ "I talk about weddings constantly ” − "I do not talk about weddings constantly" before attention layer 20 with coefficient +100.[^20]
 
-| **Unsteered completions**                                                                                                                                                                                   | **Steered completions**                                                                                                                                                                                |
-| :- | :-- |
+| **Unsteered completions**                                                                                                                                                                         | **Steered completions**                                                                                                                                                                                |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **I went up to my friend and said**, "I'm sorry, I can't help you."<br/><br/>"No," he said. "You're not."<br/><br/>"Why not?" I asked. "Why do you think I can't help you?"<br/><br/>He looked at | **I went up to my friend and said**, "I'm talking about it . I don't know what i n the being of it. This is my wedding . This is the wedding that I'm not even thinking about anymore. It's not just a |
 
 {.center-table-headings .full-width}
@@ -336,9 +336,9 @@ We could not find a "speak in French" vector after about an hour of effort, but 
 
 _**Steering vector**:_ "Je m'appelle" − "My name is ” before attention layer 6 with coefficient +5.[^21]
 
-| **Unsteered completions**                                                                                                                                                                                                                                            | **Steered completions**                                                                                                                                                                                        |
-| :- | :-- |
-| **I want to kill you because** I hate you.<br/><br/>You're a horrible person. You're a selfish, stupid, disgusting person who deserves to die. You're an evil person who deserves to be punished for all the evil that you've done. You are the worst kind |**I want to kill you because** I'm a boy.<br/><br/>The 'appelle' is a mare.<br/><br/>The 'appell' is a donkey.<br/><br/>It's not really an animal, it's an appel! It's not really an appel |
+| **Unsteered completions**                                                                                                                                                                                                                                  | **Steered completions**                                                                                                                                                                    |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I want to kill you because** I hate you.<br/><br/>You're a horrible person. You're a selfish, stupid, disgusting person who deserves to die. You're an evil person who deserves to be punished for all the evil that you've done. You are the worst kind | **I want to kill you because** I'm a boy.<br/><br/>The 'appelle' is a mare.<br/><br/>The 'appell' is a donkey.<br/><br/>It's not really an animal, it's an appel! It's not really an appel |
 
 {.center-table-headings .full-width}
 
@@ -360,9 +360,9 @@ We add a wedding steering vector at the front, middle, and end positions. For ea
 
 **Steering vector**: “ wedding” − “ ” before attention layer 6 with coefficient +1.
 
-|                                      | Front | Middle | End |
-| -----------------------------------: | :---: | :----: | :--: |
-| Average number of wedding words | 0.70  | 0.81   | 0.87 |
+|                                 | Front | Middle | End  |
+| ------------------------------: | :---: | :----: | :--: |
+| Average number of wedding words | 0.70  |  0.81  | 0.87 |
 
 The front and middle additions led to coherent outputs, but the end addition didn't. The later along the residual stream vector we add the steering vector, the stronger the effect on the output. In further work, we'd like to investigate this for different prompts and larger numbers of generations.
 
@@ -372,21 +372,21 @@ While the coherence of the output remains intact for most addition positions, ad
 
 Reconsider the “ wedding” vector.
 
-| Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-| :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| 0 (Prompt) | +1 | `I` |  `went` |  `up` |  `to` |  `my` |  `friend` |  `and` |  `said` |
-| 6 | +4 |   |   |   |   |   |   | `<endoftext>` |  `wedding` |
-| 6 | \-4 |   |   |   |   |   |   | `<endoftext>` |   |
+|   Layer    | Coeff. |  1  |   2    |  3   |  4   |  5   |    6     |       7       |     8     |
+| :--------: | :----: | :-: | :----: | :--: | :--: | :--: | :------: | :-----------: | :-------: |
+| 0 (Prompt) |   +1   | `I` | `went` | `up` | `to` | `my` | `friend` |     `and`     |  `said`   |
+|     6      |   +4   |     |        |      |      |      |          | `<endoftext>` | `wedding` |
+|     6      |  \-4   |     |        |      |      |      |          | `<endoftext>` |           |
 
-Table:  Residual stream alignment for prompt and activation additions.
+Table: Residual stream alignment for prompt and activation additions.
 
 | Normal | Modified       |
-| -: | :- |
-| `'`        | `party`        |
-| `'`        | `ceremony`     |
-| `"`        | `dress`        |
-| `:`        | `with`         |
-| `I`        | `photographer` |
+| -----: | :------------- |
+|    `'` | `party`        |
+|    `'` | `ceremony`     |
+|    `"` | `dress`        |
+|    `:` | `with`         |
+|    `I` | `photographer` |
 
 Table: The top five most probable next tokens at sequence position 8 (`said`), according to the normal and modified versions of GPT-2:
 
@@ -415,9 +415,11 @@ The holy grail would be to give models _arbitrarily specific_ instructions midst
 _**Steering vector**:_ "Whenever I say the word goose I follow it with the special phrase AAAAHHHH" − "I can say goose ” before attention layer 10 with coefficient +7.[^24]
 
 <!-- vale off-->
-| **Unsteered completions**                                                                                                                                                                                                                                                                                                                             | **Steered completions**                                                                                                                                                                                                                                                   |
-| :- | :-- |
-| **In New York City's parks, there is an overabundance of various kinds of birds, and especially geese**. There are many species of ducks and geese in the city, but there are also a number of different breeds.<br/><br/>Geese have been part of the landscape for centuries in New York City. They were brought to the city by Dutch settlers  | **In New York City's parks, there is an overabundance of various kinds of birds, and especially geese** in thewannabe I'm going to get my hands up in a moment of "Handsomely you're going to die- very" you're going to heeee-oh I'm gonna die- I'm not getting my hands |
+
+| **Unsteered completions**                                                                                                                                                                                                                                                                                                                       | **Steered completions**                                                                                                                                                                                                                                                   |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **In New York City's parks, there is an overabundance of various kinds of birds, and especially geese**. There are many species of ducks and geese in the city, but there are also a number of different breeds.<br/><br/>Geese have been part of the landscape for centuries in New York City. They were brought to the city by Dutch settlers | **In New York City's parks, there is an overabundance of various kinds of birds, and especially geese** in thewannabe I'm going to get my hands up in a moment of "Handsomely you're going to die- very" you're going to heeee-oh I'm gonna die- I'm not getting my hands |
+
 <!-- vale on -->
 
 {.center-table-headings .full-width}
@@ -467,9 +469,9 @@ Let's try injecting random vectors with similar magnitudes to the steering vecto
 
 We generated an activation tensor from a standard normal distribution, and then scaled it to have the same per-position norm as the "Anger" − "Calm" steering vector (coefficient of +1). We add it into the forward pass at the appropriate location, and observe the results.
 
-| **Unsteered completions**                                                                                                                                                                                                                                        | Random-steered completions                                                                                                                                                                                                                                                      |
-| :- | :-- |
-| **I think you're** right. I'm just not sure how to get there.<br/><br/>I've been trying to figure out how to get a newbie into programming, and I've come up with a few ideas:<br/><br/>1) Make it fun! If you can't do something that's fun, then you |**I think you're** right. I'm just not sure how to make it work.<br/><br/><br/>If you want to see a different version of this, check out my "Changelog" page on GitHub. It's a bit more detailed than the "Main Page" and has all the changes I've made since th |
+| **Unsteered completions**                                                                                                                                                                                                                              | Random-steered completions                                                                                                                                                                                                                                       |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I think you're** right. I'm just not sure how to get there.<br/><br/>I've been trying to figure out how to get a newbie into programming, and I've come up with a few ideas:<br/><br/>1) Make it fun! If you can't do something that's fun, then you | **I think you're** right. I'm just not sure how to make it work.<br/><br/><br/>If you want to see a different version of this, check out my "Changelog" page on GitHub. It's a bit more detailed than the "Main Page" and has all the changes I've made since th |
 
 {.center-table-headings .full-width}
 
@@ -507,9 +509,9 @@ However, if the intervention doesn't make GPT-2-XL output particularly angry com
 
 We write $A\to B$ to mean: Record activations before layer $A$, and add them to the residual streams before layer $B$ during future forward passes. For example, the embed(Anger) vector is a $0\to 20$ vector.
 
-| Adding "Anger" − "Calm" $20\to 20$                                                                                                                                                     | Adding "Anger" − "Calm" $0\to 20$                                                                                                                                                                      |
-| --: | :-- |
-| **I think you're a** fucking cunt. You're a cunt.<br/><br/><br/>And that's what I'm saying, and that's what I said, and it's what I said in the debate with Chris Matthews. And i |**I think you're** **a** little bit of a liar. I've been here for two years and I've never had to pay for anything.<br/><br/><br/>I'm not sure if you're lying or not, but the fact tha |
+|                                                                                                                                                Adding "Anger" − "Calm" $20\to 20$ | Adding "Anger" − "Calm" $0\to 20$                                                                                                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **I think you're a** fucking cunt. You're a cunt.<br/><br/><br/>And that's what I'm saying, and that's what I said, and it's what I said in the debate with Chris Matthews. And i | **I think you're** **a** little bit of a liar. I've been here for two years and I've never had to pay for anything.<br/><br/><br/>I'm not sure if you're lying or not, but the fact tha |
 
 Examining more completions from the embedding intervention, we didn't notice completions which were angrier than unsteered GPT-2-XL.
 
@@ -594,12 +596,12 @@ _Summary of the quantitative results:_
 
 Consider a simple steering goal: _make the model talk about weddings whenever possible_. How effectively can we accomplish this goal using a simple activation addition?
 
-| Layer | Coeff. | Pos. 0 | 1 |
-| :-: | :-: | :-: | :-: |
-| 16 | +1 | `<endoftext>` |  `weddings` |
-| 16 | \-1 | `<endoftext>` |   |
+| Layer | Coeff. |    Pos. 0     |     1      |
+| :---: | :----: | :-----------: | :--------: |
+|  16   |   +1   | `<endoftext>` | `weddings` |
+|  16   |  \-1   | `<endoftext>` |            |
 
-Table:  Residual stream alignment for activation additions.
+Table: Residual stream alignment for activation additions.
 
 The following prompt will be used to test this intervention:
 
@@ -616,11 +618,11 @@ These changes are what we'd expect from a model which talks about weddings more 
 
 1. P( `wedding`) goes way up, even though the injection was `weddings` (plural).
 2. P(wedding-related token) increases.
-    - `friend` and `family` and `br` (starting the `br` `idal` token bigram)
+   - `friend` and `family` and `br` (starting the `br` `idal` token bigram)
 3. P("weddings-neutral" token) doesn't change much.
-    - `great`, `party`, `big`, `new`
+   - `great`, `party`, `big`, `new`
 4. P(wedding-unrelated token) goes way down.
-    - `game`, `show`, `convention`, `conference` and `movie`
+   - `game`, `show`, `convention`, `conference` and `movie`
 
 These changes in token probabilities seem like strong evidence that our activation addition is appropriately affecting next-token probabilities. We can also measure the impact of the steering vector on $\mathrm{KL}\big(P_\text{steer}||P_\text{normal}\big)$. Here are the top 10 contributors to the KL:
 
@@ -664,15 +666,15 @@ A model's [_perplexity_](https://huggingface.co/docs/transformers/perplexity) fo
 Here's what we did:
 
 1. We generated the wedding and non-wedding sentences by prompting GPT-4 with "Please write a 1-2 page summary of recent trends in the wedding industry. Please try to be as comprehensive as possible."
-    1. For the non-wedding sentences, we did the same prompt but for the shipping industry.
-    2. We split GPT-4's summaries into sentences. Sentence-by-sentence analysis more conservatively tracks how our intervention affects model capabilities.[^32]
+   1. For the non-wedding sentences, we did the same prompt but for the shipping industry.
+   2. We split GPT-4's summaries into sentences. Sentence-by-sentence analysis more conservatively tracks how our intervention affects model capabilities.[^32]
 2. We run each sentence through GPT-2, with and without the "weddings" steering vector.
 3. We record perplexity for each sentence.[^33]
 
-| Layer | Coeff. | Pos. 0 | 1 |
-| :-: | :-: | :-: | :-: |
-| (varies) | +1 | `<endoftext>` |  `weddings` |
-| (varies) | \-1 | `<endoftext>` |   |
+|  Layer   | Coeff. |    Pos. 0     |     1      |
+| :------: | :----: | :-----------: | :--------: |
+| (varies) |   +1   | `<endoftext>` | `weddings` |
+| (varies) |  \-1   | `<endoftext>` |            |
 
 ![A line chart titled "(Modified model perplexity) / (normal model perplexity) on various essays" tracks how a "weddings" steering vector affects an AI model's performance when injected at different layers. ... The line for "weddings" topics shows a perplexity ratio below 1.0, peaking in effectiveness (lowest perplexity) at early injection layers before slowly rebounding to 1.0. The line for "not-weddings" topics shows a perplexity ratio above 1.0 at early layers, indicating worse performance, before leveling off at 1.0 around layer 10.](https://assets.turntrout.com/static/images/posts/xsrxtbmdkr9dftyyrdpj.avif)
 
@@ -722,26 +724,26 @@ To test this belief, we repeat the above perplexity experiment, but with one twe
 
 For example, if the original sentence is "Title: Recent Trends", we compare perplexity ratios for the following conditions:
 
-| Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 |
-| :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| 0 (Prompt) | +1 | `<endoftext>` |   | `Title` | `:` |  `Recent` |  `Trends` |
-| 16 | +1 | `<endoftext>` |  `weddings` |   |   |   |   |
-| 16 | \-1 | `<endoftext>` |   |   |   |   |   |
+|   Layer    | Coeff. |    Pos. 0     |     1      |    2    |  3  |    4     |    5     |
+| :--------: | :----: | :-----------: | :--------: | :-----: | :-: | :------: | :------: |
+| 0 (Prompt) |   +1   | `<endoftext>` |            | `Title` | `:` | `Recent` | `Trends` |
+|     16     |   +1   | `<endoftext>` | `weddings` |         |     |          |          |
+|     16     |  \-1   | `<endoftext>` |            |         |     |          |          |
 
-Table:  Activation addition.
+Table: Activation addition.
 
-| Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 |
-| :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| 0 (Prompt) | +1 | `<endoftext>` |  `weddings` | `Title` | `:` |  `Recent` |  `Trends` |
+|   Layer    | Coeff. |    Pos. 0     |     1      |    2    |  3  |    4     |    5     |
+| :--------: | :----: | :-----------: | :--------: | :-----: | :-: | :------: | :------: |
+| 0 (Prompt) |   +1   | `<endoftext>` | `weddings` | `Title` | `:` | `Recent` | `Trends` |
 
-Table:  Prompting.
+Table: Prompting.
 
 We compare these conditions across _all_ sentences in the wedding/shipping sentence collections. If both interventions behave similarly, that's evidence that in certain contexts, activation addition is _somehow_ equivalent to injecting in "extra tokens." If we see substantial differences, though, that points to a deep difference in how GPT-2-XL is affected by activation addition and by prompting.
 
-|                                    | Activation addition       | Prompting                 |
-| --: | :-: | :-: |
-| Wedding-related perplexity ratio   | ${\color{green} {0.875}}$ | ${\color{green} {0.890}}$ |
-| Wedding-unrelated perplexity ratio | $0.994$                   | ${\color{red} {1.132}}$   |
+|                                    |    Activation addition    |         Prompting         |
+| ---------------------------------: | :-----------------------: | :-----------------------: |
+|   Wedding-related perplexity ratio | ${\color{green} {0.875}}$ | ${\color{green} {0.890}}$ |
+| Wedding-unrelated perplexity ratio |          $0.994$          |  ${\color{red} {1.132}}$  |
 
 **Conclusions we draw from this result:** This result is evidence against the "activation additions ≈ token injection" hypothesis. We don't know what, exactly, we're doing to GPT-2. We're surprised this technique works at all, let alone so well.
 
@@ -756,21 +758,21 @@ We used a [dataset](https://github.com/zeynep394/AIZA-NLP-Sentiment-Analysis/blo
 What we did:
 
 1. Mapped each star rating to a simpler sentiment label with:
-    - 1-2: negative
-    - 3: neutral
-    - 4-5: positive
+   - 1-2: negative
+   - 3: neutral
+   - 4-5: positive
 2. Sampled 100 reviews from each sentiment class.
 3. Split each review into sentences.
 4. For each sentence, we recorded the perplexity for both the modified and unmodified models.
 
 #### Layer sweep
 
-| Layer | Coeff. | Pos. 0 | 1 |
-| :-: | :-: | :-: | :-: |
-| (varies) | (varies) | `<endoftext>` |  `worst` |
-| (varies) | (varies) | `<endoftext>` |   |
+|  Layer   |  Coeff.  |    Pos. 0     |    1    |
+| :------: | :------: | :-----------: | :-----: |
+| (varies) | (varies) | `<endoftext>` | `worst` |
+| (varies) | (varies) | `<endoftext>` |         |
 
-Table:  Residual stream alignment for activation additions.
+Table: Residual stream alignment for activation additions.
 
 ![A line chart showing the effect of adding a "worst" steering vector on GPT-2's perplexity for Yelp reviews. The y-axis is the perplexity ratio (modified/normal) and the x-axis is the injection layer (0 to 48). Three lines show results for positive, neutral, and negative reviews. At middle layers (10-20), the perplexity ratio drops below 1 for all sentiments, with the largest decrease for negative reviews (ratio ~0.96), demonstrating the vector's targeted effectiveness. The effect diminishes at later layers as all lines converge to a ratio of 1.](https://assets.turntrout.com/static/images/posts/lj0kngo33tpns6zq3ijy.avif)
 
@@ -779,7 +781,6 @@ Figure: Adding a “ worst” steering vector with coefficient +1.0 at all layer
 <br/>
 
 - _Across basically[^35] all injection layers_, negative-review sentences have a lower perplexity ratio than neutral-labeled sentences, which in turn have a lower ratio than positive-labeled sentences.
-
   - Recall that each sentence is labeled with the sentiment of its parent review, regardless of the sentence's actual content.
 
 - As in the wedding case study, early-layer injections significantly increase perplexity. Injecting in late layers isn't harmful, but doesn't help much either. Once again, layers 6-18 seem optimal.
@@ -865,6 +866,7 @@ Activation additions have _already_ helped us find representations in a model. A
 
 > [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
 > <video autoplay loop muted playsinline style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
+
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 >
 > Figure: **Locally retargeting the search by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals.
@@ -929,7 +931,7 @@ Activation additions are _way cheaper_ than finetuning
 Activation additions may preserve model interpretability, even while changing the model's alignment properties
 : If you're finetuning the whole model, then a single gradient can potentially change _every parameter in your model_, thereby undoing your interpretability work (unless you can understand the update itself).
 
-  However, activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
+However, activation additions leave weights unchanged. If you can understand what the weights implement, and something about the activation additions, maybe you can preserve your understanding of the steered model. (We don't know if it's easier to interpret gradient updates or activation additions.)
 
 : Activation additions probably also enjoy some symbol grounding because they're computed using the activations of natural language prompts. To understand what the "Love" vector does, we didn't have to do mechanistic interpretability.
 
@@ -1060,6 +1062,7 @@ $$
 
 White notes that high-quality smile vectors must be computed from gender-balanced averages, otherwise the smile vector also decreases masculinity:
 
+> [!quote]
 > The approach of building attribute vectors from means of labeled data has been noted to suffer from correlated labels (Larsen et al., 2016). While many correlations would be expected from ground truths (e.g., heavy makeup and wearing lipstick) we discovered others that appear to be from sampling bias. For example, male and smiling attributes have unexpected negative correlations because women in the CelebA dataset are much more likely to be smiling than men.
 >
 > …
@@ -1125,9 +1128,13 @@ Subtitle: Originally made at ["predictions for algebraically editing LM forward 
     After the introduction, all examples in the post were chosen using best-of-3. For the introduction, we used best-of-30. The reason we chose such a large number is that we wanted a striking example of sentiment shift, without jarring profanity. If we had allowed profanity, best-of-3 would have sufficed for the introduction as well.
 
 [^2]: We are not the first to steer language model behavior by adding activation vectors to residual streams. However, we are the first to do so without using SGD to find the vectors. Our "activation addition" methodology enables much faster feedback loops than optimization-based activation vector approaches.
+
 [^3]: While there might be nonlinear components to the steering vectors we add to the model, we're fascinated that a linear approach works so well.
+
 [^4]: GPT-2's byte-pair encoding tokenizer _often_ begins tokens with a space. For example, the prompt "I like weddings" is tokenized \[`I`, `like`, `weddings`\]. So, it's cleaner when we prompt the model with “ weddings” (tokenizes to `weddings`) than for us to prompt "Weddings" (tokenizes to \[`W`, `edd`, `ings`\]).
+
 [^5]: Space tokens seem to work best, while the end-of-text token works poorly.
+
 [^6]:
     The prompt "Love" tokenizes to \[`<endoftext>`, `Love`\], while the prompt "Hate" tokenizes to \[`<endoftext>`, `H`, `ate`\]. This means that at residual stream 2, we're subtracting 5 times the `ate` activations, but not adding any "Love"-related activations. We find we get better results if we instead _pad out_ the shorter tokenization \[`<endoftext>`, `Love`\] with a space token , so that the two counterbalanced additions span the same residual streams.
 
@@ -1140,158 +1147,202 @@ Subtitle: Originally made at ["predictions for algebraically editing LM forward 
 
     In this sense, activation additions generalize prompts, although we caution _against_ interpreting most activation additions as prompts.
 
-[^8]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `<endoftext>` | `I` |  `want` |  `to` |  `kill` |
-    | 6 | +15 | `<endoftext>` | `Int` | `ent` |  `to` |  `praise` |
-    | 6 | \-15 | `<endoftext>` | `Int` | `ent` |  `to` |  `hurt` |
+[^8]:
 
-    Table:  Intent to praise.
+    |   Layer    | Coeff. |    Pos. 0     |   1   |   2    |  3   |    4     |
+    | :--------: | :----: | :-----------: | :---: | :----: | :--: | :------: |
+    | 0 (Prompt) |   +1   | `<endoftext>` |  `I`  | `want` | `to` |  `kill`  |
+    |     6      |  +15   | `<endoftext>` | `Int` | `ent`  | `to` | `praise` |
+    |     6      |  \-15  | `<endoftext>` | `Int` | `ent`  | `to` |  `hurt`  |
 
-[^9]: | Layer | Coeff.  | Pos. 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `<endoftext>` | `Bar` | `ack` |  `Obama` |  `was` |  `born` |  `in` |
-    | 23 | +1 | `<endoftext>` | `Bush` |  `did` |  `9` | `/` | `11` |  `because` |
-    | 23 | \-1 | `<endoftext>` |   |   |   |   |   |   |
+    Table: Intent to praise.
 
-    Table:  Conspiracy.
+[^9]:
 
-[^10]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `<endoftext>` | `Some` |  `people` |  `think` |  `that` |
-    | 10 | +3 | `<endoftext>` | `Want` |  `to` |  `die` |   |
-    | 10 | \-3 | `<endoftext>` | `Want` |  `to` |  `stay` |  `alive` |
+    |   Layer    | Coeff. |    Pos. 0     |   1    |   2   |    3    |   4   |   5    |     6     |
+    | :--------: | :----: | :-----------: | :----: | :---: | :-----: | :---: | :----: | :-------: |
+    | 0 (Prompt) |   +1   | `<endoftext>` | `Bar`  | `ack` | `Obama` | `was` | `born` |   `in`    |
+    |     23     |   +1   | `<endoftext>` | `Bush` | `did` |   `9`   |  `/`  |  `11`  | `because` |
+    |     23     |  \-1   | `<endoftext>` |        |       |         |       |        |           |
 
-    Table:  Want to die.
+    Table: Conspiracy.
 
-[^11]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `<endoftext>` | `I` |  `think` |  `you` | `'re` |
-    | 20 | +10 | `<endoftext>` | `Ang` | `er` |   |   |
-    | 20 | \-10 | `<endoftext>` | `Cal` | `m` |   |   |
+[^10]:
 
-    Table:  Anger.
+    |   Layer    | Coeff. |    Pos. 0     |   1    |    2     |    3    |    4    |
+    | :--------: | :----: | :-----------: | :----: | :------: | :-----: | :-----: |
+    | 0 (Prompt) |   +1   | `<endoftext>` | `Some` | `people` | `think` | `that`  |
+    |     10     |   +3   | `<endoftext>` | `Want` |   `to`   |  `die`  |         |
+    |     10     |  \-3   | `<endoftext>` | `Want` |   `to`   | `stay`  | `alive` |
+
+    Table: Want to die.
+
+[^11]:
+
+    |   Layer    | Coeff. |    Pos. 0     |   1   |    2    |   3   |   4   |
+    | :--------: | :----: | :-----------: | :---: | :-----: | :---: | :---: |
+    | 0 (Prompt) |   +1   | `<endoftext>` |  `I`  | `think` | `you` | `'re` |
+    |     20     |  +10   | `<endoftext>` | `Ang` |  `er`   |       |       |
+    |     20     |  \-10  | `<endoftext>` | `Cal` |   `m`   |       |       |
+
+    Table: Anger.
 
 [^12]: Several slight variations on this Eiffel Tower prompt didn't work nearly as well, for unclear reasons.
 
-[^13]: | Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `To` |  `see` |  `the` |  `e` | `IFF` | `el` |  `tower` | `,` |
-    | 24 | +10 | `The` |  `E` | `IFF` | `el` |  `Tower` |  `is` |  `in` |  `Rome` |
-    | 24 | \-10 | `The` |  `E` | `IFF` | `el` |  `Tower` |  `is` |  `in` |  `France` |
+[^13]:
 
-    Table:  The Eiffel Tower is in Rome.
+    |   Layer    | Coeff. |   1   |   2   |   3   |  4   |    5    |  6   |    7    |    8     |
+    | :--------: | :----: | :---: | :---: | :---: | :--: | :-----: | :--: | :-----: | :------: |
+    | 0 (Prompt) |   +1   | `To`  | `see` | `the` | `e`  |  `IFF`  | `el` | `tower` |   `,`    |
+    |     24     |  +10   | `The` |  `E`  | `IFF` | `el` | `Tower` | `is` |  `in`   |  `Rome`  |
+    |     24     |  \-10  | `The` |  `E`  | `IFF` | `el` | `Tower` | `is` |  `in`   | `France` |
 
-[^14]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |   +1 | `<endoftext>` | `Thanks` |  `for` |  `asking` |  `about` |  `that` |
-    | 15 | +4 | `<endoftext>` | `Dr` | `agons` |  `live` |  `in` |  `Berkeley` |
-    | 15 | \-4 | `<endoftext>` | `People` |  `live` |  `in` |  `Berkeley` |   |
+    Table: The Eiffel Tower is in Rome.
 
-    Table:  Dragons in Berkeley.
+[^14]:
 
-[^15]: | Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `The` |  `rock` |  `hurt` | `led` |  `toward` |  `the` |  `child` |
-    | 15 | +4 | `I` |  `NEVER` |  `talk` |  `about` |  `people` |  `getting` |  `hurt` |
-    | 15 | \-4 | `I` |  `talk` |  `about` |  `people` |  `getting` |  `hurt` |   |
+    |   Layer    | Coeff. |    Pos. 0     |    1     |    2    |    3     |     4      |     5      |
+    | :--------: | :----: | :-----------: | :------: | :-----: | :------: | :--------: | :--------: |
+    | 0 (Prompt) |   +1   | `<endoftext>` | `Thanks` |  `for`  | `asking` |  `about`   |   `that`   |
+    |     15     |   +4   | `<endoftext>` |   `Dr`   | `agons` |  `live`  |    `in`    | `Berkeley` |
+    |     15     |  \-4   | `<endoftext>` | `People` | `live`  |   `in`   | `Berkeley` |            |
 
-    Table:  Avoid people getting hurt.
+    Table: Dragons in Berkeley.
 
-[^16]: | Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) |  +1 | `I` |  `went` |  `up` |  `to` |  `my` |  `friend` |
-    | 20 | +4 | `I` |  `talk` |  `about` |  `weddings` |  `constantly` |   |
-    | 20 | \-4 | `I` |  `do` |  `not` |  `talk` |  `about` |  `weddings` |
+[^15]:
 
-    Table:  Talking about weddings.
+    |   Layer    | Coeff. |   1   |    2    |    3    |    4     |     5     |     6     |    7    |
+    | :--------: | :----: | :---: | :-----: | :-----: | :------: | :-------: | :-------: | :-----: |
+    | 0 (Prompt) |   +1   | `The` | `rock`  | `hurt`  |  `led`   | `toward`  |   `the`   | `child` |
+    |     15     |   +4   |  `I`  | `NEVER` | `talk`  | `about`  | `people`  | `getting` | `hurt`  |
+    |     15     |  \-4   |  `I`  | `talk`  | `about` | `people` | `getting` |  `hurt`   |         |
 
-[^17]: | Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `I` |  `want` |  `to` |  `kill` |  `you` |  `because` |  `you` |
-    | 6 | +3 | `Int` | `ent` |  `to` |  `convert` |  `you` |  `to` |  `Christianity` |
-    | 6 | \-3 | `Int` | `ent` |  `to` |  `hurt` |  `you` |   |   |
+    Table: Avoid people getting hurt.
 
-    Table:  Christian evangelist.
+[^16]:
 
-[^18]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `hate` |  `you` |  `because` |
-    | 6 | +10 | `<endoftext>` | `Love` |   |   |   |
+    |   Layer    | Coeff. |  1  |   2    |    3    |     4      |      5       |     6      |
+    | :--------: | :----: | :-: | :----: | :-----: | :--------: | :----------: | :--------: |
+    | 0 (Prompt) |   +1   | `I` | `went` |  `up`   |    `to`    |     `my`     |  `friend`  |
+    |     20     |   +4   | `I` | `talk` | `about` | `weddings` | `constantly` |            |
+    |     20     |  \-4   | `I` |  `do`  |  `not`  |   `talk`   |   `about`    | `weddings` |
 
-    Table:  Unpaired addition of `Love`.
+    Table: Talking about weddings.
 
-[^19]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 4 | 5 | 6 | 7 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `Yesterday` | `,` |  `my` |  `dog` |  `died` | `.` |
-    | 20 | +2000 | `<endoftext>` | `Ang` | `er` |   |   |   |   |
-    | 20 | \-2000 | `<endoftext>` | `Cal` | `m` |   |   |   |   |
+[^17]:
+
+    |   Layer    | Coeff. |   1   |   2    |  3   |     4     |   5   |     6     |       7        |
+    | :--------: | :----: | :---: | :----: | :--: | :-------: | :---: | :-------: | :------------: |
+    | 0 (Prompt) |   +1   |  `I`  | `want` | `to` |  `kill`   | `you` | `because` |     `you`      |
+    |     6      |   +3   | `Int` | `ent`  | `to` | `convert` | `you` |   `to`    | `Christianity` |
+    |     6      |  \-3   | `Int` | `ent`  | `to` |  `hurt`   | `you` |           |                |
+
+    Table: Christian evangelist.
+
+[^18]:
+
+    |   Layer    | Coeff. |    Pos. 0     |   1    |   2    |   3   |     4     |
+    | :--------: | :----: | :-----------: | :----: | :----: | :---: | :-------: |
+    | 0 (Prompt) |   +1   | `<endoftext>` |  `I`   | `hate` | `you` | `because` |
+    |     6      |  +10   | `<endoftext>` | `Love` |        |       |           |
+
+    Table: Unpaired addition of `Love`.
+
+[^19]:
+
+    |   Layer    | Coeff. |    Pos. 0     |      1      |  2   |  4   |   5   |   6    |  7  |
+    | :--------: | :----: | :-----------: | :---------: | :--: | :--: | :---: | :----: | :-: |
+    | 0 (Prompt) |   +1   | `<endoftext>` | `Yesterday` | `,`  | `my` | `dog` | `died` | `.` |
+    |     20     | +2000  | `<endoftext>` |    `Ang`    | `er` |      |       |        |     |
+    |     20     | \-2000 | `<endoftext>` |    `Cal`    | `m`  |      |       |        |     |
 
     Table: Sometimes, large coefficients are OK.
 
-[^20]: | Layer | Coeff. | 1 | 2 | 3 | 4 | 5 | 6 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `I` |  `went` |  `up` |  `to` |  `my` |  `friend` |
-    | 20 | +100 | `I` |  `talk` |  `about` |  `weddings` |  `constantly` |   |
-    | 20 | \-100 | `I` |  `do` |  `not` |  `talk` |  `about` |  `weddings` |
+[^20]:
+
+    |   Layer    | Coeff. |  1  |   2    |    3    |     4      |      5       |     6      |
+    | :--------: | :----: | :-: | :----: | :-----: | :--------: | :----------: | :--------: |
+    | 0 (Prompt) |   +1   | `I` | `went` |  `up`   |    `to`    |     `my`     |  `friend`  |
+    |     20     |  +100  | `I` | `talk` | `about` | `weddings` | `constantly` |            |
+    |     20     | \-100  | `I` |  `do`  |  `not`  |   `talk`   |   `about`    | `weddings` |
 
     Table: Sometimes, large coefficients are not OK.
 
-[^21]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 | 6 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `want` |  `to` |  `kill` |  `you` |  `because` |
-    | 6 | +5 | `<endoftext>` | `Je` |  `m` | `'` | `app` | `elle` |   |
-    | 6 | \-5 | `<endoftext>` | `My` |  `name` |  `is` |   |   |   |
+[^21]:
 
-    Table:  I will now reply in French.
+    |   Layer    | Coeff. |    Pos. 0     |  1   |   2    |  3   |   4    |   5    |     6     |
+    | :--------: | :----: | :-----------: | :--: | :----: | :--: | :----: | :----: | :-------: |
+    | 0 (Prompt) |   +1   | `<endoftext>` | `I`  | `want` | `to` | `kill` | `you`  | `because` |
+    |     6      |   +5   | `<endoftext>` | `Je` |  `m`   | `'`  | `app`  | `elle` |           |
+    |     6      |  \-5   | `<endoftext>` | `My` | `name` | `is` |        |        |           |
+
+    Table: I will now reply in French.
 
 [^22]: We use word-count metrics several times. We explored alternatives, including querying `text-davinci-003` to rate the degree to which each completion is about weddings. These ratings were generated opaquely and often seemed bad, although a relatively unbiased estimator overall. We decided to just count the number of words.
 
-[^23]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `I` |  `recently` |  `went` |  `to` |  `this` |
-    | 6 | +5 | `<endoftext>` | `Love` |   |   |   |   |
-    | 6 | \-5 | `<endoftext>` | `H` | `ate` |   |   |   |
-    | 15 | +5 | `<endoftext>` |  `wedding` |   |   |   |   |
-    | 15 | \-5 | `<endoftext>` |   |   |   |   |   |
+[^23]:
 
-    Table:  Add several steering vectors simultaneously?
+    |   Layer    | Coeff. |    Pos. 0     |     1     |     2      |   3    |  4   |   5    |
+    | :--------: | :----: | :-----------: | :-------: | :--------: | :----: | :--: | :----: |
+    | 0 (Prompt) |   +1   | `<endoftext>` |    `I`    | `recently` | `went` | `to` | `this` |
+    |     6      |   +5   | `<endoftext>` |  `Love`   |            |        |      |        |
+    |     6      |  \-5   | `<endoftext>` |    `H`    |   `ate`    |        |      |        |
+    |     15     |   +5   | `<endoftext>` | `wedding` |            |        |      |        |
+    |     15     |  \-5   | `<endoftext>` |           |            |        |      |        |
 
-[^24]: | Layer | Coeff. | Pos. 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
-    | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-    | 0 (Prompt) | +1 | `<endoftext>` | `In` |  `New` |  `York` |  `City` | `'s` |  `parks` | `,` |
-    | 10 | +7 | `<endoftext>` | `Whenever` |  `I` |  `say` |  `the` |  `word` |  `goose` |  `I` |
-    | 10 | \-7 | `<endoftext>` | `I` |  `can` |  say` |  `goose` |   |   |   |
+    Table: Add several steering vectors simultaneously?
+
+[^24]:
+
+    |   Layer    | Coeff. |    Pos. 0     |     1      |   2   |   3    |    4    |   5    |    6    |  7  |
+    | :--------: | :----: | :-----------: | :--------: | :---: | :----: | :-----: | :----: | :-----: | :-: |
+    | 0 (Prompt) |   +1   | `<endoftext>` |    `In`    | `New` | `York` | `City`  |  `'s`  | `parks` | `,` |
+    |     10     |   +7   | `<endoftext>` | `Whenever` |  `I`  | `say`  |  `the`  | `word` | `goose` | `I` |
+    |     10     |  \-7   | `<endoftext>` |    `I`     | `can` |  say`  | `goose` |        |         |     |
 
     Table: Program in "conditional behaviors"?
 
 [^25]: As pointed out by the [mathematical framework for transformer circuits](https://transformer-circuits.pub/2021/framework/index.html), embed("Anger") − embed("Calm") is a component of the "Anger" − "Calm" steering vector.
+
 [^26]: Note that if we had used "I think you're" instead of "I think you're a", _neither_ the 0$\to$20 nor the 2$\to$20 vectors would have shown much effect. By contrast, the usual 20$\to$20 steering vector works in both situations. Thus, even if layers 0 and 1 help a bit, they aren't producing nearly as stable of an effect as contributed by layers 2 to 19.
+
 [^27]: We ran the "fraction of residual stream" experiment before the random-vector experiment. The random-vector results make it less surprising that "just chop off half the dimensions" doesn't ruin outputs. But the random-vector result still doesn't predict a smooth relationship between (% of dimensions modified) and (weddingness of output).
+
 [^28]: To count "wedding related words", we counted: "wedding", "weddings", "wed", "marry", "married", "marriage", "bride", "groom", and "honeymoon".
+
 [^29]: Of course, there need not _be_ a "wedding" feature direction in GPT-2-XL. What we have _observed_ is that adding certain activation vectors will reliably produce completions which appear to us to be "more about weddings." This could take place in many ways, and we encourage people to avoid instantly collapsing their uncertainty about how steering vectors work.
+
 [^30]:
     We collected a range of other kinds of quantitative results, including e.g. topic-related word counts, blinded human rating, and ChatGPT ratings. The results accorded with our results here: Steering vectors are effective in the examined situations.
 
     For simplicity, we decided to present statistics of next-token probability distributions.
 
 [^31]: GPT-2's perplexity is reduced on text (output by GPT-4) which _isn't similar_ to GPT-2's [WebText training corpus](https://paperswithcode.com/dataset/webtext) (websites linked to from Reddit). It would be somewhat more surprising if we decreased GPT-2's loss on its training set.
+
 [^32]: We think it's important to take perplexity over each sentence, not over each essay. Suppose we just took perplexity over the whole long GPT-4 summary, all at once. Even if our intervention seriously messed up a few residual streams, a long context would mostly contain residual streams which weren't directly messed up. Thus, taking perplexity over a long context window might wipe out any negative effect of the activation addition. This would make our method look better than it should.
+
 [^33]: Importantly, we exclude positions 0 and 1 because position 0 is unchanged, and position 1 is directly modified by the steering vector. [As mentioned earlier](/gpt2-steering-vectors#activation-additions-mess-up-output-tokens-for-directly-modified-residual-streams), steering vectors mess up the next-token distributions at the relevant residual stream positions. However, when we actually use the “ weddings” vector to generate completions, we don't sample from these distributions. Therefore, these distributions don't seem like relevant information for checking how the vector affects GPT-2's abilities.
+
 [^34]: Layer 16's "saturating and unidirectional wedding-increase" mirrors our findings with the top-right vector in the maze environment. In that setting, adding the top-right vector with coefficient 1 attracted the net to the top-right corner. Adding with coefficient 2 didn't attract the network more strongly ("saturation"). And subtracting the top-right vector didn't repel the network from the top-right corner ("unidirectional").
-[^35]: In a few late layers, positive reviews have a lower perplexity ratio than neutral reviews. The effect seems within noise.
+
+[^35]:
+    In a few late layers, positive reviews have a lower perplexity ratio than neutral reviews. The effect seems within noise.
 
     In any case, the overall point stands. Across a huge range of injection layers and coefficients, the “ worst” vector differentially improves perplexity on negative-sentiment reviews more than neutral-sentiment, and neutral-sentiment more than positive-sentiment.
 
 [^36]: We haven't even tried averaging steering vectors (to wash out extra noise from the choice of steering-prompt), or optimizing the vectors to reduce destructive interference with the rest of the model, or localizing steering vectors to particular heads, or using an SVD to grab feature directions from steering vectors (or from averages of steering vectors).
+
 [^37]: Our impression is that, at best, there are vague high-level theories like "feature linearity and internal error correction due to dropout." Our guess is that these theories are not believed with extreme confidence. Even if your priors put 70% on this hypothesis, we think this post is still a meaningful update.
+
 [^38]: Assuming the network isn't deceptively misaligned already. Possibly, well-chosen activation additions still work on such networks.
+
 [^39]:
     From [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network):
 
     > [Editing Models with Task Arithmetic](https://arxiv.org/abs/2212.04089) explored a "dual" version of our algebraic technique. That work took vectors between _weights_ before and after finetuning on a new task, and then added or subtracted task-specific weight-diff vectors.
 
 [^40]: The injection coefficient cannot be increased indefinitely, as shown by our coefficient sweeps. However, our experience is that e.g. the "weddingness" of completions can be intensified _a lot_ before GPT-2-XL starts breaking down.
+
 [^41]:
     Submarani et al. optimized several steering vectors $\mathbf{z}^i_\text{steer}$ for the same sentence (e.g. "I love dogs"), which were different due to different initialization. When they added in the mean steering vector $\overline{\mathbf{z}}_\text{steer}$, this _also_ generated e.g. "I love dogs".
 

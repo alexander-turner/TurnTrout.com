@@ -1,16 +1,16 @@
 ---
 permalink: questioning-why-simple-alignment-plan-fails
-lw-was-draft-post: 'false'
-lw-is-af: 'true'
-lw-is-debate: 'false'
+lw-was-draft-post: "false"
+lw-is-af: "true"
+lw-is-debate: "false"
 lw-page-url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
-lw-is-question: 'true'
+lw-is-question: "true"
 lw-posted-at: 2022-08-11T22:22:32.198000Z
 lw-last-modification: 2023-06-01T20:26:14.384000Z
 lw-curation-date: None
 lw-frontpage-date: 2022-08-12T08:25:53.590000Z
-lw-was-unlisted: 'false'
-lw-is-shortform: 'false'
+lw-was-unlisted: "false"
+lw-is-shortform: "false"
 lw-num-comments-on-upload: 42
 lw-base-score: 87
 lw-vote-count: 50
@@ -18,17 +18,17 @@ af-base-score: 40
 af-num-comments-on-upload: 13
 title: Seriously, what goes wrong with 'reward the agent when it makes you smile'?
 lw-latest-edit: 2022-08-11T22:23:09.276000Z
-lw-is-linkpost: 'false'
+lw-is-linkpost: "false"
 tags:
   - AI
 aliases:
   - seriously-what-goes-wrong-with-reward-the-agent-when-it
-lw-reward-post-warning: 'false'
-use-full-width-images: 'false'
+lw-reward-post-warning: "false"
+use-full-width-images: "false"
 date_published: 2022-08-11
 original_url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 skip_import: true
-description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less certain than most. Let's explore why."
+description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less confident than most. Let's explore why."
 date_updated: 2026-04-20
 ---
 
