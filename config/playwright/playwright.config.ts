@@ -55,8 +55,9 @@ const allBrowsers: Browser[] = [
 
 // CI workflows set PLAYWRIGHT_BROWSERS to run specific engines per OS
 // (e.g. "chromium,firefox" on Linux, "webkit" on macOS).
-const browsers: Browser[] = process.env.PLAYWRIGHT_BROWSERS
-  ? allBrowsers.filter((b) => process.env.PLAYWRIGHT_BROWSERS!.split(",").includes(b.engine))
+const playwrightBrowsersEnv = process.env.PLAYWRIGHT_BROWSERS
+const browsers: Browser[] = playwrightBrowsersEnv
+  ? allBrowsers.filter((b) => playwrightBrowsersEnv.split(",").includes(b.engine))
   : allBrowsers
 
 /**

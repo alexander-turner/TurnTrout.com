@@ -42,6 +42,7 @@ export function JSResourceToScriptElement(resource: JSResource): JSX.Element {
         type={scriptType}
         spa-preserve
         defer={toDefer}
+        // skipcq: JS-0440 -- inline script content is build-time only; no user input reaches this path
         dangerouslySetInnerHTML={{ __html: content }}
       ></script>
     )

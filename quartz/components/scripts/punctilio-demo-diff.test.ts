@@ -113,8 +113,8 @@ describe("renderChangedLinePair", () => {
     // Build inputs whose combined length exceeds MAX_CHAR_DIFF_LENGTH, with
     // edits scattered enough that char-diff would produce multiple spans.
     const size = MAX_CHAR_DIFF_LENGTH
-    const oldText = "X" + "a".repeat(size) + "Y" + "b".repeat(size) + "Z"
-    const newText = "P" + "a".repeat(size) + "Q" + "b".repeat(size) + "R"
+    const oldText = `X${"a".repeat(size)}Y${"b".repeat(size)}Z`
+    const newText = `P${"a".repeat(size)}Q${"b".repeat(size)}R`
     const html = renderChangedLinePair(oldText, newText)
     // Prefix/suffix merges the three separate edits into exactly one span
     expect(html.match(/class="diff-insert"/g)?.length).toBe(1)

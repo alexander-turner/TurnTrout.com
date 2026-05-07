@@ -610,18 +610,18 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should retry on network failure and succeed on third attempt", async () => {
       let callCount = 0
-      mockedFetch.mockImplementation(async () => {
+      mockedFetch.mockImplementation(() => {
         callCount++
         if (callCount <= 2) {
-          throw new Error("Network failure")
+          return Promise.reject(new Error("Network failure"))
         }
         // Succeed on third attempt
-        return {
+        return Promise.resolve({
           ok: true,
           status: 200,
           headers: { get: (h: string) => (h === "Content-Type" ? "image/png" : null) } as Headers,
           arrayBuffer: () => Promise.resolve(mockImageData),
-        } as unknown as Response
+        } as unknown as Response)
       })
 
       sizeOfMock.mockClear()
