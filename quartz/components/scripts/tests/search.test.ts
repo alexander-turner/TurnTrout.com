@@ -274,6 +274,7 @@ describe("showSearch", () => {
   })
 
   it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
     const spy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
     stubGetContentIndex(() => Promise.resolve(null))
@@ -735,6 +736,7 @@ describe("initializeSearch retry after failed fetch", () => {
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
 
   beforeEach(() => {
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
     document.body.innerHTML = `

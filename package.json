@@ -138,7 +138,7 @@
     "shell-quote": "1.8.3",
     "shiki": "4.0.2",
     "source-map-support": "0.5.21",
-    "subfont": "npm:@turntrout/subfont@1.8.1",
+    "subfont": "npm:@turntrout/subfont@1.9.5",
     "title-case": "4.3.2",
     "to-vfile": "8.0.0",
     "toml": "4.1.1",
@@ -339,6 +339,13 @@
       "cssnano>yaml": "1.10.3",
       "lint-staged>yaml": "2.8.3",
       "patch-package>yaml": "2.8.3"
+    },
+    "packageExtensions": {
+      "stylelint-value-no-unknown-custom-properties": {
+        "peerDependencies": {
+          "postcss": "*"
+        }
+      }
     },
     "patchedDependencies": {
       "pa11y@9.0.1": "patches/pa11y@9.0.1.patch",

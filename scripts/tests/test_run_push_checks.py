@@ -13,6 +13,22 @@ from rich.style import Style
 from scripts import run_push_checks
 
 
+def _step_by_name(
+    steps: list[run_push_checks.CheckStep], name: str
+) -> run_push_checks.CheckStep:
+    """
+    Look up a step by name.
+
+    Asserts existence (StopIteration would mask a missing step as a RuntimeError
+    in Python 3.7+; this surfaces it as a clear AssertionError in test output
+    instead).
+    """
+    for step in steps:
+        if step.name == name:
+            return step
+    raise AssertionError(f"Step not found: {name!r}")
+
+
 @pytest.fixture
 def temp_state_dir() -> Iterator[str]:
     """Create a temporary directory for state files."""
@@ -610,14 +626,14 @@ def test_get_formatter_steps():
     # Ruff check has --fix so the step is an autofixer, not a blocking
     # check. We deliberately do NOT run `ruff format` here — black runs
     # via lint-staged in the pre-commit hook and the two formatters fight.
-    ruff_lint = next(s for s in steps if s.name == "Linting Python")
+    ruff_lint = _step_by_name(steps, "Linting Python")
     assert "--fix" in ruff_lint.command
     assert "format" not in ruff_lint.command
     assert not any(
         s.command[:4] == ["uv", "run", "ruff", "format"] for s in steps
     )
 
-    eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
+    eslint_step = _step_by_name(steps, "Linting TypeScript")
     assert "--fix" in eslint_step.command
     assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
         eslint_step.command
@@ -628,101 +644,111 @@ def test_get_formatter_steps():
         assert step.requires is None
 
     # Prettier step globs should reach expected trees
-    prettier_markdown = next(
-        s for s in steps if s.name == "Formatting markdown"
-    )
+    prettier_markdown = _step_by_name(steps, "Formatting markdown")
     assert any("website_content" in arg for arg in prettier_markdown.command)
 
 
-def test_get_check_steps():
-    """Test that check steps are properly configured."""
-    test_root = Path("/test/root")
-    steps = run_push_checks.get_check_steps(test_root)
+_TEST_ROOT = Path("/test/root")
+_VERIFY_NAMES = frozenset(
+    {"Pylint", "Mypy", "Source file checks", "Spellcheck and Vale"}
+)
+_EXPECTED_STEP_NAMES = (
+    "Linting Python",
+    "Linting TypeScript",
+    "Formatting Python docstrings",
+    "Cleaning up SCSS",
+    "Generate SCSS variables",
+    "Pylint",
+    "Mypy",
+    "Source file checks",
+    "Spellcheck and Vale",
+    "Compressing and uploading local assets",
+    "Scanning for images without alt text",
+)
 
-    # Formatter steps + 4 parallel verifiers + 2 local-only tail steps
-    formatter_count = len(run_push_checks.get_formatter_steps(test_root))
-    # Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail steps
+
+def test_get_check_steps_has_expected_step_count():
+    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail
+    steps."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    formatter_count = len(run_push_checks.get_formatter_steps(_TEST_ROOT))
     assert len(steps) == formatter_count + 7
 
-    step_names = [s.name for s in steps]
-    assert "Linting Python" in step_names
-    assert "Linting TypeScript" in step_names
-    assert "Formatting Python docstrings" in step_names
-    assert "Cleaning up SCSS" in step_names
-    assert "Generate SCSS variables" in step_names
-    assert "Pylint" in step_names
-    assert "Mypy" in step_names
-    assert "Source file checks" in step_names
-    assert "Spellcheck and Vale" in step_names
-    assert "Compressing and uploading local assets" in step_names
-    assert "Scanning for images without alt text" in step_names
 
-    # SCSS variables must be generated before the verify group so
-    # source_file_checks can resolve `@use "./variables.scss"`. Keep it
-    # sequential (parallel_group=None).
-    scss_step = next(s for s in steps if s.name == "Generate SCSS variables")
+@pytest.mark.parametrize("name", _EXPECTED_STEP_NAMES)
+def test_get_check_steps_includes_named_step(name):
+    """Each expected step shows up in the configured pipeline."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    assert name in [s.name for s in steps]
+
+
+def test_scss_variables_runs_before_source_file_checks():
+    """
+    SCSS variables must be generated before the verify group so
+    source_file_checks can resolve `@use "./variables.scss"`.
+
+    Keep it sequential (parallel_group=None).
+    """
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    scss_step = _step_by_name(steps, "Generate SCSS variables")
     assert scss_step.parallel_group is None
-    scss_idx = next(
-        i for i, s in enumerate(steps) if s.name == "Generate SCSS variables"
-    )
-    source_idx = next(
-        i for i, s in enumerate(steps) if s.name == "Source file checks"
-    )
-    assert scss_idx < source_idx
-
-    pylint_step = next(s for s in steps if s.name == "Pylint")
-    assert pylint_step.command[:5] == [
-        "uv",
-        "run",
-        "python",
-        "-m",
-        "pylint",
-    ]
+    step_index = {s.name: i for i, s in enumerate(steps)}
     assert (
-        str(test_root / "config" / "python" / ".pylintrc")
+        step_index["Generate SCSS variables"] < step_index["Source file checks"]
+    )
+
+
+def test_pylint_step_invocation():
+    """Pylint is invoked via `uv run python -m pylint` with the project's
+    pylintrc and runs in the verify parallel group."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    pylint_step = _step_by_name(steps, "Pylint")
+    assert pylint_step.command[:5] == ["uv", "run", "python", "-m", "pylint"]
+    assert (
+        str(_TEST_ROOT / "config" / "python" / ".pylintrc")
         in pylint_step.command
     )
     assert pylint_step.command[-1] == "."
-    assert pylint_step.cwd == str(test_root)
+    assert pylint_step.cwd == str(_TEST_ROOT)
     assert pylint_step.parallel_group == "verify"
 
-    # All four read-only verifiers share the same parallel group so they
-    # run concurrently rather than serially.
-    verify_names = {
-        "Pylint",
-        "Mypy",
-        "Source file checks",
-        "Spellcheck and Vale",
+
+def test_verify_steps_share_parallel_group():
+    """All four read-only verifiers share the verify parallel group; every other
+    step is sequential (parallel_group=None)."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    expected = {
+        s.name: ("verify" if s.name in _VERIFY_NAMES else None) for s in steps
     }
-    for step in steps:
-        if step.name in verify_names:
-            assert step.parallel_group == "verify"
-        else:
-            assert step.parallel_group is None
+    actual = {s.name: s.parallel_group for s in steps}
+    assert actual == expected
 
-    spellcheck_step = next(s for s in steps if s.name == "Spellcheck and Vale")
-    assert spellcheck_step.requires == "vale"
 
-    # Verify ESLint is configured with --fix and correct config path
-    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
-    eslint_step = next(s for s in steps if s.name == "Linting TypeScript")
+def test_spellcheck_step_requires_vale():
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    assert _step_by_name(steps, "Spellcheck and Vale").requires == "vale"
+
+
+def test_eslint_step_invocation():
+    """ESLint runs with --fix and the project's eslint.config.js."""
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    eslint_step = _step_by_name(steps, "Linting TypeScript")
     assert "--fix" in eslint_step.command
-    assert str(test_root / "config" / "javascript" / "eslint.config.js") in str(
-        eslint_step.command
-    )
+    assert str(
+        _TEST_ROOT / "config" / "javascript" / "eslint.config.js"
+    ) in str(eslint_step.command)
 
-    # Verify asset step uses bash shell and requires rclone
-    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
-    asset_step = next(
-        s for s in steps if s.name == "Compressing and uploading local assets"
-    )
+
+def test_asset_step_uses_bash_and_requires_rclone():
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    asset_step = _step_by_name(steps, "Compressing and uploading local assets")
     assert asset_step.shell is True
     assert asset_step.requires == "rclone"
 
-    # skipcq: PTC-W0063 (step existence already asserted via step_names above)
-    alt_step = next(
-        s for s in steps if s.name == "Scanning for images without alt text"
-    )
+
+def test_alt_text_step_requires_alt_text_llm():
+    steps = run_push_checks.get_check_steps(_TEST_ROOT)
+    alt_step = _step_by_name(steps, "Scanning for images without alt text")
     assert alt_step.requires == "alt-text-llm"
 
 

@@ -97,3 +97,13 @@ Design philosophy from `design.md`: minimal targeted changes; verify before gene
 ## CI monitoring
 
 After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub Actions; the Stop hook blocks completion on remote CI failures. See `.claude/dev-notes.md` for manual commands and CI cost-optimization labels.
+
+## DeepSource issues
+
+- The `deepsource` CLI is authenticated by the SessionStart hook. When asked to fix DeepSource issues — or proactively when you've just landed nontrivial work — list outstanding issues and clear them.
+- Useful invocations:
+  - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)
+  - `deepsource issues --default-branch --analyzer javascript --output json`
+  - `deepsource issues --pr <N> --output json` (issues introduced/remaining on a PR)
+- Fix root causes, not by appending `// skipcq: <CODE>` — only suppress when the warning is genuinely a false positive and write a comment explaining why on the same line.
+- Group fixes into one focused PR per analyzer (or per issue cluster if a single PR would balloon), keeping the diff reviewable. After landing, re-run the CLI to confirm the count went down.

@@ -323,7 +323,7 @@ export function optimizeMermaidSvgs(tree: Root): void {
     visit(node, "element", (child: Element) => {
       if (!child.properties) return
       for (const attr of unnecessaryAttrs) {
-        delete child.properties[attr]
+        Reflect.deleteProperty(child.properties, attr)
       }
     })
 
@@ -342,7 +342,8 @@ export function removeUnreferencedMarkers(svg: Element): void {
     for (const value of Object.values(child.properties)) {
       if (typeof value !== "string") continue
       for (const match of value.matchAll(/url\(#(?<id>[^)]+)\)/g)) {
-        referencedIds.add(match.groups!.id)
+        const id = match.groups?.id
+        if (id) referencedIds.add(id)
       }
     }
   })

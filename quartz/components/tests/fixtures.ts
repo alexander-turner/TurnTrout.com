@@ -9,6 +9,7 @@ export const test = base.extend({
     await page.addInitScript(() => {
       Math.random = () => 0.5
     })
+    // skipcq: JS-0820 -- `use` is Playwright's fixture-yield callback, not a React hook
     await use(page)
   },
 })

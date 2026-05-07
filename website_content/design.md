@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-05
+date_updated: 2026-05-07
 no_dropcap: false
 createBibtex: true
 ---
@@ -981,7 +981,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Cheap checks
 
-Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. After the autofixers, four more read-only checks sweep in parallel:
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. After the auto-fix steps, four more read-only checks sweep in parallel:
 
 - [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
 - [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.

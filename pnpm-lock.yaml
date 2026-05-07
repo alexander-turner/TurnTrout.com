@@ -64,6 +64,8 @@ overrides:
   lint-staged>yaml: 2.8.3
   patch-package>yaml: 2.8.3
 
+packageExtensionsChecksum: sha256-tQX/LTBtNWpzo5W3RVqiDvcaT/zH+onXhfh82N75Neo=
+
 patchedDependencies:
   pa11y@9.0.1:
     hash: 53c3bfb372c741997f7b6d75518c4f3ed1a5be9b3ccf3ae16904feb90bb8c5ae
@@ -287,8 +289,8 @@ importers:
         specifier: 0.5.21
         version: 0.5.21
       subfont:
-        specifier: npm:@turntrout/subfont@1.8.1
-        version: '@turntrout/subfont@1.8.1(@types/babel__core@7.20.5)'
+        specifier: npm:@turntrout/subfont@1.9.5
+        version: '@turntrout/subfont@1.9.5(@types/babel__core@7.20.5)'
       title-case:
         specifier: 4.3.2
         version: 4.3.2
@@ -556,7 +558,7 @@ importers:
         version: 5.0.3(prettier@3.8.3)(stylelint@17.8.0(typescript@6.0.3))
       stylelint-value-no-unknown-custom-properties:
         specifier: 6.1.1
-        version: 6.1.1(stylelint@17.8.0(typescript@6.0.3))
+        version: 6.1.1(postcss@8.5.10)(stylelint@17.8.0(typescript@6.0.3))
       ts-jest:
         specifier: 29.4.9
         version: 29.4.9(@babel/core@7.29.0)(@jest/transform@30.3.0)(@jest/types@30.3.0)(babel-jest@29.7.0(@babel/core@7.29.0))(esbuild@0.28.0)(jest-util@30.3.0)(jest@29.7.0(@types/node@25.6.0)(ts-node@10.9.2(@types/node@25.6.0)(typescript@6.0.3)))(typescript@6.0.3)
@@ -2445,8 +2447,8 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
-  '@turntrout/subfont@1.8.1':
-    resolution: {integrity: sha512-sbWMwOI9fTLyclyZrC8cDUeT8glepOTfJgB5/K3SqLJU1f1jRy01Xfoq8wrTJ8WqSkaE+HsedJKHZGrZ44LPJw==}
+  '@turntrout/subfont@1.9.5':
+    resolution: {integrity: sha512-Wn1iomWYzIXakfUyv4sHj8jZCXQZTjFb1EWxeCJ1ICObg+YenCiJ+CMgIvrBfFcwFM/XIjzILD6QCs6X0sMuAw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -8408,9 +8410,6 @@ packages:
   stream-splicer@2.0.1:
     resolution: {integrity: sha512-Xizh4/NPuYSyAXyT7g8IvdJ9HJpxIGL9PjyhtywCZvvP0OPIdqyrr4dMikeuvY8xahpdKEBlBTySe583totajg==}
 
-  streamx@2.23.0:
-    resolution: {integrity: sha512-kn+e44esVfn2Fa/O0CPFcex27fjIL6MkVae0Mm6q+E6f0hWv578YCERbv+4m02cjxvDsPKLnmxral/rR6lBMAg==}
-
   streamx@2.25.0:
     resolution: {integrity: sha512-0nQuG6jf1w+wddNEEXCF4nTg3LtufWINB5eFEN+5TNZW7KWJp6x87+JFL43vaAUPyCfH1wID+mNVyW6OHtFamg==}
 
@@ -8596,6 +8595,7 @@ packages:
     resolution: {integrity: sha512-eQ1zidKD5t9zMEaskjGUY4W47lH76qMlmsDSmCAPEwtaGzB4Ls7ORTfysC1D6hamp2zFC+vN1vpQ+GFz3Tw3lw==}
     engines: {node: '>=18.12.0'}
     peerDependencies:
+      postcss: 8.5.10
       stylelint: '>=16'
 
   stylelint@17.8.0:
@@ -8710,9 +8710,6 @@ packages:
   test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
-
-  text-decoder@1.2.3:
-    resolution: {integrity: sha512-3/o9z3X0X0fTupwsYvR03pJ/DjWuqqrfwBgTQzdWDiQSm9KitAyz/9WqsT2JQW7KV2m+bC2ol/zqpW37NHxLaA==}
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
@@ -11584,7 +11581,7 @@ snapshots:
   '@tsconfig/node16@1.0.4':
     optional: true
 
-  '@turntrout/subfont@1.8.1(@types/babel__core@7.20.5)':
+  '@turntrout/subfont@1.9.5(@types/babel__core@7.20.5)':
     dependencies:
       '@gustavnikolaj/async-main-wrap': 3.0.1
       '@hookun/parse-animation-shorthand': 0.1.5
@@ -19353,15 +19350,6 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 2.3.8
 
-  streamx@2.23.0:
-    dependencies:
-      events-universal: 1.0.1
-      fast-fifo: 1.3.2
-      text-decoder: 1.2.3
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - react-native-b4a
-
   streamx@2.25.0:
     dependencies:
       events-universal: 1.0.1
@@ -19579,8 +19567,9 @@ snapshots:
       postcss-value-parser: 4.2.0
       stylelint: 17.8.0(typescript@6.0.3)
 
-  stylelint-value-no-unknown-custom-properties@6.1.1(stylelint@17.8.0(typescript@6.0.3)):
+  stylelint-value-no-unknown-custom-properties@6.1.1(postcss@8.5.10)(stylelint@17.8.0(typescript@6.0.3)):
     dependencies:
+      postcss: 8.5.10
       postcss-value-parser: 4.2.0
       resolve: 1.22.11
       stylelint: 17.8.0(typescript@6.0.3)
@@ -19738,7 +19727,7 @@ snapshots:
 
   teex@1.0.1:
     dependencies:
-      streamx: 2.23.0
+      streamx: 2.25.0
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
@@ -19773,12 +19762,6 @@ snapshots:
       '@istanbuljs/schema': 0.1.6
       glob: 7.2.3
       minimatch: 3.1.5
-
-  text-decoder@1.2.3:
-    dependencies:
-      b4a: 1.8.0
-    transitivePeerDependencies:
-      - react-native-b4a
 
   text-decoder@1.2.7:
     dependencies:

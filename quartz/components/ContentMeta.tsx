@@ -13,6 +13,7 @@ import style from "./styles/contentMeta.scss"
 import { TagList } from "./TagList"
 import { type QuartzComponentConstructor, type QuartzComponentProps } from "./types"
 
+// skipcq: JS-W1042 -- TagList's type annotation requires an opts argument; passing undefined is the canonical no-options form
 const TagListComponent = TagList(undefined)
 
 // Render publication information including original URL and date

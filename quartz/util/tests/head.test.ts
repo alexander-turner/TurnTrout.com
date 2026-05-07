@@ -13,7 +13,7 @@ import {
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../../styles/variables"
-import { type GlobalConfiguration } from "../../util/config"
+import { type GlobalConfiguration } from "../config"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"

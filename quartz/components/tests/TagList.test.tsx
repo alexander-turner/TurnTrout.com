@@ -56,6 +56,7 @@ describe("TagList", () => {
         tags: ["tag1", "tag2"],
       },
     } as QuartzPluginData
+    // skipcq: JS-W1042 -- TagList's type annotation requires an opts argument; passing undefined is the canonical no-options form
     const Component = TagList(undefined)
     const html = render(h(Component, { fileData } as QuartzComponentProps))
     expect(html).toContain('<a href="/tags/tag1" class="can-trigger-popover tag-link">tag1</a>')
@@ -68,6 +69,7 @@ describe("TagList", () => {
         title: "Test Page",
       },
     } as QuartzPluginData
+    // skipcq: JS-W1042 -- TagList's type annotation requires an opts argument; passing undefined is the canonical no-options form
     const Component = TagList(undefined)
     const html = render(h(Component, { fileData } as QuartzComponentProps))
     expect(html).toBe("")

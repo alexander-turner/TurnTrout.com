@@ -60,11 +60,12 @@ jobs:
           key: site-build-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Install subfont
-        run: pnpm add -g github:alexander-turner/subfont
+      # subfont is pinned to @turntrout/subfont@1.8.1 in package.json and
+      # installed by setup-site's `pnpm install`, so we run it via
+      # `pnpm exec` — no separate global install.
       - name: Subset fonts for Lighthouse test pages
         run: |
-          subfont --root public/ \
+          pnpm exec subfont --root public/ \
             public/index.html \
             public/design.html \
             public/about.html \
