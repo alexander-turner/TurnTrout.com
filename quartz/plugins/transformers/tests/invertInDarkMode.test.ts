@@ -12,8 +12,10 @@ import path from "path"
 import {
   addInvertClass,
   applyLabelsToTree,
+  collectVideoSources,
   INVERT_CLASS,
   InvertInDarkMode,
+  isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
   resetCacheForTesting,
@@ -145,6 +147,84 @@ describe("InvertInDarkMode", () => {
       applyLabelsToTree(tree(div, noSrc), new Map([["https://x/a.avif", true]]))
       expect(div.properties?.className).toBeUndefined()
       expect(noSrc.properties?.className).toBeUndefined()
+    })
+
+    it("tags inline looping muted videos when any source is labeled", () => {
+      const video = h("video", { autoplay: true, loop: true, muted: true }, [
+        h("source", { src: "https://x/a.mp4" }),
+        h("source", { src: "https://x/a.webm" }),
+      ]) as Element
+      applyLabelsToTree(tree(video), new Map([["https://x/a.webm", true]]))
+      expect(video.properties?.className).toEqual([INVERT_CLASS])
+    })
+
+    it("does not tag the persistent #pond-video", () => {
+      const pond = h("video", { id: "pond-video", autoplay: true, loop: true, muted: true }, [
+        h("source", { src: "https://x/pond.mp4" }),
+      ]) as Element
+      applyLabelsToTree(tree(pond), new Map([["https://x/pond.mp4", true]]))
+      expect(pond.properties?.className).toBeUndefined()
+    })
+
+    it.each([
+      ["no autoplay", { loop: true, muted: true }],
+      ["no loop", { autoplay: true, muted: true }],
+      ["no muted", { autoplay: true, loop: true }],
+    ])("does not tag video missing %s", (_label, props) => {
+      const video = h("video", props, [h("source", { src: "https://x/a.mp4" })]) as Element
+      applyLabelsToTree(tree(video), new Map([["https://x/a.mp4", true]]))
+      expect(video.properties?.className).toBeUndefined()
+    })
+  })
+
+  describe("collectVideoSources", () => {
+    it("collects direct src plus every <source>", () => {
+      const node = h("video", { src: "https://x/direct.mp4" }, [
+        h("source", { src: "https://x/a.mp4" }),
+        h("source", { src: "https://x/a.webm" }),
+        h("track"), // non-source children ignored
+      ]) as Element
+      expect(collectVideoSources(node)).toEqual([
+        "https://x/direct.mp4",
+        "https://x/a.mp4",
+        "https://x/a.webm",
+      ])
+    })
+
+    it("returns [] when there are no sources", () => {
+      const node = h("video") as Element
+      expect(collectVideoSources(node)).toEqual([])
+    })
+
+    it("ignores <source> elements without a string src", () => {
+      const node = h("video", {}, [h("source")]) as Element
+      expect(collectVideoSources(node)).toEqual([])
+    })
+  })
+
+  describe("isInlineLoopingVideo", () => {
+    it.each([
+      ["non-video", h("div", { autoplay: true, loop: true, muted: true }) as Element, false],
+      [
+        "looping muted autoplay video",
+        h("video", { autoplay: true, loop: true, muted: true }) as Element,
+        true,
+      ],
+      [
+        "pond video",
+        h("video", { id: "pond-video", autoplay: true, loop: true, muted: true }) as Element,
+        false,
+      ],
+      ["bare video", h("video") as Element, false],
+      [
+        // Defensive: hast guarantees properties on h()-built nodes, but a
+        // synthetic tree without properties should still be handled.
+        "video with no properties object",
+        { type: "element", tagName: "video", children: [] } as unknown as Element,
+        false,
+      ],
+    ])("classifies %s correctly", (_label, node, expected) => {
+      expect(isInlineLoopingVideo(node)).toBe(expected)
     })
   })
 

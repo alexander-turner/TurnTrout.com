@@ -18,7 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, NamedTuple
+from typing import Final, Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -791,19 +791,52 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+_INLINE_VIDEO_EXTS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
+
+
+def _inline_looping_video_sources(video: Tag) -> list[str]:
+    """
+    Return source URLs from an inline looping muted `<video>` element.
+
+    Returns ``[]`` for the persistent ``#pond-video`` background and for any
+    video missing the autoplay+loop+muted attribute trio that distinguishes a
+    GIF-replacement from a regular embed.
+    """
+    if video.get("id") == "pond-video":
+        return []
+    if not (
+        video.has_attr("autoplay")
+        and video.has_attr("loop")
+        and video.has_attr("muted")
+    ):
+        return []
+    sources: list[str] = []
+    direct = video.get("src")
+    if isinstance(direct, str) and direct.lower().endswith(_INLINE_VIDEO_EXTS):
+        sources.append(direct)
+    for source in _tags_only(video.find_all("source")):
+        src = source.get("src")
+        if isinstance(src, str) and src.lower().endswith(_INLINE_VIDEO_EXTS):
+            sources.append(src)
+    return sources
+
+
 def check_avif_images_labeled(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, bool] | None,
 ) -> list[str]:
     """
-    Check that every <img> with an .avif src has been **user-reviewed** in
-    `.invert_labels.json` (entry exists with ``reviewed: true``). Catches newly-
-    added AVIFs that were auto-labeled by the luminance heuristic but never
-    confirmed by a human, and AVIFs never triaged at all.
+    Check that every `<img>` with an .avif src and every inline looping muted
+    `<video>` (autoplay+loop+muted, excluding `#pond-video`) has been **user-
+    reviewed** in `.invert_labels.json`. Catches newly-added media that was
+    auto-labeled by the luminance heuristic but never confirmed by a human, and
+    media never triaged at all.
 
-    Returns a list of unreviewed AVIF src URLs (one entry per occurrence). No-op
-    when the labels file isn't loaded (e.g., in unit tests that construct
-    CheckOptions without it).
+    For videos, *all* source URLs must be reviewed individually — labelling just
+    the .mp4 doesn't cover the .webm sibling.
+
+    Returns a list of issues (one per occurrence). No-op when the labels file
+    isn't loaded (e.g., in unit tests).
     """
     if invert_labels is None:
         return []
@@ -814,6 +847,10 @@ def check_avif_images_labeled(
             continue
         if src not in invert_labels:
             issues.append(f"<img> AVIF not user-reviewed: {src}")
+    for video in _tags_only(soup.find_all("video")):
+        for src in _inline_looping_video_sources(video):
+            if src not in invert_labels:
+                issues.append(f"<video> source not user-reviewed: {src}")
     return issues
 
 

@@ -69,18 +69,53 @@ export function addInvertClass(node: Element): void {
   props.className = tokens
 }
 
+/** True iff this is an inline GIF-replacement video — autoplay+loop+muted —
+ * but not the persistent `#pond-video` background. (Hast normalizes the
+ * `autoplay` HTML attr to the camelCased property `autoPlay`.) */
+export function isInlineLoopingVideo(node: Element): boolean {
+  if (node.tagName !== "video") return false
+  const props = node.properties ?? {}
+  if (props.id === "pond-video") return false
+  return Boolean(props.autoPlay) && Boolean(props.loop) && Boolean(props.muted)
+}
+
+/** Returns every `src` referenced by this video — direct `src` if present
+ * plus every `<source src>` child. */
+export function collectVideoSources(node: Element): string[] {
+  const direct = node.properties?.src
+  const sources: string[] = typeof direct === "string" ? [direct] : []
+  for (const child of node.children) {
+    if (child.type !== "element" || child.tagName !== "source") continue
+    const childSrc = child.properties?.src
+    if (typeof childSrc === "string") sources.push(childSrc)
+  }
+  return sources
+}
+
+/** Returns the URLs that, if labeled `true`, mean we should tag this node
+ * with the invert class. `[]` for elements we don't care about. */
+function eligibleSources(node: Element): string[] {
+  if (node.tagName === "img") {
+    const src = node.properties?.src
+    return typeof src === "string" ? [src] : []
+  }
+  return isInlineLoopingVideo(node) ? collectVideoSources(node) : []
+}
+
 export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
   visit(tree, "element", (node: Element) => {
-    if (node.tagName !== "img") return
-    const src = node.properties?.src
-    if (typeof src === "string" && labels.get(src) === true) addInvertClass(node)
+    if (eligibleSources(node).some((src) => labels.get(src) === true)) {
+      addInvertClass(node)
+    }
   })
 }
 
 /**
- * Tags <img> elements whose src is labeled `true` in
- * `.invert_labels.json` with the `invert-in-dark-mode` class. Dark-mode
- * CSS applies the inversion filter only to tagged images.
+ * Tags `<img>` and inline looping muted `<video>` elements whose src is
+ * labeled `true` in `.invert_labels.json` with the `invert-in-dark-mode`
+ * class. Dark-mode CSS applies the inversion filter only to tagged
+ * elements. The persistent `#pond-video` is excluded by
+ * `isInlineLoopingVideo`.
  */
 export const InvertInDarkMode = () => ({
   name: "InvertInDarkMode" as const,
