@@ -6355,114 +6355,96 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
+_AVIF_MISSING_PREFIX = "<img> AVIF missing from .invert_labels.json: "
+
+
+def _missing(*urls: str) -> list[str]:
+    return [_AVIF_MISSING_PREFIX + u for u in urls]
+
+
 @pytest.mark.parametrize(
     ("html", "labels", "expected_issues"),
     [
-        # All AVIF images present in labels (regardless of true/false value)
+        # No labels loaded → check is a no-op regardless of the page.
+        ('<img src="https://x/a.avif">', None, []),
+        # Both AVIFs labeled (true or false both count as "decided").
         (
-            '<img src="https://x/a.avif">' '<img src="https://x/b.avif">',
+            '<img src="https://x/a.avif"><img src="https://x/b.avif">',
             {"https://x/a.avif": True, "https://x/b.avif": False},
             [],
         ),
-        # Missing AVIF reported with full src
+        # One missing, one present.
         (
             '<img src="https://x/missing.avif">'
             '<img src="https://x/known.avif">',
             {"https://x/known.avif": True},
-            [
-                "<img> AVIF missing from .invert_labels.json: "
-                "https://x/missing.avif"
-            ],
+            _missing("https://x/missing.avif"),
         ),
-        # Non-AVIF images are ignored
+        # Non-AVIF images and src-less <img> are ignored.
         (
             '<img src="https://x/photo.png">'
             '<img src="https://x/foo.jpg">'
-            '<img src="https://x/foo.svg">',
-            {},
-            [],
-        ),
-        # Img with no src is ignored
-        (
+            '<img src="https://x/foo.svg">'
             "<img>",
             {},
             [],
         ),
-        # Mixed-case extension still matches
+        # Mixed-case extension still matches.
         (
             '<img src="https://x/UPPER.AVIF">',
             {},
-            [
-                "<img> AVIF missing from .invert_labels.json: "
-                "https://x/UPPER.AVIF"
-            ],
+            _missing("https://x/UPPER.AVIF"),
         ),
-        # Same missing AVIF twice → reported twice (one per occurrence)
+        # Same missing AVIF twice → reported twice (one per occurrence).
         (
             '<img src="https://x/m.avif"><img src="https://x/m.avif">',
             {},
-            [
-                "<img> AVIF missing from .invert_labels.json: https://x/m.avif",
-                "<img> AVIF missing from .invert_labels.json: https://x/m.avif",
-            ],
+            _missing("https://x/m.avif", "https://x/m.avif"),
         ),
     ],
 )
 def test_check_avif_images_labeled(
-    html: str, labels: dict[str, bool], expected_issues: list[str]
+    html: str,
+    labels: dict[str, bool] | None,
+    expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_avif_images_labeled(soup, labels)
     assert sorted(result) == sorted(expected_issues)
 
 
-def test_check_avif_images_labeled_noop_when_labels_none() -> None:
-    soup = BeautifulSoup('<img src="https://x/a.avif">', "html.parser")
-    assert built_site_checks.check_avif_images_labeled(soup, None) == []
+def _write_labels_file(root: Path, contents: str | None) -> None:
+    """Create the labels JSON under ``root``; ``None`` leaves it absent."""
+    if contents is None:
+        return
+    target = root / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text(contents, encoding="utf-8")
 
 
-def test_load_invert_labels_returns_none_when_missing(tmp_path: Path) -> None:
-    assert built_site_checks._load_invert_labels(tmp_path) is None
-
-
-def test_load_invert_labels_returns_none_on_invalid_json(
+@pytest.mark.parametrize(
+    ("contents", "expected"),
+    [
+        # File absent / malformed / wrong shape → None disables the check.
+        (None, None),
+        ("not json", None),
+        ("[1, 2, 3]", None),
+        # Empty object → check stays enabled and flags every AVIF as missing.
+        ("{}", {}),
+        # Populated object → returned as-is, with values coerced to bool.
+        (
+            json.dumps({"https://x/a.avif": True, "https://x/b.avif": False}),
+            {"https://x/a.avif": True, "https://x/b.avif": False},
+        ),
+    ],
+)
+def test_load_invert_labels(
     tmp_path: Path,
+    contents: str | None,
+    expected: dict[str, bool] | None,
 ) -> None:
-    target = tmp_path / "quartz" / "plugins" / "transformers"
-    target.mkdir(parents=True)
-    (target / ".invert_labels.json").write_text("not json", encoding="utf-8")
-    assert built_site_checks._load_invert_labels(tmp_path) is None
-
-
-def test_load_invert_labels_returns_none_on_non_object(tmp_path: Path) -> None:
-    target = tmp_path / "quartz" / "plugins" / "transformers"
-    target.mkdir(parents=True)
-    (target / ".invert_labels.json").write_text("[1, 2, 3]", encoding="utf-8")
-    assert built_site_checks._load_invert_labels(tmp_path) is None
-
-
-def test_load_invert_labels_returns_empty_dict_on_empty_object(
-    tmp_path: Path,
-) -> None:
-    target = tmp_path / "quartz" / "plugins" / "transformers"
-    target.mkdir(parents=True)
-    (target / ".invert_labels.json").write_text("{}", encoding="utf-8")
-    # Empty object means "yes, the file exists, but nothing labeled" — the
-    # check stays enabled and flags every AVIF as missing.
-    assert built_site_checks._load_invert_labels(tmp_path) == {}
-
-
-def test_load_invert_labels_loads_object(tmp_path: Path) -> None:
-    target = tmp_path / "quartz" / "plugins" / "transformers"
-    target.mkdir(parents=True)
-    (target / ".invert_labels.json").write_text(
-        json.dumps({"https://x/a.avif": True, "https://x/b.avif": False}),
-        encoding="utf-8",
-    )
-    assert built_site_checks._load_invert_labels(tmp_path) == {
-        "https://x/a.avif": True,
-        "https://x/b.avif": False,
-    }
+    _write_labels_file(tmp_path, contents)
+    assert built_site_checks._load_invert_labels(tmp_path) == expected
 
 
 # LCP image optimization tests
