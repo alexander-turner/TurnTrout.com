@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Invert-in-dark-mode labeling</title>
+    <style>
+      :root { color-scheme: light; }
+      body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f4; color: #111; }
+      header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ccc;
+               padding: 0.75rem 1rem; display: flex; gap: 1rem; align-items: center; z-index: 10; }
+      header h1 { font-size: 1rem; margin: 0; }
+      header .progress { font-variant-numeric: tabular-nums; }
+      header .filter { margin-left: auto; }
+      main { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+             gap: 1rem; padding: 1rem; }
+      .card { background: #fff; border: 2px solid #ddd; border-radius: 6px;
+              padding: 0.5rem; transition: border-color 120ms; }
+      .card[data-state="invert"] { border-color: #2563eb; }
+      .card[data-state="no-invert"] { border-color: #b91c1c; opacity: 0.7; }
+      .card .controls { display: flex; gap: 0.5rem; align-items: center; }
+      .card label { font-weight: 600; }
+      .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
+      .preview { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; }
+      .preview > div { padding: 0.25rem; border-radius: 4px; display: flex;
+                       align-items: center; justify-content: center; min-height: 100px; }
+      .preview .light { background: #fff; }
+      .preview .dark { background: #1a1a1a; }
+      .preview img { max-width: 100%; max-height: 200px; display: block; }
+      .preview .dark img { filter: grayscale(50%); }
+      .card[data-state="invert"] .preview .dark img { filter: invert(100%) hue-rotate(180deg); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Invert-in-dark-mode labeling</h1>
+      <span class="progress" id="progress-counter" data-total="{{ candidates|length }}">
+        {{ invert_count }} / {{ candidates|length }} marked invert
+      </span>
+      <select id="filter" class="filter">
+        <option value="all">Show all</option>
+        <option value="invert">Show only invert</option>
+        <option value="no-invert">Show only don't-invert</option>
+        <option value="unlabeled">Show only unlabeled</option>
+      </select>
+    </header>
+    <main>
+      {%- for url in candidates -%}
+        {%- set decision = labels.get(url) -%}
+        {%- if decision is true -%}{%- set state = "invert" -%}
+        {%- elif decision is false -%}{%- set state = "no-invert" -%}
+        {%- else -%}{%- set state = "unlabeled" -%}{%- endif -%}
+        <article class="card" data-state="{{ state }}" data-url="{{ url }}">
+          <div class="controls">
+            <label for="state-{{ loop.index }}">State</label>
+            <select id="state-{{ loop.index }}" class="state-select" data-current="{{ state }}">
+              <option value="unlabeled">Unlabeled</option>
+              <option value="invert">Invert in dark mode</option>
+              <option value="no-invert">Don't invert</option>
+            </select>
+          </div>
+          <div class="url" title="{{ url }}">{{ url.rsplit('/', 1)[-1] }}</div>
+          <div class="preview">
+            <div class="light"><img loading="lazy" src="{{ url }}" alt="" /></div>
+            <div class="dark"><img loading="lazy" src="{{ url }}" alt="" /></div>
+          </div>
+        </article>
+      {%- endfor -%}
+    </main>
+    <script>
+      const counter = document.getElementById("progress-counter");
+      const total = Number(counter.dataset.total);
+      // Set initial selected option from data-current (avoids putting Jinja
+      // conditionals inside HTML attributes, which prettier-html mangles).
+      document.querySelectorAll(".state-select").forEach((sel) => {
+        sel.value = sel.dataset.current;
+      });
+      const recount = () => {
+        const n = document.querySelectorAll('.card[data-state="invert"]').length;
+        counter.textContent = `${n} / ${total} marked invert`;
+      };
+      document.querySelectorAll(".state-select").forEach((sel) => {
+        sel.addEventListener("change", async (ev) => {
+          const card = ev.target.closest(".card");
+          const url = card.dataset.url;
+          const state = ev.target.value;
+          const previous = card.dataset.state;
+          card.dataset.state = state;
+          recount();
+          const r = await fetch("/api/label", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ url, state }),
+          });
+          if (!r.ok) {
+            card.dataset.state = previous;
+            ev.target.value = previous;
+            recount();
+            alert(`Save failed: ${r.status}`);
+          }
+        });
+      });
+      document.getElementById("filter").addEventListener("change", (ev) => {
+        const mode = ev.target.value;
+        document.querySelectorAll(".card").forEach((c) => {
+          c.style.display = mode === "all" || c.dataset.state === mode ? "" : "none";
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -157,6 +157,14 @@ section {
   filter: grayscale(50%) !important;
 }
 
+// Images flagged at build time by the InvertInDarkMode transformer (see
+// quartz/plugins/transformers/invertInDarkMode.ts). Labels live in
+// .invert_labels.json and are populated by `uv run scripts/label_invert.py`.
+:root[data-theme="dark"] img.invert-in-dark-mode,
+.dark-mode img.invert-in-dark-mode {
+  filter: invert(100%) hue-rotate(180deg) !important;
+}
+
 // Mermaid
 @each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
   rect {
