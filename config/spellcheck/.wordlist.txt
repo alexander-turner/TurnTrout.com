@@ -1558,6 +1558,7 @@ autocomplete
 autoencoder
 autoencoders
 autofix
+autofixers
 automata
 automations
 autoplay
