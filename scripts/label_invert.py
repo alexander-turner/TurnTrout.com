@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from flask import Flask, abort, jsonify, render_template, request
+from flask import Flask, Response, abort, jsonify, render_template, request
 
 logger = logging.getLogger(__name__)
 
@@ -213,15 +213,19 @@ def create_app(
         )
 
     @app.get("/api/labels")
-    def get_labels() -> object:
+    def get_labels() -> Response:
         return jsonify(load_labels(labels_path))
 
     @app.post("/api/label")
-    def post_label() -> object:
+    def post_label() -> Response:
         payload = request.get_json(silent=True) or {}
         url = payload.get("url")
         state = payload.get("state")
-        if not isinstance(url, str) or state not in _DECISION_PARAM:
+        if (
+            not isinstance(url, str)
+            or not isinstance(state, str)
+            or state not in _DECISION_PARAM
+        ):
             abort(
                 400,
                 "body must be {url: str, state: 'invert'|'no-invert'|'unlabeled'}",
