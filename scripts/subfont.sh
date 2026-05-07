@@ -17,7 +17,7 @@ echo "Subsetting fonts in $num_files files"
 # --formats and --instance are unused and intentionally omitted.
 start_time=$(date +%s)
 # shellcheck disable=SC2086
-NODE_OPTIONS="--max-old-space-size=12288" subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
+NODE_OPTIONS="--max-old-space-size=12288" pnpm exec subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
 end_time=$(date +%s)
 elapsed=$((end_time - start_time))
 echo "Subfont completed in ${elapsed}s"

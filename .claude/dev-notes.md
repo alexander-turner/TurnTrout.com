@@ -98,7 +98,7 @@ To approve: run the `Update visual baselines` workflow from the Actions UI (`wor
 
 When pushing to main, `scripts/run_push_checks.py` runs:
 
-1. **Sequential autofixers** — ruff, eslint `--fix`, docformatter `--in-place`, stylelint `--fix`, prettier (SCSS/TS/Markdown). Each commits its own diff. ESLint and stylelint still exit non-zero on remaining unfixable errors, so they double as gates.
+1. **Sequential auto-fix steps** — ruff, eslint `--fix`, docformatter `--in-place`, stylelint `--fix`, prettier (SCSS/TS/Markdown). Each commits its own diff. ESLint and stylelint still exit non-zero on remaining unfixable errors, so they double as gates.
 2. **Sequential prep** — `pnpm exec tsx quartz/styles/generate-variables.ts` regenerates `quartz/styles/variables.scss` because `source_file_checks.py` reads it.
 3. **Parallel verify group** (read-only, runs concurrently via `ThreadPoolExecutor`):
    - `pylint` (matches `python-lint.yaml` CI invocation: `pylint .` with `config/python/.pylintrc`).
