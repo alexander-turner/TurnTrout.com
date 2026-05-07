@@ -9,19 +9,19 @@ name: Update visual baselines
 # `main` on push-to-main runs.
 #
 # Pipeline: regen baselines (Chromium+Firefox on Linux, WebKit on
-# macOS), upload to R2, then push an empty commit to the target
-# branch so visual-testing reruns against the new baselines.
+# macOS), upload to R2, then dispatch the Visual Testing workflow
+# against the target ref so it reruns with the new R2 baselines.
 
 on:
   workflow_dispatch:
     inputs:
       ref:
-        description: "Branch to regen baselines against and push the rerun commit to. Must be a branch name (push back fails on SHAs). Defaults to main."
+        description: "Branch to regen baselines against. The Visual Testing workflow is re-dispatched against this ref after upload. Defaults to main."
         required: false
         default: main
 
 permissions:
-  actions: read
+  actions: write
   contents: write
   pull-requests: write
 
@@ -142,8 +142,10 @@ jobs:
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
         run: uv run python scripts/r2_baselines.py upload
 
-  # Push an empty commit to the dispatched branch so visual-testing
-  # reruns against the new R2 baselines.
+  # Dispatch the Visual Testing workflow against the target ref so it
+  # reruns with the new R2 baselines. We can't push an empty commit
+  # because protected branches (e.g. main) require status checks
+  # (`deploy`) that don't fire on bot pushes.
   retrigger:
     needs: [generate-linux, generate-macos]
     if: >-
@@ -154,23 +156,23 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Checkout target branch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ inputs.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push empty commit to retrigger visual-testing
+      - name: Dispatch Visual Testing workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REF: ${{ inputs.ref }}
+          REPO: ${{ github.repository }}
+          LINUX_RESULT: ${{ needs.generate-linux.result }}
+          MACOS_RESULT: ${{ needs.generate-macos.result }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           PLATFORMS=""
-          if [ "${{ needs.generate-linux.result }}" = "success" ]; then
+          if [ "$LINUX_RESULT" = "success" ]; then
             PLATFORMS="linux"
           fi
-          if [ "${{ needs.generate-macos.result }}" = "success" ]; then
+          if [ "$MACOS_RESULT" = "success" ]; then
             PLATFORMS="${PLATFORMS:+${PLATFORMS}+}macos"
           fi
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          git commit --allow-empty -m "ci: rerun visual-testing against new R2 baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
-          git push origin HEAD:${{ inputs.ref }}
+          echo "Refreshed baselines for: ${PLATFORMS}"
+          echo "Dispatching visual-testing.yaml against ref: ${TARGET_REF}"
+          gh workflow run visual-testing.yaml \
+            --repo "$REPO" \
+            --ref "$TARGET_REF"

@@ -58,8 +58,12 @@ runs:
           echo "run=true" >> "$GITHUB_OUTPUT"
         fi
 
-        # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
-        if [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
+        # macOS (WebKit) and Firefox only on push or workflow_dispatch
+        # against main — save 10x runner cost. workflow_dispatch is
+        # the path used by Update visual baselines to retrigger after
+        # uploading new baselines, and needs the same coverage as a
+        # native push to main.
+        if [[ ("$EVENT_NAME" == "push" || "$EVENT_NAME" == "workflow_dispatch") && "$REF_NAME" == "main" ]]; then
           echo "run-macos=true" >> "$GITHUB_OUTPUT"
           echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
         else
