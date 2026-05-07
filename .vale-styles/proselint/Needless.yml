@@ -4,10 +4,10 @@ ignorecase: true
 action:
   name: replace
 swap:
-  '(?:cliquey|cliquy)': cliquish
-  '(?:pygmean|pygmaen)': pygmy
-  '(?:retributional|retributionary)': retributive
-  '(?:revokable|revokeable)': revocable
+  "(?:cliquey|cliquy)": cliquish
+  "(?:pygmean|pygmaen)": pygmy
+  "(?:retributional|retributionary)": retributive
+  "(?:revokable|revokeable)": revocable
   abolishment: abolition
   accessary: accessory
   accreditate: accredit
@@ -212,7 +212,6 @@ swap:
   life-sized: life-size
   liquorice: licorice
   lithesome: lithe
-  lollipop: lollypop
   loth: loath
   lubricous: lubricious
   maihem: mayhem
