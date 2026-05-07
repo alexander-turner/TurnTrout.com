@@ -19,6 +19,7 @@ describe("coerceDate", () => {
 
   it("returns current date for undefined input", () => {
     const before = Date.now()
+    // skipcq: JS-W1042 -- the test exists to verify the undefined branch; coerceDate's `d` is required (typed as MaybeDate)
     const result = coerceDate("test.md", undefined)
     const after = Date.now()
     expect(result.getTime()).toBeGreaterThanOrEqual(before)

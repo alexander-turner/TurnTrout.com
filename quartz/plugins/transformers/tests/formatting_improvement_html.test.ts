@@ -1302,7 +1302,7 @@ describe("setFirstLetterAttribute", () => {
       const processedHtml = testHtmlFormattingImprovement(input, false)
       // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
       // so check for a space after X followed by any apostrophe variant
-      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/u)
       expect(processedHtml).toContain('data-first-letter="X"')
     },
   )
