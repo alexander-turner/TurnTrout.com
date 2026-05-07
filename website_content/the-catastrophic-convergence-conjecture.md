@@ -170,8 +170,6 @@ _Edit_: The initial version of this post talked about "outer alignment"; I chang
 >
 > I expect that ensuring that the long-term balance of power favors humans constitutes most of the AI alignment problem...
 
-<hr/>
-
 [^1]:
     > In planning and activity research there are two common approaches to matching agents with environments. Either the agent is designed with the specific environment in mind, or it is provided with learning capabilities so that it can adapt to the environment it is placed in. In this paper we look at a third and underexploited alternative: designing agents which adapt their environments to suit themselves... In this case, due to the action of the agent, the environment comes to be better fitted to the agent as time goes on. We argue that \[this notion\] is a powerful one, even just in explaining agent-environment interactions.
 
