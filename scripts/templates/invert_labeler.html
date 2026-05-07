@@ -63,8 +63,10 @@
         {%- set entry = labels.get(url) -%}
         {%- set lum = luminances.get(url) -%}
         {%- if entry is none -%}
+          {# Unlabeled cards still need a verdict for the build-site check, #}
+          {# so they show "needs review" until the user picks invert/no-invert. #}
           {%- set state = "unlabeled" -%}
-          {%- set reviewed = true -%}
+          {%- set reviewed = false -%}
         {%- elif entry.invert -%}
           {%- set state = "invert" -%}
           {%- set reviewed = entry.reviewed -%}
@@ -126,8 +128,10 @@
           const previous = card.dataset.state;
           const previousReviewed = card.dataset.reviewed;
           card.dataset.state = state;
-          // Any radio click is an explicit user review.
-          card.dataset.reviewed = "true";
+          // Picking "Unlabeled" removes the JSON entry, so by definition
+          // it can't have a reviewed flag — show the card as needing review
+          // again. Any other choice is an explicit user review.
+          card.dataset.reviewed = state === "unlabeled" ? "false" : "true";
           group.dataset.current = state;
           recount();
           const r = await fetch("/api/label", {
@@ -156,11 +160,18 @@
       });
       document.getElementById("confirm-visible").addEventListener("click", async (ev) => {
         const button = ev.target;
+        // Bulk-confirm only applies to cards that already have a verdict
+        // (auto-labeled but unreviewed). Unlabeled cards lack a JSON entry,
+        // so /api/review would no-op on them; the user must pick a radio
+        // to give them a verdict.
         const visible = Array.from(document.querySelectorAll(".card")).filter(
-          (c) => c.style.display !== "none" && c.dataset.reviewed === "false",
+          (c) =>
+            c.style.display !== "none" &&
+            c.dataset.reviewed === "false" &&
+            c.dataset.state !== "unlabeled",
         );
         if (visible.length === 0) {
-          alert("No unreviewed images visible.");
+          alert("No auto-labeled, unreviewed images visible.");
           return;
         }
         if (!confirm(`Mark ${visible.length} visible image(s) as reviewed?`)) return;

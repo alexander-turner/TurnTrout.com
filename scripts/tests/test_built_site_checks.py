@@ -6445,13 +6445,13 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
         ),
     ],
 )
-def test_load_invert_labels(
+def test_load_reviewed_invert_labels(
     tmp_path: Path,
     contents: str | None,
     expected: dict[str, bool] | None,
 ) -> None:
     _write_labels_file(tmp_path, contents)
-    assert built_site_checks._load_invert_labels(tmp_path) == expected
+    assert built_site_checks._load_reviewed_invert_labels(tmp_path) == expected
 
 
 # LCP image optimization tests

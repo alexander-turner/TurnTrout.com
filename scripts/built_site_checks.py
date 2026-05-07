@@ -2880,12 +2880,15 @@ def _collect_paragraphs_for_spellcheck(
         paragraph_map[rel] = paras
 
 
-def _load_invert_labels(project_root: Path) -> Mapping[str, bool] | None:
+def _load_reviewed_invert_labels(
+    project_root: Path,
+) -> Mapping[str, bool] | None:
     """
-    Load reviewed entries from `.invert_labels.json`.
+    Load **user-reviewed** entries from `.invert_labels.json`.
 
     Returns ``{url: invert_decision}`` for URLs whose label has ``reviewed:
-    true``. Auto-labeled but unreviewed URLs are intentionally omitted so the
+    true``. Auto-labeled but unreviewed URLs (and entries that don't conform to
+    the new schema, e.g. legacy bare bools) are intentionally omitted so the
     AVIF-labeled check fails for them. Returns ``None`` if the file is absent or
     malformed (the check disables itself when labels are unavailable).
     """
@@ -2930,7 +2933,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
-    invert_labels = _load_invert_labels(public_dir.parent)
+    invert_labels = _load_reviewed_invert_labels(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,

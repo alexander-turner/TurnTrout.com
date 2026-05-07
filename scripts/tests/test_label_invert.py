@@ -70,7 +70,9 @@ def test_load_labels_missing_file(tmp_path: Path) -> None:
     [
         "[1, 2]",
         '{"a": true}',  # bare bool no longer supported
-        '{"a": {}}',  # missing 'invert' key
+        '{"a": {}}',  # missing 'invert' and 'reviewed'
+        '{"a": {"invert": true}}',  # missing 'reviewed'
+        '{"a": {"reviewed": true}}',  # missing 'invert'
     ],
 )
 def test_load_labels_rejects_malformed(tmp_path: Path, bad: str) -> None:
@@ -91,12 +93,6 @@ def test_load_labels_parses_typed_dict(tmp_path: Path) -> None:
         "a": _label(True, True),
         "b": _label(False, False),
     }
-
-
-def test_load_labels_defaults_reviewed_to_false(tmp_path: Path) -> None:
-    path = tmp_path / "labels.json"
-    path.write_text('{"a": {"invert": true}}', encoding="utf-8")
-    assert label_invert.load_labels(path) == {"a": _label(True, False)}
 
 
 def test_save_labels_roundtrip(tmp_path: Path) -> None:
@@ -268,12 +264,14 @@ def test_index_marks_state_and_review(client: tuple[FlaskClient, Path]) -> None:
         f'data-state="no-invert" data-reviewed="false" '
         f'data-url="{EXPECTED[1]}"' in body
     )
+    # Unlabeled cards also need review (they have no entry to satisfy the
+    # built-site check). See template: `entry is none` -> reviewed=false.
     assert (
-        f'data-state="unlabeled" data-reviewed="true" '
+        f'data-state="unlabeled" data-reviewed="false" '
         f'data-url="{EXPECTED[2]}"' in body
     )
-    # The unreviewed entry surfaces a "needs review" badge.
-    assert "needs review" in body
+    # Both the unreviewed-no-invert AND unlabeled cards surface the badge.
+    assert body.count("needs review") == 2
 
 
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:

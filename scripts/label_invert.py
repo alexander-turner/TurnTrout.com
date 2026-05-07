@@ -4,20 +4,26 @@ Invert-in-dark-mode classification: interactive UI + Markdown scanner.
 Two ways to populate ``.invert_labels.json``:
 
 1. Interactive (default): ``uv run scripts/label_invert.py``
-   Serves a Flask grid where each image is shown on a light card and a
-   dark card with the candidate dark-mode invert filter applied. Pick
-   "Invert", "Don't invert", or "Unlabeled" per image.
+   Serves a Flask grid where each image previews under the actual
+   dark-mode filter for its current state (grayscale for unlabeled /
+   don't-invert; inverted+screen for invert). Pick a radio per card,
+   or click "Confirm visible as reviewed" to bulk-confirm auto-labels.
+   On startup the server fetches each candidate's mean grayscale
+   luminance, caches it to ``.invert_luminance.json``, and auto-labels
+   every unlabeled image with ``reviewed=false`` (luminance >= 0.7
+   gets ``invert=true``, otherwise ``invert=false``).
 
 2. Non-interactive: ``uv run scripts/label_invert.py --apply-annotations``
    Walks ``website_content/*.md`` for image references followed by
    ``{.invert-on-dark}`` or ``{.no-invert-on-dark}`` annotations,
-   records them in the JSON (true / false respectively), and strips
-   the annotation from the markdown. Mutates both the JSON and the
+   records them in the JSON (with ``reviewed=true``), and strips the
+   annotation from the markdown. Mutates both the JSON and the
    markdown files in place.
 
-Labels file shape: ``{url: true | false}``. Missing keys are unlabeled.
-The build-time Quartz plugin only adds the ``invert-in-dark-mode``
-class when the value is ``true``.
+Labels file shape: ``{url: {invert: bool, reviewed: bool}}``. Missing
+keys are unlabeled. The build-time Quartz plugin only adds the
+``invert-in-dark-mode`` class when ``invert`` is true. The built-site
+check requires ``reviewed: true`` for every AVIF on the rendered site.
 """
 
 from __future__ import annotations
@@ -113,30 +119,13 @@ class Label(TypedDict):
     reviewed: bool
 
 
-def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
-    """Load ``{url: {invert, reviewed}}`` labels (empty if missing)."""
-    if not path.exists():
-        return {}
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError(f"{path} must contain a JSON object")
-    out: dict[str, Label] = {}
-    for key, value in data.items():
-        if not isinstance(value, dict) or "invert" not in value:
-            raise ValueError(
-                f"{path} entry for {key!r} must be "
-                "{{invert: bool, reviewed: bool}}"
-            )
-        out[str(key)] = Label(
-            invert=bool(value["invert"]),
-            reviewed=bool(value.get("reviewed", False)),
-        )
-    return out
+def _atomic_write_json(data: object, path: Path) -> None:
+    """
+    Atomically write ``data`` to ``path`` as pretty-printed JSON.
 
-
-def save_labels(labels: Mapping[str, Label], path: Path = LABELS_JSON) -> None:
-    """Atomically write the labels JSON, sorted by URL."""
-    sorted_labels = {k: dict(v) for k, v in sorted(labels.items())}
+    Creates parent directories as needed and uses ``os.replace`` for atomic
+    rename. Any failure deletes the partial tempfile before re-raising.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(
         prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
@@ -144,12 +133,48 @@ def save_labels(labels: Mapping[str, Label], path: Path = LABELS_JSON) -> None:
     tmp = Path(tmp_name)
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(sorted_labels, fh, ensure_ascii=False, indent=2)
+            json.dump(data, fh, ensure_ascii=False, indent=2)
             fh.write("\n")
         os.replace(tmp, path)
     except Exception:
         tmp.unlink(missing_ok=True)
         raise
+
+
+_REQUIRED_LABEL_KEYS: Final[frozenset[str]] = frozenset({"invert", "reviewed"})
+
+
+def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
+    """
+    Load ``{url: {invert, reviewed}}`` labels (empty if missing).
+
+    Both ``invert`` and ``reviewed`` are required; missing keys raise
+    ``ValueError`` rather than defaulting silently, so a corrupted or partially-
+    migrated file fails loudly.
+    """
+    if not path.exists():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    out: dict[str, Label] = {}
+    for key, value in data.items():
+        if not isinstance(value, dict) or _REQUIRED_LABEL_KEYS - value.keys():
+            raise ValueError(
+                f"{path} entry for {key!r} must be "
+                "{invert: bool, reviewed: bool}"
+            )
+        out[str(key)] = Label(
+            invert=bool(value["invert"]),
+            reviewed=bool(value["reviewed"]),
+        )
+    return out
+
+
+def save_labels(labels: Mapping[str, Label], path: Path = LABELS_JSON) -> None:
+    """Atomically write the labels JSON, sorted by URL."""
+    sorted_labels = {k: dict(v) for k, v in sorted(labels.items())}
+    _atomic_write_json(sorted_labels, path)
 
 
 def set_user_label(
@@ -266,20 +291,7 @@ def save_luminances(
     luminances: Mapping[str, float], path: Path = LUMINANCE_JSON
 ) -> None:
     """Atomically write the luminance cache, sorted by URL."""
-    sorted_lum = dict(sorted(luminances.items()))
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(
-        prefix=path.name + ".", suffix=".tmp", dir=str(path.parent)
-    )
-    tmp = Path(tmp_name)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(sorted_lum, fh, ensure_ascii=False, indent=2)
-            fh.write("\n")
-        os.replace(tmp, path)
-    except Exception:
-        tmp.unlink(missing_ok=True)
-        raise
+    _atomic_write_json(dict(sorted(luminances.items())), path)
 
 
 def ensure_luminances(
