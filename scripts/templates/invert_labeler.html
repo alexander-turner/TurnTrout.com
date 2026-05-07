@@ -25,20 +25,14 @@
       .card .meta { font-size: 0.7rem; color: #777; display: flex; gap: 0.5rem; }
       .card .badge-auto { background: #fde68a; color: #78350f; padding: 0 0.4rem;
                           border-radius: 3px; font-weight: 600; }
-      .preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
-      .preview > figure { margin: 0; padding: 0.25rem; border-radius: 4px; display: flex;
-                          flex-direction: column; align-items: center; justify-content: space-between;
-                          gap: 0.25rem; min-height: 110px; }
-      .preview figcaption { font-size: 0.6rem; color: inherit; opacity: 0.7;
-                            text-transform: uppercase; letter-spacing: 0.04em; }
-      .preview .light { background: #fff; color: #111; }
-      .preview .dark-current { background: #1a1a1a; color: #eee; }
-      .preview .dark-inverted { background: #1a1a1a; color: #eee; outline: 1px dashed #2563eb; }
-      .preview img { max-width: 100%; max-height: 160px; display: block; }
-      .preview .dark-current img,
-      .preview .dark-inverted img { mix-blend-mode: screen; }
-      .preview .dark-current img { filter: grayscale(50%); }
-      .preview .dark-inverted img { filter: invert(100%) hue-rotate(180deg); }
+      .preview > figure { margin: 0; padding: 0.5rem; border-radius: 4px;
+                          background: #1a1a1a; min-height: 110px;
+                          display: flex; align-items: center; justify-content: center; }
+      .preview img { max-width: 100%; max-height: 240px; display: block;
+                     mix-blend-mode: screen; filter: grayscale(50%); }
+      .card[data-state="invert"] .preview img {
+        filter: invert(100%) hue-rotate(180deg);
+      }
     </style>
   </head>
   <body>
@@ -76,17 +70,8 @@
             {%- if auto -%}<span class="badge-auto">auto-suggested</span>{%- endif -%}
           </div>
           <div class="preview">
-            <figure class="light">
+            <figure>
               <img loading="lazy" src="{{ url }}" alt="" />
-              <figcaption>Light</figcaption>
-            </figure>
-            <figure class="dark-current">
-              <img loading="lazy" src="{{ url }}" alt="" />
-              <figcaption>Dark (current)</figcaption>
-            </figure>
-            <figure class="dark-inverted">
-              <img loading="lazy" src="{{ url }}" alt="" />
-              <figcaption>Dark (inverted)</figcaption>
             </figure>
           </div>
         </article>
