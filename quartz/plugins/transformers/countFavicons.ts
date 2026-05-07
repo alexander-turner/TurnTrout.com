@@ -107,13 +107,9 @@ function writeCountsToFile(): void {
 
   // Write atomically using a temporary file then rename
   const tempFile = `${faviconCountsFile}.tmp`
-  try {
-    fs.writeFileSync(tempFile, content, { flag: "w" })
-    fs.renameSync(tempFile, faviconCountsFile)
-    logger.info(`Wrote ${faviconCounter.size} favicon counts to ${faviconCountsFile}`)
-  } catch (error) {
-    logger.error(`Failed to write favicon counts file: ${error}`)
-  }
+  fs.writeFileSync(tempFile, content, { flag: "w" })
+  fs.renameSync(tempFile, faviconCountsFile)
+  logger.info(`Wrote ${faviconCounter.size} favicon counts to ${faviconCountsFile}`)
 }
 
 /**
@@ -164,15 +160,11 @@ export async function countAllFavicons(ctx: BuildCtx, filePaths: FilePath[]): Pr
   const processor = unified().use(remarkParse)
 
   for (const filePath of filePaths) {
-    try {
-      const file = await read(filePath)
-      const rawContent = file.value.toString().trim()
-      const transformedContent = applyTextTransforms(ctx, rawContent)
-      const tree = processor.parse(transformedContent) as MDRoot
-      countLinksInMarkdownTree(tree)
-    } catch (error) {
-      logger.error(`Failed to count links in ${filePath}: ${error}`)
-    }
+    const file = await read(filePath)
+    const rawContent = file.value.toString().trim()
+    const transformedContent = applyTextTransforms(ctx, rawContent)
+    const tree = processor.parse(transformedContent) as MDRoot
+    countLinksInMarkdownTree(tree)
   }
 
   writeCountsToFile()

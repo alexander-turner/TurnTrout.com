@@ -60,27 +60,76 @@ webi_install_if_missing gh
 webi_install_if_missing jq
 uv_install_if_missing alt-text-llm
 if is_root; then
+	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
+	# needed by scripts/tests/test_compress.py et al. (the Stop hook runs
+	# pytest, and ~75 tests + 60 errors fall over without them). rclone
+	# (R2 uploads/downloads in scripts/r2_*.py and the pre-push hook) is
+	# only added below when R2 creds are present — fresh sandboxes
+	# without creds skip the ~5s apt install.
+	declare -A apt_needed=(
+		[shellcheck]=shellcheck
+		[fish]=fish
+		[ffmpeg]=ffmpeg
+		[convert]=imagemagick
+		[exiftool]=libimage-exiftool-perl
+	)
+	if [ -n "${ACCESS_KEY_ID_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${SECRET_ACCESS_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${S3_ENDPOINT_ID_TURNTROUT_MEDIA:-}" ]; then
+		apt_needed[rclone]=rclone
+	fi
 	apt_pkgs=()
-	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
-	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	for cmd in "${!apt_needed[@]}"; do
+		command -v "$cmd" &>/dev/null || apt_pkgs+=("${apt_needed[$cmd]}")
+	done
 	if [ ${#apt_pkgs[@]} -gt 0 ]; then
 		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
 			warn "Failed to install ${apt_pkgs[*]}"
 	fi
 fi
 
+# scripts/compress.py and convert_markdown_yaml.py hard-code the IM7
+# `magick` binary. Ubuntu's `imagemagick` apt package only ships the
+# legacy IM6 `convert`, so first try the official IM7 portable AppImage,
+# then fall back to a thin wrapper over IM6 `convert`.
+if ! command -v magick &>/dev/null; then
+	IM_DIR="$HOME/.local/imagemagick"
+	mkdir -p "$IM_DIR"
+	MAGICK_INSTALLED=false
+	if curl -fsSL https://imagemagick.org/archive/binaries/magick \
+		-o "$IM_DIR/magick.AppImage" 2>/dev/null; then
+		chmod +x "$IM_DIR/magick.AppImage"
+		if (cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1); then
+			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" &&
+				MAGICK_INSTALLED=true
+		fi
+	fi
+	# Fallback: create a wrapper that delegates to IM6 `convert`.
+	# The codebase calls `magick <input> <flags> <output>` which is
+	# equivalent to IM6's `convert <input> <flags> <output>`.
+	if [ "$MAGICK_INSTALLED" = false ] && command -v convert &>/dev/null; then
+		cat > "$HOME/.local/bin/magick" <<'WRAPPER'
+#!/bin/sh
+# Thin IM6 compatibility wrapper: `magick` → `convert`
+# IM7's `magick <args>` ≈ IM6's `convert <args>` for image operations
+exec convert "$@"
+WRAPPER
+		chmod +x "$HOME/.local/bin/magick"
+	elif [ "$MAGICK_INSTALLED" = false ]; then
+		warn "ImageMagick not available (neither IM7 AppImage nor IM6 convert)"
+	fi
+fi
+
 #######################################
 # rclone (needed for R2 asset uploads in pre-push hook)
+#
+# Install via apt above (bundled with other system deps for atomicity).
+# Non-root sandboxes fall back to the official installer.
 #######################################
 
-if ! command -v rclone &>/dev/null; then
-	if is_root; then
-		{ apt-get update -qq && apt-get install -y -qq rclone; } 2>/dev/null ||
-			warn "Failed to install rclone via apt"
-	else
-		curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
-			warn "Failed to install rclone"
-	fi
+if ! command -v rclone &>/dev/null && ! is_root; then
+	curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
+		warn "Failed to install rclone"
 fi
 
 # Configure rclone R2 remote from environment variables
@@ -238,6 +287,15 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
+	fi
+	# Add node_modules/.bin to PATH so binaries like `sass` (used by
+	# source_file_checks.py) and `vale`/`spellchecker` are reachable from
+	# the pre-push hook without invoking pnpm exec.
+	if [ -d "$PROJECT_DIR/node_modules/.bin" ]; then
+		export PATH="$PROJECT_DIR/node_modules/.bin:$PATH"
+		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+			echo "export PATH=\"$PROJECT_DIR/node_modules/.bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+		fi
 	fi
 fi
 

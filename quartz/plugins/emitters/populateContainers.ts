@@ -7,7 +7,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { visit } from "unist-util-visit"
+import { EXIT, visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
@@ -47,6 +47,7 @@ export const findElementById = (root: Root, id: string): Element | null => {
   visit(root, "element", (node) => {
     if (node.properties?.id === id) {
       found = node
+      return EXIT
     }
   })
   return found
@@ -155,7 +156,7 @@ export function countPythonTests(): number {
 // skipcq: JS-D1001
 export function countLinesOfCode(): number {
   const output = execSync(
-    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/lost-pixel/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
+    'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
     { encoding: "utf-8" },
   )
   return parseInt(output.trim(), 10)
@@ -380,7 +381,7 @@ export const populateElements = async (
       logger.debug(`Populating ${elements.length} element(s) with class .${config.className}`)
       const content = await config.generator()
       for (const element of elements) {
-        element.children = content
+        element.children = structuredClone(content)
         populatedElements.push(element)
       }
       logger.debug(`Added ${content.length} elements to each .${config.className}`)

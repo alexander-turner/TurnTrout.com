@@ -23,14 +23,13 @@ tsconfig.tsbuildinfo
 # Testing & Coverage
 .coverage*
 coverage
-lost-pixel/*
-.lostpixel
 .lighthouseci
 /test-results/
 /blob-report/
 /playwright-report/
 /playwright/.cache/
 quartz/**snapshots*
+tests/visual-baselines/*.png
 
 # Temporary & Backup Files
 *~

@@ -18,7 +18,7 @@ FAVICON_MAPPING: dict[str, str] = {
     "arxiv.svg": "arxiv_org.svg",
     "cnn.svg": "cnn_com.svg",
     "deepmind.svg": "deepmind_com.svg",
-    "discord.svg": "discord_gg.svg",  # Based on whitelist entry
+    "discord.svg": "discord_gg.svg",  # Based on allowlist entry
     "drive.google.svg": "drive_google_com.svg",
     "forum_effectivealtruism_org.svg": "forum_effectivealtruism_org.svg",
     "github.svg": "github_com.svg",
@@ -28,8 +28,8 @@ FAVICON_MAPPING: dict[str, str] = {
     "googlescholar.svg": "scholar_google_com.svg",
     "huggingface.svg": "huggingface_co.svg",
     "msnbc.svg": "msnbc_com.svg",
-    "nytimes.svg": "nytimes_com.svg",  # Based on whitelist entry
-    "open.spotify.svg": "open_spotify_com.svg",  # Based on whitelist entry
+    "nytimes.svg": "nytimes_com.svg",  # Based on allowlist entry
+    "open.spotify.svg": "open_spotify_com.svg",  # Based on allowlist entry
     "openai.svg": "openai_com.svg",
     "overleaf.svg": "overleaf_com.svg",
     "play.google.svg": "play_google_com.svg",

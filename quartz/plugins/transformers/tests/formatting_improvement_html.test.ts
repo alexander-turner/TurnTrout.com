@@ -705,6 +705,20 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(result)).toBe(expected)
       },
     )
+
+    it.each([
+      ["<p>Press Ctrl+F to search.</p>", "<p>Press Ctrl+F to search.</p>"],
+      ["<p>ctrl+f</p>", "<p>ctrl+f</p>"],
+      ["<p>Alt+Tab</p>", "<p>Alt+Tab</p>"],
+      ["<p>Cmd+S</p>", "<p>Cmd+S</p>"],
+      ["<p>cmd+shift</p>", "<p>cmd+shift</p>"],
+      ["<p>Command+Q</p>", "<p>Command+Q</p>"],
+      ["<p>Option+J</p>", "<p>Option+J</p>"],
+      ["<p>Fn+F1</p>", "<p>Fn+F1</p>"],
+    ])("should leave keyboard shortcut '%s' untouched", (input: string, expected: string) => {
+      const result = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(result)).toBe(expected)
+    })
   })
 
   describe("Hyphens", () => {
@@ -1288,7 +1302,7 @@ describe("setFirstLetterAttribute", () => {
       const processedHtml = testHtmlFormattingImprovement(input, false)
       // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
       // so check for a space after X followed by any apostrophe variant
-      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/u)
       expect(processedHtml).toContain('data-first-letter="X"')
     },
   )
@@ -1642,6 +1656,16 @@ describe("identifyLinkNode", () => {
 
   it("should handle no link found", () => {
     const node = createNode("div", [createNode("span"), createNode("em"), createNode("strong")])
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
+  it("should return null when last child is a text node", () => {
+    const node: Element = {
+      type: "element",
+      tagName: "div",
+      properties: {},
+      children: [createNode("a"), { type: "text", value: " trailing" }],
+    }
     expect(identifyLinkNode(node)).toBeNull()
   })
 })

@@ -20,6 +20,7 @@ import subprocess
 import sys
 import threading
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Collection, Deque, Sequence, TextIO
@@ -112,6 +113,13 @@ class CheckStep:
     """External tool that must be on PATH; step is skipped with a warning if
     missing."""
 
+    parallel_group: str | None = None
+    """
+    When set, consecutive steps with the same value run concurrently.
+
+    None runs sequentially. Only safe for read-only checks (no autofixers).
+    """
+
 
 class CheckFailedError(Exception):
     """Raised when a check step fails during pre-push validation."""
@@ -123,6 +131,111 @@ class CheckFailedError(Exception):
         self.stdout = stdout
         self.stderr = stderr
         super().__init__(f"Check failed: {step_name}")
+
+
+def _group_consecutive(steps: Sequence[CheckStep]) -> list[list[CheckStep]]:
+    """
+    Group consecutive steps that share the same non-None parallel_group.
+
+    Steps with parallel_group=None each become a singleton group. Used by
+    run_checks to dispatch read-only verification batches concurrently while
+    keeping autofixers strictly sequential.
+    """
+    groups: list[list[CheckStep]] = []
+    for step in steps:
+        if (
+            step.parallel_group is not None
+            and groups
+            and groups[-1][-1].parallel_group == step.parallel_group
+        ):
+            groups[-1].append(step)
+        else:
+            groups.append([step])
+    return groups
+
+
+def _print_failure(step_name: str, result: "CommandResult") -> None:
+    """Render a failed step's stdout/stderr to the console."""
+    console.print(f"[red]✗[/red] {step_name}")
+    console.print("\n[bold red]Error output:[/bold red]")
+    if result.stdout:
+        console.print("[yellow]stdout:[/yellow]")
+        console.print(result.stdout, markup=False, highlight=False)
+    if result.stderr:
+        console.print("[yellow]stderr:[/yellow]")
+        console.print(result.stderr, markup=False, highlight=False)
+
+
+def _execute_step(
+    step: CheckStep, progress: Progress
+) -> "CommandResult | None":
+    """
+    Run one CheckStep.
+
+    Returns None if skipped (missing required tool).
+    """
+    if step.requires and not shutil.which(step.requires):
+        console.print(
+            f"[yellow]⚠ Skipping {step.name}: "
+            f"{step.requires} not installed[/yellow]"
+        )
+        return None
+
+    name_task = progress.add_task(f"[cyan]{step.name}...", total=None)
+    output_task = progress.add_task("", total=None, visible=False)
+    try:
+        return run_command(step, progress, output_task)
+    finally:
+        progress.remove_task(name_task)
+        progress.remove_task(output_task)
+
+
+def _run_parallel_group(
+    group: Sequence[CheckStep],
+    progress: Progress,
+    auto_commit: bool,
+    continue_on_failure: bool,
+) -> None:
+    """
+    Run a group of read-only check steps concurrently.
+
+    Failures are collected so that all steps complete before raising. The first
+    failure is re-raised after the group finishes (or all are logged if
+    continue_on_failure is set).
+    """
+    console.log(
+        f"[cyan]Running {len(group)} checks in parallel: "
+        f"{', '.join(s.name for s in group)}[/cyan]"
+    )
+    results: dict[str, CommandResult | None] = {}
+    with ThreadPoolExecutor(max_workers=len(group)) as pool:
+        futures = {
+            pool.submit(_execute_step, step, progress): step for step in group
+        }
+        for future in as_completed(futures):
+            step = futures[future]
+            results[step.name] = future.result()
+
+    first_failure: tuple[str, CommandResult] | None = None
+    for step in group:
+        result = results[step.name]
+        if result is None:
+            continue  # Skipped (missing requires).
+        if result.success:
+            console.log(f"[green]✓[/green] {step.name}")
+            if auto_commit:
+                commit_step_changes(_GIT_ROOT, step.name)
+        else:
+            _print_failure(step.name, result)
+            if first_failure is None:
+                first_failure = (step.name, result)
+
+    # Save state at the last step so resume picks up after the whole group.
+    save_state(group[-1].name)
+
+    if first_failure is not None and not continue_on_failure:
+        name, result = first_failure
+        raise CheckFailedError(name, result.stdout, result.stderr)
 
 
 def run_checks(
@@ -153,37 +266,27 @@ def run_checks(
         console=console,
         expand=True,
     ) as progress:
-        for step in steps:
+        for group in _group_consecutive(steps):
             if should_skip:
-                console.log(f"[grey]Skipping step: {step.name}[/grey]")
-                if step.name == last_step:
-                    should_skip = False
+                for step in group:
+                    console.log(f"[grey]Skipping step: {step.name}[/grey]")
+                    if step.name == last_step:
+                        should_skip = False
                 continue
 
-            if step.requires and not shutil.which(step.requires):
-                console.print(
-                    f"[yellow]⚠ Skipping {step.name}: "
-                    f"{step.requires} not installed[/yellow]"
+            if len(group) > 1:
+                _run_parallel_group(
+                    group, progress, auto_commit, continue_on_failure
                 )
                 continue
 
-            name_task = progress.add_task(f"[cyan]{step.name}...", total=None)
-            output_task = progress.add_task("", total=None, visible=False)
-
-            result = run_command(step, progress, output_task)
-            progress.remove_task(name_task)
-            progress.remove_task(output_task)
+            step = group[0]
+            result = _execute_step(step, progress)
+            if result is None:
+                continue
 
             if not result.success:
-                console.print(f"[red]✗[/red] {step.name}")
-                console.print("\n[bold red]Error output:[/bold red]")
-                if result.stdout:
-                    console.print("[yellow]stdout:[/yellow]")
-                    console.print(result.stdout, markup=False, highlight=False)
-                if result.stderr:
-                    console.print("[yellow]stderr:[/yellow]")
-                    console.print(result.stderr, markup=False, highlight=False)
-
+                _print_failure(step.name, result)
                 if continue_on_failure:
                     console.log(
                         f"[yellow]continuing past failure in {step.name}[/yellow]"
@@ -482,15 +585,85 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     """
     Get the pre-push check steps to run locally.
 
-    Includes shared autofixers from `get_formatter_steps` plus tasks
-    unique to local execution: asset compression/upload (needs R2
-    credentials) and alt-text scanning (needs `alt-text-llm`).
+    Includes shared autofixers from `get_formatter_steps` plus a parallel
+    "verify" group of read-only checks (pylint, mypy, source-file checks,
+    spellcheck+vale) that mirror CI's lint-and-validate gates so failures
+    surface before main goes red. Sequential tail steps handle local-only
+    work: asset compression/upload (R2) and alt-text scanning.
 
     Args:
         git_root_path: Path to the git repository root.
     """
     return [
         *get_formatter_steps(git_root_path),
+        # source_file_checks.py imports the generated variables.scss when
+        # validating font references; mirror lint-and-validate.yaml's
+        # generate-variables step so the verify group has what it needs.
+        CheckStep(
+            name="Generate SCSS variables",
+            command=[
+                "pnpm",
+                "exec",
+                "tsx",
+                "quartz/styles/generate-variables.ts",
+            ],
+            cwd=str(git_root_path),
+        ),
+        # Match python-lint.yaml CI invocation: run on `.` so the
+        # ignore-paths in .pylintrc apply consistently. Listing
+        # .github/scripts explicitly fails because it lacks __init__.py.
+        CheckStep(
+            name="Pylint",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "pylint",
+                "--rcfile",
+                f"{git_root_path}/config/python/.pylintrc",
+                ".",
+            ],
+            cwd=str(git_root_path),
+            parallel_group="verify",
+        ),
+        # shell=True so the *.py glob expands. Matches python-lint.yaml.
+        CheckStep(
+            name="Mypy",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "mypy",
+                "--config-file",
+                f"{git_root_path}/config/python/mypy.ini",
+                f"{git_root_path}/scripts/*.py",
+            ],
+            shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
+            parallel_group="verify",
+        ),
+        CheckStep(
+            name="Source file checks",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "scripts/source_file_checks.py",
+            ],
+            cwd=str(git_root_path),
+            parallel_group="verify",
+        ),
+        CheckStep(
+            name="Spellcheck and Vale",
+            command=[
+                "bash",
+                f"{git_root_path}/scripts/run_spellcheck_and_vale.sh",
+            ],
+            shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
+            requires="vale",
+            parallel_group="verify",
+        ),
         # skipcq: BAN-B604
         CheckStep(
             name="Compressing and uploading local assets",

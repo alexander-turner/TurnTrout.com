@@ -244,15 +244,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      # Check out branch tip when autofix pushed a commit, so lint
-      # sees the final state. Otherwise use the default SHA that triggered the workflow.
+      # Always check out the branch tip (not the triggering SHA) so lint
+      # sees the final state after any update-dates or autofix commits.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result == 'success' || needs.update-dates.outputs.pushed == 'true'
         with:
           ref: ${{ github.head_ref || github.ref_name }}
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result != 'success' && needs.update-dates.outputs.pushed != 'true'
 
       - name: Setup site
         uses: ./.github/actions/setup-site

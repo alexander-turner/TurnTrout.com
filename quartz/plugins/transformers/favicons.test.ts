@@ -27,7 +27,7 @@ import { faviconUrlsFile } from "../../components/constants.server"
 import { normalizeFaviconListEntry } from "../../util/favicon-config"
 import { hasClass } from "./utils"
 
-const { minFaviconCount, faviconSubstringBlacklist } = simpleConstants
+const { minFaviconCount, faviconSubstringBlocklist } = simpleConstants
 
 jest.mock("stream/promises")
 
@@ -158,12 +158,11 @@ describe("Favicon Utilities", () => {
       expect(global.fetch).toHaveBeenCalledTimes(3) // SVG CDN, AVIF CDN, and Google attempts
     })
 
-    it("should return defaultPath immediately if blacklisted by transformUrl", async () => {
-      const blacklistedHostname = "incompleteideas.net"
+    it("should return defaultPath immediately if blocklisted by transformUrl", async () => {
+      const blocklistedHostname = "incompleteideas.net"
       const fetchSpy = jest.spyOn(global, "fetch")
-      const result = await favicons.MaybeSaveFavicon(blacklistedHostname)
+      const result = await favicons.MaybeSaveFavicon(blocklistedHostname)
       expect(result).toBe(defaultPath)
-      // Should not attempt any fetches since it's blacklisted
       expect(fetchSpy).not.toHaveBeenCalled()
       fetchSpy.mockRestore()
     })
@@ -559,7 +558,7 @@ describe("Favicon Utilities", () => {
       [specialFaviconPaths.anchor],
       [specialFaviconPaths.turntrout],
       ["/static/images/external-favicons/apple_com.png"],
-    ])("should include whitelisted favicon %s even if count is zero", (imgPath) => {
+    ])("should include allowlisted favicon %s even if count is zero", (imgPath) => {
       const faviconCounts = new Map<string, number>()
       // Counts are stored without extensions (format-agnostic), but special paths are preserved
       faviconCounts.set(favicons.normalizePathForCounting(imgPath), 0)
@@ -569,12 +568,12 @@ describe("Favicon Utilities", () => {
       expect(result).toBe(true)
     })
 
-    describe("favicon blacklist", () => {
+    describe("favicon blocklist", () => {
       it.each(
-        faviconSubstringBlacklist.map((blacklistEntry: string) => [
-          `/static/images/external-favicons/${normalizeFaviconListEntry(blacklistEntry)}.png`,
+        faviconSubstringBlocklist.map((blocklistEntry: string) => [
+          `/static/images/external-favicons/${normalizeFaviconListEntry(blocklistEntry)}.png`,
         ]),
-      )("should exclude blacklisted favicon %s even if count exceeds threshold", (imgPath) => {
+      )("should exclude blocklisted favicon %s even if count exceeds threshold", (imgPath) => {
         const faviconCounts = new Map<string, number>()
         // Counts are stored without extensions (format-agnostic)
         faviconCounts.set(favicons.normalizePathForCounting(imgPath), minFaviconCount + 10)
@@ -584,9 +583,9 @@ describe("Favicon Utilities", () => {
         expect(result).toBe(false)
       })
 
-      it("should exclude favicons with blacklisted substring in middle of path", () => {
-        const blacklistEntry = normalizeFaviconListEntry(faviconSubstringBlacklist[0])
-        const imgPath = `/static/images/external-favicons/subdomain_${blacklistEntry}.png`
+      it("should exclude favicons with blocklisted substring in middle of path", () => {
+        const blocklistEntry = normalizeFaviconListEntry(faviconSubstringBlocklist[0])
+        const imgPath = `/static/images/external-favicons/subdomain_${blocklistEntry}.png`
         const faviconCounts = new Map<string, number>()
         // Counts are stored without extensions (format-agnostic)
         faviconCounts.set(favicons.normalizePathForCounting(imgPath), minFaviconCount + 10)
@@ -1156,7 +1155,7 @@ describe("Favicon Utilities", () => {
         },
       )
 
-      it("should add whitelisted favicons even if count is below threshold", async () => {
+      it("should add allowlisted favicons even if count is below threshold", async () => {
         const hostname = "turntrout.com"
         const faviconPath = specialFaviconPaths.turntrout
         const href = `https://${hostname}/page`
@@ -1180,7 +1179,7 @@ describe("Favicon Utilities", () => {
         expect(faviconEl.properties.style).toContain(faviconPath)
       })
 
-      it("should skip non-whitelisted favicons if count is below threshold", async () => {
+      it("should skip non-allowlisted favicons if count is below threshold", async () => {
         const hostname = "example.com"
         const faviconPath = favicons.getQuartzPath(hostname)
         const href = `https://${hostname}/page`
@@ -1198,12 +1197,12 @@ describe("Favicon Utilities", () => {
         expect(node.children.length).toBe(0)
       })
 
-      it("should whitelist favicons that end with whitelist suffix", async () => {
+      it("should allowlist favicons that end with allowlist suffix", async () => {
         const hostname = "apple.com"
         const faviconPath = favicons.getQuartzPath(hostname)
         const href = `https://${hostname}/page`
 
-        // Verify the path ends with the whitelist suffix
+        // Verify the path ends with the allowlist suffix
         expect(faviconPath.endsWith("apple_com.png")).toBe(true)
 
         const counts = new Map<string, number>()
@@ -1762,22 +1761,22 @@ describe("transformUrl", () => {
       "/static/images/external-favicons/apple_com.png",
       "/static/images/external-favicons/apple_com.png",
     ],
-  ])("should return %s if whitelisted", (input, expected) => {
+  ])("should return %s if allowlisted", (input, expected) => {
     const result = favicons.transformUrl(input)
     expect(result).toBe(expected)
   })
 
   it.each(
-    faviconSubstringBlacklist.map((blacklistEntry: string) => [
-      `/static/images/external-favicons/${normalizeFaviconListEntry(blacklistEntry)}.png`,
+    faviconSubstringBlocklist.map((blocklistEntry: string) => [
+      `/static/images/external-favicons/${normalizeFaviconListEntry(blocklistEntry)}.png`,
       defaultPath,
     ]),
-  )("should return defaultPath if blacklisted: %s", (input, expected) => {
+  )("should return defaultPath if blocklisted: %s", (input, expected) => {
     const result = favicons.transformUrl(input)
     expect(result).toBe(expected)
   })
 
-  it("should return path unchanged for non-whitelisted, non-blacklisted paths", () => {
+  it("should return path unchanged for non-allowlisted, non-blocklisted paths", () => {
     const input = "/static/images/external-favicons/example_com.png"
     const result = favicons.transformUrl(input)
     expect(result).toBe(input)
@@ -1826,8 +1825,8 @@ describe("normalizeHostname", () => {
   })
 
   it.each([
-    ["mail.google.com", "mail.google.com", "whitelisted google subdomain"],
-    ["drive.google.com", "drive.google.com", "whitelisted google subdomain"],
+    ["mail.google.com", "mail.google.com", "allowlisted google subdomain"],
+    ["drive.google.com", "drive.google.com", "allowlisted google subdomain"],
     ["maps.google.com", "google.com", "maps.google.com"],
     ["www.google.com", "google.com", "www.google.com"],
   ])("should normalize google subdomains: %s -> %s (%s)", (input, expected) => {
@@ -1840,7 +1839,7 @@ describe("normalizeHostname", () => {
     ["scholar.google.com", "scholar.google.com", "scholar"],
     ["play.google.com", "play.google.com", "play"],
     ["docs.google.com", "docs.google.com", "docs"],
-  ])("should preserve whitelisted google subdomains: %s -> %s (%s)", (input, expected) => {
+  ])("should preserve allowlisted google subdomains: %s -> %s (%s)", (input, expected) => {
     const result = favicons.getQuartzPath(input)
     const expectedPath = `/static/images/external-favicons/${expected.replace(/\./g, "_")}.png`
     expect(result).toBe(expectedPath)
@@ -1897,7 +1896,7 @@ describe("getQuartzPath hostname normalization", () => {
     expect(result).toBe("/static/images/external-favicons/google_com.png")
   })
 
-  it("should preserve whitelisted google.com subdomains", () => {
+  it("should preserve allowlisted google.com subdomains", () => {
     expect(favicons.getQuartzPath("scholar.google.com")).toBe(
       "/static/images/external-favicons/scholar_google_com.png",
     )
@@ -2186,20 +2185,20 @@ describe("favicon must be inside favicon-span (prevents line-break orphaning)", 
 })
 
 describe("shouldIncludeFavicon edge cases", () => {
-  it("should exclude blacklisted favicon even if whitelisted", () => {
-    const blacklistEntry = normalizeFaviconListEntry(faviconSubstringBlacklist[0])
-    const imgPath = `/static/images/external-favicons/${blacklistEntry}.png`
+  it("should exclude blocklisted favicon even if allowlisted", () => {
+    const blocklistEntry = normalizeFaviconListEntry(faviconSubstringBlocklist[0])
+    const imgPath = `/static/images/external-favicons/${blocklistEntry}.png`
     const faviconCounts = new Map<string, number>()
     // Counts are stored without extensions (format-agnostic)
     faviconCounts.set(favicons.normalizePathForCounting(imgPath), minFaviconCount + 10)
 
-    // Even if it contains a whitelist entry, blacklist should take precedence
+    // Even if it contains an allowlist entry, blocklist should take precedence
     const result = favicons.shouldIncludeFavicon(imgPath, imgPath, faviconCounts)
 
     expect(result).toBe(false)
   })
 
-  it("should include whitelisted favicon even if count is zero and not in map", () => {
+  it("should include allowlisted favicon even if count is zero and not in map", () => {
     const imgPath = specialFaviconPaths.mail
     const faviconCounts = new Map<string, number>()
 
@@ -2208,7 +2207,7 @@ describe("shouldIncludeFavicon edge cases", () => {
     expect(result).toBe(true)
   })
 
-  it("should handle whitelist substring matching", () => {
+  it("should handle allowlist substring matching", () => {
     const imgPath = "/static/images/external-favicons/subdomain_apple_com.png"
     const faviconCounts = new Map<string, number>()
     // Counts are stored without extensions (format-agnostic)

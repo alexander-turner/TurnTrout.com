@@ -21,29 +21,7 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  # Self-triggered by verify-lp-approval when LP isn't approved yet. Skips build
-  # and tests (reuses artifacts from the original run) and re-enters the
-  # delayed-lp-check environment for another 10-minute wait + recheck.
   workflow_dispatch:
-    inputs:
-      sha:
-        description: "Commit SHA to deploy (LP recheck redispatch)"
-        required: true
-        type: string
-      run_id:
-        description: "Original deploy run ID to pull public-dir artifact from"
-        required: true
-        type: string
-      attempt:
-        description: "LP recheck attempt number (1-indexed)"
-        required: false
-        default: "1"
-        type: string
-      max_attempts:
-        description: "Cap on LP recheck attempts (36 × 10min ≈ 6h)"
-        required: false
-        default: "36"
-        type: string
 
 permissions:
   actions: write
@@ -54,13 +32,11 @@ permissions:
 
 jobs:
   deploy-build:
-    if: github.event_name != 'workflow_dispatch'
     uses: ./.github/workflows/build-site.yaml
     with:
       fetch-depth: 0
 
   prepare-deploy:
-    if: github.event_name != 'workflow_dispatch'
     needs: deploy-build
     runs-on: ubuntu-24.04
     timeout-minutes: 120
@@ -75,7 +51,6 @@ jobs:
         with:
           install-sharp: "true"
           install-browsers: "true"
-          install-ffmpeg: "true"
           install-system-deps: "true"
 
       - name: Restore built site from cache
@@ -154,9 +129,9 @@ jobs:
           project-name: turntrout
           branch: ${{ github.ref_name }}
 
-      - name: Install subfont
-        if: github.event_name == 'push'
-        run: pnpm add -g github:alexander-turner/subfont
+      # subfont is pinned to @turntrout/subfont@1.8.1 in package.json and
+      # installed by setup-site's `pnpm install`, so we run it via
+      # `pnpm exec` (in scripts/subfont.sh) — no separate global install.
       - name: Make script executable
         if: github.event_name == 'push'
         run: chmod +x ./scripts/subfont.sh
@@ -176,20 +151,12 @@ jobs:
           path: public/
 
   # Wait for test workflows to pass before deploying to production.
-  # Checks visual-testing, playwright-tests, and Lost Pixel results.
+  # Checks visual-testing and playwright-tests results.
   verify-test-results:
     if: github.event_name == 'push' && github.ref_name == 'main'
     runs-on: ubuntu-24.04
     timeout-minutes: 90
-    outputs:
-      lp-pending: ${{ steps.lp-check.outputs.lp-pending }}
     steps:
-      # Need the repo so we can call scripts/parse_lost_pixel.py. Shallow
-      # checkout: we don't need history.
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 1
-
       - name: Wait for test workflows to succeed
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -239,200 +206,18 @@ jobs:
             done
           done
 
-      - name: Verify Lost Pixel visual changes
-        id: lp-check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Check if combine-and-upload ran (it produces the LP check)
-          COMBINE_STATUS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-            --jq '[.check_runs[] | select(.name == "combine-and-upload")] | .[0].conclusion // "missing"' \
-            2>/dev/null || echo "missing")
-          if [ "$COMBINE_STATUS" = "skipped" ] || [ "$COMBINE_STATUS" = "missing" ]; then
-            echo "combine-and-upload was skipped or not found — no Lost Pixel check expected"
-            exit 0
-          fi
-
-          # Poll for the Lost Pixel check (created by LP platform ~10 min after upload)
-          MAX_ATTEMPTS=40  # 40 × 30s = 20 min max wait
-          ATTEMPT=0
-          SUMMARY=""
-          LP_CONCLUSION=""
-          LP_TEXT=""
-
-          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-            ATTEMPT=$((ATTEMPT + 1))
-
-            # Check runs (GitHub App check) — grab conclusion + summary + text
-            LP_JSON=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-              --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | .[0] // empty | {conclusion, summary: .output.summary, text: .output.text}' \
-              2>/dev/null || true)
-
-            if [ -n "$LP_JSON" ] && [ "$LP_JSON" != "null" ]; then
-              LP_CONCLUSION=$(echo "$LP_JSON" | jq -r '.conclusion // empty')
-              SUMMARY=$(echo "$LP_JSON" | jq -r '.summary // empty')
-              # If summary has no counts, check the text field too
-              LP_TEXT=$(echo "$LP_JSON" | jq -r '.text // empty')
-            fi
-
-            if [ -z "$LP_CONCLUSION" ]; then
-              # Also check commit statuses (Lost Pixel may use status API)
-              SUMMARY=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/statuses" \
-                --jq '[.[] | select(.context | test("lost.pixel"; "i"))] | .[0].description // empty' \
-                2>/dev/null || true)
-              if [ -n "$SUMMARY" ]; then
-                LP_CONCLUSION="from_status"
-              fi
-            fi
-
-            if [ -n "$LP_CONCLUSION" ] || [ -n "$SUMMARY" ]; then
-              echo "Lost Pixel check found on attempt $ATTEMPT"
-              break
-            fi
-
-            # Log available check-run names to aid debugging
-            if [ $((ATTEMPT % 5)) -eq 0 ]; then
-              echo "Available check runs:"
-              gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs" \
-                --jq '.check_runs[].name' 2>/dev/null || true
-            fi
-            echo "Attempt $ATTEMPT/$MAX_ATTEMPTS: Lost Pixel check not yet available, waiting 30s..."
-            sleep 30
-          done
-
-          if [ -z "$LP_CONCLUSION" ] && [ -z "$SUMMARY" ]; then
-            echo "::error::Lost Pixel check never appeared after $MAX_ATTEMPTS attempts"
-            exit 1
-          fi
-
-          echo "Lost Pixel conclusion: $LP_CONCLUSION"
-          echo "Lost Pixel summary: $SUMMARY"
-          [ -n "${LP_TEXT:-}" ] && echo "Lost Pixel text: $LP_TEXT"
-
-          # Use the richest available source for count extraction
-          PARSE_SOURCE="$SUMMARY"
-          if [ -n "${LP_TEXT:-}" ]; then
-            PARSE_SOURCE="$SUMMARY $LP_TEXT"
-          fi
-
-          # Delegate parsing to scripts/parse_lost_pixel.py (fixture-tested).
-          # If parsing fails AND conclusion isn't 'success', the script exits
-          # non-zero — we catch that and mark the check pending so the
-          # delayed re-check has another shot rather than aborting deploy.
-          PARSE_OUTPUT=$(python3 scripts/parse_lost_pixel.py \
-              --text "$PARSE_SOURCE" \
-              --conclusion "$LP_CONCLUSION" 2>&1) || PARSE_RC=$?
-          PARSE_RC=${PARSE_RC:-0}
-
-          if [ "$PARSE_RC" -ne 0 ]; then
-            echo "::warning::Lost Pixel output unparseable (conclusion: $LP_CONCLUSION). Will re-check after delay."
-            echo "$PARSE_OUTPUT"
-            echo "lp-pending=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # Parser prints `key=value` pairs on stdout; eval into shell vars.
-          CHANGED=$(echo "$PARSE_OUTPUT" | sed -n 's/^changed=//p')
-          ADDED=$(echo "$PARSE_OUTPUT" | sed -n 's/^added=//p')
-          DELETED=$(echo "$PARSE_OUTPUT" | sed -n 's/^deleted=//p')
-          TOTAL=$(echo "$PARSE_OUTPUT" | sed -n 's/^total=//p')
-
-          echo "Visual changes: $CHANGED changed, $ADDED added, $DELETED deleted (total: $TOTAL)"
-          if [ "$TOTAL" -ge 10 ]; then
-            echo "::warning::Visual differences ($TOTAL) exceed auto-accept threshold (9). Waiting for Lost Pixel approval. Breakdown: $CHANGED changed, $ADDED added, $DELETED deleted"
-            echo "lp-pending=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Visual differences within acceptable range (< 10)"
-          fi
-
-  # Re-check LP approval after a delay (environment wait timer avoids runner
-  # costs). One-time setup: create a "delayed-lp-check" environment in repo
-  # Settings > Environments with a 10-minute wait timer. If LP still isn't
-  # approved at the check, we redispatch this same workflow (workflow_dispatch
-  # with attempt+1) so the deploy job sits in one place. Up to max_attempts
-  # total (~6h budget at 10-min cadence). Anyone with write access can click
-  # "Review deployments" in the Actions UI to approve early.
-  verify-lp-approval:
-    needs: verify-test-results
-    if: |
-      always() && (
-        (github.event_name == 'push' && needs.verify-test-results.outputs.lp-pending == 'true') ||
-        github.event_name == 'workflow_dispatch'
-      )
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    environment:
-      name: delayed-lp-check
-    outputs:
-      approved: ${{ steps.check.outputs.approved }}
-    steps:
-      - name: Re-check Lost Pixel approval status
-        id: check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SHA: ${{ github.event.inputs.sha || github.sha }}
-          RUN_ID: ${{ github.event.inputs.run_id || github.run_id }}
-          ATTEMPT: ${{ github.event.inputs.attempt || '1' }}
-          MAX: ${{ github.event.inputs.max_attempts || '36' }}
-        run: |
-          echo "Checking Lost Pixel status for $SHA (attempt $ATTEMPT/$MAX)..."
-          LP_CONCLUSION=$(gh api "repos/${{ github.repository }}/commits/$SHA/check-runs" \
-            --jq '[.check_runs[] | select(.name | test("lost.pixel"; "i"))] | sort_by(.started_at) | last | .conclusion // empty' \
-            2>/dev/null || echo "")
-
-          echo "Lost Pixel conclusion: $LP_CONCLUSION"
-          if [ "$LP_CONCLUSION" = "success" ]; then
-            echo "Lost Pixel approved on attempt $ATTEMPT"
-            echo "approved=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          echo "approved=false" >> "$GITHUB_OUTPUT"
-
-          # Terminal non-success states won't self-heal via polling (platform
-          # processing errors, cancelled builds, timed-out runs). Fail fast and
-          # let a human investigate + manually re-dispatch.
-          case "$LP_CONCLUSION" in
-            failure|cancelled|timed_out)
-              echo "::error::Lost Pixel check concluded with '$LP_CONCLUSION' — not retrying. Investigate at https://app.lost-pixel.com/ and manually re-dispatch this workflow once resolved."
-              exit 1
-              ;;
-          esac
-
-          if [ "$ATTEMPT" -ge "$MAX" ]; then
-            echo "::error::Lost Pixel still not approved after $MAX attempts. Approve at https://app.lost-pixel.com/ and re-dispatch this workflow."
-            exit 1
-          fi
-
-          NEXT=$((ATTEMPT + 1))
-          echo "LP not approved yet (conclusion: ${LP_CONCLUSION:-pending}). Dispatching attempt $NEXT/$MAX..."
-          gh workflow run deploy.yaml \
-            --repo "${{ github.repository }}" \
-            --ref "${{ github.ref_name }}" \
-            -f sha="$SHA" \
-            -f run_id="$RUN_ID" \
-            -f attempt="$NEXT" \
-            -f max_attempts="$MAX"
-
   deploy:
-    needs: [prepare-deploy, verify-test-results, verify-lp-approval]
+    needs: [prepare-deploy, verify-test-results]
     if: |
-      always() && (
-        (github.event_name == 'push' && (
-          github.ref_name == 'dev' ||
-          (needs.verify-test-results.result == 'success' && (
-            needs.verify-lp-approval.result == 'skipped' ||
-            (needs.verify-lp-approval.result == 'success' && needs.verify-lp-approval.outputs.approved == 'true')
-          ))
-        )) ||
-        (github.event_name == 'workflow_dispatch' && needs.verify-lp-approval.outputs.approved == 'true')
+      always() &&
+      github.event_name == 'push' && (
+        github.ref_name == 'dev' ||
+        (github.ref_name == 'main' && needs.verify-test-results.result == 'success')
       )
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ github.event.inputs.sha || github.sha }}
 
       - name: Download prepared site
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -440,7 +225,6 @@ jobs:
           name: public-dir
           path: public/
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ github.event.inputs.run_id || github.run_id }}
 
       - name: Deploy to Cloudflare Pages
         uses: ./.github/actions/deploy-to-cloudflare

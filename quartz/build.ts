@@ -262,7 +262,6 @@ async function partialRebuildFromEntrypoint(
         // only content files can have added/removed dependencies because of transclusions
         if (path.extname(fp) === ".md") {
           for (const emitter of cfg.plugins.emitters) {
-            // get new dependencies from all emitters for this file
             const emitterGraph =
               (await emitter.getDependencyGraph?.(ctx, processedFiles, staticResources)) ?? null
 
@@ -331,9 +330,8 @@ async function partialRebuildFromEntrypoint(
         const upstreams = [...depGraph.getLeafNodeAncestors(fp)] as FilePath[]
 
         const upstreamContent = upstreams
-          // filter out non-markdown files
           .filter((file) => contentMap.has(file))
-          // if file was deleted, don't give it to the emitter
+          // skip deleted files so the emitter doesn't see stale paths
           .filter((file) => !toRemove.has(file))
           .map((file) => contentMap.get(file) || [])
           .filter((content) => content.length > 0)

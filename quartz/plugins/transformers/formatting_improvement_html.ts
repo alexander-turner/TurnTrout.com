@@ -404,7 +404,10 @@ export function identifyLinkNode(node: Element): Element | null {
   if (node.tagName === "a") {
     return node
   } else if (node.children && node.children.length > 0) {
-    return identifyLinkNode(node.children[node.children.length - 1] as Element)
+    const lastChild = node.children[node.children.length - 1]
+    if (lastChild.type === "element") {
+      return identifyLinkNode(lastChild)
+    }
   }
   return null
 }
@@ -546,8 +549,9 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 export function plusToAmpersand(text: string): string {
-  const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
-  const result = text.replace(new RegExp(sourcePattern, "gu"), `${NBSP}\u0026${NBSP}`)
+  // Skip keyboard shortcuts: Ctrl+F, Alt+Tab, Cmd+S, Option+J, Fn+F1, etc.
+  const sourcePattern = "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])"
+  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}&${NBSP}`)
   return result
 }
 

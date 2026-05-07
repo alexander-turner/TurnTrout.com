@@ -5,6 +5,10 @@ inputs:
     description: "Whether to install Playwright and its dependencies"
     required: false
     default: "false"
+  install-python:
+    description: "Whether to install Python and uv (needed for r2_baselines.py)"
+    required: false
+    default: "false"
 runs:
   using: "composite"
   steps:
@@ -12,11 +16,15 @@ runs:
       uses: ./.github/actions/setup-site
       with:
         install-sharp: "false"
-        install-ffmpeg: "true"
+        # install-system-deps installs ffmpeg + build tools on Linux. The
+        # prior install-ffmpeg input no longer exists upstream and was
+        # being silently ignored, leaving ffprobe unavailable when this
+        # action runs in a build-on-runner job.
+        install-system-deps: "true"
         cache-playwright: "true"
         cache-puppeteer: "true"
         cache-apt: ${{ inputs.install-playwright }}
-        install-python: "false"
+        install-python: ${{ inputs.install-python }}
 
     - name: Install Playwright system dependencies (Linux)
       if: inputs.install-playwright == 'true' && runner.os == 'Linux'
@@ -39,4 +47,19 @@ runs:
         fi
         brew install ffmpeg
         ffprobe -version
+      shell: bash
+
+    # rclone ships via apt as part of setup-site's install-system-deps on
+    # Linux, but macOS has no equivalent step — install it here so
+    # scripts/r2_baselines.py works on both platforms.
+    - name: Install rclone on macOS
+      if: runner.os == 'macOS'
+      run: |
+        if command -v rclone &>/dev/null; then
+          echo "rclone already available, skipping install"
+          rclone version
+          exit 0
+        fi
+        brew install rclone
+        rclone version
       shell: bash

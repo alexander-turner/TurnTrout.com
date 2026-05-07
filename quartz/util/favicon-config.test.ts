@@ -3,8 +3,8 @@ import { describe, it, expect } from "@jest/globals"
 import {
   normalizeHostname,
   normalizeFaviconListEntry,
-  faviconCountWhitelistComputed,
-  faviconSubstringBlacklistComputed,
+  faviconCountAllowlistComputed,
+  faviconSubstringBlocklistComputed,
 } from "./favicon-config"
 
 describe("normalizeHostname", () => {
@@ -56,22 +56,22 @@ describe("normalizeFaviconListEntry", () => {
 })
 
 describe("computed lists", () => {
-  it("faviconCountWhitelistComputed is a non-empty array", () => {
-    expect(Array.isArray(faviconCountWhitelistComputed)).toBe(true)
-    expect(faviconCountWhitelistComputed.length).toBeGreaterThan(0)
+  it("faviconCountAllowlistComputed is a non-empty array", () => {
+    expect(Array.isArray(faviconCountAllowlistComputed)).toBe(true)
+    expect(faviconCountAllowlistComputed.length).toBeGreaterThan(0)
   })
 
-  it("faviconCountWhitelistComputed contains special favicon paths", () => {
-    const joined = faviconCountWhitelistComputed.join(",")
+  it("faviconCountAllowlistComputed contains special favicon paths", () => {
+    const joined = faviconCountAllowlistComputed.join(",")
     expect(joined).toContain("turntrout_com")
   })
 
-  it("faviconSubstringBlacklistComputed is an array", () => {
-    expect(Array.isArray(faviconSubstringBlacklistComputed)).toBe(true)
+  it("faviconSubstringBlocklistComputed is an array", () => {
+    expect(Array.isArray(faviconSubstringBlocklistComputed)).toBe(true)
   })
 
-  it("blacklist entries are normalized (no deep subdomains)", () => {
-    for (const entry of faviconSubstringBlacklistComputed) {
+  it("blocklist entries are normalized (no deep subdomains)", () => {
+    for (const entry of faviconSubstringBlocklistComputed) {
       // Each entry should be a simple underscore-separated domain
       expect(typeof entry).toBe("string")
       expect(entry.length).toBeGreaterThan(0)

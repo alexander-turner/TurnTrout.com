@@ -155,7 +155,7 @@ export const tokenizeTerm = (term: string): string[] => {
 }
 
 /**
- * matchs search terms within a text string
+ * Matches search terms within a text string
  * @param searchTerm - Term to match
  * @param text - Text to search within
  * @param trim - If true, returns a window of text around matches
@@ -176,12 +176,15 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
 
     let bestSum = 0
     let bestIndex = 0
-    for (let i = 0; i < Math.max(tokenizedText.length - contextWindowWords, 0); i++) {
-      const window = occurrencesIndices.slice(i, i + contextWindowWords)
-      const windowSum = window.reduce((total, cur) => total + (cur ? 1 : 0), 0)
-      if (windowSum >= bestSum) {
-        bestSum = windowSum
-        bestIndex = i
+    let runningSum = 0
+    for (let i = 0; i < occurrencesIndices.length; i++) {
+      runningSum += occurrencesIndices[i] ? 1 : 0
+      if (i >= contextWindowWords) {
+        runningSum -= occurrencesIndices[i - contextWindowWords] ? 1 : 0
+      }
+      if (runningSum >= bestSum) {
+        bestSum = runningSum
+        bestIndex = Math.max(0, i - contextWindowWords + 1)
       }
     }
 
@@ -1140,6 +1143,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   itemTile.addEventListener("mouseenter", onMouseEnter)
   itemTile.addEventListener("mouseleave", onMouseLeave)
+  itemTile.addEventListener("focus", () => focusCard(itemTile, false))
   itemTile.addEventListener("click", (e) => {
     e.preventDefault()
     navigateWithSearchTerm(itemTile.href, currentSearchTerm)

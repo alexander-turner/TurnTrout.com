@@ -175,7 +175,7 @@ export default (() => {
         <link rel="stylesheet" href="/index.css" spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
-          <meta name="robots" content="noindex, noimageindex,nofollow" />
+          <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}
