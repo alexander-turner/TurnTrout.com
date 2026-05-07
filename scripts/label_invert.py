@@ -65,8 +65,21 @@ CONTENT_DIR: Final[Path] = PROJECT_ROOT / "website_content"
 # for the chart-on-white-background case the labeling tool is built for.
 LUMINANCE_INVERT_THRESHOLD: Final[float] = 0.7
 
-RASTER_EXTENSIONS: Final[frozenset[str]] = frozenset(
-    {".avif", ".png", ".jpg", ".jpeg", ".webp", ".gif"}
+# Tuples (not sets) so we can pass directly to ``str.endswith``.
+RASTER_EXTENSIONS: Final[tuple[str, ...]] = (
+    ".avif",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".gif",
+)
+# Video extensions for inline looping muted videos (GIF-replacements).
+# Each format is its own URL on R2; the rendered ``<video>`` tries each
+# ``<source>`` in order, but we ask the labeler for a verdict per URL.
+VIDEO_EXTENSIONS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
+LABELABLE_EXTENSIONS: Final[tuple[str, ...]] = (
+    RASTER_EXTENSIONS + VIDEO_EXTENSIONS
 )
 EXCLUDED_SEGMENTS: Final[frozenset[str]] = frozenset(
     {
@@ -92,10 +105,15 @@ _ANNOTATION_RE: Final[re.Pattern[str]] = re.compile(
 def _is_candidate(url: str) -> bool:
     if not url.startswith(("http://", "https://")):
         return False
-    if not any(url.lower().endswith(ext) for ext in RASTER_EXTENSIONS):
+    if not url.lower().endswith(LABELABLE_EXTENSIONS):
         return False
     segments = url.split("?", 1)[0].split("/")
     return not any(seg in EXCLUDED_SEGMENTS for seg in segments)
+
+
+def is_video_url(url: str) -> bool:
+    """True iff ``url`` ends with a labeled-video extension."""
+    return url.lower().endswith(VIDEO_EXTENSIONS)
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
@@ -301,9 +319,14 @@ def ensure_luminances(
     fetch: FetchFn | None = None,
     max_workers: int = 8,
 ) -> dict[str, float]:
-    """Return luminance per URL, computing+caching any missing entries."""
+    """
+    Return luminance per URL, computing+caching any missing entries.
+
+    Videos are skipped — extracting a frame would require ffmpeg and the user
+    has to label them by hand anyway.
+    """
     cache = load_luminances(cache_path)
-    missing = [u for u in candidates if u not in cache]
+    missing = [u for u in candidates if u not in cache and not is_video_url(u)]
     if not missing:
         return cache
 
@@ -389,6 +412,7 @@ def create_app(
             labels=labels,
             luminances=lum_map,
             luminance_threshold=LUMINANCE_INVERT_THRESHOLD,
+            is_video_url=is_video_url,
             invert_count=sum(
                 1 for u in candidates if u in labels and labels[u]["invert"]
             ),

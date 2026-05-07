@@ -34,7 +34,8 @@ DIMS = {
     "https://assets.turntrout.com/static/images/posts/b.png": {},
     "https://assets.turntrout.com/static/images/posts/c.jpg": {},
     "https://assets.turntrout.com/static/images/posts/d.svg": {},  # excluded
-    "https://assets.turntrout.com/static/images/posts/e.mp4": {},  # excluded
+    "https://assets.turntrout.com/static/images/posts/e.mp4": {},  # video
+    "https://assets.turntrout.com/static/images/posts/f.webm": {},  # video
     "https://assets.turntrout.com/static/images/external-favicons/x.avif": {},
     "https://assets.turntrout.com/static/images/twemoji/y.png": {},
     "https://assets.turntrout.com/static/images/card_images/z.jpg": {},
@@ -44,6 +45,8 @@ EXPECTED = (
     "https://assets.turntrout.com/static/images/posts/a.avif",
     "https://assets.turntrout.com/static/images/posts/b.png",
     "https://assets.turntrout.com/static/images/posts/c.jpg",
+    "https://assets.turntrout.com/static/images/posts/e.mp4",
+    "https://assets.turntrout.com/static/images/posts/f.webm",
 )
 
 
@@ -270,8 +273,12 @@ def test_index_marks_state_and_review(client: tuple[FlaskClient, Path]) -> None:
         f'data-state="unlabeled" data-reviewed="false" '
         f'data-url="{EXPECTED[2]}"' in body
     )
-    # Both the unreviewed-no-invert AND unlabeled cards surface the badge.
-    assert body.count("needs review") == 2
+    # The unreviewed-no-invert plus every unlabeled card (incl. videos)
+    # surfaces the "needs review" badge.
+    expected_needs_review = 1 + sum(
+        1 for u in EXPECTED if u not in {EXPECTED[0], EXPECTED[1]}
+    )
+    assert body.count("needs review") == expected_needs_review
 
 
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:
@@ -747,3 +754,63 @@ def test_main_skip_luminance(
     assert rc == 0
     assert called == []
     assert not labels_path.exists()
+
+
+# --- video-specific behaviors ------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("https://x/a.mp4", True),
+        ("https://x/a.MP4", True),
+        ("https://x/a.webm", True),
+        ("https://x/a.mov", True),
+        ("https://x/a.avif", False),
+        ("https://x/a.png", False),
+    ],
+)
+def test_is_video_url(url: str, expected: bool) -> None:
+    assert label_invert.is_video_url(url) is expected
+
+
+def test_ensure_luminances_skips_video_urls(tmp_path: Path) -> None:
+    cache_path = tmp_path / "lum.json"
+    fetched: list[str] = []
+
+    def fake_fetch(url: str) -> bytes:
+        fetched.append(url)
+        return _solid_png((255, 255, 255))
+
+    out = label_invert.ensure_luminances(
+        ("https://x/a.avif", "https://x/b.mp4", "https://x/c.webm"),
+        cache_path=cache_path,
+        fetch=fake_fetch,
+        max_workers=2,
+    )
+    assert fetched == ["https://x/a.avif"]
+    assert "https://x/b.mp4" not in out
+    assert "https://x/c.webm" not in out
+
+
+def test_index_renders_video_preview(tmp_path: Path) -> None:
+    labels_path = tmp_path / "labels.json"
+    image_url = "https://assets.turntrout.com/static/images/posts/a.avif"
+    video_url = "https://assets.turntrout.com/static/images/posts/b.mp4"
+    app = label_invert.create_app(
+        (image_url, video_url),
+        labels_path=labels_path,
+    )
+    app.config["TESTING"] = True
+    body = app.test_client().get("/").get_data(as_text=True)
+    # Image card uses <img>, video card uses <video> with autoplay+loop+muted.
+    assert (
+        f'<article class="card" data-state="unlabeled" data-reviewed="false" '
+        f'data-url="{video_url}">' in body
+    )
+    assert "<video autoplay loop muted playsinline" in body
+    assert f'<source src="{video_url}" />' in body
+    # Image card still uses <img>, not <video>.
+    img_card_start = body.index(f'data-url="{image_url}"')
+    img_card_end = body.index("</article>", img_card_start)
+    assert "<video" not in body[img_card_start:img_card_end]

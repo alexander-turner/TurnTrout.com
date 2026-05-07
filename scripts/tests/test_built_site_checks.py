@@ -6413,6 +6413,73 @@ def test_check_avif_images_labeled(
     assert sorted(result) == sorted(expected_issues)
 
 
+_VIDEO_PREFIX = "<video> source not user-reviewed: "
+
+
+def _video_missing(*urls: str) -> list[str]:
+    return [_VIDEO_PREFIX + u for u in urls]
+
+
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # All sources reviewed → no issue.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/a.mp4">'
+            '<source src="https://x/a.webm">'
+            "</video>",
+            {"https://x/a.mp4": True, "https://x/a.webm": False},
+            [],
+        ),
+        # Both sources missing → both flagged.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/a.mp4">'
+            '<source src="https://x/a.webm">'
+            "</video>",
+            {},
+            _video_missing("https://x/a.mp4", "https://x/a.webm"),
+        ),
+        # `<video src=...>` (no <source> children) is also covered.
+        (
+            '<video autoplay loop muted src="https://x/inline.mp4"></video>',
+            {},
+            _video_missing("https://x/inline.mp4"),
+        ),
+        # Pond video is exempt regardless of attributes.
+        (
+            '<video id="pond-video" autoplay loop muted>'
+            '<source src="https://x/pond.mp4"></video>',
+            {},
+            [],
+        ),
+        # Missing one of autoplay/loop/muted → not an inline GIF-replacement,
+        # so untracked.
+        (
+            "<video loop muted>" '<source src="https://x/regular.mp4"></video>',
+            {},
+            [],
+        ),
+        # Non-video extensions on <source> are ignored.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/poster.jpg"></video>',
+            {},
+            [],
+        ),
+    ],
+)
+def test_check_inline_videos_reviewed(
+    html: str,
+    labels: dict[str, bool] | None,
+    expected_issues: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_avif_images_labeled(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
 def _write_labels_file(root: Path, contents: str | None) -> None:
     """Create the labels JSON under ``root``; ``None`` leaves it absent."""
     if contents is None:
