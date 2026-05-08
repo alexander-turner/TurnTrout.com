@@ -48,11 +48,11 @@ describe("getNavigationOpts", () => {
   const makeClick = (target: EventTarget | null): Event => ({ target }) as unknown as Event
 
   const anchor = (attrs: Record<string, string> = {}, href?: string): HTMLAnchorElement => {
-    const a = document.createElement("a")
-    if (href !== undefined) a.href = href
-    for (const [k, v] of Object.entries(attrs)) a.setAttribute(k, v)
-    document.body.appendChild(a)
-    return a
+    const anchorEl = document.createElement("a")
+    if (href !== undefined) anchorEl.href = href
+    for (const [k, v] of Object.entries(attrs)) anchorEl.setAttribute(k, v)
+    document.body.appendChild(anchorEl)
+    return anchorEl
   }
 
   beforeEach(() => {
@@ -70,8 +70,8 @@ describe("getNavigationOpts", () => {
     [
       'nested click inside target="_blank" anchor',
       () => {
-        const a = anchor({ target: "_blank" }, "http://localhost:8080/foo")
-        return a.appendChild(document.createElement("span"))
+        const anchorEl = anchor({ target: "_blank" }, "http://localhost:8080/foo")
+        return anchorEl.appendChild(document.createElement("span"))
       },
     ],
     ["external link", () => anchor({}, "https://example.com/bar")],
@@ -85,22 +85,22 @@ describe("getNavigationOpts", () => {
   })
 
   it("returns URL when anchor is a local link", () => {
-    const a = anchor({}, "http://localhost:8080/page")
-    expect(getNavigationOpts(makeClick(a))).toEqual({
+    const anchorEl = anchor({}, "http://localhost:8080/page")
+    expect(getNavigationOpts(makeClick(anchorEl))).toEqual({
       url: expect.objectContaining({ href: "http://localhost:8080/page" }),
       scroll: undefined,
     })
   })
 
   it("resolves closest-ancestor anchor when a nested element is clicked", () => {
-    const a = anchor({}, "http://localhost:8080/nested")
-    const inner = a.appendChild(document.createElement("span"))
+    const anchorEl = anchor({}, "http://localhost:8080/nested")
+    const inner = anchorEl.appendChild(document.createElement("span"))
     expect(getNavigationOpts(makeClick(inner))?.url.href).toBe("http://localhost:8080/nested")
   })
 
   it("sets scroll=false when anchor has data-router-no-scroll", () => {
-    const a = anchor({ "data-router-no-scroll": "" }, "http://localhost:8080/no-scroll")
-    expect(getNavigationOpts(makeClick(a))?.scroll).toBe(false)
+    const anchorEl = anchor({ "data-router-no-scroll": "" }, "http://localhost:8080/no-scroll")
+    expect(getNavigationOpts(makeClick(anchorEl))?.scroll).toBe(false)
   })
 })
 
@@ -131,7 +131,7 @@ describe("scroll helpers", () => {
 
   beforeEach(() => {
     document.body.innerHTML = ""
-    scrollSpy = jest.spyOn(window, "scrollTo").mockImplementation(() => {})
+    scrollSpy = jest.spyOn(window, "scrollTo").mockImplementation(jest.fn())
     Object.defineProperty(window, "innerHeight", { value: 800, configurable: true })
     Object.defineProperty(window, "scrollY", { value: 0, configurable: true })
   })
