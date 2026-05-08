@@ -103,8 +103,13 @@ export function spacesAroundSlashes(text: string): string {
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
+  // The trailing lookahead is permeable to markerChar — it skips past zero or
+  // more markers to look for real content beyond. Using a bare \S would let a
+  // stray "ab/<marker>" match via backtracking (markerAfter goes empty and the
+  // lookahead settles on the marker itself), producing "ab / " for joined
+  // input but no match for the marker-stripped "ab/", breaking invariance.
   const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=\\S)(?!/)`,
+    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^\\s${markerChar}])(?!/)`,
     "gu",
   )
   text = text.replace(slashRegex, (...args) => {
