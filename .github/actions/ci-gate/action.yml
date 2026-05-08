@@ -58,8 +58,11 @@ runs:
           echo "run=true" >> "$GITHUB_OUTPUT"
         fi
 
-        # macOS (WebKit) and Firefox only on push to main — save 10x runner cost
-        if [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
+        # macOS (WebKit) and Firefox run on push to main and in the merge queue —
+        # the queue gates merges into main, so it needs the same coverage.
+        # PRs stay Chromium-only to keep per-push cost down.
+        if [[ "$EVENT_NAME" == "merge_group" ]] || \
+           [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
           echo "run-macos=true" >> "$GITHUB_OUTPUT"
           echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
         else

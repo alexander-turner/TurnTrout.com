@@ -41,6 +41,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - **Pre-push**: stashes uncommitted changes, runs auto-fix formatters, pylint, asset upload, alt-text scan. Resume from last failure with `RESUME=true git push`.
 - **Pull requests**: always follow `.claude/skills/pr-creation.md`.
 - **Dev branch workflow**: when working on `dev`, first merge `main` into `dev`, push `dev`, then start the new feature branch from `dev`.
+- **Merging PRs**: never call `merge_pull_request` directly. Once PR-side checks are green, call `mcp__github__enable_pr_auto_merge` (squash by default). GitHub's merge queue then runs the full suite — Linux Chromium+Firefox, macOS WebKit, visual, a11y, lighthouse, site-build-checks — against the post-merge tree, and only lands the PR if everything passes. If the queue ejects the PR, investigate the failing check, push a fix, and re-enable auto-merge. Do **not** bypass the queue with empty "run ALL CI" commits or a direct merge — the queue is the only sanctioned path to `main`.
 
 ## Testing requirements
 

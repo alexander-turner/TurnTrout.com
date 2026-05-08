@@ -135,7 +135,7 @@ After pushing to main:
 
 ### CI cost optimization
 
-- **Expensive tests always run on main**. They also support `workflow_dispatch` for manual triggering.
+- **Expensive tests always run on main and in the merge queue**. They also support `workflow_dispatch` for manual triggering.
 - **Per-commit CI labels on PRs**: expensive tests only run when a label is _actively added_ (one-shot per commit, not persistent). Labels:
   - `ci:run-playwright`, `ci:run-visual`, `ci:run-lighthouse`, `ci:run-a11y`, `ci:run-site-checks`
   - `ci:full-tests` (all of the above)
@@ -144,6 +144,22 @@ After pushing to main:
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards.
 - **Path filters**: PR workflows only fire when relevant files change.
 - **Skip CI**: `[skip ci]` in commit messages.
+
+### Merge queue
+
+`main` is gated by GitHub's merge queue. PRs run a cheap PR-side suite (Linux Chromium, lint, jest, python) on every push; the full expensive suite (Firefox, macOS WebKit, visual regression, a11y, lighthouse, site-build-checks) only runs when the PR enters the queue, against the post-merge tree.
+
+- **Merging**: call `mcp__github__enable_pr_auto_merge` once PR-side checks are green. Don't merge directly.
+- **Queue trigger**: workflows fire on `merge_group` events; `.github/actions/ci-gate` treats `merge_group` like push-to-main (`run-macos=true`, `browsers=chromium,firefox`).
+- **Ejection**: a failed queue run kicks the PR out and posts the failing check. Fix, push, re-enable auto-merge.
+- **Repo settings** (one-time, GitHub UI — Settings → Branches → branch protection rule for `main`):
+  1. Enable "Require merge queue".
+  2. Merge method: `Squash and merge` (matches `auto-merge-dependabot.yml`).
+  3. Required status checks: keep whatever's already required on `main` — every test workflow already declares `merge_group:`, so the same checks fire in the queue. The unified status checks designed to be required are `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, plus `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, and the lighthouse jobs.
+  4. "Maximum pull requests to build" = 1 unless multiple PRs queue at once (parallel groups multiply runner cost).
+  5. "Only merge non-failing pull requests" = on, so red PR-side checks block queue entry.
+- **Path-filter caveat**: `paths:` filters on `pull_request` don't apply to `merge_group` events, so the full suite always runs in the queue regardless of which files changed. That's intentional — the queue is the safety net.
+- **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`. With merge queue enabled, `--auto` automatically routes through the queue, so no change needed.
 
 ## Lessons learned
 

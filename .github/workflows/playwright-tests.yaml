@@ -54,7 +54,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  # Chromium + Firefox on main and in the merge queue; Chromium-only on PRs.
   playwright-tests-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -278,7 +278,7 @@ jobs:
             echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
+          # macOS runs on push to main and in the merge queue; allow skipped elsewhere
           if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
              [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
             echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"
