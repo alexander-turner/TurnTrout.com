@@ -512,7 +512,8 @@ Proton Mail also screens out creepy tracking scripts which "tell senders and adv
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
-5. [ ] Start using Proton Mail! :)
+5. [ ] Enable [post-quantum encryption to protect against harvest-now, decrypt-later](https://proton.me/support/mail-post-quantum-protection).
+6. [ ] Start using Proton Mail! :)
 
 > [!danger] The authorities can always track whom you're emailing and when
 > The problem has to do with [the definition of the email protocol itself](https://www.forbes.com/sites/timworstall/2013/08/18/why-email-can-never-be-truly-secure-its-the-metadata/). Use Signal for truly sensitive communication.
