@@ -30,7 +30,7 @@ date_published: 2020-10-02
 original_url: https://www.lesswrong.com/posts/Lotih2o2pkR2aeusW/math-that-clicks-look-for-two-way-correspondences
 skip_import: true
 description: 'Good formalizations are two-way correspondences: the math suggests the concept it formalizes.'
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 > [!thanks]
@@ -118,8 +118,6 @@ If something feels wrong, **pay attention**, and then mentally reward yourself f
 Make the math as obviously correct as possible. In my personal and observed experience, this advice is _not_ followed by default, even though you'd obviously agree with it.
 
 Strive for clearly correct math, informative names, and unambiguously specified assumptions and desiderata. Strive for a two-way correspondence: the concept should jump out of the math.
-
-<hr/>
 
 [^1]: Assuming they actually _are_ flipping a coin with a stationary bias (a Bernoulli process).
 

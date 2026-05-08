@@ -35,6 +35,12 @@
   h6 & {
     vertical-align: 65%;
   }
+
+  // Glyphs whose top-right corner crowds the favicon (e.g. "f", "?", quotes)
+  // get a wider left margin so the favicon doesn't visually collide.
+  &.close-text {
+    margin-left: calc(0.3125 * #{$base-margin});
+  }
 }
 
 // SVG-specific styling using masks for color control

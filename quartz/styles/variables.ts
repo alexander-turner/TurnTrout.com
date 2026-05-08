@@ -79,6 +79,7 @@ export const dropcapPaddingRight = "0.1em"
 
 // Design tokens — shared across SCSS files
 export const borderRadius = 5
+export const transitionDurationVeryQuick = "0.1s"
 export const transitionDurationQuick = "0.2s"
 export const transitionDurationMedium = "0.3s"
 export const transitionDurationSlow = "0.5s"
@@ -164,6 +165,7 @@ export const variables = {
   dropcapMinHeight,
   dropcapPaddingRight,
   borderRadius,
+  transitionDurationVeryQuick,
   transitionDurationQuick,
   transitionDurationMedium,
   transitionDurationSlow,
