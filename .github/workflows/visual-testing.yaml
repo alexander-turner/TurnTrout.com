@@ -26,6 +26,7 @@ permissions:
   actions: read
   contents: read
   pull-requests: write
+  statuses: write
 
 jobs:
   # Gate: only run expensive tests on PRs when a CI label is actively added.
@@ -454,6 +455,27 @@ jobs:
           branch: ${{ steps.cf-branch.outputs.name }}
           public-dir: ./playwright-report
 
+      # Surface the Cloudflare URL as a commit status so the red X on
+      # PR/commit pages links straight to the diff gallery via "Details"
+      # — instead of dropping into the workflow run logs.
+      - name: Post visual-diff commit status
+        if: steps.deploy-report.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+        with:
+          script: |
+            const sha = context.payload.pull_request?.head.sha || context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'failure',
+              context: 'Visual diff report',
+              target_url: process.env.CLOUDFLARE_URL,
+              description: 'Open Details to view the screenshot diff gallery',
+            });
+
       # Always-on summary on the workflow run page. Works for PR and main
       # pushes so you can find the URLs from any failing visual-testing
       # run without hunting through the Artifacts section. Includes the
@@ -472,8 +494,8 @@ jobs:
             echo "## Visual diff report"
             echo ""
             if [ "$CLOUDFLARE_OK" = "true" ]; then
-              echo "- Playwright report (per-test detail): $CLOUDFLARE_URL"
-              echo "- Screenshot gallery (skim view): $CLOUDFLARE_URL/gallery.html"
+              echo "- Diff gallery (skim view, expected/actual/diff side-by-side): $CLOUDFLARE_URL"
+              echo "- Playwright report (per-test detail): $CLOUDFLARE_URL/report.html"
               echo ""
             fi
             echo "- Artifact: $ARTIFACT_URL"
@@ -513,8 +535,8 @@ jobs:
               '',
             ];
             if (cloudflareOk) {
-              lines.push(`- Playwright report (per-test detail): ${cloudflareUrl}`);
-              lines.push(`- Screenshot gallery (skim view): ${cloudflareUrl}/gallery.html`);
+              lines.push(`- Diff gallery (skim view, expected/actual/diff side-by-side): ${cloudflareUrl}`);
+              lines.push(`- Playwright report (per-test detail): ${cloudflareUrl}/report.html`);
               lines.push('');
             }
             lines.push(`Download: ${artifactUrl}`);
