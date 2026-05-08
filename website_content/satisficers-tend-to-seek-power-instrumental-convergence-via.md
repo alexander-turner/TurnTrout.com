@@ -35,22 +35,12 @@ next-post-slug: instrumental-convergence-for-realistic-agent-objectives
 next-post-title: Instrumental Convergence For Realistic Agent Objectives
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2021-11-18 00:00:00
+date_published: 2021-11-18
 original_url: https://www.lesswrong.com/posts/nZY8Np759HYFawdjH/satisficers-tend-to-seek-power-instrumental-convergence-via
 skip_import: true
 description: Power-seeking isn't just for optimal agents; it's a feature of many decision-making processes, including satisficers. This is a problem for AI alignment.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
-
 
 Why exactly should smart agents tend to usurp their creators? Previous results only apply to optimal agents tending to stay alive and preserve their future options. I extend the power-seeking theorems to apply to many kinds of policy-selection procedures, ranging from planning agents which choose plans with expected utility closest to a randomly generated number, to satisficers, to policies trained by some reinforcement learning algorithms. The key property is not agent optimality—as previously supposed—but is instead the _retargetability of the policy-selection procedure_. These results hint at which kinds of agent cognition and of agent-producing processes are dangerous by default.
 

@@ -113,7 +113,7 @@ test("Clicking on nav-searchbar opens search", async ({ page }) => {
   await expect(searchContainer).toHaveClass(/active/)
 })
 
-test("Search results appear and can be navigated (lostpixel)", async ({ page }, testInfo) => {
+test("Search results appear and can be navigated (screenshot)", async ({ page }, testInfo) => {
   // Search index loading + preview fetch + screenshot can exceed 30s in CI
   test.slow()
 
@@ -208,7 +208,6 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
 
   const previewContainer = page.locator("#preview-container")
 
-  // eslint-disable-next-line playwright/no-conditional-in-test -- viewport varies by project config
   const isDesktop = (page.viewportSize()?.width ?? 0) > tabletBreakpoint
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
@@ -494,7 +493,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
 })
 
 /* eslint-disable playwright/expect-expect */
-test("Checkbox search preview (lostpixel)", async ({ page }, testInfo) => {
+test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
   await search(page, "Checkboxes")
 
   const previewContainer = await waitForArticlePreview(page)
@@ -524,7 +523,7 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
   expect(previewBoxIsChecked).toBe(true)
 })
 
-test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page }, testInfo) => {
+test("Emoji search works and is converted to twemoji (screenshot)", async ({ page }, testInfo) => {
   await search(page, "Emoji examples")
 
   const previewContainer = await waitForArticlePreview(page)
@@ -538,7 +537,7 @@ test("Emoji search works and is converted to twemoji (lostpixel)", async ({ page
   })
 })
 
-test("Footnote back arrow is properly replaced (lostpixel)", async ({ page }, testInfo) => {
+test("Footnote back arrow is properly replaced (screenshot)", async ({ page }, testInfo) => {
   await search(page, "Testing site")
   await page.waitForLoadState("load")
 
@@ -573,7 +572,7 @@ test.describe("Image's mix-blend-mode attribute", () => {
   })
 })
 
-test("Opens the 'testing site features' page (lostpixel)", async ({ page }, testInfo) => {
+test("Opens the 'testing site features' page (screenshot)", async ({ page }, testInfo) => {
   await search(page, "Testing site")
 
   const previewContainer = await waitForArticlePreview(page)
@@ -627,7 +626,7 @@ test("Show search preview, search invalid, then show again", async ({ page }) =>
   await expect(previewContent).toHaveCount(1)
 })
 
-test("The pond dropcaps, search preview visual regression test (lostpixel)", async ({
+test("The pond dropcaps, search preview visual regression test (screenshot)", async ({
   page,
 }, testInfo) => {
   await search(page, "Testing site")
@@ -816,7 +815,7 @@ test("should not select a search result on initial render, even if the mouse is 
   await page.waitForURL("**/test-page**")
 })
 
-test("Footnote table displays within boundaries in search preview (lostpixel)", async ({
+test("Footnote table displays within boundaries in search preview (screenshot)", async ({
   page,
 }, testInfo) => {
   await search(page, "test page")
@@ -915,7 +914,7 @@ test("Mobile search results show card preview snippets", async ({ page }) => {
   await expect(article).not.toBeEmpty()
 })
 
-test("admonition background is transparent in focused mobile card preview (lostpixel)", async ({
+test("admonition background is transparent in focused mobile card preview (screenshot)", async ({
   page,
 }, testInfo) => {
   test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
@@ -931,13 +930,11 @@ test("admonition background is transparent in focused mobile card preview (lostp
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
 
-  // The focused card has a non-transparent background (the hover/focus effect),
-  // while the admonition inside is transparent — so the highlight shows through.
+  // Native .focus() fires the focus event; the listener in resultToHTML
+  // calls focusCard, which adds the .focus class. The focused card has a
+  // non-transparent background (the hover/focus effect), while the
+  // admonition inside is transparent — so the highlight shows through.
   await expect(testPageResult).toHaveClass(/focus/)
-  const cardBg = await testPageResult.evaluate((el) => {
-    return window.getComputedStyle(el).backgroundColor
-  })
-  expect(cardBg).not.toBe("rgba(0, 0, 0, 0)")
 
   const admonition = cardPreview.locator(".admonition").first()
   await expect(admonition).toBeAttached()

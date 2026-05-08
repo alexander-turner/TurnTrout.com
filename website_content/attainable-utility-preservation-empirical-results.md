@@ -37,28 +37,13 @@ next-post-slug: how-low-should-fruit-hang-before-we-pick-it
 next-post-title: Choosing the strength of the impact penalty term
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
-date_published: 2020-02-22 00:00:00
+date_published: 2020-02-22
 original_url: https://www.lesswrong.com/posts/4J4TA2ZF3wmSxhxuc/attainable-utility-preservation-empirical-results
 skip_import: true
 description: The AUP technique encourages low-impact behavior in both simple and complex environments.
-date_updated: 2026-01-25 23:47:56.984113
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 _Reframing Impact_ has focused on supplying the right intuitions and framing. Now we can see how these intuitions about power and the AU landscape both predict and explain AUP's empirical success thus far.
 

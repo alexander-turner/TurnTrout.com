@@ -1851,23 +1851,23 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Test each whitelisted case - should be ignored
+        # Test each allowed pattern - should be ignored
         *[
             (
                 f"<p>{prev}<i>{next_}</i> else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test whitelisted case with extra whitespace - should be ignored
+        # Test allowed pattern with extra whitespace - should be ignored
         *[
             (
                 f"<p>{prev}  <i>{next_}</i>  else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test non-whitelisted case - should be ignored since Some is whitelisted
+        # Test non-allowed case - should be ignored since Some is allowed
         (
             "<p>Some<i>thing</i> else</p>",
             [],
@@ -1882,12 +1882,12 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
             "<p>some<i>one</i> else</p>",
             ["Missing space before: some<i>one</i>"],
         ),
-        # Test with other emphasis elements - should be ignored since Some is whitelisted
+        # Test with other emphasis elements - should be ignored since Some is allowed
         (
             "<p>Some<em>one</em> else</p>",
             [],
         ),
-        # Test with nested elements - should be ignored since Some is whitelisted
+        # Test with nested elements - should be ignored since Some is allowed
         (
             "<p>Some<i><strong>one</strong></i> else</p>",
             [],
@@ -1904,8 +1904,8 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
         ),
     ],
 )
-def test_check_emphasis_spacing_whitelist(html, expected):
-    """Test the check_emphasis_spacing function's whitelist functionality."""
+def test_check_emphasis_spacing_allowed_patterns(html, expected):
+    """Test the check_emphasis_spacing function's allowed patterns."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_emphasis_spacing(soup)
     assert sorted(result) == sorted(expected)
@@ -1950,7 +1950,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MAX_DESCRIPTION_LENGTH + 1)}">
+                <meta name="description" content="{"a" * (_MAX_DESCRIPTION_LENGTH + 1)}">
             </head>
             </html>
             """,
@@ -1963,7 +1963,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MIN_DESCRIPTION_LENGTH - 1)}">
+                <meta name="description" content="{"a" * (_MIN_DESCRIPTION_LENGTH - 1)}">
             </head>
             </html>
             """,
@@ -2838,6 +2838,22 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert "I 've" not in result[0]
 
 
+def test_extract_flat_paragraph_texts_collapses_internal_whitespace():
+    """
+    Embedded newlines/tabs in paragraph HTML are collapsed to single spaces.
+
+    Each paragraph must occupy exactly one line in the spellcheck tempfile so
+    the line_to_source mapping stays in sync with per-line warnings.
+    """
+    html = "<article><p>First line\n\nsecond line\twith\ttabs.</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "\n" not in result[0]
+    assert "\t" not in result[0]
+    assert "First line second line with tabs" in result[0]
+
+
 def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
     """
     A <p> containing block-level elements (e.g. from transclusion wrapping
@@ -2897,6 +2913,37 @@ def test_parse_spellcheck_output(stdout, line_to_source, expected):
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
         == expected
     )
+
+
+def test_write_paragraphs_to_tempfile_preserves_one_line_per_paragraph(
+    tmp_path, monkeypatch
+):
+    """
+    Each paragraph maps to exactly one tempfile line, even if it contains
+    embedded newlines.
+
+    Otherwise line_to_source misattributes later paragraphs' warnings to the
+    wrong source file.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    paragraph_map = {
+        "first.html": ["paragraph one with\nembedded newline"],
+        "second.html": ["paragraph two on second file"],
+    }
+    tmp_file, line_to_source = built_site_checks._write_paragraphs_to_tempfile(
+        paragraph_map
+    )
+    try:
+        contents = tmp_file.read_text(encoding="utf-8")
+    finally:
+        tmp_file.unlink(missing_ok=True)
+
+    lines = contents.splitlines()
+    assert len(lines) == 2
+    assert line_to_source == {1: "first.html", 2: "second.html"}
+    assert "\n" not in lines[0]
+    # The paragraph for line 2 really belongs to the second file.
+    assert "second file" in lines[1]
 
 
 def test_spellcheck_flattened_paragraphs_empty():
@@ -2977,6 +3024,130 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
         )
     assert len(result) == 1
     assert "some warning text" in result[0]
+
+
+_AUGMENT_SCRIPT = (
+    Path(__file__).resolve().parents[2]
+    / "scripts"
+    / "augment_spellcheck_wordlist.sh"
+)
+
+
+@pytest.fixture
+def fake_repo(tmp_path: Path, monkeypatch):
+    """
+    Fake git root with the real augment helper staged under scripts/.
+
+    Returns a helper ``write(content)`` that writes the given text to
+    ``config/spellcheck/.wordlist.txt`` and returns its path.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    (tmp_path / "scripts").mkdir()
+    staged = tmp_path / "scripts" / "augment_spellcheck_wordlist.sh"
+    staged.write_bytes(_AUGMENT_SCRIPT.read_bytes())
+    staged.chmod(0o755)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+
+    def write(content: str) -> Path:
+        wordlist.write_text(content, encoding="utf-8")
+        return wordlist
+
+    return write
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,helper_staged,expect_none",
+    [
+        pytest.param(None, True, True, id="missing-wordlist"),
+        pytest.param("KaTeX\n", False, True, id="missing-helper-script"),
+    ],
+)
+def test_augmented_wordlist_returns_none_when_prerequisites_missing(
+    tmp_path, monkeypatch, wordlist_content, helper_staged, expect_none
+):
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    if helper_staged:
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "augment_spellcheck_wordlist.sh").write_bytes(
+            _AUGMENT_SCRIPT.read_bytes()
+        )
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    if wordlist_content is not None:
+        wordlist.parent.mkdir(parents=True)
+        wordlist.write_text(wordlist_content)
+
+    assert (
+        built_site_checks._augmented_wordlist(wordlist) is None
+    ) is expect_none
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,must_include,must_exclude",
+    [
+        pytest.param(
+            "KaTeX\nAnthropic\n",
+            ["KaTeX", "KaTeX's", "KaTeX’s", "Anthropic's"],
+            [],
+            id="possessive-expansion",
+        ),
+        pytest.param(
+            "Barto's\nNoether’s\n",
+            ["Barto's", "Noether’s"],
+            ["Barto's's", "Noether’s’s"],
+            id="no-double-suffix",
+        ),
+        pytest.param(
+            "# a comment\n\nKaTeX\n",
+            ["# a comment"],
+            ["# a comment's"],
+            id="preserves-blanks-and-comments",
+        ),
+    ],
+)
+def test_augmented_wordlist_content(
+    fake_repo, wordlist_content, must_include, must_exclude
+):
+    augmented = built_site_checks._augmented_wordlist(
+        fake_repo(wordlist_content)
+    )
+    assert augmented is not None
+    try:
+        text = augmented.read_text(encoding="utf-8")
+        for word in must_include:
+            assert word in text, f"{word!r} missing from augmented output"
+        for word in must_exclude:
+            assert word not in text, f"{word!r} should not appear"
+    finally:
+        augmented.unlink(missing_ok=True)
+
+
+def test_spellcheck_passes_augmented_dict_to_cli(fake_repo):
+    """--dictionaries points at the augmented tempfile, not the source."""
+    wordlist = fake_repo("KaTeX\n")
+    captured: dict[str, object] = {}
+    real_run = subprocess.run
+
+    def fake_run(cmd, *args, **kwargs):
+        if cmd and str(cmd[0]).endswith("augment_spellcheck_wordlist.sh"):
+            return real_run(cmd, *args, **kwargs)
+        captured["argv"] = list(cmd)
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=0, stdout="", stderr=""
+        )
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run", side_effect=fake_run),
+    ):
+        built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["KaTeX's codebase is neat."]}
+        )
+
+    argv = cast(list[str], captured["argv"])
+    dict_path = Path(argv[argv.index("--dictionaries") + 1])
+    assert dict_path.name.startswith(".wordlist-augmented-")
+    assert dict_path != wordlist
 
 
 @pytest.mark.parametrize(
@@ -3710,13 +3881,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
@@ -6403,7 +6572,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://apple.com/products">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: apple.com" " (https://apple.com/products)"],
+            ["Link missing favicon: apple.com (https://apple.com/products)"],
         ),
         # Non-included domain without favicon (valid — not expected)
         (
@@ -6418,8 +6587,7 @@ def test_is_asset_href(href, expected):
             "Blog</a></article>",
             {"apple_com"},
             [
-                "Link missing favicon: blog.apple.com"
-                " (https://blog.apple.com/news)"
+                "Link missing favicon: blog.apple.com (https://blog.apple.com/news)"
             ],
         ),
         # www. prefix stripped correctly
@@ -6427,7 +6595,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://www.apple.com">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: www.apple.com" " (https://www.apple.com)"],
+            ["Link missing favicon: www.apple.com (https://www.apple.com)"],
         ),
         # Asset link to included domain (should be skipped)
         (
@@ -6438,8 +6606,7 @@ def test_is_asset_href(href, expected):
         ),
         # Internal link (no class="external") to included domain (skip)
         (
-            '<article><a href="https://apple.com/products">'
-            "Apple</a></article>",
+            '<article><a href="https://apple.com/products">Apple</a></article>',
             {"apple_com"},
             [],
         ),
@@ -6451,7 +6618,7 @@ def test_is_asset_href(href, expected):
             '<a class="external" href="https://discord.gg/abc">bad</a>'
             "</article>",
             {"apple_com", "discord_gg"},
-            ["Link missing favicon: discord.gg" " (https://discord.gg/abc)"],
+            ["Link missing favicon: discord.gg (https://discord.gg/abc)"],
         ),
         # Google subdomain included entry
         (
@@ -6480,22 +6647,19 @@ def test_is_asset_href(href, expected):
         ),
         # Empty included domains set - nothing flagged
         (
-            '<article><a class="external" href="https://apple.com">'
-            "Apple</a></article>",
+            '<article><a class="external" href="https://apple.com">Apple</a></article>',
             set(),
             [],
         ),
         # Malformed URL with no hostname (should be skipped gracefully)
         (
-            '<article><a class="external" href="https://">'
-            "Bad URL</a></article>",
+            '<article><a class="external" href="https://">Bad URL</a></article>',
             {"apple_com"},
             [],
         ),
         # Link outside <article> (nav/aside) - should be skipped
         (
-            '<nav><a class="external" href="https://apple.com">'
-            "Apple</a></nav>",
+            '<nav><a class="external" href="https://apple.com">Apple</a></nav>',
             {"apple_com"},
             [],
         ),

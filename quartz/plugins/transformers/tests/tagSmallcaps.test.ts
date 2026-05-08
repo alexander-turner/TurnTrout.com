@@ -86,7 +86,7 @@ describe("rehypeTagSmallcaps", () => {
 
 describe("Abbreviations and Units", () => {
   // Test numeric abbreviations (e.g., 100km)
-  const validCases = ["10ZB", ".1EXP", "10BTC", "100.0KM", "5K"].map((text) => [
+  const validCases = ["10ZB", ".1EXP", "5XP", "10BTC", "100.0KM", "5K"].map((text) => [
     text,
     `<p><abbr class="small-caps">${text.toLowerCase()}</abbr></p>`,
   ])
@@ -385,12 +385,22 @@ describe("REGEX_ABBREVIATION tests", () => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })
 
-  it.each(["1000", "KM", "1000 km", "1000-km", "1000.km", "5N"])(
-    "should not match invalid abbreviations: %s",
-    (input) => {
-      expect(REGEX_ABBREVIATION.test(input)).toBe(false)
-    },
-  )
+  it.each([
+    "1000",
+    "KM",
+    "1000 km",
+    "1000-km",
+    "1000.km",
+    "5N",
+    // Regression: "in" is an English preposition, not an "inches" unit, even
+    // though punctilio's nbspTransform treats it as one.
+    `1${NBSP}in`,
+    `D.1${NBSP}in`,
+    // Not in unit list.
+    "5FOO",
+  ])("should not match invalid abbreviations: %s", (input) => {
+    expect(REGEX_ABBREVIATION.test(input)).toBe(false)
+  })
 })
 
 describe("REGEX_VERSION_NUMBER tests", () => {
@@ -1180,21 +1190,21 @@ describe("replaceSCInNode", () => {
   describe("Processing order and priority", () => {
     it("should prioritize allowlist over roman numerals", () => {
       const { node, parent, ancestors } = createNodeWithParent(
-        "IID is a roman numeral but also whitelisted",
+        "IID is a roman numeral but also allowlisted",
       )
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe(
-        '<abbr class="small-caps">Iid</abbr> is a roman numeral but also whitelisted',
+        '<abbr class="small-caps">Iid</abbr> is a roman numeral but also allowlisted',
       )
     })
 
-    it("should preserve roman numerals when not whitelisted", () => {
+    it("should preserve roman numerals when not allowlisted", () => {
       const { node, parent, ancestors } = createNodeWithParent("Chapter XIV discusses")
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe("Chapter XIV discusses")
     })
 
-    it("should preserve numeric abbreviations when not whitelisted", () => {
+    it("should preserve numeric abbreviations when not allowlisted", () => {
       const { node, parent, ancestors } = createNodeWithParent("The 1st place winner")
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe("The 1st place winner")

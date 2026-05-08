@@ -17,15 +17,10 @@ card_image_alt: Five men strike a pose at Lighthaven, the community campus. Four
 aliases:
   - mats-team
   - mentorship
-date_published: 2025-12-23 00:16:38.244546
-date_updated: 2026-04-06 18:02:03.576874
+date_published: 2025-12-23
+date_updated: 2026-04-20
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
-
-
-
-
-
 
 Through the [MATS](https://matsprogram.org) program, we (Alex Turner and Alex Cloud[^cloud]) help alignment researchers grow from seeds into majestic trees. We have fun, consistently make real alignment progress, and help scholars tap into their latent abilities.
 

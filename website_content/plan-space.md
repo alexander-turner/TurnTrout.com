@@ -14,11 +14,9 @@ card_image_alt:
 aliases:
   - convergence-psychology
   - success-conditioned-convergence
-date_published: 2026-01-20 10:53:02.330875
-date_updated: 2026-02-23 17:58:50.463964
+date_published: 2026-01-20
+date_updated: 2026-04-20
 ---
-
-
 
 > [!quote] Zack M. Davis, group discussion
 > The secret is that instrumental convergence is a fact _about reality_ (about the space of possible plans), not AI psychology.

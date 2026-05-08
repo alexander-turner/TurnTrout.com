@@ -3,8 +3,7 @@ permalink: digital-minimalism
 lw-was-draft-post: 'false'
 lw-is-af: 'false'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
+lw-page-url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
 lw-is-question: 'false'
 lw-posted-at: 2022-03-27T23:09:26.753000Z
 lw-last-modification: 2022-08-04T17:57:35.886000Z
@@ -34,25 +33,12 @@ next-post-slug: alignment-phd
 next-post-title: Looking back on my alignment PhD
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-03-27 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
+date_published: 2022-03-27
+original_url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
 skip_import: true
-description: 'A cost-benefit analysis of technology: Is your smartphone really worth
-  1.5 waking months per year?'
-date_updated: 2025-11-22 00:21:52.667251
+description: 'A cost-benefit analysis of technology: Is your smartphone really worth 1.5 waking months per year?'
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
-
-
 
 If an unaligned entity invests billions of dollars into an application which you use, where they benefit from wasting your time, and you haven’t at least done a cost-benefit analysis so that your usage minimizes your costs and maximizes your benefits—_You are probably getting fucked over_.
 

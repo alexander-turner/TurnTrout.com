@@ -14,20 +14,10 @@ aliases:
   - dr-stone
   - senku
   - breaking-free-doctor-stone
-date_published: 2024-12-17 19:04:42.697213
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2024-12-17
+date_updated: 2026-04-20
 card_image_alt: Senku from Dr. Stone grins with fierce determination, his face lit by fire and sparks against a dark forest at night. He has spiky, light-colored hair with green tips, cracks on his face, and "E=mc²" written on his collar.
 ---
-
-
-
-
-
-
-
-
-
-
 
 Doctor Stone is an anime where everyone suddenly turns into a statue. Civilization falls apart. Thousands of years pass, and then a superhumanly knowledgeable teenager named Senku wakes up due to nitric acid dripping on him for long enough.
 

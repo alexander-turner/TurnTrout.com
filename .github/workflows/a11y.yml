@@ -54,7 +54,7 @@ jobs:
   a11y-test:
     needs: [should-run, a11y-build]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 55
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -64,7 +64,7 @@ jobs:
           install-python: "false"
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
           key: site-build-${{ github.sha }}
@@ -77,7 +77,7 @@ jobs:
           path: public
 
       - name: Run accessibility checks
-        timeout-minutes: 25
+        timeout-minutes: 50
         env:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |

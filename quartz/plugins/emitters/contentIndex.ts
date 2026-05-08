@@ -2,11 +2,11 @@ import type { Root } from "hast"
 
 import { toHtml } from "hast-util-to-html"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { formatTitle } from "../../components/component_utils"
 import { uiStrings } from "../../components/constants"
 import { getDate } from "../../components/Date"
 import DepGraph from "../../depgraph"
+import { type GlobalConfiguration } from "../../util/config"
 import { escapeHTML } from "../../util/escape"
 import {
   type FilePath,
@@ -17,6 +17,7 @@ import {
 } from "../../util/path"
 import { applyTextTransforms } from "../transformers/formatting_improvement_html"
 import { type QuartzEmitterPlugin } from "../types"
+import { type ContentDetails } from "../vfile"
 import { write } from "./helpers"
 
 /** Build-time content entry with required date (always set by emit via getDate). */
@@ -27,18 +28,7 @@ type BuildContentDetails = ContentDetails & {
 
 type BuildContentIndex = Map<FullSlug, BuildContentDetails>
 
-/** Client-side content details (date/description stripped before writing to JSON). */
-export type ContentIndex = Map<FullSlug, ContentDetails>
-export type ContentDetails = {
-  title: string
-  links: readonly SimpleSlug[]
-  tags: readonly string[]
-  content: string
-  richContent?: string
-  authors?: readonly string[]
-}
-
-interface Options {
+interface ContentIndexOptions {
   enableSiteMap: boolean
   enableRSS: boolean
   rssLimit?: number
@@ -46,7 +36,7 @@ interface Options {
   includeEmptyFiles: boolean
 }
 
-const defaultOptions: Options = {
+const defaultOptions: ContentIndexOptions = {
   enableSiteMap: true,
   enableRSS: true,
   rssLimit: 10,
@@ -146,7 +136,7 @@ function generateRSSFeed(
  *
  * @param opts Options for configuring the plugin.
  */
-export const ContentIndex: QuartzEmitterPlugin<Partial<Options>> = (opts) => {
+export const ContentIndex: QuartzEmitterPlugin<Partial<ContentIndexOptions>> = (opts) => {
   opts = { ...defaultOptions, ...opts }
   return {
     name: "ContentIndex",

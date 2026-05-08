@@ -12,21 +12,11 @@ card_image:
 aliases:
   - website-design
   - site-design
-date_published: 2024-10-31 23:14:34.832290
-date_updated: 2026-04-17 20:47:52.973099
+date_published: 2024-10-31
+date_updated: 2026-05-07
 no_dropcap: false
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
 
 When I decided to design my own website, I had no experience with web development. I've since made <span class="populate-commit-count"></span> commits, so I've learned a few things. :) I present `turntrout.com`, a work of beauty dear to my heart. Indulge me and let me explain the choices I made along the way.
 
@@ -188,9 +178,9 @@ Quartz offers basic optimizations, such as [lazy loading](https://developer.mozi
 
 ### Fonts
 
-EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses. While I could subset each page with only the required glyphs, that would add overhead and complicate client-side caching, likely resulting in a net slowdown.
+EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
 
-I use [`subfont`](https://github.com/Munter/subfont) to subset each font across my entire website. Further optimizations strip glyph hinting, drop dead OpenType tables, and filter out font features that the CSS never exercises. The table below gives current full vs. subset sizes for each web font, regenerated from `config/font_stats.md` at build time.
+Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references.
 
 <span class="populate-markdown-font-stats"></span>
 
@@ -493,21 +483,6 @@ Every time you navigate to a new page, there's a <span id="populate-dropcap-prob
 > [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
 > ![[/open-source#punctilio-for-meticulous-typography]]
 
-|                                                                                                                                                                                                                          Before | After                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <span class="no-formatting">"We did not come to fear the future. We came here to shape it." - <a href="https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009">Barack Obama</a></span> | "We did not come to fear the future. We came here to shape it." - [Barack Obama](https://en.wikisource.org/wiki/Barack_Obama_speech_to_joint_session_of_Congress,_September_2009) |
-
-### Non-breaking spaces
-
-[My `punctilio` library](https://github.com/alexander-turner/punctilio) intelligently inserts non-breaking spaces (NBSPs) throughout site text. Non-breaking spaces prevent awkward line breaks --- text on either side of a non-breaking space will always stay together on the same line. `punctilio` handles several typographic scenarios:
-
-- Preventing short words: "a", "I", and "to" should never be alone on a line.
-- Keeping numbers with their units: "100 km", "5 kg", and "32 °F".
-- Preserving references and abbreviations: "Fig. 1", "p. 42", "§ 5", and "Dr. Smith".
-- Handling copyright and trademark symbols: "© 2024" and "™ Widget".
-- Keeping initials together: "J. K. Rowling" and "C. S. Lewis".
-- Preventing widow words: The last word of a paragraph stays with at least one preceding word.
-
 ### Automatic conversion of quotation marks
 
 Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
@@ -628,7 +603,7 @@ No hyphenated text wrapping
 : To improve readability, I don't allow words to wrap by being split by [`hyphens`](https://developer.mozilla.org/en-US/docs/Web/CSS/hyphens) - unless those hyphens were already there.
 
 Balanced text wrapping
-: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s [non-breaking spaces](#non-breaking-spaces) set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
+: I use [`text-wrap: balance`](https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap) to balance line lengths in headings, captions, and subtitles. I use `text-wrap: pretty` for body text, which lets the browser optimize line-break positions to reduce orphans. `punctilio`'s non-breaking spaces set hard constraints on which words must stay together, while `text-wrap` optimizes the remaining break points.
 
 Fractions
 : I chose slanted fractions in order to slightly increase the height of the numerals in the numerator and denominator. People are 2/3 water, but "01/01/2000" should not be rendered as a fraction.
@@ -992,6 +967,12 @@ The `pre-push` hook runs cheap checks for fast feedback, auto-fixing formatters 
 ✓ Linting TypeScript (ESLint --fix)
 ✓ Formatting Python docstrings (docformatter --in-place)
 ✓ Cleaning up SCSS (stylelint --fix)
+✓ Generate SCSS variables
+ℹ Running 4 checks in parallel: Pylint, Mypy, Source file checks, Spellcheck and Vale
+✓ Pylint
+✓ Mypy
+✓ Source file checks
+✓ Spellcheck and Vale
 ✓ Compressing and uploading local assets
 ⠹ Scanning for images without alt text...
 ```
@@ -1000,13 +981,18 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Cheap checks
 
-Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. CI also runs this for reliability, but having it locally means errors are caught and fixed before the push completes.
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. After the auto-fix steps, four more read-only checks sweep in parallel:
+
+- [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
+- [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
+- My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
+- A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/) which strips `[!quote]` callouts first, so I don't get flagged for quoting people whose words aren't in my dictionary.
+
+Running them in parallel is essentially free — they don't modify files, they don't depend on each other. A single push reports every problem at once instead of one-at-a-time.
 
 ### Auto-fixing formatters
 
 I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
-
-These formatters run locally because they _modify files_ and auto-commit the fixes. Check-only equivalents also run in CI for redundancy.
 
 ### Alt-text scanning
 
@@ -1080,7 +1066,7 @@ Pure unit tests cannot test the end-to-end experience of my site, nor can they e
 
 Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and sends them to [`lost-pixel`](https://www.lost-pixel.com/) for comparison to the last "reference" screenshot which I approved. If a picture differs by more than a small number of pixels, then I have to manually approve the new picture. Until then, my site won't be updated with any changes.
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails and I approve the new baseline (by running a workflow) before the site updates with any changes.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
 
@@ -1192,6 +1178,16 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > 1. RSS file generation failure or schema validation errors.
 
+### Spellchecking
+
+[`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) runs over both Markdown source and rendered HTML against `config/spellcheck/.wordlist.txt`. Two layers cut manual dictionary edits:
+
+Possessive expansion (`scripts/augment_spellcheck_wordlist.sh`)
+: Emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
+
+Claude triage (`scripts/spellcheck_triage.py`)
+: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the wordlist in alphabetical order, ambiguous ones are printed for review.
+
 ## Build pipeline extras
 
 Reordering elements in `<head>` to ensure social media previews
@@ -1202,12 +1198,12 @@ Reordering elements in `<head>` to ensure social media previews
 : The solution: Include tags like `<meta>` and `<title>` as early as possible in the `<head>`. As a post-build check, I ensure that these tags are confined to the first 9KB of each file.
 
 Updating page metadata
-: Article publication dates are updated automatically via GitHub Actions after merging to `main`. The workflow sets `date_published` for new posts and updates `date_updated` for modified posts.
+: Article publication dates are updated automatically via GitHub Actions after pushing to `main`. The workflow amends the pushed commit with updated `date_published` for new posts and `date_updated` for modified posts, then force-pushes. This avoids cluttering the history with extra "update dates" commits, and all other CI workflows restart on the amended commit.
 
 The workflow also refreshes the latest year in my GitHub copyright notice. While this upkeep is minor, it’s relaxing. Suppose I don’t update the site in 2026. Since I’m not pushing any commits, the `pre-push` hook doesn’t update the copyright notice. The year range would thus remain “2024–2025”, accurately reflecting the lack of site maintenance. However, suppose I then update the site in 2027. The range would then update to “2024–2027.”
 
 Python dependency management
-: I use [`uv`](https://github.com/astral-sh/uv), a fast Rust-based Python package manager that replaces `pip`. Dependencies are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) following modern Python standards, and `uv` generates a [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) file with exact version pins for reproducible builds. `uv` is 10-100x faster than `pip` for dependency resolution and installation, which significantly speeds up both local development and CI/CD pipelines.
+: I use [`uv`](https://github.com/astral-sh/uv) to manage Python dependencies. Packages are declared in [`pyproject.toml`](https://github.com/alexander-turner/TurnTrout.com/blob/main/pyproject.toml) and pinned in [`uv.lock`](https://github.com/alexander-turner/TurnTrout.com/blob/main/uv.lock) for reproducible builds.
 
 Cryptographic timestamping
 : I use [Open Timestamps](https://opentimestamps.org/) to stamp each `git` commit hash onto the blockchain. By committing the hash to the blockchain, I provide cryptographic assurance that I have in fact published the claimed commits by the claimed date. This reduces the possibility of undetectably "hiding my tracks" by silently editing away incorrect or embarrassing claims after the fact, or by editing my commit history. In particular, I cannot make the positive claim that I wrote content by a given date, unless I had in fact committed that content at least once by that date.
@@ -1233,7 +1229,7 @@ Lighthouse audits
 : I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
 
 Quality gates
-: CI is the primary quality gate for checks that don't require local credentials or auto-fixing. This includes Python linting (`mypy`, `pylint`, `docformatter --check`), Python tests, prose linting (`vale`), spellchecking, SCSS validation (`stylelint`), TypeScript type-checking and ESLint, source file checks, built site checks (CSS variable validation), and link checking via `linkchecker`. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed. Running checks in CI provides better reliability and parallelism than running everything locally.
+: CI is the primary quality gate for checks that don't require local credentials or auto-fixing — linting, type-checking, tests, spellcheck, and link validation across the Python, TypeScript, and SCSS stacks. CI also enforces that all posts have `date_published` set, catching cases where the `pre-push` hook was bypassed.
 
 Action SHA pinning
 : All GitHub Actions references are pinned to commit SHAs (e.g. `actions/checkout@de0fac2e...`) rather than mutable version tags (`@v6`), preventing a compromised upstream action from injecting code into CI. A CI lint job fails any commit that introduces an unpinned action reference.

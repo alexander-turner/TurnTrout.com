@@ -7,12 +7,11 @@ import { h } from "hastscript"
 // skipcq: JS-W1028
 import React from "react"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { type FullSlug, type RelativeURL } from "../../util/path"
 import { type StaticResources, type JSResource } from "../../util/resources"
 import { locale, normalizeNbsp } from "../constants"
-import Header from "../Header"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
 import {
@@ -122,12 +121,10 @@ describe("renderPage", () => {
   const componentData = createMockProps()
   const components = {
     head: MockHead,
-    header: [() => <MockComponent {...componentData} />],
     beforeBody: [],
     pageBody: MockPageBody,
     left: [() => <MockComponent {...componentData} />],
     right: [() => <MockComponent {...componentData} />],
-    footer: () => <MockComponent {...componentData} />,
   }
   const pageResources: StaticResources = {
     css: [],
@@ -656,29 +653,6 @@ describe("renderPage", () => {
 
     const html = renderPage(props.cfg, slug, props, components, pageResources)
     expect(html).toContain("<!DOCTYPE html>") // Should not crash
-  })
-})
-
-describe("Header component", () => {
-  it("should render header element when children are provided", () => {
-    const props = createMockProps()
-    props.children = [<div key="child">Test Content</div>]
-
-    const HeaderComponent = Header()
-    const result = HeaderComponent(props) as React.ReactElement
-
-    expect(result).not.toBeNull()
-    expect(result.type).toBe("header")
-  })
-
-  it("should return null when no children are provided", () => {
-    const props = createMockProps()
-    props.children = []
-
-    const HeaderComponent = Header()
-    const result = HeaderComponent(props)
-
-    expect(result).toBeNull()
   })
 })
 

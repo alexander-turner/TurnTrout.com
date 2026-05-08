@@ -3,8 +3,7 @@ permalink: questioning-why-simple-alignment-plan-fails
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+lw-page-url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 lw-is-question: 'true'
 lw-posted-at: 2022-08-11T22:22:32.198000Z
 lw-last-modification: 2023-06-01T20:26:14.384000Z
@@ -26,21 +25,12 @@ aliases:
   - seriously-what-goes-wrong-with-reward-the-agent-when-it
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2022-08-11 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
+date_published: 2022-08-11
+original_url: https://www.lesswrong.com/posts/22xf8GmwqGzHbiuLg/seriously-what-goes-wrong-with-reward-the-agent-when-it
 skip_import: true
-description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less
-  certain than most. Let's explore why."
-date_updated: 2025-11-22 00:21:52.667251
+description: "Reinforcing AI for smiles: simple, yet potentially disastrous? I'm less certain than most. Let's explore why."
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
 
 Suppose you're training a huge neural network with some awesome future RL algorithm with clever exploration bonuses and a self-supervised pretrained multimodal initialization and a recurrent state. This NN implements an embodied agent which takes actions in reality (and also in some sim environments). You watch the agent remotely using a webcam (initially unbeknownst to the agent). When the AI's activities make you smile, you press the antecedent-computation-reinforcer button (known to some as the "reward" button). The agent is given some appropriate curriculum, like population-based self-play, so as to provide a steady skill requirement against which its intelligence is sharpened over training. Supposing the curriculum trains these agents out until they're generally intelligent—what comes next?
 

@@ -1,9 +1,8 @@
 import { sharedPageComponents } from "../../../config/quartz/quartz.layout"
-import { type FullPageLayout } from "../../cfg"
 import { ContentMeta, NotFound } from "../../components"
-import BodyConstructor from "../../components/Body"
+import PageShellConstructor from "../../components/PageShell"
 import { pageResources, renderPage } from "../../components/renderPage"
-import { type QuartzComponentProps } from "../../components/types"
+import { type FullPageLayout, type QuartzComponentProps } from "../../components/types"
 import DepGraph from "../../depgraph"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type QuartzEmitterPlugin } from "../types"
@@ -18,13 +17,13 @@ export const NotFoundPage: QuartzEmitterPlugin = () => {
     right: [ContentMeta()],
   }
 
-  const { head: Head, pageBody, footer: Footer } = opts
-  const Body = BodyConstructor()
+  const { head: Head, pageBody } = opts
+  const PageShell = PageShellConstructor()
 
   return {
     name: "404Page",
     getQuartzComponents() {
-      return [Head, Body, pageBody, Footer]
+      return [Head, PageShell, pageBody]
     },
     getDependencyGraph() {
       return new DepGraph<FilePath>()

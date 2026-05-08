@@ -304,7 +304,7 @@ sup {
   inset: 0; /* stretch over the whole video */
   pointer-events: none; /* keep clicks for the extension if you prefer, otherwise remove */
   background: none !important; /* no extra paint */
-  z-index: 100; // Ensure it's on top of the video but behind eg search-container
+  z-index: $z-sticky; // Ensure it's on top of the video but behind eg search-container
 }
 
 // Hide video speed controller
@@ -411,7 +411,7 @@ p:has(+ .subtitle),
 }
 
 figure > img {
-  z-index: -1;
+  z-index: $z-below;
 }
 
 figcaption {
@@ -604,7 +604,7 @@ img {
 
 // Ordering the z stacks
 #left-sidebar {
-  z-index: 1;
+  z-index: $z-raised;
   background-color: var(--background);
 
   // Sync with the navbar's translateY/opacity transition so the mobile
@@ -1023,8 +1023,13 @@ img-comparison-slider {
   --default-handle-color: var(--foreground);
   --default-handle-shadow: 0 0 1px var(--background);
 
-  // Remove blue focus outline
   &:focus {
     outline: none;
+  }
+
+  &:focus-visible {
+    outline: 0.15rem solid var(--color-link);
+    outline-offset: 0.1rem;
+    border-radius: 0.15rem;
   }
 }

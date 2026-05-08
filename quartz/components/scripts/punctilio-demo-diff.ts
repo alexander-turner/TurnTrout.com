@@ -1,6 +1,6 @@
 import { diffChars, diffLines, type Change } from "diff"
 
-import { escapeHtml } from "./component_script_utils"
+import { escapeHTML } from "../../util/escape"
 
 // Per-changed-line-pair cap for Myers char-diff. Beyond this combined length,
 // we fall back to a linear prefix+suffix diff — which highlights the divergent
@@ -10,7 +10,7 @@ import { escapeHtml } from "./component_script_utils"
 export const MAX_CHAR_DIFF_LENGTH = 4_000
 
 export function escapeForOutput(text: string): string {
-  return escapeHtml(text).replace(/\n/g, "<br>")
+  return escapeHTML(text).replace(/\n/g, "<br>")
 }
 
 /** Render char-level Myers changes, keeping only additions (green) and unchanged text. */

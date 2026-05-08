@@ -574,6 +574,7 @@ describe("attachPopoverEventListeners", () => {
       linkElement.href = "http://example.com/"
       cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
 
+      // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
       const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
 
       let clickEvent: MouseEvent
@@ -600,6 +601,7 @@ describe("attachPopoverEventListeners", () => {
     linkElement.href = "http://example.com/"
     cleanup = attachPopoverEventListeners(popoverElement, linkElement, jest.fn())
 
+    // skipcq: JS-0321 -- intentional no-op: silence real navigation in tests
     const navSpy = jest.spyOn(navigation, "goTo").mockImplementation(() => {})
     popoverElement.dispatchEvent(new MouseEvent("click"))
     expect(navSpy).not.toHaveBeenCalled()

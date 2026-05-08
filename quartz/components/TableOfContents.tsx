@@ -12,7 +12,7 @@ import { fromHtml } from "hast-util-from-html"
 import React from "react"
 
 import { arrowsToWrap } from "../plugins/transformers/formatting_improvement_html"
-import { type TocEntry } from "../plugins/transformers/toc"
+import { type TocEntry } from "../plugins/vfile"
 import { createWinstonLogger, getLogLevel } from "../util/log"
 import {
   formatTitle,
@@ -239,8 +239,11 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
  * Renders an abbreviation element (<abbr>) in the TOC with the appropriate class names and text content.
  */
 const handleAbbr = (elt: Element): JSX.Element => {
-  const abbrText = elt.children.length > 0 ? (elt.children[0] as { value: string }).value : ""
-  const className = (elt.properties?.className as string[])?.join(" ") || ""
+  const firstChild = elt.children[0]
+  const abbrText = firstChild?.type === "text" ? firstChild.value : ""
+  const className = Array.isArray(elt.properties?.className)
+    ? (elt.properties.className as string[]).join(" ")
+    : ""
   return <abbr className={className}>{abbrText}</abbr>
 }
 
@@ -276,6 +279,7 @@ const handleSpan = (elt: Element): JSX.Element => {
 export function elementToJsx(elt: RootContent): JSX.Element | null {
   switch (elt.type) {
     case "text":
+      // skipcq: JS-0349 Preact renders raw strings as text nodes
       return elt.value as unknown as JSX.Element
     case "element":
       return elt.tagName === "abbr" ? handleAbbr(elt) : handleSpan(elt)

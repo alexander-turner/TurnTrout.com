@@ -3,8 +3,7 @@ permalink: non-obstruction-motivates-corrigibility
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
+lw-page-url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
 lw-is-question: 'false'
 lw-posted-at: 2020-11-21T19:35:40.445000Z
 lw-last-modification: 2021-11-11T23:19:59.481000Z
@@ -33,25 +32,12 @@ next-post-slug: corrigibility-as-outside-view
 next-post-title: Corrigibility as outside view
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-11-21 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
+date_published: 2020-11-21
+original_url: https://www.lesswrong.com/posts/Xts5wm3akbemk4pDa/non-obstruction-a-simple-concept-motivating-corrigibility
 skip_import: true
-description: "Non-obstruction: how do we design AI that doesn't limit our ability
-  to achieve our goals, even if we misspecified its programming?"
-date_updated: 2025-11-22 00:21:52.667251
+description: "Non-obstruction: how do we design AI that doesn't limit our ability to achieve our goals, even if we misspecified its programming?"
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
-
-
 
 I present a unified mathematical frame for understanding corrigibility’s _benefits_, what it “is”, and what it isn’t. This frame is precisely understood by graphing the human overseer’s ability to achieve various goals (their [_attainable utility (AU) landscape_](/attainable-utility-landscape)). I argue that corrigibility’s benefits are secretly a form of counterfactual alignment (alignment with a set of goals the human may want to pursue).
 

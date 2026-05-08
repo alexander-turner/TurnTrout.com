@@ -32,6 +32,12 @@ export default [
   // JS/TS/React base configs
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
   { languageOptions: { globals: globals.browser } },
+
+  // CommonJS files (.cjs) need Node-style globals like `module` and `require`
+  {
+    files: ["**/*.cjs"],
+    languageOptions: { globals: globals.node },
+  },
   pluginJs.configs.recommended,
   ...tseslintConfigs.recommended,
   pluginReact.configs.flat.recommended,

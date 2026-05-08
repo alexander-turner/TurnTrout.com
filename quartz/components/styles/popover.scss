@@ -22,7 +22,7 @@
 }
 
 .popover {
-  z-index: 10;
+  z-index: $z-popover;
   position: absolute;
   overflow: visible;
 
@@ -181,7 +181,7 @@
     position: absolute;
     top: calc(2 * $base-margin + 0.25rem);
     right: calc(2 * $base-margin + 0.25rem);
-    z-index: 1;
+    z-index: $z-raised;
     background: none;
     border: none;
     cursor: pointer;

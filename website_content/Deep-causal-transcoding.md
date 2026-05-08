@@ -15,20 +15,10 @@ card_image:
 aliases:
   - melbo-framework
   - dct
-date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-02-23 17:58:50.463964
+date_published: 2024-12-04
+date_updated: 2026-04-20
 original_url: https://www.lesswrong.com/posts/fSRg5qs9TPbNy3sm5/deep-causal-transcoding-a-framework-for-mechanistically
 ---
-
-
-
-
-
-
-
-
-
-
 
 > [!thanks]
 > Based off research performed in the MATS 5.1 extension program, under the mentorship of Alex Turner (`TurnTrout`). Research supported by a grant from the Long-Term Future Fund.

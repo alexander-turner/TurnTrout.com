@@ -55,8 +55,9 @@ const allBrowsers: Browser[] = [
 
 // CI workflows set PLAYWRIGHT_BROWSERS to run specific engines per OS
 // (e.g. "chromium,firefox" on Linux, "webkit" on macOS).
-const browsers: Browser[] = process.env.PLAYWRIGHT_BROWSERS
-  ? allBrowsers.filter((b) => process.env.PLAYWRIGHT_BROWSERS!.split(",").includes(b.engine))
+const playwrightBrowsersEnv = process.env.PLAYWRIGHT_BROWSERS
+const browsers: Browser[] = playwrightBrowsersEnv
+  ? allBrowsers.filter((b) => playwrightBrowsersEnv.split(",").includes(b.engine))
   : allBrowsers
 
 /**
@@ -99,7 +100,10 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
-  snapshotPathTemplate: "../../lost-pixel/{arg}.png",
+  // getScreenshotName already incorporates browser name into the
+  // filename so a single flat directory holds all project baselines
+  // without collision.
+  snapshotPathTemplate: "../../tests/visual-baselines/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
     command: process.env.CI ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1" : "pnpm start",

@@ -1,0 +1,176 @@
+name: Update visual baselines
+
+# Single approval path for visual baseline drift, used both for PRs
+# and for failures on main (or any other branch).
+#
+# Trigger: workflow_dispatch with a `ref` input (defaults to main).
+# The Visual Testing workflow surfaces a link to "Run workflow" on
+# every failure — pre-filled with the PR head branch on PRs, or with
+# `main` on push-to-main runs.
+#
+# Pipeline: regen baselines (Chromium+Firefox on Linux, WebKit on
+# macOS), upload to R2, then push an empty commit to the target
+# branch so visual-testing reruns against the new baselines.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch to regen baselines against and push the rerun commit to. Must be a branch name (push back fails on SHAs). Defaults to main."
+        required: false
+        default: main
+
+permissions:
+  actions: read
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-visual-baselines-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-site.yaml
+
+  generate-linux:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      PLAYWRIGHT_BROWSERS: chromium,firefox
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+          install-python: "true"
+
+      - name: Install browsers
+        run: pnpm run install-browsers
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Download existing visual baselines from R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py download
+
+      - name: Run Playwright with --update-snapshots
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --update-snapshots=all \
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload regenerated baselines to R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py upload
+
+  generate-macos:
+    needs: build
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      PLAYWRIGHT_BROWSERS: webkit
+      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
+      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
+      PLAYWRIGHT_NO_UA_PLATFORM: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Disable macOS firewall
+        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
+
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "false"
+          install-python: "true"
+
+      - name: Install Playwright WebKit browser
+        run: pnpm exec playwright install webkit
+
+      - name: Strip macOS Gatekeeper quarantine attributes
+        run: xattr -cr ~/Library/Caches/ms-playwright
+
+      - name: Restore built site from cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Download existing visual baselines from R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py download
+
+      - name: Run Playwright with --update-snapshots
+        run: |
+          set -o pipefail
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --update-snapshots=all \
+            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
+        env:
+          CI: true
+          NODE_OPTIONS: "--max-old-space-size=4096"
+
+      - name: Upload regenerated baselines to R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py upload
+
+  # Push an empty commit to the dispatched branch so visual-testing
+  # reruns against the new R2 baselines.
+  retrigger:
+    needs: [generate-linux, generate-macos]
+    if: >-
+      always() && (
+        needs.generate-linux.result == 'success' ||
+        needs.generate-macos.result == 'success'
+      )
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push empty commit to retrigger visual-testing
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          PLATFORMS=""
+          if [ "${{ needs.generate-linux.result }}" = "success" ]; then
+            PLATFORMS="linux"
+          fi
+          if [ "${{ needs.generate-macos.result }}" = "success" ]; then
+            PLATFORMS="${PLATFORMS:+${PLATFORMS}+}macos"
+          fi
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          git commit --allow-empty -m "ci: rerun visual-testing against new R2 baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
+          git push origin HEAD:${{ inputs.ref }}

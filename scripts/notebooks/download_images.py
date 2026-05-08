@@ -52,12 +52,12 @@ def replace_urls_in_file(file_path: Path, url: str, new_url: str) -> None:
             f"File path {file_path} is not in the website_content directory."
         )
 
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         content = f.read()
 
     new_content = content.replace(url, new_url)
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
 
@@ -72,11 +72,9 @@ def main(markdown_files: list[Path]) -> None:
     # 1. Find all image URLs in Markdown files
     asset_urls: set[str] = set()
     for file in markdown_files:
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             content = f.read()
-            urls = re.findall(
-                r"(https?://.*?\." + SUFFIX_REGEX + r")", content
-            )
+            urls = re.findall(r"(https?://.*?\." + SUFFIX_REGEX + r")", content)
             asset_urls.update(url for url, _ in urls)
 
     # 2. Download each image and replace URLs in markdown files

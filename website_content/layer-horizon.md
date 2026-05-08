@@ -13,22 +13,11 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 original_url: https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=onhHdxZ8iQ4qvSHgi
-date_published: 2024-10-27 19:14:04.653922
-date_updated: 2025-12-18 09:42:00.251916
+date_published: 2024-10-27
+date_updated: 2026-04-20
 aliases:
   - layer-horizon
 ---
-
-
-
-
-
-
-
-
-
-
-
 
 The [residual stream norm grows exponentially over the forward pass](https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-norms-grow-exponentially-over-the-forward), with a growth rate of about 1.05. Consider the residual stream at layer 0, with norm (say) of 100. Suppose the MLP heads at layer 0 have outputs of norm (say) 5. Then after 30 layers, the residual stream norm will be $100\cdot1.05^{30}\approx432.2$. Then the MLP-0 outputs of norm 5 should have a significantly reduced effect on the computations of MLP-30 due to their smaller relative norm.
 

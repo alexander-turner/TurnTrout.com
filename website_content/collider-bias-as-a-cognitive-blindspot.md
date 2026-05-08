@@ -3,8 +3,7 @@ permalink: collider-bias-as-a-cognitive-blindspot
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/ZMP353rgkd7DQjrA8/collider-bias-as-a-cognitive-blindspot
+lw-page-url: https://www.lesswrong.com/posts/ZMP353rgkd7DQjrA8/collider-bias-as-a-cognitive-blindspot
 lw-is-question: "true"
 lw-posted-at: 2020-12-30T02:39:35.700000Z
 lw-last-modification: 2020-12-31T08:07:22.823000Z
@@ -26,23 +25,12 @@ aliases:
   - "collider-bias-as-a-cognitive-blindspot"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2020-12-30 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/ZMP353rgkd7DQjrA8/collider-bias-as-a-cognitive-blindspot
+date_published: 2020-12-30
+original_url: https://www.lesswrong.com/posts/ZMP353rgkd7DQjrA8/collider-bias-as-a-cognitive-blindspot
 skip_import: true
-description: Examining a statistical illusion that tricks us into seeing correlations
-  where there are none. Can we rewire our brains to see through it?
-date_updated: 2025-11-22 00:21:52.667251
+description: Examining a statistical illusion that tricks us into seeing correlations where there are none. Can we rewire our brains to see through it?
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
 
 > [!quote] Zack M. Davis's [summary](https://www.lesswrong.com/posts/y4bkJTtG3s5d6v36k/stupidity-and-dishonesty-explain-each-other-away) of collider bias
 >

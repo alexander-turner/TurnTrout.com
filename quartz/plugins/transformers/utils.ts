@@ -228,7 +228,7 @@ export function spliceAndWrapLastChars(
 
   // Remove the text node entirely if all text was moved into the span
   if (lastChars === text) {
-    const idx = parent.children.indexOf(lastTextNode as unknown as ElementContent)
+    const idx = parent.children.indexOf(lastTextNode)
     /* istanbul ignore next -- lastTextNode is always a child of parent */
     if (idx !== -1) {
       parent.children.splice(idx, 1)

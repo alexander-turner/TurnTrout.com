@@ -32,26 +32,16 @@ next-post-slug: value-impact
 next-post-title: Value Impact
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-09-20 00:00:00
+date_published: 2019-09-20
 original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/3LocEy9.jpg
 description: A foundational examination of "impact" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.
-date_updated: 2026-04-02 02:48:16.361446
+date_updated: 2026-04-20
 card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.'
 no_dropcap: "true"
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
 
 ![The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.](https://assets.turntrout.com/static/images/posts/3LocEy9.avif)
 ![Handwritten text setting up a scenario: "Imagine we have a robot named Frank. Frank finds things for us in places we can't go. We provide a rule, and he returns with the object that best fits the rule. Right now, we want an intensely pink marble. Naturally, we ask Frank for the pinkest thing he can find." The text is accompanied by simple drawings of Frank—a friendly robot—and also a pink marble.](https://assets.turntrout.com/static/images/posts/IUOudUK.avif)

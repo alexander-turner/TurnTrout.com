@@ -1,4 +1,5 @@
-import type { QuartzConfig } from "../cfg"
+import type { PluginTypes } from "../plugins/types"
+import type { GlobalConfiguration } from "./config"
 import type { FullSlug } from "./path"
 
 export interface Argv {
@@ -14,6 +15,11 @@ export interface Argv {
   skipCriticalCSS?: boolean
   offline?: boolean
   logLevel?: "error" | "warn" | "info" | "debug"
+}
+
+export interface QuartzConfig {
+  configuration: GlobalConfiguration
+  plugins: PluginTypes
 }
 
 export interface BuildCtx {

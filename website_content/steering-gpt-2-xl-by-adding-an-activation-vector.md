@@ -38,31 +38,13 @@ aliases:
 lw-podcast-link: https://www.buzzsprout.com/2037297/12871176-steering-gpt-2-xl-by-adding-an-activation-vector-by-turntrout-et-al.js?container_id=buzzsprout-player-12871176&player=small
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-05-13 00:00:00
+date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 | Prompt given to the model[^1]                                              |
 | :------------------------------------------------------------------------: |
@@ -904,7 +886,7 @@ Let's think about the most common ways of steering LLMs: finetuning and promptin
 
 Why should activation additions do any better?
 
-> [!quote] Alex Turner, [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
+> [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
 > It's possible to deeply modify a range of alignment-relevant model properties, without retraining the model, via techniques as simple as activation additions.
 
 Here's how Julian Schulz explains the intuitions:

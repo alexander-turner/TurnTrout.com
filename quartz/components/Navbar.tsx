@@ -96,13 +96,13 @@ const searchHTML = (
     <div className="no-select" id="search-icon">
       <svg
         tabIndex={-1}
-        aria-labelledby="title desc"
+        aria-labelledby="search-svg-title search-svg-desc"
         role="img"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 19.9 19.7"
       >
-        <title id="title">Search</title>
-        <desc id="desc">Search</desc>
+        <title id="search-svg-title">Search</title>
+        <desc id="search-svg-desc">Search</desc>
         <g className="search-path" fill="none">
           <path strokeLinecap="square" d="M18.5 18.3l-5.4-5.4" />
           <circle cx="8" cy="8" r="7" />
@@ -197,6 +197,7 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           </a>
         </li>
       </ul>
+      {/* skipcq: JS-0440 -- inline script content is a build-time constant; no user input reaches this path */}
       <script dangerouslySetInnerHTML={{ __html: randomPostScript }} />
     </nav>
   )

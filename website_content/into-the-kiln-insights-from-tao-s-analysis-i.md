@@ -3,8 +3,7 @@ permalink: first-analysis-textbook-review
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
+lw-page-url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 lw-is-question: "false"
 lw-posted-at: 2018-06-01T18:16:32.616000Z
 lw-last-modification: None
@@ -35,29 +34,12 @@ next-post-slug: swimming-upstream
 next-post-title: "Swimming Upstream: A Case Study in Instrumental Rationality"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-06-01 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
+date_published: 2018-06-01
+original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
-description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural
-  numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2025-11-22 00:21:52.667251
+description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.
 

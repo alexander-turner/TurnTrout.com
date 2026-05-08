@@ -14,18 +14,12 @@ import { matchHTML } from "./search"
  */
 export function isLocalUrl(href: string): boolean {
   try {
-    // Provide the current location as the base URL for resolving protocol-relative URLs
+    // Base URL resolves protocol-relative and relative inputs against the current page
     const url = new URL(href, window.location.href)
-    /* istanbul ignore next -- SSR guard: typeof window is always defined in jsdom */
-    if (typeof window !== "undefined" && window.location) {
-      if (window.location.origin === url.origin) {
-        return true
-      }
-    }
+    return window.location.origin === url.origin
   } catch {
-    // Malformed URLs or environments without window.location will return false
+    return false
   }
-  return false
 }
 
 /**

@@ -8,11 +8,11 @@ import { jest, describe, it, expect } from "@jest/globals"
 import React from "react"
 import { createRoot } from "react-dom/client"
 
-import { type GlobalConfiguration } from "../../cfg"
+import { type QuartzPluginData } from "../../plugins/vfile"
 
 import "@testing-library/jest-dom"
 
-import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
 import { type FilePath } from "../../util/path"
 import { normalizeNbsp } from "../constants"
 import {
@@ -350,6 +350,14 @@ describe("renderTags", () => {
 describe("renderSequenceTitleJsx", () => {
   it("should return null if no sequence title", () => {
     const fileData = createFileData({})
+    const result = renderSequenceTitleJsx(fileData)
+    expect(result).toBeNull()
+  })
+
+  it("should return null if sequence title exists but link is missing", () => {
+    const fileData = createFileData({
+      "lw-sequence-title": SEQUENCE_TITLE,
+    })
     const result = renderSequenceTitleJsx(fileData)
     expect(result).toBeNull()
   })

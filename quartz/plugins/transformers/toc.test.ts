@@ -6,7 +6,8 @@ import { describe, expect, it } from "@jest/globals"
 import type { BuildCtx } from "../../util/ctx"
 
 import { normalizeNbsp } from "../../components/constants"
-import { customToString, stripHtmlTagsFromString, TableOfContents, type TocEntry } from "./toc"
+import { type TocEntry } from "../vfile"
+import { customToString, stripHtmlTagsFromString, TableOfContents } from "./toc"
 
 // Type definitions for test objects
 type MockFile = {

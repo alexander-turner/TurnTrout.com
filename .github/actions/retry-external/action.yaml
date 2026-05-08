@@ -1,0 +1,67 @@
+name: "Retry external command with exponential backoff"
+description: >-
+  Retries a shell command up to N times on non-zero exit with exponential
+  backoff. Use ONLY for transient external failures we don't control (e.g.
+  Cloudflare API 504s, external link checks). Do NOT
+  wrap in-house steps (tests, linters, builds) — zero-flakiness policy
+  requires fixing those at the source, not retrying them.
+inputs:
+  command:
+    description: "Shell command to run and retry on non-zero exit."
+    required: true
+  max-attempts:
+    description: "Maximum attempts, including the first try."
+    required: false
+    default: "4"
+  initial-delay-seconds:
+    description: "Delay before the second attempt. Doubles each retry."
+    required: false
+    default: "2"
+  max-delay-seconds:
+    description: "Cap on the exponential delay between retries."
+    required: false
+    default: "30"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Retry with exponential backoff
+      shell: bash
+      env:
+        # Passed via env so command contents don't get interpolated into
+        # the shell literal — avoids quoting/injection issues.
+        RETRY_COMMAND: ${{ inputs.command }}
+        MAX_ATTEMPTS: ${{ inputs.max-attempts }}
+        INITIAL_DELAY: ${{ inputs.initial-delay-seconds }}
+        MAX_DELAY: ${{ inputs.max-delay-seconds }}
+      run: |
+        set -u
+        attempt=1
+        delay="$INITIAL_DELAY"
+        while :; do
+          echo "::group::Attempt $attempt/$MAX_ATTEMPTS"
+          # Capture exit code BEFORE the if-test: after `if cmd; then ...; fi`
+          # with the branch not taken, `$?` is 0 (the if-fi itself succeeded),
+          # not the command's failing exit. Run the command, capture `$?`,
+          # then branch on it.
+          bash -c "$RETRY_COMMAND"
+          rc=$?
+          echo "::endgroup::"
+          if [ "$rc" -eq 0 ]; then
+            if [ "$attempt" -gt 1 ]; then
+              echo "::notice::Command succeeded on attempt $attempt"
+            fi
+            exit 0
+          fi
+          if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
+            echo "::error::Command failed after $MAX_ATTEMPTS attempts (last exit code $rc)"
+            exit "$rc"
+          fi
+          echo "::warning::Attempt $attempt failed (exit $rc). Retrying in ${delay}s..."
+          sleep "$delay"
+          attempt=$((attempt + 1))
+          delay=$((delay * 2))
+          if [ "$delay" -gt "$MAX_DELAY" ]; then
+            delay="$MAX_DELAY"
+          fi
+        done

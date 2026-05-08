@@ -1,8 +1,15 @@
 #!/bin/sh
 set -e
 
-# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH
+GIT_ROOT=$(git rev-parse --show-toplevel)
+
+# Ensure uv-installed tools (e.g. alt-text-llm) are on PATH, plus
+# node_modules/.bin so source_file_checks can find sass and the
+# spellcheck wrapper can find vale/spellchecker.
 export PATH="$HOME/.local/bin:$PATH"
+if [ -d "$GIT_ROOT/node_modules/.bin" ]; then
+  export PATH="$GIT_ROOT/node_modules/.bin:$PATH"
+fi
 
 RESUME_FLAG=""
 if [ "$RESUME" = "true" ]; then
@@ -18,13 +25,15 @@ trap 'handle_cleanup "$PUSHED_CHANGES"' EXIT
 handle_cleanup() {
   _exit_code=$?
 
-  # Explicitly set error handling
   set +e
 
   _pushed_changes=$1
   if [ "$_pushed_changes" -eq 1 ]; then
     echo "Restoring stashed changes..."
-    git stash pop >>/dev/null || true
+    if ! git stash pop >>/dev/null 2>&1; then
+      echo "ERROR: Failed to restore stashed changes! Your changes are in 'git stash'." >&2
+      echo "Run 'git stash pop' manually and resolve any conflicts." >&2
+    fi
   fi
 
   return "$_exit_code"
@@ -42,7 +51,6 @@ stash_and_exit() {
   fi
 }
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT"
 
 if [ "$RESUME" != "true" ]; then

@@ -25,24 +25,12 @@ aliases:
   - some-of-my-disagreements-with-list-of-lethalities
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2023-01-24 00:00:00
+date_published: 2023-01-24
 original_url: https://www.lesswrong.com/posts/kpFxkXBbpF5pWDRrc/some-of-my-disagreements-with-list-of-lethalities
 skip_import: true
 description: A critical look at the idea of "lethal" AI failures, challenging common assumptions about reward functions, alignment, and the limits of human values.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 This was an appendix of [Inner and outer alignment decompose one hard problem into two extremely hard problems](/against-inner-outer-alignment). However, I think the material is self-contained and worth sharing separately, especially since [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities) has become so influential.
 

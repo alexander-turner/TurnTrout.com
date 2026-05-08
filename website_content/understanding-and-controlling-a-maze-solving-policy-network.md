@@ -43,32 +43,15 @@ next-post-slug: top-right-steering-vector
 next-post-title: "Maze-solving agents: Add a top-right vector, make the agent go to the top-right"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-03-11 00:00:00
+date_published: 2023-03-11
 original_url: https://www.lesswrong.com/posts/cAC4AXiNC5ig6jQnc/understanding-and-controlling-a-maze-solving-policy-network
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/dc4zupnie9hr2hm7tfnx.jpg
 description: A dive into the surprising behavior of a maze-solving AI agent and how its goals can be manipulated.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-04-20
 card_image_alt: An illustration of a cute gray mouse whose body is composed of glowing, crystalline yellow cheese shards. This visually represents an AI agent with "cheese subshards" as its motivational components.
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <video autoplay loop muted playsinline   webkit-playsinline preload="auto" style="width: 50%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
 <source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>

@@ -212,7 +212,7 @@ test.describe("SPA navigation", () => {
 })
 
 test.describe("Visual regression", () => {
-  test("Punctilio demo in plaintext mode (lostpixel)", async ({ page }, testInfo) => {
+  test("Punctilio demo in plaintext mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator("#punctilio-demo").waitFor({ state: "visible" })
 
     await takeRegressionScreenshot(page, testInfo, "punctilio-demo-plaintext", {
@@ -220,7 +220,7 @@ test.describe("Visual regression", () => {
     })
   })
 
-  test("Punctilio demo in HTML mode (lostpixel)", async ({ page }, testInfo) => {
+  test("Punctilio demo in HTML mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="html"]').click()
     await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
 
@@ -229,7 +229,7 @@ test.describe("Visual regression", () => {
     })
   })
 
-  test("Punctilio demo in Markdown mode (lostpixel)", async ({ page }, testInfo) => {
+  test("Punctilio demo in Markdown mode (screenshot)", async ({ page }, testInfo) => {
     await page.locator('.punctilio-mode-btn[data-mode="markdown"]').click()
     await expect(page.locator(OUTPUT_CONTENT)).toBeVisible()
 

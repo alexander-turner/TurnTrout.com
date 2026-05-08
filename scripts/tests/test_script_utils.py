@@ -4,7 +4,7 @@ import shutil
 import subprocess
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 from unittest import mock
 
 import git
@@ -155,7 +155,7 @@ def test_find_executable_success_and_cache(
     ],
 )
 def test_path_relative_to_quartz(
-    input_path: str, expected_output: Optional[Path], should_raise: bool
+    input_path: str, expected_output: Path | None, should_raise: bool
 ):
     """
     Test path_relative_to_quartz_parent with various input paths.

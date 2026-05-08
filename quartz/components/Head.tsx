@@ -6,8 +6,8 @@ import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
-import { GlobalConfiguration } from "../cfg"
 import { QuartzPluginData } from "../plugins/vfile"
+import { GlobalConfiguration } from "../util/config"
 import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
@@ -102,7 +102,7 @@ export default (() => {
     const frontmatterScript = (
       <script
         type="application/json"
-        id="quartz-frontmatter"
+        id="page-frontmatter"
         // skipcq: JS-0440
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(exposedFrontmatter),
@@ -175,7 +175,7 @@ export default (() => {
         <link rel="stylesheet" href="/index.css" spa-preserve />
         {headJsx}
         {fileData.frontmatter?.avoidIndexing && (
-          <meta name="robots" content="noindex, noimageindex,nofollow" />
+          <meta name="robots" content="noindex, noimageindex, nofollow" />
         )}
         <link rel="stylesheet" href="/static/styles/katex.min.css" spa-preserve />
         {iconPreloads}

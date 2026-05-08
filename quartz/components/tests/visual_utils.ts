@@ -1,6 +1,4 @@
 import { type Locator, type TestInfo, expect } from "@playwright/test"
-import { promises as fsPromises } from "fs"
-import path from "path"
 import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
@@ -231,11 +229,13 @@ export async function takeRegressionScreenshot(
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
-  // Write screenshot to lost-pixel directory for visual regression comparison
-  // (replaces toHaveScreenshot — baselines are managed by lost-pixel cloud, not locally)
-  const screenshotPath = testInfo.snapshotPath(screenshotName)
-  await fsPromises.mkdir(path.dirname(screenshotPath), { recursive: true })
-  await fsPromises.writeFile(screenshotPath, screenshotBuffer)
+  // Compare against the in-repo baseline stored at snapshotPathTemplate
+  // (see config/playwright/playwright.config.ts). Uses expect.soft so all
+  // shots in a test run get reported in the HTML report instead of halting
+  // on the first mismatch.
+  await expect
+    .soft(screenshotBuffer, { message: screenshotName })
+    .toMatchSnapshot(screenshotName, { maxDiffPixelRatio: 0.002 })
 
   return screenshotBuffer
 }

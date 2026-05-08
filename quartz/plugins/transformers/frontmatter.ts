@@ -31,13 +31,15 @@ const defaultOptions: Options = {
  */
 function gatherAllText(tree: Root): string {
   let allText = ""
+  const textNodeTypes: ReadonlySet<string> = new Set([
+    "text",
+    "inlineCode",
+    "code",
+    "math",
+    "inlineMath",
+  ])
   visit(tree, (node) => {
-    if (
-      // @ts-expect-error: mixing AST node types
-      (node.type === "text" || node.type === "inlineCode") &&
-      "value" in node &&
-      typeof node.value === "string"
-    ) {
+    if (textNodeTypes.has(node.type) && "value" in node && typeof node.value === "string") {
       allText += `${node.value} `
     }
   })

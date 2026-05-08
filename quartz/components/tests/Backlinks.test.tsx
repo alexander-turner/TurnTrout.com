@@ -10,8 +10,9 @@ import { render } from "preact-render-to-string"
 
 import type { QuartzComponentProps } from "../types"
 
-import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { FrontmatterData, type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
 import { Backlinks, getBacklinkFileData, elementToJsx } from "../Backlinks"

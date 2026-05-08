@@ -16,14 +16,9 @@ aliases:
   - foss
   - software
   - OSS
-date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-04-16 05:08:37.485274
+date_published: 2025-10-28
+date_updated: 2026-04-20
 ---
-
-
-
-
-
 
 # Punctilio for meticulous typography
 
@@ -163,6 +158,10 @@ KaTeX emits many CSS classes (`mord`, `mbin`, `mrel`, etc.) that appear in the f
 ## Jest `--collect-only` flag
 
 Jest lacked a way to enumerate test cases without running them, unlike `pytest --collect-only`. [PR #16006](https://github.com/jestjs/jest/pull/16006) fixed that.
+
+## KaTeX TypeScript cleanup
+
+KaTeX's TypeScript codebase carried dozens of escape-hatch `as any` casts left over from its earlier Flow-to-TypeScript migration. Each one silenced a type error instead of fixing it, so the compiler couldn't catch bugs in those spots. [PR #4171](https://github.com/KaTeX/KaTeX/pull/4171) (merged) replaces these with proper checks and tighter type definitions, then enables a lint rule so new `any` casts can't sneak back in.
 
 ## SCSS linting rule
 

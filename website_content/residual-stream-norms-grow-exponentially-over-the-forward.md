@@ -28,25 +28,14 @@ aliases:
   - residual-stream-norms-grow-exponentially-over-the-forward
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2023-05-07 00:00:00
+date_published: 2023-05-07
 original_url: https://www.lesswrong.com/posts/8mizBCm3dyc432nK8/residual-stream-norms-grow-exponentially-over-the-forward
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/hpgem17ggmbpgnwcvdut.jpg
 description: Residual stream norms grow, perhaps due to layer normalization making it hard to delete information and easier to overshadow it.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-04-20
 card_image_alt: A line chart plots the log norm of the residual stream for each token in a prompt. The norm for the tokens "M", "ATS", "is", "really", and "cool" grows exponentially (appearing as a near-straight line on the log scale) with the layer number. The `<|endoftext|>` token's norm is an outlier, rising much more steeply to a higher peak before declining.
 ---
-
-
-
-
-
-
-
-
-
-
-
 
 For a range of language models and a range of input prompts, the norm of each residual stream grows exponentially over the forward pass, with average per-layer growth rate of about 1.045 in GPT-2-XL. We show a bunch of evidence for this. We discuss to what extent different weights and parts of the network are responsible.
 

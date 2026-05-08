@@ -3,8 +3,7 @@ permalink: MDPs-are-not-subjective
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
+lw-page-url: https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
 lw-is-question: "false"
 lw-posted-at: 2021-05-26T00:14:00.699000Z
 lw-last-modification: 2021-06-09T12:29:08.871000Z
@@ -17,8 +16,7 @@ lw-base-score: 23
 lw-vote-count: 8
 af-base-score: 15
 af-num-comments-on-upload: 29
-title: "MDP models are determined by the agent architecture and the environmental
-  dynamics"
+title: "MDP models are determined by the agent architecture and the environmental dynamics"
 lw-latest-edit: 2021-06-02T18:31:04.668000Z
 lw-is-linkpost: "false"
 tags:
@@ -36,20 +34,12 @@ next-post-slug: environmental-structure-can-cause-instrumental-convergence
 next-post-title: "Environmental Structure Can Cause Instrumental Convergence"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2021-05-26 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
+date_published: 2021-05-26
+original_url: https://www.lesswrong.com/posts/XkXL96H6GknCbT5QH/mdp-models-are-determined-by-the-agent-architecture-and-the
 skip_import: true
-description: "Agent architecture and environmental dynamics determine Markov Decision
-  Processes. Power-seeking tendencies are not subjective."
-date_updated: 2025-11-22 00:21:52.667251
+description: "Agent architecture and environmental dynamics determine Markov Decision Processes. Power-seeking tendencies are not subjective."
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
 
 [_Seeking Power is Often Robustly Instrumental in MDPs_](/seeking-power-is-often-convergently-instrumental-in-mdps) relates the structure of the agent's environment (the "Markov decision process (MDP)[^POMDP] model") to the tendencies of optimal policies for different reward functions in that environment ("instrumental convergence"). The results tell us what optimal decision-making "tends to look like" in a given environment structure, formalizing reasoning that says e.g. that most agents stay alive because that helps them achieve their goals.
 

@@ -94,18 +94,22 @@ interface CustomElementData extends ElementData {
   hProperties?: Record<string, unknown>
 }
 
+function customData(data: Partial<CustomElementData>): ElementData {
+  return data as ElementData
+}
+
 /** Creates an admonition icon element. */
 const createAdmonitionIcon = (): Element => ({
   type: "element",
   tagName: "span",
   properties: {},
-  data: {
+  data: customData({
     hName: "span",
     hProperties: {
       className: ["admonition-icon"],
     },
     position: {},
-  } as unknown as CustomElementData,
+  }),
   children: [],
 })
 
@@ -119,12 +123,12 @@ const createAdmonitionTitleInner = (
   type: "element",
   tagName: "span",
   properties: {},
-  data: {
+  data: customData({
     hName: "span",
     hProperties: {
       className: ["admonition-title-inner"],
     },
-  } as unknown as CustomElementData,
+  }),
   children: [
     createAdmonitionIcon(),
     {
@@ -140,13 +144,13 @@ const createAdmonitionTitleInner = (
 const createFoldIcon = (): Element => ({
   type: "element",
   tagName: "div",
-  data: {
+  data: customData({
     hName: "div",
     hProperties: {
       className: ["fold-admonition-icon"],
     },
     position: {},
-  } as unknown as CustomElementData,
+  }),
   children: [],
   properties: {},
 })
@@ -176,13 +180,13 @@ const createAdmonitionTitle = (
     type: "element",
     tagName: "div",
     properties: {},
-    data: {
+    data: customData({
       hName: "div",
       hProperties: {
         className: ["admonition-title"],
       },
       position: {},
-    } as unknown as CustomElementData,
+    }),
     children,
   }
 }
@@ -195,13 +199,13 @@ const createAdmonitionContent = (contentChildren: ElementContent[]): Element | n
     tagName: "div",
     properties: {},
     children: contentChildren,
-    data: {
+    data: customData({
       hName: "div",
       hProperties: {
         className: ["admonition-content"],
       },
       position: {},
-    } as unknown as CustomElementData,
+    }),
   }
 }
 

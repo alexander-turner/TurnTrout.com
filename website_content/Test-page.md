@@ -10,16 +10,10 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 aliases:
-date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-04-06 18:02:03.576874
+date_published: 2024-12-04
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
-
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 

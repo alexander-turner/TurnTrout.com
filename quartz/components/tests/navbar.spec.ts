@@ -129,7 +129,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => window.scrollTo(0, 0))
 })
 
-test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => {
+test("Clicking away closes the menu (screenshot)", async ({ page }, testInfo) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   const menuButton = page.locator("#menu-button")
@@ -151,7 +151,7 @@ test("Clicking away closes the menu (lostpixel)", async ({ page }, testInfo) => 
   await expect(navbarRightMenu).not.toHaveClass(/visible/)
 })
 
-test("Menu button makes menu visible (lostpixel)", async ({ page }, testInfo) => {
+test("Menu button makes menu visible (screenshot)", async ({ page }, testInfo) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   const menuButton = page.locator("#menu-button")
@@ -293,7 +293,7 @@ test("Menu disappears gradually when scrolling down", async ({ page }) => {
   await expect(navbar).toHaveCSS("opacity", "0")
 })
 
-test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, testInfo) => {
+test("Navbar shows shadow when scrolling down (screenshot)", async ({ page }, testInfo) => {
   test.skip(isDesktopViewport(page), "Mobile-only test")
 
   const navbar = page.locator("#navbar")
@@ -342,7 +342,7 @@ test("Navbar shows shadow when scrolling down (lostpixel)", async ({ page }, tes
 })
 
 for (const theme of ["light", "dark", "auto"]) {
-  test(`Left sidebar is visible on desktop in ${theme} mode (lostpixel)`, async ({
+  test(`Left sidebar is visible on desktop in ${theme} mode (screenshot)`, async ({
     page,
   }, testInfo) => {
     test.skip(!isDesktopViewport(page), "Desktop-only test")

@@ -2,7 +2,6 @@ import React from "react"
 
 import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 
-import { type GlobalConfiguration } from "../cfg"
 import { RenderPublicationInfo } from "./ContentMeta"
 
 // skipcq: JS-D1001
@@ -22,7 +21,7 @@ const Authors: QuartzComponent = ({ fileData, cfg }: QuartzComponentProps) => {
   const authorsText = `By ${formatAuthors(authorList)}`
 
   // Add the publication info
-  const publicationInfo = RenderPublicationInfo(cfg as GlobalConfiguration, fileData)
+  const publicationInfo = RenderPublicationInfo(cfg, fileData)
 
   return (
     <div className="authors">

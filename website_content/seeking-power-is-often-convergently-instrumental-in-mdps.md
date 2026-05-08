@@ -37,27 +37,15 @@ next-post-slug: attainable-utility-landscape
 next-post-title: "Attainable Utility Landscape: How The World Is Changed"
 lw-reward-post-warning: "true"
 use-full-width-images: "false"
-date_published: 2019-12-05 00:00:00
+date_published: 2019-12-05
 original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is-often-convergently-instrumental-in-mdps
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-04-20
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 In 2008, Steve Omohundro's foundational paper [The Basic AI Drives](https://selfawaresystems.files.wordpress.com/2008/01/ai_drives_final.pdf) conjectured that superintelligent goal-directed AIs might be incentivized to gain significant amounts of power in order to better achieve their goals. Omohundro's conjecture bears out in [toy models](https://intelligence.org/2015/11/26/new-paper-formalizing-convergent-instrumental-goals/), and the supporting philosophical arguments are intuitive. In 2019, the conjecture was even [debated by well-known AI researchers](https://www.lesswrong.com/posts/WxW6Gc6f2z3mzmqKs/debate-on-instrumental-convergence-between-lecun-russell).
 

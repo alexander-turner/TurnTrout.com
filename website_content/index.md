@@ -10,20 +10,11 @@ aliases:
 hideSubscriptionLinks: true
 toc: false
 description: Writings on AI, self-improvement, and living a good life.
-date_published: 2024-10-27 19:14:04.653922
-date_updated: 2026-03-08 23:44:38.062842
+date_published: 2024-10-27
+date_updated: 2026-04-20
 tags:
   - website
 ---
-
-
-
-
-
-
-
-
-
 
 Hello! I'm Alex, and this is my pond. _The Pond_ gathers my writings on topics including AI, self-improvement, and living a good life.
 

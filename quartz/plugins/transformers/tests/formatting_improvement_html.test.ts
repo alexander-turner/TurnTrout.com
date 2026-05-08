@@ -261,7 +261,7 @@ describe("HTMLFormattingImprovement", () => {
       })
     }
 
-    it.each([["https://dog"], ["https://dog/cat"]])(
+    it.each([["https://dog"], ["https://dog/cat"], ["https://dog/cat/fish"]])(
       "should not add spaces around '/' in <a> %s",
       (input: string) => {
         const inputElement = `<p><a href="${input}">${input}</a></p>`
@@ -269,6 +269,14 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(processedHtml)).toBe(inputElement)
       },
     )
+
+    it("still transforms <a> text when it differs from href", () => {
+      const inputElement = '<p><a href="https://example.com/abc">dog/cat</a></p>'
+      const processedHtml = testHtmlFormattingImprovement(inputElement)
+      expect(normalizeNbsp(processedHtml)).toBe(
+        '<p><a href="https://example.com/abc">dog / cat</a></p>',
+      )
+    })
   })
 
   describe("non-breaking spaces around slashes and ampersands", () => {
@@ -697,6 +705,20 @@ describe("HTMLFormattingImprovement", () => {
         expect(normalizeNbsp(result)).toBe(expected)
       },
     )
+
+    it.each([
+      ["<p>Press Ctrl+F to search.</p>", "<p>Press Ctrl+F to search.</p>"],
+      ["<p>ctrl+f</p>", "<p>ctrl+f</p>"],
+      ["<p>Alt+Tab</p>", "<p>Alt+Tab</p>"],
+      ["<p>Cmd+S</p>", "<p>Cmd+S</p>"],
+      ["<p>cmd+shift</p>", "<p>cmd+shift</p>"],
+      ["<p>Command+Q</p>", "<p>Command+Q</p>"],
+      ["<p>Option+J</p>", "<p>Option+J</p>"],
+      ["<p>Fn+F1</p>", "<p>Fn+F1</p>"],
+    ])("should leave keyboard shortcut '%s' untouched", (input: string, expected: string) => {
+      const result = testHtmlFormattingImprovement(input)
+      expect(normalizeNbsp(result)).toBe(expected)
+    })
   })
 
   describe("Hyphens", () => {
@@ -1089,7 +1111,7 @@ describe("assertSmartQuotesMatch", () => {
     const invalidStrings = ["“This is missing an end quote", "“Nested “quotes” that are incorrect"]
 
     invalidStrings.forEach((str) => {
-      expect(() => assertSmartQuotesMatch(str)).toThrowErrorMatchingSnapshot()
+      expect(() => assertSmartQuotesMatch(str)).toThrow(/Mismatched quotes/)
     })
   })
 
@@ -1097,7 +1119,7 @@ describe("assertSmartQuotesMatch", () => {
     const invalidStrings = ["This has a random ending quote”", "“More” nested mismatches”"]
 
     invalidStrings.forEach((str) => {
-      expect(() => assertSmartQuotesMatch(str)).toThrowErrorMatchingSnapshot()
+      expect(() => assertSmartQuotesMatch(str)).toThrow(/Mismatched quotes/)
     })
   })
 })
@@ -1280,7 +1302,7 @@ describe("setFirstLetterAttribute", () => {
       const processedHtml = testHtmlFormattingImprovement(input, false)
       // Smart-quote transform may convert straight apostrophe to RIGHT_SINGLE_QUOTE,
       // so check for a space after X followed by any apostrophe variant
-      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/)
+      expect(normalizeNbsp(processedHtml)).toMatch(/X ['\u2018\u2019]s story/u)
       expect(processedHtml).toContain('data-first-letter="X"')
     },
   )
@@ -1634,6 +1656,16 @@ describe("identifyLinkNode", () => {
 
   it("should handle no link found", () => {
     const node = createNode("div", [createNode("span"), createNode("em"), createNode("strong")])
+    expect(identifyLinkNode(node)).toBeNull()
+  })
+
+  it("should return null when last child is a text node", () => {
+    const node: Element = {
+      type: "element",
+      tagName: "div",
+      properties: {},
+      children: [createNode("a"), { type: "text", value: " trailing" }],
+    }
     expect(identifyLinkNode(node)).toBeNull()
   })
 })

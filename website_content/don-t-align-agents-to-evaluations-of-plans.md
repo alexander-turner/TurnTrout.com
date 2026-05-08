@@ -32,27 +32,13 @@ next-post-slug: alignment-without-total-robustness
 next-post-title: Alignment Allows “Nonrobust” Decision-Influences and Doesn’t Require Robust Grading
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-11-26 00:00:00
+date_published: 2022-11-26
 original_url: https://www.lesswrong.com/posts/fopZesxLCGAXqqaPv/don-t-align-agents-to-evaluations-of-plans
 description: Aligning an AI to evaluations of your goals won't give you what you want. Don't do it.
 skip_import: true
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 > [!info]
 > This post is another stab at explaining [_Don't design agents which exploit adversarial inputs_](/dont-design-agents-which-exploit-adversarial-inputs).
@@ -217,7 +203,7 @@ As a corollary, grader-optimization is not synonymous with planning. Grader-opti
 
 # Intended takeaways
 
-> [!quote] Alex Turner, [I am not in fact _perfectly_ pessimistic about grader-optimization](/dont-design-agents-which-exploit-adversarial-inputs#user-content-fn-6)
+> [!quote] [I am not in fact _perfectly_ pessimistic about grader-optimization](/dont-design-agents-which-exploit-adversarial-inputs#user-content-fn-6)
 > I feel confident \[~95%\] that we will not train a grader which is "secured" against actor-level intelligences. Even if the grader is reasonably smarter than the actor \[~90%\].
 
 That said, I think this pattern is extremely unwise, and [alternative patterns AFAICT cleanly avoid incentivizing the agent to exploit adversarial inputs to the grader](/dont-design-agents-which-exploit-adversarial-inputs#user-content-fn-3). Thus, I bid that we:

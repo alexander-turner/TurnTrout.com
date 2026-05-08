@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Literal, Set, TypedDict
+from typing import Literal, TypedDict
 
 import requests  # type: ignore[import]
 
@@ -17,8 +17,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import utils as script_utils  # noqa: E402
 
-MetadataIssues = Dict[str, List[str]]
-PathMap = Dict[str, Path]  # Maps URLs to their source files
+MetadataIssues = dict[str, list[str]]
+PathMap = dict[str, Path]  # Maps URLs to their source files
 
 _http_session = script_utils.http_session()
 
@@ -31,7 +31,7 @@ class ForbiddenPatternConfig(TypedDict):
     ignore_code: bool
 
 
-def check_required_fields(metadata: dict) -> List[str]:
+def check_required_fields(metadata: dict) -> list[str]:
     """Check for empty required metadata fields."""
     errors = []
     required_fields = ("title", "description", "tags", "permalink")
@@ -49,7 +49,7 @@ def check_required_fields(metadata: dict) -> List[str]:
     return errors
 
 
-def check_publication_date(metadata: dict) -> List[str]:
+def check_publication_date(metadata: dict) -> list[str]:
     """Check that date_published exists (skips pages with hide_metadata)."""
     if not metadata or metadata.get("hide_metadata"):
         return []
@@ -58,9 +58,9 @@ def check_publication_date(metadata: dict) -> List[str]:
     return []
 
 
-def check_cover_image_alt(metadata: dict) -> List[str]:
+def check_cover_image_alt(metadata: dict) -> list[str]:
     """If a card_image is specified, card_image_alt must also be provided."""
-    errors: List[str] = []
+    errors: list[str] = []
     card_url = metadata.get("card_image")
     if not metadata or not metadata.get("card_image"):
         return errors
@@ -79,17 +79,16 @@ def get_max_card_image_size_kb() -> int:
     return constants["maxCardImageSizeKb"]
 
 
-def _check_card_image_domain(card_url: str) -> List[str]:
+def _check_card_image_domain(card_url: str) -> list[str]:
     """Check if card_image is from assets.turntrout.com."""
     if not card_url.startswith("https://assets.turntrout.com/"):
         return [
-            f"card_image must be from assets.turntrout.com, "
-            f"but found: {card_url}"
+            f"card_image must be from assets.turntrout.com, but found: {card_url}"
         ]
     return []
 
 
-def _check_card_image_format(card_url: str) -> List[str]:
+def _check_card_image_format(card_url: str) -> list[str]:
     """Check if card_image has valid format (JPEG or PNG)."""
     allowed_extensions = {".jpg", ".jpeg", ".png"}
     if not any(card_url.endswith(ext) for ext in allowed_extensions):
@@ -100,14 +99,14 @@ def _check_card_image_format(card_url: str) -> List[str]:
     return []
 
 
-def _check_card_image_accessibility(card_url: str) -> List[str]:
+def _check_card_image_accessibility(card_url: str) -> list[str]:
     """
     Check if card_image URL is accessible and under size limit.
 
     This check is best-effort: network/SSL issues should not crash long-running
     asset pipelines.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     try:
         headers = {
             "User-Agent": (
@@ -122,8 +121,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
 
         if not response.ok:
             errors.append(
-                f"Card image URL '{card_url}' returned "
-                f"status {response.status_code}"
+                f"Card image URL '{card_url}' returned status {response.status_code}"
             )
         else:
             # Check size if request was successful
@@ -141,7 +139,7 @@ def _check_card_image_accessibility(card_url: str) -> List[str]:
     return errors
 
 
-def check_card_image(metadata: dict) -> List[str]:
+def check_card_image(metadata: dict) -> list[str]:
     """
     Check card_image format, size, and existence.
 
@@ -155,14 +153,14 @@ def check_card_image(metadata: dict) -> List[str]:
     if not card_url:
         return []
 
-    errors: List[str] = []
+    errors: list[str] = []
     errors.extend(_check_card_image_domain(card_url))
     errors.extend(_check_card_image_format(card_url))
     errors.extend(_check_card_image_accessibility(card_url))
     return errors
 
 
-def validate_video_tags(text: str) -> List[str]:
+def validate_video_tags(text: str) -> list[str]:
     """
     Validate that the video tag is valid.
 
@@ -172,15 +170,14 @@ def validate_video_tags(text: str) -> List[str]:
     issues = []
     for match in re.finditer(r"<video[^>]*\s(src|type)\s*=", text):
         issues.append(
-            f"Video tag contains forbidden 'src' or 'type' attribute:"
-            f" {match.group()}"
+            f"Video tag contains forbidden 'src' or 'type' attribute: {match.group()}"
         )
     return issues
 
 
 def check_url_uniqueness(
-    urls: Set[str], existing_urls: PathMap, source_path: Path
-) -> List[str]:
+    urls: set[str], existing_urls: PathMap, source_path: Path
+) -> list[str]:
     """
     Check if any URLs (permalinks/aliases) have already been used.
 
@@ -201,7 +198,7 @@ def check_url_uniqueness(
     return errors
 
 
-def get_all_urls(metadata: dict) -> Set[str]:
+def get_all_urls(metadata: dict) -> set[str]:
     """
     Extract all URLs (permalinks and aliases) from metadata.
 
@@ -228,7 +225,7 @@ def get_all_urls(metadata: dict) -> Set[str]:
     return urls
 
 
-def check_invalid_md_links(text: str, file_path: Path) -> List[str]:
+def check_invalid_md_links(text: str, file_path: Path) -> list[str]:
     """
     Check for invalid markdown links that don't start with '/'.
 
@@ -257,7 +254,7 @@ def check_invalid_md_links(text: str, file_path: Path) -> List[str]:
     return errors
 
 
-def check_latex_tags(text: str, file_path: Path) -> List[str]:
+def check_latex_tags(text: str, file_path: Path) -> list[str]:
     r"""
     Check for \tag{ in markdown files, which should be avoided.
 
@@ -299,7 +296,7 @@ def check_post_titles(
     target_mapping: dict,
     target_slug: str,
     direction: SequenceDirection,
-) -> List[str]:
+) -> list[str]:
     """
     Check if post titles match between linked posts.
 
@@ -333,8 +330,8 @@ def check_post_titles(
 
 
 def check_sequence_relationships(
-    permalink: str, sequence_data: Dict[str, dict]
-) -> List[str]:
+    permalink: str, sequence_data: dict[str, dict]
+) -> list[str]:
     """
     Check if next-post-slug and prev-post-slug relationships are bidirectional,
     and that {next,prev}-post-title fields match the actual titles.
@@ -347,7 +344,7 @@ def check_sequence_relationships(
     if not permalink or permalink not in sequence_data:
         raise ValueError(f"Invalid permalink {permalink}")
 
-    errors: List[str] = []
+    errors: list[str] = []
     current_mapping = sequence_data[permalink]
     # Compute all valid identifiers (permalink and aliases) for the current post
     valid_ids = {
@@ -391,12 +388,12 @@ def check_sequence_relationships(
     return errors
 
 
-def check_spaces_in_path(file_path: Path) -> List[str]:
+def check_spaces_in_path(file_path: Path) -> list[str]:
     """Check if the file path contains spaces."""
     return ["File path contains spaces"] if " " in str(file_path) else []
 
 
-def check_table_alignments(text: str) -> List[str]:
+def check_table_alignments(text: str) -> list[str]:
     """
     Check if all markdown tables have explicit column alignments.
 
@@ -479,7 +476,7 @@ _BRACE_REGEX = r"(^|(?<=\\\\)|(?<=[^\\]))[{}]"
 _END_OF_LINE_BRACES_REGEX = r"{[^$`\\]*}\s*$"
 
 
-def check_unescaped_braces(text: str) -> List[str]:
+def check_unescaped_braces(text: str) -> list[str]:
     """
     Check for unescaped braces in markdown files that aren't at beginning/end of
     line or inside of katex element.
@@ -527,7 +524,7 @@ _FORBIDDEN_PATTERNS: tuple[ForbiddenPatternConfig, ...] = (
 )
 
 
-def check_no_forbidden_patterns(text: str) -> List[str]:
+def check_no_forbidden_patterns(text: str) -> list[str]:
     """Check for forbidden patterns in text."""
     errors = []
     for config in _FORBIDDEN_PATTERNS:
@@ -545,7 +542,7 @@ def check_no_forbidden_patterns(text: str) -> List[str]:
     return errors
 
 
-def check_stray_katex(text: str) -> List[str]:
+def check_stray_katex(text: str) -> list[str]:
     """Check for stray LaTeX commands outside of math/code blocks."""
     stripped_text = remove_math(remove_code(text))
     errors = []
@@ -557,7 +554,7 @@ def check_stray_katex(text: str) -> List[str]:
     return errors
 
 
-def check_description_list_continuations(text: str) -> List[str]:
+def check_description_list_continuations(text: str) -> list[str]:
     """
     Check for improperly formatted description list continuations.
 
@@ -611,7 +608,7 @@ def check_description_list_continuations(text: str) -> List[str]:
     return errors
 
 
-def check_html_with_braces(text: str) -> List[str]:
+def check_html_with_braces(text: str) -> list[str]:
     """Check for HTML elements followed by {style="..."}, which won't work as
     intended."""
     errors = []
@@ -631,7 +628,7 @@ def check_html_with_braces(text: str) -> List[str]:
     return errors
 
 
-def check_heading_links(text: str) -> List[str]:
+def check_heading_links(text: str) -> list[str]:
     """
     Headings should not contain markdown links like [text](url).
 
@@ -651,7 +648,7 @@ def check_heading_links(text: str) -> List[str]:
     return errors
 
 
-def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
+def extract_footnote_line_numbers(text: str) -> dict[str, int]:
     """
     Extract all footnote definitions from text.
 
@@ -662,7 +659,7 @@ def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
     """
     # Extract from original text since definitions can contain code
     definition_pattern = r"\[\^([^\]]+)\]:"
-    definitions: Dict[str, int] = {}
+    definitions: dict[str, int] = {}
     for match in re.finditer(definition_pattern, text):
         footnote_name = match.group(1)
         # Only record the first occurrence of each footnote definition
@@ -671,7 +668,7 @@ def extract_footnote_line_numbers(text: str) -> Dict[str, int]:
     return definitions
 
 
-def extract_footnote_references(text: str) -> Dict[str, int]:
+def extract_footnote_references(text: str) -> dict[str, int]:
     """
     Extract all footnote references from text, excluding definitions and content
     in code/math blocks.
@@ -683,7 +680,7 @@ def extract_footnote_references(text: str) -> Dict[str, int]:
     stripped_text = remove_math(remove_code(text))
 
     reference_pattern = r"\[\^([^\]]+)\]"
-    references: Dict[str, int] = {}
+    references: dict[str, int] = {}
     for match in re.finditer(reference_pattern, stripped_text):
         footnote_name = match.group(1)
         # Skip if this is a definition (has colon after it)
@@ -694,7 +691,7 @@ def extract_footnote_references(text: str) -> Dict[str, int]:
     return references
 
 
-def check_footnote_references(text: str) -> List[str]:
+def check_footnote_references(text: str) -> list[str]:
     """Check that each footnote is referenced exactly once."""
     errors = []
     definitions = extract_footnote_line_numbers(text)
@@ -747,15 +744,15 @@ _SELF_CLOSING_NON_VOID_RE = re.compile(
 )
 
 
-def check_self_closing_non_void_elements(text: str) -> List[str]:
+def check_self_closing_non_void_elements(text: str) -> list[str]:
     """
     Check for self-closing syntax on non-void HTML elements.
 
-    Elements like `<iframe ... />` cause parsing bugs because the browser
-    treats them as unclosed tags, swallowing subsequent content.  Only void
-    elements (`<img>`, `<br>`, `<hr>`, etc.) may use self-closing syntax.
+    Elements like `<iframe ... />` cause parsing bugs because the browser treats
+    them as unclosed tags, swallowing subsequent content.  Only void elements
+    (`<img>`, `<br>`, `<hr>`, etc.) may use self-closing syntax.
     """
-    errors: List[str] = []
+    errors: list[str] = []
     for match in _SELF_CLOSING_NON_VOID_RE.finditer(text):
         # Skip matches inside code blocks (indented 4+ spaces or fenced)
         line_start = text.rfind("\n", 0, match.start()) + 1
@@ -776,7 +773,7 @@ def check_file_data(
     metadata: dict,
     existing_urls: PathMap,
     file_path: Path,
-    all_posts_metadata: Dict[str, dict],
+    all_posts_metadata: dict[str, dict],
     *,
     check_publication_dates: bool = False,
 ) -> MetadataIssues:
@@ -863,7 +860,7 @@ def compile_scss(scss_file_path: Path) -> str:
     return result.stdout
 
 
-def check_font_files(css_content: str, base_dir: Path) -> List[str]:
+def check_font_files(css_content: str, base_dir: Path) -> list[str]:
     """
     Check if font files referenced in CSS exist.
 
@@ -879,7 +876,8 @@ def check_font_files(css_content: str, base_dir: Path) -> List[str]:
         r"""@font-face\s*\{[^}]*?
         src:\s*url\(\s*["']?(.*?)["']?\)\s*
         (?:format\([^\)]*\)\s*)?
-        [^;]*;""",
+        [^;]*;"""
+                 ,
         re.VERBOSE | re.DOTALL,
     )
 
@@ -898,7 +896,7 @@ def check_font_files(css_content: str, base_dir: Path) -> List[str]:
     return missing_fonts
 
 
-def check_font_families(css_content: str) -> List[str]:
+def check_font_families(css_content: str) -> list[str]:
     """
     Check if all referenced font families are properly declared.
 
@@ -934,7 +932,8 @@ def check_font_families(css_content: str) -> List[str]:
     # Find all @font-face declarations and their font families
     font_face_pattern = re.compile(
         r"""@font-face\s*\{[^}]*?
-        font-family:\s*["']?(.*?)["']?[;,]""",
+        font-family:\s*["']?(.*?)["']?[;,]"""
+                                             ,
         re.VERBOSE | re.DOTALL,
     )
     declared_fonts = {
@@ -956,7 +955,7 @@ def check_font_families(css_content: str) -> List[str]:
     return missing_fonts
 
 
-def check_scss_font_files(scss_file_path: Path, base_dir: Path) -> List[str]:
+def check_scss_font_files(scss_file_path: Path, base_dir: Path) -> list[str]:
     """
     Check SCSS file for font-related issues.
 
@@ -980,15 +979,15 @@ def check_scss_font_files(scss_file_path: Path, base_dir: Path) -> List[str]:
     return missing_files + undeclared_families
 
 
-def build_sequence_data(markdown_files: List[Path]) -> Dict[str, dict]:
+def build_sequence_data(markdown_files: list[Path]) -> dict[str, dict]:
     """Build a mapping of post slugs to their forward and previous post
     slugs."""
-    all_sequence_data: Dict[str, dict] = {}
+    all_sequence_data: dict[str, dict] = {}
     for file_path in markdown_files:
         metadata, _ = script_utils.split_yaml(file_path)
         if metadata:
             # Build a mapping with only the forward and previous post slugs
-            slug_mapping: Dict[str, str] = {}
+            slug_mapping: dict[str, str] = {}
             for key in (
                 "title",
                 "next-post-slug",
@@ -1038,7 +1037,7 @@ def main(check_publication_dates: bool = False) -> None:
     )
 
     # mapping from permalink or alias to its forward and prev post slugs
-    all_sequence_data: Dict[str, dict] = build_sequence_data(
+    all_sequence_data: dict[str, dict] = build_sequence_data(
         list(markdown_files)
     )
 
