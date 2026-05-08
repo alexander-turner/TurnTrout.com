@@ -103,6 +103,18 @@ def test_render_html_empty() -> None:
     assert "0 failing screenshots" in page
 
 
+def test_render_html_omits_report_link_when_absent() -> None:
+    page = gvg.render_html([], has_playwright_report=False)
+    assert 'href="report.html"' not in page
+
+
+def test_render_html_caps_cell_height() -> None:
+    """Tall screenshots must scroll within their cell, not blow out the page."""
+    page = gvg.render_html([])
+    assert "max-height: 600px" in page
+    assert "overflow: auto" in page
+
+
 def test_render_html_escapes_label() -> None:
     tiles = [gvg.Tile(label="<script>x", expected=None, actual=None, diff=None)]
     page = gvg.render_html(tiles)
@@ -147,6 +159,24 @@ def test_main_writes_index_and_gallery(tmp_path: Path) -> None:
     assert (report / "gallery.html").exists()
     assert (report / "report.html").read_text(encoding="utf-8") == "ORIGINAL"
     assert (report / "gallery-images" / "spec__shot-actual.png").exists()
+    # Playwright report existed → header link to it is rendered.
+    assert 'href="report.html"' in (report / "index.html").read_text(
+        encoding="utf-8"
+    )
+
+
+def test_main_omits_report_link_when_no_playwright_index(
+    tmp_path: Path,
+) -> None:
+    traces = tmp_path / "traces"
+    report = tmp_path / "report"
+    report.mkdir()  # no index.html
+    _png(traces / "spec" / "shot-actual.png")
+
+    gvg.main(traces, report)
+
+    page = (report / "index.html").read_text(encoding="utf-8")
+    assert 'href="report.html"' not in page
 
 
 def test_cli_argument_parsing(

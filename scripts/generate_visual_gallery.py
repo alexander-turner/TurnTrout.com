@@ -107,9 +107,17 @@ def _figure(images_subdir: str, kind: str, name: str | None) -> str:
 
 
 def render_html(
-    tiles: list[Tile], images_subdir: str = "gallery-images"
+    tiles: list[Tile],
+    images_subdir: str = "gallery-images",
+    *,
+    has_playwright_report: bool = True,
 ) -> str:
-    """Build the gallery HTML page."""
+    """
+    Build the gallery HTML page.
+
+    If ``has_playwright_report`` is False, the header link to the full
+    Playwright report is omitted to avoid a dead link.
+    """
     rows = "\n".join(
         f'<section class="row" id="{html.escape(t.label)}">'
         f'<h3><a href="#{html.escape(t.label)}">{html.escape(t.label)}</a></h3>'
@@ -125,6 +133,11 @@ def render_html(
     body = rows or '<p class="empty">No failing screenshots found.</p>'
     count = len(tiles)
     plural = "" if count == 1 else "s"
+    report_link = (
+        ' · <a href="report.html">open full Playwright report</a>'
+        if has_playwright_report
+        else ""
+    )
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,30 +155,40 @@ h1 {{ margin: 0 0 .25rem; }}
 .row h3 a:hover {{ text-decoration: underline; }}
 .cells {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: .75rem; align-items: start; }}
-.cell {{ margin: 0; }}
-.cell figcaption {{ font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
-                    color: #888; margin: 0 0 .25rem; }}
-.cell img {{ width: 100%; height: auto; display: block; cursor: zoom-in;
-             border: 1px solid rgba(127,127,127,0.25); border-radius: 3px; }}
+.cell {{ margin: 0; max-height: 600px; overflow: auto;
+         border: 1px solid rgba(127,127,127,0.25); border-radius: 3px;
+         background: rgba(0,0,0,0.02); }}
+.cell figcaption {{ position: sticky; top: 0; z-index: 1;
+                    font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
+                    color: #888; padding: .25rem .5rem;
+                    background: rgba(255,255,255,0.85);
+                    backdrop-filter: blur(4px);
+                    border-bottom: 1px solid rgba(127,127,127,0.15); }}
+@media (prefers-color-scheme: dark) {{
+  .cell figcaption {{ background: rgba(20,20,20,0.85); }}
+}}
+.cell img {{ width: 100%; height: auto; display: block; cursor: zoom-in; }}
+.cell.missing {{ max-height: none; overflow: visible; border: none; background: none; }}
 .cell.missing .placeholder {{ display: flex; align-items: center; justify-content: center;
                               height: 6rem; color: #888; font-size: .8rem;
                               border: 1px dashed rgba(127,127,127,0.4); border-radius: 3px; }}
 .empty {{ color: #888; }}
 .lb {{ display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999;
-       align-items: center; justify-content: center; cursor: zoom-out; padding: 1rem; }}
-.lb.show {{ display: flex; }}
-.lb img {{ max-width: 100%; max-height: 100%; }}
+       cursor: zoom-out; padding: 1rem; overflow: auto; }}
+.lb.show {{ display: block; }}
+.lb img {{ display: block; margin: 0 auto; max-width: 100%; }}
 </style>
 </head>
 <body>
 <h1>Visual diff gallery</h1>
-<p class="sub">{count} failing screenshot{plural} · click any image to enlarge · <a href="report.html">open full Playwright report</a></p>
+<p class="sub">{count} failing screenshot{plural} · click any image to enlarge · scroll within a cell to see tall screenshots{report_link}</p>
 {body}
 <div class="lb" id="lb"><img id="lbi" alt=""></div>
 <script>
 const lb = document.getElementById('lb'); const lbi = document.getElementById('lbi');
 document.querySelectorAll('.cell a').forEach(a => a.addEventListener('click', e => {{
-  e.preventDefault(); lbi.src = a.querySelector('img').src; lb.classList.add('show');
+  e.preventDefault(); lbi.src = a.querySelector('img').src;
+  lb.scrollTop = 0; lb.classList.add('show');
 }}));
 lb.addEventListener('click', () => lb.classList.remove('show'));
 document.addEventListener('keydown', e => {{ if (e.key === 'Escape') lb.classList.remove('show'); }});
@@ -187,7 +210,8 @@ def main(traces_dir: Path, report_dir: Path) -> None:
     """Build the gallery and install it as index.html."""
     images_dir = report_dir / "gallery-images"
     tiles = collect_tiles(traces_dir, images_dir)
-    page = render_html(tiles)
+    has_report = (report_dir / "index.html").exists()
+    page = render_html(tiles, has_playwright_report=has_report)
     # Keep gallery.html for backward-compatible deep links.
     (report_dir / "gallery.html").write_text(page, encoding="utf-8")
     install_as_index(report_dir, page)
