@@ -98,6 +98,10 @@ Design philosophy from `design.md`: minimal targeted changes; verify before gene
 
 After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub Actions; the Stop hook blocks completion on remote CI failures. See `.claude/dev-notes.md` for manual commands and CI cost-optimization labels.
 
+- **Never sit on a CI failure.** If the Stop hook reports a failure — or any check on the open PR is red — investigate and fix it before reporting the task done. Do not assume a remote failure is "just stale local deps" without verifying remote status via `mcp__github__pull_request_read` (`get_status` + `get_check_runs`).
+- This includes lint/static-analysis services (DeepSource, Socket, etc.) shown alongside GitHub Actions checks — fix their findings even when the underlying file came from a parent branch, since they block the PR all the same.
+- If a failure is genuinely outside the PR's scope and not fixable here, say so explicitly with evidence rather than going silent.
+
 ## DeepSource issues
 
 - The `deepsource` CLI is authenticated by the SessionStart hook. When asked to fix DeepSource issues — or proactively when you've just landed nontrivial work — list outstanding issues and clear them.

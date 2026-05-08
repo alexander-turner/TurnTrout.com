@@ -30,7 +30,7 @@ date_published: 2018-06-16
 original_url: https://www.lesswrong.com/posts/H7KB44oKoSjSCkpzL/worrying-about-the-vase-whitelisting
 skip_import: true
 description: An impact measure for AI safety that whitelists the object transformations which are allowed.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 > [!quote] Quotes
@@ -266,8 +266,9 @@ Edit: [Here is a potential solution](/overcoming-clinginess-in-impact-measures) 
 
 # Discussing Imperfect Approaches
 
-A few months ago, Scott Garrabrant [wrote](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale) about robustness to scale:
+A few months ago, Scott Garrabrant wrote about robustness to scale.
 
+> [!quote] [Robustness to Scale](https://www.lesswrong.com/posts/bBdfbWfWxHN9Chjcq/robustness-to-scale)
 > Briefly, you want your proposal for an AI to be robust (or at least fail gracefully) to changes in its level of capabilities.
 
 I recommend reading it - it's to-the-point, and he makes good points.

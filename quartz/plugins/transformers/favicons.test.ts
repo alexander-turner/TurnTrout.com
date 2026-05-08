@@ -673,7 +673,7 @@ describe("Favicon Utilities", () => {
       const imgPath = "/test/favicon.png"
 
       it.each([
-        ["Long text content", "Long text con", "tent"],
+        ["Long text concord", "Long text con", "cord"],
         ["Medium", "Me", "dium"],
       ])(
         "should splice last 4 chars into favicon-span for %s",
@@ -723,7 +723,7 @@ describe("Favicon Utilities", () => {
       it.each(favicons.tagsToZoomInto)(
         "should zoom into %s elements and splice text into favicon-span",
         (tagName) => {
-          const innerText = "tag name test"
+          const innerText = "tag name plan"
           const node = h("a", {}, [
             { type: "text", value: "Test " },
             h(tagName as string, {}, [innerText]),
@@ -738,7 +738,7 @@ describe("Favicon Utilities", () => {
           expect(tagChild.children[0]).toEqual({ type: "text", value: "tag name " })
           const span = tagChild.children[1] as Element
           expect(span).toMatchObject(faviconSpanNode)
-          expect(span.children[0]).toEqual({ type: "text", value: "test" })
+          expect(span.children[0]).toEqual({ type: "text", value: "plan" })
           expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath))
         },
       )
@@ -2048,7 +2048,7 @@ describe("maybeSpliceText edge cases", () => {
   })
 
   it("should handle nested tagsToZoomInto elements", () => {
-    const innerText = "nested text"
+    const innerText = "nested plan"
     const node = h("a", {}, [
       { type: "text", value: "Outer " },
       h("em", {}, [{ type: "text", value: "text " }]),
@@ -2058,12 +2058,12 @@ describe("maybeSpliceText edge cases", () => {
 
     const strongElement = node.children[2] as Element
     expect(strongElement.tagName).toBe("strong")
-    // "nested text" is 11 chars, last 4 spliced: text becomes "nested " and span has "text"
+    // "nested plan" is 11 chars, last 4 spliced: text becomes "nested " and span has "plan"
     expect(strongElement.children.length).toBe(2) // truncated text + favicon-span
     expect(strongElement.children[0]).toEqual({ type: "text", value: "nested " })
     const span = strongElement.children[1] as Element
     expect(span).toMatchObject(faviconSpanNode)
-    expect(span.children[0]).toEqual({ type: "text", value: "text" })
+    expect(span.children[0]).toEqual({ type: "text", value: "plan" })
     expect(span.children[1]).toMatchObject(createExpectedFavicon(imgPath))
   })
 

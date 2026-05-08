@@ -371,3 +371,50 @@ export function attachPopoverEventListeners(
 export function escapeLeadingIdNumber(text: string): string {
   return text.replace(/#(?<id>\d+)/, "#_$<id>")
 }
+
+export const focusableSelector =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"]), input, select, textarea'
+
+/**
+ * Returns focusable descendants of the popover, excluding any with
+ * `display:none` or `visibility:hidden`.
+ */
+export function getVisibleFocusable(popoverElement: HTMLElement): HTMLElement[] {
+  return [...popoverElement.querySelectorAll<HTMLElement>(focusableSelector)].filter((el) => {
+    if (el.offsetParent === null) return false // fast path: handles display:none
+    return getComputedStyle(el).visibility !== "hidden"
+  })
+}
+
+/**
+ * Traps keyboard focus within a popover element for pinned (click-opened)
+ * popovers. Cycles focus between the first and last focusable descendants
+ * so Tab/Shift+Tab wrap around instead of moving into the underlying page.
+ * Returns a cleanup function to remove the event listener.
+ */
+export function trapFocusInPopover(popoverElement: HTMLElement): () => void {
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key !== "Tab") return
+
+    const focusableElements = getVisibleFocusable(popoverElement)
+    if (focusableElements.length === 0) return
+
+    const first = focusableElements[0]
+    const last = focusableElements[focusableElements.length - 1]
+
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+  }
+
+  document.addEventListener("keydown", handleKeydown)
+  return () => document.removeEventListener("keydown", handleKeydown)
+}

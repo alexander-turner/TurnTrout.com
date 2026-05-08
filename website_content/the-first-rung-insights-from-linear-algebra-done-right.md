@@ -37,7 +37,7 @@ date_published: 2018-04-22
 original_url: https://www.lesswrong.com/posts/C6XJcWtxcMTeQPBs3/the-first-rung-insights-from-linear-algebra-done-right
 skip_import: true
 description: "The author rediscovers their love for math while rigorously studying linear algebra, sharing insights and lessons learned along the way. "
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 # Foreword
@@ -56,8 +56,9 @@ I also sometimes elected to give myself small hints after being stuck on a probl
 
 Over time, I needed fewer hints, even as problem difficulty increased.
 
-My approach was in part motivated by the [findings of Rohrer and Pashler](http://thesciencenetwork.org/docs/BrainsRUs/Increasing%20Retention_Pashler.pdf):
+My approach was in part motivated by Rohrer and Pashler's findings.
 
+> [!quote] [Increasing Retention Without Increasing Study Time](http://thesciencenetwork.org/docs/BrainsRUs/Increasing%20Retention_Pashler.pdf)
 > Surprisingly little is known about how long-term retention is most efficiently achieved... Our results suggest that a single session devoted to the study of some material should continue long enough to ensure that mastery is achieved but that immediate further study of the same material is an inefficient use of time.
 
 The point isn't to struggle _per se_ - it's to improve and to _win_.
@@ -254,8 +255,6 @@ I have the distinct feeling of having been incredibly silly for many years; one 
 However, in college, I just wanted to learn computer science. I'd gloss over the low-level math (although I did do some [Project Euler](https://projecteuler.net/) for fun). Instead, I preferred learning to find clever high-level solutions and build up an algorithm-centric problem-solving toolkit. Now that I've truly taken the plunge, the water is just so nice.
 
 I'm sorry to have been away for so long.
-
-<hr/>
 
 [^1]: For Ch. 8-10, I did a random sampling of 15% of the practice problems, as opposed to 100% (I was reaching steeply diminishing returns).
 [^2]: Please let me know if there's a more appropriate linear-algebraic term for this.
