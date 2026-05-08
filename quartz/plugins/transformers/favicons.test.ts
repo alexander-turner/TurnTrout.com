@@ -2014,7 +2014,7 @@ describe("normalizeUrl", () => {
   it.each([
     ["./page?query=value#section", "https://www.turntrout.com/page?query=value#section"],
     ["./", "https://www.turntrout.com/"],
-    ["../../deep/path", "https://www.turntrout.com/../deep/path"],
+    ["../../deep/path", "https://www.turntrout.com/deep/path"],
   ])("should handle edge cases: %s", (input, expected) => {
     const result = favicons.normalizeUrl(input)
     expect(result).toBe(expected)

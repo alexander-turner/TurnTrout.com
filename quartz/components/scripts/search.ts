@@ -7,6 +7,7 @@ import FlexSearch, {
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
 import { type ContentDetails } from "../../plugins/vfile"
 import { tabletBreakpoint } from "../../styles/variables"
+import { escapeHTML } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { NBSP, simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
@@ -196,15 +197,15 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
 
   const slice = tokenizedText
     .map((tok: string): string => {
-      // see if this tok is prefixed by any search terms
+      const escaped = escapeHTML(tok)
       for (const searchTok of tokenizedTerms) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
-          const sanitizedSearchTok = RegExp.escape(searchTok)
-          const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
+          const sanitizedSearchTok = RegExp.escape(escapeHTML(searchTok))
+          const regex = new RegExp(sanitizedSearchTok, "gi")
+          return escaped.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
-      return tok
+      return escaped
     })
     .join(" ")
 

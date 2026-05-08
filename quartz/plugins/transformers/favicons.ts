@@ -765,11 +765,7 @@ export function shouldIncludeFavicon(
  */
 export function normalizeUrl(href: string): string {
   if (!href.startsWith("http")) {
-    if (href.startsWith("./")) {
-      href = href.slice(2)
-    } else if (href.startsWith("../")) {
-      href = href.slice(3)
-    }
+    href = href.replace(/^(?:\.\.?\/)+/, "")
     href = `https://www.turntrout.com/${href}`
   }
   return href
