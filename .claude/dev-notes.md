@@ -160,6 +160,7 @@ After pushing to main:
   5. "Only merge non-failing pull requests" = on, so red PR-side checks block queue entry.
 - **Path-filter caveat**: `paths:` filters on `pull_request` don't apply to `merge_group` events, so the full suite always runs in the queue regardless of which files changed. That's intentional — the queue is the safety net.
 - **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`. With merge queue enabled, `--auto` automatically routes through the queue, so no change needed.
+- **Known duplication**: expensive workflows still trigger on `push: branches: [main]` after a successful queue merge, so the suite reruns on the landed commit (~2x cost on macOS/Firefox). Pruning `push: main` from the gated workflows is a follow-up — `deploy.yaml` and the publication-date amend still need that trigger.
 
 ## Lessons learned
 
