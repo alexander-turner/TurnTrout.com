@@ -1798,7 +1798,7 @@ requires-dist = [
     { name = "ruamel-yaml" },
     { name = "tqdm" },
     { name = "types-defusedxml" },
-    { name = "types-html5lib", specifier = ">=1.1.11.20260408" },
+    { name = "types-html5lib", specifier = ">=1.1.11.20260508" },
     { name = "types-psutil", specifier = ">=7.2.2.20260408" },
     { name = "types-pygments", specifier = ">=2.20.0.20260408" },
     { name = "types-pysocks", specifier = ">=1.7.1.20251001" },
@@ -1829,14 +1829,14 @@ wheels = [
 
 [[package]]
 name = "types-html5lib"
-version = "1.1.11.20260408"
+version = "1.1.11.20260508"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "types-webencodings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/59/914d00107c770e49fa57d4c4572e0371bbce14321385fd2ea3e06691b62d/types_html5lib-1.1.11.20260408.tar.gz", hash = "sha256:8a281aa367bc77dbc758358cd9bef79530f2d154eeed9b33705bb035a0dab9e4", size = 18316, upload-time = "2026-04-08T04:35:49.581Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/65/d7/8512bdd1d3102a12d5125ad0850153c795bd99f4f5ef496498e494912787/types_html5lib-1.1.11.20260508.tar.gz", hash = "sha256:f44f55f3bd1f7a55477851165c8955a821f2342447a995a17f10a376134ea049", size = 18377, upload-time = "2026-05-08T04:51:35.25Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/61/19/12d95e98e42e120522665ec6850b38df8d2c1cca94e21c4d7f8578acb64e/types_html5lib-1.1.11.20260408-py3-none-any.whl", hash = "sha256:d18dc4b90d6d6745585790b920db13ede43e1f8ff6ee1ac0ceb0dec4223a06fa", size = 24313, upload-time = "2026-04-08T04:35:48.679Z" },
+    { url = "https://files.pythonhosted.org/packages/fe/e5/f1c8f553b392c447fbab985e100cf3998e657c10b5996de88f2815b09234/types_html5lib-1.1.11.20260508-py3-none-any.whl", hash = "sha256:cb85cb9dd46cdb18349f9ad08df69cc911921849e154860dad9029da4a2c1c39", size = 24312, upload-time = "2026-05-08T04:51:34.383Z" },
 ]
 
 [[package]]
