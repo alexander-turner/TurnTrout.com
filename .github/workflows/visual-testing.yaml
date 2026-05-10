@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "website_content/**"
@@ -20,7 +19,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
@@ -28,10 +26,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  # Gate: only run expensive tests on PRs when a CI label is actively added.
-  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
-  # fires on every push — the should-run gate returns run=false instantly,
-  # which is needed for the unified "visual-testing" required status check.
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # Otherwise yields run=true; still picks browser coverage (Chromium-only on
+  # PRs, +Firefox/macOS on push to main).
   should-run:
     name: visual-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
@@ -56,7 +53,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main and in the merge queue; Chromium-only on PRs.
+  # Chromium + Firefox on push to main; Chromium-only on PRs.
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -340,7 +337,7 @@ jobs:
             echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
             exit 1
           fi
-          # macOS runs on push to main and in the merge queue; allow skipped elsewhere
+          # macOS only runs on push to main; allow skipped elsewhere
           if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
              [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
             echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"

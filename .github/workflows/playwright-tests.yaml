@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "config/quartz/**"
@@ -18,18 +17,15 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  # Gate: only run expensive tests on PRs when a CI label is actively added.
-  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
-  # fires on every push — the should-run gate returns run=false instantly,
-  # which is needed for the unified "playwright-tests" required status check.
-  # Skip entirely for bot actors (dependabot, renovate, etc.).
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # On all other events the gate yields run=true; it stays in place so it can
+  # also pick browser coverage (Chromium-only on PRs, +Firefox/macOS on main).
   should-run:
     name: playwright-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
@@ -54,7 +50,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main and in the merge queue; Chromium-only on PRs.
+  # Chromium + Firefox on push to main; Chromium-only on PRs.
   playwright-tests-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -278,7 +274,7 @@ jobs:
             echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
             exit 1
           fi
-          # macOS runs on push to main and in the merge queue; allow skipped elsewhere
+          # macOS only runs on push to main; allow skipped elsewhere
           if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
              [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
             echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"

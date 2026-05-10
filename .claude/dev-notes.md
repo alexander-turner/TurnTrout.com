@@ -135,32 +135,22 @@ After pushing to main:
 
 ### CI cost optimization
 
-- **Expensive tests always run on main and in the merge queue**. They also support `workflow_dispatch` for manual triggering.
-- **Per-commit CI labels on PRs**: expensive tests only run when a label is _actively added_ (one-shot per commit, not persistent). Labels:
-  - `ci:run-playwright`, `ci:run-visual`, `ci:run-lighthouse`, `ci:run-a11y`, `ci:run-site-checks`
-  - `ci:full-tests` (all of the above)
-- **When a PR modifies Playwright tests or interaction behavior**, add the appropriate label: `gh pr edit <number> --add-label "ci:run-playwright"`. Re-add to run again on the next push.
+- **Expensive tests run on every PR (Chromium-only) and on `push: main` (adds Firefox + macOS WebKit)**. They also support `workflow_dispatch` for manual triggering.
+- **Browser coverage**: `.github/actions/ci-gate` selects browsers — Chromium-only on PRs, `chromium,firefox` plus macOS shards on `push: main`. PRs cover ~90% of regressions at ~10% of the runner cost; full coverage runs once after merge.
+- **Bot skip**: the `should-run` job in each gated workflow skips dependabot/renovate/deepsource branches (no value running expensive suites on lockfile bumps).
 - **Flake check**: `workflow_dispatch` only.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards.
-- **Path filters**: PR workflows only fire when relevant files change.
+- **Path filters**: every gated workflow has `paths:` on its `pull_request` trigger so unrelated changes (frontmatter, CLAUDE.md, etc.) don't fire the heavy suites.
 - **Skip CI**: `[skip ci]` in commit messages.
 
-### Merge queue
+### Merging PRs
 
-`main` is gated by GitHub's merge queue. PRs run a cheap PR-side suite (Linux Chromium, lint, jest, python) on every push; the full expensive suite (Firefox, macOS WebKit, visual regression, a11y, lighthouse, site-build-checks) only runs when the PR enters the queue, against the post-merge tree.
+`main` is gated by GitHub's required-status-check branch protection plus auto-merge — there's **no merge queue** (the feature isn't exposed in this repo's UI).
 
-- **Merging**: call `mcp__github__enable_pr_auto_merge` once PR-side checks are green. Don't merge directly.
-- **Queue trigger**: workflows fire on `merge_group` events; `.github/actions/ci-gate` treats `merge_group` like push-to-main (`run-macos=true`, `browsers=chromium,firefox`).
-- **Ejection**: a failed queue run kicks the PR out and posts the failing check. Fix, push, re-enable auto-merge.
-- **Repo settings** (one-time, GitHub UI — Settings → Branches → branch protection rule for `main`):
-  1. Enable "Require merge queue".
-  2. Merge method: `Squash and merge` (matches `auto-merge-dependabot.yml`).
-  3. Required status checks: keep whatever's already required on `main` — every test workflow already declares `merge_group:`, so the same checks fire in the queue. The unified status checks designed to be required are `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, plus `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, and the lighthouse jobs.
-  4. "Maximum pull requests to build" = 1 unless multiple PRs queue at once (parallel groups multiply runner cost).
-  5. "Only merge non-failing pull requests" = on, so red PR-side checks block queue entry.
-- **Path-filter caveat**: `paths:` filters on `pull_request` don't apply to `merge_group` events, so the full suite always runs in the queue regardless of which files changed. That's intentional — the queue is the safety net.
-- **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`. With merge queue enabled, `--auto` automatically routes through the queue, so no change needed.
-- **Known duplication**: expensive workflows still trigger on `push: branches: [main]` after a successful queue merge, so the suite reruns on the landed commit (~2x cost on macOS/Firefox). Pruning `push: main` from the gated workflows is a follow-up — `deploy.yaml` and the publication-date amend still need that trigger.
+- **How to merge**: call `mcp__github__enable_pr_auto_merge` once the PR is green. GitHub waits for required checks to pass on the PR head SHA, then squashes.
+- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each runs on every PR (subject to `paths:` filters) so they always report.
+- **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, which works the same way.
+- **Post-merge**: `push: main` triggers the full Firefox + macOS WebKit suite plus `deploy.yaml`. `deploy.yaml`'s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
 ## Lessons learned
 

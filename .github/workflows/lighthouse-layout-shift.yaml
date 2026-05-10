@@ -9,8 +9,18 @@ on:
   push:
     branches: ["main", "dev"]
   pull_request:
-    types: [labeled]
-  merge_group:
+    paths:
+      - "quartz/**"
+      - "!quartz/**/*.spec.ts"
+      - "!quartz/**/*.test.ts"
+      - "!quartz/**/*.test.tsx"
+      - "!quartz/**/tests/**"
+      - "website_content/**"
+      - "config/quartz/**"
+      - "config/constants.json"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
