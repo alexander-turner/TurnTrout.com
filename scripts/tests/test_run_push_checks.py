@@ -742,7 +742,7 @@ def test_eslint_step_invocation():
 def test_asset_step_uses_bash_and_requires_rclone():
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     asset_step = _step_by_name(steps, "Compressing and uploading local assets")
-    assert asset_step.shell is True
+    assert asset_step.shell is False
     assert asset_step.requires == "rclone"
 
 

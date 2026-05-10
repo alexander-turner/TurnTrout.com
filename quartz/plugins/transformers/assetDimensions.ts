@@ -13,7 +13,7 @@ import type { BuildCtx } from "../../util/ctx"
 
 import { createWinstonLogger } from "../../util/log"
 
-const logger = createWinstonLogger("assetDimensions")
+export const logger = createWinstonLogger("assetDimensions")
 
 const __filepath = fileURLToPath(import.meta.url)
 const projectRoot = path.dirname(gitRoot(__filepath))
@@ -91,7 +91,7 @@ class AssetProcessor {
       const data = await fs.readFile(paths.assetDimensions, "utf-8")
       this.assetDimensionsCache = JSON.parse(data) as AssetDimensionMap
     } catch (error) {
-      console.warn(
+      logger.warn(
         `Could not load asset dimension cache from ${paths.assetDimensions}: ${error}. Starting fresh.`,
       )
       this.assetDimensionsCache = {}
