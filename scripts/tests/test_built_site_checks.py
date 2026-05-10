@@ -6403,13 +6403,13 @@ def _missing(*urls: str) -> list[str]:
         ),
     ],
 )
-def test_check_avif_images_labeled(
+def test_check_inline_media_reviewed_images(
     html: str,
     labels: dict[str, bool] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_avif_images_labeled(soup, labels)
+    result = built_site_checks.check_inline_media_reviewed(soup, labels)
     assert sorted(result) == sorted(expected_issues)
 
 
@@ -6470,13 +6470,13 @@ def _video_missing(*urls: str) -> list[str]:
         ),
     ],
 )
-def test_check_inline_videos_reviewed(
+def test_check_inline_media_reviewed_videos(
     html: str,
     labels: dict[str, bool] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_avif_images_labeled(soup, labels)
+    result = built_site_checks.check_inline_media_reviewed(soup, labels)
     assert sorted(result) == sorted(expected_issues)
 
 

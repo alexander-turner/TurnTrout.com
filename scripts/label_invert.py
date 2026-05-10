@@ -117,7 +117,7 @@ def is_video_url(url: str) -> bool:
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
-    """Sorted, deduplicated raster content image URLs."""
+    """Sorted, deduplicated raster image and inline-video URLs."""
     return tuple(sorted({u for u in dimensions if _is_candidate(u)}))
 
 
@@ -416,10 +416,14 @@ def create_app(
             invert_count=sum(
                 1 for u in candidates if u in labels and labels[u]["invert"]
             ),
+            # An unlabeled card has no JSON entry to review, so it also
+            # counts as "needs review" alongside labeled-but-unreviewed
+            # cards. Mirrors the template's "needs review" badge logic
+            # and the JS recount that targets `data-reviewed="false"`.
             unreviewed_count=sum(
                 1
                 for u in candidates
-                if u in labels and not labels[u]["reviewed"]
+                if u not in labels or not labels[u]["reviewed"]
             ),
         )
 

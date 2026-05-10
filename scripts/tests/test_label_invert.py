@@ -279,6 +279,10 @@ def test_index_marks_state_and_review(client: tuple[FlaskClient, Path]) -> None:
         1 for u in EXPECTED if u not in {EXPECTED[0], EXPECTED[1]}
     )
     assert body.count("needs review") == expected_needs_review
+    # The header counter must include unlabeled cards (regression guard:
+    # an earlier version excluded them and therefore disagreed with the
+    # per-card badge count and the JS recount).
+    assert f"{expected_needs_review} unreviewed" in body
 
 
 def test_get_labels_returns_json(client: tuple[FlaskClient, Path]) -> None:

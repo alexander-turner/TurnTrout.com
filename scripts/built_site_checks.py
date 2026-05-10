@@ -821,16 +821,19 @@ def _inline_looping_video_sources(video: Tag) -> list[str]:
     return sources
 
 
-def check_avif_images_labeled(
+def check_inline_media_reviewed(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, bool] | None,
 ) -> list[str]:
     """
-    Check that every `<img>` with an .avif src and every inline looping muted
-    `<video>` (autoplay+loop+muted, excluding `#pond-video`) has been **user-
-    reviewed** in `.invert_labels.json`. Catches newly-added media that was
-    auto-labeled by the luminance heuristic but never confirmed by a human, and
-    media never triaged at all.
+    Check that every dark-mode-relevant inline media element is user-reviewed.
+
+    Covers both images (every ``<img>`` with an ``.avif`` src) and inline
+    looping muted videos (``<video autoplay loop muted>``, excluding the
+    persistent ``#pond-video``). Each must have an entry in
+    ``.invert_labels.json`` with ``reviewed: true``. Catches newly-added media
+    that was auto-labeled by the luminance heuristic but never confirmed by a
+    human, and media never triaged at all.
 
     For videos, *all* source URLs must be reviewed individually — labelling just
     the .mp4 doesn't cover the .webm sibling.
@@ -1916,7 +1919,7 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
-        "avif_missing_invert_label": check_avif_images_labeled(
+        "media_missing_invert_review": check_inline_media_reviewed(
             soup, opts.invert_labels
         ),
         "lcp_image_not_optimized": check_lcp_image_optimized(soup),
