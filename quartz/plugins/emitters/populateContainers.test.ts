@@ -1029,7 +1029,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.playwrightTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'grep -r "test(" quartz/components/tests/*.spec.ts | wc -l',
+          'grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l',
           { encoding: "utf-8" },
         )
       })
