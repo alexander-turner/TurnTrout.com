@@ -594,6 +594,12 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
+    mypy_files = glob.glob(f"{git_root_path}/scripts/*.py")
+    if not mypy_files and (git_root_path / "scripts").is_dir():
+        raise FileNotFoundError(
+            f"No Python files found in {git_root_path}/scripts/ for Mypy"
+        )
+
     return [
         *get_formatter_steps(git_root_path),
         # source_file_checks.py imports the generated variables.scss when
@@ -637,7 +643,7 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "mypy",
                 "--config-file",
                 f"{git_root_path}/config/python/mypy.ini",
-                *glob.glob(f"{git_root_path}/scripts/*.py"),
+                *mypy_files,
             ],
             parallel_group="verify",
         ),
