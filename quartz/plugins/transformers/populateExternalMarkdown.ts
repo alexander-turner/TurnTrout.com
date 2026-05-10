@@ -124,7 +124,12 @@ export function fetchLocalContentSync(source: LocalMarkdownSource): string {
   const content = readFileFunction(source.filePath)
 
   if (source.jsonPath) {
-    const json = JSON.parse(content) as Record<string, unknown>
+    let json: Record<string, unknown>
+    try {
+      json = JSON.parse(content) as Record<string, unknown>
+    } catch {
+      throw new Error(`Failed to parse JSON from ${source.filePath}: content is not valid JSON`)
+    }
     const keys = source.jsonPath.split(".")
     let value: unknown = json
     for (const key of keys) {

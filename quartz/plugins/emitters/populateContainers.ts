@@ -130,7 +130,7 @@ export function countJsTests(): number {
 
 // skipcq: JS-D1001
 export function countPlaywrightTests(): number {
-  const output = execSync('grep -r "test(" quartz/components/tests/*.spec.ts | wc -l', {
+  const output = execSync('grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l', {
     encoding: "utf-8",
   })
   return parseInt(output.trim(), 10)
