@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "website_content/**"
@@ -20,7 +19,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
@@ -29,10 +27,8 @@ permissions:
   statuses: write
 
 jobs:
-  # Gate: only run expensive tests on PRs when a CI label is actively added.
-  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
-  # fires on every push — the should-run gate returns run=false instantly,
-  # which is needed for the unified "visual-testing" required status check.
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: visual-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
@@ -57,7 +53,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  # Linux Chromium + Firefox.
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -341,9 +337,7 @@ jobs:
             echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
-          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
-             [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
+          if [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
             echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
             exit 1
           fi
@@ -487,8 +481,6 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
           CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
-          APPROVE_REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
-          APPROVE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/update-visual-baselines.yaml
         run: |
           {
             echo "## Visual diff report"
@@ -502,9 +494,9 @@ jobs:
             echo ""
             echo "### Approve baselines"
             echo ""
-            echo "If the diffs look intended, approve them by running"
-            echo "[Update visual baselines]($APPROVE_URL) with \`ref=$APPROVE_REF\`."
-            echo "(Click *Run workflow*, pick the branch, set the ref input, and submit.)"
+            echo "If the diffs look intended, comment \`/approve-baselines\` on the PR."
+            echo "The approve workflow will adopt this run's screenshots as the new R2 baselines"
+            echo "and push an empty commit to retrigger visual-testing."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment report links on PR
@@ -515,8 +507,6 @@ jobs:
           ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
           CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
           CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
-          APPROVE_REF: ${{ github.event.pull_request.head.ref }}
-          APPROVE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/update-visual-baselines.yaml
         with:
           script: |
             const marker = '<!-- visual-diff-report -->';
@@ -525,8 +515,6 @@ jobs:
             const artifactUrl = process.env.ARTIFACT_URL;
             const cloudflareOk = process.env.CLOUDFLARE_OK === 'true';
             const cloudflareUrl = process.env.CLOUDFLARE_URL;
-            const approveRef = process.env.APPROVE_REF;
-            const approveUrl = process.env.APPROVE_URL;
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
             const lines = [
@@ -542,7 +530,7 @@ jobs:
             lines.push(`Download: ${artifactUrl}`);
             lines.push(`(or see the Artifacts section of the [workflow run](${runUrl}))`);
             lines.push('');
-            lines.push(`If everything looks intended, approve the baselines by running [Update visual baselines](${approveUrl}) with \`ref=${approveRef}\`. (Click *Run workflow*, pick the branch, set the ref input, and submit.)`);
+            lines.push('If the diffs are intended, comment `/approve-baselines` on this PR. The approve workflow will adopt this run\'s screenshots as new R2 baselines and push an empty commit to retrigger visual-testing.');
             const body = lines.join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {

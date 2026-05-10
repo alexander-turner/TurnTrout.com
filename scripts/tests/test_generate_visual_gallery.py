@@ -108,11 +108,13 @@ def test_render_html_omits_report_link_when_absent() -> None:
     assert 'href="report.html"' not in page
 
 
-def test_render_html_caps_cell_height() -> None:
-    """Tall screenshots must scroll within their cell, not blow out the page."""
+def test_render_html_uses_full_height_cells() -> None:
+    """Cells render images at natural height — no per-cell scroll cap."""
     page = gvg.render_html([])
-    assert "max-height: 600px" in page
-    assert "overflow: auto" in page
+    # Per-cell scroll cap (would clip tall screenshots) must not appear.
+    assert "max-height: 600px" not in page
+    # Cells let images flow at natural height.
+    assert "height: auto" in page
 
 
 def test_render_html_escapes_label() -> None:

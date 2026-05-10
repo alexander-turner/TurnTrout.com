@@ -9,6 +9,11 @@ each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
 ``<report-dir>/gallery-images/``, and writes the gallery to ``<report-
 dir>/index.html``. Any existing Playwright ``index.html`` is moved aside to
 ``report.html`` and linked from the gallery header.
+
+Each row shows expected / actual / diff side-by-side at full natural height.
+Loading is strictly sequential: row N's images don't start fetching until every
+image in row N-1 has finished loading (or errored). Keeps fetch parallelism
+predictable on multi-hundred-row diffs.
 """
 
 from __future__ import annotations
@@ -28,45 +33,69 @@ _CSS = """
 body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; margin: 1.25rem; }
 h1 { margin: 0 0 .25rem; }
 .sub { color: #666; margin: 0 0 1.25rem; }
-.row { margin: 0 0 2rem; padding: .75rem; border-radius: 6px;
-       background: rgba(127,127,127,0.06); border: 1px solid rgba(127,127,127,0.2); }
-.row h3 { margin: 0 0 .5rem; font-size: .95rem; word-break: break-all; }
+.row { margin: 0 0 2.5rem; padding-bottom: 1.5rem;
+       border-bottom: 1px solid rgba(127,127,127,0.25); }
+.row h3 { margin: 0 0 .75rem; font-size: 1rem;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          word-break: break-all; color: #333; }
 .row h3 a { color: inherit; text-decoration: none; }
 .row h3 a:hover { text-decoration: underline; }
 .cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-         gap: .75rem; align-items: start; }
-.cell { margin: 0; max-height: 600px; overflow: auto;
-        border: 1px solid rgba(127,127,127,0.25); border-radius: 3px;
-        background: rgba(0,0,0,0.02); }
-.cell figcaption { position: sticky; top: 0; z-index: 1;
-                   font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
-                   color: #888; padding: .25rem .5rem;
-                   background: rgba(255,255,255,0.85);
-                   backdrop-filter: blur(4px);
-                   border-bottom: 1px solid rgba(127,127,127,0.15); }
-@media (prefers-color-scheme: dark) {
-  .cell figcaption { background: rgba(20,20,20,0.85); }
-}
-.cell img { width: 100%; height: auto; display: block; cursor: zoom-in; }
-.cell.missing { max-height: none; overflow: visible; border: none; background: none; }
+         gap: 1rem; align-items: start; }
+.cell { margin: 0; min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
+.cell figcaption { font-size: .7rem; text-transform: uppercase;
+                   letter-spacing: .05em; color: #888; }
+.cell img { width: 100%; height: auto; display: block; cursor: zoom-in;
+            border: 1px solid rgba(127,127,127,0.3);
+            background: rgba(127,127,127,0.06); }
 .cell.missing .placeholder { display: flex; align-items: center; justify-content: center;
                              height: 6rem; color: #888; font-size: .8rem;
-                             border: 1px dashed rgba(127,127,127,0.4); border-radius: 3px; }
+                             border: 1px dashed rgba(127,127,127,0.4);
+                             background: rgba(127,127,127,0.05); }
 .empty { color: #888; }
-.lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 9999;
-      cursor: zoom-out; padding: 1rem; overflow: auto; }
+.lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92);
+      z-index: 9999; cursor: zoom-out; padding: 1rem; overflow: auto; }
 .lb.show { display: block; }
 .lb img { display: block; margin: 0 auto; max-width: 100%; }
+@media (prefers-color-scheme: dark) {
+  .row h3 { color: #ddd; }
+  .row { border-color: rgba(255,255,255,0.15); }
+}
 """
 
 _JS = """
-const lb = document.getElementById('lb'), lbi = document.getElementById('lbi');
-document.querySelectorAll('.cell a').forEach(a => a.addEventListener('click', e => {
-  e.preventDefault(); lbi.src = a.querySelector('img').src;
-  lb.scrollTop = 0; lb.classList.add('show');
-}));
-lb.addEventListener('click', () => lb.classList.remove('show'));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('show'); });
+// Sequential row loading: row N's <img> elements only get their src set
+// once every <img> in row N-1 has either finished loading or errored.
+// Keeps fetch parallelism predictable on multi-hundred-row diffs.
+(() => {
+  const rows = Array.from(document.querySelectorAll('.row'));
+  function loadRow(idx) {
+    if (idx >= rows.length) return;
+    const imgs = Array.from(rows[idx].querySelectorAll('img[data-src]'));
+    if (imgs.length === 0) { loadRow(idx + 1); return; }
+    let pending = imgs.length;
+    const done = () => { if (--pending === 0) loadRow(idx + 1); };
+    imgs.forEach(img => {
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    });
+  }
+  loadRow(0);
+
+  const lb = document.getElementById('lb'), lbi = document.getElementById('lbi');
+  document.querySelectorAll('.cell a').forEach(a => a.addEventListener('click', e => {
+    const img = a.querySelector('img');
+    if (!img || !img.src) return;
+    e.preventDefault();
+    lbi.src = img.src;
+    lb.scrollTop = 0;
+    lb.classList.add('show');
+  }));
+  lb.addEventListener('click', () => lb.classList.remove('show'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('show'); });
+})();
 """
 
 
@@ -137,9 +166,10 @@ def _figure(images_subdir: str, kind: str, name: str | None) -> str:
         cls = "cell missing"
     else:
         src = f"{images_subdir}/{html.escape(name)}"
-        inner = (
-            f'<a href="{src}"><img src="{src}" loading="lazy" alt="{kind}"></a>'
-        )
+        # `data-src` (not `src`) is set up-front; the gallery JS swaps it
+        # in row-by-row so the next row only starts loading once the
+        # previous row finishes. `loading="lazy"` would defeat that.
+        inner = f'<a href="{src}"><img data-src="{src}" alt="{kind}"></a>'
         cls = "cell"
     return (
         f'<figure class="{cls}"><figcaption>{kind}</figcaption>{inner}</figure>'
@@ -191,8 +221,8 @@ def render_html(
         "<title>Visual diff gallery</title>\n"
         f"<style>{_CSS}</style>\n</head>\n<body>\n"
         "<h1>Visual diff gallery</h1>\n"
-        f'<p class="sub">{count} failing screenshot{plural} · click any image '
-        f"to enlarge · scroll within a cell to see tall screenshots"
+        f'<p class="sub">{count} failing screenshot{plural} · '
+        f"expected / actual / diff side-by-side · click any image to enlarge"
         f"{report_link}</p>\n"
         f"{body}\n"
         '<div class="lb" id="lb"><img id="lbi" alt=""></div>\n'

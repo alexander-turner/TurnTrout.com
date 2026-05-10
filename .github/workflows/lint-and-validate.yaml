@@ -16,7 +16,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/**"
-  merge_group:
 
 permissions:
   actions: read
@@ -136,7 +135,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-    # Auto-fix formatting on PRs and pushes to main/dev (not merge queue).
+    # Auto-fix formatting on PRs and pushes to main/dev.
     # Depends on update-dates so it doesn't run until any potential force-push completes.
     # always() lets this run even when update-dates is skipped (PRs, no content changes).
     # Runs whenever any tracked source class changed (code, styles, python,
@@ -333,9 +332,9 @@ jobs:
         id: pub-date-flag
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: |
-          # Check publication dates on PRs and merge queue (pre-merge validation)
-          # Skip on push to main/dev (dates are auto-added by update-dates job)
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
+          # Check publication dates on PRs (pre-merge validation).
+          # Skip on push to main/dev (dates are auto-added by update-dates job).
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
           fi
 
