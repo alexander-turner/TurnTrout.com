@@ -1066,7 +1066,7 @@ Pure unit tests cannot test the end-to-end experience of my site, nor can they e
 
 Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails and I approve the new baseline (by running a workflow) before the site updates with any changes.
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails. The CI run posts a side-by-side diff gallery (expected / actual / diff) so I can skim every changed shot at a glance. If the new look is intentional I leave a `/approve-baselines` comment on the PR; a workflow then promotes the run's screenshots straight into R2 as the new baselines, no rerun needed.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
 
@@ -1075,10 +1075,8 @@ However, it's not practical to test every single page. So I have a [test page](/
 > [!quote] [Lessons from my 428-day battle against flaky Playwright screenshots](/playwright)  
 > ![[playwright-tips#Background]]
 
-> [!money] Cost of running CI on GitHub Actions
-> My GitHub Pro subscription allows 3,000 free minutes each month. A full push to `main` runs Chromium, Firefox, and WebKit tests across Linux and macOS runners. GitHub [prices Linux 2-core systems at \$0.008 per minute](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions#per-minute-rates-for-standard-runners) and macOS M1 runners at \$0.08/min (10x).
->
-> To control costs: macOS and Firefox only run on `main`, PRs run Chromium-only on Linux, and CI labels are per-commit (one-shot).
+> [!info] Keeping CI fast
+> Public-repo CI on GitHub Actions is free, so I run the full browser matrix — Chromium and Firefox on Linux, WebKit on macOS — on every PR. To keep wall-clock time reasonable: each workflow has tight `paths:` filters so docs-only edits don't fire the heavy suites; the Playwright, visual, and site-build-checks workflows share a single site build across shards; dependabot and renovate branches skip the rendering jobs; and `[skip ci]` in a commit message bypasses CI when I really need to.
 
 ### Validating links
 
@@ -1223,7 +1221,7 @@ When I `push` commits to [the `main` branch on GitHub](https://github.com/alexan
 Site functionality
 : I have [hundreds of Playwright tests to ensure stable, reliable site operation.](#simulating-site-interactions) I run these tests across three different viewport sizes (desktop, tablet, and mobile) and three browsers (Chrome, Firefox, and Safari) — <span class="populate-playwright-configs"></span> combinations in total. Therefore, I need to run <span class="populate-playwright-configs"></span> × <span class="populate-playwright-test-count"></span> = <span class="populate-playwright-total-tests"></span> tests, each of which takes up to 90 seconds.
 
-I run these tests using 8 Linux shards (plus 5 macOS shards on pushes to `main`) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
+I run these tests using 8 Linux shards (plus 5 macOS shards) for functional tests and 3 Linux shards (plus 2 macOS) for visual regression tests. Playwright's `fullyParallel` mode distributes individual tests evenly across shards for balanced load distribution.
 
 Lighthouse audits
 : I enforce strict [Lighthouse](#lighthouse) thresholds across all four audit categories, plus dedicated layout-shift checks on desktop and mobile.
