@@ -151,7 +151,7 @@ While I haven't been writing in the "definition-theorem-corollary" style, the ke
 
 And even if the environment is stochastic, I think that there won't be any kind of interesting instrumental convergence. The theorems let us reason about that case, but their applicability depends on the details of the stochasticity, and so I won't talk about that more here.
 
-**Conclusion:** Optimal policies for u<sub>AOH</sub> will tend to look like _random twitching_. For example, if you generate a u<sub>AOH</sub> by uniformly randomly assigning each AOH utility from the unit interval $[0,1]$, there's no predictable regularity to the optimal actions for this utility function. In this setting and under our assumptions, there is _no_ instrumental convergence without further structural assumptions.
+**Conclusion:** Optimal policies for u<sub>AOH</sub> will tend to look like _random twitching_. For example, if you generate some u<sub>AOH</sub> by uniformly randomly assigning each AOH utility from the unit interval $[0,1]$, there's no predictable regularity to the optimal actions for this utility function. In this setting and under our assumptions, there is _no_ instrumental convergence without further structural assumptions.
 
 # How Structural Assumptions On Utility Affect Instrumental Convergence
 

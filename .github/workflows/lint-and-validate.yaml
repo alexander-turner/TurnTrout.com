@@ -97,7 +97,7 @@ jobs:
               - 'website_content/**'
               - 'config/spellcheck/**'
               - 'config/vale/**'
-              - 'scripts/strip_quotes.py'
+              - 'scripts/strip_for_spellcheck.py'
             code:
               - 'quartz/**'
               - 'config/javascript/**'
@@ -271,36 +271,31 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
-      - name: Strip quote blocks for linting
-        id: strip-quotes
+      - name: Strip quote blocks and math for linting
+        id: strip-for-spellcheck
         if: needs.detect-changes.outputs.content == 'true'
         run: |
-          STRIPPED_DIR=".stripped_quotes"
-          uv run python scripts/strip_quotes.py --source-dir website_content --output-dir "$STRIPPED_DIR"
+          STRIPPED_DIR=".stripped_for_spellcheck"
+          uv run python scripts/strip_for_spellcheck.py --source-dir website_content --output-dir "$STRIPPED_DIR"
           echo "dir=$STRIPPED_DIR" >> $GITHUB_OUTPUT
 
       - name: Run spellcheck
         id: spellcheck
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: |
-          pnpm exec spellchecker \
-            --no-suggestions \
-            --quiet \
-            --dictionaries config/spellcheck/.wordlist.txt \
-            --files "${{ steps.strip-quotes.outputs.dir }}/**/*.md" \
-            --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
-            --plugins spell indefinite-article repeated-words syntax-urls frontmatter
+        env:
+          STRIP_QUOTES_CONTENT_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
+        run: scripts/spellcheck.sh
 
       - name: Run Vale
         id: vale
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: vale --config config/vale/.vale.ini "${{ steps.strip-quotes.outputs.dir }}"
+        run: vale --config config/vale/.vale.ini "${{ steps.strip-for-spellcheck.outputs.dir }}"
 
-      - name: Clean up stripped quotes
-        if: always() && steps.strip-quotes.outputs.dir
-        run: rm -rf "${{ steps.strip-quotes.outputs.dir }}"
+      - name: Clean up stripped content
+        if: always() && steps.strip-for-spellcheck.outputs.dir
+        run: rm -rf "${{ steps.strip-for-spellcheck.outputs.dir }}"
 
       - name: Run ESLint
         id: eslint
