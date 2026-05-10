@@ -27,8 +27,7 @@ permissions:
 
 jobs:
   # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
-  # Otherwise yields run=true; still picks browser coverage (Chromium-only on
-  # PRs, +Firefox/macOS on push to main).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: visual-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
@@ -53,7 +52,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on push to main; Chromium-only on PRs.
+  # Linux Chromium + Firefox.
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -337,9 +336,7 @@ jobs:
             echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
-          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
-             [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
+          if [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
             echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
             exit 1
           fi

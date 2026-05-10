@@ -24,8 +24,7 @@ permissions:
 
 jobs:
   # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
-  # On all other events the gate yields run=true; it stays in place so it can
-  # also pick browser coverage (Chromium-only on PRs, +Firefox/macOS on main).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: playwright-should-run
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
@@ -50,7 +49,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on push to main; Chromium-only on PRs.
+  # Linux Chromium + Firefox.
   playwright-tests-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -274,9 +273,7 @@ jobs:
             echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
-          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
-             [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
+          if [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
             echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"
             exit 1
           fi

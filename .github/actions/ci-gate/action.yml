@@ -1,8 +1,9 @@
 name: CI Gate
 description: >
-  Selects browser coverage for Playwright/visual workflows. macOS (WebKit) and
-  Firefox run on push to main; PRs stay Chromium-only to keep per-push cost
-  down. The `run` output is always true so required-status-check gating works.
+  Constants for Playwright/visual workflows. Public-repo CI is free, so every
+  trigger gets full coverage: Chromium + Firefox on Linux plus the macOS
+  WebKit shards. Kept as a composite action so existing `needs.should-run`
+  wiring still works.
 
 inputs:
   run-labels:
@@ -12,28 +13,17 @@ inputs:
 
 outputs:
   run:
-    description: Always true. Kept for backwards compatibility with existing `if:` guards.
+    description: Always true.
     value: "true"
   run-macos:
-    description: Whether macOS (WebKit) tests should run
-    value: ${{ steps.check.outputs.run-macos }}
+    description: Always true.
+    value: "true"
   browsers:
-    description: Comma-separated list of browsers to test
-    value: ${{ steps.check.outputs.browsers }}
+    description: Always "chromium,firefox".
+    value: "chromium,firefox"
 
 runs:
   using: composite
   steps:
-    - id: check
-      shell: bash
-      env:
-        EVENT_NAME: ${{ github.event_name }}
-        REF_NAME: ${{ github.ref_name }}
-      run: |
-        if [[ "$EVENT_NAME" == "push" && "$REF_NAME" == "main" ]]; then
-          echo "run-macos=true" >> "$GITHUB_OUTPUT"
-          echo "browsers=chromium,firefox" >> "$GITHUB_OUTPUT"
-        else
-          echo "run-macos=false" >> "$GITHUB_OUTPUT"
-          echo "browsers=chromium" >> "$GITHUB_OUTPUT"
-        fi
+    - shell: bash
+      run: ":"
