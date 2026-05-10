@@ -35,7 +35,7 @@ def test_image_conversion(ext: str, setup_test_env):
 
     assert avif_path.exists()
 
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content = f.read()
     assert asset_path.exists()
 
@@ -54,7 +54,7 @@ def test_video_conversion(ext: str, setup_test_env):
     content_path: Path = (
         Path(setup_test_env) / "website_content" / f"{ext.lstrip('.')}.md"
     )
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content: str = f.read()
 
     convert_assets.convert_asset(
@@ -64,7 +64,7 @@ def test_video_conversion(ext: str, setup_test_env):
     )
 
     assert mp4_path.exists()
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content = f.read()
 
     video_tags = f" {convert_assets.GIF_ATTRIBUTES}" if ext == ".gif" else ""
@@ -134,7 +134,8 @@ def test_video_conversion_preserves_attributes(
 
 
 def test_video_conversion_with_attributes_end_to_end(setup_test_env):
-    """End-to-end test: markdown with attributes -> video tag with parsed HTML attributes."""
+    """End-to-end test: markdown with attributes -> video tag with parsed HTML
+    attributes."""
     test_dir = Path(setup_test_env)
     asset_path = test_dir / "quartz" / "static" / "demo.mp4"
     content_path = test_dir / "website_content" / "demo.md"
@@ -397,22 +398,21 @@ def test_video_patterns(
 ):
     source_pattern = convert_assets._video_original_pattern(input_file)
     target_pattern = convert_assets._video_replacement_pattern(input_file)
-
     assert source_pattern == expected_source_pattern
     assert target_pattern == expected_target_pattern
-
-
 @pytest.mark.parametrize(
     "initial_content",
     [
         """
-    Some content before
-    
-    </video>
-    <br/>Figure: This is a caption
-    
-    Some content after
-    """,
+        Some content before.
+
+        </video> <br/>Figure: This is a caption
+
+        Some content after
+        """
+
+
+       ,
         """
     Some content before
     
@@ -435,7 +435,7 @@ def test_video_figure_caption_formatting(setup_test_env, initial_content):
 
     convert_assets.convert_asset(dummy_video, md_references_dir=content_dir)
 
-    with open(test_md) as f:
+    with open(test_md, encoding="utf-8") as f:
         converted_content = f.read()
 
     expected_pattern = r"</video>\n\nFigure: This is a caption"
@@ -455,7 +455,7 @@ def test_asset_staging_path_conversion(setup_test_env):
     content_path = Path(setup_test_env) / "website_content" / "staging.md"
 
     # Create a test markdown file with asset_staging paths
-    with open(content_path, "w") as f:
+    with open(content_path, "w", encoding="utf-8") as f:
         f.write("![](./asset_staging/static/asset.jpg)\n")
         f.write("[[./asset_staging/static/asset.jpg]]\n")
         f.write('<img src="./asset_staging/static/asset.jpg" alt="shrek"/>\n')
@@ -466,7 +466,7 @@ def test_asset_staging_path_conversion(setup_test_env):
 
     assert avif_path.exists()
 
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content = f.read()
 
     expected_content = (
@@ -509,14 +509,14 @@ def test_path_pattern_variations(
     asset_path: Path = test_dir / "quartz/static" / "asset.jpg"
     content_path = Path(setup_test_env) / "website_content" / "variations.md"
 
-    with open(content_path, "w") as f:
+    with open(content_path, "w", encoding="utf-8") as f:
         f.write(input_content)
 
     convert_assets.convert_asset(
         asset_path, md_references_dir=test_dir / "website_content"
     )
 
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content = f.read()
 
     assert file_content.strip() == expected_content
@@ -553,7 +553,7 @@ def test_video_asset_staging_paths(
     test_utils.create_test_video(gif_path)
     content_path = Path(setup_test_env) / "website_content" / "video_paths.md"
 
-    with open(content_path, "w") as f:
+    with open(content_path, "w", encoding="utf-8") as f:
         f.write(input_content)
 
     if "animation.gif" in input_content:
@@ -565,7 +565,7 @@ def test_video_asset_staging_paths(
             asset_path, md_references_dir=content_path.parent
         )
 
-    with open(content_path) as f:
+    with open(content_path, encoding="utf-8") as f:
         file_content = f.read()
 
     assert file_content.strip() == expected_content
@@ -776,7 +776,7 @@ def test_markdown_video_with_alt_text(ext: str, setup_test_env):
         dummy_video_path, md_references_dir=content_dir
     )
 
-    with open(test_md_path) as f:
+    with open(test_md_path, encoding="utf-8") as f:
         converted_content = f.read()
 
     tags_to_use = f" {convert_assets.GIF_ATTRIBUTES}" if ext == ".gif" else ""
@@ -935,7 +935,7 @@ def test_video_conversion_long_html(setup_test_env):
         dummy_video_path, md_references_dir=content_dir
     )
 
-    with open(test_md_path) as f:
+    with open(test_md_path, encoding="utf-8") as f:
         converted_content = f.read()
 
     expected_html = '<video autoplay muted loop playsinline alt="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="static/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="static/prune_still-easy_trajectories.webm" type="video/webm"></video>'
@@ -970,7 +970,7 @@ def test_multiple_bracket_video_links(setup_test_env):
     convert_assets.convert_asset(video1_path, md_references_dir=content_dir)
     convert_assets.convert_asset(video2_path, md_references_dir=content_dir)
 
-    with open(test_md_path) as f:
+    with open(test_md_path, encoding="utf-8") as f:
         converted_content = f.read()
 
     expected_content = """<video><source src="static/images/posts/cls.mp4" type="video/mp4; codecs=hvc1"><source src="static/images/posts/cls.webm" type="video/webm"></video>

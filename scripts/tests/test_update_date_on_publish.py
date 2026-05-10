@@ -419,7 +419,7 @@ Test content here
         update_lib.write_to_yaml(test_file, metadata, content)
 
         # Read the result and verify
-        with open(test_file) as f:
+        with open(test_file, encoding="utf-8") as f:
             result = f.read()
 
         assert '"Quoted Title"' in result  # Double quotes preserved
@@ -450,14 +450,11 @@ Content here
         update_lib.write_to_yaml(test_file, metadata, content)
 
         result = test_file.read_text()
-
     # Check that quotes and comments are preserved
     assert 'date_published: "05/20/2024"' in result
     assert "# Original publish date" in result
     assert "# Last update" in result
     assert 'title: "Test Post"' in result
-
-
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -465,15 +462,19 @@ Content here
             """---
 ---
 Content
-""",
+"""
+   ,
             id="empty-frontmatter",
         ),
         pytest.param(
-            """---
-title: "Test Post"
----
-Content
-""",
+            """
+            ---
+
+            title: "Test Post"
+            ---
+            Content
+            """
+   ,
             id="missing-dates",
         ),
     ],
@@ -483,7 +484,7 @@ def test_initialize_missing_dates(temp_content_dir, mock_datetime, test_case):
     test_file = create_markdown_file(
         temp_content_dir / "test.md", frontmatter={}, content="Test content"
     )
-    with open(test_file, "w") as f:
+    with open(test_file, "w", encoding="utf-8") as f:
         f.write(test_case)
 
     metadata, _ = script_utils.split_yaml(test_file)
@@ -504,7 +505,7 @@ date_published: "01/01/2023"
 ---
 Content
 """
-    with open(test_file, "w") as f:
+    with open(test_file, "w", encoding="utf-8") as f:
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
@@ -526,7 +527,7 @@ date_updated: "01/02/2023"
 ---
 Content
 """
-    with open(test_file, "w") as f:
+    with open(test_file, "w", encoding="utf-8") as f:
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
@@ -551,14 +552,14 @@ tags:  # Tag list
 ---
 Content
 """
-    with open(test_file, "w") as f:
+    with open(test_file, "w", encoding="utf-8") as f:
         f.write(content)
 
     metadata, content = script_utils.split_yaml(test_file)
     update_lib.maybe_update_publish_date(metadata)
     update_lib.write_to_yaml(test_file, metadata, content)
 
-    with open(test_file) as f:
+    with open(test_file, encoding="utf-8") as f:
         result = f.read()
 
     assert "# Header comment" in result
