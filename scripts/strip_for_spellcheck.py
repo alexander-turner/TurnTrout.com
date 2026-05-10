@@ -29,7 +29,7 @@ _QUOTE_CALLOUT_RE = re.compile(r"^(?:>\s*)+\[!quote\][+-]?")
 # splitting into two adjacent `$...$` inline matches. Inline (`$...$`) is
 # restricted to a single line so it doesn't eat across paragraph breaks.
 _MATH_RE = re.compile(
-    r"(?<!\\)\$\$.*?(?<!\\)\$\$" r"|(?<!\\)\$(?:[^$\n\\]|\\.)+?(?<!\\)\$",
+    r"(?<!\\)\$\$.*?(?<!\\)\$\$|(?<!\\)\$(?:[^$\n\\]|\\.)+?(?<!\\)\$",
     re.DOTALL,
 )
 
