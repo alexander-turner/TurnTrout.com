@@ -2926,11 +2926,16 @@ def _load_reviewed_invert_labels(
     """
     Load **user-reviewed** entries from `.invert_labels.json`.
 
-    Returns ``{url: invert_decision}`` for URLs whose label has ``reviewed:
-    true``. Auto-labeled but unreviewed URLs (and entries that don't conform to
-    the new schema, e.g. legacy bare bools) are intentionally omitted so the
-    AVIF-labeled check fails for them. Returns ``None`` if the file is absent or
-    malformed (the check disables itself when labels are unavailable).
+    Returns ``{url: invert_decision}`` for URLs whose label has
+    ``reviewed: true``. Auto-labeled but unreviewed URLs (and entries
+    that don't conform to the new schema, e.g. legacy bare bools) are
+    intentionally omitted so the AVIF-labeled check fails for them.
+
+    Returns ``None`` (disabling the check) when:
+    - the file is absent or malformed, or
+    - the labels file exists but the user has not reviewed any entry
+      yet (e.g. fresh checkout, before any labeling). Without this
+      escape hatch every CI run would fail on day one.
     """
     path = (
         project_root
@@ -2955,6 +2960,9 @@ def _load_reviewed_invert_labels(
             and "invert" in value
         ):
             reviewed[str(key)] = bool(value["invert"])
+    # No reviewed entries yet → treat the check as not-yet-armed.
+    if not reviewed:
+        return None
     return reviewed
 
 
