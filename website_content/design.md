@@ -1076,7 +1076,7 @@ However, it's not practical to test every single page. So I have a [test page](/
 > ![[playwright-tips#Background]]
 
 > [!info] Keeping CI fast
-> Public-repo CI on GitHub Actions is free, so I run the full browser matrix — Chromium and Firefox on Linux, WebKit on macOS — on every PR. To keep wall-clock time reasonable: each workflow has tight `paths:` filters so docs-only edits don't fire the heavy suites; the Playwright, visual, and site-build-checks workflows share a single site build across shards; dependabot and renovate branches skip the rendering jobs; and `[skip ci]` in a commit message bypasses CI when I really need to.
+> Public-repo CI on GitHub Actions is free, so every PR runs the full browser matrix: Chromium and Firefox on Linux, with WebKit run on macOS. For efficiency, each workflow has tight `paths` filters so docs-only edits don't fire the heavy suites. I share a single site build across as many workflows as possible. `dependabot` branches skip the rendering jobs. `[skip ci]` in a commit message bypasses CI altogether.
 
 ### Validating links
 
