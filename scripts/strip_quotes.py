@@ -123,7 +123,7 @@ def main() -> None:
     source_dir = args.source_dir
     if source_dir is None:
         git_root = script_utils.get_git_root()
-        source_dir = git_root / "website_content"
+        source_dir = git_root / script_utils.CONTENT_DIR_NAME
 
     output_dir = create_stripped_directory(source_dir, args.output_dir)
     # Only echo the path when we picked it ourselves; if the caller passed

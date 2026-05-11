@@ -42,6 +42,14 @@ EMBEDDED_RASTER_EXTENSIONS: Final[tuple[str, ...]] = tuple(
 # because those aren't embedded as `<video>` sources on the site.
 INLINE_VIDEO_EXTENSIONS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
 
+# Image formats PIL can read for re-encoding to JPEG (e.g. card-image
+# previews in YAML frontmatter). Subset of EMBEDDED_RASTER_EXTENSIONS —
+# excludes .gif because animated GIF → first-frame JPEG isn't useful for
+# social cards.
+CONVERTIBLE_CARD_IMAGE_EXTENSIONS: Final[frozenset[str]] = frozenset(
+    {".avif", ".webp", ".jpg", ".jpeg", ".png"}
+)
+
 _CODEC_HEVC: Final[str] = "libx265"
 _CODEC_VP9: Final[str] = "libvpx-vp9"
 _CODEC_AUDIO_OPUS: Final[str] = "libopus"

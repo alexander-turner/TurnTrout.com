@@ -102,8 +102,10 @@ def replace_asset_staging_refs(
 def main() -> None:
     """Entry point used by the ``handle_assets.sh`` pipeline."""
     git_root = script_utils.get_git_root()
-    asset_staging_dir = git_root / "website_content" / "asset_staging"
-    markdown_dir = git_root / "website_content"
+    asset_staging_dir = (
+        git_root / script_utils.CONTENT_DIR_NAME / "asset_staging"
+    )
+    markdown_dir = git_root / script_utils.CONTENT_DIR_NAME
 
     if not asset_staging_dir.exists():
         print(f"Asset staging directory not found: {asset_staging_dir}")

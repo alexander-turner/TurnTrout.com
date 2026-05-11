@@ -670,7 +670,7 @@ def resolve_media_path(src: str, base_dir: Path) -> Path:
     return full_path
 
 
-ALLOWED_ASSET_DOMAINS = frozenset({"assets.turntrout.com"})
+ALLOWED_ASSET_DOMAINS = frozenset({script_utils.CDN_HOSTNAME})
 
 
 def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
@@ -3054,7 +3054,7 @@ def main() -> None:
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
         _PUBLIC_DIR,
-        _GIT_ROOT / "website_content",
+        _GIT_ROOT / script_utils.CONTENT_DIR_NAME,
         args.check_fonts,
         defined_css_vars,
     )

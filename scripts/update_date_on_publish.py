@@ -199,7 +199,8 @@ def commit_changes(message: str) -> None:
 
 
 def main(
-    content_dir: Path = Path("website_content"), commit_range: str | None = None
+    content_dir: Path = Path(script_utils.CONTENT_DIR_NAME),
+    commit_range: str | None = None,
 ) -> None:
     """
     Main function to update dates in markdown files.
@@ -250,7 +251,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--content-dir",
         type=Path,
-        default=Path("website_content"),
+        default=Path(script_utils.CONTENT_DIR_NAME),
         help="Directory containing markdown files",
     )
     args = parser.parse_args()

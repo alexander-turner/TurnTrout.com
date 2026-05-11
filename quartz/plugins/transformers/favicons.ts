@@ -25,7 +25,14 @@ import {
 import { createWinstonLogger } from "../../util/log"
 import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
-const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
+const { minFaviconCount, quartzFolder, faviconFolder, faviconExtensions } = simpleConstants
+
+// Anchored regex matching any of the configured favicon extensions, e.g.
+// /\.(?:png|svg|avif)$/. Built from `faviconExtensions` so adding a new
+// format (e.g. .webp) only requires a constants.json edit.
+const FAVICON_EXTENSION_RE = new RegExp(
+  `\\.(?:${faviconExtensions.map((e) => e.replace(/^\./, "")).join("|")})$`,
+)
 
 const logger = createWinstonLogger("linkFavicons")
 
@@ -112,7 +119,7 @@ export function normalizePathForCounting(faviconPath: string): string {
     return faviconPath
   }
   // Remove .png, .svg, .avif extensions for counting (domain-based paths)
-  return faviconPath.replace(/\.(?:png|svg|avif)$/, "")
+  return faviconPath.replace(FAVICON_EXTENSION_RE, "")
 }
 
 /** Maps a hostname to its favicon storage path (e.g. "example.com" → "/static/images/external-favicons/example_com.png"). */
