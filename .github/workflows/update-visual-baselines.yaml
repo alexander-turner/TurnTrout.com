@@ -1,17 +1,17 @@
 name: Update visual baselines
 
-# Two triggers:
-#   - `/approve-baselines` posted as a PR comment.
-#   - `workflow_dispatch` with a `run_id` input — used by the click-to-approve
-#     button on the visual-diff gallery (works for both PR runs and main runs).
+# Triggered by the "Approve these as baselines" button on the visual-diff
+# gallery (which POSTs to the workflow_dispatch endpoint). Downloads the
+# named visual-testing run's `*-actual.png` artifacts and uploads them
+# to R2 as the new baselines.
 #
-# In both cases: download the named visual-testing run's `*-actual.png`
-# artifacts and upload them to R2 as the new baselines. For PR runs we also
-# push an empty commit to the PR branch so visual-testing reruns immediately.
+# For PR runs (`pr_number` supplied) the workflow then pushes an empty
+# commit to the PR branch so visual-testing reruns immediately. For main
+# runs it posts a synthetic passing `visual-testing` check-run + re-runs
+# failed jobs on the same-commit `deploy.yaml` run so the deploy
+# unblocks without a 30-minute visual-testing rerun.
 
 on:
-  issue_comment:
-    types: [created]
   workflow_dispatch:
     inputs:
       run_id:
@@ -32,51 +32,29 @@ permissions:
   issues: write
 
 concurrency:
-  # Key on PR number when one is involved (comment, or dispatch-with-pr_number)
-  # so the comment and button paths share a queue per PR. Main-run dispatches
-  # fall through to a per-run key so they never block each other.
-  group: update-visual-baselines-${{ github.event.issue.number || github.event.inputs.pr_number || github.run_id }}
+  # Key on PR number when one is supplied so concurrent button-clicks on
+  # the same PR queue cleanly. Main-run dispatches fall through to a
+  # per-run key so they never block each other.
+  group: update-visual-baselines-${{ github.event.inputs.pr_number || github.run_id }}
   cancel-in-progress: false
 
 jobs:
   approve:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.issue.pull_request &&
-       contains(github.event.comment.body, '/approve-baselines'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: React to triggering comment
-        if: github.event_name == 'issue_comment'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'rocket',
-            });
-
-      - name: Resolve run id, PR (if any), and target ref
+      - name: Resolve PR ref (if any)
         id: resolve
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          DISPATCH_RUN_ID: ${{ github.event.inputs.run_id }}
           DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
         with:
           script: |
-            let runId, prNumber, ref = '';
-            if (context.eventName === 'workflow_dispatch') {
-              runId = process.env.DISPATCH_RUN_ID;
-              prNumber = process.env.DISPATCH_PR_NUMBER || '';
-            } else {
-              prNumber = String(context.payload.issue.number);
-            }
-            // Set pr_number first so the failure-comment step can find the PR
-            // even if the run-id lookup below fails.
+            const prNumber = process.env.DISPATCH_PR_NUMBER || '';
+            // Set pr_number first so the failure-comment step can find
+            // the PR even if the lookup below fails.
             core.setOutput('pr_number', prNumber);
+            let ref = '';
             if (prNumber) {
               const pr = await github.rest.pulls.get({
                 owner: context.repo.owner,
@@ -84,27 +62,7 @@ jobs:
                 pull_number: Number(prNumber),
               });
               ref = pr.data.head.ref;
-              if (!runId) {
-                const runs = await github.rest.actions.listWorkflowRuns({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'visual-testing.yaml',
-                  head_sha: pr.data.head.sha,
-                  per_page: 5,
-                });
-                const completed = runs.data.workflow_runs.find(
-                  (r) => r.status === 'completed'
-                );
-                if (!completed) {
-                  core.setFailed(
-                    `No completed visual-testing run for ${pr.data.head.sha}`
-                  );
-                  return;
-                }
-                runId = String(completed.id);
-              }
             }
-            core.setOutput('run_id', String(runId));
             core.setOutput('ref', ref);
 
       - name: Checkout target ref
@@ -124,7 +82,7 @@ jobs:
           pattern: playwright-traces-*
           path: ./all-traces
           merge-multiple: true
-          run-id: ${{ steps.resolve.outputs.run_id }}
+          run-id: ${{ github.event.inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
@@ -147,8 +105,8 @@ jobs:
         if: steps.resolve.outputs.pr_number != ''
         env:
           REF: ${{ steps.resolve.outputs.ref }}
-          RUN_ID: ${{ steps.resolve.outputs.run_id }}
-          APPROVER: ${{ github.event.comment.user.login || github.actor }}
+          RUN_ID: ${{ github.event.inputs.run_id }}
+          APPROVER: ${{ github.actor }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -167,7 +125,7 @@ jobs:
         if: success() && steps.resolve.outputs.pr_number == ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          VISUAL_RUN_ID: ${{ steps.resolve.outputs.run_id }}
+          VISUAL_RUN_ID: ${{ github.event.inputs.run_id }}
         with:
           script: |
             const runId = Number(process.env.VISUAL_RUN_ID);
@@ -230,7 +188,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: Number('${{ steps.resolve.outputs.pr_number }}'),
-              body: `Approved baselines from run ${{ steps.resolve.outputs.run_id }} and pushed an empty commit to retrigger visual-testing.`,
+              body: `Approved baselines from run ${{ github.event.inputs.run_id }} and pushed an empty commit to retrigger visual-testing.`,
             });
 
       - name: Comment failure on PR
