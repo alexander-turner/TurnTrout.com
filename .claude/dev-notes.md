@@ -128,22 +128,30 @@ After pushing to main:
 
 - **Publication date updates**: amends the commit with updated `date_published`/`date_updated` and force-pushes; other workflows restart on the amended commit via `cancel-in-progress`
 - 1,602 Playwright tests across 9 configurations (3 browsers × 3 viewports), ~33 parallel shards
-- macOS runners (10x Linux cost) only run on pushes to main, not PRs. macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation on ARM64
+- macOS WebKit runs Desktop Safari only — Playwright 1.58+ crashes on mobile device emulation on ARM64
 - Visual regression with Playwright snapshots (R2 baselines)
 - Lighthouse for layout shift
 - DeepSource static analysis. Use the `deepsource` CLI with `--commit`, `--pr`, or `--default-branch`. **Never** WebFetch DeepSource URLs — the web UI is auth-walled and returns no useful content.
 
-### CI cost optimization
+### How CI runs
 
-- **Expensive tests always run on main**. They also support `workflow_dispatch` for manual triggering.
-- **Per-commit CI labels on PRs**: expensive tests only run when a label is _actively added_ (one-shot per commit, not persistent). Labels:
-  - `ci:run-playwright`, `ci:run-visual`, `ci:run-lighthouse`, `ci:run-a11y`, `ci:run-site-checks`
-  - `ci:full-tests` (all of the above)
-- **When a PR modifies Playwright tests or interaction behavior**, add the appropriate label: `gh pr edit <number> --add-label "ci:run-playwright"`. Re-add to run again on the next push.
+Public-repo Actions are free, so we don't tier coverage by event — every workflow runs the full suite whenever its `paths:` filter matches.
+
+- **Full suite on every PR and `push: main`**: Linux Chromium + Firefox plus macOS WebKit shards for Playwright/visual; full a11y, lighthouse, site-build-checks, python-tests, python-lint, lint, Node.js. `.github/actions/ci-gate` is now a constant — `run=true`, `run-macos=true`, `browsers=chromium,firefox` for every event.
+- **Bot skip**: `should-run` skips dependabot/renovate/deepsource branches so lockfile bumps don't churn the visual baselines.
 - **Flake check**: `workflow_dispatch` only.
 - **Shared builds**: Playwright, visual testing, and site-build-checks each build the site once and share the artifact across shards.
-- **Path filters**: PR workflows only fire when relevant files change.
+- **Path filters**: every workflow has `paths:` on its `pull_request` trigger so doc-only / CI-only PRs don't fire the heavy suites.
 - **Skip CI**: `[skip ci]` in commit messages.
+
+### Merging PRs
+
+`main` is gated by required-status-check branch protection plus auto-merge — there's **no merge queue** (the feature isn't enabled in this repo).
+
+- **How to merge**: call `mcp__github__enable_pr_auto_merge` once the PR is green. GitHub waits for required checks to pass on the PR head SHA, then squashes.
+- **Required checks**: `playwright-tests`, `visual-testing`, `a11y`, `site-build-checks`, `python-tests`, `python-lint`, `lint`, `Node.js CI / build`, lighthouse jobs. Each runs on every PR (subject to `paths:` filters) so they report on the same SHA auto-merge waits on.
+- **Compatibility with auto-merge bots**: `auto-merge-dependabot.yml` uses `gh pr merge --auto --squash`, same mechanism.
+- **Post-merge**: `push: main` re-runs the full suite plus `deploy.yaml`. `deploy.yaml`'s `verify-test-results` job polls check-runs on the landed SHA, so deploy waits for those to pass before pushing to Cloudflare.
 
 ## Lessons learned
 

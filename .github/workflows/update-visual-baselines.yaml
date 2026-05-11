@@ -1,176 +1,144 @@
 name: Update visual baselines
 
-# Single approval path for visual baseline drift, used both for PRs
-# and for failures on main (or any other branch).
-#
-# Trigger: workflow_dispatch with a `ref` input (defaults to main).
-# The Visual Testing workflow surfaces a link to "Run workflow" on
-# every failure — pre-filled with the PR head branch on PRs, or with
-# `main` on push-to-main runs.
-#
-# Pipeline: regen baselines (Chromium+Firefox on Linux, WebKit on
-# macOS), upload to R2, then push an empty commit to the target
-# branch so visual-testing reruns against the new baselines.
+# Triggered by `/approve-baselines` posted as a PR comment. Promotes the
+# `*-actual.png` screenshots from the latest failing visual-testing run on
+# the PR's head SHA straight to R2 — no rebuild, no Playwright rerun. Then
+# pushes an empty commit to retrigger visual-testing against the new
+# baselines.
 
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Branch to regen baselines against and push the rerun commit to. Must be a branch name (push back fails on SHAs). Defaults to main."
-        required: false
-        default: main
+  issue_comment:
+    types: [created]
 
 permissions:
   actions: read
   contents: write
-  pull-requests: write
+  pull-requests: read
+  issues: write
 
 concurrency:
-  group: update-visual-baselines-${{ inputs.ref }}
+  group: update-visual-baselines-${{ github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
-  build:
-    uses: ./.github/workflows/build-site.yaml
-
-  generate-linux:
-    needs: build
+  approve:
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/approve-baselines') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'COLLABORATOR' ||
+       github.event.comment.author_association == 'MEMBER')
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    env:
-      PLAYWRIGHT_BROWSERS: chromium,firefox
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Setup Frontend Environment
-        uses: ./.github/actions/setup-visual-testing-env
+      - name: React to triggering comment
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
-          install-playwright: "true"
-          install-python: "true"
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket',
+            });
 
-      - name: Install browsers
-        run: pnpm run install-browsers
-
-      - name: Restore built site from cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      - name: Resolve PR head ref + SHA
+        id: pr
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number,
+            });
+            core.setOutput('ref', pr.data.head.ref);
+            core.setOutput('sha', pr.data.head.sha);
+            core.setOutput('repo_full', pr.data.head.repo.full_name);
 
-      - name: Download existing visual baselines from R2
+      - name: Find latest visual-testing run for this SHA
+        id: run
         env:
-          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
-          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
-          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-        run: uv run python scripts/r2_baselines.py download
-
-      - name: Run Playwright with --update-snapshots
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_SHA: ${{ steps.pr.outputs.sha }}
         run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --update-snapshots=all \
-            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
+          set -euo pipefail
+          run_id=$(gh run list \
+            --workflow visual-testing.yaml \
+            --commit "$HEAD_SHA" \
+            --limit 5 \
+            --json databaseId,conclusion,status \
+            --jq 'map(select(.status == "completed")) | .[0].databaseId')
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "No completed visual-testing run found for $HEAD_SHA" >&2
+            exit 1
+          fi
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "Found visual-testing run $run_id for $HEAD_SHA"
 
-      - name: Upload regenerated baselines to R2
-        env:
-          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
-          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
-          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-        run: uv run python scripts/r2_baselines.py upload
+      - name: Checkout PR head
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ steps.pr.outputs.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  generate-macos:
-    needs: build
-    runs-on: macos-26
-    timeout-minutes: 60
-    env:
-      PLAYWRIGHT_BROWSERS: webkit
-      # Playwright 1.59.0 added Page.overridePlatform for WebKit device presets,
-      # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
-      PLAYWRIGHT_NO_UA_PLATFORM: "1"
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Download Playwright trace artifacts from the failing run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v6
+        with:
+          pattern: playwright-traces-*
+          path: ./all-traces
+          merge-multiple: true
+          run-id: ${{ steps.run.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Disable macOS firewall
-        run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
-
-      - name: Setup Frontend Environment
+      - name: Setup Python
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "false"
           install-python: "true"
 
-      - name: Install Playwright WebKit browser
-        run: pnpm exec playwright install webkit
+      - name: Install rclone
+        run: sudo apt-get update && sudo apt-get install -y rclone
 
-      - name: Strip macOS Gatekeeper quarantine attributes
-        run: xattr -cr ~/Library/Caches/ms-playwright
-
-      - name: Restore built site from cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
-
-      - name: Download existing visual baselines from R2
+      - name: Upload screenshots to R2 as new baselines
         env:
           ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
           SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-        run: uv run python scripts/r2_baselines.py download
-
-      - name: Run Playwright with --update-snapshots
-        run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --update-snapshots=all \
-            -g "(screenshot)" 2>&1 | tee playwright-update.log || true
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Upload regenerated baselines to R2
-        env:
-          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
-          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
-          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-        run: uv run python scripts/r2_baselines.py upload
-
-  # Push an empty commit to the dispatched branch so visual-testing
-  # reruns against the new R2 baselines.
-  retrigger:
-    needs: [generate-linux, generate-macos]
-    if: >-
-      always() && (
-        needs.generate-linux.result == 'success' ||
-        needs.generate-macos.result == 'success'
-      )
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout target branch
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          ref: ${{ inputs.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run python scripts/approve_baselines_from_artifacts.py ./all-traces
 
       - name: Push empty commit to retrigger visual-testing
+        env:
+          REF: ${{ steps.pr.outputs.ref }}
+          RUN_ID: ${{ steps.run.outputs.run_id }}
+          COMMENT_USER: ${{ github.event.comment.user.login }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          PLATFORMS=""
-          if [ "${{ needs.generate-linux.result }}" = "success" ]; then
-            PLATFORMS="linux"
-          fi
-          if [ "${{ needs.generate-macos.result }}" = "success" ]; then
-            PLATFORMS="${PLATFORMS:+${PLATFORMS}+}macos"
-          fi
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          git commit --allow-empty -m "ci: rerun visual-testing against new R2 baselines (${PLATFORMS}, approved on ${SHORT_SHA})"
-          git push origin HEAD:${{ inputs.ref }}
+          git commit --allow-empty -m "ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $COMMENT_USER)"
+          git push origin "HEAD:$REF"
+
+      - name: Comment success on PR
+        if: success()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `Approved baselines from run ${{ steps.run.outputs.run_id }} and pushed an empty commit to retrigger visual-testing.`,
+            });
+
+      - name: Comment failure on PR
+        if: failure()
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: `Approve-baselines failed: ${runUrl}`,
+            });

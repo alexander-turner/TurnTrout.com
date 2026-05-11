@@ -41,6 +41,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - **Pre-push**: stashes uncommitted changes, runs auto-fix formatters, pylint, asset upload, alt-text scan. Resume from last failure with `RESUME=true git push`.
 - **Pull requests**: always follow `.claude/skills/pr-creation.md`.
 - **Dev branch workflow**: when working on `dev`, first merge `main` into `dev`, push `dev`, then start the new feature branch from `dev`.
+- **Merging PRs**: never call `merge_pull_request` directly. Once checks are green, call `mcp__github__enable_pr_auto_merge` (squash by default). Required status checks gate the merge — the full suite (Linux Chromium + Firefox, macOS WebKit, visual, a11y, lighthouse, site-build-checks, python, lint, node) runs on every PR where the `paths:` filter matches. Do **not** force-merge with empty "run ALL CI" commits or a direct merge — auto-merge is the only sanctioned path to `main`.
 
 ## Testing requirements
 
@@ -97,6 +98,10 @@ Design philosophy from `design.md`: minimal targeted changes; verify before gene
 ## CI monitoring
 
 After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub Actions; the Stop hook blocks completion on remote CI failures. See `.claude/dev-notes.md` for manual commands and CI cost-optimization labels.
+
+- **Never sit on a CI failure.** If the Stop hook reports a failure — or any check on the open PR is red — investigate and fix it before reporting the task done. Do not assume a remote failure is "just stale local deps" without verifying remote status via `mcp__github__pull_request_read` (`get_status` + `get_check_runs`).
+- This includes lint/static-analysis services (DeepSource, Socket, etc.) shown alongside GitHub Actions checks — fix their findings even when the underlying file came from a parent branch, since they block the PR all the same.
+- If a failure is genuinely outside the PR's scope and not fixable here, say so explicitly with evidence rather than going silent.
 
 ## DeepSource issues
 

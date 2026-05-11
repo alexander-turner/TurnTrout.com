@@ -14,16 +14,10 @@ echo "Subsetting fonts in $num_files files"
 # font-family into CSS/SVG" pass holds every page in memory at once and
 # pushed past the previous 6GB cap (mark-compact OOM at ~6.0/6.2GB).
 # Note: this fork only emits woff2 and doesn't support font instancing, so
-# --formats and --instance are unused and intentionally omitted.
-start_time=$(date +%s)
 # shellcheck disable=SC2086
 NODE_OPTIONS="--max-old-space-size=12288" pnpm exec subfont --root public/ $html_files --in-place --inline-css --no-recursive --debug
-end_time=$(date +%s)
-elapsed=$((end_time - start_time))
-echo "Subfont completed in ${elapsed}s"
 
 # Refresh config/font_stats.md from the just-emitted subset woff2s so the
 # design page picks up current sizes on the next build.
 echo "Regenerating config/font_stats.md"
 npx tsx scripts/gen_font_stats.ts
-

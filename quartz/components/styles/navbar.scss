@@ -69,10 +69,18 @@
   border: none;
   cursor: pointer;
 
+  // The button extends ~1rem left of the icon as a tap target; without this
+  // the mobile default tap-highlight paints a blue square to the left.
+  -webkit-tap-highlight-color: transparent;
+
   & span {
     display: block;
     height: calc(0.25 * $base-margin);
     background-color: var(--midground);
+
+    // Declared on the base so the X→hamburger reverse animation works too;
+    // when on .x alone, removing the class also removes the transition rule.
+    transition: all $transition-duration-very-quick ease-in-out;
 
     &:not(:last-child) {
       margin-bottom: 5px;
@@ -81,7 +89,6 @@
 }
 
 .x:nth-of-type(1) {
-  transition: all 100ms ease-in-out;
   transform: rotate(45deg);
   transform-origin: top left;
   width: 24px;
@@ -92,13 +99,11 @@
 }
 
 .x:nth-of-type(2) {
-  transition: all 100ms ease-in-out;
   transform-origin: center;
   width: 0;
 }
 
 .x:nth-of-type(3) {
-  transition: all 100ms ease-in-out;
   transform: rotate(-45deg);
   transform-origin: bottom left;
   width: 24px;
@@ -184,8 +189,8 @@
   #page-columns #navbar {
     opacity: 1;
     transition:
-      transform 0.45s ease,
-      opacity 0.45s ease;
+      transform $transition-duration-slow ease,
+      opacity $transition-duration-slow ease;
     z-index: $z-navbar;
     padding-top: calc(0.5 * $base-margin);
     pointer-events: auto;
@@ -356,7 +361,7 @@ $header-video-size: 188px;
     left: 0;
     top: 0;
     fill: var(--midground);
-    transition: opacity 0.1s ease;
+    transition: opacity $transition-duration-very-quick ease;
   }
 }
 

@@ -2268,3 +2268,18 @@ describe("applyTextTransforms with useNbsp option", () => {
     expect(result).toBe(expected)
   })
 })
+
+describe("link with trailing slash does not break invariance", () => {
+  // Regression: previously, the slash regex's `(?=\S)` lookahead matched the
+  // markerChar separator appended to a single-text-node element. With backtracking
+  // on the optional markerAfter, "ab/<marker>" would match and produce "ab / ",
+  // but the stripped form "ab/" wouldn't match — failing the invariance check.
+  it.each([
+    '<p><a href="https://npmjs.com">ab/</a></p>',
+    "<table><tbody><tr><td>" +
+      '<a href="https://npmjs.com">ab/</a></td><td><a href="https://npmjs.com">ab\\</a>' +
+      "</td></tr></tbody></table>",
+  ])("does not crash for %s", (html) => {
+    expect(() => testHtmlFormattingImprovement(html)).not.toThrow()
+  })
+})

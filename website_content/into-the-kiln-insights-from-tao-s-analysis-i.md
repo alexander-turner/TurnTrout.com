@@ -38,7 +38,7 @@ date_published: 2018-06-01
 original_url: https://www.lesswrong.com/posts/cuZxipMFup5uJdeAp/into-the-kiln-insights-from-tao-s-analysis-i
 skip_import: true
 description: Tao's "Analysis I" illuminates the foundations of mathematics, from natural numbers to Riemann integrals. Rigorous yet accessible.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 As a young boy, mathematics captivated me. In elementary school, I'd happily while away entire weekends working through the next grade's math book. I was impatient. In middle school, I'd lazily estimate angles of incidence that would result if I shot lasers from my eyes, tracing their trajectories within the classroom and out down the hallway. I was restless.
@@ -254,8 +254,6 @@ The following problem was admittedly confusing at first, but I had an overwhelmi
 > A similar proof holds for $L > 0$, so $L=0$.
 >
 > To solve for local minimum $f(x_0)$, define $g(x) := -f(x)$ and use the above result on local maximum $g(x_0)$. ∎
-
-<hr/>
 
 [^1]: Constructing the reals from first principles was profoundly enjoyable. Working through this book gave me a sense of certitude when dealing with math. Numbers are no longer simply familiar friends following familiar rules, but rather objects I _know_ how to construct. It feels great.
 [^2]:

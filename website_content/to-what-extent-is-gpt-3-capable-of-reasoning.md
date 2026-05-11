@@ -29,7 +29,7 @@ date_published: 2020-07-20
 original_url: https://www.lesswrong.com/posts/L5JSMZQvkBAx9MD5A/to-what-extent-is-gpt-3-capable-of-reasoning
 skip_import: true
 description: Examining the reasoning capabilities of GPT-3 through a series of hypothetical questions and scenarios.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 ETA 8/19/20: This interview was conducted with AIDungeon's Dragon model in Custom mode. At the time of writing, the first reply in each exchange was actually sampled from GPT-2.
@@ -88,8 +88,9 @@ Here are excerpts from a [recent "interview"](https://aidungeon.page.link/?link=
 >
 > Hawking: "It keeps going up, and never comes back. \[_wrong_\]
 
-Two minutes of gravity (without air resistance) implies a velocity decrease of about 1,176 m/s. [Wikipedia's article on muzzle velocities](https://en.wikipedia.org/wiki/Muzzle_velocity) suggests that GPT-3's answer of "two minutes" is roughly correct:
+Two minutes of gravity (without air resistance) implies a velocity decrease of about 1,176 m/s. Wikipedia suggests that GPT-3's answer of "two minutes" is roughly correct.
 
+> [!quote] [Wikipedia: Muzzle velocity](https://en.wikipedia.org/wiki/Muzzle_velocity)
 > [Firearm](https://en.wikipedia.org/wiki/Firearm) muzzle velocities range from approximately 120 m/s (390 ft/s) to 370 m/s (1,200 ft/s) in [black powder muskets](https://en.wikipedia.org/wiki/Musket), to more than 1,200 m/s (3,900 ft/s) in modern rifles with high-velocity cartridges such as the [.220 Swift](https://en.wikipedia.org/wiki/.220_Swift) and [.204 Ruger](https://en.wikipedia.org/wiki/.204_Ruger), all the way to 1,700 m/s (5,600 ft/s) for [tank](https://en.wikipedia.org/wiki/Tank) guns firing [kinetic energy penetrator](https://en.wikipedia.org/wiki/Kinetic_energy_penetrator) ammunition.
 
 <hr/>

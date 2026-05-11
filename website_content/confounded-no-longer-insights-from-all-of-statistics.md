@@ -38,7 +38,7 @@ date_published: 2018-05-03
 original_url: https://www.lesswrong.com/posts/NMfQFubXAQda4Y5fe/confounded-no-longer-insights-from-all-of-statistics
 skip_import: true
 description: A tour of fundamental statistical concepts, from basic probability to hypothesis testing and Bayesian inference.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 > [!quote]Larry Wasserman, _All of Statistics_
@@ -388,8 +388,6 @@ Zooming out from _All of Statistics_, I think it's telling that I achieved fairl
 I no longer ask "how can I study most effectively?", but rather, "what does it feel like to be me right now, and how can I bring that into alignment with what I want to do?".
 
 > Red seeks _freedom,_ and it tries to achieve that freedom through _action..._ For a red agent, victory feels fiery, beautiful, magnificent, and fierce — it’s the climax of a dance or a brawl or a love affair, the feeling of cresting a summit or having successfully ridden a wave. It’s feeling _alive._
-
-<hr/>
 
 [^1]: Although any shape in the sequence implied by the image does indeed have strictly different area than the circle it approximates (in contrast to $F_n$ and $F$), the analogy may still be helpful.
 [^2]: Please don't wirehead thinking about this.

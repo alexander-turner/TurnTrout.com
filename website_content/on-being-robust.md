@@ -30,7 +30,7 @@ date_published: 2020-01-10
 original_url: https://www.lesswrong.com/posts/eX2aobNp5uCdcpsiK/on-being-robust
 skip_import: true
 description: "How to avoid feeling like a fraud: build good habits and stop cutting corners."
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 > [!thanks]
@@ -67,8 +67,6 @@ This robustness is a kind of epistemic humility - it's the kind of reasoning tha
 I try to live my mental life such that, if people could read my thoughts, they would think I'm doing things right. That doesn't mean I'm always being polite to people in my mind, but it means that I'm not being deceitful, or unfair, or secretly cutting corners on work I'm doing for them.[^2]
 
 Again, the point isn't "have good habits and be happy". The point is that I think we often cut too many corners, and so I recommend a policy which leans towards _not_ cutting corners (even when it locally makes sense). The benefits for me have been twofold: getting better results, and feeling more secure about myself while getting those results.
-
-<hr/>
 
 [^1]: Ironically, the first draft of this spelled "impostor" as "imposter".
 

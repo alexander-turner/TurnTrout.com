@@ -35,7 +35,7 @@ date_published: 2022-12-02
 original_url: https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into
 skip_import: true
 description: Inner and outer alignment—while seemingly useful—are unnecessary, anti-natural, and extremely hard. Better alignment strategies exist.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 createBibtex: true
 ---
 
@@ -92,8 +92,9 @@ Here’s the structure of the essay, and some key points made within:
 
 <hr/>
 
-For reasoning about trained AI systems, I like [Evan Hubinger’s “training stories” framework](https://www.alignmentforum.org/posts/FDJnZt8Ks2djouQTZ/how-do-we-become-confident-in-the-safety-of-a-machine):
+For reasoning about trained AI systems, I like Evan Hubinger's “training stories” framework.
 
+> [!quote] [How do we become confident in the safety of a machine learning system?](https://www.alignmentforum.org/posts/FDJnZt8Ks2djouQTZ/how-do-we-become-confident-in-the-safety-of-a-machine)
 > A _training story_ is a story of how you think training is going to go and what sort of model you think you’re going to get at the end\[…\]
 
 In a training story, the _training goal_ is a mechanistic description of the model you hope to train, and the _training rationale_ explains why you’ll train the desired model and not something else instead.
@@ -170,8 +171,7 @@ We shouldn’t build an agent where the inner agent spends a ton of time thinkin
 >
 > \[...\] If you're building a toaster, you don't build one element that heats the toast and then add a tiny refrigerator that cools down the toast.
 
-In [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans), I wrote:
-
+> [!quote] [Don't align agents to evaluations of plans](/dont-align-agents-to-evaluations-of-plans)
 > In the intended motivational structure, the actor tries to trick the grader, and the grader tries to avoid being tricked. I think we can realize massive alignment benefits by not designing motivational architectures which require extreme robustness properties and whose parts work at internal cross-purposes.
 
 ## I know of no outer-aligned objectives for any real-world task

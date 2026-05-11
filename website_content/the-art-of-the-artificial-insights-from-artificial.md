@@ -38,7 +38,7 @@ date_published: 2018-03-25
 original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
 description: My review of "Artificial Intelligence, A Modern Approach" & how I read hundreds of pages in 3 days.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
     
@@ -526,8 +526,6 @@ I feel a bit like a kid in a candy shop.
 I am convinced that _there are no hard concepts_, only concepts which take different amounts of time to learn. [^5] This is not trivial; dissolving the seemingly ontologically basic "difficult for me" attribute goes a long way towards having the persistence to figure things out.
 
 > _Given enough time, I can understand anything._
-
-<hr/>
 
 [^1]: From personal experience, I don't recommend using this technique liberally; it's already hard enough to correct our epistemologies.
 [^2]: Disclaimer: even setting aside the need for a hypercomputer, AIXI has issues (such as not being [naturalized](http://lesswrong.com/lw/jd9/building_phenomenological_bridges/)). This isn't the droid you're looking for.

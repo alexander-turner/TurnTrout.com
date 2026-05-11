@@ -212,6 +212,13 @@ describe("PopulateExternalMarkdown", () => {
         'JSON path "missing" not found in test.json',
       )
     })
+
+    it("should throw a descriptive error on invalid JSON content", () => {
+      mockReadFile.mockReturnValue("not valid json {{{")
+      expect(() => fetchLocalContentSync({ filePath: "bad.json", jsonPath: "key" })).toThrow(
+        "Failed to parse JSON from bad.json: content is not valid JSON",
+      )
+    })
   })
 
   describe("populateExternalContent with local sources", () => {
