@@ -201,6 +201,45 @@ def test_cli_argument_parsing(
     assert (report / "index.html").exists()
 
 
+def test_cli_with_approve_flags(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """--run-id + --repo (+ optional --pr-number) get injected into the HTML."""
+    import runpy
+    import sys
+
+    traces = tmp_path / "traces"
+    report = tmp_path / "report"
+    report.mkdir()
+    # Approve button only renders when there's at least one failing tile, so
+    # plant a minimal *-actual.png the gallery generator can pick up.
+    (traces / "shard").mkdir(parents=True)
+    (traces / "shard" / "img-actual.png").write_bytes(b"")
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "generate_visual_gallery.py",
+            str(traces),
+            str(report),
+            "--run-id",
+            "987654",
+            "--repo",
+            "owner/repo",
+            "--pr-number",
+            "42",
+        ],
+    )
+    runpy.run_module("scripts.generate_visual_gallery", run_name="__main__")
+
+    page = (report / "index.html").read_text(encoding="utf-8")
+    assert "approve-btn" in page
+    assert '"runId": "987654"' in page
+    assert '"repo": "owner/repo"' in page
+    assert '"prNumber": "42"' in page
+
+
 def test_cli_wrong_arg_count(monkeypatch: pytest.MonkeyPatch) -> None:
     import runpy
     import sys
@@ -209,3 +248,31 @@ def test_cli_wrong_arg_count(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(SystemExit) as exc:
         runpy.run_module("scripts.generate_visual_gallery", run_name="__main__")
     assert exc.value.code == 2
+
+
+def test_render_html_omits_approve_without_config() -> None:
+    """No ApproveConfig → no approve UI rendered."""
+    page = gvg.render_html([gvg.Tile("t", None, "a.png", None)])
+    assert "approve-btn" not in page
+    assert "__APPROVE_CFG__" not in page
+
+
+def test_render_html_includes_approve_with_config() -> None:
+    """ApproveConfig + at least one tile → approve button + config script."""
+    page = gvg.render_html(
+        [gvg.Tile("t", None, "a.png", None)],
+        approve=gvg.ApproveConfig(run_id="123", repo="o/r"),
+    )
+    assert 'id="approve-btn"' in page
+    assert '"runId": "123"' in page
+    assert '"repo": "o/r"' in page
+    assert '"prNumber": null' in page
+
+
+def test_render_html_omits_approve_on_clean_gallery() -> None:
+    """Even with an ApproveConfig, an empty tile list (passing run) hides the
+    button — nothing to adopt as a baseline."""
+    page = gvg.render_html(
+        [], approve=gvg.ApproveConfig(run_id="123", repo="o/r")
+    )
+    assert "approve-btn" not in page
