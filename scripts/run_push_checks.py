@@ -673,7 +673,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "bash",
                 f"{git_root_path}/scripts/check_deepsource_pr.sh",
             ],
-            requires="deepsource",
             parallel_group="verify",
         ),
         CheckStep(

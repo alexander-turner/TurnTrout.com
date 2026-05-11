@@ -1,28 +1,13 @@
 #!/usr/bin/env bash
 # Block pushes when DeepSource has outstanding findings on the current
-# branch's open PR. Skips silently when the deepsource CLI is missing,
-# the gh CLI is missing, or no open PR exists for the branch yet (first
-# push). DeepSource analyzes commits asynchronously, so this only sees
-# findings from the previously-pushed HEAD — its job is to stop the
-# author from piling more commits onto a PR that already has unaddressed
-# issues.
+# branch's open PR. Requires `deepsource`, `gh`, and `jq` to be on PATH
+# (installed by the SessionStart hook). Exits 0 cleanly when no open PR
+# exists for the branch yet (first push). DeepSource analyzes commits
+# asynchronously, so this only sees findings from the previously-pushed
+# HEAD — its job is to stop the author from piling more commits onto a
+# PR that already has unaddressed issues.
 
 set -euo pipefail
-
-if ! command -v deepsource >/dev/null 2>&1; then
-  echo "deepsource CLI not installed; skipping."
-  exit 0
-fi
-
-if ! command -v gh >/dev/null 2>&1; then
-  echo "gh CLI not installed; skipping deepsource PR check."
-  exit 0
-fi
-
-if ! command -v jq >/dev/null 2>&1; then
-  echo "jq not installed; skipping deepsource PR check."
-  exit 0
-fi
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 pr_number=$(gh pr list --head "$branch" --state open --json number \
