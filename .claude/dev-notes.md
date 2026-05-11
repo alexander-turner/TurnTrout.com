@@ -98,7 +98,7 @@ Three ways to approve baselines (all promote the named visual-testing run's `*-a
 2. **"Approve baselines" button on the diff gallery** — works for both PR and main galleries. Stores a GitHub PAT (`actions:write` scope) in `localStorage` on first click and POSTs to the GitHub API to dispatch `update-visual-baselines.yaml`.
 3. **Actions UI `workflow_dispatch`** — manual fallback. Supply the `run_id` of the visual-testing run whose actuals to adopt; optionally a `pr_number` to also retrigger that PR.
 
-For PR runs the workflow also pushes an empty commit to the PR branch so visual-testing reruns immediately. For main runs it just uploads to R2 — the next push to main reruns visual-testing naturally.
+For PR runs the workflow also pushes an empty commit to the PR branch so visual-testing reruns immediately. For main runs it can't push (would pollute history), so it instead calls the GitHub API to `rerun` the visual-testing run and `rerun-failed-jobs` on the same-commit `deploy.yaml` run — once visual-testing passes against the new baselines, `verify-test-results` polls succeed and the `deploy` job runs.
 
 ## Pre-push validation pipeline
 
