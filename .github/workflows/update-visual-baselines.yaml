@@ -25,7 +25,8 @@ on:
         default: ""
 
 permissions:
-  actions: write # re-run visual-testing + deploy on main
+  actions: write # re-run deploy on main
+  checks: write # post a synthetic passing visual-testing check-run on main
   contents: write
   pull-requests: read
   issues: write
@@ -154,12 +155,15 @@ jobs:
           git commit --allow-empty -m "ci: rerun visual-testing against approved baselines (run $RUN_ID, approved by $APPROVER)"
           git push origin "HEAD:$REF"
 
-      # Main runs can't push an empty commit (would pollute history), so
-      # instead we re-run the visual-testing run via the GitHub API — with
-      # the freshly-uploaded R2 baselines it'll pass — then re-run failed
-      # jobs on the same-commit deploy.yaml run so `verify-test-results`
-      # re-polls and unblocks the deploy.
-      - name: Retrigger visual-testing + deploy on main
+      # Main runs can't push an empty commit (would pollute history). The
+      # actuals we just uploaded ARE the new baselines, so re-running
+      # visual-testing would always pass — skip it. Instead, post a
+      # synthetic passing `visual-testing` check-run on the head commit
+      # (deploy.yaml's verify-test-results polls `sort_by(.started_at)
+      # | last`, so the new success wins over the prior failure), then
+      # re-run failed jobs on the same-commit deploy.yaml run to unblock
+      # the deploy.
+      - name: Mark visual-testing passing + retrigger deploy on main
         if: success() && steps.resolve.outputs.pr_number == ''
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
@@ -167,19 +171,31 @@ jobs:
         with:
           script: |
             const runId = Number(process.env.VISUAL_RUN_ID);
-            await github.rest.actions.reRunWorkflow({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: runId,
-            });
-            core.info(`Re-running visual-testing run ${runId}`);
-
             const original = await github.rest.actions.getWorkflowRun({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: runId,
             });
             const headSha = original.data.head_sha;
+            const detailsUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const nowIso = new Date().toISOString();
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'visual-testing',
+              head_sha: headSha,
+              status: 'completed',
+              conclusion: 'success',
+              started_at: nowIso,
+              completed_at: nowIso,
+              details_url: detailsUrl,
+              output: {
+                title: 'Baselines approved',
+                summary: `Baselines for ${headSha} were approved via run ${runId}; the uploaded actuals are now the new R2 baselines, so visual-testing on this commit would pass. Synthetic check-run posted to unblock \`verify-test-results\`.`,
+              },
+            });
+            core.info(`Posted passing visual-testing check-run for ${headSha}`);
+
             const deployRuns = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -192,9 +208,9 @@ jobs:
             );
             if (!deploy) {
               core.info(
-                `No failed deploy.yaml run for ${headSha}; ` +
-                `verify-test-results will pick up the new visual-testing ` +
-                `run on its next poll.`
+                `No failed deploy.yaml run for ${headSha}; if one is ` +
+                `still in progress its verify-test-results poll will see ` +
+                `the new success on its next iteration.`
               );
               return;
             }
