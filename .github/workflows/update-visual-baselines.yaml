@@ -41,7 +41,7 @@ concurrency:
 jobs:
   approve:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30 # 5 min R2 upload + up to 15 min polling deploy.yaml
     steps:
       - name: Resolve PR ref (if any)
         id: resolve
@@ -154,30 +154,81 @@ jobs:
             });
             core.info(`Posted passing visual-testing check-run for ${headSha}`);
 
-            const deployRuns = await github.rest.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'deploy.yaml',
-              head_sha: headSha,
-              per_page: 5,
-            });
-            const deploy = deployRuns.data.workflow_runs.find(
-              (r) => r.status === 'completed' && r.conclusion !== 'success'
-            );
+            // Find the deploy.yaml run for this commit, then poll until it
+            // reaches a terminal state — `rerun-failed-jobs` only works on
+            // completed runs. Typical wait is just `prepare-deploy`
+            // finishing (≈3–5 min); cap at 15 min so a stuck pipeline
+            // doesn't burn the workflow's 20-min timeout.
+            const listDeployRuns = () =>
+              github.rest.actions.listWorkflowRuns({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'deploy.yaml',
+                head_sha: headSha,
+                per_page: 5,
+              });
+            const POLL_INTERVAL_MS = 30_000;
+            const MAX_ATTEMPTS = 30; // 30 × 30s = 15 min
+            let deploy;
+            for (let i = 0; i < MAX_ATTEMPTS; i++) {
+              const { data } = await listDeployRuns();
+              const run = data.workflow_runs[0]; // most recent for this SHA
+              if (!run) {
+                core.info(`No deploy.yaml run for ${headSha} yet; waiting…`);
+              } else if (run.status === 'completed') {
+                deploy = run;
+                break;
+              } else {
+                core.info(
+                  `deploy.yaml run ${run.id} still ${run.status}; waiting…`
+                );
+              }
+              await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
+            }
             if (!deploy) {
-              core.info(
-                `No failed deploy.yaml run for ${headSha}; if one is ` +
-                `still in progress its verify-test-results poll will see ` +
-                `the new success on its next iteration.`
+              core.warning(
+                `deploy.yaml run for ${headSha} didn't finish within 15 min; ` +
+                `re-run its failed jobs manually from the Actions UI to ` +
+                `unblock the deploy.`
               );
               return;
             }
-            await github.rest.actions.reRunWorkflowFailedJobs({
+            if (deploy.conclusion === 'success') {
+              core.info(
+                `deploy.yaml ${deploy.id} already succeeded; nothing to do`
+              );
+              return;
+            }
+            // Rerun just the `verify-test-results` job — `rerun-job`
+            // also reruns dependents, so `deploy` re-evaluates against
+            // the now-passing visual-testing check-run. More targeted
+            // than `rerun-failed-jobs`, which would also rerun anything
+            // else that happened to fail in this run.
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
               owner: context.repo.owner,
               repo: context.repo.repo,
               run_id: deploy.id,
+              per_page: 50,
             });
-            core.info(`Re-running deploy run ${deploy.id} failed jobs`);
+            const verifyJob = jobs.data.jobs.find(
+              (j) => j.name === 'verify-test-results'
+            );
+            if (!verifyJob) {
+              core.warning(
+                `deploy.yaml ${deploy.id} has no verify-test-results job; ` +
+                `nothing to rerun`
+              );
+              return;
+            }
+            await github.rest.actions.reRunJobForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              job_id: verifyJob.id,
+            });
+            core.info(
+              `Re-running verify-test-results job ${verifyJob.id} ` +
+              `(part of deploy run ${deploy.id})`
+            );
 
       - name: Comment success on PR
         if: success() && steps.resolve.outputs.pr_number != ''
