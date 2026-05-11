@@ -19,6 +19,9 @@ tsconfig.tsbuildinfo
 *variables.scss
 *critical.scss
 *__pycache__*
+# Per-image mean-luminance cache used by scripts/label_invert.py.
+# Regenerated on demand by fetching image bytes; not source of truth.
+quartz/plugins/transformers/.invert_luminance.json
 
 # Testing & Coverage
 .coverage*

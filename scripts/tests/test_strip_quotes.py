@@ -213,11 +213,14 @@ class TestMain:
 
         strip_quotes.main()
 
+        # With an explicit --output-dir, main() shouldn't echo the path:
+        # the caller already knows it, and the print otherwise leaks into
+        # the pre-push runner's output.
         captured = capsys.readouterr()
-        assert str(output) in captured.out
+        assert captured.out == ""
         assert (output / "test.md").read_text() == "\n"
 
-    def test_default_source_dir(
+    def test_main_prints_only_when_output_dir_auto_chosen(
         self,
         mock_git_root: Path,
         monkeypatch: pytest.MonkeyPatch,
@@ -226,14 +229,10 @@ class TestMain:
         content_dir = mock_git_root / "website_content"
         content_dir.mkdir()
         (content_dir / "test.md").write_text("content", encoding="utf-8")
-        output = mock_git_root / "output"
 
-        monkeypatch.setattr(
-            "sys.argv",
-            ["strip_quotes.py", "--output-dir", str(output)],
-        )
-
+        monkeypatch.setattr("sys.argv", ["strip_quotes.py"])
         strip_quotes.main()
 
         captured = capsys.readouterr()
-        assert str(output) in captured.out
+        # Auto-created temp dir path is echoed so callers can capture it.
+        assert captured.out.strip() != ""

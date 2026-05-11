@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Invert-in-dark-mode labeling</title>
+    <style>
+      :root { color-scheme: light; }
+      body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f4; color: #111; }
+      header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ccc;
+               padding: 0.75rem 1rem; display: flex; gap: 0.75rem; align-items: center; z-index: 10;
+               flex-wrap: wrap; }
+      header h1 { font-size: 1rem; margin: 0; }
+      header .progress { font-variant-numeric: tabular-nums; }
+      header .controls-spacer { margin-left: auto; }
+      header button { font: inherit; padding: 0.3rem 0.7rem; border-radius: 4px;
+                      border: 1px solid #2563eb; background: #2563eb; color: #fff;
+                      cursor: pointer; }
+      header button:disabled { opacity: 0.5; cursor: not-allowed; }
+      main { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+             gap: 1rem; padding: 1rem; }
+      .card { background: #fff; border: 2px solid #ddd; border-radius: 6px;
+              padding: 0.5rem; transition: border-color 120ms; }
+      .card[data-state="invert"] { border-color: #2563eb; }
+      .card[data-state="no-invert"] { border-color: #b91c1c; opacity: 0.7; }
+      .card[data-reviewed="false"] { box-shadow: 0 0 0 2px #fde68a inset; }
+      .card .controls { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+                        font-size: 0.85rem; }
+      .card .controls label { display: inline-flex; align-items: center; gap: 0.25rem;
+                              cursor: pointer; font-weight: 500; }
+      .card .url { font-size: 0.7rem; color: #555; word-break: break-all; margin: 0.25rem 0; }
+      .card .meta { font-size: 0.7rem; color: #777; display: flex; gap: 0.5rem; }
+      .card .badge { padding: 0 0.4rem; border-radius: 3px; font-weight: 600; }
+      .card .badge-auto { background: #fde68a; color: #78350f; }
+      .card .badge-needs-review { background: #fed7aa; color: #7c2d12; }
+      .preview > figure { margin: 0; padding: 0.5rem; border-radius: 4px;
+                          background: #1a1a1a; min-height: 110px;
+                          display: flex; align-items: center; justify-content: center; }
+      .preview img,
+      .preview video { max-width: 100%; max-height: 240px; display: block;
+                       mix-blend-mode: screen; filter: grayscale(50%); }
+      .card[data-state="invert"] .preview img,
+      .card[data-state="invert"] .preview video {
+        filter: invert(100%) hue-rotate(180deg);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Invert-in-dark-mode labeling</h1>
+      <span class="progress" id="progress-counter" data-total="{{ candidates|length }}">
+        {{ invert_count }} / {{ candidates|length }} invert &middot; {{ unreviewed_count }} unreviewed
+      </span>
+      <span class="controls-spacer"></span>
+      <select id="filter" class="filter">
+        <option value="all">Show all</option>
+        <option value="invert">Show only invert</option>
+        <option value="no-invert">Show only don't-invert</option>
+        <option value="unlabeled">Show only unlabeled</option>
+        <option value="unreviewed">Show only unreviewed</option>
+      </select>
+      <button id="confirm-visible" type="button">Confirm visible as reviewed</button>
+    </header>
+    <main>
+      {%- for url in candidates -%}
+        {%- set entry = labels.get(url) -%}
+        {%- set lum = luminances.get(url) -%}
+        {%- if entry is none -%}
+          {# Unlabeled cards still need a verdict for the build-site check, #}
+          {# so they show "needs review" until the user picks invert/no-invert. #}
+          {%- set state = "unlabeled" -%}
+          {%- set reviewed = false -%}
+        {%- elif entry.invert -%}
+          {%- set state = "invert" -%}
+          {%- set reviewed = entry.reviewed -%}
+        {%- else -%}
+          {%- set state = "no-invert" -%}
+          {%- set reviewed = entry.reviewed -%}
+        {%- endif -%}
+        {%- set auto = state == "invert" and lum is not none and lum >= luminance_threshold and not reviewed -%}
+        <article class="card" data-state="{{ state }}" data-reviewed="{{ 'true' if reviewed else 'false' }}" data-url="{{ url }}">
+          <div class="controls" role="radiogroup" aria-label="Label state" data-current="{{ state }}">
+            <label><input type="radio" name="state-{{ loop.index }}" value="unlabeled" /> Unlabeled</label>
+            <label><input type="radio" name="state-{{ loop.index }}" value="invert" /> Invert</label>
+            <label><input type="radio" name="state-{{ loop.index }}" value="no-invert" /> Don't invert</label>
+          </div>
+          <div class="url" title="{{ url }}">{{ url.rsplit('/', 1)[-1] }}</div>
+          <div class="meta">
+            {%- if lum is not none -%}
+              <span title="Mean grayscale luminance">L = {{ '%.2f' % lum }}</span>
+            {%- endif -%}
+            {%- if auto -%}<span class="badge badge-auto">auto-suggested</span>{%- endif -%}
+            {%- if not reviewed -%}<span class="badge badge-needs-review">needs review</span>{%- endif -%}
+          </div>
+          <div class="preview">
+            <figure>
+              {%- if is_video_url(url) -%}
+                <video autoplay loop muted playsinline preload="metadata">
+                  <source src="{{ url }}" />
+                </video>
+              {%- else -%}
+                <img loading="lazy" src="{{ url }}" alt="" />
+              {%- endif -%}
+            </figure>
+          </div>
+        </article>
+      {%- endfor -%}
+    </main>
+    <script>
+      const counter = document.getElementById("progress-counter");
+      const total = Number(counter.dataset.total);
+      // Pre-select the radio matching the current state. Done in JS so the
+      // `checked` attribute does not have to live inside a Jinja conditional
+      // (prettier-html mangles Jinja blocks placed inside HTML attributes).
+      document.querySelectorAll(".controls").forEach((group) => {
+        const current = group.dataset.current;
+        const radio = group.querySelector(`input[type=radio][value="${current}"]`);
+        if (radio) radio.checked = true;
+      });
+      const recount = () => {
+        const n = document.querySelectorAll('.card[data-state="invert"]').length;
+        const u = document.querySelectorAll('.card[data-reviewed="false"]').length;
+        counter.textContent = `${n} / ${total} invert · ${u} unreviewed`;
+      };
+      const cardMatchesFilter = (card, mode) => {
+        if (mode === "all") return true;
+        if (mode === "unreviewed") return card.dataset.reviewed === "false";
+        return card.dataset.state === mode;
+      };
+      document.querySelectorAll('.controls input[type=radio]').forEach((radio) => {
+        radio.addEventListener("change", async (ev) => {
+          if (!ev.target.checked) return;
+          const card = ev.target.closest(".card");
+          const group = ev.target.closest(".controls");
+          const url = card.dataset.url;
+          const state = ev.target.value;
+          const previous = card.dataset.state;
+          const previousReviewed = card.dataset.reviewed;
+          card.dataset.state = state;
+          // Picking "Unlabeled" removes the JSON entry, so by definition
+          // it can't have a reviewed flag — show the card as needing review
+          // again. Any other choice is an explicit user review.
+          card.dataset.reviewed = state === "unlabeled" ? "false" : "true";
+          group.dataset.current = state;
+          recount();
+          const r = await fetch("/api/label", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ url, state }),
+          });
+          if (!r.ok) {
+            card.dataset.state = previous;
+            card.dataset.reviewed = previousReviewed;
+            group.dataset.current = previous;
+            const prevRadio = group.querySelector(
+              `input[type=radio][value="${previous}"]`,
+            );
+            if (prevRadio) prevRadio.checked = true;
+            recount();
+            alert(`Save failed: ${r.status}`);
+          }
+        });
+      });
+      document.getElementById("filter").addEventListener("change", (ev) => {
+        const mode = ev.target.value;
+        document.querySelectorAll(".card").forEach((c) => {
+          c.style.display = cardMatchesFilter(c, mode) ? "" : "none";
+        });
+      });
+      document.getElementById("confirm-visible").addEventListener("click", async (ev) => {
+        const button = ev.target;
+        // Bulk-confirm only applies to cards that already have a verdict
+        // (auto-labeled but unreviewed). Unlabeled cards lack a JSON entry,
+        // so /api/review would no-op on them; the user must pick a radio
+        // to give them a verdict.
+        const visible = Array.from(document.querySelectorAll(".card")).filter(
+          (c) =>
+            c.style.display !== "none" &&
+            c.dataset.reviewed === "false" &&
+            c.dataset.state !== "unlabeled",
+        );
+        if (visible.length === 0) {
+          alert("No auto-labeled, unreviewed images visible.");
+          return;
+        }
+        if (!confirm(`Mark ${visible.length} visible image(s) as reviewed?`)) return;
+        button.disabled = true;
+        try {
+          const r = await fetch("/api/review", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ urls: visible.map((c) => c.dataset.url) }),
+          });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          visible.forEach((c) => (c.dataset.reviewed = "true"));
+          recount();
+        } catch (err) {
+          alert(`Bulk review failed: ${err.message}`);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

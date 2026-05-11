@@ -15,10 +15,10 @@ import tempfile
 import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, NamedTuple
+from typing import Final, Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -788,6 +788,72 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
 
             issues.append(f"<img> missing {', '.join(missing)}: {src_str}")
 
+    return issues
+
+
+_INLINE_VIDEO_EXTS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
+
+
+def _inline_looping_video_sources(video: Tag) -> list[str]:
+    """
+    Return source URLs from an inline looping muted `<video>` element.
+
+    Returns ``[]`` for the persistent ``#pond-video`` background and for any
+    video missing the autoplay+loop+muted attribute trio that distinguishes a
+    GIF-replacement from a regular embed.
+    """
+    if video.get("id") == "pond-video":
+        return []
+    if not (
+        video.has_attr("autoplay")
+        and video.has_attr("loop")
+        and video.has_attr("muted")
+    ):
+        return []
+    sources: list[str] = []
+    direct = video.get("src")
+    if isinstance(direct, str) and direct.lower().endswith(_INLINE_VIDEO_EXTS):
+        sources.append(direct)
+    for source in _tags_only(video.find_all("source")):
+        src = source.get("src")
+        if isinstance(src, str) and src.lower().endswith(_INLINE_VIDEO_EXTS):
+            sources.append(src)
+    return sources
+
+
+def check_inline_media_reviewed(
+    soup: BeautifulSoup,
+    invert_labels: Mapping[str, bool] | None,
+) -> list[str]:
+    """
+    Check that every dark-mode-relevant inline media element is user-reviewed.
+
+    Covers both images (every ``<img>`` with an ``.avif`` src) and inline
+    looping muted videos (``<video autoplay loop muted>``, excluding the
+    persistent ``#pond-video``). Each must have an entry in
+    ``.invert_labels.json`` with ``reviewed: true``. Catches newly-added media
+    that was auto-labeled by the luminance heuristic but never confirmed by a
+    human, and media never triaged at all.
+
+    For videos, *all* source URLs must be reviewed individually — labelling just
+    the .mp4 doesn't cover the .webm sibling.
+
+    Returns a list of issues (one per occurrence). No-op when the labels file
+    isn't loaded (e.g., in unit tests).
+    """
+    if invert_labels is None:
+        return []
+    issues: list[str] = []
+    for img in _tags_only(soup.find_all("img")):
+        src = img.get("src")
+        if not isinstance(src, str) or not src.lower().endswith(".avif"):
+            continue
+        if src not in invert_labels:
+            issues.append(f"<img> AVIF not user-reviewed: {src}")
+    for video in _tags_only(soup.find_all("video")):
+        for src in _inline_looping_video_sources(video):
+            if src not in invert_labels:
+                issues.append(f"<video> source not user-reviewed: {src}")
     return issues
 
 
@@ -1785,6 +1851,9 @@ class CheckOptions:
     should_check_fonts: bool = False
     defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
+    # Loaded once in _process_html_files; passed through so each file
+    # check doesn't have to re-read the JSON.
+    invert_labels: Mapping[str, bool] | None = None
 
 
 def check_file_for_issues(
@@ -1850,6 +1919,9 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "media_missing_invert_review": check_inline_media_reviewed(
+            soup, opts.invert_labels
+        ),
         "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
@@ -2848,6 +2920,52 @@ def _collect_paragraphs_for_spellcheck(
         paragraph_map[rel] = paras
 
 
+def _load_reviewed_invert_labels(
+    project_root: Path,
+) -> Mapping[str, bool] | None:
+    """
+    Load **user-reviewed** entries from `.invert_labels.json`.
+
+    Returns ``{url: invert_decision}`` for URLs whose label has
+    ``reviewed: true``. Auto-labeled but unreviewed URLs (and entries
+    that don't conform to the new schema, e.g. legacy bare bools) are
+    intentionally omitted so the AVIF-labeled check fails for them.
+
+    Returns ``None`` (disabling the check) when:
+    - the file is absent or malformed, or
+    - the labels file exists but the user has not reviewed any entry
+      yet (e.g. fresh checkout, before any labeling). Without this
+      escape hatch every CI run would fail on day one.
+    """
+    path = (
+        project_root
+        / "quartz"
+        / "plugins"
+        / "transformers"
+        / ".invert_labels.json"
+    )
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+    reviewed: dict[str, bool] = {}
+    for key, value in data.items():
+        if (
+            isinstance(value, dict)
+            and value.get("reviewed") is True
+            and "invert" in value
+        ):
+            reviewed[str(key)] = bool(value["invert"])
+    # No reviewed entries yet → treat the check as not-yet-armed.
+    if not reviewed:
+        return None
+    return reviewed
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
@@ -2863,10 +2981,12 @@ def _process_html_files(  # pylint: disable=too-many-locals
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
+    invert_labels = _load_reviewed_invert_labels(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,
         favicon_included_domains=included_domains,
+        invert_labels=invert_labels,
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)

@@ -28,6 +28,7 @@ import {
   Twemoji,
   WrapNakedElements,
   addAssetDimensionsFromSrc,
+  InvertInDarkMode,
   ColorVariables,
   ContentIndex,
   ContentPage,
@@ -107,6 +108,7 @@ const config: QuartzConfig = {
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),
+      InvertInDarkMode(),
     ],
     filters: [RemoveDrafts()],
     emitters: [

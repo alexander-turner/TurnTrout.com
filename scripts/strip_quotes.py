@@ -126,7 +126,11 @@ def main() -> None:
         source_dir = git_root / "website_content"
 
     output_dir = create_stripped_directory(source_dir, args.output_dir)
-    print(output_dir)
+    # Only echo the path when we picked it ourselves; if the caller passed
+    # --output-dir they already know it, and the print just adds noise to
+    # tools like the pre-push runner.
+    if args.output_dir is None:
+        print(output_dir)
 
 
 if __name__ == "__main__":

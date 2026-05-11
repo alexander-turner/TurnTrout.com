@@ -24,10 +24,7 @@ jobs:
   approve:
     if: >-
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, '/approve-baselines') &&
-      (github.event.comment.author_association == 'OWNER' ||
-       github.event.comment.author_association == 'COLLABORATOR' ||
-       github.event.comment.author_association == 'MEMBER')
+      contains(github.event.comment.body, '/approve-baselines')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

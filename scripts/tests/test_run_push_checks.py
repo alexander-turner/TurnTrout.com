@@ -650,7 +650,13 @@ def test_get_formatter_steps():
 
 _TEST_ROOT = Path("/test/root")
 _VERIFY_NAMES = frozenset(
-    {"Pylint", "Mypy", "Source file checks", "Spellcheck and Vale"}
+    {
+        "Pylint",
+        "Mypy",
+        "Source file checks",
+        "Spellcheck and Vale",
+        "DeepSource PR issues",
+    }
 )
 _EXPECTED_STEP_NAMES = (
     "Linting Python",
@@ -662,17 +668,18 @@ _EXPECTED_STEP_NAMES = (
     "Mypy",
     "Source file checks",
     "Spellcheck and Vale",
+    "DeepSource PR issues",
     "Compressing and uploading local assets",
     "Scanning for images without alt text",
 )
 
 
 def test_get_check_steps_has_expected_step_count():
-    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail
+    """Formatter steps + SCSS-vars prep + 5 parallel verifiers + 2 tail
     steps."""
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     formatter_count = len(run_push_checks.get_formatter_steps(_TEST_ROOT))
-    assert len(steps) == formatter_count + 7
+    assert len(steps) == formatter_count + 8
 
 
 @pytest.mark.parametrize("name", _EXPECTED_STEP_NAMES)

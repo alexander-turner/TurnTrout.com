@@ -565,10 +565,10 @@ test.describe("Image's mix-blend-mode attribute", () => {
     await expect(image).toHaveCSS("mix-blend-mode", "multiply")
   })
 
-  test("is normal in dark mode", async ({ page }) => {
+  test("is screen in dark mode", async ({ page }) => {
     await setTheme(page, "dark")
     const image = getPreviewLocator(page).locator("img").first()
-    await expect(image).toHaveCSS("mix-blend-mode", "normal")
+    await expect(image).toHaveCSS("mix-blend-mode", "screen")
   })
 })
 

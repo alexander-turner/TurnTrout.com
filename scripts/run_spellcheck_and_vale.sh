@@ -9,7 +9,11 @@ set -uo pipefail
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "$GIT_ROOT" || exit 1
 
-STRIPPED=$(mktemp -d -t turntrout-stripped-XXXXXX)
+# `mktemp -t TEMPLATE` is non-portable: macOS treats the arg as a literal
+# prefix and appends random chars, so the directory name ends up containing
+# the literal "XXXXXX". Pass a full template path instead — both macOS and
+# Linux mktemp substitute the X's with random characters.
+STRIPPED=$(mktemp -d "${TMPDIR:-/tmp}/turntrout-stripped-XXXXXX")
 trap 'rm -rf "$STRIPPED"' EXIT
 
 uv run python scripts/strip_quotes.py \
