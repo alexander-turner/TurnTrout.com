@@ -105,10 +105,11 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 
 ## DeepSource issues
 
-- The `deepsource` CLI is authenticated by the SessionStart hook. When asked to fix DeepSource issues — or proactively when you've just landed nontrivial work — list outstanding issues and clear them.
-- Useful invocations:
+- The `deepsource` CLI is authenticated by the SessionStart hook.
+- **Required before declaring a PR task done.** After every push to a PR branch, run `deepsource issues --pr <N> --output json` and clear the findings in the same PR — don't wait for the user to prompt you. Treat this as a blocking step alongside CI: a green CI with outstanding DeepSource issues is not "done".
+- The PR-status check (DeepSource Code Review) only flags issues from the lint/static-analysis bots after a delay; the CLI gives the canonical list. Do not rely on the PR comment alone — poll the CLI.
+- Also useful:
   - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)
   - `deepsource issues --default-branch --analyzer javascript --output json`
-  - `deepsource issues --pr <N> --output json` (issues introduced/remaining on a PR)
-- Fix root causes, not by appending `// skipcq: <CODE>` — only suppress when the warning is genuinely a false positive and write a comment explaining why on the same line.
+- Fix root causes, not by appending `# skipcq: <CODE>` / `// skipcq: <CODE>` — only suppress when the warning is genuinely a false positive and write a comment explaining why on the same line.
 - Group fixes into one focused PR per analyzer (or per issue cluster if a single PR would balloon), keeping the diff reviewable. After landing, re-run the CLI to confirm the count went down.
