@@ -92,7 +92,12 @@ PUPPETEER_EXECUTABLE_PATH=$(find ~/.cache/ms-playwright -name "chrome" -path "*/
 
 Uses Playwright's native `toMatchSnapshot`. Baselines live in Cloudflare R2 (`r2:turntrout/visual-baselines/`); `tests/visual-baselines/` is gitignored. CI downloads baselines via `scripts/r2_baselines.py download`. On mismatch, CI uploads a merged HTML diff report as the `visual-diff-report` artifact and surfaces an "Approve baselines" link in the failed run's step summary (and as a PR comment on PRs).
 
-To approve: run the `Update visual baselines` workflow from the Actions UI (`workflow_dispatch`) with `ref` set to the branch (PR head ref, or `main`). The workflow regens baselines, uploads them to R2, and pushes an empty commit to retrigger visual-testing.
+Two ways to approve baselines (both promote the named visual-testing run's `*-actual.png` artifacts to R2):
+
+1. **"Approve these as baselines" button on the diff gallery** — primary path. Works for both PR and main galleries. Stores a fine-grained GitHub PAT (`actions:write` scope on this repo) in `localStorage` on first click and POSTs to the GitHub API to dispatch `update-visual-baselines.yaml`.
+2. **Actions UI `workflow_dispatch`** — manual fallback. Supply the `run_id` of the visual-testing run whose actuals to adopt; optionally a `pr_number` to also retrigger that PR.
+
+For PR runs the workflow pushes an empty commit to the PR branch so visual-testing reruns immediately. For main runs it can't push (would pollute history); instead it (a) posts a synthetic passing `visual-testing` check-run on the head commit (the just-uploaded actuals ARE the new baselines, so rerunning would always pass — skip the wait), then (b) `rerun-failed-jobs` on the same-commit `deploy.yaml` run. `verify-test-results` polls `sort_by(.started_at) | last`, so the new success wins; `deploy` unblocks.
 
 ## Pre-push validation pipeline
 

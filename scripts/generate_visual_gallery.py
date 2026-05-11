@@ -2,13 +2,19 @@
 """
 Build a single-page screenshot gallery from Playwright trace artifacts.
 
-Usage: generate_visual_gallery.py <traces-dir> <report-dir>
+Usage: generate_visual_gallery.py <traces-dir> <report-dir>        [--run-id N]
+[--repo owner/repo] [--pr-number N]
 
 Walks ``traces-dir`` for ``*-actual.png`` (skipping ``*-retry*`` dirs), pairs
 each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
 ``<report-dir>/gallery-images/``, and writes the gallery to ``<report-
 dir>/index.html``. Any existing Playwright ``index.html`` is moved aside to
 ``report.html`` and linked from the gallery header.
+
+When ``--run-id`` and ``--repo`` are supplied the gallery includes an "Approve
+baselines" button that dispatches the ``update-visual-baselines.yaml`` workflow
+via the GitHub API. The button prompts for a PAT (``actions:write`` scope) on
+first click and caches it in ``localStorage``.
 
 Each row shows expected / actual / diff side-by-side at full natural height.
 Loading is strictly sequential: row N's images don't start fetching until every
@@ -18,7 +24,9 @@ predictable on multi-hundred-row diffs.
 
 from __future__ import annotations
 
+import argparse
 import html
+import json
 import shutil
 import sys
 from dataclasses import dataclass
@@ -53,6 +61,22 @@ h1 { margin: 0 0 .25rem; }
                              border: 1px dashed rgba(127,127,127,0.4);
                              background: rgba(127,127,127,0.05); }
 .empty { color: #888; }
+.approve { margin: 0 0 1.25rem; padding: .75rem 1rem;
+           border: 1px solid rgba(127,127,127,0.3); border-radius: .5rem;
+           background: rgba(127,127,127,0.06); display: flex;
+           align-items: center; gap: .75rem; flex-wrap: wrap; }
+.approve button { font: inherit; padding: .4rem .9rem; border-radius: .35rem;
+                  border: 1px solid rgba(127,127,127,0.4); cursor: pointer;
+                  background: #f6f6f6; color: #111; }
+.approve button:disabled { opacity: .55; cursor: progress; }
+.approve .ok { color: #1c7c1c; }
+.approve .err { color: #b21010; }
+@media (prefers-color-scheme: dark) {
+  .approve button { background: #2a2a2a; color: #eee;
+                    border-color: rgba(255,255,255,0.18); }
+  .approve .ok { color: #6ad26a; }
+  .approve .err { color: #ff7373; }
+}
 .lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92);
       z-index: 9999; cursor: zoom-out; padding: 1rem; overflow: auto; }
 .lb.show { display: block; }
@@ -61,6 +85,69 @@ h1 { margin: 0 0 .25rem; }
   .row h3 { color: #ddd; }
   .row { border-color: rgba(255,255,255,0.15); }
 }
+"""
+
+_APPROVE_JS = """
+// One-click approve baselines: dispatches the update-visual-baselines.yaml
+// workflow via the GitHub API. Stores the user's PAT in localStorage on
+// first click (key: ``gh_approve_baselines_pat``); a 401 clears it.
+(() => {
+  const cfg = window.__APPROVE_CFG__;
+  if (!cfg || !cfg.runId || !cfg.repo) return;  // No CI metadata; skip.
+  const btn = document.getElementById('approve-btn');
+  const status = document.getElementById('approve-status');
+  const PAT_KEY = 'gh_approve_baselines_pat';
+
+  async function dispatch() {
+    let token = (localStorage.getItem(PAT_KEY) || '').trim();
+    if (!token) {
+      const entered = prompt(
+        'GitHub PAT with `actions:write` scope (stored in localStorage):'
+      );
+      token = (entered || '').trim();
+      if (!token) return;
+      localStorage.setItem(PAT_KEY, token);
+    }
+    btn.disabled = true;
+    status.textContent = 'Dispatching…';
+    status.className = '';
+    const url = `https://api.github.com/repos/${cfg.repo}` +
+      `/actions/workflows/update-visual-baselines.yaml/dispatches`;
+    const inputs = { run_id: String(cfg.runId) };
+    if (cfg.prNumber) inputs.pr_number = String(cfg.prNumber);
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+        body: JSON.stringify({ ref: 'main', inputs }),
+      });
+      if (res.status === 204) {
+        status.textContent =
+          'Dispatched. Watch the Actions tab for the run.';
+        status.className = 'ok';
+        return;
+      }
+      const body = (await res.text()).slice(0, 300);
+      status.textContent = `Failed (${res.status}): ${body}`;
+      status.className = 'err';
+      // 401 = bad/expired token. 403 = missing scope / SSO-unauth. Either
+      // way the cached value won't ever work; force a re-prompt.
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem(PAT_KEY);
+      }
+    } catch (err) {
+      status.textContent = `Network error: ${err.message}`;
+      status.className = 'err';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+  btn.addEventListener('click', dispatch);
+})();
 """
 
 _JS = """
@@ -107,6 +194,15 @@ class Tile:
     expected: str | None
     actual: str | None
     diff: str | None
+
+
+@dataclass(frozen=True)
+class ApproveConfig:
+    """CI metadata that wires up the gallery's approve-baselines button."""
+
+    run_id: str
+    repo: str
+    pr_number: str | None = None
 
 
 def _copy_if_exists(src: Path, dest_dir: Path, dest_name: str) -> str | None:
@@ -198,12 +294,17 @@ def render_html(
     images_subdir: str = "gallery-images",
     *,
     has_playwright_report: bool = True,
+    approve: ApproveConfig | None = None,
 ) -> str:
     """
     Build the gallery HTML page.
 
     If ``has_playwright_report`` is False, the header link to the full
     Playwright report is omitted to avoid a dead link.
+
+    When ``approve`` is supplied AND there's at least one failing tile, the page
+    includes a one-click "Approve baselines" button that dispatches the
+    ``update-visual-baselines.yaml`` workflow.
     """
     body = "\n".join(_row(t, images_subdir) for t in tiles) or (
         '<p class="empty">No failing screenshots found.</p>'
@@ -215,6 +316,25 @@ def render_html(
         if has_playwright_report
         else ""
     )
+    # Only show the approve button when there's actually something to
+    # adopt as baselines — a tile-less gallery means visual-testing passed.
+    show_approve = approve is not None and bool(tiles)
+    approve_panel = (
+        '<div class="approve">'
+        '<button type="button" id="approve-btn">Approve these as baselines</button>'
+        '<span id="approve-status"></span>'
+        "</div>\n"
+        if show_approve
+        else ""
+    )
+    approve_cfg_script = (
+        "<script>window.__APPROVE_CFG__ = "
+        f"{json.dumps({'runId': approve.run_id, 'repo': approve.repo, 'prNumber': approve.pr_number})};"
+        "</script>\n"
+        if show_approve and approve is not None
+        else ""
+    )
+    approve_script = f"<script>{_APPROVE_JS}</script>\n" if show_approve else ""
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n<head>\n<meta charset="utf-8">\n'
@@ -224,8 +344,11 @@ def render_html(
         f'<p class="sub">{count} failing screenshot{plural} · '
         f"expected / actual / diff side-by-side · click any image to enlarge"
         f"{report_link}</p>\n"
+        f"{approve_panel}"
         f"{body}\n"
         '<div class="lb" id="lb"><img id="lbi" alt=""></div>\n'
+        f"{approve_cfg_script}"
+        f"{approve_script}"
         f"<script>{_JS}</script>\n"
         "</body>\n</html>\n"
     )
@@ -239,11 +362,18 @@ def install_as_index(report_dir: Path, gallery_html: str) -> None:
     (report_dir / "index.html").write_text(gallery_html, encoding="utf-8")
 
 
-def main(traces_dir: Path, report_dir: Path) -> None:
+def main(
+    traces_dir: Path,
+    report_dir: Path,
+    *,
+    approve: ApproveConfig | None = None,
+) -> None:
     """Build the gallery and install it as index.html."""
     tiles = collect_tiles(traces_dir, report_dir / "gallery-images")
     page = render_html(
-        tiles, has_playwright_report=(report_dir / "index.html").exists()
+        tiles,
+        has_playwright_report=(report_dir / "index.html").exists(),
+        approve=approve,
     )
     # Keep gallery.html for backward-compatible deep links.
     (report_dir / "gallery.html").write_text(page, encoding="utf-8")
@@ -251,10 +381,37 @@ def main(traces_dir: Path, report_dir: Path) -> None:
     print(f"Wrote {report_dir / 'index.html'} with {len(tiles)} tiles")
 
 
+def _parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build a screenshot diff gallery from Playwright traces.",
+    )
+    parser.add_argument("traces_dir", type=Path)
+    parser.add_argument("report_dir", type=Path)
+    parser.add_argument(
+        "--run-id",
+        default=None,
+        help="visual-testing run ID — required for the approve-baselines button",
+    )
+    parser.add_argument(
+        "--repo",
+        default=None,
+        help="owner/repo — required for the approve-baselines button",
+    )
+    parser.add_argument(
+        "--pr-number",
+        default=None,
+        help="PR number, if this gallery is for a PR run (omit on main)",
+    )
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(
-            f"usage: {sys.argv[0]} <traces-dir> <report-dir>", file=sys.stderr
+    args = _parse_args(sys.argv[1:])
+    approve_cfg = (
+        ApproveConfig(
+            run_id=args.run_id, repo=args.repo, pr_number=args.pr_number
         )
-        sys.exit(2)
-    main(Path(sys.argv[1]), Path(sys.argv[2]))
+        if args.run_id and args.repo
+        else None
+    )
+    main(args.traces_dir, args.report_dir, approve=approve_cfg)
