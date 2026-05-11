@@ -20,7 +20,7 @@ dependencies = [
     "pytest-xdist",
     "pyyaml",
     "requests",
-    "urllib3>=2.6.0",
+    "urllib3>=2.7.0",
     "rich",
     "ruamel-yaml",
     "tqdm",
