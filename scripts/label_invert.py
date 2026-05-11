@@ -49,6 +49,8 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
+from scripts import compress
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent.parent
@@ -65,21 +67,11 @@ CONTENT_DIR: Final[Path] = PROJECT_ROOT / "website_content"
 # for the chart-on-white-background case the labeling tool is built for.
 LUMINANCE_INVERT_THRESHOLD: Final[float] = 0.7
 
-# Tuples (not sets) so we can pass directly to ``str.endswith``.
-RASTER_EXTENSIONS: Final[tuple[str, ...]] = (
-    ".avif",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".gif",
-)
-# Video extensions for inline looping muted videos (GIF-replacements).
-# Each format is its own URL on R2; the rendered ``<video>`` tries each
-# ``<source>`` in order, but we ask the labeler for a verdict per URL.
-VIDEO_EXTENSIONS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
+# Each video format is its own URL on R2; the rendered ``<video>`` tries
+# each ``<source>`` in order, but we ask the labeler for a verdict per
+# URL.
 LABELABLE_EXTENSIONS: Final[tuple[str, ...]] = (
-    RASTER_EXTENSIONS + VIDEO_EXTENSIONS
+    compress.EMBEDDED_RASTER_EXTENSIONS + compress.INLINE_VIDEO_EXTENSIONS
 )
 EXCLUDED_SEGMENTS: Final[frozenset[str]] = frozenset(
     {
@@ -113,7 +105,7 @@ def _is_candidate(url: str) -> bool:
 
 def is_video_url(url: str) -> bool:
     """True iff ``url`` ends with a labeled-video extension."""
-    return url.lower().endswith(VIDEO_EXTENSIONS)
+    return url.lower().endswith(compress.INLINE_VIDEO_EXTENSIONS)
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:

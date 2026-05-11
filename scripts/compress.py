@@ -30,6 +30,18 @@ ALLOWED_EXTENSIONS: Final[tuple[str, ...]] = (
     ALLOWED_IMAGE_EXTENSIONS + ALLOWED_VIDEO_EXTENSIONS
 )
 
+# Raster image formats embedded as `<img>` in the rendered site. Broader
+# than ALLOWED_IMAGE_EXTENSIONS — compress.py only takes .jpg/.jpeg/.png
+# as input, but the rendered HTML also embeds .avif/.webp/.gif directly.
+EMBEDDED_RASTER_EXTENSIONS: Final[tuple[str, ...]] = tuple(
+    sorted(set(ALLOWED_IMAGE_EXTENSIONS) | {".avif", ".webp", ".gif"})
+)
+
+# Subset of ALLOWED_VIDEO_EXTENSIONS used as inline looping muted GIF
+# replacements (`<video autoplay loop muted>`). Excludes .gif/.avi/.mpeg
+# because those aren't embedded as `<video>` sources on the site.
+INLINE_VIDEO_EXTENSIONS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
+
 _CODEC_HEVC: Final[str] = "libx265"
 _CODEC_VP9: Final[str] = "libvpx-vp9"
 _CODEC_AUDIO_OPUS: Final[str] = "libopus"

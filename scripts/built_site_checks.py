@@ -18,7 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, NamedTuple
+from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -791,9 +791,6 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-_INLINE_VIDEO_EXTS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
-
-
 def _inline_looping_video_sources(video: Tag) -> list[str]:
     """
     Return source URLs from an inline looping muted `<video>` element.
@@ -812,11 +809,15 @@ def _inline_looping_video_sources(video: Tag) -> list[str]:
         return []
     sources: list[str] = []
     direct = video.get("src")
-    if isinstance(direct, str) and direct.lower().endswith(_INLINE_VIDEO_EXTS):
+    if isinstance(direct, str) and direct.lower().endswith(
+        compress.INLINE_VIDEO_EXTENSIONS
+    ):
         sources.append(direct)
     for source in _tags_only(video.find_all("source")):
         src = source.get("src")
-        if isinstance(src, str) and src.lower().endswith(_INLINE_VIDEO_EXTS):
+        if isinstance(src, str) and src.lower().endswith(
+            compress.INLINE_VIDEO_EXTENSIONS
+        ):
             sources.append(src)
     return sources
 
