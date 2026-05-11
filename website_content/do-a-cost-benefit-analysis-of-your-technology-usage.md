@@ -37,7 +37,7 @@ date_published: 2022-03-27
 original_url: https://www.lesswrong.com/posts/fri4HdDkwhayCYFaE/do-a-cost-benefit-analysis-of-your-technology-usage
 skip_import: true
 description: 'A cost-benefit analysis of technology: Is your smartphone really worth 1.5 waking months per year?'
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 If an unaligned entity invests billions of dollars into an application which you use, where they benefit from wasting your time, and you haven’t at least done a cost-benefit analysis so that your usage minimizes your costs and maximizes your benefits—_You are probably getting fucked over_.
@@ -78,8 +78,9 @@ Readers of this forum are probably better about their usage. Let’s be (too) ge
 
 ## Attentional costs
 
-Lost time doesn’t capture everything sucked away by your apps, by your email tics, by YouTube, by Reddit, by Slack, by Discord, by everything else which is after you. [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/) asked:
+Lost time doesn’t capture everything sucked away by your apps, by your email tics, by YouTube, by Reddit, by Slack, by Discord, by everything else which is after you.
 
+> [!quote] [_Digital Minimalism_](https://smile.amazon.com/Digital-Minimalism-Choosing-Focused-Noisy/dp/0525536515/)
 > When was the last time you were bored and in silence?
 
 I remember lazy summer childhoods, staring at the ceiling after I ran out of video game time. At my 2018 CFAR workshop, my phone dipped in a stream for several minutes and short-circuited. I was actually glad. I felt free. How strange, to feel _free_ from a device I purchased! Perhaps I should have noticed the warning sign.

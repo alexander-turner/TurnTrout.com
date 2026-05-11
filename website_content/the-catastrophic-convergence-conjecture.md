@@ -40,7 +40,7 @@ original_url: https://www.lesswrong.com/posts/w6BtMqKRLxG9bNLMr/the-catastrophic
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/8l3kkwg.jpg
 description: "Conjecture: Alignment catastrophe is exclusively caused by AI seeking power."
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 card_image_alt: 'The "Catastrophic Convergence Conjecture" is defined as: "Unaligned goals tend to have catastrophe-inducing optimal policies because of power-seeking incentives."'
 createBibtex: true
 ---
@@ -115,8 +115,7 @@ How useful is our definition of "catastrophe" with respect to humans? After all,
 
 Tying one's shoes is absolutely catastrophic for an agent which only finds value in universes in which shoes have _never, ever, ever_ been tied. [Maybe all possible value in the universe is destroyed if we lose at Go to an AI even once](https://www.lesswrong.com/posts/c2oM7qytRByv6ZFtz/impact-measure-desiderata#zLnkb5xM4E9ATzCFg). But this seems rather silly.
 
-[Human values are complicated and fragile](https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile):
-
+> [!quote] [Human values are complicated and fragile](https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile)
 > Consider the incredibly important human value of "boredom" - our desire not to do "the same thing" over and over and over again. You can imagine a mind that contained almost the whole specification of human value, almost all the morals and metamorals, but left out just this one thing - and so it spent until the end of time, and until the farthest reaches of its light cone, replaying a single highly optimized experience, over and over and over again.
 
 In contrast, the human AU is not so delicate. That is, given that we have power, we can make value; there don’t seem to be arbitrary, silly value-specific catastrophes for us. Given energy and resources and time and manpower and competence, we can build a better future.

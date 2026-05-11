@@ -38,7 +38,7 @@ date_published: 2019-12-29
 original_url: https://www.lesswrong.com/posts/MjZSdPEd94sp48EFC/judgment-day-insights-from-judgment-in-managerial-decision
 skip_import: true
 description: Insights from a management textbook on how to improve decision-making, negotiate effectively, and overcome cognitive biases.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 The more broadly I read and learn, the more I bump into implicit self-conceptions and self-boundaries. I was slightly averse to learning from a manager-oriented textbook because I'm not a manager, but also because I... didn't see myself as the kind of person who could learn about a "business"-y context? I also [didn't see myself as the kind of person who could read and do math](/first-analysis-textbook-review), which now seems ridiculous.
@@ -143,7 +143,5 @@ While I was waiting for her to arrive, I noticed that people were writing on pap
 The list of things I've noticed I failed to notice in the last month is surprisingly long. I don't think I'm bad at this in a relative sense – just in an absolute sense.
 
 This new year, I'm going to become a less oblivious, less stupid, and less wrong person.
-
-<hr/>
 
 [^1]: I also still want to learn Bayes nets, category theory, get a much deeper understanding of probability theory, provability logic, and decision theory.

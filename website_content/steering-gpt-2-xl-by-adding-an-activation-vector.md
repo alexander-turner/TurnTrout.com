@@ -42,7 +42,7 @@ date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 createBibtex: true
 ---
 
@@ -392,8 +392,7 @@ Table: The top five most probable next tokens at sequence position 8 (`said`), a
 
 Four of the top five most probable tokens are wedding-related. However, none of them are sensical (e.g. "I went up to my friend and said party" is strange). Probably for similar reasons, the completions are incoherent when we add the steering vector to the last residual streams (the "end" condition above).
 
-[In the comments, the user `Measure` notes](https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector?commentId=KJEhAFbLNzZMucHNL#comments):
-
+> [!quote] [`Measure`'s comment on _Steering GPT-2-XL by adding an activation vector_](https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector?commentId=KJEhAFbLNzZMucHNL#comments)
 > While these aren't syntactically valid continuations of the prompt, they _are_ highly likely (and syntactically valid) continuations for “ ”. More than just being wedding-related, these seem like direct continuations.
 
 We intuit that modifying the last residual stream does not leave the model time to recover from the activation addition. This normally isn't a problem: The activation additions don't directly affect the last residual stream of the prompt. The last stream is responsible for actually generating the first completion token.
@@ -887,8 +886,9 @@ Let's think about the most common ways of steering LLMs: finetuning and promptin
 
 **Activation additions may let you change model** **properties which are inaccessible to the finetuning process.** If we optimize a model to increase logits on nice-seeming tokens, the model might just memorize nice token outputs in that situation. Because why not? That locally reduces loss.
 
-Why should activation additions do any better? In [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network), Alex conjectured that:
+Why should activation additions do any better?
 
+> [!quote] [Understanding and controlling a maze-solving policy network](/understanding-and-controlling-a-maze-solving-policy-network)
 > It's possible to deeply modify a range of alignment-relevant model properties, without retraining the model, via techniques as simple as activation additions.
 
 Here's how Julian Schulz explains the intuitions:

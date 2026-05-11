@@ -415,6 +415,12 @@ article .ordinal-num {
   font-variant-numeric: lining-nums;
 }
 
+// Version labels like "V1", "V2", "V100" — keep digits at cap height so they
+// pair with the small-cap V instead of dropping below the baseline.
+.version-num {
+  font-variant-numeric: lining-nums;
+}
+
 #article-title {
   margin-top: calc(-4 * $base-margin);
 }

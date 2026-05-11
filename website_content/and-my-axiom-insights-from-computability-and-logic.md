@@ -37,7 +37,7 @@ date_published: 2019-01-16
 original_url: https://www.lesswrong.com/posts/n8neHaCubKG3HDWhT/and-my-axiom-insights-from-computability-and-logic
 skip_import: true
 description: Turing computability and the surprising limits of what formal systems can express.
-date_updated: 2026-04-20
+date_updated: 2026-05-08
 ---
 
 Max Tegmark's _[Our Mathematical Universe](https://www.amazon.com/Our-Mathematical-Universe-Ultimate-Reality/dp/0307599809)_ briefly touches on a captivating, beautiful mystery:
@@ -207,5 +207,3 @@ I don't think I'm a great mathematician yet by any means, but as my studies cont
 
 > [!quote] [Twelve virtues of rationality](https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality)
 > If for many years you practice the techniques and submit yourself to strict constraints, it may be that you will glimpse the center. Then you will see how all techniques are one technique, and you will move correctly without feeling constrained. Musashi wrote: “When you appreciate the power of nature, knowing the rhythm of any situation, you will be able to hit the enemy naturally and strike naturally. All this is the Way of the Void.”
-
-<hr/>
