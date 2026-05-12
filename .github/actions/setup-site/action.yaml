@@ -185,19 +185,18 @@ runs:
     # All versions pinned for deterministic builds. Bump when Ubuntu
     # pushes security updates that remove the old version.
     # Wrapped in retry-external because Azure's apt mirror occasionally
-    # serves at ~133 kB/s or hangs entirely; without retry+timeout a
-    # single slow connection can sit in `apt-get install` for 30+
-    # minutes before eventually completing. `timeout 600` bounds each
-    # attempt so a hung mirror rolls into the next retry instead of
-    # monopolizing the job budget.
+    # serves at ~133 kB/s or hangs entirely. retry-external bounds the
+    # total at 3 attempts; per-attempt we let apt run to completion
+    # rather than capping with `timeout` — slow but successful downloads
+    # were getting killed mid-fetch by a 10-min cap.
     - name: Install system packages
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       uses: ./.github/actions/retry-external
       with:
         max-attempts: "3"
         command: |
-          timeout 600 sudo apt-get update && \
-          timeout 600 sudo apt-get install -y --no-install-recommends \
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends \
             libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
             dos2unix=7.5.1-1 \
             ffmpeg=7:6.1.1-3ubuntu5 \
