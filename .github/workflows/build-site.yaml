@@ -21,17 +21,13 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    # Bumped from 30 → 45 because the median build is ~24 min and slow
+    # runners occasionally pushed it over the 30-min line. Eight CI
+    # workflows reuse this file in parallel, so each commit still pays
+    # the full build cost N times; deduplicating those is a separate,
+    # bigger refactor (concurrency groups cancel queued waiters in GHA,
+    # so that primitive doesn't fit).
     timeout-minutes: 45
-    # Serialize builds for the same commit across every caller (deploy,
-    # visual-testing, site-build-checks, playwright-tests, a11y, etc.).
-    # The first caller does the real build (~24 min) and writes the
-    # public/ cache. Every later caller queues, then hits the cache and
-    # the build/setup steps no-op via the `if:` gates below. Without this,
-    # all callers race in parallel and each pays the full build cost,
-    # which is what hit the old 30-min timeout on slower runners.
-    concurrency:
-      group: build-site-${{ github.sha }}
-      cancel-in-progress: false
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
