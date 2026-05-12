@@ -6356,7 +6356,7 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
 
 
 _InvertLabel = built_site_checks._InvertLabel
-_INVERT_CLASS = "invert-in-dark-mode"
+INVERT_CLASS = built_site_checks.INVERT_CLASS
 
 
 def _reviewed(invert: bool) -> _InvertLabel:
@@ -6380,7 +6380,7 @@ def _class_mismatch_msg(
 ) -> str:
     expected = "expected" if invert else "must not be applied"
     return (
-        f"<{kind}> {url} {_INVERT_CLASS} class {expected} "
+        f"<{kind}> {url} {INVERT_CLASS} class {expected} "
         f"(JSON invert={invert}, class present={has_class})"
     )
 
@@ -6392,7 +6392,7 @@ def _class_mismatch_msg(
         ('<img src="https://x/a.avif">', None, []),
         # Reviewed entries with classes matching their `invert` field.
         (
-            f'<img class="{_INVERT_CLASS}" src="https://x/a.avif">'
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">'
             '<img src="https://x/b.png">',
             {
                 "https://x/a.avif": _reviewed(True),
@@ -6427,7 +6427,7 @@ def _class_mismatch_msg(
         ),
         # Reviewed invert=False but class present → mismatch.
         (
-            f'<img class="{_INVERT_CLASS} other" src="https://x/b.jpg">',
+            f'<img class="{INVERT_CLASS} other" src="https://x/b.jpg">',
             {"https://x/b.jpg": _reviewed(False)},
             [
                 _class_mismatch_msg(
@@ -6492,7 +6492,7 @@ def _class_mismatch_msg(
         ),
         # class attribute as a space-separated string also works.
         (
-            f'<img class="foo {_INVERT_CLASS} bar" src="https://x/a.avif">',
+            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif">',
             {"https://x/a.avif": _reviewed(True)},
             [],
         ),
@@ -6513,7 +6513,7 @@ def test_check_invert_labels_images(
     [
         # All sources reviewed with matching class → no issue.
         (
-            f'<video class="{_INVERT_CLASS}" autoplay loop muted>'
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
@@ -6552,7 +6552,7 @@ def test_check_invert_labels_images(
         ),
         # Reviewed invert=False with class present on <video> → mismatch.
         (
-            f'<video class="{_INVERT_CLASS}" autoplay loop muted>'
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
             '<source src="https://x/a.mp4">'
             "</video>",
             {"https://x/a.mp4": _reviewed(False)},

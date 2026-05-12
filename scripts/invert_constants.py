@@ -7,7 +7,19 @@ validator doesn't have to import the labeler's heavy CV dependencies (Flask,
 PIL, numpy) just to reuse a few constants.
 """
 
+import json
+from pathlib import Path
 from typing import Final
+
+_CONSTANTS_JSON_PATH: Final[Path] = (
+    Path(__file__).resolve().parent.parent / "config" / "constants.json"
+)
+with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as _f:
+    _SHARED_CONSTANTS = json.load(_f)
+
+# CSS class the build pipeline applies to elements that should be inverted in
+# dark mode. Canonical source: config/constants.json.
+INVERT_CLASS: Final[str] = _SHARED_CONSTANTS["invertInDarkModeClass"]
 
 # Tuples (not sets) so we can pass directly to ``str.endswith``.
 RASTER_EXTENSIONS: Final[tuple[str, ...]] = (

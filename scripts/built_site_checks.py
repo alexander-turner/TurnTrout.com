@@ -18,7 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Literal, NamedTuple
+from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -36,6 +36,7 @@ from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 from scripts.invert_constants import (
     EXCLUDED_SEGMENTS,
+    INVERT_CLASS,
     RASTER_EXTENSIONS,
     VIDEO_EXTENSIONS,
 )
@@ -796,10 +797,6 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-# Mirrors INVERT_CLASS in quartz/plugins/transformers/invertInDarkMode.ts.
-_INVERT_CLASS: Final[str] = "invert-in-dark-mode"
-
-
 class _InvertLabel(NamedTuple):
     invert: bool
     reviewed: bool
@@ -817,7 +814,7 @@ def _is_invert_candidate(url: str, valid_exts: tuple[str, ...]) -> bool:
 def _has_invert_class(tag: Tag) -> bool:
     raw = tag.get("class")
     tokens = raw.split() if isinstance(raw, str) else raw
-    return isinstance(tokens, list) and _INVERT_CLASS in tokens
+    return isinstance(tokens, list) and INVERT_CLASS in tokens
 
 
 def _inline_looping_video_sources(video: Tag) -> list[str]:
@@ -852,7 +849,7 @@ def _invert_issue(
         return None
     expected = "expected" if label.invert else "must not be applied"
     return (
-        f"<{kind}> {src} {_INVERT_CLASS} class {expected} "
+        f"<{kind}> {src} {INVERT_CLASS} class {expected} "
         f"(JSON invert={label.invert}, class present={has_class})"
     )
 

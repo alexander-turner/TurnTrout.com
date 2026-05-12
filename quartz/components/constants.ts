@@ -20,6 +20,7 @@ export const {
   faviconSubstringBlocklist,
   sessionStoragePondVideoKey,
   pondVideoId,
+  invertInDarkModeClass,
   debounceSearchDelay,
   mouseFocusDelay,
   searchPlaceholderDesktop,

@@ -171,8 +171,8 @@ section {
 
 // Images and inline looping muted videos flagged at build time by the
 // InvertInDarkMode transformer (quartz/plugins/transformers/invertInDarkMode.ts).
-// Labels live in .invert_labels.json and are populated by
-// `uv run scripts/label_invert.py`.
+// Class name is the canonical `invertInDarkModeClass` in config/constants.json;
+// SCSS can't read JSON, so the literal must stay in sync manually.
 :root[data-theme="dark"] img.invert-in-dark-mode,
 :root[data-theme="dark"] video.invert-in-dark-mode,
 .dark-mode img.invert-in-dark-mode,
