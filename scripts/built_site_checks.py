@@ -871,25 +871,6 @@ def _invert_issue_string(
     )
 
 
-def _validate_eligible_src(
-    kind: str,
-    src: str,
-    has_class: bool,
-    invert_labels: Mapping[str, InvertLabel],
-) -> str | None:
-    """
-    Validate one src already past the extension + excluded-segment filters:
-
-    error on non-HTTP(S) (labeler can't reach it), otherwise delegate to
-    :func:`_invert_issue_string`.
-    """
-    if not src.startswith(("http://", "https://")):
-        return (
-            f"<{kind}> {src}: must be served over HTTP(S) to be invert-labeled"
-        )
-    return _invert_issue_string(kind, src, has_class, invert_labels.get(src))
-
-
 def check_invert_labels(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, InvertLabel] | None,
@@ -898,11 +879,10 @@ def check_invert_labels(
     Validate every eligible ``<img>`` (raster ext) and inline looping
     ``<video>`` source against ``.invert_labels.json``: each must be present,
     reviewed, and have its ``invert-in-dark-mode`` class match the JSON
-    ``invert`` field (JSON is the source of truth).
+    ``invert`` field (the source of truth).
 
-    Also errors on non-HTTP(S) raster srcs the labeler can't reach. No-op when
-    ``invert_labels`` is None (loader-disabled in tests / when the labels file
-    is missing entirely).
+    No-op when ``invert_labels`` is ``None`` (loader-disabled in tests / when
+    the labels file is missing).
     """
     if invert_labels is None:
         return []
@@ -915,8 +895,8 @@ def check_invert_labels(
             continue
         if _is_excluded_segment(src):
             continue
-        issue = _validate_eligible_src(
-            "img", src, _has_invert_class(img), invert_labels
+        issue = _invert_issue_string(
+            "img", src, _has_invert_class(img), invert_labels.get(src)
         )
         if issue is not None:
             issues.append(issue)
@@ -924,8 +904,8 @@ def check_invert_labels(
         src = _canonical_inline_video_source(video)
         if src is None or _is_excluded_segment(src):
             continue
-        issue = _validate_eligible_src(
-            "video", src, _has_invert_class(video), invert_labels
+        issue = _invert_issue_string(
+            "video", src, _has_invert_class(video), invert_labels.get(src)
         )
         if issue is not None:
             issues.append(issue)

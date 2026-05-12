@@ -9,8 +9,8 @@ from .. import utils as script_utils
 from .utils import run_shell_command
 
 pytestmark = pytest.mark.skipif(
-    shutil.which("pnpm") is None,
-    reason="pnpm not found (node deps not installed)",
+    shutil.which("pnpm") is None or shutil.which("fish") is None,
+    reason="pnpm or fish not found",
 )
 
 
