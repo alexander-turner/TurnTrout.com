@@ -105,31 +105,70 @@ export function modifyNode(node: Element, index: number | undefined, parent: Par
   }
 }
 
+/**
+ * Split a text node's value on newlines into an alternating sequence of text
+ * nodes and <br> elements. A value with no newlines yields a single text node.
+ */
+function splitTextOnNewlines(value: string): (Text | Element)[] {
+  const lines = value.split("\n")
+  const result: (Text | Element)[] = []
+  lines.forEach((line, i) => {
+    if (i > 0) result.push(h("br"))
+    result.push({ type: "text", value: line })
+  })
+  return result
+}
+
+/**
+ * Flatten a paragraph's children so each logical line is a contiguous run of
+ * nodes separated by <br> elements. Markdown soft-wraps multiple `>` lines into
+ * a single paragraph whose text nodes contain embedded "\n" characters; this
+ * helper makes those line boundaries explicit.
+ */
+function flattenParagraphChildren(paragraph: Element): (Text | Element)[] {
+  const result: (Text | Element)[] = []
+  for (const child of paragraph.children) {
+    if (child.type === "text") {
+      result.push(...splitTextOnNewlines(child.value))
+      continue
+    }
+    /* istanbul ignore next -- paragraph children are always text or element nodes */
+    if (child.type === "element") {
+      result.push(child)
+    }
+  }
+  return result
+}
+
+function isLineBreak(node: Text | Element): boolean {
+  return node.type === "element" && node.tagName === "br"
+}
+
 export function processParagraph(paragraph: Element): Element | null {
   const newChildren: (Text | Element)[] = []
   let isSpoiler = false
+  let atLineStart = true
 
-  for (const child of paragraph.children) {
-    if (child.type === "text") {
-      const spoilerText = matchSpoilerText(child.value)
-      if (spoilerText !== null) {
-        isSpoiler = true
-        newChildren.push({ type: "text", value: spoilerText })
-        continue
-      }
-
-      if (!isSpoiler) {
-        return null
-      }
-
-      newChildren.push(child)
+  for (const node of flattenParagraphChildren(paragraph)) {
+    if (isLineBreak(node)) {
+      newChildren.push(node)
+      atLineStart = true
       continue
     }
 
-    /* istanbul ignore next -- paragraph children are always text or element nodes */
-    if (child.type === "element") {
-      newChildren.push(child)
+    if (atLineStart && node.type === "text") {
+      const spoilerText = matchSpoilerText(node.value)
+      if (spoilerText !== null) {
+        isSpoiler = true
+        newChildren.push({ type: "text", value: spoilerText })
+        atLineStart = false
+        continue
+      }
+      if (!isSpoiler) return null
     }
+
+    newChildren.push(node)
+    atLineStart = false
   }
 
   return isSpoiler ? { ...paragraph, children: newChildren } : null
