@@ -6514,29 +6514,27 @@ def test_check_invert_labels_images(
 @pytest.mark.parametrize(
     ("html", "labels", "expected_issues"),
     [
-        # All sources reviewed with matching class → no issue.
+        # Canonical (first) source reviewed with matching class → no issue,
+        # even if alternate-format sibling has no JSON entry. The
+        # invert-in-dark-mode class lives on the <video>, not per <source>,
+        # so a single label per video is the source of truth.
         (
             f'<video class="{INVERT_CLASS}" autoplay loop muted>'
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
-            {
-                "https://x/a.mp4": _reviewed(True),
-                "https://x/a.webm": _reviewed(True),
-            },
+            {"https://x/a.mp4": _reviewed(True)},
             [],
         ),
-        # Both sources missing → both flagged.
+        # Canonical source missing → flagged once. Alternate-format
+        # sibling is silently ignored (not double-counted).
         (
             "<video autoplay loop muted>"
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
             {},
-            [
-                _missing_msg("video", "https://x/a.mp4"),
-                _missing_msg("video", "https://x/a.webm"),
-            ],
+            [_missing_msg("video", "https://x/a.mp4")],
         ),
         # Reviewed invert=True on one source but class absent on the <video>.
         (
