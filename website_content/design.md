@@ -1107,6 +1107,11 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 4. `<video>` tags which do not provide multiple `<source>` options in the correct order (MP4 first, then WEBM);
 > 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
 >
+> **Dark-mode inversion:**
+>
+> 1. Eligible raster `<img>` and inline looping `<video>` sources missing from `.invert_labels.json` or not user-reviewed;
+> 2. `invert-in-dark-mode` class on a rendered element disagreeing with the JSON's `invert` field (the source of truth);
+>
 > **CSS and styling:**
 >
 > 1. Inline styles which invoke nonexistent CSS variables;

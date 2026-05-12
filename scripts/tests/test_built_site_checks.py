@@ -6459,14 +6459,12 @@ def _class_mismatch_msg(
             {},
             [],
         ),
-        # Non-HTTP src on a raster <img> errors — labeler can't reach it.
+        # Non-HTTP src is reported as missing from labels like any other
+        # raster <img> — relative paths are an error mode for separate checks.
         (
             '<img src="/local/a.png">',
             {},
-            [
-                "<img> /local/a.png: must be served over HTTP(S) "
-                "to be invert-labeled"
-            ],
+            [_missing_msg("img", "/local/a.png")],
         ),
         # Mixed-case extension still matches.
         (
