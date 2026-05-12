@@ -6,6 +6,8 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
+import { invertInDarkModeClass } from "../../components/constants"
+
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
 export const labelsPath = path.join(
@@ -16,7 +18,7 @@ export const labelsPath = path.join(
   ".invert_labels.json",
 )
 
-export const INVERT_CLASS = "invert-in-dark-mode"
+export const INVERT_CLASS = invertInDarkModeClass
 
 export type InvertLabelMap = ReadonlyMap<string, boolean>
 
