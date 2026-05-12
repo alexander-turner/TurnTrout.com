@@ -62,6 +62,7 @@ jobs:
         uses: ./.github/actions/setup-site
         with:
           install-python: "false"
+          install-puppeteer-chrome: "true"
 
       - name: Restore built site from cache
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
