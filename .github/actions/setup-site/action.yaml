@@ -29,6 +29,10 @@ inputs:
     description: "Whether to cache Puppeteer browsers"
     required: false
     default: "false"
+  install-puppeteer-chrome:
+    description: "Whether to install Puppeteer's Chrome (needed by pa11y-ci, subfont, Mermaid). Implies cache-puppeteer."
+    required: false
+    default: "false"
   cache-apt:
     description: "Whether to cache apt packages across runs (redirects apt archive dir)"
     required: false
@@ -36,7 +40,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # ── Node.js ──────────────────────────────────────────────────────
+    # ── Node.js ─────────────────────────────────────────────────────────────────
     - name: Set up Node.js
       if: inputs.install-node-deps == 'true'
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
@@ -80,7 +84,7 @@ runs:
       run: pnpm install --os=linux --cpu=x64 sharp
       shell: bash
 
-    # ── Python ───────────────────────────────────────────────────────
+    # ── Python ────────────────────────────────────────────────────────────────
     - name: Set up uv
       if: inputs.install-python == 'true'
       uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v7
@@ -98,7 +102,7 @@ runs:
       run: uv sync --frozen
       shell: bash
 
-    # ── Browsers ─────────────────────────────────────────────────────
+    # ── Browsers ──────────────────────────────────────────────────────────────
     - name: Cache Playwright browsers
       if: inputs.cache-playwright == 'true'
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
@@ -109,7 +113,7 @@ runs:
           playwright-${{ runner.os }}-
 
     - name: Cache Puppeteer browsers
-      if: inputs.cache-puppeteer == 'true'
+      if: inputs.cache-puppeteer == 'true' || inputs.install-puppeteer-chrome == 'true'
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
         path: ~/.cache/puppeteer
@@ -117,7 +121,7 @@ runs:
         restore-keys: |
           puppeteer-${{ runner.os }}-
 
-    # ── Apt package cache ──────────────────────────────────────────
+    # ── Apt package cache ──────────────────────────────────────────────────────────
     # Redirect apt's archive dir to a cached location so ALL apt-get
     # install commands (here and in calling workflows) reuse cached .debs.
     - name: Restore apt package cache
@@ -141,7 +145,16 @@ runs:
       run: pnpm playwright install chromium && npx puppeteer browsers install chrome
       shell: bash
 
-    # ── System packages ──────────────────────────────────────────────
+    # Puppeteer ≥22 dropped the postinstall Chrome download — pa11y-ci,
+    # subfont, and any other Puppeteer caller will fail with "Could not
+    # find Chrome" unless we install it explicitly. Skipped when
+    # install-browsers already installed it above.
+    - name: Install Puppeteer Chrome
+      if: inputs.install-puppeteer-chrome == 'true' && inputs.install-browsers != 'true' && inputs.install-node-deps == 'true'
+      run: npx puppeteer browsers install chrome
+      shell: bash
+
+    # ── System packages ─────────────────────────────────────────────────────────────
     # All apt packages in one step so every workflow populates the same
     # cache. With cache-apt enabled, repeat installs unpack from disk in
     # seconds instead of downloading from slow mirrors.
