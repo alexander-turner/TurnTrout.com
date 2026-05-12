@@ -32,118 +32,105 @@ DEFAULT_CONFIG: Final[Path] = REPO_ROOT / "config" / "pa11y" / ".pa11yci"
 DEFAULT_SITEMAP: Final[str] = "http://localhost:8080/sitemap.xml"
 DEFAULT_SITEMAP_FIND: Final[str] = "https://turntrout.com"
 DEFAULT_SITEMAP_REPLACE: Final[str] = "http://localhost:8080"
-
-# Issue messages that indicate a transient failure rather than a real
-# accessibility violation. If every issue for a URL matches one of these,
-# we re-run that URL rather than failing the build.
-_FLAKE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
-    re.compile(r"Navigation timeout", re.IGNORECASE),
-    re.compile(r"timed?\s*out", re.IGNORECASE),
-    re.compile(r"Failed to run pa11y", re.IGNORECASE),
-    re.compile(r"crashed", re.IGNORECASE),
-    re.compile(r"net::ERR_", re.IGNORECASE),
-    re.compile(r"Protocol error", re.IGNORECASE),
-)
-
 MAX_ATTEMPTS: Final[int] = 3
 
+# Issue-message substrings that indicate a transient failure rather than a
+# real accessibility violation. A URL whose issues are *only* flake patterns
+# gets re-run; any non-flake issue fails immediately.
+_FLAKE_RE: Final[re.Pattern[str]] = re.compile(
+    r"navigation timeout|timed?\s*out|failed to run pa11y"
+    r"|crashed|net::err_|protocol error",
+    re.IGNORECASE,
+)
 
-def is_flake_issue(message: str) -> bool:
-    """True iff ``message`` matches one of the known transient-failure
-    patterns."""
-    return any(p.search(message) for p in _FLAKE_PATTERNS)
-
-
-def classify_failures(
-    results: Mapping[str, Iterable[Mapping[str, object]]],
-) -> tuple[list[str], list[str]]:
-    """
-    Partition failing URLs into (flake-only, real-violation).
-
-    A URL is "flake-only" iff at least one issue exists and every issue's
-    ``message`` matches a flake pattern. Otherwise (any non-flake issue), it's a
-    real violation.
-    """
-    flake_urls: list[str] = []
-    violation_urls: list[str] = []
-    for url, issues in results.items():
-        messages = [str(i.get("message", "")) for i in issues]
-        if not messages:
-            continue
-        if all(is_flake_issue(m) for m in messages):
-            flake_urls.append(url)
-        else:
-            violation_urls.append(url)
-    return sorted(flake_urls), sorted(violation_urls)
-
-
-def write_url_only_config(
-    base_config: Path, urls: list[str], target_dir: Path | None = None
-) -> Path:
-    """
-    Write a temporary pa11y-ci config inheriting ``defaults`` from
-    ``base_config`` and listing exactly ``urls``.
-
-    Returns the path to the new config file.
-    """
-    base = json.loads(base_config.read_text(encoding="utf-8"))
-    config = {"defaults": base.get("defaults", {}), "urls": list(urls)}
-    target_dir = target_dir or Path(tempfile.gettempdir())
-    target_dir.mkdir(parents=True, exist_ok=True)
-    fd, path_str = tempfile.mkstemp(
-        prefix=".pa11yci.", suffix=".json", dir=str(target_dir)
-    )
-    path = Path(path_str)
-    with open(fd, "w", encoding="utf-8") as fh:
-        json.dump(config, fh)
-    return path
-
-
-def _subprocess_runner(  # pragma: no cover
-    cmd: list[str],
-) -> tuple[int, str, str]:
-    """Default :data:`Runner`: invoke ``cmd`` via :func:`subprocess.run`."""
-    completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    return completed.returncode, completed.stdout, completed.stderr
-
-
-def _parse_report(stdout: str) -> dict[str, object] | None:
-    """Parse pa11y-ci JSON output, returning ``None`` on parse failure."""
-    try:
-        return json.loads(stdout)
-    except json.JSONDecodeError:
-        return None
+Kind = Literal["pass", "real_violation", "flake", "fatal"]
 
 
 @dataclass(frozen=True)
 class _Outcome:
     """Result of evaluating one pa11y-ci attempt's JSON output."""
 
-    kind: Literal["pass", "real_violation", "flake", "fatal"]
+    kind: Kind
     rc: int
     flake_urls: tuple[str, ...] = ()
 
 
+def is_flake_issue(message: str) -> bool:
+    """True iff ``message`` matches a known transient-failure pattern."""
+    return bool(_FLAKE_RE.search(message))
+
+
+def classify_failures(
+    results: Mapping[str, Iterable[Mapping[str, object]]],
+) -> tuple[list[str], list[str]]:
+    """
+    Partition failing URLs into ``(flake_only, real_violation)``.
+
+    A URL is "flake-only" iff it has at least one issue and every issue's
+    ``message`` matches a flake pattern.
+    """
+    flake: list[str] = []
+    real: list[str] = []
+    for url, issues in results.items():
+        messages = [str(i.get("message", "")) for i in issues]
+        if not messages:
+            continue
+        (flake if all(map(is_flake_issue, messages)) else real).append(url)
+    return sorted(flake), sorted(real)
+
+
+def write_url_only_config(
+    base_config: Path, urls: Iterable[str], target_dir: Path | None = None
+) -> Path:
+    """
+    Write a temporary pa11y-ci config inheriting ``defaults`` from
+    ``base_config`` and listing exactly ``urls``.
+
+    Returns the new path.
+    """
+    base = json.loads(base_config.read_text(encoding="utf-8"))
+    target_dir = target_dir or Path(tempfile.gettempdir())
+    target_dir.mkdir(parents=True, exist_ok=True)
+    fd, path = tempfile.mkstemp(
+        prefix=".pa11yci.", suffix=".json", dir=str(target_dir)
+    )
+    with open(fd, "w", encoding="utf-8") as fh:
+        json.dump(
+            {"defaults": base.get("defaults", {}), "urls": list(urls)}, fh
+        )
+    return Path(path)
+
+
+def _subprocess_runner(  # pragma: no cover
+    cmd: list[str],
+) -> tuple[int, str, str]:
+    """Default :data:`Runner`: invoke ``cmd`` via :func:`subprocess.run`."""
+    r = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    return r.returncode, r.stdout, r.stderr
+
+
 def _evaluate(rc: int, stdout: str) -> _Outcome:
-    """Classify a pa11y-ci attempt into pass/real_violation/flake/fatal."""
+    """Classify a pa11y-ci attempt into pass / real_violation / flake /
+    fatal."""
     if rc == 0:
         return _Outcome("pass", 0)
-    report = _parse_report(stdout)
-    if report is None:
+    try:
+        report = json.loads(stdout)
+    except json.JSONDecodeError:
         return _Outcome("fatal", rc)
-    results = report.get("results") or {}
+    results = report.get("results") if isinstance(report, dict) else None
     if not isinstance(results, dict):
         return _Outcome("fatal", rc)
-    flake_urls, violation_urls = classify_failures(results)
-    if violation_urls:
+    flake, real = classify_failures(results)
+    if real:
         return _Outcome("real_violation", rc)
-    if not flake_urls:
+    if not flake:
         return _Outcome("fatal", rc)
-    return _Outcome("flake", rc, tuple(flake_urls))
+    return _Outcome("flake", rc, tuple(flake))
 
 
-def _do_attempt(runner: Runner, cmd: list[str]) -> _Outcome:
-    """Run one pa11y-ci invocation and classify its result, logging output."""
+def _attempt(runner: Runner, cmd: list[str]) -> _Outcome:
+    """Run one pa11y-ci invocation, log streams, and classify the result."""
     rc, stdout, stderr = runner(cmd)
     if stderr:
         sys.stderr.write(stderr)
@@ -153,19 +140,19 @@ def _do_attempt(runner: Runner, cmd: list[str]) -> _Outcome:
     return outcome
 
 
-def _retry_attempt(
-    runner: Runner, config_path: Path, flake_urls: list[str]
+def _retry(
+    runner: Runner, base_config: Path, flake_urls: list[str]
 ) -> _Outcome:
-    """Run one retry against just ``flake_urls``, cleaning up the temp
-    config."""
-    tmp_config = write_url_only_config(config_path, flake_urls)
+    """One retry attempt against ``flake_urls`` only, with temp-config
+    cleanup."""
+    tmp = write_url_only_config(base_config, flake_urls)
     try:
-        return _do_attempt(
+        return _attempt(
             runner,
-            ["pnpm", "exec", "pa11y-ci", "--json", "--config", str(tmp_config)],
+            ["pnpm", "exec", "pa11y-ci", "--json", "--config", str(tmp)],
         )
     finally:
-        tmp_config.unlink(missing_ok=True)
+        tmp.unlink(missing_ok=True)
 
 
 def run_with_retry(
@@ -184,7 +171,7 @@ def run_with_retry(
     ``sys.exit``.
     """
     runner = runner or _subprocess_runner
-    outcome = _do_attempt(
+    outcome = _attempt(
         runner,
         [
             "pnpm",
@@ -205,10 +192,13 @@ def run_with_retry(
         return outcome.rc
 
     flake_urls = list(outcome.flake_urls)
-    _log_flake_first_pass(flake_urls)
+    sys.stderr.write(
+        f"First pass: {len(flake_urls)} flake-only failure(s). Retrying:\n"
+        + "".join(f"  - {u}\n" for u in flake_urls)
+    )
 
     for attempt in range(2, MAX_ATTEMPTS + 1):
-        outcome = _retry_attempt(runner, config_path, flake_urls)
+        outcome = _retry(runner, config_path, flake_urls)
         if outcome.kind == "pass":
             sys.stderr.write(f"Attempt {attempt}: all retried URLs passed.\n")
             return 0
@@ -224,16 +214,6 @@ def run_with_retry(
         "(no real a11y violations). Passing.\n"
     )
     return 0
-
-
-def _log_flake_first_pass(flake_urls: list[str]) -> None:
-    """Emit the first-pass flake summary to stderr."""
-    sys.stderr.write(
-        f"First pass: {len(flake_urls)} flake-only failure(s). "
-        f"Retrying just those URLs.\n"
-    )
-    for url in flake_urls:
-        sys.stderr.write(f"  - {url}\n")
 
 
 def main(argv: list[str] | None = None) -> int:
