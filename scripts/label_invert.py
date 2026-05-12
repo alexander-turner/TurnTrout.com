@@ -49,10 +49,10 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
-from scripts.invert_constants import (
-    EXCLUDED_SEGMENTS,
-    LABELABLE_EXTENSIONS,
-    VIDEO_EXTENSIONS,
+from scripts.utils import (
+    INVERT_EXCLUDED_SEGMENTS,
+    INVERT_LABELABLE_EXTENSIONS,
+    INVERT_VIDEO_EXTENSIONS,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,15 +85,15 @@ _ANNOTATION_RE: Final[re.Pattern[str]] = re.compile(
 def _is_candidate(url: str) -> bool:
     if not url.startswith(("http://", "https://")):
         return False
-    if not url.lower().endswith(LABELABLE_EXTENSIONS):
+    if not url.lower().endswith(INVERT_LABELABLE_EXTENSIONS):
         return False
     segments = url.split("?", 1)[0].split("/")
-    return not any(seg in EXCLUDED_SEGMENTS for seg in segments)
+    return not any(seg in INVERT_EXCLUDED_SEGMENTS for seg in segments)
 
 
 def is_video_url(url: str) -> bool:
     """True iff ``url`` ends with a labeled-video extension."""
-    return url.lower().endswith(VIDEO_EXTENSIONS)
+    return url.lower().endswith(INVERT_VIDEO_EXTENSIONS)
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:

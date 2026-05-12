@@ -34,14 +34,12 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
-from scripts.invert_constants import (
-    EXCLUDED_SEGMENTS,
-    RASTER_EXTENSIONS,
-    VIDEO_EXTENSIONS,
-)
 from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
+    INVERT_EXCLUDED_SEGMENTS,
+    INVERT_RASTER_EXTENSIONS,
+    INVERT_VIDEO_EXTENSIONS,
     LEFT_DOUBLE_QUOTE,
     LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
@@ -810,18 +808,21 @@ class InvertLabel(NamedTuple):
 
 
 def _is_excluded_segment(url: str) -> bool:
+    """True iff any path segment of ``url`` is in
+    ``INVERT_EXCLUDED_SEGMENTS``."""
     segments = url.split("?", 1)[0].split("/")
-    return any(seg in EXCLUDED_SEGMENTS for seg in segments)
+    return any(seg in INVERT_EXCLUDED_SEGMENTS for seg in segments)
 
 
 def _has_invert_class(tag: Tag) -> bool:
+    """True iff ``tag`` has the ``invert-in-dark-mode`` class."""
     raw = tag.get("class")
     tokens = raw.split() if isinstance(raw, str) else raw
     return isinstance(tokens, list) and INVERT_CLASS in tokens
 
 
 def _inline_looping_video_sources(video: Tag) -> list[str]:
-    """Source URLs from an inline looping muted ``<video>`` (GIF replacement);
+    """Source URLs of an inline looping muted ``<video>`` (GIF replacement);
     ``[]`` for ``#pond-video`` or non-inline videos."""
     if video.get("id") == "pond-video":
         return []
@@ -834,16 +835,22 @@ def _inline_looping_video_sources(video: Tag) -> list[str]:
     return [
         s
         for s in candidates
-        if isinstance(s, str) and s.lower().endswith(VIDEO_EXTENSIONS)
+        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS)
     ]
 
 
-def _invert_issue(
+def _invert_issue_string(
     kind: str,
     src: str,
     has_class: bool,
     label: InvertLabel | None,
 ) -> str | None:
+    """
+    Issue message for one labeled src, or ``None`` if the JSON entry agrees with
+    the rendered class.
+
+    Reports missing / unreviewed / class-mismatch.
+    """
     if label is None:
         return f"<{kind}> {src} missing from .invert_labels.json"
     if not label.reviewed:
@@ -864,17 +871,16 @@ def _validate_eligible_src(
     invert_labels: Mapping[str, InvertLabel],
 ) -> str | None:
     """
-    Check one src that's already passed the extension + excluded-segment
-    filters.
+    Validate one src already past the extension + excluded-segment filters:
 
-    Errors on non-HTTP(S) (the labeler can't reach it) before delegating to
-    _invert_issue.
+    error on non-HTTP(S) (labeler can't reach it), otherwise delegate to
+    :func:`_invert_issue_string`.
     """
     if not src.startswith(("http://", "https://")):
         return (
             f"<{kind}> {src}: must be served over HTTP(S) to be invert-labeled"
         )
-    return _invert_issue(kind, src, has_class, invert_labels.get(src))
+    return _invert_issue_string(kind, src, has_class, invert_labels.get(src))
 
 
 def check_invert_labels(
@@ -882,14 +888,14 @@ def check_invert_labels(
     invert_labels: Mapping[str, InvertLabel] | None,
 ) -> list[str]:
     """
-    Error when an eligible ``<img>`` or inline looping ``<video>`` source is
-    missing from ``.invert_labels.json``, is present but ``reviewed: false``, or
-    disagrees with the rendered element's ``invert-in-dark-mode`` class (JSON is
-    the source of truth). Also errors on non-HTTP(S) raster srcs the labeler
-    can't reach.
+    Validate every eligible ``<img>`` (raster ext) and inline looping
+    ``<video>`` source against ``.invert_labels.json``: each must be present,
+    reviewed, and have its ``invert-in-dark-mode`` class match the JSON
+    ``invert`` field (JSON is the source of truth).
 
-    No-op when ``invert_labels`` is None — only used by tests; the loader
-    returns ``None`` only when the labels file is missing entirely.
+    Also errors on non-HTTP(S) raster srcs the labeler can't reach. No-op when
+    ``invert_labels`` is None (loader-disabled in tests / when the labels file
+    is missing entirely).
     """
     if invert_labels is None:
         return []
@@ -898,7 +904,7 @@ def check_invert_labels(
         src = img.get("src")
         if not isinstance(src, str):
             continue
-        if not src.lower().endswith(RASTER_EXTENSIONS):
+        if not src.lower().endswith(INVERT_RASTER_EXTENSIONS):
             continue
         if _is_excluded_segment(src):
             continue
@@ -2989,12 +2995,9 @@ def _load_invert_labels(
     """
     Load ``.invert_labels.json`` as ``InvertLabel`` tuples.
 
-    Raises ``ValueError`` when the file exists but isn't a valid JSON object of
-    ``{invert, reviewed}`` entries — fail loudly on a corrupted labels file
-    rather than silently skipping the validation.
-
-    Returns ``None`` only when the file is absent (disabling the check for test
-    environments without it; production has the file committed).
+    Raises ``ValueError`` on a malformed file (corrupted JSON, non-object root,
+    or any entry not of the form ``{invert, reviewed}``). Returns ``None`` only
+    when the file is absent (production has it committed).
     """
     path = (
         project_root
