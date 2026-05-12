@@ -796,14 +796,8 @@ _INVERT_RASTER_EXTS: Final = (".avif", ".png", ".jpg", ".jpeg", ".webp", ".gif")
 # Mirrors INVERT_CLASS in quartz/plugins/transformers/invertInDarkMode.ts.
 _INVERT_CLASS: Final[str] = "invert-in-dark-mode"
 # Mirrors EXCLUDED_SEGMENTS in scripts/label_invert.py.
-_INVERT_EXCLUDED_SEGMENTS: Final[frozenset[str]] = frozenset(
-    {
-        "external-favicons",
-        "twemoji",
-        "turntrout-favicons",
-        "card_images",
-        "avatars",
-    }
+_INVERT_EXCLUDED_SEGMENTS: Final = frozenset(
+    "external-favicons twemoji turntrout-favicons card_images avatars".split()
 )
 
 
