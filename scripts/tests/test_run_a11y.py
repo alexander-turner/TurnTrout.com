@@ -83,14 +83,14 @@ def test_write_url_only_config_handles_missing_defaults(tmp_path: Path) -> None:
         out.unlink(missing_ok=True)
 
 
-class _FakeRunner(run_a11y.Runner):
+class _FakeRunner:
     """Pre-canned subprocess runner for tests; records every command invoked."""
 
     def __init__(self, responses: list[tuple[int, str, str]]) -> None:
         self.responses = list(responses)
         self.calls: list[list[str]] = []
 
-    def run(self, cmd: list[str]) -> tuple[int, str, str]:
+    def __call__(self, cmd: list[str]) -> tuple[int, str, str]:
         self.calls.append(list(cmd))
         if not self.responses:
             raise AssertionError(f"FakeRunner exhausted; cmd={cmd}")

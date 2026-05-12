@@ -18,9 +18,14 @@ import re
 import subprocess
 import sys
 import tempfile
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal
+
+# Runs a command, returning (returncode, stdout, stderr). Tests inject a
+# deterministic implementation; production uses :func:`_subprocess_runner`.
+Runner = Callable[[list[str]], tuple[int, str, str]]
 
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG: Final[Path] = REPO_ROOT / "config" / "pa11y" / ".pa11yci"
@@ -94,8 +99,10 @@ def write_url_only_config(
     return path
 
 
-def _run(cmd: list[str]) -> tuple[int, str, str]:  # pragma: no cover
-    """Run ``cmd``, returning (returncode, stdout, stderr)."""
+def _subprocess_runner(  # pragma: no cover
+    cmd: list[str],
+) -> tuple[int, str, str]:
+    """Default :data:`Runner`: invoke ``cmd`` via :func:`subprocess.run`."""
     completed = subprocess.run(cmd, capture_output=True, text=True, check=False)
     return completed.returncode, completed.stdout, completed.stderr
 
@@ -108,13 +115,66 @@ def _parse_report(stdout: str) -> dict[str, object] | None:
         return None
 
 
+@dataclass(frozen=True)
+class _Outcome:
+    """Result of evaluating one pa11y-ci attempt's JSON output."""
+
+    kind: Literal["pass", "real_violation", "flake", "fatal"]
+    rc: int
+    flake_urls: tuple[str, ...] = ()
+
+
+def _evaluate(rc: int, stdout: str) -> _Outcome:
+    """Classify a pa11y-ci attempt into pass/real_violation/flake/fatal."""
+    if rc == 0:
+        return _Outcome("pass", 0)
+    report = _parse_report(stdout)
+    if report is None:
+        return _Outcome("fatal", rc)
+    results = report.get("results") or {}
+    if not isinstance(results, dict):
+        return _Outcome("fatal", rc)
+    flake_urls, violation_urls = classify_failures(results)
+    if violation_urls:
+        return _Outcome("real_violation", rc)
+    if not flake_urls:
+        return _Outcome("fatal", rc)
+    return _Outcome("flake", rc, tuple(flake_urls))
+
+
+def _do_attempt(runner: Runner, cmd: list[str]) -> _Outcome:
+    """Run one pa11y-ci invocation and classify its result, logging output."""
+    rc, stdout, stderr = runner(cmd)
+    if stderr:
+        sys.stderr.write(stderr)
+    outcome = _evaluate(rc, stdout)
+    if outcome.kind in {"real_violation", "fatal"}:
+        sys.stdout.write(stdout)
+    return outcome
+
+
+def _retry_attempt(
+    runner: Runner, config_path: Path, flake_urls: list[str]
+) -> _Outcome:
+    """Run one retry against just ``flake_urls``, cleaning up the temp
+    config."""
+    tmp_config = write_url_only_config(config_path, flake_urls)
+    try:
+        return _do_attempt(
+            runner,
+            ["pnpm", "exec", "pa11y-ci", "--json", "--config", str(tmp_config)],
+        )
+    finally:
+        tmp_config.unlink(missing_ok=True)
+
+
 def run_with_retry(
     *,
     config_path: Path,
     sitemap: str,
     sitemap_find: str,
     sitemap_replace: str,
-    runner: "Runner" = None,  # type: ignore[assignment]
+    runner: Runner | None = None,
 ) -> int:
     """
     Run pa11y-ci on the sitemap.
@@ -123,105 +183,41 @@ def run_with_retry(
     total). Real violations fail immediately. Returns the exit code suitable for
     ``sys.exit``.
     """
-    runner = runner or _Subprocess()
-
-    first_cmd = [
-        "pnpm",
-        "exec",
-        "pa11y-ci",
-        "--json",
-        "--config",
-        str(config_path),
-        "--sitemap",
-        sitemap,
-        "--sitemap-find",
-        sitemap_find,
-        "--sitemap-replace",
-        sitemap_replace,
-    ]
-    rc, stdout, stderr = runner.run(first_cmd)
-    if stderr:
-        sys.stderr.write(stderr)
-    if rc == 0:
-        return 0
-
-    report = _parse_report(stdout)
-    if report is None:
-        sys.stderr.write(
-            "pa11y-ci output was not valid JSON; treating as fatal.\n"
-        )
-        sys.stdout.write(stdout)
-        return rc
-
-    results = report.get("results") or {}
-    if not isinstance(results, dict):
-        sys.stderr.write("pa11y-ci JSON had no `results` dict.\n")
-        return rc
-
-    flake_urls, violation_urls = classify_failures(results)
-    if violation_urls:
-        sys.stderr.write(
-            f"Real accessibility violations on {len(violation_urls)} URL(s); "
-            "not retrying.\n"
-        )
-        sys.stdout.write(stdout)
-        return rc
-
-    if not flake_urls:
-        return rc
-
-    sys.stderr.write(
-        f"First pass: {len(flake_urls)} flake-only failure(s). "
-        f"Retrying just those URLs.\n"
+    runner = runner or _subprocess_runner
+    outcome = _do_attempt(
+        runner,
+        [
+            "pnpm",
+            "exec",
+            "pa11y-ci",
+            "--json",
+            "--config",
+            str(config_path),
+            "--sitemap",
+            sitemap,
+            "--sitemap-find",
+            sitemap_find,
+            "--sitemap-replace",
+            sitemap_replace,
+        ],
     )
-    for url in flake_urls:
-        sys.stderr.write(f"  - {url}\n")
+    if outcome.kind != "flake":
+        return outcome.rc
+
+    flake_urls = list(outcome.flake_urls)
+    _log_flake_first_pass(flake_urls)
 
     for attempt in range(2, MAX_ATTEMPTS + 1):
-        tmp_config = write_url_only_config(config_path, flake_urls)
-        try:
-            retry_cmd = [
-                "pnpm",
-                "exec",
-                "pa11y-ci",
-                "--json",
-                "--config",
-                str(tmp_config),
-            ]
-            rc, stdout, stderr = runner.run(retry_cmd)
-            if stderr:
-                sys.stderr.write(stderr)
-            if rc == 0:
-                sys.stderr.write(
-                    f"Attempt {attempt}: all retried URLs passed.\n"
-                )
-                return 0
-            report = _parse_report(stdout)
-            if report is None:
-                sys.stderr.write(
-                    f"Attempt {attempt}: retry output was not valid JSON.\n"
-                )
-                sys.stdout.write(stdout)
-                return rc
-            results = report.get("results") or {}
-            flake_urls, violation_urls = classify_failures(
-                results if isinstance(results, dict) else {}
-            )
-            if violation_urls:
-                sys.stderr.write(
-                    f"Retry attempt {attempt} surfaced "
-                    f"{len(violation_urls)} real violation(s); failing.\n"
-                )
-                sys.stdout.write(stdout)
-                return rc
-            if not flake_urls:
-                return rc
-            sys.stderr.write(
-                f"Attempt {attempt}: still {len(flake_urls)} flake-only "
-                "failure(s).\n"
-            )
-        finally:
-            tmp_config.unlink(missing_ok=True)
+        outcome = _retry_attempt(runner, config_path, flake_urls)
+        if outcome.kind == "pass":
+            sys.stderr.write(f"Attempt {attempt}: all retried URLs passed.\n")
+            return 0
+        if outcome.kind != "flake":
+            return outcome.rc
+        flake_urls = list(outcome.flake_urls)
+        sys.stderr.write(
+            f"Attempt {attempt}: still {len(flake_urls)} flake-only failure(s).\n"
+        )
 
     sys.stderr.write(
         f"All {MAX_ATTEMPTS} attempts produced only timeout/crash failures "
@@ -230,19 +226,18 @@ def run_with_retry(
     return 0
 
 
-class Runner:
-    """Pluggable subprocess runner so tests can inject deterministic output."""
-
-    def run(self, cmd: list[str]) -> tuple[int, str, str]:  # pragma: no cover
-        raise NotImplementedError
-
-
-class _Subprocess(Runner):
-    def run(self, cmd: list[str]) -> tuple[int, str, str]:  # pragma: no cover
-        return _run(cmd)
+def _log_flake_first_pass(flake_urls: list[str]) -> None:
+    """Emit the first-pass flake summary to stderr."""
+    sys.stderr.write(
+        f"First pass: {len(flake_urls)} flake-only failure(s). "
+        f"Retrying just those URLs.\n"
+    )
+    for url in flake_urls:
+        sys.stderr.write(f"  - {url}\n")
 
 
 def main(argv: list[str] | None = None) -> int:
+    """CLI entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--sitemap", default=DEFAULT_SITEMAP)
