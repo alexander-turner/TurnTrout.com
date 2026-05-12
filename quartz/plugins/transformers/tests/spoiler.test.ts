@@ -113,6 +113,16 @@ describe("rehype-custom-spoiler", () => {
         input: h("p", {}, "This is not a spoiler"),
         expected: null,
       },
+      {
+        name: "multi-line text within a single paragraph (soft-wrapped blockquote)",
+        input: h("p", {}, "! Line one\n! Line two\n! Line three"),
+        expected: h("p", {}, ["Line one", h("br"), "Line two", h("br"), "Line three"]),
+      },
+      {
+        name: "multi-line text with trailing non-spoiler line passes through",
+        input: h("p", {}, "! First\nsecond line"),
+        expected: h("p", {}, ["First", h("br"), "second line"]),
+      },
     ])("$name", ({ input, expected }) => {
       const result = processParagraph(input as Element)
       expect(removePositions(result)).toEqual(removePositions(expected))
