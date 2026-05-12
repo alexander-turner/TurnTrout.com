@@ -106,8 +106,8 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 ## DeepSource issues
 
 - The `deepsource` CLI is authenticated by the SessionStart hook.
-- **The pre-push hook runs `scripts/check_deepsource_pr.sh` automatically**, which calls `deepsource issues --pr <N>` for the current branch's open PR and blocks the push if findings exist. You don't need to invoke the CLI manually before pushing — the hook will fail the push and surface the findings. Fix them and push again.
-- DeepSource analyzes commits asynchronously, so the hook only sees findings from the previously-pushed HEAD. After the most recent CI run on a PR completes, re-run `deepsource issues --pr <N> --output json` to confirm the latest commit is clean before declaring the task done.
+- **Before pushing to an open PR, run `scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and fix any findings.** This used to be a pre-push gate, but DeepSource's analysis is asynchronous, so the gate kept blocking fix commits that hadn't been re-analyzed yet. Treat it as a checklist item, not a hook.
+- DeepSource analyzes commits asynchronously, so the CLI lags behind your local HEAD. After the most recent CI run on a PR completes, re-run `deepsource issues --pr <N> --output json` to confirm the latest commit is clean before declaring the task done.
 - The PR-status check (DeepSource Code Review) only flags issues from the lint/static-analysis bots after a delay; the CLI gives the canonical list. Do not rely on the PR comment alone — poll the CLI.
 - Also useful:
   - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)

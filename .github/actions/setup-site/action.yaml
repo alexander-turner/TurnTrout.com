@@ -66,8 +66,21 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
-    - name: Install Node Dependencies
+    # Cache node_modules itself so `pnpm install --frozen-lockfile`
+    # (which still takes 5–30s even with a warm pnpm store, because of
+    # the symlink-farm setup) can be skipped on cache hit. Keyed on
+    # install-sharp too because the build job installs a linux/x64
+    # sharp binary that shards do not — they must not share a cache.
+    - name: Cache node_modules
       if: inputs.install-node-deps == 'true'
+      id: cache-node-modules
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: node_modules
+        key: node-modules-${{ runner.os }}-sharp-${{ inputs.install-sharp }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: Install Node Dependencies
+      if: inputs.install-node-deps == 'true' && steps.cache-node-modules.outputs.cache-hit != 'true'
       run: |
         # macOS doesn't have GNU timeout; use perl one-liner as a portable fallback
         if command -v timeout &>/dev/null; then
@@ -80,7 +93,7 @@ runs:
         NODE_OPTIONS: "--max-old-space-size=4096"
 
     - name: Install sharp
-      if: inputs.install-sharp == 'true' && inputs.install-node-deps == 'true'
+      if: inputs.install-sharp == 'true' && inputs.install-node-deps == 'true' && steps.cache-node-modules.outputs.cache-hit != 'true'
       run: pnpm install --os=linux --cpu=x64 sharp
       shell: bash
 
@@ -97,8 +110,19 @@ runs:
       run: uv python install 3.11
       shell: bash
 
-    - name: Install Python Dependencies
+    # Cache .venv directly so `uv sync --frozen` (5–15s even with the
+    # uv cache warm, because it copies into the venv) can be skipped on
+    # cache hit.
+    - name: Cache .venv
       if: inputs.install-python == 'true'
+      id: cache-venv
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+
+    - name: Install Python Dependencies
+      if: inputs.install-python == 'true' && steps.cache-venv.outputs.cache-hit != 'true'
       run: uv sync --frozen
       shell: bash
 
