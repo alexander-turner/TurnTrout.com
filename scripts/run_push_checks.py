@@ -594,6 +594,12 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
     Args:
         git_root_path: Path to the git repository root.
     """
+    mypy_files = glob.glob(f"{git_root_path}/scripts/*.py")
+    if not mypy_files and (git_root_path / "scripts").is_dir():
+        raise FileNotFoundError(
+            f"No Python files found in {git_root_path}/scripts/ for Mypy"
+        )
+
     return [
         *get_formatter_steps(git_root_path),
         # source_file_checks.py imports the generated variables.scss when
@@ -627,7 +633,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             cwd=str(git_root_path),
             parallel_group="verify",
         ),
-        # shell=True so the *.py glob expands. Matches python-lint.yaml.
         CheckStep(
             name="Mypy",
             command=[
@@ -638,9 +643,8 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "mypy",
                 "--config-file",
                 f"{git_root_path}/config/python/mypy.ini",
-                f"{git_root_path}/scripts/*.py",
+                *mypy_files,
             ],
-            shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
             parallel_group="verify",
         ),
         CheckStep(
@@ -660,25 +664,28 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 "bash",
                 f"{git_root_path}/scripts/run_spellcheck_and_vale.sh",
             ],
-            shell=True,  # skipcq: BAN-B604 (a local command, assume safe)
             requires="vale",
             parallel_group="verify",
         ),
-        # skipcq: BAN-B604
+        CheckStep(
+            name="DeepSource PR issues",
+            command=[
+                "bash",
+                f"{git_root_path}/scripts/check_deepsource_pr.sh",
+            ],
+            parallel_group="verify",
+        ),
         CheckStep(
             name="Compressing and uploading local assets",
             command=[
                 "bash",
                 f"{git_root_path}/scripts/handle_assets.sh",
             ],
-            # skipcq: BAN-B604 (a local command, assume safe)
-            shell=True,
             requires="rclone",
         ),
         CheckStep(
             name="Scanning for images without alt text",
             command=["alt-text-llm", "scan"],
-            shell=True,  # skipcq: BAN-B604
             requires="alt-text-llm",
         ),
     ]

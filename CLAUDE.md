@@ -41,6 +41,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - **Pre-push**: stashes uncommitted changes, runs auto-fix formatters, pylint, asset upload, alt-text scan. Resume from last failure with `RESUME=true git push`.
 - **Pull requests**: always follow `.claude/skills/pr-creation.md`.
 - **Dev branch workflow**: when working on `dev`, first merge `main` into `dev`, push `dev`, then start the new feature branch from `dev`.
+- **Merging PRs**: never call `merge_pull_request` directly. Once checks are green, call `mcp__github__enable_pr_auto_merge` (squash by default). Required status checks gate the merge — the full suite (Linux Chromium + Firefox, macOS WebKit, visual, a11y, lighthouse, site-build-checks, python, lint, node) runs on every PR where the `paths:` filter matches. Do **not** force-merge with empty "run ALL CI" commits or a direct merge — auto-merge is the only sanctioned path to `main`.
 
 ## Testing requirements
 
@@ -104,10 +105,12 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 
 ## DeepSource issues
 
-- The `deepsource` CLI is authenticated by the SessionStart hook. When asked to fix DeepSource issues — or proactively when you've just landed nontrivial work — list outstanding issues and clear them.
-- Useful invocations:
+- The `deepsource` CLI is authenticated by the SessionStart hook.
+- **The pre-push hook runs `scripts/check_deepsource_pr.sh` automatically**, which calls `deepsource issues --pr <N>` for the current branch's open PR and blocks the push if findings exist. You don't need to invoke the CLI manually before pushing — the hook will fail the push and surface the findings. Fix them and push again.
+- DeepSource analyzes commits asynchronously, so the hook only sees findings from the previously-pushed HEAD. After the most recent CI run on a PR completes, re-run `deepsource issues --pr <N> --output json` to confirm the latest commit is clean before declaring the task done.
+- The PR-status check (DeepSource Code Review) only flags issues from the lint/static-analysis bots after a delay; the CLI gives the canonical list. Do not rely on the PR comment alone — poll the CLI.
+- Also useful:
   - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)
   - `deepsource issues --default-branch --analyzer javascript --output json`
-  - `deepsource issues --pr <N> --output json` (issues introduced/remaining on a PR)
-- Fix root causes, not by appending `// skipcq: <CODE>` — only suppress when the warning is genuinely a false positive and write a comment explaining why on the same line.
+- Fix root causes, not by appending `# skipcq: <CODE>` / `// skipcq: <CODE>` — only suppress when the warning is genuinely a false positive and write a comment explaining why on the same line.
 - Group fixes into one focused PR per analyzer (or per issue cluster if a single PR would balloon), keeping the diff reviewable. After landing, re-run the CLI to confirm the count went down.

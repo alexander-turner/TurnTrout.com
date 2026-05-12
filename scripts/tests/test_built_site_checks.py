@@ -6496,8 +6496,15 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
         (None, None),
         ("not json", None),
         ("[1, 2, 3]", None),
-        # Empty object → check stays enabled and flags every AVIF.
-        ("{}", {}),
+        # Empty object → check is not yet armed (no reviewed entries).
+        ("{}", None),
+        # All entries unreviewed → still not armed.
+        (
+            json.dumps(
+                {"https://x/a.avif": {"invert": True, "reviewed": False}}
+            ),
+            None,
+        ),
         # Mixed reviewed / unreviewed: only reviewed entries returned.
         (
             json.dumps(

@@ -61,14 +61,25 @@ export default [
     },
   },
 
+  // Security: prevent dangerous eval-like constructs
+  {
+    rules: {
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+    },
+  },
+
   // Disable rules for test/spec files:
   // - react-hooks: Playwright's `use()` triggers false positives
   // - require-await: mock methods often need async signatures
+  // - no-new-func: tests use Function constructor to simulate inline scripts
   {
     files: ["**/*.spec.ts", "**/*.test.ts", "**/*.test.js"],
     rules: {
       "react-hooks/rules-of-hooks": "off",
       "require-await": "off",
+      "no-new-func": "off",
     },
   },
   {

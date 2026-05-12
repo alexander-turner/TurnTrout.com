@@ -65,7 +65,7 @@ export const transformStyle = (
   // Restore var() expressions
   newStyle = newStyle.replace(placeholderRestoreRegex, (...args) => {
     const groups = args[args.length - 1] as { index: string }
-    return varExpressions[parseInt(groups.index)]
+    return varExpressions[parseInt(groups.index, 10)]
   })
 
   return newStyle

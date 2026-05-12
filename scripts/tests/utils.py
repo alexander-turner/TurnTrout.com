@@ -72,8 +72,9 @@ def create_test_video(
     framerate: float = 15,
 ) -> None:
     """
-    Creates a test video using `ffmpeg` with a silent audio track. Uses MPEG-2
-    with high bitrate and all I-frames for maximum inefficiency.
+    Creates a test video using `ffmpeg` with a silent audio track.
+
+    Uses MPEG-2 with high bitrate and all I-frames for maximum inefficiency.
 
     Args:
         path (Path): The file path where the video will be saved.
@@ -243,7 +244,6 @@ def mock_http_response(
 @pytest.fixture
 def setup_test_env(tmp_path: Path) -> Iterator[Path]:
     """Sets up a temporary Git repository and populates it with test assets."""
-
     # Create the required directories for testing
     for dir_name in ["quartz/static", "scripts", "website_content"]:
         (tmp_path / dir_name).mkdir(parents=True, exist_ok=True)
@@ -265,7 +265,9 @@ def setup_test_env(tmp_path: Path) -> Iterator[Path]:
         create_test_video(tmp_path / "quartz/static" / f"asset{ext}")
         # skipcq: PTC-W6004 because this is server-side
         with open(
-            tmp_path / "website_content" / f"{ext.lstrip('.')}.md", "a"
+            tmp_path / "website_content" / f"{ext.lstrip('.')}.md",
+            "a",
+            encoding="utf-8",
         ) as file:
             file.write(f"![](static/asset{ext})\n")
             file.write(f"[[static/asset{ext}]]\n")
@@ -273,7 +275,9 @@ def setup_test_env(tmp_path: Path) -> Iterator[Path]:
                 file.write(f'<video src="static/asset{ext}" alt="shrek"/>\n')
 
     # Special handling for GIF file in markdown
-    with open(tmp_path / "website_content" / "gif.md", "a") as file:
+    with open(
+        tmp_path / "website_content" / "gif.md", "a", encoding="utf-8"
+    ) as file:
         file.write('<img src="static/asset.gif" alt="shrek">')
 
     # Create an unsupported file
