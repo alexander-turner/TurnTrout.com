@@ -43,18 +43,24 @@ body { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; ma
 h1 { margin: 0 0 .25rem; }
 .sub { color: #666; margin: 0 0 1.25rem; }
 .row { margin: 0 0 2.5rem; padding-bottom: 1.5rem;
-       border-bottom: 1px solid rgba(127,127,127,0.25); }
+       border-bottom: 1px solid rgba(127,127,127,0.25);
+       overflow-x: auto; }
 .row h3 { margin: 0 0 .75rem; font-size: 1rem;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
           word-break: break-all; color: #333; }
 .row h3 a { color: inherit; text-decoration: none; }
 .row h3 a:hover { text-decoration: underline; }
-.cells { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-         gap: 1rem; align-items: start; }
-.cell { margin: 0; min-width: 0; display: flex; flex-direction: column; gap: .35rem; }
+.cells { display: grid; grid-template-columns: repeat(3, auto);
+         gap: 1rem; align-items: start; width: max-content; }
+.cell { margin: 0; display: flex; flex-direction: column; gap: .35rem; }
 .cell figcaption { font-size: .7rem; text-transform: uppercase;
                    letter-spacing: .05em; color: #888; }
-.cell img { width: 100%; height: auto; display: block; cursor: zoom-in;
+/* Width is set per-image at load time to naturalWidth / devicePixelRatio,
+   so each PNG pixel maps to one device pixel regardless of display DPR.
+   We deliberately don't stretch to fill the container — zooming the
+   browser then preserves the screenshot's native resolution. */
+.cell img { height: auto; display: block; cursor: zoom-in;
+            max-width: none;
             border: 1px solid rgba(127,127,127,0.3);
             background: rgba(127,127,127,0.06); }
 .cell.missing .placeholder { display: flex; align-items: center; justify-content: center;
@@ -81,7 +87,7 @@ h1 { margin: 0 0 .25rem; }
 .lb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92);
       z-index: 9999; cursor: zoom-out; padding: 1rem; overflow: auto; }
 .lb.show { display: block; }
-.lb img { display: block; margin: 0 auto; max-width: 100%; }
+.lb img { display: block; margin: 0 auto; }
 @media (prefers-color-scheme: dark) {
   .row h3 { color: #ddd; }
   .row { border-color: rgba(255,255,255,0.15); }
@@ -131,6 +137,15 @@ _JS = """
 // once every <img> in row N-1 has either finished loading or errored.
 // Keeps fetch parallelism predictable on multi-hundred-row diffs.
 (() => {
+  // Each screenshot is captured with deviceScaleFactor=1, so a PNG of
+  // W pixels represents W CSS pixels of the rendered page. Display it
+  // at W/DPR CSS px so 1 PNG pixel maps to 1 device pixel — crispest
+  // possible rendering, and stable under browser zoom-out.
+  const dpr = window.devicePixelRatio || 1;
+  function sizeToDPR(img) {
+    if (!img.naturalWidth) return;
+    img.style.width = (img.naturalWidth / dpr) + 'px';
+  }
   const rows = Array.from(document.querySelectorAll('.row'));
   function loadRow(idx) {
     if (idx >= rows.length) return;
@@ -139,7 +154,7 @@ _JS = """
     let pending = imgs.length;
     const done = () => { if (--pending === 0) loadRow(idx + 1); };
     imgs.forEach(img => {
-      img.addEventListener('load', done, { once: true });
+      img.addEventListener('load', () => { sizeToDPR(img); done(); }, { once: true });
       img.addEventListener('error', done, { once: true });
       img.src = img.dataset.src;
       img.removeAttribute('data-src');
