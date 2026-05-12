@@ -37,17 +37,13 @@ jest.mock("winston", () => ({
   },
 }))
 
-// Mock find-git-root and fs used by log root detection.
 // find-git-root returns the path to the `.git` directory; log.ts wraps it
 // with path.dirname() so the working-tree root is what callers see.
+// Using `unstable_mockModule` because find-git-root is loaded via ESM-style
+// default import; `jest.mock` does not consistently apply to those.
 jest.unstable_mockModule("find-git-root", () => ({
   __esModule: true,
   default: jest.fn(() => "/repo/.git"),
-}))
-
-jest.mock("fs", () => ({
-  existsSync: jest.fn(() => true),
-  mkdirSync: jest.fn(),
 }))
 
 // Import after mocks are set up

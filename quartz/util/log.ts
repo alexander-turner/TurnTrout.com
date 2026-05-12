@@ -41,10 +41,10 @@ export const findGitRoot = (): string => {
 
 const logDir = path.join(findGitRoot(), ".logs")
 
-// Create the log directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true })
-}
+// `createWinstonLogger` ensures `logDir` exists before instantiating a
+// transport. We deliberately do NOT create it at module load: that turns
+// every `import` into a filesystem write and breaks tests in sandboxes that
+// mock the git-root to a non-writable path.
 
 const timezoneFormat = new Date().toLocaleString("en-US", {
   timeZone: "America/Los_Angeles",
