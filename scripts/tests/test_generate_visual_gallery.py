@@ -204,7 +204,7 @@ def test_cli_argument_parsing(
 def test_cli_with_approve_flags(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """--run-id + --repo (+ optional --pr-number) get injected into the HTML."""
+    """--run-id (+ optional --pr-number) get injected into the HTML."""
     import runpy
     import sys
 
@@ -225,8 +225,6 @@ def test_cli_with_approve_flags(
             str(report),
             "--run-id",
             "987654",
-            "--repo",
-            "owner/repo",
             "--pr-number",
             "42",
         ],
@@ -236,8 +234,13 @@ def test_cli_with_approve_flags(
     page = (report / "index.html").read_text(encoding="utf-8")
     assert "approve-btn" in page
     assert '"runId": "987654"' in page
-    assert '"repo": "owner/repo"' in page
     assert '"prNumber": "42"' in page
+    # POSTs to the same-origin proxy, not GitHub directly.
+    assert "/api/approve-baselines" in page
+    assert "api.github.com" not in page
+    # No PAT prompt / localStorage handling in the new JS.
+    assert "localStorage" not in page
+    assert "prompt(" not in page
 
 
 def test_cli_wrong_arg_count(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -261,18 +264,20 @@ def test_render_html_includes_approve_with_config() -> None:
     """ApproveConfig + at least one tile → approve button + config script."""
     page = gvg.render_html(
         [gvg.Tile("t", None, "a.png", None)],
-        approve=gvg.ApproveConfig(run_id="123", repo="o/r"),
+        approve=gvg.ApproveConfig(run_id="123"),
     )
     assert 'id="approve-btn"' in page
     assert '"runId": "123"' in page
-    assert '"repo": "o/r"' in page
     assert '"prNumber": null' in page
+    # The old PAT-in-localStorage flow is gone from the rendered JS.
+    assert "localStorage" not in page
+    assert "prompt(" not in page
+    assert "api.github.com" not in page
+    assert "/api/approve-baselines" in page
 
 
 def test_render_html_omits_approve_on_clean_gallery() -> None:
     """Even with an ApproveConfig, an empty tile list (passing run) hides the
     button — nothing to adopt as a baseline."""
-    page = gvg.render_html(
-        [], approve=gvg.ApproveConfig(run_id="123", repo="o/r")
-    )
+    page = gvg.render_html([], approve=gvg.ApproveConfig(run_id="123"))
     assert "approve-btn" not in page
