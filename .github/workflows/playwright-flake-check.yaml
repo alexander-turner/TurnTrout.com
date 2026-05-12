@@ -82,10 +82,10 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload flake check logs
         if: always()
@@ -181,10 +181,10 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload flake check logs
         if: always()

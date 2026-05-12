@@ -118,6 +118,22 @@ def _mock_response(payload: bytes = b"") -> mock.MagicMock:
     return response
 
 
+def test_download_media_skips_url_with_no_filename(
+    mock_git_root, tmp_path, capsys
+):
+    """URLs whose path has no filename component are skipped without raising."""
+    target_dir = tmp_path / "downloads"
+    target_dir.mkdir()
+
+    result = download_external_media.download_media(
+        "https://example.com/", target_dir
+    )
+
+    assert result is False
+    captured = capsys.readouterr()
+    assert "Skipping URL with no filename" in captured.err
+
+
 def test_download_media_success(mock_git_root, tmp_path):
     """Test successful media download."""
     target_dir = tmp_path / "downloads"

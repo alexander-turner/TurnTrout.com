@@ -102,11 +102,11 @@ jobs:
           # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
-      - name: Create sanitized shard
+      - name: Sanitize shard name
         if: always()
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
@@ -214,11 +214,11 @@ jobs:
           # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
-      - name: Create sanitized shard
+      - name: Sanitize shard name
         if: always()
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()

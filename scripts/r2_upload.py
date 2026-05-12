@@ -89,7 +89,9 @@ def update_markdown_references(
         references_dir: Dir to search for files to update references.
         verbose: Whether to print verbose output.
     """
-    relative_original_path = script_utils.path_relative_to_quartz_parent(file_path)
+    relative_original_path = script_utils.path_relative_to_quartz_parent(
+        file_path
+    )
     static_index = relative_original_path.parts.index("static")
     relative_subpath = Path(*relative_original_path.parts[static_index:])
 
@@ -104,16 +106,15 @@ def update_markdown_references(
     for text_file_path in script_utils.get_files(
         references_dir, (".md",), use_git_ignore=False
     ):
-        with open(text_file_path, encoding="utf-8") as f:
-            file_content: str = f.read()
-
-        new_content: str = re.sub(source_regex, r2_address, file_content)
-
-        with open(text_file_path, "w", encoding="utf-8") as f:
-            f.write(new_content)
+        script_utils.update_markdown_file(
+            text_file_path,
+            lambda content: re.sub(source_regex, r2_address, content),
+        )
 
 
-def _download_from_r2(upload_target: str, target: Path) -> None:  # pragma: no cover
+def _download_from_r2(
+    upload_target: str, target: Path
+) -> None:  # pragma: no cover
     rclone_args = ["rclone", "copyto", upload_target, str(target)]
     subprocess.run(rclone_args, check=True)
 
@@ -248,7 +249,9 @@ def upload_and_move(
         if not move_to_dir.exists():
             print(f"Warning: Directory does not exist: {move_to_dir}")
         else:
-            move_uploaded_file(file_path, move_to_dir=move_to_dir, verbose=verbose)
+            move_uploaded_file(
+                file_path, move_to_dir=move_to_dir, verbose=verbose
+            )
 
 
 def main() -> None:
@@ -266,7 +269,9 @@ def main() -> None:
         default=None,
         help="Move file to directory after upload",
     )
-    parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    parser.add_argument(
+        "--verbose", action="store_true", help="Enable verbose output"
+    )
     parser.add_argument(
         "--upload-from-directory",
         type=Path,
@@ -302,7 +307,9 @@ def main() -> None:
             use_git_ignore=False,  # several image dirs are git ignored
         )
         # Filter out ignored files
-        files_to_upload = [f for f in all_files if f.name not in args.ignore_files]
+        files_to_upload = [
+            f for f in all_files if f.name not in args.ignore_files
+        ]
     elif args.file:
         files_to_upload = [args.file]
     else:
