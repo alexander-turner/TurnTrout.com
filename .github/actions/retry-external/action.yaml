@@ -35,15 +35,16 @@ runs:
         INITIAL_DELAY: ${{ inputs.initial-delay-seconds }}
         MAX_DELAY: ${{ inputs.max-delay-seconds }}
       run: |
+        # GitHub Actions runs composite `shell: bash` steps with
+        # `set -eo pipefail`. Without disabling `-e` here, a failing
+        # `bash -c "$RETRY_COMMAND"` aborts the script immediately and
+        # the retry loop never iterates — `rc=$?` is never reached.
+        set +e
         set -u
         attempt=1
         delay="$INITIAL_DELAY"
         while :; do
           echo "::group::Attempt $attempt/$MAX_ATTEMPTS"
-          # Capture exit code BEFORE the if-test: after `if cmd; then ...; fi`
-          # with the branch not taken, `$?` is 0 (the if-fi itself succeeded),
-          # not the command's failing exit. Run the command, capture `$?`,
-          # then branch on it.
           bash -c "$RETRY_COMMAND"
           rc=$?
           echo "::endgroup::"
