@@ -1,6 +1,7 @@
 import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
+import escapeStringRegexp from "escape-string-regexp"
 import { h } from "hastscript"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -48,7 +49,7 @@ export const ignoreList: readonly string[] = ["th", "hz", "st", "nd", "rd"]
 
 // Escaped and joined allowAcronyms as an intermediate variable
 const escapedAllowAcronyms = allowAcronyms.map((acronym) =>
-  acronym.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"),
+  escapeStringRegexp(acronym),
 )
 
 const boundaryAllowAcronyms = escapedAllowAcronyms

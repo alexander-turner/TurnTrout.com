@@ -255,7 +255,9 @@ def test_download_image(tmp_path):
     mock_response.status_code = 200
     mock_response.raw = io.BytesIO(b"fake image data")
 
-    with mock.patch("requests.get", return_value=mock_response) as mock_get:
+    with mock.patch.object(
+        convert_markdown_yaml._http_session, "get", return_value=mock_response
+    ) as mock_get:
         convert_markdown_yaml._download_image(url, output_path)
 
         mock_get.assert_called_once()
@@ -272,7 +274,11 @@ def test_download_image_failure(tmp_path):
     mock_response.status_code = 404
 
     with (
-        mock.patch("requests.get", return_value=mock_response),
+        mock.patch.object(
+            convert_markdown_yaml._http_session,
+            "get",
+            return_value=mock_response,
+        ),
         pytest.raises(ValueError, match="Failed to download image"),
     ):
         convert_markdown_yaml._download_image(url, output_path)

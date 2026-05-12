@@ -54,14 +54,11 @@ jobs:
           install-python: "false"
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Install subfont
-        run: pnpm add -g github:alexander-turner/subfont
+        # Pin to a commit SHA so `pnpm add -g` is reproducible.
+        run: pnpm add -g github:alexander-turner/subfont#f220fd1115ef2dd4512c24d4ec8ffe7248e196b2
       - name: Subset fonts for Lighthouse test pages
         run: |
           subfont --root public/ \
@@ -74,7 +71,8 @@ jobs:
             --formats woff2 --in-place --instance --inline-css --no-recursive --debug
 
       - name: Install Wrangler
-        run: pnpm add -g wrangler
+        # Match the version pinned in .github/actions/deploy-to-cloudflare/action.yaml.
+        run: pnpm add -g wrangler@3.99.0
 
       - name: Publish to Cloudflare Pages for Lighthouse testing
         id: deploy_cf_pages

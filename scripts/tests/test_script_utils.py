@@ -1,5 +1,6 @@
 """Test the utilities used for running the tests :)"""
 
+import io
 import shutil
 import subprocess
 from collections.abc import Iterator
@@ -1206,3 +1207,75 @@ def test_get_imagemagick_command_im6_operation_not_found(
         FileNotFoundError, match="ImageMagick 'identify' not found"
     ):
         script_utils.get_imagemagick_command("identify")
+
+
+# ---------------------------------------------------------------------------
+# Newer shared helpers
+# ---------------------------------------------------------------------------
+
+
+def test_get_yaml_parser_round_trips_and_preserves_quotes(tmp_path: Path):
+    parser = script_utils.get_yaml_parser()
+    source = 'name: "quoted"\nlist:\n  - a\n  - b\n'
+    loaded = parser.load(source)
+    assert loaded["name"] == "quoted"
+    stream = io.StringIO()
+    parser.dump(loaded, stream)
+    # Quotes preserved by the round-trip parser
+    assert '"quoted"' in stream.getvalue()
+
+
+def test_write_yaml_frontmatter_writes_full_file(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    script_utils.write_yaml_frontmatter(
+        file_path, {"title": "Hi"}, "body line\n"
+    )
+    contents = file_path.read_text(encoding="utf-8")
+    assert contents.startswith("---\n")
+    assert "title: Hi" in contents
+    assert contents.endswith("body line\n")
+
+
+def test_write_yaml_frontmatter_accepts_explicit_parser(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    parser = script_utils.get_yaml_parser()
+    script_utils.write_yaml_frontmatter(
+        file_path, {"a": 1}, "body\n", parser=parser
+    )
+    assert "a: 1" in file_path.read_text(encoding="utf-8")
+
+
+def test_update_markdown_file_writes_only_on_change(tmp_path: Path):
+    file_path = tmp_path / "post.md"
+    file_path.write_text("original", encoding="utf-8")
+
+    changed = script_utils.update_markdown_file(file_path, lambda s: s)
+    assert changed is False
+
+    changed = script_utils.update_markdown_file(
+        file_path, lambda s: s + " updated"
+    )
+    assert changed is True
+    assert file_path.read_text(encoding="utf-8") == "original updated"
+
+
+def test_extract_filename_from_url_returns_basename():
+    assert (
+        script_utils.extract_filename_from_url(
+            "https://example.com/path/to/file.png"
+        )
+        == "file.png"
+    )
+
+
+def test_extract_filename_from_url_raises_when_empty():
+    with pytest.raises(ValueError, match="no filename component"):
+        script_utils.extract_filename_from_url("https://example.com/")
+
+
+def test_error_exit_prints_to_stderr_and_exits(capsys):
+    with pytest.raises(SystemExit) as excinfo:
+        script_utils.error_exit("boom", code=2)
+    assert excinfo.value.code == 2
+    captured = capsys.readouterr()
+    assert "boom" in captured.err

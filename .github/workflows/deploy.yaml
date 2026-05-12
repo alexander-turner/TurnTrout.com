@@ -39,6 +39,12 @@ jobs:
     needs: deploy-build
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    # Wrangler reads these from the environment; setting them once at job
+    # level avoids re-declaring them on every deploy-to-cloudflare step.
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -54,20 +60,13 @@ jobs:
           install-system-deps: "true"
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       # --- PR preview: deploy immediately without subfont ---
       - name: Deploy PR preview to Cloudflare Pages
         if: github.event_name == 'pull_request'
         uses: ./.github/actions/deploy-to-cloudflare
         with:
-          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
           project-name: turntrout
           branch: pr-${{ github.event.pull_request.number }}
 
@@ -123,15 +122,13 @@ jobs:
         if: github.event_name == 'push' && github.ref_name == 'dev'
         uses: ./.github/actions/deploy-to-cloudflare
         with:
-          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
           project-name: turntrout
           branch: ${{ github.ref_name }}
 
       - name: Install subfont
         if: github.event_name == 'push'
-        run: pnpm add -g github:alexander-turner/subfont
+        # Pin to a commit SHA so `pnpm add -g` is reproducible.
+        run: pnpm add -g github:alexander-turner/subfont#f220fd1115ef2dd4512c24d4ec8ffe7248e196b2
       - name: Make script executable
         if: github.event_name == 'push'
         run: chmod +x ./scripts/subfont.sh
@@ -351,6 +348,10 @@ jobs:
     if: ${{ github.event_name == 'push' && ((always() && github.ref_name == 'dev') || (needs.verify-test-results.result == 'success' && (needs.verify-lp-approval.result == 'success' || needs.verify-lp-approval.result == 'skipped'))) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
@@ -363,8 +364,5 @@ jobs:
       - name: Deploy to Cloudflare Pages
         uses: ./.github/actions/deploy-to-cloudflare
         with:
-          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
           project-name: turntrout
           branch: ${{ github.ref_name }}

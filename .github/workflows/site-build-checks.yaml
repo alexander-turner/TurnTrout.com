@@ -85,11 +85,7 @@ jobs:
           cache-apt: "true"
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Check CSS variables
         run: |
@@ -120,11 +116,7 @@ jobs:
         uses: ./.github/actions/setup-site
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Start server
         id: server

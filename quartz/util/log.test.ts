@@ -37,9 +37,12 @@ jest.mock("winston", () => ({
   },
 }))
 
-// Mock child_process and fs used by log root detection
-jest.mock("child_process", () => ({
-  execSync: jest.fn(() => "/repo\n"),
+// Mock find-git-root and fs used by log root detection.
+// find-git-root returns the path to the `.git` directory; log.ts wraps it
+// with path.dirname() so the working-tree root is what callers see.
+jest.unstable_mockModule("find-git-root", () => ({
+  __esModule: true,
+  default: jest.fn(() => "/repo/.git"),
 }))
 
 jest.mock("fs", () => ({

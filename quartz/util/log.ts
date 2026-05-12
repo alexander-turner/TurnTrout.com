@@ -1,8 +1,9 @@
 import type Transport from "winston-transport"
 
-import { execSync } from "child_process"
+import gitRoot from "find-git-root"
 import fs from "fs"
 import path from "path"
+import { fileURLToPath } from "url"
 import { transports, format, createLogger } from "winston"
 import DailyRotateFile from "winston-daily-rotate-file"
 
@@ -30,18 +31,15 @@ export function setLogLevelFromArgv(argv: Partial<Argv> | undefined): void {
 
 /**
  * Finds the root directory of the current Git repository.
+ *
+ * Wraps the `find-git-root` package, which returns the `.git` directory; we
+ * return its parent so callers receive the working-tree root.
  */
-export const findGitRoot = (): string | null => {
-  return execSync("git rev-parse --show-toplevel").toString().trim()
+export const findGitRoot = (): string => {
+  return path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 }
 
-const gitRoot = findGitRoot()
-
-if (!gitRoot) {
-  throw new Error("Git root not found.")
-}
-
-const logDir = path.join(gitRoot, ".logs")
+const logDir = path.join(findGitRoot(), ".logs")
 
 // Create the log directory if it doesn't exist
 if (!fs.existsSync(logDir)) {

@@ -88,11 +88,7 @@ jobs:
         run: pnpm run install-browsers
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Run Playwright tests
         id: playwright
@@ -204,11 +200,7 @@ jobs:
         run: xattr -cr ~/Library/Caches/ms-playwright
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Run Playwright tests
         id: playwright

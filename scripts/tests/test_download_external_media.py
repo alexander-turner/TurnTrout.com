@@ -1,6 +1,6 @@
 """Tests for download_external_media.py."""
 
-import subprocess
+import io
 from unittest import mock
 
 import pytest
@@ -109,23 +109,33 @@ def test_find_external_media_urls_case_insensitive(mock_git_root):
     assert "https://example.com/video.MP4" in urls
 
 
+def _mock_response(payload: bytes = b"") -> mock.MagicMock:
+    """Build a MagicMock that mimics a streaming requests Response."""
+    response = mock.MagicMock()
+    response.raw = io.BytesIO(payload)
+    response.__enter__.return_value = response
+    response.raise_for_status = mock.MagicMock()
+    return response
+
+
 def test_download_media_success(mock_git_root, tmp_path):
     """Test successful media download."""
     target_dir = tmp_path / "downloads"
     target_dir.mkdir()
 
-    with mock.patch("subprocess.run") as mock_run:
-        mock_run.return_value = mock.Mock(returncode=0)
-
+    response = _mock_response(b"image-bytes")
+    with mock.patch.object(
+        download_external_media._http_session, "get", return_value=response
+    ) as mock_get:
         result = download_external_media.download_media(
             "https://example.com/image.png", target_dir
         )
 
         assert result is True
-        mock_run.assert_called_once()
-        call_args = mock_run.call_args[0][0]
-        assert "curl" in call_args
-        assert "https://example.com/image.png" in call_args
+        mock_get.assert_called_once()
+        url = mock_get.call_args[0][0]
+        assert url == "https://example.com/image.png"
+        assert (target_dir / "image.png").read_bytes() == b"image-bytes"
 
 
 def test_download_media_failure(mock_git_root, tmp_path):
@@ -133,11 +143,13 @@ def test_download_media_failure(mock_git_root, tmp_path):
     target_dir = tmp_path / "downloads"
     target_dir.mkdir()
 
-    with mock.patch("subprocess.run") as mock_run:
-        mock_run.side_effect = subprocess.CalledProcessError(
-            1, "curl", stderr=b"Error message"
-        )
-
+    with mock.patch.object(
+        download_external_media._http_session,
+        "get",
+        side_effect=download_external_media.requests.RequestException(
+            "Error message"
+        ),
+    ):
         result = download_external_media.download_media(
             "https://example.com/image.png", target_dir
         )
@@ -205,20 +217,25 @@ def test_main_downloads_and_updates(mock_git_root, capsys):
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 
-    with mock.patch("subprocess.run") as mock_run:
+    response = _mock_response(b"image-bytes")
+    with (
+        mock.patch("subprocess.run") as mock_run,
+        mock.patch.object(
+            download_external_media._http_session,
+            "get",
+            return_value=response,
+        ) as mock_get,
+    ):
         mock_run.return_value = mock.Mock(returncode=0)
 
         download_external_media.main()
 
-        # Check that subprocess.run was called multiple times (pkill, curl, open)
-        assert mock_run.call_count >= 3
+        # pkill and open were invoked via subprocess.run
+        assert mock_run.call_count >= 2
 
-        # Check that curl download was attempted
-        curl_calls = [
-            call for call in mock_run.call_args_list if "curl" in str(call)
-        ]
-        assert len(curl_calls) == 1
-        assert "https://example.com/image.png" in str(curl_calls[0])
+        # Download was attempted via the http session
+        mock_get.assert_called_once()
+        assert mock_get.call_args[0][0] == "https://example.com/image.png"
 
         # Check that URL was updated in markdown
         updated_content = md_file.read_text()
@@ -235,15 +252,17 @@ def test_main_handles_download_failures(mock_git_root, capsys):
     md_file = mock_git_root / "website_content" / "test.md"
     md_file.write_text("![Image](https://example.com/image.png)")
 
-    with mock.patch("subprocess.run") as mock_run:
-        # First call (pkill) succeeds, second call (curl) fails, third call (open) succeeds
-        mock_run.side_effect = [
-            mock.Mock(returncode=0),  # pkill
-            subprocess.CalledProcessError(
-                1, "curl", stderr=b"Error"
-            ),  # curl fails
-            mock.Mock(returncode=0),  # open
-        ]
+    with (
+        mock.patch("subprocess.run") as mock_run,
+        mock.patch.object(
+            download_external_media._http_session,
+            "get",
+            side_effect=download_external_media.requests.RequestException(
+                "Error"
+            ),
+        ),
+    ):
+        mock_run.return_value = mock.Mock(returncode=0)
 
         download_external_media.main()
 

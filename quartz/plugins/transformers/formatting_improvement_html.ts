@@ -16,6 +16,7 @@ import {
   NBSP,
   LEFT_SINGLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
+  HEADING_TAGS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -25,7 +26,6 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  * Content inside these elements won't have formatting improvements applied.
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
-export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 
 /**
  * Tags that should be skipped during fraction replacement.
