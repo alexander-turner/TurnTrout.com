@@ -60,7 +60,7 @@ def http_session(
     return session
 
 
-def load_shared_constants() -> dict:  # pragma: no cover
+def load_shared_constants() -> dict:
     """Load shared constants from config/constants.json."""
     with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)

@@ -36,7 +36,6 @@ from scripts import compress, source_file_checks
 from scripts import utils as script_utils
 from scripts.invert_constants import (
     EXCLUDED_SEGMENTS,
-    INVERT_CLASS,
     RASTER_EXTENSIONS,
     VIDEO_EXTENSIONS,
 )
@@ -58,6 +57,12 @@ from scripts.utils import (
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
 RSS_XSD_PATH = _GIT_ROOT / "scripts" / ".rss-2.0.xsd"
+
+# CSS class the build pipeline applies to elements that should be inverted in
+# dark mode. Canonical source: config/constants.json (`invertInDarkModeClass`).
+INVERT_CLASS: str = script_utils.load_shared_constants()[
+    "invertInDarkModeClass"
+]
 
 _IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
@@ -797,18 +802,16 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-class _InvertLabel(NamedTuple):
+class InvertLabel(NamedTuple):
+    """One entry from ``.invert_labels.json``."""
+
     invert: bool
     reviewed: bool
 
 
-def _is_invert_candidate(url: str, valid_exts: tuple[str, ...]) -> bool:
-    if not url.startswith(("http://", "https://")):
-        return False
-    if not url.lower().endswith(valid_exts):
-        return False
+def _is_excluded_segment(url: str) -> bool:
     segments = url.split("?", 1)[0].split("/")
-    return not any(seg in EXCLUDED_SEGMENTS for seg in segments)
+    return any(seg in EXCLUDED_SEGMENTS for seg in segments)
 
 
 def _has_invert_class(tag: Tag) -> bool:
@@ -839,7 +842,7 @@ def _invert_issue(
     kind: str,
     src: str,
     has_class: bool,
-    label: _InvertLabel | None,
+    label: InvertLabel | None,
 ) -> str | None:
     if label is None:
         return f"<{kind}> {src} missing from .invert_labels.json"
@@ -854,39 +857,63 @@ def _invert_issue(
     )
 
 
+def _validate_eligible_src(
+    kind: str,
+    src: str,
+    has_class: bool,
+    invert_labels: Mapping[str, InvertLabel],
+) -> str | None:
+    """
+    Check one src that's already passed the extension + excluded-segment
+    filters.
+
+    Errors on non-HTTP(S) (the labeler can't reach it) before delegating to
+    _invert_issue.
+    """
+    if not src.startswith(("http://", "https://")):
+        return (
+            f"<{kind}> {src}: must be served over HTTP(S) to be invert-labeled"
+        )
+    return _invert_issue(kind, src, has_class, invert_labels.get(src))
+
+
 def check_invert_labels(
     soup: BeautifulSoup,
-    invert_labels: Mapping[str, _InvertLabel] | None,
+    invert_labels: Mapping[str, InvertLabel] | None,
 ) -> list[str]:
     """
     Error when an eligible ``<img>`` or inline looping ``<video>`` source is
     missing from ``.invert_labels.json``, is present but ``reviewed: false``, or
     disagrees with the rendered element's ``invert-in-dark-mode`` class (JSON is
-    the source of truth).
+    the source of truth). Also errors on non-HTTP(S) raster srcs the labeler
+    can't reach.
 
-    No-op when ``invert_labels`` is None.
+    No-op when ``invert_labels`` is None — only used by tests; the loader
+    returns ``None`` only when the labels file is missing entirely.
     """
     if invert_labels is None:
         return []
     issues: list[str] = []
     for img in _tags_only(soup.find_all("img")):
         src = img.get("src")
-        if not isinstance(src, str) or not _is_invert_candidate(
-            src, RASTER_EXTENSIONS
-        ):
+        if not isinstance(src, str):
             continue
-        issue = _invert_issue(
-            "img", src, _has_invert_class(img), invert_labels.get(src)
+        if not src.lower().endswith(RASTER_EXTENSIONS):
+            continue
+        if _is_excluded_segment(src):
+            continue
+        issue = _validate_eligible_src(
+            "img", src, _has_invert_class(img), invert_labels
         )
         if issue is not None:
             issues.append(issue)
     for video in _tags_only(soup.find_all("video")):
         has_class = _has_invert_class(video)
         for src in _inline_looping_video_sources(video):
-            if not _is_invert_candidate(src, VIDEO_EXTENSIONS):
+            if _is_excluded_segment(src):
                 continue
-            issue = _invert_issue(
-                "video", src, has_class, invert_labels.get(src)
+            issue = _validate_eligible_src(
+                "video", src, has_class, invert_labels
             )
             if issue is not None:
                 issues.append(issue)
@@ -1889,7 +1916,7 @@ class CheckOptions:
     favicon_included_domains: frozenset[str] | None = None
     # Loaded once in _process_html_files; passed through so each file
     # check doesn't have to re-read the JSON.
-    invert_labels: Mapping[str, _InvertLabel] | None = None
+    invert_labels: Mapping[str, InvertLabel] | None = None
 
 
 def check_file_for_issues(
@@ -2958,13 +2985,16 @@ def _collect_paragraphs_for_spellcheck(
 
 def _load_invert_labels(
     project_root: Path,
-) -> Mapping[str, _InvertLabel] | None:
+) -> Mapping[str, InvertLabel] | None:
     """
-    Load ``.invert_labels.json`` as ``_InvertLabel`` tuples.
+    Load ``.invert_labels.json`` as ``InvertLabel`` tuples.
 
-    Returns None (disabling :func:`check_invert_labels`) when the file is
-    absent, malformed, or contains no schema-conforming entries — the escape
-    hatch for fresh checkouts before any labeling has happened.
+    Raises ``ValueError`` when the file exists but isn't a valid JSON object of
+    ``{invert, reviewed}`` entries — fail loudly on a corrupted labels file
+    rather than silently skipping the validation.
+
+    Returns ``None`` only when the file is absent (disabling the check for test
+    environments without it; production has the file committed).
     """
     path = (
         project_root
@@ -2977,18 +3007,25 @@ def _load_invert_labels(
         return None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path} is not valid JSON: {e}") from e
     if not isinstance(data, dict):
-        return None
-    labels = {
-        str(k): _InvertLabel(
-            invert=bool(v["invert"]), reviewed=bool(v["reviewed"])
+        raise ValueError(f"{path} must contain a JSON object")
+    labels: dict[str, InvertLabel] = {}
+    for key, value in data.items():
+        if (
+            not isinstance(value, dict)
+            or "invert" not in value
+            or "reviewed" not in value
+        ):
+            raise ValueError(
+                f"{path} entry for {key!r} must be "
+                f"{{invert: bool, reviewed: bool}}, got {value!r}"
+            )
+        labels[str(key)] = InvertLabel(
+            invert=bool(value["invert"]), reviewed=bool(value["reviewed"])
         )
-        for k, v in data.items()
-        if isinstance(v, dict) and "invert" in v and "reviewed" in v
-    }
-    return labels or None
+    return labels
 
 
 def _process_html_files(  # pylint: disable=too-many-locals

@@ -6355,16 +6355,16 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
-_InvertLabel = built_site_checks._InvertLabel
+InvertLabel = built_site_checks.InvertLabel
 INVERT_CLASS = built_site_checks.INVERT_CLASS
 
 
-def _reviewed(invert: bool) -> _InvertLabel:
-    return _InvertLabel(invert=invert, reviewed=True)
+def _reviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=True)
 
 
-def _unreviewed(invert: bool) -> _InvertLabel:
-    return _InvertLabel(invert=invert, reviewed=False)
+def _unreviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=False)
 
 
 def _missing_msg(kind: str, url: str) -> str:
@@ -6459,11 +6459,14 @@ def _class_mismatch_msg(
             {},
             [],
         ),
-        # Non-HTTP src (relative paths) is ignored.
+        # Non-HTTP src on a raster <img> errors — labeler can't reach it.
         (
             '<img src="/local/a.png">',
             {},
-            [],
+            [
+                "<img> /local/a.png: must be served over HTTP(S) "
+                "to be invert-labeled"
+            ],
         ),
         # Mixed-case extension still matches.
         (
@@ -6500,7 +6503,7 @@ def _class_mismatch_msg(
 )
 def test_check_invert_labels_images(
     html: str,
-    labels: dict[str, _InvertLabel] | None,
+    labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
@@ -6604,7 +6607,7 @@ def test_check_invert_labels_images(
 )
 def test_check_invert_labels_videos(
     html: str,
-    labels: dict[str, _InvertLabel] | None,
+    labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
@@ -6624,29 +6627,25 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
 @pytest.mark.parametrize(
     ("contents", "expected"),
     [
-        # File absent / malformed / wrong shape → None disables the check.
+        # File absent → None disables the check (only used by tests; production
+        # has the file committed).
         (None, None),
-        ("not json", None),
-        ("[1, 2, 3]", None),
-        # Empty object → check is not yet armed.
-        ("{}", None),
-        # File with only legacy bool-shape entries → still not armed.
-        (json.dumps({"https://x/a.avif": True}), None),
-        # Mixed entries — reviewed, unreviewed, legacy. Legacy ignored; the
-        # rest are loaded with their full (invert, reviewed) tuples.
+        # Empty object → returns {} so the validator runs and (correctly) fails
+        # every eligible image. No more empty-file escape hatch.
+        ("{}", {}),
+        # Well-formed entries are loaded into InvertLabel tuples.
         (
             json.dumps(
                 {
                     "https://x/a.avif": {"invert": True, "reviewed": True},
                     "https://x/b.avif": {"invert": False, "reviewed": True},
                     "https://x/c.avif": {"invert": True, "reviewed": False},
-                    "https://x/legacy.avif": True,
                 }
             ),
             {
-                "https://x/a.avif": _InvertLabel(invert=True, reviewed=True),
-                "https://x/b.avif": _InvertLabel(invert=False, reviewed=True),
-                "https://x/c.avif": _InvertLabel(invert=True, reviewed=False),
+                "https://x/a.avif": InvertLabel(invert=True, reviewed=True),
+                "https://x/b.avif": InvertLabel(invert=False, reviewed=True),
+                "https://x/c.avif": InvertLabel(invert=True, reviewed=False),
             },
         ),
     ],
@@ -6654,10 +6653,31 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
 def test_load_invert_labels(
     tmp_path: Path,
     contents: str | None,
-    expected: dict[str, _InvertLabel] | None,
+    expected: dict[str, InvertLabel] | None,
 ) -> None:
     _write_labels_file(tmp_path, contents)
     assert built_site_checks._load_invert_labels(tmp_path) == expected
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        # Not valid JSON.
+        "not json",
+        # Wrong top-level shape.
+        "[1, 2, 3]",
+        # Legacy bare-bool entry.
+        json.dumps({"https://x/a.avif": True}),
+        # Schema-malformed dict (missing `reviewed`).
+        json.dumps({"https://x/a.avif": {"invert": True}}),
+    ],
+)
+def test_load_invert_labels_raises_on_malformed(
+    tmp_path: Path, contents: str
+) -> None:
+    _write_labels_file(tmp_path, contents)
+    with pytest.raises(ValueError):
+        built_site_checks._load_invert_labels(tmp_path)
 
 
 # LCP image optimization tests
