@@ -80,81 +80,10 @@ jobs:
         env:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |
-          # First pass: full sitemap. ~17 min on a healthy runner.
-          # On crash (exit 1) or timeout/crash-only failure (exit 2 with
-          # no real a11y violations), re-run pa11y *just for the URLs
-          # that failed* — re-running the whole 200+ URL suite per
-          # attempt blows the 50-min step cap with only 2 attempts'
-          # worth of budget.
-          set +e
-          first_output=$(pnpm test:a11y 2>&1)
-          first_exit=$?
-          set -e
-          echo "$first_output"
-
-          if [ "$first_exit" -eq 0 ]; then
-            kill $SERVER_PID 2>/dev/null || true
-            exit 0
-          fi
-
-          real_violations=$(echo "$first_output" | grep -E "Elements must|WCAG|aria-|color-contrast" || true)
-          flake_signal=$(echo "$first_output" | grep -E "timed? ?out|Failed to run|crashed" || true)
-          if [ -z "$flake_signal" ] || [ -n "$real_violations" ]; then
-            echo "pa11y-ci found real accessibility violations."
-            kill $SERVER_PID 2>/dev/null || true
-            exit "$first_exit"
-          fi
-
-          failing_urls=$(echo "$first_output" | grep -oE "Errors in http://localhost:8080[^:]+" | sed 's|Errors in ||' | sort -u)
-          if [ -z "$failing_urls" ]; then
-            echo "Flake signal but no Errors-in-URL line; falling back to full re-run."
-            failing_urls="ALL"
-          fi
-          echo ""
-          echo "First pass had flake-only failures. Retrying these URLs:"
-          echo "$failing_urls"
-
-          for attempt in 2 3; do
-            set +e
-            if [ "$failing_urls" = "ALL" ]; then
-              retry_output=$(pnpm test:a11y 2>&1)
-            else
-              # Per-URL retry. Lower concurrency than the full suite is
-              # already 1, so we just iterate.
-              retry_output=""
-              retry_exit=0
-              while IFS= read -r url; do
-                page_output=$(pnpm exec pa11y \
-                  --config config/pa11y/.pa11yci \
-                  --reporter cli \
-                  "$url" 2>&1)
-                page_exit=$?
-                retry_output="${retry_output}${page_output}"$'\n'
-                if [ "$page_exit" -ne 0 ]; then
-                  retry_exit=$page_exit
-                fi
-              done <<< "$failing_urls"
-            fi
-            set -e
-            echo "$retry_output"
-
-            if [ "${retry_exit:-0}" -eq 0 ]; then
-              echo "Attempt $attempt: all retried URLs passed."
-              kill $SERVER_PID 2>/dev/null || true
-              exit 0
-            fi
-
-            real_violations=$(echo "$retry_output" | grep -E "Elements must|WCAG|aria-|color-contrast" || true)
-            if [ -n "$real_violations" ]; then
-              echo "Retry attempt $attempt surfaced real accessibility violations."
-              kill $SERVER_PID 2>/dev/null || true
-              exit 2
-            fi
-            echo "Attempt $attempt: still only timeout/crash failures."
-          done
-
-          echo "All 3 attempts had only timeouts/crashes (no real a11y violations). Passing."
+          uv run python scripts/run_a11y.py
+          rc=$?
           kill $SERVER_PID 2>/dev/null || true
+          exit $rc
 
   # Unified status check — provides passing status when gated off on PRs
   a11y-status:
