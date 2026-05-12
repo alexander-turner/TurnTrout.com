@@ -136,14 +136,14 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
 
   const inputs: Record<string, string> = { run_id: runId }
   if (prNumber) inputs.pr_number = prNumber
-  const d = await ghFetch(env, `/repos/${REPO}/actions/workflows/${DISPATCH}/dispatches`, {
+  const dispatch = await ghFetch(env, `/repos/${REPO}/actions/workflows/${DISPATCH}/dispatches`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ ref: "main", inputs }),
   })
-  if (d.status !== 204) {
+  if (dispatch.status !== 204) {
     return jres(502, {
-      error: `Dispatch failed (${d.status}): ${(await d.text()).slice(0, 200)}`,
+      error: `Dispatch failed (${dispatch.status}): ${(await dispatch.text()).slice(0, 200)}`,
     })
   }
   return jres(200, { ok: true, message: "Dispatched update-visual-baselines.yaml" })

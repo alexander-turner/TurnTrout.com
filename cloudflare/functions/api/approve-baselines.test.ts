@@ -33,12 +33,14 @@ type Route = (url: string, init?: RequestInit) => Response | null
 let lastInit: RequestInit | undefined
 function mockFetch(route: Route): void {
   lastInit = undefined
-  const fn = jest.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  const fn = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === "string" ? input : (input as Request).url
     if (url === DISP) lastInit = init
     const res = route(url, init)
-    if (res === null) throw new Error(`Unexpected fetch: ${init?.method ?? "GET"} ${url}`)
-    return res
+    if (res === null) {
+      return Promise.reject(new Error(`Unexpected fetch: ${init?.method ?? "GET"} ${url}`))
+    }
+    return Promise.resolve(res)
   })
   ;(globalThis as unknown as { fetch: typeof fetch }).fetch = fn as unknown as typeof fetch
 }
@@ -133,9 +135,9 @@ describe("approve-baselines", () => {
     )
     const res = await onRequestPost({ request: req({ runId: "42", prNumber: "7" }), env: ENV })
     expect(res.status).toBe(409)
-    const e = await errOf(res)
-    expect(e).toMatch(pat)
-    expect(e).toMatch(/stale gallery/)
+    const errMsg = await errOf(res)
+    expect(errMsg).toMatch(pat)
+    expect(errMsg).toMatch(/stale gallery/)
   })
 
   it("dispatches with pr_number when PR is open", async () => {
@@ -196,12 +198,12 @@ describe("approve-baselines", () => {
       ref: "main",
       inputs: { run_id: "42" },
     })
-    const h = lastInit?.headers as Record<string, string>
-    expect(h.authorization).toBe("Bearer ghp_test")
-    expect(h["x-github-api-version"]).toBe("2022-11-28")
-    expect(h["content-type"]).toBe("application/json")
-    expect(h.accept).toBe("application/vnd.github+json")
-    expect(h["user-agent"]).toBe("turntrout-approve-baselines")
+    const headers = lastInit?.headers as Record<string, string>
+    expect(headers.authorization).toBe("Bearer ghp_test")
+    expect(headers["x-github-api-version"]).toBe("2022-11-28")
+    expect(headers["content-type"]).toBe("application/json")
+    expect(headers.accept).toBe("application/vnd.github+json")
+    expect(headers["user-agent"]).toBe("turntrout-approve-baselines")
   })
 
   it("returns 502 when dispatch returns non-204", async () => {
