@@ -372,18 +372,11 @@ _DECISION_PARAM: Final[Mapping[str, bool | None]] = {
 }
 
 
-def create_app(
+def _index_handler(
     candidates: tuple[str, ...],
-    *,
-    labels_path: Path = LABELS_JSON,
-    luminances: Mapping[str, float] | None = None,
-) -> Flask:
-    """Build the labeling Flask app."""
-    app = Flask(__name__, template_folder="templates")
-    candidate_set = frozenset(candidates)
-    lum_map: Mapping[str, float] = luminances or {}
-
-    @app.get("/")
+    labels_path: Path,
+    lum_map: Mapping[str, float],
+) -> Callable[[], str]:
     def index() -> str:
         labels = load_labels(labels_path)
         return render_template(
@@ -407,11 +400,12 @@ def create_app(
             ),
         )
 
-    @app.get("/api/labels")
-    def get_labels() -> Response:
-        return jsonify(load_labels(labels_path))
+    return index
 
-    @app.post("/api/label")
+
+def _label_handler(
+    candidate_set: frozenset[str], labels_path: Path
+) -> Callable[[], Response]:
     def post_label() -> Response:
         payload = request.get_json(silent=True) or {}
         url = payload.get("url")
@@ -432,7 +426,10 @@ def create_app(
         save_labels(labels, labels_path)
         return jsonify(ok=True)
 
-    @app.post("/api/review")
+    return post_label
+
+
+def _review_handler(labels_path: Path) -> Callable[[], Response]:
     def post_review() -> Response:
         """Bulk-mark URLs as user-reviewed (verdict unchanged)."""
         payload = request.get_json(silent=True) or {}
@@ -446,6 +443,25 @@ def create_app(
         if reviewed_count:
             save_labels(labels, labels_path)
         return jsonify(ok=True, reviewed=reviewed_count)
+
+    return post_review
+
+
+def create_app(
+    candidates: tuple[str, ...],
+    *,
+    labels_path: Path = LABELS_JSON,
+    luminances: Mapping[str, float] | None = None,
+) -> Flask:
+    """Build the labeling Flask app."""
+    app = Flask(__name__, template_folder="templates")
+    candidate_set = frozenset(candidates)
+    lum_map: Mapping[str, float] = luminances or {}
+
+    app.get("/")(_index_handler(candidates, labels_path, lum_map))
+    app.get("/api/labels")(lambda: jsonify(load_labels(labels_path)))
+    app.post("/api/label")(_label_handler(candidate_set, labels_path))
+    app.post("/api/review")(_review_handler(labels_path))
 
     return app
 

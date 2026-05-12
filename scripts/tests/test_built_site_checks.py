@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -28,6 +29,11 @@ if TYPE_CHECKING:
     from .. import built_site_checks
 else:
     import built_site_checks
+
+requires_xmllint = pytest.mark.skipif(
+    shutil.which("xmllint") is None,
+    reason="xmllint not available in this environment",
+)
 
 
 @pytest.fixture
@@ -780,6 +786,7 @@ def test_check_unrendered_subtitles():
     ]
 
 
+@requires_xmllint
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS
     file."""
@@ -811,6 +818,7 @@ def test_check_valid_rss_file_with_xmllint(temp_site_root):
         pytest.fail("check_rss_file_for_issues failed with valid RSS content")
 
 
+@requires_xmllint
 def test_check_invalid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues fails on an invalid RSS file."""
     script_utils.get_git_root()
@@ -6459,14 +6467,12 @@ def _class_mismatch_msg(
             {},
             [],
         ),
-        # Non-HTTP src on a raster <img> errors — labeler can't reach it.
+        # Non-HTTP src is reported as missing from labels like any other
+        # raster <img> — relative paths are an error mode for separate checks.
         (
             '<img src="/local/a.png">',
             {},
-            [
-                "<img> /local/a.png: must be served over HTTP(S) "
-                "to be invert-labeled"
-            ],
+            [_missing_msg("img", "/local/a.png")],
         ),
         # Mixed-case extension still matches.
         (
@@ -6514,29 +6520,27 @@ def test_check_invert_labels_images(
 @pytest.mark.parametrize(
     ("html", "labels", "expected_issues"),
     [
-        # All sources reviewed with matching class → no issue.
+        # Canonical (first) source reviewed with matching class → no issue,
+        # even if alternate-format sibling has no JSON entry. The
+        # invert-in-dark-mode class lives on the <video>, not per <source>,
+        # so a single label per video is the source of truth.
         (
             f'<video class="{INVERT_CLASS}" autoplay loop muted>'
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
-            {
-                "https://x/a.mp4": _reviewed(True),
-                "https://x/a.webm": _reviewed(True),
-            },
+            {"https://x/a.mp4": _reviewed(True)},
             [],
         ),
-        # Both sources missing → both flagged.
+        # Canonical source missing → flagged once. Alternate-format
+        # sibling is silently ignored (not double-counted).
         (
             "<video autoplay loop muted>"
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
             {},
-            [
-                _missing_msg("video", "https://x/a.mp4"),
-                _missing_msg("video", "https://x/a.webm"),
-            ],
+            [_missing_msg("video", "https://x/a.mp4")],
         ),
         # Reviewed invert=True on one source but class absent on the <video>.
         (

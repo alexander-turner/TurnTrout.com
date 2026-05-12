@@ -42,7 +42,7 @@ date_published: 2023-05-13
 original_url: https://www.lesswrong.com/posts/5spBue2z2tw4JuDCx/steering-gpt-2-xl-by-adding-an-activation-vector
 skip_import: true
 description: Steering GPT-2 with simple vector addition. Sentiment control turns hateful prompts into loving completions.
-date_updated: 2026-05-08
+date_updated: 2026-05-12
 createBibtex: true
 ---
 
@@ -864,9 +864,7 @@ Alex gets mileage out of _not_ thinking about the model as "trying to predict ne
 Activation additions have _already_ helped us find representations in a model. Activation additions are how we [found the cheese-tracking channels in the maze-solving network, which then let us retarget the network](/understanding-and-controlling-a-maze-solving-policy-network):
 
 > [!quote] [Understanding and Controlling a Maze-Solving Policy Network](./understanding-and-controlling-a-maze-solving-policy-network)
-> <video autoplay loop muted playsinline style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1">
-
-<source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
+> <video autoplay loop muted playsinline style="width:60%;"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/vyflftmbwgl7jmbaeimm.webm" type="video/webm"></video>
 >
 > Figure: **Locally retargeting the search by modifying a single activation.** We found a residual channel halfway through a maze-solving network. When we set one of the channel activations to +5.5, the agent often navigates to the maze location (shown above in red) implied by that positive activation. This allows limited on-the-fly redirection of the net's goals.
 

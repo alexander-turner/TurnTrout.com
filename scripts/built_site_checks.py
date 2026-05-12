@@ -821,22 +821,29 @@ def _has_invert_class(tag: Tag) -> bool:
     return isinstance(tokens, list) and INVERT_CLASS in tokens
 
 
-def _inline_looping_video_sources(video: Tag) -> list[str]:
-    """Source URLs of an inline looping muted ``<video>`` (GIF replacement);
-    ``[]`` for ``#pond-video`` or non-inline videos."""
+def _canonical_inline_video_source(video: Tag) -> str | None:
+    """
+    Canonical source URL of an inline looping muted ``<video>`` (GIF
+    replacement); ``None`` for ``#pond-video`` or non-inline videos.
+
+    ``.invert-in-dark-mode`` is set on the ``<video>`` element, not per
+    ``<source>``. Multi-format videos (e.g. ``.mp4`` + ``.webm`` fallback)
+    therefore share one inversion decision and one labels-JSON entry, so we
+    validate just the *first* eligible source (the canonical format browsers
+    prefer) and skip alternate-format siblings.
+    """
     if video.get("id") == "pond-video":
-        return []
+        return None
     if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
-        return []
+        return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
         *(s.get("src") for s in _tags_only(video.find_all("source"))),
     )
-    return [
-        s
-        for s in candidates
-        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS)
-    ]
+    for s in candidates:
+        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS):
+            return s
+    return None
 
 
 def _invert_issue_string(
@@ -864,25 +871,6 @@ def _invert_issue_string(
     )
 
 
-def _validate_eligible_src(
-    kind: str,
-    src: str,
-    has_class: bool,
-    invert_labels: Mapping[str, InvertLabel],
-) -> str | None:
-    """
-    Validate one src already past the extension + excluded-segment filters:
-
-    error on non-HTTP(S) (labeler can't reach it), otherwise delegate to
-    :func:`_invert_issue_string`.
-    """
-    if not src.startswith(("http://", "https://")):
-        return (
-            f"<{kind}> {src}: must be served over HTTP(S) to be invert-labeled"
-        )
-    return _invert_issue_string(kind, src, has_class, invert_labels.get(src))
-
-
 def check_invert_labels(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, InvertLabel] | None,
@@ -891,11 +879,10 @@ def check_invert_labels(
     Validate every eligible ``<img>`` (raster ext) and inline looping
     ``<video>`` source against ``.invert_labels.json``: each must be present,
     reviewed, and have its ``invert-in-dark-mode`` class match the JSON
-    ``invert`` field (JSON is the source of truth).
+    ``invert`` field (the source of truth).
 
-    Also errors on non-HTTP(S) raster srcs the labeler can't reach. No-op when
-    ``invert_labels`` is None (loader-disabled in tests / when the labels file
-    is missing entirely).
+    No-op when ``invert_labels`` is ``None`` (loader-disabled in tests / when
+    the labels file is missing).
     """
     if invert_labels is None:
         return []
@@ -908,21 +895,20 @@ def check_invert_labels(
             continue
         if _is_excluded_segment(src):
             continue
-        issue = _validate_eligible_src(
-            "img", src, _has_invert_class(img), invert_labels
+        issue = _invert_issue_string(
+            "img", src, _has_invert_class(img), invert_labels.get(src)
         )
         if issue is not None:
             issues.append(issue)
     for video in _tags_only(soup.find_all("video")):
-        has_class = _has_invert_class(video)
-        for src in _inline_looping_video_sources(video):
-            if _is_excluded_segment(src):
-                continue
-            issue = _validate_eligible_src(
-                "video", src, has_class, invert_labels
-            )
-            if issue is not None:
-                issues.append(issue)
+        src = _canonical_inline_video_source(video)
+        if src is None or _is_excluded_segment(src):
+            continue
+        issue = _invert_issue_string(
+            "video", src, _has_invert_class(video), invert_labels.get(src)
+        )
+        if issue is not None:
+            issues.append(issue)
     return issues
 
 
