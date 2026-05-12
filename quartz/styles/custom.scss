@@ -578,7 +578,7 @@ video {
 
 // don't apply in fullscreen (backdrop)
 [data-theme="light"] img,
-[data-theme="light"] video:not(:has(::backdrop)) {
+[data-theme="light"] video:not(:fullscreen) {
   mix-blend-mode: multiply;
 }
 
@@ -964,10 +964,15 @@ iframe {
   }
 }
 
-// These transparent images need a background color to have visible text
+// These transparent images need a background color to have visible text.
+// Use pure white (not var(--foreground), which is #d6deff): if the image is
+// also `.invert-in-dark-mode`, the invert(100%) filter turns white into pure
+// black, which then `mix-blend-mode: screen`-blends perfectly with the dark
+// page background. A non-pure-white bg inverts to a non-pure-black overlay
+// that screen-blends to a visible tinted rectangle around the figure.
 .transparent-image {
   :root[data-theme="dark"] & {
-    background-color: var(--foreground);
+    background-color: white;
   }
 }
 

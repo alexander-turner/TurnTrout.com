@@ -2288,7 +2288,7 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/original_site.avif": {
-    "invert": true,
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/osmosis-1.avif": {
@@ -3220,6 +3220,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/test.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/turntrout-art-transparent.avif": {
     "invert": false,
     "reviewed": true
   },
