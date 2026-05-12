@@ -187,13 +187,22 @@ runs:
     - name: Install system packages
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
-          dos2unix=7.5.1-1 \
-          ffmpeg=7:6.1.1-3ubuntu5 \
-          libimage-exiftool-perl=12.76+dfsg-1 \
-          inkscape=1.2.2-2ubuntu12 \
-          rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
-          fish=3.7.0-1
+        # Retry with a per-attempt timeout so a hung apt mirror can't
+        # consume the entire job budget. Without this, a single slow
+        # Azure mirror connection can sit in apt-get install for 30+
+        # minutes with no output before eventually completing.
+        for attempt in 1 2 3; do
+          if timeout 600 sudo apt-get update && \
+             timeout 600 sudo apt-get install -y --no-install-recommends \
+               libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
+               dos2unix=7.5.1-1 \
+               ffmpeg=7:6.1.1-3ubuntu5 \
+               libimage-exiftool-perl=12.76+dfsg-1 \
+               inkscape=1.2.2-2ubuntu12 \
+               rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
+               fish=3.7.0-1; then
+            break
+          fi
+          [ "$attempt" -lt 3 ] && sleep $((attempt * 10)) || exit 1
+        done
       shell: bash
