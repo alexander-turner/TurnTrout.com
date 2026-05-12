@@ -421,15 +421,17 @@ jobs:
           fi
           python3 scripts/generate_visual_gallery.py "${args[@]}"
 
-      # Cloudflare Pages Functions live at `<public-dir>/functions/`.
-      # We copy the source out of `cloudflare/` so it deploys only with
-      # diff-gallery branches (visual-pr-*, visual-main-*) and never
-      # with the production turntrout deploy from `./public`.
+      # `wrangler pages deploy <dir>` bundles Pages Functions from
+      # `./functions/` relative to CWD, NOT from inside `<dir>`. We stage
+      # at the repo root so wrangler picks it up; the production deploy
+      # in deploy.yaml runs in a separate checkout with no `functions/`
+      # dir, so this stays isolated to diff-gallery branches
+      # (visual-pr-*, visual-main-*).
       - name: Stage approve-baselines Pages Function
         run: |
-          mkdir -p playwright-report/functions/api
+          mkdir -p functions/api
           cp cloudflare/functions/api/approve-baselines.ts \
-             playwright-report/functions/api/approve-baselines.ts
+             functions/api/approve-baselines.ts
 
       - name: Upload merged HTML report
         id: upload-report

@@ -8,7 +8,8 @@
 //   * Main runs: head_branch must be `main` AND head_sha must match
 //                main's current HEAD (rejects stale main commits).
 // Source ships only with diff-gallery branches — visual-testing.yaml
-// copies this file into <public-dir>/functions/api/ before deploy.
+// copies this file into ./functions/api/ (repo root) before deploy so
+// wrangler's default Functions discovery picks it up.
 
 interface Env {
   GH_DISPATCH_PAT: string
