@@ -34,6 +34,11 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import compress, source_file_checks
 from scripts import utils as script_utils
+from scripts.invert_constants import (
+    EXCLUDED_SEGMENTS,
+    RASTER_EXTENSIONS,
+    VIDEO_EXTENSIONS,
+)
 from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
@@ -791,14 +796,8 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-_INLINE_VIDEO_EXTS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
-_INVERT_RASTER_EXTS: Final = (".avif", ".png", ".jpg", ".jpeg", ".webp", ".gif")
 # Mirrors INVERT_CLASS in quartz/plugins/transformers/invertInDarkMode.ts.
 _INVERT_CLASS: Final[str] = "invert-in-dark-mode"
-# Mirrors EXCLUDED_SEGMENTS in scripts/label_invert.py.
-_INVERT_EXCLUDED_SEGMENTS: Final = frozenset(
-    "external-favicons twemoji turntrout-favicons card_images avatars".split()
-)
 
 
 class _InvertLabel(NamedTuple):
@@ -812,7 +811,7 @@ def _is_invert_candidate(url: str, valid_exts: tuple[str, ...]) -> bool:
     if not url.lower().endswith(valid_exts):
         return False
     segments = url.split("?", 1)[0].split("/")
-    return not any(seg in _INVERT_EXCLUDED_SEGMENTS for seg in segments)
+    return not any(seg in EXCLUDED_SEGMENTS for seg in segments)
 
 
 def _has_invert_class(tag: Tag) -> bool:
@@ -835,7 +834,7 @@ def _inline_looping_video_sources(video: Tag) -> list[str]:
     return [
         s
         for s in candidates
-        if isinstance(s, str) and s.lower().endswith(_INLINE_VIDEO_EXTS)
+        if isinstance(s, str) and s.lower().endswith(VIDEO_EXTENSIONS)
     ]
 
 
@@ -876,7 +875,7 @@ def check_invert_labels(
     for img in _tags_only(soup.find_all("img")):
         src = img.get("src")
         if not isinstance(src, str) or not _is_invert_candidate(
-            src, _INVERT_RASTER_EXTS
+            src, RASTER_EXTENSIONS
         ):
             continue
         issue = _invert_issue(
@@ -887,7 +886,7 @@ def check_invert_labels(
     for video in _tags_only(soup.find_all("video")):
         has_class = _has_invert_class(video)
         for src in _inline_looping_video_sources(video):
-            if not _is_invert_candidate(src, _INLINE_VIDEO_EXTS):
+            if not _is_invert_candidate(src, VIDEO_EXTENSIONS):
                 continue
             issue = _invert_issue(
                 "video", src, has_class, invert_labels.get(src)
