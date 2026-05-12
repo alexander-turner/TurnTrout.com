@@ -2,7 +2,6 @@ import type { Element, Root, Text, Parent } from "hast"
 
 import fs from "fs"
 import mime from "mime-types"
-import path from "path"
 import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -22,29 +21,30 @@ import {
 import { createWinstonLogger } from "../../util/log"
 import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
-const { minFaviconCount, quartzFolder, faviconFolder } = simpleConstants
+const { minFaviconCount, faviconFolder } = simpleConstants
 
 const logger = createWinstonLogger("linkFavicons")
 
 /**
- * In-memory record of which SVG favicon paths have been verified to exist
- * (locally or on CDN) during this build. Values are the in-flight Promise
- * itself, so concurrent lookups for the same domain share a single check.
+ * In-memory record of which SVG favicon paths have been verified to exist on
+ * the CDN during this build. Values are the in-flight Promise itself, so
+ * concurrent lookups for the same domain share a single fetch.
  */
 export const faviconExistsCache = new Map<string, Promise<boolean>>()
 
 /**
- * Generates a standardized SVG path for the given hostname.
+ * Generates the SVG path for the given hostname.
  *
  * Handles special cases:
  * - Converts localhost to turntrout.com (returns the special CDN URL)
  * - Removes www. prefix
  * - Normalizes subdomains (e.g., blog.openai.com -> openai.com)
- * - Converts dots to underscores for filesystem compatibility
+ * - Converts dots to underscores so the path matches CDN filenames
  *
  * @param hostname - Domain name to generate path for (e.g. "example.com")
- * @returns Local-style SVG path (e.g. "/static/images/external-favicons/example_com.svg")
- *          or the special turntrout CDN URL.
+ * @returns Path under the CDN favicon folder (e.g.
+ *          "/static/images/external-favicons/example_com.svg") or the special
+ *          turntrout CDN URL.
  */
 export function getQuartzPath(hostname: string): string {
   hostname = hostname === "localhost" ? "turntrout.com" : hostname.replace(/^www\./, "")
@@ -116,20 +116,7 @@ export function transformUrl(faviconPath: string): string {
 }
 
 /**
- * Checks whether an SVG exists on disk at the local Quartz path.
- */
-async function checkLocalSvg(svgPath: string): Promise<boolean> {
-  if (svgPath.startsWith("http")) return false
-  try {
-    await fs.promises.stat(path.join(quartzFolder, svgPath))
-    return true
-  } catch {
-    return false
-  }
-}
-
-/**
- * Checks whether an SVG exists on the CDN via HTTP HEAD-like fetch.
+ * Checks whether an SVG exists on the CDN via HTTP fetch.
  */
 async function checkCdnSvg(svgPath: string): Promise<boolean> {
   const url = svgPath.startsWith("http") ? svgPath : `${cdnBaseUrl}${svgPath}`
@@ -143,29 +130,29 @@ async function checkCdnSvg(svgPath: string): Promise<boolean> {
 }
 
 /**
- * Resolves whether a single SVG path exists, using the in-memory cache and
- * falling back to local + CDN lookups. Concurrent callers share the same
- * in-flight Promise, so each path is checked at most once per build.
+ * Resolves whether a single SVG exists on the CDN, using the in-memory cache.
+ * Concurrent callers share the same in-flight Promise, so each path is
+ * checked at most once per build.
  */
 function resolveSvgPath(svgPath: string): Promise<boolean> {
   const cached = faviconExistsCache.get(svgPath)
   if (cached !== undefined) return cached
 
-  const pending = (async () => (await checkLocalSvg(svgPath)) || (await checkCdnSvg(svgPath)))()
+  const pending = checkCdnSvg(svgPath)
   faviconExistsCache.set(svgPath, pending)
   return pending
 }
 
 /**
- * Locates an SVG favicon for the given hostname.
+ * Locates an SVG favicon for the given hostname on the CDN.
  *
  * Tries the PSL-normalized path first (e.g. `spotify_com.svg`), then falls
  * back to the unnormalized subdomain path (e.g. `open_spotify_com.svg`) so
- * that subdomain-specific icons still resolve. Each path is checked locally
- * then on the CDN; results are cached for the rest of the build.
+ * that subdomain-specific icons still resolve. Results are cached for the
+ * rest of the build.
  *
- * @returns the resolved SVG path if found, or null if no SVG exists or the
- *          hostname is blacklisted.
+ * @returns the resolved SVG path if the CDN has it, or null if it's missing
+ *          or the hostname is blacklisted.
  */
 export async function findFaviconPath(hostname: string): Promise<string | null> {
   const normalizedPath = transformUrl(getQuartzPath(hostname))
@@ -461,7 +448,9 @@ async function handleLink(
     throw new MissingFaviconError(finalURL.hostname, faviconPath, count)
   }
 
-  insertFavicon(found, node)
+  // Always emit the full CDN URL so downstream consumers (asset dimension
+  // resolution, browsers) treat it as a remote asset rather than a local file.
+  insertFavicon(getFaviconUrl(found), node)
 }
 
 /**

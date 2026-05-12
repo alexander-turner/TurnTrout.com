@@ -38,17 +38,7 @@ const createExpectedFavicon = (
   return faviconElement as unknown as Record<string, unknown>
 }
 
-const mockSvgLookups = ({
-  localExists = false,
-  cdnOk = false,
-}: { localExists?: boolean; cdnOk?: boolean } = {}): void => {
-  jest
-    .spyOn(fs.promises, "stat")
-    .mockImplementation(() =>
-      localExists
-        ? Promise.resolve({ size: 1000 } as fs.Stats)
-        : Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
-    )
+const mockCdnLookup = (cdnOk = false): void => {
   jest.spyOn(global, "fetch").mockResolvedValue({ ok: cdnOk } as Response)
 }
 
@@ -153,30 +143,21 @@ describe("findFaviconPath", () => {
   const expectedPath = "/static/images/external-favicons/example_com.svg"
   const expectedCdnUrl = `https://assets.turntrout.com${expectedPath}`
 
-  it("returns null for blacklisted hostname without any network or filesystem call", async () => {
+  it("returns null for blacklisted hostname without any network call", async () => {
     const fetchSpy = jest.spyOn(global, "fetch")
-    const statSpy = jest.spyOn(fs.promises, "stat")
-
     expect(await favicons.findFaviconPath("incompleteideas.net")).toBeNull()
     expect(fetchSpy).not.toHaveBeenCalled()
-    expect(statSpy).not.toHaveBeenCalled()
   })
 
-  it("returns local SVG path when local SVG exists", async () => {
-    mockSvgLookups({ localExists: true })
-    expect(await favicons.findFaviconPath(hostname)).toBe(expectedPath)
-    await expect(favicons.faviconExistsCache.get(expectedPath)).resolves.toBe(true)
-  })
-
-  it("returns SVG path when only CDN has the SVG", async () => {
-    mockSvgLookups({ cdnOk: true })
+  it("returns SVG path when CDN has the SVG", async () => {
+    mockCdnLookup(true)
     expect(await favicons.findFaviconPath(hostname)).toBe(expectedPath)
     expect(global.fetch).toHaveBeenCalledWith(expectedCdnUrl)
     await expect(favicons.faviconExistsCache.get(expectedPath)).resolves.toBe(true)
   })
 
-  it("returns null when neither local nor CDN has SVG", async () => {
-    mockSvgLookups()
+  it("returns null when CDN does not have the SVG", async () => {
+    mockCdnLookup(false)
     expect(await favicons.findFaviconPath(hostname)).toBeNull()
     await expect(favicons.faviconExistsCache.get(expectedPath)).resolves.toBe(false)
   })
@@ -188,25 +169,16 @@ describe("findFaviconPath", () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it("falls back to unnormalized SVG path when normalized path is missing", async () => {
+  it("falls back to unnormalized SVG path when normalized is missing on CDN", async () => {
     const subdomainHost = "open.spotify.com"
     const normalizedPath = "/static/images/external-favicons/spotify_com.svg"
     const unnormalizedPath = "/static/images/external-favicons/open_spotify_com.svg"
 
-    // Normalized: missing locally + on CDN. Unnormalized: missing local, found on CDN.
-    jest
-      .spyOn(fs.promises, "stat")
-      .mockImplementation(() =>
-        Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
-      )
     const fetchSpy = jest
       .spyOn(global, "fetch")
       .mockImplementation((url: string | URL | Request) => {
         const u = url.toString()
-        if (u.includes("open_spotify_com")) {
-          return Promise.resolve({ ok: true } as Response)
-        }
-        return Promise.resolve({ ok: false } as Response)
+        return Promise.resolve({ ok: u.includes("open_spotify_com") } as Response)
       })
 
     expect(await favicons.findFaviconPath(subdomainHost)).toBe(unnormalizedPath)
@@ -215,27 +187,10 @@ describe("findFaviconPath", () => {
     fetchSpy.mockRestore()
   })
 
-  it("falls back to unnormalized SVG path found locally", async () => {
-    const subdomainHost = "open.spotify.com"
-    const unnormalizedPath = "/static/images/external-favicons/open_spotify_com.svg"
-
-    // Normalized: stat rejects. Unnormalized: stat resolves.
-    jest
-      .spyOn(fs.promises, "stat")
-      .mockImplementationOnce(() =>
-        Promise.reject(Object.assign(new Error("ENOENT"), { code: "ENOENT" })),
-      )
-      .mockImplementationOnce(() => Promise.resolve({ size: 100 } as fs.Stats))
-    jest.spyOn(global, "fetch").mockResolvedValue({ ok: false } as Response)
-
-    expect(await favicons.findFaviconPath(subdomainHost)).toBe(unnormalizedPath)
-    await expect(favicons.faviconExistsCache.get(unnormalizedPath)).resolves.toBe(true)
-  })
-
   it("returns null when both normalized and unnormalized are missing", async () => {
     const subdomainHost = "open.spotify.com"
     const unnormalizedPath = "/static/images/external-favicons/open_spotify_com.svg"
-    mockSvgLookups()
+    mockCdnLookup(false)
     expect(await favicons.findFaviconPath(subdomainHost)).toBeNull()
     await expect(favicons.faviconExistsCache.get(unnormalizedPath)).resolves.toBe(false)
   })
@@ -262,19 +217,13 @@ describe("findFaviconPath", () => {
     expect(fetchSpy).not.toHaveBeenCalled()
   })
 
-  it("handles http-prefixed paths by skipping local check and using URL directly for CDN", async () => {
-    // turntrout.com -> getQuartzPath returns specialFaviconPaths.turntrout (full https URL).
-    const statSpy = jest.spyOn(fs.promises, "stat")
+  it("uses the full URL directly for special CDN paths like turntrout.com", async () => {
     const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({ ok: true } as Response)
     expect(await favicons.findFaviconPath("turntrout.com")).toBe(specialFaviconPaths.turntrout)
-    expect(statSpy).not.toHaveBeenCalled()
     expect(fetchSpy).toHaveBeenCalledWith(specialFaviconPaths.turntrout)
   })
 
   it("returns null when CDN fetch throws", async () => {
-    jest
-      .spyOn(fs.promises, "stat")
-      .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }))
     jest.spyOn(global, "fetch").mockRejectedValue(new Error("Network error"))
     expect(await favicons.findFaviconPath(hostname)).toBeNull()
   })
@@ -697,7 +646,7 @@ describe("ModifyNode", () => {
 
     it("throws MissingFaviconError when threshold met but SVG missing", async () => {
       faviconCounts.set(favicons.normalizePathForCounting(faviconPath), minFaviconCount + 10)
-      mockSvgLookups()
+      mockCdnLookup(false)
       const node = h("a", { href: `https://${hostname}/page` })
       const parent = h("div", [node])
       await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
@@ -708,7 +657,7 @@ describe("ModifyNode", () => {
     it("throws when whitelisted favicon has no SVG", async () => {
       const appleHost = "apple.com"
       // No counts entry; apple_com is whitelisted so should still try to include.
-      mockSvgLookups()
+      mockCdnLookup(false)
       const node = h("a", { href: `https://${appleHost}/page` })
       const parent = h("div", [node])
       await expect(favicons.ModifyNode(node, parent, faviconCounts)).rejects.toThrow(
