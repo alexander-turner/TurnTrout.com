@@ -1,7 +1,7 @@
 // Cloudflare Pages Function: POST /api/approve-baselines.
 //
-// Dispatches update-visual-baselines.yaml using `env.GITHUB_DISPATCH_PAT`
-// (CF Pages preview-env secret); `env.GITHUB_REPO` is `owner/repo`.
+// Dispatches update-visual-baselines.yaml using `env.GH_DISPATCH_PAT`
+// (CF Pages preview-env secret).
 // Before dispatching, the function rejects stale galleries:
 //   * Run must be from `.github/workflows/visual-testing.yaml`.
 //   * PR runs:   PR must be `open` (rejects merged/closed PRs).
@@ -11,9 +11,10 @@
 // copies this file into <public-dir>/functions/api/ before deploy.
 
 interface Env {
-  GITHUB_DISPATCH_PAT: string
-  GITHUB_REPO: string
+  GH_DISPATCH_PAT: string
 }
+
+const REPO = "alexander-turner/TurnTrout.com"
 
 interface FunctionContext<E> {
   request: Request
@@ -34,7 +35,7 @@ const ghFetch = (env: Env, path: string, init: RequestInit = {}) =>
   fetch(`${GH}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${env.GITHUB_DISPATCH_PAT}`,
+      authorization: `Bearer ${env.GH_DISPATCH_PAT}`,
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
       "user-agent": "turntrout-approve-baselines",
@@ -56,10 +57,8 @@ function asNumStr(v: unknown): string | null {
 
 export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response> {
   const { request, env } = ctx
-  if (!env.GITHUB_DISPATCH_PAT || !env.GITHUB_REPO) {
-    return jres(500, {
-      error: "Server misconfigured: GITHUB_DISPATCH_PAT or GITHUB_REPO missing",
-    })
+  if (!env.GH_DISPATCH_PAT) {
+    return jres(500, { error: "Server misconfigured: GH_DISPATCH_PAT missing" })
   }
 
   let body: { runId?: unknown; prNumber?: unknown }
@@ -86,7 +85,7 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
 
   let run: { head_sha: string; head_branch: string | null; path: string }
   try {
-    run = await ghJson(env, `/repos/${env.GITHUB_REPO}/actions/runs/${runId}`)
+    run = await ghJson(env, `/repos/${REPO}/actions/runs/${runId}`)
   } catch (err) {
     return jres(502, {
       error: `Failed to fetch run ${runId}: ${(err as Error).message}`,
@@ -99,7 +98,7 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
   if (prNumber) {
     let pr: { state: string; merged: boolean }
     try {
-      pr = await ghJson(env, `/repos/${env.GITHUB_REPO}/pulls/${prNumber}`)
+      pr = await ghJson(env, `/repos/${REPO}/pulls/${prNumber}`)
     } catch (err) {
       return jres(502, {
         error: `Failed to fetch PR ${prNumber}: ${(err as Error).message}`,
@@ -120,7 +119,7 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
     }
     let ref: { object: { sha: string } }
     try {
-      ref = await ghJson(env, `/repos/${env.GITHUB_REPO}/git/ref/heads/main`)
+      ref = await ghJson(env, `/repos/${REPO}/git/ref/heads/main`)
     } catch (err) {
       return jres(502, {
         error: `Failed to fetch main HEAD: ${(err as Error).message}`,
@@ -137,15 +136,11 @@ export async function onRequestPost(ctx: FunctionContext<Env>): Promise<Response
 
   const inputs: Record<string, string> = { run_id: runId }
   if (prNumber) inputs.pr_number = prNumber
-  const d = await ghFetch(
-    env,
-    `/repos/${env.GITHUB_REPO}/actions/workflows/${DISPATCH}/dispatches`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ref: "main", inputs }),
-    },
-  )
+  const d = await ghFetch(env, `/repos/${REPO}/actions/workflows/${DISPATCH}/dispatches`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ ref: "main", inputs }),
+  })
   if (d.status !== 204) {
     return jres(502, {
       error: `Dispatch failed (${d.status}): ${(await d.text()).slice(0, 200)}`,

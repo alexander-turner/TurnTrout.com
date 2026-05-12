@@ -3,18 +3,17 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals"
 import { onRequestPost } from "./approve-baselines"
 
 interface Env {
-  GITHUB_DISPATCH_PAT: string
-  GITHUB_REPO: string
+  GH_DISPATCH_PAT: string
 }
 
-const ENV: Env = { GITHUB_DISPATCH_PAT: "ghp_test", GITHUB_REPO: "owner/repo" }
+const ENV: Env = { GH_DISPATCH_PAT: "ghp_test" }
 const VISUAL_PATH = ".github/workflows/visual-testing.yaml"
 const MAIN_SHA = "a".repeat(40)
-const RUNS = (id: string) => `https://api.github.com/repos/owner/repo/actions/runs/${id}`
-const PULLS = (n: string) => `https://api.github.com/repos/owner/repo/pulls/${n}`
-const REF = "https://api.github.com/repos/owner/repo/git/ref/heads/main"
-const DISP =
-  "https://api.github.com/repos/owner/repo/actions/workflows/update-visual-baselines.yaml/dispatches"
+const REPO = "alexander-turner/TurnTrout.com"
+const RUNS = (id: string) => `https://api.github.com/repos/${REPO}/actions/runs/${id}`
+const PULLS = (n: string) => `https://api.github.com/repos/${REPO}/pulls/${n}`
+const REF = `https://api.github.com/repos/${REPO}/git/ref/heads/main`
+const DISP = `https://api.github.com/repos/${REPO}/actions/workflows/update-visual-baselines.yaml/dispatches`
 
 const req = (body: unknown, invalid = false): Request =>
   new Request("https://example.com/api/approve-baselines", {
@@ -51,11 +50,8 @@ afterEach(() => {
 })
 
 describe("approve-baselines", () => {
-  it.each<[string, Env]>([
-    ["missing PAT", { GITHUB_DISPATCH_PAT: "", GITHUB_REPO: "owner/repo" }],
-    ["missing REPO", { GITHUB_DISPATCH_PAT: "ghp_x", GITHUB_REPO: "" }],
-  ])("returns 500 when %s", async (_, env) => {
-    const res = await onRequestPost({ request: req({}), env })
+  it("returns 500 when PAT is missing", async () => {
+    const res = await onRequestPost({ request: req({}), env: { GH_DISPATCH_PAT: "" } })
     expect(res.status).toBe(500)
     expect(await errOf(res)).toMatch(/misconfigured/i)
   })

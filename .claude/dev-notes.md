@@ -99,8 +99,7 @@ Two ways to approve baselines (both promote the named visual-testing run's `*-ac
 
 **Proxy config** — set once in the Cloudflare Pages dashboard, scoped to **Preview** so it ships with `visual-*` branches only:
 
-- `GITHUB_DISPATCH_PAT` (secret) — fine-grained PAT, scopes `Actions: write` + `Pull requests: read` + `Metadata: read` + `Contents: read`.
-- `GITHUB_REPO` (plain) — `alexander-turner/TurnTrout.com`. Missing either yields a 500 "misconfigured" pill on the gallery.
+- `GH_DISPATCH_PAT` (secret) — fine-grained PAT, scopes `Actions: write` + `Pull requests: read` + `Metadata: read` + `Contents: read`. The repo (`alexander-turner/TurnTrout.com`) is hardcoded in the function. Missing PAT yields a 500 "misconfigured" pill on the gallery.
 
 For PR runs the workflow pushes an empty commit to the PR branch so visual-testing reruns immediately. For main runs it can't push (would pollute history); instead it (a) posts a synthetic passing `visual-testing` check-run on the head commit (the just-uploaded actuals ARE the new baselines, so rerunning would always pass — skip the wait), then (b) `rerun-failed-jobs` on the same-commit `deploy.yaml` run. `verify-test-results` polls `sort_by(.started_at) | last`, so the new success wins; `deploy` unblocks.
 
