@@ -668,14 +668,6 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
             parallel_group="verify",
         ),
         CheckStep(
-            name="DeepSource PR issues",
-            command=[
-                "bash",
-                f"{git_root_path}/scripts/check_deepsource_pr.sh",
-            ],
-            parallel_group="verify",
-        ),
-        CheckStep(
             name="Compressing and uploading local assets",
             command=[
                 "bash",

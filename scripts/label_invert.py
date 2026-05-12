@@ -49,6 +49,12 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
+from scripts.utils import (
+    INVERT_EXCLUDED_SEGMENTS,
+    INVERT_LABELABLE_EXTENSIONS,
+    INVERT_VIDEO_EXTENSIONS,
+)
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT: Final[Path] = Path(__file__).resolve().parent.parent
@@ -65,32 +71,6 @@ CONTENT_DIR: Final[Path] = PROJECT_ROOT / "website_content"
 # for the chart-on-white-background case the labeling tool is built for.
 LUMINANCE_INVERT_THRESHOLD: Final[float] = 0.7
 
-# Tuples (not sets) so we can pass directly to ``str.endswith``.
-RASTER_EXTENSIONS: Final[tuple[str, ...]] = (
-    ".avif",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".gif",
-)
-# Video extensions for inline looping muted videos (GIF-replacements).
-# Each format is its own URL on R2; the rendered ``<video>`` tries each
-# ``<source>`` in order, but we ask the labeler for a verdict per URL.
-VIDEO_EXTENSIONS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
-LABELABLE_EXTENSIONS: Final[tuple[str, ...]] = (
-    RASTER_EXTENSIONS + VIDEO_EXTENSIONS
-)
-EXCLUDED_SEGMENTS: Final[frozenset[str]] = frozenset(
-    {
-        "external-favicons",
-        "twemoji",
-        "turntrout-favicons",
-        "card_images",
-        "avatars",
-    }
-)
-
 # Matches `![alt](url){.invert-on-dark}` or the no-invert variant.
 # `url` is the captured target; `decision` is true/false.
 _ANNOTATION_RE: Final[re.Pattern[str]] = re.compile(
@@ -105,15 +85,15 @@ _ANNOTATION_RE: Final[re.Pattern[str]] = re.compile(
 def _is_candidate(url: str) -> bool:
     if not url.startswith(("http://", "https://")):
         return False
-    if not url.lower().endswith(LABELABLE_EXTENSIONS):
+    if not url.lower().endswith(INVERT_LABELABLE_EXTENSIONS):
         return False
     segments = url.split("?", 1)[0].split("/")
-    return not any(seg in EXCLUDED_SEGMENTS for seg in segments)
+    return not any(seg in INVERT_EXCLUDED_SEGMENTS for seg in segments)
 
 
 def is_video_url(url: str) -> bool:
     """True iff ``url`` ends with a labeled-video extension."""
-    return url.lower().endswith(VIDEO_EXTENSIONS)
+    return url.lower().endswith(INVERT_VIDEO_EXTENSIONS)
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
