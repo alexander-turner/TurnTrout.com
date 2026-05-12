@@ -5,6 +5,8 @@ import { h } from "hastscript"
 
 import { createElementVisitorPlugin } from "./utils"
 
+type InlineNode = Text | Element
+
 const SPOILER_REGEX = /^!\s*(?<spoilerText>.*)/
 
 /**
@@ -109,9 +111,9 @@ export function modifyNode(node: Element, index: number | undefined, parent: Par
  * Split a text node's value on newlines into an alternating sequence of text
  * nodes and <br> elements. A value with no newlines yields a single text node.
  */
-function splitTextOnNewlines(value: string): (Text | Element)[] {
+function splitTextOnNewlines(value: string): InlineNode[] {
   const lines = value.split("\n")
-  const result: (Text | Element)[] = []
+  const result: InlineNode[] = []
   lines.forEach((line, i) => {
     if (i > 0) result.push(h("br"))
     result.push({ type: "text", value: line })
@@ -125,8 +127,8 @@ function splitTextOnNewlines(value: string): (Text | Element)[] {
  * a single paragraph whose text nodes contain embedded "\n" characters; this
  * helper makes those line boundaries explicit.
  */
-function flattenParagraphChildren(paragraph: Element): (Text | Element)[] {
-  const result: (Text | Element)[] = []
+function flattenParagraphChildren(paragraph: Element): InlineNode[] {
+  const result: InlineNode[] = []
   for (const child of paragraph.children) {
     if (child.type === "text") {
       result.push(...splitTextOnNewlines(child.value))
@@ -140,12 +142,12 @@ function flattenParagraphChildren(paragraph: Element): (Text | Element)[] {
   return result
 }
 
-function isLineBreak(node: Text | Element): boolean {
+function isLineBreak(node: InlineNode): boolean {
   return node.type === "element" && node.tagName === "br"
 }
 
 export function processParagraph(paragraph: Element): Element | null {
-  const newChildren: (Text | Element)[] = []
+  const newChildren: InlineNode[] = []
   let isSpoiler = false
   let atLineStart = true
 
