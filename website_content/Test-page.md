@@ -519,6 +519,8 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 ### Favicon kerning iteration
 
+<!--spellchecker-disable-->
+
 |                            |                            |                            |                            |                            |                            |
 | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: |
 | [aba](https://npmjs.com)   | [abb](https://npmjs.com)   | [abc](https://npmjs.com)   | [abd](https://npmjs.com)   | [abe](https://npmjs.com)   | [abf](https://npmjs.com)   |
@@ -539,6 +541,8 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 | [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | <a href="https://npmjs.com">ab&#96;</a> |
 | [ab…](https://npmjs.com)   | [ab—](https://npmjs.com)   | [ab–](https://npmjs.com)   | [ab′](https://npmjs.com)   | [ab″](https://npmjs.com)   | [ab°](https://npmjs.com)   |
 | [ab→](https://npmjs.com)   | [ab×](https://npmjs.com)   | [ab™](https://npmjs.com)   | [ab©](https://npmjs.com)   | [ab®](https://npmjs.com)   | [ab⁇](https://npmjs.com)   |
+
+<!--spellchecker-enable-->
 
 # Typography
 
