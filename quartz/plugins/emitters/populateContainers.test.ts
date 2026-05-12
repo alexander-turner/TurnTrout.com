@@ -24,7 +24,7 @@ import { simpleConstants, specialFaviconPaths } from "../../components/constants
 import { type BuildCtx } from "../../util/ctx"
 import { type StaticResources } from "../../util/resources"
 
-const { minFaviconCount, defaultPath } = simpleConstants
+const { minFaviconCount } = simpleConstants
 import { faviconCounter } from "../transformers/countFavicons"
 // skipcq: JS-C1003
 import * as favicons from "../transformers/favicons"
@@ -57,7 +57,6 @@ describe("PopulateContainers", () => {
   let mockCtx: BuildCtx
   const mockOutputDir = "/mock/output"
   const mockStaticResources: StaticResources = { css: [], js: [] }
-  const urlCache = favicons.urlCache
 
   beforeAll(async () => {
     populateModule = await import("./populateContainers")
@@ -106,9 +105,7 @@ describe("PopulateContainers", () => {
       return '<html><body><div id="populate-favicon-container"></div><div id="populate-favicon-threshold"></div><span class="populate-commit-count"></span><span class="populate-human-commit-count"></span><span class="populate-js-test-count"></span><span class="populate-playwright-test-count"></span><span class="populate-pytest-count"></span><span class="populate-lines-of-code"></span><span class="populate-turntrout-favicon"></span></body></html>'
     })
 
-    if (urlCache) {
-      urlCache.clear()
-    }
+    favicons.faviconExistsCache.clear()
 
     jest.spyOn(global, "fetch").mockResolvedValue({
       ok: false,
@@ -123,9 +120,7 @@ describe("PopulateContainers", () => {
   afterEach(() => {
     jest.restoreAllMocks()
     faviconCounter.clear()
-    if (urlCache) {
-      urlCache.clear()
-    }
+    favicons.faviconExistsCache.clear()
   })
 
   const setFaviconCounts = (entries: Array<[string, number]>): void => {
@@ -144,8 +139,8 @@ describe("PopulateContainers", () => {
           ["/static/images/external-favicons/test_com", minFaviconCount + 3],
         ],
         (content: string) => {
-          expect(content).not.toContain("example_com.avif")
-          expect(content).toContain("test_com.avif")
+          expect(content).not.toContain("example_com.svg")
+          expect(content).toContain("test_com.svg")
         },
       ],
       [
@@ -155,8 +150,8 @@ describe("PopulateContainers", () => {
           ["/static/images/external-favicons/below_threshold_com", minFaviconCount - 1],
         ],
         (content: string) => {
-          expect(content).toContain("above_threshold_com.avif")
-          expect(content).not.toContain("below_threshold_com.avif")
+          expect(content).toContain("above_threshold_com.svg")
+          expect(content).not.toContain("below_threshold_com.svg")
         },
       ],
       [
@@ -167,7 +162,7 @@ describe("PopulateContainers", () => {
         ],
         (content: string) => {
           expect(content).not.toContain("medium_com")
-          expect(content).toContain("valid_com.avif")
+          expect(content).toContain("valid_com.svg")
         },
       ],
     ])(
@@ -192,15 +187,6 @@ describe("PopulateContainers", () => {
         ["/static/images/external-favicons/apple_com", minFaviconCount + 15],
         ["/static/images/external-favicons/x_com", minFaviconCount + 20],
       ])
-
-      // Mock fetch to return ok: true for SVG URLs so they get cached and used
-      jest.spyOn(global, "fetch").mockImplementation((url) => {
-        const urlStr = url.toString()
-        if (urlStr.includes(".svg")) {
-          return Promise.resolve({ ok: true } as Response)
-        }
-        return Promise.resolve({ ok: false } as Response)
-      })
 
       const emitter = PopulateContainersEmitter()
       await emitter.emit(mockCtx, [], mockStaticResources)
@@ -296,8 +282,9 @@ describe("PopulateContainers", () => {
 
       const writtenContent = (fs.writeFileSync as jest.Mock).mock.calls[0][1] as string
       expect(writtenContent).toContain('class="favicon"')
-      expect(writtenContent).toContain('alt=""')
-      expect(writtenContent).toContain('loading="lazy"')
+      expect(writtenContent).toContain('data-domain="example_com"')
+      expect(writtenContent).toContain("--mask-url:")
+      expect(writtenContent).toContain('aria-hidden="true"')
     })
 
     it("should populate favicon threshold element", async () => {
@@ -351,65 +338,6 @@ describe("PopulateContainers", () => {
       expect(designPageContent).toContain(`<span>${minFaviconCount}</span>`)
     })
 
-    it("should cache SVG URLs when found on CDN", async () => {
-      // Clear urlCache before test
-      urlCache.clear()
-
-      const pngPath = "/static/images/external-favicons/example_com"
-      setFaviconCounts([[pngPath, minFaviconCount + 1]])
-
-      // Mock fetch to return successful response for SVG
-      const originalFetch = global.fetch
-      const mockFetch = jest
-        .fn<(url: string) => Promise<Response>>()
-        .mockResolvedValue({ ok: true } as Response)
-      global.fetch = mockFetch as unknown as typeof fetch
-
-      try {
-        const emitter = PopulateContainersEmitter()
-        await emitter.emit(mockCtx, [], mockStaticResources)
-
-        // Verify SVG URL was checked
-        expect(mockFetch).toHaveBeenCalledWith(
-          "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
-        )
-
-        // Verify cache was populated with PNG->SVG mapping
-        expect(urlCache.get(`${pngPath}.png`)).toBe(
-          "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
-        )
-      } finally {
-        global.fetch = originalFetch
-      }
-    })
-
-    it("should check CDN for paths cached with defaultPath", async () => {
-      // Clear urlCache and populate with defaultPath entry
-      urlCache.clear()
-      const pngPath = "/static/images/external-favicons/example_com"
-      urlCache.set(`${pngPath}.png`, defaultPath)
-
-      setFaviconCounts([[pngPath, minFaviconCount + 1]])
-
-      // Mock fetch to return successful response for SVG
-      const originalFetch = global.fetch
-      const mockFetch = jest
-        .fn<(url: string) => Promise<Response>>()
-        .mockResolvedValue({ ok: true } as Response)
-      global.fetch = mockFetch as unknown as typeof fetch
-
-      try {
-        const emitter = PopulateContainersEmitter()
-        await emitter.emit(mockCtx, [], mockStaticResources)
-
-        // Verify SVG URL was checked even though path was in cache
-        expect(mockFetch).toHaveBeenCalledWith(
-          "https://assets.turntrout.com/static/images/external-favicons/example_com.svg",
-        )
-      } finally {
-        global.fetch = originalFetch
-      }
-    })
     it("should handle unknown populate targets gracefully", async () => {
       setFaviconCounts([])
 
@@ -611,10 +539,10 @@ describe("PopulateContainers", () => {
       it("should add favicons to external links using ModifyNode", async () => {
         // Set up counts so github.com meets the threshold
         setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
-        // Pre-populate urlCache so MaybeSaveFavicon resolves without network
-        urlCache.set(
-          "/static/images/external-favicons/github_com.png",
+        // Pre-populate cache so the build doesn't need network access
+        favicons.faviconExistsCache.set(
           "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
         )
 
         const html =
@@ -807,9 +735,9 @@ describe("PopulateContainers", () => {
       it("should only add favicons to links inside populated containers, not the whole page", async () => {
         // Set up favicon data so github.com links would get favicons
         setFaviconCounts([["/static/images/external-favicons/github_com", minFaviconCount]])
-        urlCache.set(
-          "/static/images/external-favicons/github_com.png",
+        favicons.faviconExistsCache.set(
           "/static/images/external-favicons/github_com.svg",
+          Promise.resolve(true),
         )
 
         // Page has an external link OUTSIDE the populated container and the
