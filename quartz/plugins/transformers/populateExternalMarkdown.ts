@@ -4,6 +4,7 @@
  */
 
 import { execFileSync } from "child_process"
+import escapeStringRegexp from "escape-string-regexp"
 import { readFileSync } from "fs"
 
 import type { QuartzTransformerPlugin } from "../types"
@@ -171,7 +172,7 @@ function getContent(name: string, source: MarkdownSource): string {
 // skipcq: JS-D1001
 export function buildPlaceholderRegex(sourceNames: string[]): RegExp {
   if (sourceNames.length === 0) return /(?!)/g // never matches
-  const escaped = sourceNames.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  const escaped = sourceNames.map(escapeStringRegexp)
   return new RegExp(
     `<span\\s+class="populate-markdown-(${escaped.join("|")})"\\s*>(?:<\\/span>)?`,
     "g",

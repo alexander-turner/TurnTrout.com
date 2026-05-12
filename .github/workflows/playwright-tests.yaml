@@ -90,11 +90,7 @@ jobs:
         run: pnpm run install-browsers
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Run Playwright tests
         id: playwright
@@ -107,10 +103,10 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
@@ -198,11 +194,7 @@ jobs:
         run: xattr -cr ~/Library/Caches/ms-playwright
 
       - name: Restore built site from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
-        with:
-          path: public/
-          key: site-build-${{ github.sha }}
-          fail-on-cache-miss: true
+        uses: ./.github/actions/restore-site-build
 
       - name: Run Playwright tests
         id: playwright
@@ -215,10 +207,10 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2700000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
+        uses: ./.github/actions/sanitize-shard-name
+        with:
+          shard: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()

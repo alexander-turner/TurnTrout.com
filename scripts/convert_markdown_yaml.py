@@ -9,22 +9,13 @@ ImageMagick, and uploads them to R2 storage.
 
 #!/usr/bin/env python3
 import argparse
-import io
-import os
 import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from urllib import parse
 
-import requests
 from frozendict import frozendict
-from ruamel.yaml import YAML  # type: ignore
-
-yaml_parser = YAML(typ="rt")  # Use Round-Trip to preserve formatting
-yaml_parser.preserve_quotes = True  # Preserve existing quotes
-yaml_parser.indent(mapping=2, sequence=2, offset=2)  # Set desired indentation
 
 try:
     from . import r2_upload, source_file_checks
@@ -33,6 +24,9 @@ except ImportError:
     import r2_upload  # type: ignore
     import source_file_checks  # type: ignore
     import utils as script_utils  # type: ignore
+
+yaml_parser = script_utils.get_yaml_parser()
+_http_session = script_utils.http_session()
 
 
 _CAN_CONVERT_EXTENSIONS: set[str] = {
@@ -87,7 +81,7 @@ def _download_image(url: str, output_path: Path) -> None:
     Raises:
         ValueError: If download fails
     """
-    response = requests.get(
+    response = _http_session.get(
         url, stream=True, timeout=10, headers=_DOWNLOAD_HEADERS
     )
     if response.status_code == 200:
@@ -174,8 +168,7 @@ def _process_image(card_image_url: str, temp_dir: Path) -> tuple[Path, str]:
     Returns:
         Tuple of (converted JPEG path, JPEG filename)
     """
-    parsed_url = parse.urlparse(card_image_url)
-    card_image_filename = os.path.basename(parsed_url.path)
+    card_image_filename = script_utils.extract_filename_from_url(card_image_url)
     downloaded_path = temp_dir / card_image_filename
     jpeg_filename = downloaded_path.with_suffix(".jpg").name
     jpeg_path = downloaded_path.with_suffix(".jpg")
@@ -259,15 +252,9 @@ def process_card_image_in_markdown(md_file: Path) -> None:
     # Update the YAML frontmatter
     data["card_image"] = _get_r2_image_url(local_jpeg_path)
 
-    # Write back to file
-    stream = io.StringIO()
-    yaml_parser.dump(data, stream)
-    updated_yaml = stream.getvalue()
-    updated_content = f"---\n{updated_yaml}---\n{md_body}"
-
-    with open(md_file, "w", encoding="utf-8") as file:
-        file.write(updated_content)
-
+    script_utils.write_yaml_frontmatter(
+        md_file, data, md_body, parser=yaml_parser
+    )
     print(f"Updated 'card_image' in {md_file}")
 
 

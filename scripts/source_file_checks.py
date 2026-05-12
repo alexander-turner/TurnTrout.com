@@ -863,6 +863,15 @@ def compile_scss(scss_file_path: Path) -> str:
     return result.stdout
 
 
+_FONT_FACE_PATTERN = re.compile(
+    r"""@font-face\s*\{[^}]*?
+    src:\s*url\(\s*["']?(.*?)["']?\)\s*
+    (?:format\([^\)]*\)\s*)?
+    [^;]*;""",
+    re.VERBOSE | re.DOTALL,
+)
+
+
 def check_font_files(css_content: str, base_dir: Path) -> List[str]:
     """
     Check if font files referenced in CSS exist.
@@ -875,15 +884,7 @@ def check_font_files(css_content: str, base_dir: Path) -> List[str]:
         List of missing font file paths
     """
     missing_fonts = []
-    font_pattern = re.compile(
-        r"""@font-face\s*\{[^}]*?
-        src:\s*url\(\s*["']?(.*?)["']?\)\s*
-        (?:format\([^\)]*\)\s*)?
-        [^;]*;""",
-        re.VERBOSE | re.DOTALL,
-    )
-
-    for match in font_pattern.finditer(css_content):
+    for match in _FONT_FACE_PATTERN.finditer(css_content):
         font_path = match.group(1)
         if font_path.startswith(("http:", "https:", "data:")):
             continue
