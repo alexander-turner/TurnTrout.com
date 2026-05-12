@@ -830,9 +830,8 @@ def _is_invert_candidate(url: str, valid_exts: tuple[str, ...]) -> bool:
 
 def _has_invert_class(tag: Tag) -> bool:
     raw = tag.get("class")
-    if isinstance(raw, str):
-        raw = raw.split()
-    return isinstance(raw, list) and _INVERT_CLASS in raw
+    tokens = raw.split() if isinstance(raw, str) else raw
+    return isinstance(tokens, list) and _INVERT_CLASS in tokens
 
 
 def _inline_looping_video_sources(video: Tag) -> list[str]:
