@@ -81,6 +81,8 @@ Do NOT skip reading the resource file — it contains the detailed checklist the
 
 Run the project's test/lint/typecheck commands (see [pr-templates.md](pr-templates.md) for common commands per language). Fix any failures before proceeding.
 
+If an open PR already exists for this branch, also run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
+
 ### Step 5: Push and Create the Pull Request
 
 You MUST read [pr-templates.md](pr-templates.md) for the PR template and formatting guidelines before this step.
