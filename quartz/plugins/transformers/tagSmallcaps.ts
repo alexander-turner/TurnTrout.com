@@ -48,9 +48,7 @@ export const allowAcronyms: readonly string[] = [
 export const ignoreList: readonly string[] = ["th", "hz", "st", "nd", "rd"]
 
 // Escaped and joined allowAcronyms as an intermediate variable
-const escapedAllowAcronyms = allowAcronyms.map((acronym) =>
-  escapeStringRegexp(acronym),
-)
+const escapedAllowAcronyms = allowAcronyms.map((acronym) => escapeStringRegexp(acronym))
 
 const boundaryAllowAcronyms = escapedAllowAcronyms
   .map((acronym) => `\\b${acronym}(?!-)\\b`)

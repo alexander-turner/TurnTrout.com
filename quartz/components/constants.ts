@@ -110,20 +110,8 @@ export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string 
 export const EXTERNAL_LINK_REL = "noopener noreferrer"
 
 // HTML tag groups reused across transformers/components
-export const HEADING_TAGS: ReadonlySet<string> = new Set([
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-])
-export const MEDIA_TAGS: ReadonlySet<string> = new Set([
-  "img",
-  "video",
-  "audio",
-  "iframe",
-])
+export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+export const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "iframe"])
 
 // Shared CSS class names (used across multiple components/scripts)
 export const PREVIEWABLE_CLASS = "previewable"
