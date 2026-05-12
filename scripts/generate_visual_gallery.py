@@ -3,7 +3,7 @@
 Build a single-page screenshot gallery from Playwright trace artifacts.
 
 Usage: generate_visual_gallery.py <traces-dir> <report-dir>        [--run-id N]
-[--repo owner/repo] [--pr-number N]
+[--pr-number N]
 
 Walks ``traces-dir`` for ``*-actual.png`` (skipping ``*-retry*`` dirs), pairs
 each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
@@ -11,10 +11,11 @@ each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
 dir>/index.html``. Any existing Playwright ``index.html`` is moved aside to
 ``report.html`` and linked from the gallery header.
 
-When ``--run-id`` and ``--repo`` are supplied the gallery includes an "Approve
-baselines" button that dispatches the ``update-visual-baselines.yaml`` workflow
-via the GitHub API. The button prompts for a PAT (``actions:write`` scope) on
-first click and caches it in ``localStorage``.
+When ``--run-id`` is supplied the gallery includes an "Approve baselines" button
+that POSTs to the same-origin Cloudflare Pages Function at ``/api/approve-
+baselines``. The function validates the run (still-open PR or current main HEAD)
+and dispatches ``update-visual-baselines.yaml`` using a PAT stored as a CF Pages
+preview-env secret — the browser never sees it.
 
 Each row shows expected / actual / diff side-by-side at full natural height.
 Loading is strictly sequential: row N's images don't start fetching until every
@@ -88,56 +89,32 @@ h1 { margin: 0 0 .25rem; }
 """
 
 _APPROVE_JS = """
-// One-click approve baselines: dispatches the update-visual-baselines.yaml
-// workflow via the GitHub API. Stores the user's PAT in localStorage on
-// first click (key: ``gh_approve_baselines_pat``); a 401 clears it.
+// POSTs to the same-origin /api/approve-baselines proxy; server validates
+// the run and dispatches update-visual-baselines.yaml with a held secret.
 (() => {
   const cfg = window.__APPROVE_CFG__;
-  if (!cfg || !cfg.runId || !cfg.repo) return;  // No CI metadata; skip.
+  if (!cfg || !cfg.runId) return;
   const btn = document.getElementById('approve-btn');
   const status = document.getElementById('approve-status');
-  const PAT_KEY = 'gh_approve_baselines_pat';
-
-  async function dispatch() {
-    let token = (localStorage.getItem(PAT_KEY) || '').trim();
-    if (!token) {
-      const entered = prompt(
-        'GitHub PAT with `actions:write` scope (stored in localStorage):'
-      );
-      token = (entered || '').trim();
-      if (!token) return;
-      localStorage.setItem(PAT_KEY, token);
-    }
+  btn.addEventListener('click', async () => {
     btn.disabled = true;
     status.textContent = 'Dispatching…';
     status.className = '';
-    const url = `https://api.github.com/repos/${cfg.repo}` +
-      `/actions/workflows/update-visual-baselines.yaml/dispatches`;
-    const inputs = { run_id: String(cfg.runId) };
-    if (cfg.prNumber) inputs.pr_number = String(cfg.prNumber);
+    const payload = { runId: String(cfg.runId) };
+    if (cfg.prNumber) payload.prNumber = String(cfg.prNumber);
     try {
-      const res = await fetch(url, {
+      const res = await fetch('/api/approve-baselines', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-        },
-        body: JSON.stringify({ ref: 'main', inputs }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      if (res.status === 204) {
-        status.textContent =
-          'Dispatched. Watch the Actions tab for the run.';
+      const body = await res.json().catch(() => null);
+      if (res.ok && body && body.ok) {
+        status.textContent = 'Dispatched. Watch the Actions tab for the run.';
         status.className = 'ok';
-        return;
-      }
-      const body = (await res.text()).slice(0, 300);
-      status.textContent = `Failed (${res.status}): ${body}`;
-      status.className = 'err';
-      // 401 = bad/expired token. 403 = missing scope / SSO-unauth. Either
-      // way the cached value won't ever work; force a re-prompt.
-      if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem(PAT_KEY);
+      } else {
+        status.textContent = `Failed: ${(body && body.error) || 'HTTP ' + res.status}`;
+        status.className = 'err';
       }
     } catch (err) {
       status.textContent = `Network error: ${err.message}`;
@@ -145,8 +122,7 @@ _APPROVE_JS = """
     } finally {
       btn.disabled = false;
     }
-  }
-  btn.addEventListener('click', dispatch);
+  });
 })();
 """
 
@@ -198,10 +174,14 @@ class Tile:
 
 @dataclass(frozen=True)
 class ApproveConfig:
-    """CI metadata that wires up the gallery's approve-baselines button."""
+    """
+    CI metadata that wires up the gallery's approve-baselines button.
+
+    The browser only needs ``run_id`` (and ``pr_number`` for PR galleries); the
+    proxy infers the repo from its own ``GITHUB_REPO`` env var.
+    """
 
     run_id: str
-    repo: str
     pr_number: str | None = None
 
 
@@ -329,7 +309,7 @@ def render_html(
     )
     approve_cfg_script = (
         "<script>window.__APPROVE_CFG__ = "
-        f"{json.dumps({'runId': approve.run_id, 'repo': approve.repo, 'prNumber': approve.pr_number})};"
+        f"{json.dumps({'runId': approve.run_id, 'prNumber': approve.pr_number})};"
         "</script>\n"
         if show_approve and approve is not None
         else ""
@@ -393,11 +373,6 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         help="visual-testing run ID — required for the approve-baselines button",
     )
     parser.add_argument(
-        "--repo",
-        default=None,
-        help="owner/repo — required for the approve-baselines button",
-    )
-    parser.add_argument(
         "--pr-number",
         default=None,
         help="PR number, if this gallery is for a PR run (omit on main)",
@@ -408,10 +383,8 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 if __name__ == "__main__":
     args = _parse_args(sys.argv[1:])
     approve_cfg = (
-        ApproveConfig(
-            run_id=args.run_id, repo=args.repo, pr_number=args.pr_number
-        )
-        if args.run_id and args.repo
+        ApproveConfig(run_id=args.run_id, pr_number=args.pr_number)
+        if args.run_id
         else None
     )
     main(args.traces_dir, args.report_dir, approve=approve_cfg)

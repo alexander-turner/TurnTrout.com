@@ -47,13 +47,17 @@ Use the `/commit` skill to create conventional commits:
 /commit
 ```
 
-### 4. Push Updates
+### 4. Check DeepSource
+
+Run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
+
+### 5. Push Updates
 
 ```bash
 git push
 ```
 
-### 5. Verify CI (with 15-minute timeout)
+### 6. Verify CI (with 15-minute timeout)
 
 ```bash
 timeout 15m gh pr checks --watch || true
@@ -61,7 +65,7 @@ timeout 15m gh pr checks --watch || true
 
 The stop hook (`verify_ci.py`) will automatically block completion if CI fails. If checks fail, fix issues and repeat steps 3-5.
 
-### 6. Report Result
+### 7. Report Result
 
 Confirm the PR is updated and provide the URL.
 
