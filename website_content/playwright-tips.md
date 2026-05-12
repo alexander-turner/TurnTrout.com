@@ -15,7 +15,7 @@ aliases:
   - visual-regression
   - screenshot-testing
 date_published: 2025-08-12
-date_updated: 2026-04-26
+date_updated: 2026-05-12
 ---
 
 # Background
@@ -63,7 +63,7 @@ Beware browser-specific event ordering
 : `mousemove` may fire slightly _after_ `mouseenter` when Playwright teleports the cursor. I had a `mouseMovedSinceNav` flag that was set by `mousemove` and read by the `mouseenter` handler to decide whether to show a popover. The bug: `mouseenter` fired first and saw the flag as `false`, so the popover was suppressed even though the user had genuinely moved the mouse. The fix was to read the flag inside a `setTimeout` callback (300ms later) instead of synchronously — by then, `mousemove` had fired and set it.
 
 Prefer feature detection over timing buffers
-: When a browser quirk fires spurious events (e.g. Safari emitting `mouseenter` after an SPA navigation morphs the DOM under a stationary cursor), resist the urge to add a millisecond buffer like "ignore hovers for 500ms." Instead, track whether the triggering condition actually occurred — e.g. a `mouseMovedSinceNav` boolean that resets on navigation and flips on `mousemove`. This is timing-independent and self-documenting.
+: When a browser quirk fires spurious events (e.g. Safari emitting `mouseenter` after an SPA navigation morphs the DOM under a stationary cursor), resist the urge to add a millisecond buffer like "ignore hovers for 500ms." Instead, track whether the triggering condition actually occurred — e.g. a `mouseMovedSinceNav` boolean that resets on navigation and flips on `mousemove`. The boolean is timing-independent and self-documenting.
 
 Use `domcontentloaded` instead of `load` when possible
 : Firefox can stall on subresource loads (images, fonts) in CI, causing 30-second timeouts on page navigation. Using `domcontentloaded` as the wait condition for `page.goto()` avoids this. Only wait for `load` when you specifically need all subresources to be ready.

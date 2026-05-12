@@ -407,8 +407,31 @@ jobs:
       # Build a single-page screenshot gallery alongside the Playwright
       # report. Skim-friendly grid view; useful at bootstrap (no
       # baselines yet → main report has nothing to slide between).
+      # `--run-id` (+ `--pr-number` on PR runs) wires up the one-click
+      # "Approve baselines" button; the button POSTs to the same-origin
+      # Pages Function staged below (which holds the PAT server-side).
       - name: Generate screenshot gallery
-        run: python3 scripts/generate_visual_gallery.py ./all-traces ./playwright-report
+        env:
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          args=(./all-traces ./playwright-report
+                --run-id "${{ github.run_id }}")
+          if [ -n "${GH_PR_NUMBER:-}" ]; then
+            args+=(--pr-number "$GH_PR_NUMBER")
+          fi
+          python3 scripts/generate_visual_gallery.py "${args[@]}"
+
+      # `wrangler pages deploy <dir>` bundles Pages Functions from
+      # `./functions/` relative to CWD, NOT from inside `<dir>`. We stage
+      # at the repo root so wrangler picks it up; the production deploy
+      # in deploy.yaml runs in a separate checkout with no `functions/`
+      # dir, so this stays isolated to diff-gallery branches
+      # (visual-pr-*, visual-main-*).
+      - name: Stage approve-baselines Pages Function
+        run: |
+          mkdir -p functions/api
+          cp cloudflare/functions/api/approve-baselines.ts \
+             functions/api/approve-baselines.ts
 
       - name: Upload merged HTML report
         id: upload-report
@@ -472,9 +495,7 @@ jobs:
 
       # Always-on summary on the workflow run page. Works for PR and main
       # pushes so you can find the URLs from any failing visual-testing
-      # run without hunting through the Artifacts section. Includes the
-      # approve-baselines link too — the PR-comment step below adds the
-      # same content as a PR-side surface.
+      # run without hunting through the Artifacts section.
       - name: Emit summary with report links
         if: always()
         env:
@@ -494,9 +515,9 @@ jobs:
             echo ""
             echo "### Approve baselines"
             echo ""
-            echo "If the diffs look intended, comment \`/approve-baselines\` on the PR."
-            echo "The approve workflow will adopt this run's screenshots as the new R2 baselines"
-            echo "and push an empty commit to retrigger visual-testing."
+            echo "If the diffs look intended, open the gallery and click \"Approve these as baselines\"."
+            echo "The button dispatches \`update-visual-baselines.yaml\` to adopt this run's screenshots"
+            echo "as the new R2 baselines."
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment report links on PR
@@ -530,7 +551,7 @@ jobs:
             lines.push(`Download: ${artifactUrl}`);
             lines.push(`(or see the Artifacts section of the [workflow run](${runUrl}))`);
             lines.push('');
-            lines.push('If the diffs are intended, comment `/approve-baselines` on this PR. The approve workflow will adopt this run\'s screenshots as new R2 baselines and push an empty commit to retrigger visual-testing.');
+            lines.push('If the diffs are intended, open the gallery and click **"Approve these as baselines"**. The button dispatches `update-visual-baselines.yaml`, which uploads this run\'s screenshots to R2 and pushes an empty commit to retrigger visual-testing.');
             const body = lines.join('\n');
 
             const comments = await github.paginate(github.rest.issues.listComments, {

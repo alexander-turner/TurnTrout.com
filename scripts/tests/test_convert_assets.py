@@ -1,4 +1,5 @@
 import re
+import shutil
 import subprocess
 import unittest.mock as mock  # Import the mock module
 from pathlib import Path
@@ -18,6 +19,11 @@ except ImportError:
 
 mock_r2_upload = mock.MagicMock()
 mock.patch.dict("sys.modules", {"r2_upload": mock_r2_upload}).start()
+
+pytestmark = pytest.mark.skipif(
+    shutil.which("ffmpeg") is None,
+    reason="ffmpeg not available in this environment",
+)
 
 
 @pytest.mark.parametrize("ext", compress.ALLOWED_IMAGE_EXTENSIONS)
@@ -400,6 +406,8 @@ def test_video_patterns(
     target_pattern = convert_assets._video_replacement_pattern(input_file)
     assert source_pattern == expected_source_pattern
     assert target_pattern == expected_target_pattern
+
+
 @pytest.mark.parametrize(
     "initial_content",
     [
@@ -409,10 +417,7 @@ def test_video_patterns(
         </video> <br/>Figure: This is a caption
 
         Some content after
-        """
-
-
-           ,
+        """,
         """
     Some content before
     

@@ -45,6 +45,35 @@ LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]
 RIGHT_GUILLEMET: str = _UNICODE_TYPO["rightGuillemet"]
 GERMAN_OPEN_QUOTE: str = _UNICODE_TYPO["germanOpenQuote"]
 
+# Dark-mode invert pipeline. Shared between scripts/label_invert.py (the
+# interactive labeler) and scripts/built_site_checks.py (the validator).
+# Tuples (not sets) so we can pass directly to ``str.endswith``.
+INVERT_RASTER_EXTENSIONS: tuple[str, ...] = (
+    ".avif",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".gif",
+)
+# Inline looping muted videos (GIF-replacements). Each format is its own URL on
+# R2; the rendered ``<video>`` tries each ``<source>`` in order, but we ask the
+# labeler for a verdict per URL.
+INVERT_VIDEO_EXTENSIONS: tuple[str, ...] = (".mp4", ".webm", ".mov")
+INVERT_LABELABLE_EXTENSIONS: tuple[str, ...] = (
+    INVERT_RASTER_EXTENSIONS + INVERT_VIDEO_EXTENSIONS
+)
+# URL path segments whose media bypass invert-labeling (favicons, emoji, etc.).
+INVERT_EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
+    {
+        "external-favicons",
+        "twemoji",
+        "turntrout-favicons",
+        "card_images",
+        "avatars",
+    }
+)
+
 
 def http_session(
     retries: int = 3,
@@ -70,7 +99,7 @@ def http_session(
     return session
 
 
-def load_shared_constants() -> dict:  # pragma: no cover
+def load_shared_constants() -> dict:
     """Load shared constants from config/constants.json."""
     with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)

@@ -37,6 +37,9 @@ from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
+    INVERT_EXCLUDED_SEGMENTS,
+    INVERT_RASTER_EXTENSIONS,
+    INVERT_VIDEO_EXTENSIONS,
     LEFT_DOUBLE_QUOTE,
     LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
@@ -52,6 +55,12 @@ from scripts.utils import (
 _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
 RSS_XSD_PATH = _GIT_ROOT / "scripts" / ".rss-2.0.xsd"
+
+# CSS class the build pipeline applies to elements that should be inverted in
+# dark mode. Canonical source: config/constants.json (`invertInDarkModeClass`).
+INVERT_CLASS: str = script_utils.load_shared_constants()[
+    "invertInDarkModeClass"
+]
 
 _IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
@@ -791,70 +800,109 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-def _inline_looping_video_sources(video: Tag) -> list[str]:
-    """
-    Return source URLs from an inline looping muted `<video>` element.
+class InvertLabel(NamedTuple):
+    """One entry from ``.invert_labels.json``."""
 
-    Returns ``[]`` for the persistent ``#pond-video`` background and for any
-    video missing the autoplay+loop+muted attribute trio that distinguishes a
-    GIF-replacement from a regular embed.
-    """
+    invert: bool
+    reviewed: bool
+
+
+def _is_excluded_segment(url: str) -> bool:
+    """True iff any path segment of ``url`` is in
+    ``INVERT_EXCLUDED_SEGMENTS``."""
+    segments = url.split("?", 1)[0].split("/")
+    return any(seg in INVERT_EXCLUDED_SEGMENTS for seg in segments)
+
+
+def _has_invert_class(tag: Tag) -> bool:
+    """True iff ``tag`` has the ``invert-in-dark-mode`` class."""
+    raw = tag.get("class")
+    tokens = raw.split() if isinstance(raw, str) else raw
+    return isinstance(tokens, list) and INVERT_CLASS in tokens
+
+
+def _inline_looping_video_sources(video: Tag) -> list[str]:
+    """Source URLs of an inline looping muted ``<video>`` (GIF replacement);
+    ``[]`` for ``#pond-video`` or non-inline videos."""
     if video.get("id") == "pond-video":
         return []
-    if not (
-        video.has_attr("autoplay")
-        and video.has_attr("loop")
-        and video.has_attr("muted")
-    ):
+    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
         return []
-    sources: list[str] = []
-    direct = video.get("src")
-    if isinstance(direct, str) and direct.lower().endswith(
-        compress.INLINE_VIDEO_EXTENSIONS
-    ):
-        sources.append(direct)
-    for source in _tags_only(video.find_all("source")):
-        src = source.get("src")
-        if isinstance(src, str) and src.lower().endswith(
-            compress.INLINE_VIDEO_EXTENSIONS
-        ):
-            sources.append(src)
-    return sources
+    candidates: Iterable[str | list[str] | None] = (
+        video.get("src"),
+        *(s.get("src") for s in _tags_only(video.find_all("source"))),
+    )
+    return [
+        s
+        for s in candidates
+        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS)
+    ]
 
 
-def check_inline_media_reviewed(
+def _invert_issue_string(
+    kind: str,
+    src: str,
+    has_class: bool,
+    label: InvertLabel | None,
+) -> str | None:
+    """
+    Issue message for one labeled src, or ``None`` if the JSON entry agrees with
+    the rendered class.
+
+    Reports missing / unreviewed / class-mismatch.
+    """
+    if label is None:
+        return f"<{kind}> {src} missing from .invert_labels.json"
+    if not label.reviewed:
+        return f"<{kind}> {src} not user-reviewed in .invert_labels.json"
+    if label.invert == has_class:
+        return None
+    expected = "expected" if label.invert else "must not be applied"
+    return (
+        f"<{kind}> {src} {INVERT_CLASS} class {expected} "
+        f"(JSON invert={label.invert}, class present={has_class})"
+    )
+
+
+def check_invert_labels(
     soup: BeautifulSoup,
-    invert_labels: Mapping[str, bool] | None,
+    invert_labels: Mapping[str, InvertLabel] | None,
 ) -> list[str]:
     """
-    Check that every dark-mode-relevant inline media element is user-reviewed.
+    Validate every eligible ``<img>`` (raster ext) and inline looping
+    ``<video>`` source against ``.invert_labels.json``: each must be present,
+    reviewed, and have its ``invert-in-dark-mode`` class match the JSON
+    ``invert`` field (the source of truth).
 
-    Covers both images (every ``<img>`` with an ``.avif`` src) and inline
-    looping muted videos (``<video autoplay loop muted>``, excluding the
-    persistent ``#pond-video``). Each must have an entry in
-    ``.invert_labels.json`` with ``reviewed: true``. Catches newly-added media
-    that was auto-labeled by the luminance heuristic but never confirmed by a
-    human, and media never triaged at all.
-
-    For videos, *all* source URLs must be reviewed individually — labelling just
-    the .mp4 doesn't cover the .webm sibling.
-
-    Returns a list of issues (one per occurrence). No-op when the labels file
-    isn't loaded (e.g., in unit tests).
+    No-op when ``invert_labels`` is ``None`` (loader-disabled in tests / when
+    the labels file is missing).
     """
     if invert_labels is None:
         return []
     issues: list[str] = []
     for img in _tags_only(soup.find_all("img")):
         src = img.get("src")
-        if not isinstance(src, str) or not src.lower().endswith(".avif"):
+        if not isinstance(src, str):
             continue
-        if src not in invert_labels:
-            issues.append(f"<img> AVIF not user-reviewed: {src}")
+        if not src.lower().endswith(INVERT_RASTER_EXTENSIONS):
+            continue
+        if _is_excluded_segment(src):
+            continue
+        issue = _invert_issue_string(
+            "img", src, _has_invert_class(img), invert_labels.get(src)
+        )
+        if issue is not None:
+            issues.append(issue)
     for video in _tags_only(soup.find_all("video")):
+        has_class = _has_invert_class(video)
         for src in _inline_looping_video_sources(video):
-            if src not in invert_labels:
-                issues.append(f"<video> source not user-reviewed: {src}")
+            if _is_excluded_segment(src):
+                continue
+            issue = _invert_issue_string(
+                "video", src, has_class, invert_labels.get(src)
+            )
+            if issue is not None:
+                issues.append(issue)
     return issues
 
 
@@ -1854,7 +1902,7 @@ class CheckOptions:
     favicon_included_domains: frozenset[str] | None = None
     # Loaded once in _process_html_files; passed through so each file
     # check doesn't have to re-read the JSON.
-    invert_labels: Mapping[str, bool] | None = None
+    invert_labels: Mapping[str, InvertLabel] | None = None
 
 
 def check_file_for_issues(
@@ -1920,7 +1968,7 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
-        "media_missing_invert_review": check_inline_media_reviewed(
+        "invert_label_mismatches": check_invert_labels(
             soup, opts.invert_labels
         ),
         "lcp_image_not_optimized": check_lcp_image_optimized(soup),
@@ -2921,22 +2969,15 @@ def _collect_paragraphs_for_spellcheck(
         paragraph_map[rel] = paras
 
 
-def _load_reviewed_invert_labels(
+def _load_invert_labels(
     project_root: Path,
-) -> Mapping[str, bool] | None:
+) -> Mapping[str, InvertLabel] | None:
     """
-    Load **user-reviewed** entries from `.invert_labels.json`.
+    Load ``.invert_labels.json`` as ``InvertLabel`` tuples.
 
-    Returns ``{url: invert_decision}`` for URLs whose label has
-    ``reviewed: true``. Auto-labeled but unreviewed URLs (and entries
-    that don't conform to the new schema, e.g. legacy bare bools) are
-    intentionally omitted so the AVIF-labeled check fails for them.
-
-    Returns ``None`` (disabling the check) when:
-    - the file is absent or malformed, or
-    - the labels file exists but the user has not reviewed any entry
-      yet (e.g. fresh checkout, before any labeling). Without this
-      escape hatch every CI run would fail on day one.
+    Raises ``ValueError`` on a malformed file (corrupted JSON, non-object root,
+    or any entry not of the form ``{invert, reviewed}``). Returns ``None`` only
+    when the file is absent (production has it committed).
     """
     path = (
         project_root
@@ -2949,22 +2990,25 @@ def _load_reviewed_invert_labels(
         return None
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path} is not valid JSON: {e}") from e
     if not isinstance(data, dict):
-        return None
-    reviewed: dict[str, bool] = {}
+        raise ValueError(f"{path} must contain a JSON object")
+    labels: dict[str, InvertLabel] = {}
     for key, value in data.items():
         if (
-            isinstance(value, dict)
-            and value.get("reviewed") is True
-            and "invert" in value
+            not isinstance(value, dict)
+            or "invert" not in value
+            or "reviewed" not in value
         ):
-            reviewed[str(key)] = bool(value["invert"])
-    # No reviewed entries yet → treat the check as not-yet-armed.
-    if not reviewed:
-        return None
-    return reviewed
+            raise ValueError(
+                f"{path} entry for {key!r} must be "
+                f"{{invert: bool, reviewed: bool}}, got {value!r}"
+            )
+        labels[str(key)] = InvertLabel(
+            invert=bool(value["invert"]), reviewed=bool(value["reviewed"])
+        )
+    return labels
 
 
 def _process_html_files(  # pylint: disable=too-many-locals
@@ -2982,7 +3026,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
-    invert_labels = _load_reviewed_invert_labels(public_dir.parent)
+    invert_labels = _load_invert_labels(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,

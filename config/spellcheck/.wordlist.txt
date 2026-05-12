@@ -18,6 +18,7 @@
 113KB
 124M
 125M
+12pt
 13B
 16GB
 16x16
@@ -75,6 +76,7 @@
 3.5M
 300IQ
 300MHz
+300ms
 30x
 32B
 36GB
@@ -97,6 +99,7 @@
 500M
 500x200
 50GB
+50mV
 50x
 561KB
 58KB
@@ -152,6 +155,7 @@ ALÉNA
 AMSGrad
 AOH
 APG
+API
 ASI
 ASIs
 ASR
@@ -304,6 +308,8 @@ CB-VAE
 CCC
 CDF
 CDN
+CEA
+CEO
 CEV
 CFAR
 CHAI
@@ -372,6 +378,7 @@ Critch
 Critch-bargaining
 Cryptographic
 Cryptpad
+Ctrl
 Cundy
 Curnow
 D1
@@ -391,6 +398,7 @@ DOM
 DOMs
 DPO
 DPO-driven
+DPR
 Dai
 Davide
 De
@@ -409,6 +417,7 @@ Demski
 Denecke
 DenseNets
 Deontology
+Dependabot
 Diagonalizability
 Dimensionality
 Dipika
@@ -633,6 +642,7 @@ Harish
 Harmbench
 HarryHPMOR's
 Harsanyi
+Hartley
 Haxhia
 Heatmap
 Heatmaps
@@ -654,6 +664,7 @@ Hubinger
 Hutter
 Hyori
 Hänni
+IASEAI
 IDC
 IFEval
 IFF
@@ -728,6 +739,7 @@ Kosoy
 Krakovna
 Kristian
 Krueger
+Kuhan
 Kuo
 Kurzeja
 Kwa
@@ -1021,6 +1033,7 @@ Pre-layer
 Precommit
 PredictionBook
 Preflection
+Preloading
 Prepush
 Pretrained
 Pretraining
@@ -1073,6 +1086,7 @@ RFID
 RFLO
 RGB
 RGDP
+RINTOT
 RL
 RL-
 RL-finetune
@@ -1158,6 +1172,7 @@ SERI
 SFT
 SFT-only
 SGD
+SHA
 SHA-1
 SHA-256
 SISA
@@ -1189,6 +1204,7 @@ Saurous
 Scalable
 Schneier
 Scooby
+Scrollable
 Searle
 Senku
 Sensationalization
@@ -1314,6 +1330,7 @@ UB
 UBlock
 UC
 UDP
+UI
 UNDO'ing
 USAID
 USCIS
@@ -1381,6 +1398,7 @@ WEBMs
 WEBP
 WLOG
 WMDP
+WPE
 WTF
 WX
 WYSIATI
@@ -1504,6 +1522,7 @@ alpha_jP_j
 altricial
 alungus
 ambivert
+amicus
 amidst
 amongst
 amungus
@@ -1761,6 +1780,7 @@ conceito
 concerningly
 conclusion-to-reframing-impact
 concretization
+config
 confounder
 confounders
 conjuction
@@ -2068,6 +2088,8 @@ geo-guessing
 geq
 gg
 github
+gitignore
+gitignored
 glomerulus
 glyphs
 gnome-keyring
@@ -2234,7 +2256,6 @@ jailbroke
 jailbroken
 jankier
 je
-jitter
 jitter
 jk
 jlnkhq3volgajzks64sw
@@ -2443,6 +2464,7 @@ nanotech
 natively
 nats
 nauseum
+navbar
 navigations
 naïve
 naïvely
@@ -2553,6 +2575,7 @@ overline
 overseeable
 overset
 overupdated
+overweight
 overworld
 owers
 oſtentatiouſly
@@ -2672,6 +2695,7 @@ preprint
 preprocess
 preprocessed
 preprocessing
+preprocessor
 prespecified
 pretrain
 pretrained
@@ -2688,6 +2712,7 @@ problemas
 problematicness
 procedurally
 procgen
+promptable
 proof-centric
 proprioceptive
 propto
@@ -2875,6 +2900,8 @@ sequencesgrid
 ser
 seria
 serror
+shard
+sharding
 shardtheory
 shoggoth
 shoggoths
@@ -2959,6 +2986,7 @@ submodules
 subnetwork
 suboptimal
 suboptimal.
+subpixel
 subproblem
 subproblems
 subquestions
@@ -2966,6 +2994,7 @@ subreddit
 subreddits
 subregion
 subregions
+subresource
 subseteq
 subsetneq
 subsetting
@@ -3009,6 +3038,7 @@ telecom
 telecoms
 telencephalon
 telencephelon
+teleport
 teleported
 temos
 terminalize
@@ -3072,6 +3102,7 @@ translational
 travelling
 trembly
 trendline
+triage
 trichotomy
 trilemma
 truthfulqa
@@ -3163,6 +3194,7 @@ utilizando
 uv
 v1.0
 v6
+validator
 valores
 value-activations
 varepsilon_0

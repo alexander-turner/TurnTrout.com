@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -28,6 +29,11 @@ if TYPE_CHECKING:
     from .. import built_site_checks
 else:
     import built_site_checks
+
+requires_xmllint = pytest.mark.skipif(
+    shutil.which("xmllint") is None,
+    reason="xmllint not available in this environment",
+)
 
 
 @pytest.fixture
@@ -780,6 +786,7 @@ def test_check_unrendered_subtitles():
     ]
 
 
+@requires_xmllint
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS
     file."""
@@ -811,6 +818,7 @@ def test_check_valid_rss_file_with_xmllint(temp_site_root):
         pytest.fail("check_rss_file_for_issues failed with valid RSS content")
 
 
+@requires_xmllint
 def test_check_invalid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues fails on an invalid RSS file."""
     script_utils.get_git_root()
@@ -6355,11 +6363,34 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
-_AVIF_NOT_REVIEWED_PREFIX = "<img> AVIF not user-reviewed: "
+InvertLabel = built_site_checks.InvertLabel
+INVERT_CLASS = built_site_checks.INVERT_CLASS
 
 
-def _missing(*urls: str) -> list[str]:
-    return [_AVIF_NOT_REVIEWED_PREFIX + u for u in urls]
+def _reviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=True)
+
+
+def _unreviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=False)
+
+
+def _missing_msg(kind: str, url: str) -> str:
+    return f"<{kind}> {url} missing from .invert_labels.json"
+
+
+def _unreviewed_msg(kind: str, url: str) -> str:
+    return f"<{kind}> {url} not user-reviewed in .invert_labels.json"
+
+
+def _class_mismatch_msg(
+    kind: str, url: str, *, invert: bool, has_class: bool
+) -> str:
+    expected = "expected" if invert else "must not be applied"
+    return (
+        f"<{kind}> {url} {INVERT_CLASS} class {expected} "
+        f"(JSON invert={invert}, class present={has_class})"
+    )
 
 
 @pytest.mark.parametrize(
@@ -6367,69 +6398,138 @@ def _missing(*urls: str) -> list[str]:
     [
         # No labels loaded → check is a no-op regardless of the page.
         ('<img src="https://x/a.avif">', None, []),
-        # All AVIFs reviewed (the loader only returns reviewed entries).
+        # Reviewed entries with classes matching their `invert` field.
         (
-            '<img src="https://x/a.avif"><img src="https://x/b.avif">',
-            {"https://x/a.avif": True, "https://x/b.avif": False},
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">'
+            '<img src="https://x/b.png">',
+            {
+                "https://x/a.avif": _reviewed(True),
+                "https://x/b.png": _reviewed(False),
+            },
             [],
         ),
-        # One unreviewed (absent from the mapping), one reviewed.
+        # Missing from JSON.
         (
-            '<img src="https://x/missing.avif">'
-            '<img src="https://x/known.avif">',
-            {"https://x/known.avif": True},
-            _missing("https://x/missing.avif"),
+            '<img src="https://x/missing.avif">',
+            {},
+            [_missing_msg("img", "https://x/missing.avif")],
         ),
-        # Non-AVIF images and src-less <img> are ignored.
+        # Present but unreviewed.
         (
-            '<img src="https://x/photo.png">'
-            '<img src="https://x/foo.jpg">'
-            '<img src="https://x/foo.svg">'
-            "<img>",
+            '<img src="https://x/u.png">',
+            {"https://x/u.png": _unreviewed(True)},
+            [_unreviewed_msg("img", "https://x/u.png")],
+        ),
+        # Reviewed invert=True but class absent → mismatch.
+        (
+            '<img src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [
+                _class_mismatch_msg(
+                    "img",
+                    "https://x/a.avif",
+                    invert=True,
+                    has_class=False,
+                )
+            ],
+        ),
+        # Reviewed invert=False but class present → mismatch.
+        (
+            f'<img class="{INVERT_CLASS} other" src="https://x/b.jpg">',
+            {"https://x/b.jpg": _reviewed(False)},
+            [
+                _class_mismatch_msg(
+                    "img",
+                    "https://x/b.jpg",
+                    invert=False,
+                    has_class=True,
+                )
+            ],
+        ),
+        # All raster extensions are eligible (.png, .jpg, .jpeg, .webp, .gif,
+        # .avif). Each missing from JSON → flagged.
+        (
+            '<img src="https://x/p.png">'
+            '<img src="https://x/p.jpg">'
+            '<img src="https://x/p.jpeg">'
+            '<img src="https://x/p.webp">'
+            '<img src="https://x/p.gif">'
+            '<img src="https://x/p.avif">',
+            {},
+            [
+                _missing_msg("img", f"https://x/p{ext}")
+                for ext in (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+            ],
+        ),
+        # SVGs and src-less imgs are ignored.
+        (
+            '<img src="https://x/icon.svg"><img>',
             {},
             [],
+        ),
+        # Non-HTTP src is reported as missing from labels like any other
+        # raster <img> — relative paths are an error mode for separate checks.
+        (
+            '<img src="/local/a.png">',
+            {},
+            [_missing_msg("img", "/local/a.png")],
         ),
         # Mixed-case extension still matches.
         (
             '<img src="https://x/UPPER.AVIF">',
             {},
-            _missing("https://x/UPPER.AVIF"),
+            [_missing_msg("img", "https://x/UPPER.AVIF")],
         ),
         # Same unreviewed AVIF twice → reported twice (one per occurrence).
         (
             '<img src="https://x/m.avif"><img src="https://x/m.avif">',
             {},
-            _missing("https://x/m.avif", "https://x/m.avif"),
+            [
+                _missing_msg("img", "https://x/m.avif"),
+                _missing_msg("img", "https://x/m.avif"),
+            ],
+        ),
+        # Excluded path segments (favicons, twemoji, etc.) are ignored.
+        (
+            '<img src="https://x/external-favicons/foo.png">'
+            '<img src="https://x/twemoji/bar.png">'
+            '<img src="https://x/turntrout-favicons/baz.png">'
+            '<img src="https://x/card_images/c.png">'
+            '<img src="https://x/avatars/d.png">',
+            {},
+            [],
+        ),
+        # class attribute as a space-separated string also works.
+        (
+            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [],
         ),
     ],
 )
-def test_check_inline_media_reviewed_images(
+def test_check_invert_labels_images(
     html: str,
-    labels: dict[str, bool] | None,
+    labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_inline_media_reviewed(soup, labels)
+    result = built_site_checks.check_invert_labels(soup, labels)
     assert sorted(result) == sorted(expected_issues)
-
-
-_VIDEO_PREFIX = "<video> source not user-reviewed: "
-
-
-def _video_missing(*urls: str) -> list[str]:
-    return [_VIDEO_PREFIX + u for u in urls]
 
 
 @pytest.mark.parametrize(
     ("html", "labels", "expected_issues"),
     [
-        # All sources reviewed → no issue.
+        # All sources reviewed with matching class → no issue.
         (
-            "<video autoplay loop muted>"
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
             '<source src="https://x/a.mp4">'
             '<source src="https://x/a.webm">'
             "</video>",
-            {"https://x/a.mp4": True, "https://x/a.webm": False},
+            {
+                "https://x/a.mp4": _reviewed(True),
+                "https://x/a.webm": _reviewed(True),
+            },
             [],
         ),
         # Both sources missing → both flagged.
@@ -6439,13 +6539,54 @@ def _video_missing(*urls: str) -> list[str]:
             '<source src="https://x/a.webm">'
             "</video>",
             {},
-            _video_missing("https://x/a.mp4", "https://x/a.webm"),
+            [
+                _missing_msg("video", "https://x/a.mp4"),
+                _missing_msg("video", "https://x/a.webm"),
+            ],
+        ),
+        # Reviewed invert=True on one source but class absent on the <video>.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/a.mp4">'
+            "</video>",
+            {"https://x/a.mp4": _reviewed(True)},
+            [
+                _class_mismatch_msg(
+                    "video",
+                    "https://x/a.mp4",
+                    invert=True,
+                    has_class=False,
+                )
+            ],
+        ),
+        # Reviewed invert=False with class present on <video> → mismatch.
+        (
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
+            '<source src="https://x/a.mp4">'
+            "</video>",
+            {"https://x/a.mp4": _reviewed(False)},
+            [
+                _class_mismatch_msg(
+                    "video",
+                    "https://x/a.mp4",
+                    invert=False,
+                    has_class=True,
+                )
+            ],
         ),
         # `<video src=...>` (no <source> children) is also covered.
         (
             '<video autoplay loop muted src="https://x/inline.mp4"></video>',
             {},
-            _video_missing("https://x/inline.mp4"),
+            [_missing_msg("video", "https://x/inline.mp4")],
+        ),
+        # Unreviewed source → unreviewed error.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/u.webm">'
+            "</video>",
+            {"https://x/u.webm": _unreviewed(True)},
+            [_unreviewed_msg("video", "https://x/u.webm")],
         ),
         # Pond video is exempt regardless of attributes.
         (
@@ -6457,7 +6598,7 @@ def _video_missing(*urls: str) -> list[str]:
         # Missing one of autoplay/loop/muted → not an inline GIF-replacement,
         # so untracked.
         (
-            "<video loop muted>" '<source src="https://x/regular.mp4"></video>',
+            "<video loop muted><source src='https://x/regular.mp4'></video>",
             {},
             [],
         ),
@@ -6470,13 +6611,13 @@ def _video_missing(*urls: str) -> list[str]:
         ),
     ],
 )
-def test_check_inline_media_reviewed_videos(
+def test_check_invert_labels_videos(
     html: str,
-    labels: dict[str, bool] | None,
+    labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],
 ) -> None:
     soup = BeautifulSoup(html, "html.parser")
-    result = built_site_checks.check_inline_media_reviewed(soup, labels)
+    result = built_site_checks.check_invert_labels(soup, labels)
     assert sorted(result) == sorted(expected_issues)
 
 
@@ -6492,40 +6633,57 @@ def _write_labels_file(root: Path, contents: str | None) -> None:
 @pytest.mark.parametrize(
     ("contents", "expected"),
     [
-        # File absent / malformed / wrong shape → None disables the check.
+        # File absent → None disables the check (only used by tests; production
+        # has the file committed).
         (None, None),
-        ("not json", None),
-        ("[1, 2, 3]", None),
-        # Empty object → check is not yet armed (no reviewed entries).
-        ("{}", None),
-        # All entries unreviewed → still not armed.
-        (
-            json.dumps(
-                {"https://x/a.avif": {"invert": True, "reviewed": False}}
-            ),
-            None,
-        ),
-        # Mixed reviewed / unreviewed: only reviewed entries returned.
+        # Empty object → returns {} so the validator runs and (correctly) fails
+        # every eligible image. No more empty-file escape hatch.
+        ("{}", {}),
+        # Well-formed entries are loaded into InvertLabel tuples.
         (
             json.dumps(
                 {
                     "https://x/a.avif": {"invert": True, "reviewed": True},
                     "https://x/b.avif": {"invert": False, "reviewed": True},
                     "https://x/c.avif": {"invert": True, "reviewed": False},
-                    "https://x/legacy.avif": True,  # legacy bool-shape ignored
                 }
             ),
-            {"https://x/a.avif": True, "https://x/b.avif": False},
+            {
+                "https://x/a.avif": InvertLabel(invert=True, reviewed=True),
+                "https://x/b.avif": InvertLabel(invert=False, reviewed=True),
+                "https://x/c.avif": InvertLabel(invert=True, reviewed=False),
+            },
         ),
     ],
 )
-def test_load_reviewed_invert_labels(
+def test_load_invert_labels(
     tmp_path: Path,
     contents: str | None,
-    expected: dict[str, bool] | None,
+    expected: dict[str, InvertLabel] | None,
 ) -> None:
     _write_labels_file(tmp_path, contents)
-    assert built_site_checks._load_reviewed_invert_labels(tmp_path) == expected
+    assert built_site_checks._load_invert_labels(tmp_path) == expected
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        # Not valid JSON.
+        "not json",
+        # Wrong top-level shape.
+        "[1, 2, 3]",
+        # Legacy bare-bool entry.
+        json.dumps({"https://x/a.avif": True}),
+        # Schema-malformed dict (missing `reviewed`).
+        json.dumps({"https://x/a.avif": {"invert": True}}),
+    ],
+)
+def test_load_invert_labels_raises_on_malformed(
+    tmp_path: Path, contents: str
+) -> None:
+    _write_labels_file(tmp_path, contents)
+    with pytest.raises(ValueError):
+        built_site_checks._load_invert_labels(tmp_path)
 
 
 # LCP image optimization tests

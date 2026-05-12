@@ -6398,5 +6398,25 @@
   "/static/images/new_site.avif": {
     "width": 1920,
     "height": 6581
+  },
+  "https://assets.turntrout.com/static/images/posts/team-shard-04022026.avif": {
+    "width": 6000,
+    "height": 4000
+  },
+  "https://assets.turntrout.com/static/images/original_site.avif": {
+    "width": 1440,
+    "height": 887
+  },
+  "https://assets.turntrout.com/static/images/new_site.avif": {
+    "width": 1440,
+    "height": 887
+  },
+  "https://assets.turntrout.com/static/images/posts/design-03252026-1.avif": {
+    "width": 2038,
+    "height": 1856
+  },
+  "https://assets.turntrout.com/static/images/posts/design-03252026-2.avif": {
+    "width": 2032,
+    "height": 1846
   }
 }

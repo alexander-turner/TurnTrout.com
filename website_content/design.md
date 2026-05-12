@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-08
+date_updated: 2026-05-12
 no_dropcap: false
 createBibtex: true
 ---
@@ -986,7 +986,7 @@ Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback 
 - [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
 - [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
 - My [Markdown and source-file validators](#static-validation-of-markdown-and-source-files).
-- A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/) which strips `[!quote]` callouts first, so I don't get flagged for quoting people whose words aren't in my dictionary.
+- A wrapper around [`spellchecker-cli`](https://www.npmjs.com/package/spellchecker-cli) and [Vale](https://vale.sh/). Before linting, I run a preprocessor that strips `[!quote]` callouts (so external quotes don't trip my dictionary), blanks the interior of LaTeX math (so `\cdot`-style commands aren't tokenized as words), and collapses inline `<span class="dropcap">…</span>` tags (so `dropcap` reads as one word, not split across the tag).
 
 Running them in parallel is essentially free — they don't modify files, they don't depend on each other. A single push reports every problem at once instead of one-at-a-time.
 
@@ -1066,7 +1066,7 @@ Pure unit tests cannot test the end-to-end experience of my site, nor can they e
 
 Many errors cannot be caught by unit tests. For example, I want to ensure the stability of my site's appearance. To do so, I perform [visual regression testing](https://snappify.com/blog/visual-regression-testing-101). This testing ensures my site looks consistent and nice - no matter whether the user runs Chrome, Firefox, or Safari using a desktop, tablet, or mobile device.
 
-I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails. The CI run posts a side-by-side diff gallery (expected / actual / diff) so I can skim every changed shot at a glance. If the new look is intentional I leave a `/approve-baselines` comment on the PR; a workflow then promotes the run's screenshots straight into R2 as the new baselines, no rerun needed.
+I use [Playwright](https://playwright.dev/) to interact with my website and screenshot it. Playwright renders the site at pre-specified locations, takes screenshots, and compares each one against a baseline stored in Cloudflare R2. If a picture differs by more than a small number of pixels, the test fails. The CI run posts a side-by-side diff gallery (expected / actual / diff) so I can skim every changed shot at a glance. If all changes are intended, then I click "approve." A workflow then promotes the run's screenshots straight into R2 as the new baselines.
 
 ![An image of a mountain is changed to have snow on top. The pixel-level diff is highlighted to the user.](https://assets.turntrout.com/static/images/posts/visual_regression_testing.avif)
 
@@ -1106,6 +1106,11 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 3. Assets present in the Markdown file but which are not present in the HTML DOM;
 > 4. `<video>` tags which do not provide multiple `<source>` options in the correct order (MP4 first, then WEBM);
 > 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
+>
+> **Dark-mode inversion:**
+>
+> 1. Eligible raster `<img>` and inline looping `<video>` sources which are missing from `.invert_labels.json` or which are not user-reviewed;
+> 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
 >
 > **CSS and styling:**
 >
@@ -1184,7 +1189,7 @@ Possessive expansion (`scripts/augment_spellcheck_wordlist.sh`)
 : Emits `word's` and `word’s` for every non-possessive entry at runtime, so adding `KaTeX` alone covers both quote styles.
 
 Claude triage (`scripts/spellcheck_triage.py`)
-: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the wordlist in alphabetical order, ambiguous ones are printed for review.
+: Sends each still-unknown word with its source context to Claude Haiku. Obvious proper nouns are auto-added to the dictionary in alphabetical order, ambiguous ones are printed for review.
 
 ## Build pipeline extras
 

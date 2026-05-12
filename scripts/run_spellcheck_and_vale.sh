@@ -16,17 +16,11 @@ cd "$GIT_ROOT" || exit 1
 STRIPPED=$(mktemp -d "${TMPDIR:-/tmp}/turntrout-stripped-XXXXXX")
 trap 'rm -rf "$STRIPPED"' EXIT
 
-uv run python scripts/strip_quotes.py \
+uv run python scripts/strip_for_spellcheck.py \
 	--source-dir website_content \
 	--output-dir "$STRIPPED" || exit 1
 
-pnpm exec spellchecker \
-	--no-suggestions \
-	--quiet \
-	--dictionaries config/spellcheck/.wordlist.txt \
-	--files "$STRIPPED/**/*.md" \
-	--ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
-	--plugins spell indefinite-article repeated-words syntax-urls frontmatter &
+STRIP_QUOTES_CONTENT_DIR="$STRIPPED" scripts/spellcheck.sh &
 SPELL_PID=$!
 
 vale --config config/vale/.vale.ini "$STRIPPED" &
