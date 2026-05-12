@@ -3,7 +3,7 @@
 Build a single-page screenshot gallery from Playwright trace artifacts.
 
 Usage: generate_visual_gallery.py <traces-dir> <report-dir>        [--run-id N]
-[--repo owner/repo] [--pr-number N]
+[--pr-number N]
 
 Walks ``traces-dir`` for ``*-actual.png`` (skipping ``*-retry*`` dirs), pairs
 each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
@@ -11,11 +11,11 @@ each with sibling ``*-expected.png`` / ``*-diff.png``, copies them into
 dir>/index.html``. Any existing Playwright ``index.html`` is moved aside to
 ``report.html`` and linked from the gallery header.
 
-When ``--run-id`` and ``--repo`` are supplied the gallery includes an "Approve
-baselines" button that POSTs to the same-origin Cloudflare Pages Function at
-``/api/approve-baselines``. The function validates the run (still-open PR or
-current main HEAD) and dispatches ``update-visual-baselines.yaml`` using a PAT
-stored as a CF Pages preview-env secret — the browser never sees it.
+When ``--run-id`` is supplied the gallery includes an "Approve baselines" button
+that POSTs to the same-origin Cloudflare Pages Function at ``/api/approve-
+baselines``. The function validates the run (still-open PR or current main HEAD)
+and dispatches ``update-visual-baselines.yaml`` using a PAT stored as a CF Pages
+preview-env secret — the browser never sees it.
 
 Each row shows expected / actual / diff side-by-side at full natural height.
 Loading is strictly sequential: row N's images don't start fetching until every
