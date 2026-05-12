@@ -792,14 +792,7 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
 
 
 _INLINE_VIDEO_EXTS: Final[tuple[str, ...]] = (".mp4", ".webm", ".mov")
-_INVERT_RASTER_EXTS: Final[tuple[str, ...]] = (
-    ".avif",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".gif",
-)
+_INVERT_RASTER_EXTS: Final = (".avif", ".png", ".jpg", ".jpeg", ".webp", ".gif")
 # Mirrors INVERT_CLASS in quartz/plugins/transformers/invertInDarkMode.ts.
 _INVERT_CLASS: Final[str] = "invert-in-dark-mode"
 # Mirrors EXCLUDED_SEGMENTS in scripts/label_invert.py.
