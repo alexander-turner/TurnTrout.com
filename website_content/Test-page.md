@@ -474,7 +474,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 > Normal blockquote
 
-> ! This text is hidden until you hover over it.
+> ! This text is hidden until you click on it.
 > ! Multiple lines can be hidden
 > ! Like this!
 
