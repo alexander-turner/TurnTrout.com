@@ -30,54 +30,53 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     return stem + ".png"
 
 
-def _iter_actual_attachments(
-    blob_zip: Path,
-) -> Iterator[tuple[str, str]]:
+def _attachments_from_jsonl(jsonl: str) -> Iterator[dict]:
+    for line in jsonl.splitlines():
+        if not line.strip():
+            continue
+        event = json.loads(line)
+        if event.get("method") != "onAttach":
+            continue
+        yield from event.get("params", {}).get("attachments", [])
+
+
+def _iter_actual_pngs(blob_zip: Path) -> Iterator[tuple[str, bytes]]:
     with zipfile.ZipFile(blob_zip) as zf:
         try:
             jsonl = zf.read("report.jsonl").decode("utf-8")
         except KeyError:
             return
-        for line in jsonl.splitlines():
-            if not line.strip():
+        for attachment in _attachments_from_jsonl(jsonl):
+            if attachment.get("contentType") != _PNG_CONTENT_TYPE:
                 continue
-            event = json.loads(line)
-            if event.get("method") != "onAttach":
+            baseline_name = _canonical_baseline_name(attachment.get("name", ""))
+            path = attachment.get("path")
+            if not baseline_name or not path:
                 continue
-            for attachment in event.get("params", {}).get("attachments", []):
-                if attachment.get("contentType") != _PNG_CONTENT_TYPE:
-                    continue
-                baseline_name = _canonical_baseline_name(
-                    attachment.get("name", "")
-                )
-                path = attachment.get("path")
-                if not baseline_name or not path:
-                    continue
-                yield baseline_name, path
+            try:
+                yield baseline_name, zf.read(path)
+            except KeyError:
+                continue
 
 
 def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
+    """Stage canonical baselines from every blob-report zip; return the
+    count."""
     staging_dir.mkdir(parents=True, exist_ok=True)
     seen: set[str] = set()
     count = 0
     for blob_zip in sorted(blob_reports_dir.rglob("*.zip")):
-        with zipfile.ZipFile(blob_zip) as zf:
-            for baseline_name, zip_entry_path in _iter_actual_attachments(
-                blob_zip
-            ):
-                if baseline_name in seen:
-                    continue
-                try:
-                    png_bytes = zf.read(zip_entry_path)
-                except KeyError:
-                    continue
-                seen.add(baseline_name)
-                (staging_dir / baseline_name).write_bytes(png_bytes)
-                count += 1
+        for baseline_name, png_bytes in _iter_actual_pngs(blob_zip):
+            if baseline_name in seen:
+                continue
+            seen.add(baseline_name)
+            (staging_dir / baseline_name).write_bytes(png_bytes)
+            count += 1
     return count
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> None:
+    """CLI entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "blob_reports_dir",
@@ -94,16 +93,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if not args.blob_reports_dir.is_dir():
-        print(f"Not a directory: {args.blob_reports_dir}", file=sys.stderr)
-        return 2
+        parser.error(f"Not a directory: {args.blob_reports_dir}")
 
     count = collect_from_blob_reports(args.blob_reports_dir, args.staging_dir)
     if count == 0:
-        print(
-            "No PNG attachments found in any blob report; nothing to upload.",
-            file=sys.stderr,
+        raise SystemExit(
+            "No PNG attachments found in any blob report; nothing to upload."
         )
-        return 1
     print(
         f"Staged {count} baseline(s) from "
         f"{args.blob_reports_dir} -> {args.staging_dir}"
@@ -111,8 +107,7 @@ def main(argv: list[str] | None = None) -> int:
 
     r2_baselines.upload(args.staging_dir)
     print(f"Uploaded {count} baseline(s) to R2")
-    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(main())
+    main()

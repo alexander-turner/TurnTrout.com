@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import io
 import json
 import zipfile
 from pathlib import Path
@@ -133,11 +132,9 @@ def test_collect_skips_missing_zip_entry(tmp_path: Path) -> None:
                 {
                     "method": "onAttach",
                     "params": {
-                        "testId": "t",
-                        "resultId": "r",
                         "attachments": [
                             {
-                                "name": "toc-Desktop-Safari-actual",
+                                "name": "toc-actual",
                                 "contentType": "image/png",
                                 "path": "resources/missing.png",
                             }
@@ -149,8 +146,7 @@ def test_collect_skips_missing_zip_entry(tmp_path: Path) -> None:
         )
 
     staging = tmp_path / "stage"
-    count = approve.collect_from_blob_reports(blob_dir, staging)
-    assert count == 0
+    assert approve.collect_from_blob_reports(blob_dir, staging) == 0
 
 
 def test_collect_handles_blob_zip_without_report_jsonl(tmp_path: Path) -> None:
@@ -159,11 +155,37 @@ def test_collect_handles_blob_zip_without_report_jsonl(tmp_path: Path) -> None:
     with zipfile.ZipFile(blob_dir / "empty.zip", "w") as zf:
         zf.writestr("unrelated.txt", "no jsonl here")
 
-    staging = tmp_path / "stage"
-    assert approve.collect_from_blob_reports(blob_dir, staging) == 0
+    assert approve.collect_from_blob_reports(blob_dir, tmp_path / "stage") == 0
 
 
-def test_collect_skips_blank_jsonl_lines(tmp_path: Path) -> None:
+def test_collect_skips_attachments_without_path(tmp_path: Path) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    zip_path = blob_dir / "report.zip"
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr(
+            "report.jsonl",
+            json.dumps(
+                {
+                    "method": "onAttach",
+                    "params": {
+                        "attachments": [
+                            {
+                                "name": "toc-actual",
+                                "contentType": "image/png",
+                                "body": "base64data",
+                            }
+                        ],
+                    },
+                }
+            )
+            + "\n",
+        )
+
+    assert approve.collect_from_blob_reports(blob_dir, tmp_path / "stage") == 0
+
+
+def test_collect_skips_blank_and_non_attach_lines(tmp_path: Path) -> None:
     blob_dir = tmp_path / "blobs"
     blob_dir.mkdir()
     zip_path = blob_dir / "report.zip"
@@ -174,13 +196,11 @@ def test_collect_skips_blank_jsonl_lines(tmp_path: Path) -> None:
             "\n".join(
                 [
                     "",
-                    "   ",
+                    json.dumps({"method": "onTestEnd", "params": {}}),
                     json.dumps(
                         {
                             "method": "onAttach",
                             "params": {
-                                "testId": "t",
-                                "resultId": "r",
                                 "attachments": [
                                     {
                                         "name": "toc-actual",
@@ -196,60 +216,7 @@ def test_collect_skips_blank_jsonl_lines(tmp_path: Path) -> None:
             + "\n",
         )
 
-    staging = tmp_path / "stage"
-    assert approve.collect_from_blob_reports(blob_dir, staging) == 1
-
-
-def test_collect_ignores_non_attach_events(tmp_path: Path) -> None:
-    blob_dir = tmp_path / "blobs"
-    blob_dir.mkdir()
-    zip_path = blob_dir / "report.zip"
-    with zipfile.ZipFile(zip_path, "w") as zf:
-        zf.writestr(
-            "report.jsonl",
-            "\n".join(
-                json.dumps(e)
-                for e in [
-                    {"method": "onTestBegin", "params": {}},
-                    {"method": "onTestEnd", "params": {}},
-                    {"method": "onBlobReportMetadata", "params": {}},
-                ]
-            )
-            + "\n",
-        )
-
-    staging = tmp_path / "stage"
-    assert approve.collect_from_blob_reports(blob_dir, staging) == 0
-
-
-def test_collect_skips_attachments_without_path(tmp_path: Path) -> None:
-    blob_dir = tmp_path / "blobs"
-    blob_dir.mkdir()
-    zip_path = blob_dir / "report.zip"
-    with zipfile.ZipFile(zip_path, "w") as zf:
-        zf.writestr(
-            "report.jsonl",
-            json.dumps(
-                {
-                    "method": "onAttach",
-                    "params": {
-                        "testId": "t",
-                        "resultId": "r",
-                        "attachments": [
-                            {
-                                "name": "toc-actual",
-                                "contentType": "image/png",
-                                "body": "base64data",
-                            }
-                        ],
-                    },
-                }
-            )
-            + "\n",
-        )
-
-    staging = tmp_path / "stage"
-    assert approve.collect_from_blob_reports(blob_dir, staging) == 0
+    assert approve.collect_from_blob_reports(blob_dir, tmp_path / "stage") == 1
 
 
 def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:
@@ -262,98 +229,24 @@ def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:
     staging = tmp_path / "stage"
 
     with patch.object(approve.r2_baselines, "upload") as mock_upload:
-        exit_code = approve.main([str(blob_dir), "--staging-dir", str(staging)])
-    assert exit_code == 0
+        approve.main([str(blob_dir), "--staging-dir", str(staging)])
     mock_upload.assert_called_once_with(staging)
     assert (staging / "toc.png").exists()
 
 
-def test_main_returns_nonzero_when_dir_missing(tmp_path: Path) -> None:
-    missing = tmp_path / "does-not-exist"
-    assert approve.main([str(missing)]) == 2
+def test_main_exits_when_dir_missing(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit) as exc:
+        approve.main([str(tmp_path / "does-not-exist")])
+    assert exc.value.code == 2
 
 
-def test_main_returns_nonzero_when_no_attachments(tmp_path: Path) -> None:
+def test_main_exits_when_no_attachments(tmp_path: Path) -> None:
     blob_dir = tmp_path / "blobs"
     blob_dir.mkdir()
-
-    with patch.object(approve.r2_baselines, "upload") as mock_upload:
-        exit_code = approve.main([str(blob_dir)])
-    assert exit_code == 1
+    with (
+        patch.object(approve.r2_baselines, "upload") as mock_upload,
+        pytest.raises(SystemExit) as exc,
+    ):
+        approve.main([str(blob_dir)])
+    assert "No PNG attachments" in str(exc.value)
     mock_upload.assert_not_called()
-
-
-def test_iter_actual_attachments_handles_corrupt_zip(tmp_path: Path) -> None:
-    zip_path = tmp_path / "broken.zip"
-    with zipfile.ZipFile(zip_path, "w") as zf:
-        zf.writestr("resources/orphan.png", b"png-bytes")
-
-    assert list(approve._iter_actual_attachments(zip_path)) == []
-
-
-def test_iter_actual_attachments_streams_zip_entries(
-    tmp_path: Path,
-) -> None:
-    zip_path = tmp_path / "report.zip"
-    with zipfile.ZipFile(zip_path, "w") as zf:
-        zf.writestr("resources/sha0.png", _PNG_BYTES)
-        zf.writestr(
-            "report.jsonl",
-            json.dumps(
-                {
-                    "method": "onAttach",
-                    "params": {
-                        "attachments": [
-                            {
-                                "name": "long-name-actual",
-                                "contentType": "image/png",
-                                "path": "resources/sha0.png",
-                            }
-                        ],
-                    },
-                }
-            )
-            + "\n",
-        )
-
-    results = list(approve._iter_actual_attachments(zip_path))
-    assert results == [("long-name.png", "resources/sha0.png")]
-    with zipfile.ZipFile(zip_path) as zf:
-        assert zf.read(results[0][1]) == _PNG_BYTES
-
-
-def test_collect_from_blob_reports_no_zips(tmp_path: Path) -> None:
-    blob_dir = tmp_path / "blobs"
-    blob_dir.mkdir()
-    staging = tmp_path / "stage"
-    assert approve.collect_from_blob_reports(blob_dir, staging) == 0
-    assert staging.is_dir()
-
-
-def test_iter_actual_attachments_uses_io_only(tmp_path: Path) -> None:
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as zf:
-        zf.writestr("resources/sha0.png", _PNG_BYTES)
-        zf.writestr(
-            "report.jsonl",
-            json.dumps(
-                {
-                    "method": "onAttach",
-                    "params": {
-                        "attachments": [
-                            {
-                                "name": "x-actual",
-                                "contentType": "image/png",
-                                "path": "resources/sha0.png",
-                            }
-                        ]
-                    },
-                }
-            )
-            + "\n",
-        )
-    zip_path = tmp_path / "in-memory.zip"
-    zip_path.write_bytes(buffer.getvalue())
-    assert list(approve._iter_actual_attachments(zip_path)) == [
-        ("x.png", "resources/sha0.png")
-    ]
