@@ -742,6 +742,8 @@ function loseTheGame(numTimes: number): void {
 This is a plain code block without a language specified.
 ```
 
+Inline code adjacent to a slash: the sycophantic `A`/`B` token should render with breathing room on both sides of the slash, and the surrounding "sycophantic" and "token" should keep their spaces.
+
 # Formatting
 
 - Normal
