@@ -137,27 +137,39 @@ export function spacesAroundSlashes(text: string): string {
 }
 
 /**
- * Strip leading whitespace from text immediately inside `<em>`/`<strong>`.
+ * Strip whitespace adjacent to the inside boundary of an inline element.
  *
- * Markdown like `_ italics_` or `* bold*` produces `<em> italics</em>`/
- * `<strong> bold</strong>`. The leading space inside the emphasis renders
- * adjacent to whatever precedes the element (often an em-dash from `-`),
- * yielding "—  italics" — visually wrong for American typography. This
- * normalizer rewrites the emphasis as if the author had written `_italics_`.
+ * - `<em>` / `<strong>`: leading-only. Markdown like `_ italics_` produces
+ *   `<em> italics</em>`, and the leading space renders adjacent to whatever
+ *   precedes the element (often an em-dash from `-`), yielding "— italics".
+ *   Strip it so the rendering matches `_italics_`.
+ * - `<a>`: both ends. Link underlines that extend past the link text look
+ *   wrong; leading/trailing space inside the anchor visibly stretches the
+ *   underline beyond the actual content.
  */
-export function stripEmphasisLeadingSpace(tree: Root): void {
+export function stripInlineBoundaryWhitespace(tree: Root): void {
   visitParents(tree, "element", (node) => {
-    if (node.tagName !== "em" && node.tagName !== "strong") return
-    const firstChild = node.children[0]
-    if (firstChild?.type !== "text") return
-    const trimmed = firstChild.value.replace(/^\s+/, "")
-    if (trimmed === firstChild.value) return
-    if (trimmed === "") {
-      node.children.shift()
-      return
+    if (node.tagName === "em" || node.tagName === "strong") {
+      trimTextChild(node, "leading")
+    } else if (node.tagName === "a") {
+      trimTextChild(node, "leading")
+      trimTextChild(node, "trailing")
     }
-    firstChild.value = trimmed
   })
+}
+
+function trimTextChild(node: Element, side: "leading" | "trailing"): void {
+  const idx = side === "leading" ? 0 : node.children.length - 1
+  const child = node.children[idx]
+  if (child?.type !== "text") return
+  const trimmed =
+    side === "leading" ? child.value.replace(/^\s+/, "") : child.value.replace(/\s+$/, "")
+  if (trimmed === child.value) return
+  if (trimmed === "") {
+    node.children.splice(idx, 1)
+    return
+  }
+  child.value = trimmed
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
@@ -829,8 +841,8 @@ export const improveFormatting = (
     // Run after the main pipeline: the em-dash transform relies on the
     // trailing space inside <em>/<strong> to fire (otherwise punctilio's
     // hanging-hyphen rule treats "-<em>word" as suspended). Strip the
-    // residual leading space here, after em-dash has done its work.
-    stripEmphasisLeadingSpace(tree)
+    // residual boundary whitespace here, after em-dash has done its work.
+    stripInlineBoundaryWhitespace(tree)
   }
 }
 

@@ -37,7 +37,7 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   arrowsToWrap,
-  stripEmphasisLeadingSpace,
+  stripInlineBoundaryWhitespace,
 } from "../formatting_improvement_html"
 import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
@@ -224,7 +224,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
-        '<p>(<strong>NAFTA</strong> <a href="x"> / ˈnæftə / </a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
@@ -738,20 +738,21 @@ describe("HTMLFormattingImprovement", () => {
     })
   })
 
-  describe("stripEmphasisLeadingSpace", () => {
+  describe("stripInlineBoundaryWhitespace", () => {
     function runOnHtml(html: string): string {
       const processor = rehype().data("settings", { fragment: true })
       processor.use(() => (tree: Root) => {
-        stripEmphasisLeadingSpace(tree)
+        stripInlineBoundaryWhitespace(tree)
       })
       return processor.processSync(html).toString()
     }
 
     it.each([
+      // Emphasis: leading only (the user-facing rendering uses surrounding text)
       ["<p><em> despite</em></p>", "<p><em>despite</em></p>"],
       ["<p><strong> bold</strong></p>", "<p><strong>bold</strong></p>"],
       ["<p><em>  many   leading</em></p>", "<p><em>many   leading</em></p>"],
-      // Trailing space is left alone (intentionally scoped to leading only).
+      // Trailing space inside emphasis is left alone (scoped to leading).
       ["<p><em>kept </em></p>", "<p><em>kept </em></p>"],
       // No leading whitespace: pass through unchanged.
       ["<p><em>fine</em></p>", "<p><em>fine</em></p>"],
@@ -759,6 +760,12 @@ describe("HTMLFormattingImprovement", () => {
       ["<p><em> <strong>nested</strong></em></p>", "<p><em><strong>nested</strong></em></p>"],
       // First child is an element (not text) — leading-text strip doesn't apply.
       ["<p><em><span> inner</span></em></p>", "<p><em><span> inner</span></em></p>"],
+      // Anchors: BOTH leading and trailing are stripped (underline would
+      // otherwise extend past the link's content).
+      ['<p>a <a href="x"> link</a> b</p>', '<p>a <a href="x">link</a> b</p>'],
+      ['<p>a <a href="x">link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
+      ['<p>a <a href="x"> link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
+      ['<p>a <a href="x">fine</a> b</p>', '<p>a <a href="x">fine</a> b</p>'],
     ])("normalizes %s", (input, expected) => {
       expect(runOnHtml(input)).toBe(expected)
     })
@@ -766,7 +773,7 @@ describe("HTMLFormattingImprovement", () => {
     it("makes em-dash conversion produce Chicago-style output for `-_ word_`", () => {
       // Before: "I think that—<em> despite</em>" (em-dash preserves boundary
       // space inside <em>, since punctilio 3.8.2 respects marker boundaries).
-      // After stripEmphasisLeadingSpace runs first, the <em> has no leading
+      // After stripInlineBoundaryWhitespace runs first, the <em> has no leading
       // space, so em-dash conversion produces the unspaced "—despite" form.
       const out = testHtmlFormattingImprovement("<p>I think that -<em> despite</em></p>")
       expect(normalizeNbsp(out)).toBe("<p>I think that—<em>despite</em></p>")
