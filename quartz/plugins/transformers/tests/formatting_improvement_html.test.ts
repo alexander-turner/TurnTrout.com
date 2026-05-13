@@ -38,6 +38,7 @@ import {
   rearrangeLinkPunctuation,
   arrowsToWrap,
   stripInlineBoundaryWhitespace,
+  StripInlineBoundaryWhitespace,
 } from "../formatting_improvement_html"
 import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
@@ -2154,6 +2155,23 @@ describe("HTMLFormattingImprovement plugin", () => {
       )
     }
     expect(valueToCheck).toEqual([improveFormatting])
+  })
+
+  it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
+    const plugin = StripInlineBoundaryWhitespace()
+    expect(plugin.name).toBe("stripInlineBoundaryWhitespace")
+    expect(plugin.htmlPlugins).toBeDefined()
+
+    const mockCtx = {} as unknown
+    const htmlPlugins = plugin.htmlPlugins!(
+      mockCtx as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0],
+    )
+    const processor = rehype().data("settings", { fragment: true })
+    for (const p of htmlPlugins) {
+      processor.use(p as never)
+    }
+    const result = processor.processSync("<p><em> word </em></p>").toString()
+    expect(result).toBe("<p><em>word</em></p>")
   })
 
   describe("Unicode Arrow Wrapping", () => {
