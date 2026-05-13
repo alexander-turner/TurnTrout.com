@@ -25,10 +25,19 @@ type TestFixtures = {
   dummyLink: Locator
 }
 
+// Repoint the test page's first internal link at the popover fixture at
+// test time so popover screenshots aren't churned by edits to whatever
+// page the link normally targets. The fixture lives outside the live
+// site (see RemoveFixtures filter), so no user-facing link references it.
+export const DUMMY_LINK_FIXTURE_HREF = "/popover-fixture#anchor-target"
+
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
     const dummyLink = page.locator("a#first-link-test-page")
     await expect(dummyLink).toBeVisible()
+    await dummyLink.evaluate((el, href) => {
+      ;(el as HTMLAnchorElement).setAttribute("href", href)
+    }, DUMMY_LINK_FIXTURE_HREF)
     await use(dummyLink) // skipcq: JS-0820 — `use` is a Playwright fixture callback, not a React hook
   },
 })
@@ -160,15 +169,11 @@ test("Popover updates position on window resize", async ({ page, dummyLink }) =>
   }).toPass()
 })
 
-test("Popover scrolls to hash target", async ({ page }) => {
-  const hashLink = page.locator("#first-link-test-page")
-  await expect(hashLink).toBeVisible()
+test("Popover scrolls to hash target", async ({ page, dummyLink }) => {
+  const href = await dummyLink.getAttribute("href")
+  expect(href).toContain(DUMMY_LINK_FIXTURE_HREF)
 
-  const href = await hashLink.getAttribute("href")
-  const targetHref = "/popover-fixture#anchor-target"
-  expect(href).toContain(targetHref)
-
-  await hashLink.hover()
+  await dummyLink.hover()
   const popover = page.locator(".popover")
   await expect(popover).toBeVisible()
   const popoverInner = popover.locator(".popover-inner")
@@ -176,7 +181,9 @@ test("Popover scrolls to hash target", async ({ page }) => {
 
   // Find the target element *inside* the popover
   // Note: The ID is modified in the popover content
-  const targetElementInPopover = popoverInner.locator(`#${targetHref.split("#")[1]}-popover`)
+  const targetElementInPopover = popoverInner.locator(
+    `#${DUMMY_LINK_FIXTURE_HREF.split("#")[1]}-popover`,
+  )
   await expect(targetElementInPopover).toBeVisible()
 
   // Calculate the expected scroll position based on the target's offsetTop

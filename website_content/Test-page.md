@@ -15,7 +15,7 @@ date_updated: 2026-05-12
 createBibtex: true
 ---
 
-I use this page for <a href="/popover-fixture#anchor-target" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
+I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
 # Header 1 (`inline_code`)
 
