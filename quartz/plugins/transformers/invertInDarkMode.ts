@@ -18,62 +18,53 @@ export const labelsPath = path.join(
   ".invert_labels.json",
 )
 
-export const INVERT_CLASS = invertInDarkModeClass
-
 export type InvertLabelMap = ReadonlyMap<string, boolean>
 
-let cache: InvertLabelMap | null = null
-
-export function resetCacheForTesting(): void {
-  cache = null
+function parseLabels(raw: string, source: string): InvertLabelMap {
+  const parsed: unknown = JSON.parse(raw)
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error(`${source} must contain a JSON object`)
+  }
+  const labels = new Map<string, boolean>()
+  for (const [key, value] of Object.entries(parsed as Record<string, unknown>)) {
+    if (value === null || typeof value !== "object" || !("invert" in value)) {
+      throw new Error(`${source} entry for ${key} must be {invert, reviewed}`)
+    }
+    labels.set(key, Boolean((value as { invert: unknown }).invert))
+  }
+  return labels
 }
 
+/** Missing file → empty map; other I/O errors propagate. */
 export async function loadInvertLabels(filePath: string = labelsPath): Promise<InvertLabelMap> {
-  const isDefault = filePath === labelsPath
-  if (isDefault && cache !== null) return cache
-
   let raw: string
   try {
     raw = await fs.readFile(filePath, "utf-8")
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      const empty: InvertLabelMap = new Map()
-      if (isDefault) cache = empty
-      return empty
-    }
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Map()
     throw error
   }
+  return parseLabels(raw, filePath)
+}
 
-  const parsed = JSON.parse(raw) as unknown
-  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
-    throw new Error(`${filePath} must contain a JSON object`)
-  }
-  const labels = new Map<string, boolean>()
-  for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
-    if (v === null || typeof v !== "object" || !("invert" in v)) {
-      throw new Error(`${filePath} entry for ${k} must be {invert, reviewed}`)
-    }
-    labels.set(k, Boolean((v as { invert: unknown }).invert))
-  }
-  if (isDefault) cache = labels
-  return labels
+function classTokens(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String)
+  if (typeof value === "string") return value.split(/\s+/).filter(Boolean)
+  return []
 }
 
 export function addInvertClass(node: Element): void {
   const props = (node.properties ??= {})
-  const existing = props.className
-  const tokens = Array.isArray(existing)
-    ? existing.map(String)
-    : typeof existing === "string"
-      ? existing.split(/\s+/).filter(Boolean)
-      : []
-  if (!tokens.includes(INVERT_CLASS)) tokens.push(INVERT_CLASS)
+  const tokens = classTokens(props.className)
+  if (!tokens.includes(invertInDarkModeClass)) tokens.push(invertInDarkModeClass)
   props.className = tokens
 }
 
-/** True iff this is an inline GIF-replacement video — autoplay+loop+muted —
+/**
+ * True iff this is an inline GIF-replacement video — autoplay+loop+muted —
  * but not the persistent `#pond-video` background. (Hast normalizes the
- * `autoplay` HTML attr to the camelCased property `autoPlay`.) */
+ * `autoplay` HTML attr to the camelCased property `autoPlay`.)
+ */
 export function isInlineLoopingVideo(node: Element): boolean {
   if (node.tagName !== "video") return false
   const props = node.properties ?? {}
@@ -81,11 +72,11 @@ export function isInlineLoopingVideo(node: Element): boolean {
   return Boolean(props.autoPlay) && Boolean(props.loop) && Boolean(props.muted)
 }
 
-/** Returns every `src` referenced by this video — direct `src` if present
- * plus every `<source src>` child. */
+/** Direct `src` plus every `<source src>` child of a video element. */
 export function collectVideoSources(node: Element): string[] {
+  const sources: string[] = []
   const direct = node.properties?.src
-  const sources: string[] = typeof direct === "string" ? [direct] : []
+  if (typeof direct === "string") sources.push(direct)
   for (const child of node.children) {
     if (child.type !== "element" || child.tagName !== "source") continue
     const childSrc = child.properties?.src
@@ -94,9 +85,8 @@ export function collectVideoSources(node: Element): string[] {
   return sources
 }
 
-/** Returns the URLs that, if labeled `true`, mean we should tag this node
- * with the invert class. `[]` for elements we don't care about. */
-function eligibleSources(node: Element): string[] {
+/** URLs whose label decides whether to tag this element. */
+function eligibleSources(node: Element): readonly string[] {
   if (node.tagName === "img") {
     const src = node.properties?.src
     return typeof src === "string" ? [src] : []
@@ -118,12 +108,15 @@ export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
  * class. Dark-mode CSS applies the inversion filter only to tagged
  * elements. The persistent `#pond-video` is excluded by
  * `isInlineLoopingVideo`.
+ *
+ * Labels are read once per plugin instance and shared across every page in
+ * the build.
  */
-export const InvertInDarkMode = () => ({
-  name: "InvertInDarkMode" as const,
-  htmlPlugins: () => [
-    () => async (tree: Root) => {
-      applyLabelsToTree(tree, await loadInvertLabels())
-    },
-  ],
-})
+export const InvertInDarkMode = () => {
+  let labelsPromise: Promise<InvertLabelMap> | null = null
+  const labels = () => (labelsPromise ??= loadInvertLabels())
+  return {
+    name: "InvertInDarkMode" as const,
+    htmlPlugins: () => [() => async (tree: Root) => applyLabelsToTree(tree, await labels())],
+  }
+}
