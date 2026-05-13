@@ -76,11 +76,16 @@ jobs:
         if: steps.resolve.outputs.ref == ''
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Download Playwright trace artifacts from the named run
+      # Use the blob reports rather than the test-results trees: blob reports
+      # carry the canonical snapshot name on every attachment, while
+      # test-results filenames get truncated-and-hashed by Playwright for long
+      # titles, so stripping `-actual.png` from them produced names that
+      # didn't match the baselines visual-testing actually compares against.
+      - name: Download Playwright blob reports from the named run
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v6
         with:
-          pattern: playwright-traces-*
-          path: ./all-traces
+          pattern: blob-report-*
+          path: ./all-blob-reports
           merge-multiple: true
           run-id: ${{ github.event.inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -99,7 +104,7 @@ jobs:
           ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
           SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
           S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
-        run: uv run python scripts/approve_baselines_from_artifacts.py ./all-traces
+        run: uv run python scripts/approve_baselines_from_artifacts.py ./all-blob-reports
 
       - name: Push empty commit to retrigger visual-testing (PR runs only)
         if: steps.resolve.outputs.pr_number != ''
