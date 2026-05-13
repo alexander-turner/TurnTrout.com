@@ -42,7 +42,7 @@ MEDIA_EXTENSIONS = (
     "ogg",
 )
 
-EXCLUDED_DOMAIN = "assets.turntrout.com"
+EXCLUDED_DOMAIN = script_utils.CDN_HOSTNAME
 
 
 def download_media(url: str, target_dir: Path) -> bool:
@@ -92,10 +92,11 @@ def download_media(url: str, target_dir: Path) -> bool:
 def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
     """Replace URL in a markdown file."""
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "website_content"
+    content_dir = git_root / script_utils.CONTENT_DIR_NAME
     if not file_path.resolve().is_relative_to(content_dir):
         raise ValueError(
-            f"File path {file_path} is not in the website_content directory."
+            f"File path {file_path} is not in the "
+            f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
     with open(file_path, encoding="utf-8") as f:
@@ -142,7 +143,7 @@ def main() -> None:
         time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
-    markdown_directory = git_root / "website_content"
+    markdown_directory = git_root / script_utils.CONTENT_DIR_NAME
 
     markdown_files = list(markdown_directory.rglob("*.md"))
     if not markdown_files:

@@ -1023,7 +1023,7 @@ def parse_args() -> argparse.Namespace:
 def main(check_publication_dates: bool = False) -> None:
     """Check source files for issues."""
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "website_content"
+    content_dir = git_root / script_utils.CONTENT_DIR_NAME
     existing_urls: PathMap = {}
     has_errors = False
 

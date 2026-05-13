@@ -227,7 +227,7 @@ def convert_asset(
     input_file: Path,
     remove_originals: bool = False,
     strip_metadata: bool = False,
-    md_references_dir: Path | None = Path("website_content/"),
+    md_references_dir: Path | None = Path(f"{script_utils.CONTENT_DIR_NAME}/"),
 ) -> None:
     """
     Converts an image or video to a more efficient format.
@@ -349,7 +349,7 @@ def main() -> None:
             asset,
             remove_originals=args.remove_originals,
             strip_metadata=args.strip_metadata,
-            md_references_dir=Path("website_content/"),
+            md_references_dir=Path(f"{script_utils.CONTENT_DIR_NAME}/"),
         )
 
 
