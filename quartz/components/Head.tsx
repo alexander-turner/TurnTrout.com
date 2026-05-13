@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unknown-property */
 import type { JSX } from "react"
 
-// (For the spa-preserve attribute)
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
@@ -46,9 +45,6 @@ const CALLOUT_ICONS = [
   "dollar",
 ] as const
 
-/*
- * Render the meta JSX for the head of the page.
- */
 function generateScriptElement(id: string, src: string): JSX.Element {
   return (
     <script
@@ -68,7 +64,6 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
     redirect: undefined,
   })
 
-  // Convert HTML string to HAST tree, then to JSX
   const headHast = fromHtml(headHtml, { fragment: true })
   const slug = fileData.slug || "head"
   const headJsx = htmlToJsx(slug as unknown as FilePath, headHast)
@@ -94,7 +89,6 @@ export default (() => {
         spa-preserve
       />
     )
-    // Create a filtered object with only the properties you want to expose
     const exposedFrontmatter = {
       no_dropcap: fileData.frontmatter?.no_dropcap,
     }

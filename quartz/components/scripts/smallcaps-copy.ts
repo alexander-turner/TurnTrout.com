@@ -64,7 +64,6 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
   const selection = window.getSelection()
   if (!selection || selection.isCollapsed) return
 
-  // Check if selection contains any small-caps elements
   const range = selection.getRangeAt(0)
   const container = range.commonAncestorContainer
   const containerEl =
@@ -77,7 +76,6 @@ export function handleSmallCapsCopy(event: ClipboardEvent): void {
   // Quick check: if no small-caps in the selection area, do nothing
   if (!containsSmallCaps && !isEntirelyInSmallCaps) return
 
-  // Get the HTML content and fix it
   const tempDiv = document.createElement("div")
   tempDiv.appendChild(range.cloneContents())
 
