@@ -20,12 +20,13 @@ from requests.adapters import HTTPAdapter
 from ruamel.yaml import YAML, YAMLError
 from urllib3.util.retry import Retry
 
-# Unicode typography constants (single source of truth: config/constants.json)
+# Shared constants — single source of truth: config/constants.json.
 _CONSTANTS_JSON_PATH = (
     Path(__file__).resolve().parent.parent / "config" / "constants.json"
 )
 with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as _f:
-    _UNICODE_TYPO = json.load(_f)["unicodeTypography"]
+    _CONSTANTS = json.load(_f)
+_UNICODE_TYPO = _CONSTANTS["unicodeTypography"]
 
 NBSP: str = _UNICODE_TYPO["nbsp"]
 LEFT_SINGLE_QUOTE: str = _UNICODE_TYPO["leftSingleQuote"]
@@ -34,6 +35,15 @@ LEFT_DOUBLE_QUOTE: str = _UNICODE_TYPO["leftDoubleQuote"]
 RIGHT_DOUBLE_QUOTE: str = _UNICODE_TYPO["rightDoubleQuote"]
 ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
 ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
+
+# Asset CDN: full URL and bare hostname. Hostname is derived so the
+# bare-string and URL forms can't drift.
+CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
+CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
+
+# Top-level content directory (Markdown source). Mirrors the TS-side
+# `contentDirName` export.
+CONTENT_DIR_NAME: str = _CONSTANTS["contentDirName"]
 ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
 WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
 LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]

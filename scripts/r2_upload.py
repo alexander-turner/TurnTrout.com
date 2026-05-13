@@ -21,7 +21,7 @@ try:
 except ImportError:
     import utils as script_utils  # type: ignore
 
-R2_BASE_URL: str = "https://assets.turntrout.com"
+R2_BASE_URL: str = script_utils.CDN_BASE_URL
 R2_BUCKET_NAME: str = "turntrout"
 _HOME_DIR = Path(os.environ.get("HOME", os.path.expanduser("~")))
 R2_MEDIA_DIR: Path = _HOME_DIR / "Downloads" / "website-media-r2"
@@ -260,7 +260,8 @@ def main() -> None:
     parser.add_argument(
         "--references-dir",
         type=Path,
-        default=Path(f"{script_utils.get_git_root()}") / "website_content",
+        default=Path(f"{script_utils.get_git_root()}")
+        / script_utils.CONTENT_DIR_NAME,
         help="Directory to search for files to update references",
     )
     parser.add_argument(

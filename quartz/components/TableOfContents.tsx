@@ -205,11 +205,9 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
       const leadingNumberRegex = /^(?<numberPart>\d+:?\s*)(?<restText>.*)$/
       const match = textValue.match(leadingNumberRegex)
       if (match?.groups) {
-        // Leading numbers and colon found
         const numberPart = match.groups.numberPart
         const restText = match.groups.restText
 
-        // Create span for numberPart
         const numberSpan = {
           type: "element",
           tagName: "span",
@@ -275,7 +273,6 @@ const handleSpan = (elt: Element): JSX.Element => {
   return <span>{elt.children.map(elementToJsx)}</span>
 }
 
-// Convert HAST element to JSX element
 export function elementToJsx(elt: RootContent): JSX.Element | null {
   switch (elt.type) {
     case "text":

@@ -23,7 +23,6 @@ runs:
         install-system-deps: "true"
         cache-playwright: "true"
         cache-puppeteer: "true"
-        cache-apt: ${{ inputs.install-playwright }}
         install-python: ${{ inputs.install-python }}
 
     - name: Install Playwright system dependencies (Linux)
@@ -31,7 +30,8 @@ runs:
       shell: bash
       run: |
         # Install with retry for transient mirror failures. Apt archives are
-        # cached by setup-site via cache-apt, so repeat runs unpack locally.
+        # cached by setup-site's "Restore apt package cache" step, so
+        # repeat runs unpack locally.
         for attempt in 1 2 3; do
           pnpm exec playwright install-deps chromium firefox && break
           [ "$attempt" -lt 3 ] && sleep $((attempt * 10)) || exit 1

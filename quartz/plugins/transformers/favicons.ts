@@ -32,20 +32,7 @@ const logger = createWinstonLogger("linkFavicons")
  */
 export const faviconExistsCache = new Map<string, Promise<boolean>>()
 
-/**
- * Generates the SVG path for the given hostname.
- *
- * Handles special cases:
- * - Converts localhost to turntrout.com (returns the special CDN URL)
- * - Removes www. prefix
- * - Normalizes subdomains (e.g., blog.openai.com -> openai.com)
- * - Converts dots to underscores so the path matches CDN filenames
- *
- * @param hostname - Domain name to generate path for (e.g. "example.com")
- * @returns Path under the CDN favicon folder (e.g.
- *          "/static/images/external-favicons/example_com.svg") or the special
- *          turntrout CDN URL.
- */
+/** Maps a hostname to its favicon storage path (e.g. "example.com" → "/static/images/external-favicons/example_com.png"). */
 export function getQuartzPath(hostname: string): string {
   hostname = hostname === "localhost" ? "turntrout.com" : hostname.replace(/^www\./, "")
   hostname = normalizeHostname(hostname)
