@@ -839,11 +839,6 @@ export const improveFormatting = (
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
     removeSpaceBeforeFootnotes(tree)
-    // Run after the main pipeline: the em-dash transform relies on the
-    // trailing space inside <em>/<strong> to fire (otherwise punctilio's
-    // hanging-hyphen rule treats "-<em>word" as suspended). Strip the
-    // residual boundary whitespace here, after em-dash has done its work.
-    stripInlineBoundaryWhitespace(tree)
   }
 }
 
@@ -856,6 +851,22 @@ export const HTMLFormattingImprovement: QuartzTransformerPlugin = () => {
     name: "htmlFormattingImprovement",
     htmlPlugins() {
       return [improveFormatting]
+    },
+  }
+}
+
+/**
+ * Quartz plugin running ``stripInlineBoundaryWhitespace`` as a late pass.
+ *
+ * Separated from ``HTMLFormattingImprovement`` so it can run *after*
+ * downstream plugins (``AddFavicons`` in particular) that rewrite link
+ * content and can reintroduce leading whitespace inside an ``<a>``.
+ */
+export const StripInlineBoundaryWhitespace: QuartzTransformerPlugin = () => {
+  return {
+    name: "stripInlineBoundaryWhitespace",
+    htmlPlugins() {
+      return [() => stripInlineBoundaryWhitespace]
     },
   }
 }

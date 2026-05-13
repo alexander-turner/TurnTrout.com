@@ -19,6 +19,7 @@ import {
   RemoveDrafts,
   Static,
   stripBadges,
+  StripInlineBoundaryWhitespace,
   SyntaxHighlighting,
   TableOfContents,
   TagPage,
@@ -105,6 +106,9 @@ const config: QuartzConfig = {
       TagSmallcaps(),
       AfterArticle(),
       AddFavicons(),
+      // After AddFavicons because favicon insertion can rewrite link
+      // content and reintroduce leading whitespace inside an <a>.
+      StripInlineBoundaryWhitespace(),
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),

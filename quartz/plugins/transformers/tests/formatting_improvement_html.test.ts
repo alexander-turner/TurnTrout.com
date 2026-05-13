@@ -60,6 +60,10 @@ function testHtmlFormattingImprovement(
   } else {
     processor.use(improveFormatting, options)
   }
+  // Match the production pipeline: stripInlineBoundaryWhitespace runs as a
+  // separate late pass (after AddFavicons in `quartz.config.ts`). Include it
+  // here so tests see the same end-state.
+  processor.use(() => stripInlineBoundaryWhitespace)
 
   return processor.processSync(inputHTML).toString()
 }
