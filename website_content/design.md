@@ -698,9 +698,10 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 1. Takes as input a semi-processed HTML syntax tree,
 2. Finds all of the link elements,
-3. Checks what favicon (if any) is available for each,
-4. Downloads the favicon if needed,
-5. Appends a favicon `<img>` element after the link.
+3. Looks up the favicon SVG for the link's hostname (locally or on the CDN),
+4. Appends a favicon element after the link.
+
+If a hostname passes the inclusion criteria (count threshold or whitelist) but no SVG exists for it, the build fails loudly so I can either add the SVG or blacklist the domain.
 
 ### Favicons never wrap alone to a new line
 

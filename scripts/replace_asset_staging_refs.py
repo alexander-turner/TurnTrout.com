@@ -63,11 +63,9 @@ def _process_markdown_file(
 
     ``markdown_root`` is used only for pretty printing the relative path.
     """
-    original = md_path.read_text(encoding="utf-8")
-    updated = _replace_content(original, filename)
-
-    if updated != original:
-        md_path.write_text(updated, encoding="utf-8")
+    if script_utils.update_markdown_file(
+        md_path, lambda content: _replace_content(content, filename)
+    ):
         print(f"  Updated: {md_path.relative_to(markdown_root)}")
 
 

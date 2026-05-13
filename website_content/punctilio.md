@@ -64,4 +64,5 @@ While `punctilio` is easy to install, here's an online demo for fast access!
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-superscript" />Superscript</label></li>
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-ligatures" />Ligatures</label></li>
 > <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-nbsp" checked />Non-breaking spaces</label></li>
+> <li class="punctilio-option"><label><input type="checkbox" class="checkbox-toggle" id="opt-collapse-spaces" checked />Collapse spaces</label></li>
 > </ul>

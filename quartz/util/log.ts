@@ -1,8 +1,9 @@
 import type Transport from "winston-transport"
 
-import { execSync } from "child_process"
+import gitRoot from "find-git-root"
 import fs from "fs"
 import path from "path"
+import { fileURLToPath } from "url"
 import { transports, format, createLogger } from "winston"
 import DailyRotateFile from "winston-daily-rotate-file"
 
@@ -30,23 +31,20 @@ export function setLogLevelFromArgv(argv: Partial<Argv> | undefined): void {
 
 /**
  * Finds the root directory of the current Git repository.
+ *
+ * Wraps the `find-git-root` package, which returns the `.git` directory; we
+ * return its parent so callers receive the working-tree root.
  */
-export const findGitRoot = (): string | null => {
-  return execSync("git rev-parse --show-toplevel").toString().trim()
+export const findGitRoot = (): string => {
+  return path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 }
 
-const gitRoot = findGitRoot()
+const logDir = path.join(findGitRoot(), ".logs")
 
-if (!gitRoot) {
-  throw new Error("Git root not found.")
-}
-
-const logDir = path.join(gitRoot, ".logs")
-
-// Create the log directory if it doesn't exist
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true })
-}
+// `createWinstonLogger` ensures `logDir` exists before instantiating a
+// transport. We deliberately do NOT create it at module load: that turns
+// every `import` into a filesystem write and breaks tests in sandboxes that
+// mock the git-root to a non-writable path.
 
 const timezoneFormat = new Date().toLocaleString("en-US", {
   timeZone: "America/Los_Angeles",

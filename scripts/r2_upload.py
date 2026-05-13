@@ -106,13 +106,10 @@ def update_markdown_references(
     for text_file_path in script_utils.get_files(
         references_dir, (".md",), use_git_ignore=False
     ):
-        with open(text_file_path, encoding="utf-8") as f:
-            file_content: str = f.read()
-
-        new_content: str = re.sub(source_regex, r2_address, file_content)
-
-        with open(text_file_path, "w", encoding="utf-8") as f:
-            f.write(new_content)
+        script_utils.update_markdown_file(
+            text_file_path,
+            lambda content: re.sub(source_regex, r2_address, content),
+        )
 
 
 def _download_from_r2(

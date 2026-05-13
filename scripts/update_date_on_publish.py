@@ -1,23 +1,17 @@
 """Update the publish and update dates in markdown files."""
 
-import io
 import re  # Import the re module
 import subprocess
 import sys
 from datetime import date, datetime
 from pathlib import Path
 
-from ruamel.yaml import YAML
-
 # Ensure the parent directory is in the sys path so we can import utils
 sys.path.append(str(Path(__file__).parent.parent))
 # pylint: disable=wrong-import-position
 import scripts.utils as script_utils
 
-yaml_parser = YAML(typ="rt")  # Use Round-Trip to preserve formatting
-yaml_parser.preserve_quotes = True  # Preserve existing quotes
-yaml_parser.indent(mapping=2, sequence=2, offset=2)
-yaml_parser.width = 4096  # Prevent line wrapping for long URLs
+yaml_parser = script_utils.get_yaml_parser()
 
 current_date = date.today()
 
@@ -122,23 +116,12 @@ def maybe_update_publish_date(yaml_metadata: dict) -> None:
 
 def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
     """Write updated metadata to a markdown file."""
-    # Use StringIO to capture the YAML dump with preserved formatting
-    stream = io.StringIO()
-    yaml_parser.dump(metadata, stream)
-    updated_yaml = stream.getvalue()
-
-    # Normalize to exactly one blank line between the closing `---` and the
-    # body: strip any leading newlines split_yaml gave us (it always returns
-    # at least one, and files that previously round-tripped through the old
-    # buggy writer accumulated more) and emit our own separator.
-    content = content.lstrip("\n")
-
-    # Write back to file if changes were made
-    with file_path.open("w", encoding="utf-8") as f:
-        f.write("---\n")
-        f.write(updated_yaml)
-        f.write("---\n\n")
-        f.write(content)
+    # Collapse any accumulated blank lines after the closing `---` to exactly
+    # one, so files that previously round-tripped don't keep growing.
+    content = "\n" + content.lstrip("\n")
+    script_utils.write_yaml_frontmatter(
+        file_path, metadata, content, parser=yaml_parser
+    )
 
 
 _README_PATH = Path("README.md")

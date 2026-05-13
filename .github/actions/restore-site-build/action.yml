@@ -1,0 +1,21 @@
+name: "Restore site build"
+description: >-
+  Restore the `public/` directory produced by the build-site workflow. Pins
+  the actions/cache/restore action SHA and the cache-key shape in one place
+  so callers stay in sync.
+
+inputs:
+  fail-on-cache-miss:
+    description: "Fail the step if the cache is missing."
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Restore built site from cache
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
+      with:
+        path: public/
+        key: site-build-${{ github.sha }}
+        fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}

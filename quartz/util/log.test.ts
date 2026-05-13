@@ -1,6 +1,17 @@
 import { describe, it, expect, beforeEach, jest } from "@jest/globals"
 
-// Mocks for winston + rotate transport
+// All mocks use `jest.unstable_mockModule` because log.ts loads its
+// dependencies via ESM-style default imports inside `await import("./log")`.
+// `jest.mock` is unreliable in that combination on Node 22 CI runners
+// (the `fs` mock silently slips through and the real `mkdirSync('/repo/.logs')`
+// fires with EACCES).
+
+// Constructor mock for winston-daily-rotate-file (the imported default).
+// Captured at module scope so tests can inspect `.mock.calls` directly,
+// without going through `jest.requireMock` (which is CJS-only).
+const mockDailyRotateFileCtor: jest.Mock<
+  (opts: Record<string, unknown>) => Record<string, unknown>
+> = jest.fn(() => ({}))
 const mockDailyRotateFile = jest.fn()
 const mockConsoleTransport = jest.fn()
 const mockLoggerInstance = {
@@ -14,11 +25,13 @@ const mockCreateLogger = jest.fn(() => mockLoggerInstance)
 
 let capturedPrintfFormatter: ((info: { level: string; message: string }) => string) | null = null
 
-jest.mock("winston-daily-rotate-file", () => {
-  return jest.fn(() => ({}))
-})
+jest.unstable_mockModule("winston-daily-rotate-file", () => ({
+  __esModule: true,
+  default: mockDailyRotateFileCtor,
+}))
 
-jest.mock("winston", () => ({
+jest.unstable_mockModule("winston", () => ({
+  __esModule: true,
   transports: {
     DailyRotateFile: mockDailyRotateFile,
     Console: mockConsoleTransport,
@@ -37,14 +50,23 @@ jest.mock("winston", () => ({
   },
 }))
 
-// Mock child_process and fs used by log root detection
-jest.mock("child_process", () => ({
-  execSync: jest.fn(() => "/repo\n"),
+// find-git-root returns the path to the `.git` directory; log.ts wraps it
+// with path.dirname() so the working-tree root is what callers see.
+jest.unstable_mockModule("find-git-root", () => ({
+  __esModule: true,
+  default: jest.fn(() => "/repo/.git"),
 }))
 
-jest.mock("fs", () => ({
+// fs is mocked so the per-call `mkdirSync` inside createWinstonLogger does
+// not try to write under the mocked git root.
+const fsMock = {
   existsSync: jest.fn(() => true),
   mkdirSync: jest.fn(),
+}
+jest.unstable_mockModule("fs", () => ({
+  __esModule: true,
+  default: fsMock,
+  ...fsMock,
 }))
 
 // Import after mocks are set up
@@ -71,11 +93,7 @@ describe("util/log", () => {
     // The rotate-file transport is instantiated via `new transports.DailyRotateFile(...)`.
     // In our module, we assign that transport constructor to the imported DailyRotateFile,
     // so we assert on the DailyRotateFile mock.
-    const callArgs = (
-      jest.requireMock("winston-daily-rotate-file") as unknown as {
-        mock: { calls: unknown[][] }
-      }
-    ).mock.calls[0][0] as Record<string, unknown>
+    const callArgs = mockDailyRotateFileCtor.mock.calls[0][0] as Record<string, unknown>
     expect(callArgs).toMatchObject({
       datePattern: "YYYY-MM-DD",
       zippedArchive: true,
@@ -122,11 +140,7 @@ describe("util/log", () => {
     createWinstonLogger("logger1")
     createWinstonLogger("logger2")
 
-    const calls = (
-      jest.requireMock("winston-daily-rotate-file") as unknown as {
-        mock: { calls: unknown[][] }
-      }
-    ).mock.calls
+    const calls = mockDailyRotateFileCtor.mock.calls
     expect((calls[0][0] as Record<string, unknown>).filename).toContain("logger1.log")
     expect((calls[1][0] as Record<string, unknown>).filename).toContain("logger2.log")
   })
