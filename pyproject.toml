@@ -36,7 +36,10 @@ dependencies = [
     "types-html5lib>=1.1.11.20260508",
     "types-psutil>=7.2.2.20260508",
     "types-tqdm>=4.67.3.20260508",
-    "docformatter>=1.7.8",
+    # Pinned: 1.7.8 mangles non-docstring triple-quoted strings inside function
+    # calls (e.g. `re.compile(r"""...""")`). Tracked upstream at
+    # PyCQA/docformatter#344. Unpin once it's resolved.
+    "docformatter==1.7.7",
     "pylint>=4.0.4",
     "autoflake>=2.3.1",
     "autopep8>=2.3.1",
