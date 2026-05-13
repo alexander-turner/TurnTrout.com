@@ -42,6 +42,8 @@ function getConfig(): TransformOptions {
     superscript: document.querySelector<HTMLInputElement>("#opt-superscript")?.checked ?? false,
     ligatures: document.querySelector<HTMLInputElement>("#opt-ligatures")?.checked ?? false,
     nbsp: document.querySelector<HTMLInputElement>("#opt-nbsp")?.checked ?? true,
+    collapseSpaces:
+      document.querySelector<HTMLInputElement>("#opt-collapse-spaces")?.checked ?? true,
   }
 }
 

@@ -21,7 +21,7 @@ try:
 except ImportError:
     import utils as script_utils  # type: ignore
 
-R2_BASE_URL: str = "https://assets.turntrout.com"
+R2_BASE_URL: str = script_utils.CDN_BASE_URL
 R2_BUCKET_NAME: str = "turntrout"
 _HOME_DIR = Path(os.environ.get("HOME", os.path.expanduser("~")))
 R2_MEDIA_DIR: Path = _HOME_DIR / "Downloads" / "website-media-r2"
@@ -106,13 +106,10 @@ def update_markdown_references(
     for text_file_path in script_utils.get_files(
         references_dir, (".md",), use_git_ignore=False
     ):
-        with open(text_file_path, encoding="utf-8") as f:
-            file_content: str = f.read()
-
-        new_content: str = re.sub(source_regex, r2_address, file_content)
-
-        with open(text_file_path, "w", encoding="utf-8") as f:
-            f.write(new_content)
+        script_utils.update_markdown_file(
+            text_file_path,
+            lambda content: re.sub(source_regex, r2_address, content),
+        )
 
 
 def _download_from_r2(
@@ -263,7 +260,8 @@ def main() -> None:
     parser.add_argument(
         "--references-dir",
         type=Path,
-        default=Path(f"{script_utils.get_git_root()}") / "website_content",
+        default=Path(f"{script_utils.get_git_root()}")
+        / script_utils.CONTENT_DIR_NAME,
         help="Directory to search for files to update references",
     )
     parser.add_argument(

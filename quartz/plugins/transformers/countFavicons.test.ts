@@ -120,7 +120,7 @@ describe("countAllFavicons", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const counts = getWrittenCounts()
-    const pathWithoutExt = faviconPath.replace(/\.png$/, "")
+    const pathWithoutExt = faviconPath.replace(/\.svg$/, "")
     expect(counts.get(pathWithoutExt)).toBe(3)
   })
 
@@ -225,8 +225,8 @@ describe("countAllFavicons", () => {
     const counts = getWrittenCounts()
     expect(counts.size).toBeGreaterThanOrEqual(2)
 
-    const examplePath = getQuartzPath("example.com").replace(/\.png$/, "")
-    const testPath = getQuartzPath("test.com").replace(/\.png$/, "")
+    const examplePath = getQuartzPath("example.com").replace(/\.svg$/, "")
+    const testPath = getQuartzPath("test.com").replace(/\.svg$/, "")
 
     const exampleCount = counts.get(examplePath)
     const testCount = counts.get(testPath)
@@ -270,9 +270,9 @@ describe("countAllFavicons", () => {
     const counts = getWrittenCounts()
 
     const applePath = getQuartzPath("apple.com")
-    const applePathWithoutExt = applePath.replace(/\.png$/, "")
+    const applePathWithoutExt = applePath.replace(/\.svg$/, "")
     const examplePath = getQuartzPath("example.com")
-    const examplePathWithoutExt = examplePath.replace(/\.png$/, "")
+    const examplePathWithoutExt = examplePath.replace(/\.svg$/, "")
 
     const appleCount = counts.get(applePathWithoutExt)
     const exampleCount = counts.get(examplePathWithoutExt)
@@ -389,7 +389,7 @@ describe("countAllFavicons", () => {
     await countAllFavicons(ctxWithTransform, [filePath])
 
     const counts = getWrittenCounts()
-    const examplePath = getQuartzPath("example.com").replace(/\.png$/, "")
+    const examplePath = getQuartzPath("example.com").replace(/\.svg$/, "")
     expect(counts.get(examplePath)).toBe(2)
   })
 

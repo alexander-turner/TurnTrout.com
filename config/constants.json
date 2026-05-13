@@ -70,7 +70,9 @@
   "searchPlaceholderMobile": "Search",
   "defaultPath": "",
   "quartzFolder": "quartz",
+  "contentDirName": "website_content",
   "faviconFolder": "static/images/external-favicons",
+  "faviconExtensions": [".png", ".svg", ".avif"],
   "debounceWaitMs": 100,
   "popoverScrollOffset": 12,
   "popoverPadding": 5,
@@ -166,5 +168,6 @@
     "leftGuillemet": "\u00AB",
     "rightGuillemet": "\u00BB",
     "germanOpenQuote": "\u201E"
-  }
+  },
+  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"]
 }

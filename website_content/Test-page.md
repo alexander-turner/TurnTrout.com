@@ -517,7 +517,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
-# Favicon kerning iteration
+### Favicon kerning iteration
 
 <!--spellchecker-disable-->
 

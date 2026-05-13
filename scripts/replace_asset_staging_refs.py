@@ -63,11 +63,9 @@ def _process_markdown_file(
 
     ``markdown_root`` is used only for pretty printing the relative path.
     """
-    original = md_path.read_text(encoding="utf-8")
-    updated = _replace_content(original, filename)
-
-    if updated != original:
-        md_path.write_text(updated, encoding="utf-8")
+    if script_utils.update_markdown_file(
+        md_path, lambda content: _replace_content(content, filename)
+    ):
         print(f"  Updated: {md_path.relative_to(markdown_root)}")
 
 
@@ -102,8 +100,10 @@ def replace_asset_staging_refs(
 def main() -> None:
     """Entry point used by the ``handle_assets.sh`` pipeline."""
     git_root = script_utils.get_git_root()
-    asset_staging_dir = git_root / "website_content" / "asset_staging"
-    markdown_dir = git_root / "website_content"
+    asset_staging_dir = (
+        git_root / script_utils.CONTENT_DIR_NAME / "asset_staging"
+    )
+    markdown_dir = git_root / script_utils.CONTENT_DIR_NAME
 
     if not asset_staging_dir.exists():
         print(f"Asset staging directory not found: {asset_staging_dir}")

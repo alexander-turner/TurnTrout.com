@@ -13,13 +13,15 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Sequence
-from urllib.parse import urlparse
+
+import requests
 
 try:
     from . import utils as script_utils
 except ImportError:
     import utils as script_utils  # type: ignore
+
+_http_session = script_utils.http_session()
 
 
 MEDIA_EXTENSIONS = (
@@ -42,7 +44,7 @@ MEDIA_EXTENSIONS = (
     "ogg",
 )
 
-EXCLUDED_DOMAIN = "assets.turntrout.com"
+EXCLUDED_DOMAIN = script_utils.CDN_HOSTNAME
 
 
 def download_media(url: str, target_dir: Path) -> bool:
@@ -56,55 +58,41 @@ def download_media(url: str, target_dir: Path) -> bool:
     Returns:
         True if download succeeded, False otherwise
     """
-    filename = os.path.basename(urlparse(url).path)
-    if not filename:
+    try:
+        filename = script_utils.extract_filename_from_url(url)
+    except ValueError:
         print(f"Skipping URL with no filename: {url}", file=sys.stderr)
         return False
     target_path = target_dir / filename
 
     print(f"Downloading: {url} to {target_path}")
 
-    curl_command: Sequence[str] = [
-        "curl",
-        "-L",  # Follow redirects
-        "-o",
-        str(target_path),  # Output file
-        "--retry",
-        "5",  # Retry up to 5 times
-        "--retry-delay",
-        "1",  # Start with a 1 second delay, doubles for each retry
-        "--retry-max-time",
-        "60",  # Maximum time for retries
-        "-s",  # Silent mode
-        "-S",  # Show error messages
-        url,
-    ]
-
     try:
-        subprocess.run(curl_command, check=True, stderr=subprocess.PIPE)
+        with _http_session.get(
+            url, stream=True, timeout=60, allow_redirects=True
+        ) as response:
+            response.raise_for_status()
+            with open(target_path, "wb") as out_file:
+                shutil.copyfileobj(response.raw, out_file)
         return True
-    except subprocess.CalledProcessError as e:
-        error_output = e.stderr.decode() if e.stderr else str(e)
-        print(f"Error downloading {url}: {error_output}", file=sys.stderr)
+    except requests.RequestException as e:
+        print(f"Error downloading {url}: {e}", file=sys.stderr)
         return False
 
 
 def replace_url_in_file(file_path: Path, old_url: str, new_url: str) -> None:
     """Replace URL in a markdown file."""
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "website_content"
+    content_dir = git_root / script_utils.CONTENT_DIR_NAME
     if not file_path.resolve().is_relative_to(content_dir):
         raise ValueError(
-            f"File path {file_path} is not in the website_content directory."
+            f"File path {file_path} is not in the "
+            f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
-    with open(file_path, encoding="utf-8") as f:
-        content = f.read()
-
-    new_content = content.replace(old_url, new_url)
-
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(new_content)
+    script_utils.update_markdown_file(
+        file_path, lambda content: content.replace(old_url, new_url)
+    )
 
 
 def find_external_media_urls(markdown_files: list[Path]) -> set[str]:
@@ -142,7 +130,7 @@ def main() -> None:
         time.sleep(0.5)
 
     git_root = script_utils.get_git_root()
-    markdown_directory = git_root / "website_content"
+    markdown_directory = git_root / script_utils.CONTENT_DIR_NAME
 
     markdown_files = list(markdown_directory.rglob("*.md"))
     if not markdown_files:
@@ -165,7 +153,7 @@ def main() -> None:
         if not download_media(url, asset_staging_dir):
             continue
 
-        filename = os.path.basename(urlparse(url).path)
+        filename = script_utils.extract_filename_from_url(url)
         new_url = f"asset_staging/{filename}"
         print(f"Downloaded to {new_url}")
 

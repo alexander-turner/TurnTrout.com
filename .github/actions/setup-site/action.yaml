@@ -33,10 +33,6 @@ inputs:
     description: "Whether to install Puppeteer's Chrome (needed by pa11y-ci, subfont, Mermaid). Implies cache-puppeteer."
     required: false
     default: "false"
-  cache-apt:
-    description: "Whether to cache apt packages across runs (redirects apt archive dir)"
-    required: false
-    default: "false"
 runs:
   using: "composite"
   steps:
@@ -148,8 +144,10 @@ runs:
     # ── Apt package cache ──────────────────────────────────────────────────────────
     # Redirect apt's archive dir to a cached location so ALL apt-get
     # install commands (here and in calling workflows) reuse cached .debs.
+    # Any path that installs apt packages benefits from the cache, so
+    # the gate matches `install-system-deps`.
     - name: Restore apt package cache
-      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5
       with:
         path: ~/apt-cache
@@ -158,7 +156,7 @@ runs:
           apt-cache-${{ runner.os }}-
 
     - name: Configure apt to use cached archives
-      if: inputs.cache-apt == 'true' && runner.os == 'Linux'
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
         mkdir -p ~/apt-cache/partial
         echo "Dir::Cache::Archives \"$HOME/apt-cache/\";" | sudo tee /etc/apt/apt.conf.d/99-github-cache
@@ -180,20 +178,42 @@ runs:
 
     # ── System packages ─────────────────────────────────────────────────────────────
     # All apt packages in one step so every workflow populates the same
-    # cache. With cache-apt enabled, repeat installs unpack from disk in
+    # cache. With caching active, repeat installs unpack from disk in
     # seconds instead of downloading from slow mirrors.
     # All versions pinned for deterministic builds. Bump when Ubuntu
     # pushes security updates that remove the old version.
-    - name: Install system packages
+    # GitHub-hosted runners ship with `azure.archive.ubuntu.com` as the
+    # priority-1 mirror in /etc/apt/apt-mirrors.txt. That mirror
+    # periodically throttles to ~100 kB/s, which made install steps
+    # consistently exceed any reasonable timeout. Drop the Azure entry so
+    # apt falls through to canonical `archive.ubuntu.com` immediately.
+    - name: Demote Azure apt mirror
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
-          libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
-          dos2unix=7.5.1-1 \
-          ffmpeg=7:6.1.1-3ubuntu5 \
-          libimage-exiftool-perl=12.76+dfsg-1 \
-          inkscape=1.2.2-2ubuntu12 \
-          rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
-          fish=3.7.0-1
+        if [ -f /etc/apt/apt-mirrors.txt ]; then
+          sudo sed -i '\|azure\.archive\.ubuntu\.com|d' /etc/apt/apt-mirrors.txt
+        fi
+        sudo sed -i 's|//azure\.archive\.ubuntu\.com/ubuntu|//archive.ubuntu.com/ubuntu|g' \
+          /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
       shell: bash
+
+    # Wrapped in retry-external because the upstream Ubuntu mirror still
+    # occasionally rate-limits. retry-external bounds the total at 3
+    # attempts; per-attempt we let apt run to completion rather than
+    # capping with `timeout`, since slow-but-progressing downloads were
+    # getting killed mid-fetch by a 10-min cap.
+    - name: Install system packages
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
+      uses: ./.github/actions/retry-external
+      with:
+        max-attempts: "3"
+        command: |
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends \
+            libxml2-utils=2.9.14+dfsg-1.3ubuntu3.7 \
+            dos2unix=7.5.1-1 \
+            ffmpeg=7:6.1.1-3ubuntu5 \
+            libimage-exiftool-perl=12.76+dfsg-1 \
+            inkscape=1.2.2-2ubuntu12 \
+            rclone=1.60.1+dfsg-3ubuntu0.24.04.3 \
+            fish=3.7.0-1

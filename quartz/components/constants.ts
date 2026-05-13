@@ -27,7 +27,9 @@ export const {
   searchPlaceholderMobile,
   defaultPath,
   quartzFolder,
+  contentDirName,
   faviconFolder,
+  faviconExtensions,
   debounceWaitMs,
   popoverScrollOffset,
   popoverPadding,
@@ -64,6 +66,15 @@ export const {
   leftDoubleQuote: LEFT_DOUBLE_QUOTE,
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
 } = constantsJson.unicodeTypography
+
+/**
+ * Inline tags whose first/last text-child should be trimmed of whitespace.
+ * Shared with `scripts/built_site_checks.py:_STRIP_BOUNDARY_TAGS`; keep in
+ * sync via `config/constants.json`.
+ */
+export const STRIP_BOUNDARY_TAGS: ReadonlySet<string> = new Set(
+  constantsJson.stripBoundaryWhitespaceTags,
+)
 
 /** Normalize non-breaking spaces to regular spaces */
 export function normalizeNbsp(s: string): string {
@@ -109,6 +120,10 @@ export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string 
 
 // External link attributes
 export const EXTERNAL_LINK_REL = "noopener noreferrer"
+
+// HTML tag groups reused across transformers/components
+export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+export const MEDIA_TAGS: ReadonlySet<string> = new Set(["img", "video", "audio", "iframe"])
 
 // Shared CSS class names (used across multiple components/scripts)
 export const PREVIEWABLE_CLASS = "previewable"
