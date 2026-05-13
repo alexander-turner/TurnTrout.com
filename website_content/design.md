@@ -614,6 +614,9 @@ Detecting multipliers
 Spaced slashes
 : Used for separators like "cat" / "dog" in place of "cat"<span class="no-formatting">/</span>"dog".
 
+Trim space inside emphasis and links
+: Inline elements shouldn't carry stray whitespace at their boundary. Markdown like `_ italics_` parses oddly, but upstream transformers occasionally produce `<em> text </em>`. I trim the leading and trailing whitespace from the first and last text-child of tags like `<em>`.
+
 Mathematical definitions
 : In the past, I used the $:=$ symbol to denote definitions (as opposed to normal equations). I now convert these symbols to the self-explanatory $ :=$.
 
