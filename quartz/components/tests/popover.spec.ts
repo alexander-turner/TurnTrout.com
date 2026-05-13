@@ -29,7 +29,9 @@ type TestFixtures = {
 // test time so popover screenshots aren't churned by edits to whatever
 // page the link normally targets. The fixture lives outside the live
 // site (see RemoveFixtures filter), so no user-facing link references it.
-export const DUMMY_LINK_FIXTURE_HREF = "/popover-fixture#anchor-target"
+// Use the `./`-prefixed form Quartz emits for internal links so existing
+// `linkHref.replace("./", "")` paths in this file behave as before.
+export const DUMMY_LINK_FIXTURE_HREF = "./popover-fixture#anchor-target"
 
 const test = base.extend<TestFixtures>({
   dummyLink: async ({ page }, use) => {
@@ -379,7 +381,7 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
       releasePopoverFetch = release
     })
     let firstRequest = true
-    page.route("**/design", async (route) => {
+    page.route("**/popover-fixture", async (route) => {
       if (firstRequest) {
         firstRequest = false
         resolve() // signal that the popover fetch has started
@@ -398,7 +400,7 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
 
   // Release the held fetch and wait for the response to complete, so we know
   // mouseEnterHandler has had a chance to process it (and should bail out).
-  const responsePromise = page.waitForResponse("**/design")
+  const responsePromise = page.waitForResponse("**/popover-fixture")
   releasePopoverFetch()
   await responsePromise
 
