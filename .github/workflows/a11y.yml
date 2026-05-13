@@ -59,7 +59,7 @@ jobs:
       - name: Setup site
         uses: ./.github/actions/setup-site
         with:
-          install-python: "true"
+          install-python: "false"
           install-puppeteer-chrome: "true"
 
       - name: Restore built site from cache
@@ -80,7 +80,7 @@ jobs:
         env:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
         run: |
-          uv run python scripts/run_a11y.py
+          pnpm test:a11y
           rc=$?
           kill $SERVER_PID 2>/dev/null || true
           exit $rc
