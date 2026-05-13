@@ -7,9 +7,13 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-  # Removed pull_request trigger: zero failures across 50 PRs analyzed.
-  # Still runs on main/dev push and merge queue for pre-merge validation.
-  merge_group:
+  pull_request:
+    paths:
+      - "scripts/**/*.py"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - ".github/workflows/python-tests.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read

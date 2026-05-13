@@ -39,7 +39,7 @@ export const renderSequenceTitle = (fileData: QuartzPluginData) => {
     h(
       "a",
       { href: sequenceLink, className: "internal can-trigger-popover", style: "cursor: pointer;" },
-      sequence as unknown as RootContent,
+      { type: "text", value: sequence } as RootContent,
     ),
   ])
 }

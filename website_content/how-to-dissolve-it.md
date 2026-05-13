@@ -26,20 +26,12 @@ aliases:
   - how-to-dissolve-it
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2018-03-07 00:00:00
+date_published: 2018-03-07
 original_url: https://www.lesswrong.com/posts/argvWNNHZAz2MeM8C/how-to-dissolve-it
 skip_import: true
-description: Dissolving technical problems by visualizing ideal solutions and then
-  working backwards.
-date_updated: 2025-11-22 00:21:52.667251
+description: Dissolving technical problems by visualizing ideal solutions and then working backwards.
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
 
 In the last month and a half, I've had more (of what I believe to be) profound, creative insights to technical problems than in the five years prior. For example, I independently came up with the core insight behind [DenseNets](https://arxiv.org/abs/1608.06993) during the second lecture on convolutional neural nets in my Deep Learning class. I've noticed that these insights occur as byproducts of _good processes_ and having a _conducive mindset and physiology_ at that point in time. I'm going to focus on the former in this post.
 

@@ -17,18 +17,10 @@ lw-sequence-title: Becoming Stronger
 sequence-link: posts#becoming-stronger
 prev-post-slug: alignment-phd
 prev-post-title: Looking back on my alignment PhD
-date_published: 2025-01-23 20:50:38.343137
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-01-23
+date_updated: 2026-04-20
 card_image_alt: The cutesy cartoon cover of "The Manga Guide to Physiology."
 ---
-
-
-
-
-
-
-
-
 
 In physics, there are simple laws and complex consequences. In math, a good formalism (like a "graph") may well appear wherever you concentrate your attention. In economics, incentive structures fractally explain behavior at a range of scales, from intrapersonal to international.
 

@@ -1,10 +1,10 @@
-import { type GlobalConfiguration } from "../cfg"
 import { formatAuthors } from "../components/Authors"
 import { formatTitle } from "../components/component_utils"
 import { simpleConstants, faviconUrl } from "../components/constants"
 import { applyTextTransforms } from "../plugins/transformers/formatting_improvement_html"
 import { type QuartzPluginData } from "../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../styles/variables"
+import { type GlobalConfiguration } from "./config"
 import { escapeHTML } from "./escape"
 import { resolveRelative, type FullSlug } from "./path"
 
@@ -48,12 +48,12 @@ export function maybeProduceVideoTag(videoPreview: string | undefined): string {
 }
 
 // skipcq: JS-D1001
-function renderImageTags(cardImage: string, altText: string | undefined): string {
+function renderImageTags(cardImage: string, altText: string): string {
   return `
     <meta property="og:image" content="${escapeHTML(cardImage)}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${escapeHTML(altText as string)}" />
+    <meta property="og:image:alt" content="${escapeHTML(altText)}" />
   `
 }
 

@@ -4,8 +4,8 @@ import type { JSX } from "preact"
 import React from "react"
 import readingTime from "reading-time"
 
-import { type GlobalConfiguration } from "../cfg"
 import { type QuartzPluginData } from "../plugins/vfile"
+import { type GlobalConfiguration } from "../util/config"
 import { Backlinks } from "./Backlinks"
 import { formatTitle } from "./component_utils"
 import { DateElement } from "./Date"
@@ -13,6 +13,7 @@ import style from "./styles/contentMeta.scss"
 import { TagList } from "./TagList"
 import { type QuartzComponentConstructor, type QuartzComponentProps } from "./types"
 
+// skipcq: JS-W1042 -- TagList's type annotation requires an opts argument; passing undefined is the canonical no-options form
 const TagListComponent = TagList(undefined)
 
 // Render publication information including original URL and date
@@ -64,7 +65,6 @@ export function renderLastUpdated(
   if (!frontmatter?.date_updated || frontmatter?.hide_metadata) {
     return null
   }
-  const dateUpdated = new Date(frontmatter.date_updated as string)
 
   const githubStem = "https://github.com/alexander-turner/TurnTrout.com/blob/main/website_content/"
   const githubUrl = `${githubStem}${fileData.relativePath}`
@@ -76,7 +76,7 @@ export function renderLastUpdated(
   const date = (
     <DateElement
       cfg={cfg}
-      date={dateUpdated}
+      date={frontmatter.date_updated}
       monthFormat="long"
       includeOrdinalSuffix
       formatOrdinalSuffix
@@ -191,7 +191,8 @@ export const renderTags = (props: QuartzComponentProps): JSX.Element => {
 export const renderSequenceTitleJsx = (fileData: QuartzPluginData) => {
   const sequence = fileData.frontmatter?.["lw-sequence-title"]
   if (!sequence) return null
-  const sequenceLink: string = fileData.frontmatter?.["sequence-link"] as string
+  const sequenceLink = fileData.frontmatter?.["sequence-link"] as string | undefined
+  if (!sequenceLink) return null
 
   return (
     <span>
@@ -244,10 +245,9 @@ export const renderNextPostJsx = (fileData: QuartzPluginData) => {
  * Renders sequence information, including title, previous, and next posts.
  */
 export const renderSequenceInfo = (fileData: QuartzPluginData): JSX.Element | null => {
-  const sequenceTitle = renderSequenceTitleJsx(fileData)
-  if (!sequenceTitle) return null
-
   const sequenceTitleJsx = renderSequenceTitleJsx(fileData)
+  if (!sequenceTitleJsx) return null
+
   const previousPostJsx = renderPreviousPostJsx(fileData)
   const nextPostJsx = renderNextPostJsx(fileData)
 

@@ -60,27 +60,76 @@ webi_install_if_missing gh
 webi_install_if_missing jq
 uv_install_if_missing alt-text-llm
 if is_root; then
+	# Map: command-to-probe -> apt package name. ffmpeg/imagemagick are
+	# needed by scripts/tests/test_compress.py et al. (the Stop hook runs
+	# pytest, and ~75 tests + 60 errors fall over without them). rclone
+	# (R2 uploads/downloads in scripts/r2_*.py and the pre-push hook) is
+	# only added below when R2 creds are present — fresh sandboxes
+	# without creds skip the ~5s apt install.
+	declare -A apt_needed=(
+		[shellcheck]=shellcheck
+		[fish]=fish
+		[ffmpeg]=ffmpeg
+		[convert]=imagemagick
+		[exiftool]=libimage-exiftool-perl
+	)
+	if [ -n "${ACCESS_KEY_ID_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${SECRET_ACCESS_TURNTROUT_MEDIA:-}" ] && \
+	   [ -n "${S3_ENDPOINT_ID_TURNTROUT_MEDIA:-}" ]; then
+		apt_needed[rclone]=rclone
+	fi
 	apt_pkgs=()
-	command -v shellcheck &>/dev/null || apt_pkgs+=(shellcheck)
-	command -v fish &>/dev/null || apt_pkgs+=(fish)
+	for cmd in "${!apt_needed[@]}"; do
+		command -v "$cmd" &>/dev/null || apt_pkgs+=("${apt_needed[$cmd]}")
+	done
 	if [ ${#apt_pkgs[@]} -gt 0 ]; then
 		{ apt-get update -qq && apt-get install -y -qq "${apt_pkgs[@]}"; } ||
 			warn "Failed to install ${apt_pkgs[*]}"
 	fi
 fi
 
+# scripts/compress.py and convert_markdown_yaml.py hard-code the IM7
+# `magick` binary. Ubuntu's `imagemagick` apt package only ships the
+# legacy IM6 `convert`, so first try the official IM7 portable AppImage,
+# then fall back to a thin wrapper over IM6 `convert`.
+if ! command -v magick &>/dev/null; then
+	IM_DIR="$HOME/.local/imagemagick"
+	mkdir -p "$IM_DIR"
+	MAGICK_INSTALLED=false
+	if curl -fsSL https://imagemagick.org/archive/binaries/magick \
+		-o "$IM_DIR/magick.AppImage" 2>/dev/null; then
+		chmod +x "$IM_DIR/magick.AppImage"
+		if (cd "$IM_DIR" && "$IM_DIR/magick.AppImage" --appimage-extract >/dev/null 2>&1); then
+			ln -sf "$IM_DIR/squashfs-root/AppRun" "$HOME/.local/bin/magick" &&
+				MAGICK_INSTALLED=true
+		fi
+	fi
+	# Fallback: create a wrapper that delegates to IM6 `convert`.
+	# The codebase calls `magick <input> <flags> <output>` which is
+	# equivalent to IM6's `convert <input> <flags> <output>`.
+	if [ "$MAGICK_INSTALLED" = false ] && command -v convert &>/dev/null; then
+		cat > "$HOME/.local/bin/magick" <<'WRAPPER'
+#!/bin/sh
+# Thin IM6 compatibility wrapper: `magick` → `convert`
+# IM7's `magick <args>` ≈ IM6's `convert <args>` for image operations
+exec convert "$@"
+WRAPPER
+		chmod +x "$HOME/.local/bin/magick"
+	elif [ "$MAGICK_INSTALLED" = false ]; then
+		warn "ImageMagick not available (neither IM7 AppImage nor IM6 convert)"
+	fi
+fi
+
 #######################################
 # rclone (needed for R2 asset uploads in pre-push hook)
+#
+# Install via apt above (bundled with other system deps for atomicity).
+# Non-root sandboxes fall back to the official installer.
 #######################################
 
-if ! command -v rclone &>/dev/null; then
-	if is_root; then
-		{ apt-get update -qq && apt-get install -y -qq rclone; } 2>/dev/null ||
-			warn "Failed to install rclone via apt"
-	else
-		curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
-			warn "Failed to install rclone"
-	fi
+if ! command -v rclone &>/dev/null && ! is_root; then
+	curl -fsSL https://rclone.org/install.sh | sudo bash 2>/dev/null ||
+		warn "Failed to install rclone"
 fi
 
 # Configure rclone R2 remote from environment variables
@@ -218,8 +267,74 @@ if [ -d "$PROJECT_DIR/.timestamps/.git" ] && [ -n "${GH_TOKEN:-}" ]; then
 	git -C "$PROJECT_DIR/.timestamps" config http.sslVerify false
 fi
 
+# Pre-fetch .timestamps origin/master so the post-commit hook's
+# `git pull --rebase` works against an already-warm DNS/TLS connection
+# and an already-up-to-date ref (the rebase still fetches, but the
+# delta is empty/small).
+if [ -d "$PROJECT_DIR/.timestamps/.git" ]; then
+	pre_fetch_err=$(git -C "$PROJECT_DIR/.timestamps" \
+		fetch --quiet origin master 2>&1) ||
+		warn "Failed to pre-fetch .timestamps origin/master: $pre_fetch_err"
+fi
+
+# Configure `.timestamps`'s local git identity from the authenticated
+# GitHub user so post-commit-hook timestamp commits are attributed to
+# the real human, not to whatever the session's global git config
+# defaults to (in Claude Code web sandboxes that's "Claude" /
+# noreply@anthropic.com). Falls back to the GitHub noreply email when
+# the public email is hidden. Only writes when the local config is
+# unset, so a deliberate user override survives subsequent sessions.
+if [ -d "$PROJECT_DIR/.timestamps/.git" ] && \
+   command -v gh >/dev/null 2>&1; then
+	if ! command -v jq >/dev/null 2>&1; then
+		warn "jq missing; skipping .timestamps identity setup"
+	else
+		gh_user_json=$(gh api user 2>/dev/null) || {
+			[ -n "${GH_TOKEN:-}" ] && warn \
+				"gh api user failed; .timestamps identity not configured"
+			gh_user_json=""
+		}
+		if [ -n "$gh_user_json" ]; then
+			ts_repo="$PROJECT_DIR/.timestamps"
+			gh_name=$(echo "$gh_user_json" | jq -r '.name // empty')
+			gh_email=$(echo "$gh_user_json" | jq -r '.email // empty')
+			gh_login=$(echo "$gh_user_json" | jq -r '.login // empty')
+			gh_id=$(echo "$gh_user_json" | jq -r '.id // empty')
+			if [ -n "$gh_name" ] && \
+			   ! git -C "$ts_repo" config --local --get user.name >/dev/null; then
+				git -C "$ts_repo" config user.name "$gh_name"
+			fi
+			if ! git -C "$ts_repo" config --local --get user.email >/dev/null; then
+				if [ -n "$gh_email" ]; then
+					git -C "$ts_repo" config user.email "$gh_email"
+				elif [ -n "$gh_id" ] && [ -n "$gh_login" ]; then
+					git -C "$ts_repo" config user.email \
+						"${gh_id}+${gh_login}@users.noreply.github.com"
+				fi
+			fi
+		fi
+	fi
+fi
+
 # Install opentimestamps-client (needed by post-commit hook, not pre-installed in web sessions)
 uv_install_if_missing ots opentimestamps-client
+
+# Verify ots is actually callable. Catches a silent install failure now
+# rather than at the next commit, where the post-commit hook would roll
+# back the commit with a stale-looking error. Surface the prior warning
+# count so a slow install isn't drowned out by the exit-1 message.
+die_ots() {
+	[ "$SETUP_WARNINGS" -gt 0 ] && echo \
+		"(plus $SETUP_WARNINGS earlier warning(s) — see above)" >&2
+	exit 1
+}
+if ! command -v ots >/dev/null 2>&1; then
+	echo "ERROR: ots not on PATH after install; post-commit hook will fail" >&2
+	die_ots
+elif ! ots --version >/dev/null 2>&1; then
+	echo "ERROR: ots --version failed; post-commit hook may misbehave" >&2
+	die_ots
+fi
 
 #######################################
 # Project dependencies
@@ -238,6 +353,15 @@ if [ -f "$PROJECT_DIR/package.json" ]; then
 		PUPPETEER_SKIP_DOWNLOAD=true pnpm install --silent || warn "Failed to install Node dependencies"
 	elif command -v npm &>/dev/null; then
 		npm install --silent || warn "Failed to install Node dependencies"
+	fi
+	# Add node_modules/.bin to PATH so binaries like `sass` (used by
+	# source_file_checks.py) and `vale`/`spellchecker` are reachable from
+	# the pre-push hook without invoking pnpm exec.
+	if [ -d "$PROJECT_DIR/node_modules/.bin" ]; then
+		export PATH="$PROJECT_DIR/node_modules/.bin:$PATH"
+		if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
+			echo "export PATH=\"$PROJECT_DIR/node_modules/.bin:\$PATH\"" >>"$CLAUDE_ENV_FILE"
+		fi
 	fi
 fi
 

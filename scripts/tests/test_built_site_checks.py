@@ -1,4 +1,5 @@
 import json
+import shutil
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -28,6 +29,11 @@ if TYPE_CHECKING:
     from .. import built_site_checks
 else:
     import built_site_checks
+
+requires_xmllint = pytest.mark.skipif(
+    shutil.which("xmllint") is None,
+    reason="xmllint not available in this environment",
+)
 
 
 @pytest.fixture
@@ -780,6 +786,7 @@ def test_check_unrendered_subtitles():
     ]
 
 
+@requires_xmllint
 def test_check_valid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues validates a correctly formatted RSS
     file."""
@@ -811,6 +818,7 @@ def test_check_valid_rss_file_with_xmllint(temp_site_root):
         pytest.fail("check_rss_file_for_issues failed with valid RSS content")
 
 
+@requires_xmllint
 def test_check_invalid_rss_file_with_xmllint(temp_site_root):
     """Test that check_rss_file_for_issues fails on an invalid RSS file."""
     script_utils.get_git_root()
@@ -1851,23 +1859,23 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
 @pytest.mark.parametrize(
     "html,expected",
     [
-        # Test each whitelisted case - should be ignored
+        # Test each allowed pattern - should be ignored
         *[
             (
                 f"<p>{prev}<i>{next_}</i> else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test whitelisted case with extra whitespace - should be ignored
+        # Test allowed pattern with extra whitespace - should be ignored
         *[
             (
                 f"<p>{prev}  <i>{next_}</i>  else</p>",
                 [],
             )
-            for prev, next_ in built_site_checks.WHITELISTED_EMPHASIS
+            for prev, next_ in built_site_checks.ALLOWED_EMPHASIS_PATTERNS
         ],
-        # Test non-whitelisted case - should be ignored since Some is whitelisted
+        # Test non-allowed case - should be ignored since Some is allowed
         (
             "<p>Some<i>thing</i> else</p>",
             [],
@@ -1882,12 +1890,12 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
             "<p>some<i>one</i> else</p>",
             ["Missing space before: some<i>one</i>"],
         ),
-        # Test with other emphasis elements - should be ignored since Some is whitelisted
+        # Test with other emphasis elements - should be ignored since Some is allowed
         (
             "<p>Some<em>one</em> else</p>",
             [],
         ),
-        # Test with nested elements - should be ignored since Some is whitelisted
+        # Test with nested elements - should be ignored since Some is allowed
         (
             "<p>Some<i><strong>one</strong></i> else</p>",
             [],
@@ -1904,8 +1912,8 @@ def test_check_markdown_assets_in_html_with_invalid_md_path():
         ),
     ],
 )
-def test_check_emphasis_spacing_whitelist(html, expected):
-    """Test the check_emphasis_spacing function's whitelist functionality."""
+def test_check_emphasis_spacing_allowed_patterns(html, expected):
+    """Test the check_emphasis_spacing function's allowed patterns."""
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_emphasis_spacing(soup)
     assert sorted(result) == sorted(expected)
@@ -1950,7 +1958,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MAX_DESCRIPTION_LENGTH + 1)}">
+                <meta name="description" content="{"a" * (_MAX_DESCRIPTION_LENGTH + 1)}">
             </head>
             </html>
             """,
@@ -1963,7 +1971,7 @@ _MIN_DESCRIPTION_LENGTH = built_site_checks.MIN_DESCRIPTION_LENGTH
             f"""
             <html>
             <head>
-                <meta name="description" content="{'a' * (_MIN_DESCRIPTION_LENGTH - 1)}">
+                <meta name="description" content="{"a" * (_MIN_DESCRIPTION_LENGTH - 1)}">
             </head>
             </html>
             """,
@@ -2838,6 +2846,22 @@ def test_extract_flat_paragraph_texts_rejoins_dropcap_contractions():
     assert "I 've" not in result[0]
 
 
+def test_extract_flat_paragraph_texts_collapses_internal_whitespace():
+    """
+    Embedded newlines/tabs in paragraph HTML are collapsed to single spaces.
+
+    Each paragraph must occupy exactly one line in the spellcheck tempfile so
+    the line_to_source mapping stays in sync with per-line warnings.
+    """
+    html = "<article><p>First line\n\nsecond line\twith\ttabs.</p></article>"
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks._extract_flat_paragraph_texts(soup)
+    assert len(result) == 1
+    assert "\n" not in result[0]
+    assert "\t" not in result[0]
+    assert "First line second line with tabs" in result[0]
+
+
 def test_extract_flat_paragraph_texts_skips_p_with_block_level_children():
     """
     A <p> containing block-level elements (e.g. from transclusion wrapping
@@ -2897,6 +2921,37 @@ def test_parse_spellcheck_output(stdout, line_to_source, expected):
         built_site_checks._parse_spellcheck_output(stdout, line_to_source)
         == expected
     )
+
+
+def test_write_paragraphs_to_tempfile_preserves_one_line_per_paragraph(
+    tmp_path, monkeypatch
+):
+    """
+    Each paragraph maps to exactly one tempfile line, even if it contains
+    embedded newlines.
+
+    Otherwise line_to_source misattributes later paragraphs' warnings to the
+    wrong source file.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    paragraph_map = {
+        "first.html": ["paragraph one with\nembedded newline"],
+        "second.html": ["paragraph two on second file"],
+    }
+    tmp_file, line_to_source = built_site_checks._write_paragraphs_to_tempfile(
+        paragraph_map
+    )
+    try:
+        contents = tmp_file.read_text(encoding="utf-8")
+    finally:
+        tmp_file.unlink(missing_ok=True)
+
+    lines = contents.splitlines()
+    assert len(lines) == 2
+    assert line_to_source == {1: "first.html", 2: "second.html"}
+    assert "\n" not in lines[0]
+    # The paragraph for line 2 really belongs to the second file.
+    assert "second file" in lines[1]
 
 
 def test_spellcheck_flattened_paragraphs_empty():
@@ -2977,6 +3032,130 @@ def test_spellcheck_flattened_paragraphs_no_line_match(tmp_path, monkeypatch):
         )
     assert len(result) == 1
     assert "some warning text" in result[0]
+
+
+_AUGMENT_SCRIPT = (
+    Path(__file__).resolve().parents[2]
+    / "scripts"
+    / "augment_spellcheck_wordlist.sh"
+)
+
+
+@pytest.fixture
+def fake_repo(tmp_path: Path, monkeypatch):
+    """
+    Fake git root with the real augment helper staged under scripts/.
+
+    Returns a helper ``write(content)`` that writes the given text to
+    ``config/spellcheck/.wordlist.txt`` and returns its path.
+    """
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    (tmp_path / "scripts").mkdir()
+    staged = tmp_path / "scripts" / "augment_spellcheck_wordlist.sh"
+    staged.write_bytes(_AUGMENT_SCRIPT.read_bytes())
+    staged.chmod(0o755)
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    wordlist.parent.mkdir(parents=True)
+
+    def write(content: str) -> Path:
+        wordlist.write_text(content, encoding="utf-8")
+        return wordlist
+
+    return write
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,helper_staged,expect_none",
+    [
+        pytest.param(None, True, True, id="missing-wordlist"),
+        pytest.param("KaTeX\n", False, True, id="missing-helper-script"),
+    ],
+)
+def test_augmented_wordlist_returns_none_when_prerequisites_missing(
+    tmp_path, monkeypatch, wordlist_content, helper_staged, expect_none
+):
+    monkeypatch.setattr(built_site_checks, "_GIT_ROOT", tmp_path)
+    if helper_staged:
+        (tmp_path / "scripts").mkdir()
+        (tmp_path / "scripts" / "augment_spellcheck_wordlist.sh").write_bytes(
+            _AUGMENT_SCRIPT.read_bytes()
+        )
+    wordlist = tmp_path / "config" / "spellcheck" / ".wordlist.txt"
+    if wordlist_content is not None:
+        wordlist.parent.mkdir(parents=True)
+        wordlist.write_text(wordlist_content)
+
+    assert (
+        built_site_checks._augmented_wordlist(wordlist) is None
+    ) is expect_none
+
+
+@pytest.mark.parametrize(
+    "wordlist_content,must_include,must_exclude",
+    [
+        pytest.param(
+            "KaTeX\nAnthropic\n",
+            ["KaTeX", "KaTeX's", "KaTeX’s", "Anthropic's"],
+            [],
+            id="possessive-expansion",
+        ),
+        pytest.param(
+            "Barto's\nNoether’s\n",
+            ["Barto's", "Noether’s"],
+            ["Barto's's", "Noether’s’s"],
+            id="no-double-suffix",
+        ),
+        pytest.param(
+            "# a comment\n\nKaTeX\n",
+            ["# a comment"],
+            ["# a comment's"],
+            id="preserves-blanks-and-comments",
+        ),
+    ],
+)
+def test_augmented_wordlist_content(
+    fake_repo, wordlist_content, must_include, must_exclude
+):
+    augmented = built_site_checks._augmented_wordlist(
+        fake_repo(wordlist_content)
+    )
+    assert augmented is not None
+    try:
+        text = augmented.read_text(encoding="utf-8")
+        for word in must_include:
+            assert word in text, f"{word!r} missing from augmented output"
+        for word in must_exclude:
+            assert word not in text, f"{word!r} should not appear"
+    finally:
+        augmented.unlink(missing_ok=True)
+
+
+def test_spellcheck_passes_augmented_dict_to_cli(fake_repo):
+    """--dictionaries points at the augmented tempfile, not the source."""
+    wordlist = fake_repo("KaTeX\n")
+    captured: dict[str, object] = {}
+    real_run = subprocess.run
+
+    def fake_run(cmd, *args, **kwargs):
+        if cmd and str(cmd[0]).endswith("augment_spellcheck_wordlist.sh"):
+            return real_run(cmd, *args, **kwargs)
+        captured["argv"] = list(cmd)
+        return subprocess.CompletedProcess(
+            args=cmd, returncode=0, stdout="", stderr=""
+        )
+
+    with (
+        patch("shutil.which", return_value="/usr/bin/pnpm"),
+        patch("subprocess.run", side_effect=fake_run),
+    ):
+        built_site_checks._spellcheck_flattened_paragraphs(
+            {"page.html": ["KaTeX's codebase is neat."]}
+        )
+
+    argv = cast(list[str], captured["argv"])
+    dict_path = Path(argv[argv.index("--dictionaries") + 1])
+    assert dict_path.name.startswith(".wordlist-augmented-")
+    assert dict_path != wordlist
 
 
 @pytest.mark.parametrize(
@@ -3710,13 +3889,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
@@ -6186,6 +6363,327 @@ def test_check_images_have_dimensions(html: str, expected_issues: list[str]):
     assert sorted(result) == sorted(expected_issues)
 
 
+InvertLabel = built_site_checks.InvertLabel
+INVERT_CLASS = built_site_checks.INVERT_CLASS
+
+
+def _reviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=True)
+
+
+def _unreviewed(invert: bool) -> InvertLabel:
+    return InvertLabel(invert=invert, reviewed=False)
+
+
+def _missing_msg(kind: str, url: str) -> str:
+    return f"<{kind}> {url} missing from .invert_labels.json"
+
+
+def _unreviewed_msg(kind: str, url: str) -> str:
+    return f"<{kind}> {url} not user-reviewed in .invert_labels.json"
+
+
+def _class_mismatch_msg(
+    kind: str, url: str, *, invert: bool, has_class: bool
+) -> str:
+    expected = "expected" if invert else "must not be applied"
+    return (
+        f"<{kind}> {url} {INVERT_CLASS} class {expected} "
+        f"(JSON invert={invert}, class present={has_class})"
+    )
+
+
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # No labels loaded → check is a no-op regardless of the page.
+        ('<img src="https://x/a.avif">', None, []),
+        # Reviewed entries with classes matching their `invert` field.
+        (
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">'
+            '<img src="https://x/b.png">',
+            {
+                "https://x/a.avif": _reviewed(True),
+                "https://x/b.png": _reviewed(False),
+            },
+            [],
+        ),
+        # Missing from JSON.
+        (
+            '<img src="https://x/missing.avif">',
+            {},
+            [_missing_msg("img", "https://x/missing.avif")],
+        ),
+        # Present but unreviewed.
+        (
+            '<img src="https://x/u.png">',
+            {"https://x/u.png": _unreviewed(True)},
+            [_unreviewed_msg("img", "https://x/u.png")],
+        ),
+        # Reviewed invert=True but class absent → mismatch.
+        (
+            '<img src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [
+                _class_mismatch_msg(
+                    "img",
+                    "https://x/a.avif",
+                    invert=True,
+                    has_class=False,
+                )
+            ],
+        ),
+        # Reviewed invert=False but class present → mismatch.
+        (
+            f'<img class="{INVERT_CLASS} other" src="https://x/b.jpg">',
+            {"https://x/b.jpg": _reviewed(False)},
+            [
+                _class_mismatch_msg(
+                    "img",
+                    "https://x/b.jpg",
+                    invert=False,
+                    has_class=True,
+                )
+            ],
+        ),
+        # All raster extensions are eligible (.png, .jpg, .jpeg, .webp, .gif,
+        # .avif). Each missing from JSON → flagged.
+        (
+            '<img src="https://x/p.png">'
+            '<img src="https://x/p.jpg">'
+            '<img src="https://x/p.jpeg">'
+            '<img src="https://x/p.webp">'
+            '<img src="https://x/p.gif">'
+            '<img src="https://x/p.avif">',
+            {},
+            [
+                _missing_msg("img", f"https://x/p{ext}")
+                for ext in (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+            ],
+        ),
+        # SVGs and src-less imgs are ignored.
+        (
+            '<img src="https://x/icon.svg"><img>',
+            {},
+            [],
+        ),
+        # Non-HTTP src is reported as missing from labels like any other
+        # raster <img> — relative paths are an error mode for separate checks.
+        (
+            '<img src="/local/a.png">',
+            {},
+            [_missing_msg("img", "/local/a.png")],
+        ),
+        # Mixed-case extension still matches.
+        (
+            '<img src="https://x/UPPER.AVIF">',
+            {},
+            [_missing_msg("img", "https://x/UPPER.AVIF")],
+        ),
+        # Same unreviewed AVIF twice → reported twice (one per occurrence).
+        (
+            '<img src="https://x/m.avif"><img src="https://x/m.avif">',
+            {},
+            [
+                _missing_msg("img", "https://x/m.avif"),
+                _missing_msg("img", "https://x/m.avif"),
+            ],
+        ),
+        # Excluded path segments (favicons, twemoji, etc.) are ignored.
+        (
+            '<img src="https://x/external-favicons/foo.png">'
+            '<img src="https://x/twemoji/bar.png">'
+            '<img src="https://x/turntrout-favicons/baz.png">'
+            '<img src="https://x/card_images/c.png">'
+            '<img src="https://x/avatars/d.png">',
+            {},
+            [],
+        ),
+        # class attribute as a space-separated string also works.
+        (
+            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [],
+        ),
+    ],
+)
+def test_check_invert_labels_images(
+    html: str,
+    labels: dict[str, InvertLabel] | None,
+    expected_issues: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_invert_labels(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # Canonical (first) source reviewed with matching class → no issue,
+        # even if alternate-format sibling has no JSON entry. The
+        # invert-in-dark-mode class lives on the <video>, not per <source>,
+        # so a single label per video is the source of truth.
+        (
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
+            '<source src="https://x/a.mp4">'
+            '<source src="https://x/a.webm">'
+            "</video>",
+            {"https://x/a.mp4": _reviewed(True)},
+            [],
+        ),
+        # Canonical source missing → flagged once. Alternate-format
+        # sibling is silently ignored (not double-counted).
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/a.mp4">'
+            '<source src="https://x/a.webm">'
+            "</video>",
+            {},
+            [_missing_msg("video", "https://x/a.mp4")],
+        ),
+        # Reviewed invert=True on one source but class absent on the <video>.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/a.mp4">'
+            "</video>",
+            {"https://x/a.mp4": _reviewed(True)},
+            [
+                _class_mismatch_msg(
+                    "video",
+                    "https://x/a.mp4",
+                    invert=True,
+                    has_class=False,
+                )
+            ],
+        ),
+        # Reviewed invert=False with class present on <video> → mismatch.
+        (
+            f'<video class="{INVERT_CLASS}" autoplay loop muted>'
+            '<source src="https://x/a.mp4">'
+            "</video>",
+            {"https://x/a.mp4": _reviewed(False)},
+            [
+                _class_mismatch_msg(
+                    "video",
+                    "https://x/a.mp4",
+                    invert=False,
+                    has_class=True,
+                )
+            ],
+        ),
+        # `<video src=...>` (no <source> children) is also covered.
+        (
+            '<video autoplay loop muted src="https://x/inline.mp4"></video>',
+            {},
+            [_missing_msg("video", "https://x/inline.mp4")],
+        ),
+        # Unreviewed source → unreviewed error.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/u.webm">'
+            "</video>",
+            {"https://x/u.webm": _unreviewed(True)},
+            [_unreviewed_msg("video", "https://x/u.webm")],
+        ),
+        # Pond video is exempt regardless of attributes.
+        (
+            '<video id="pond-video" autoplay loop muted>'
+            '<source src="https://x/pond.mp4"></video>',
+            {},
+            [],
+        ),
+        # Missing one of autoplay/loop/muted → not an inline GIF-replacement,
+        # so untracked.
+        (
+            "<video loop muted><source src='https://x/regular.mp4'></video>",
+            {},
+            [],
+        ),
+        # Non-video extensions on <source> are ignored.
+        (
+            "<video autoplay loop muted>"
+            '<source src="https://x/poster.jpg"></video>',
+            {},
+            [],
+        ),
+    ],
+)
+def test_check_invert_labels_videos(
+    html: str,
+    labels: dict[str, InvertLabel] | None,
+    expected_issues: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_invert_labels(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
+def _write_labels_file(root: Path, contents: str | None) -> None:
+    """Create the labels JSON under ``root``; ``None`` leaves it absent."""
+    if contents is None:
+        return
+    target = root / "quartz" / "plugins" / "transformers"
+    target.mkdir(parents=True)
+    (target / ".invert_labels.json").write_text(contents, encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    ("contents", "expected"),
+    [
+        # File absent → None disables the check (only used by tests; production
+        # has the file committed).
+        (None, None),
+        # Empty object → returns {} so the validator runs and (correctly) fails
+        # every eligible image. No more empty-file escape hatch.
+        ("{}", {}),
+        # Well-formed entries are loaded into InvertLabel tuples.
+        (
+            json.dumps(
+                {
+                    "https://x/a.avif": {"invert": True, "reviewed": True},
+                    "https://x/b.avif": {"invert": False, "reviewed": True},
+                    "https://x/c.avif": {"invert": True, "reviewed": False},
+                }
+            ),
+            {
+                "https://x/a.avif": InvertLabel(invert=True, reviewed=True),
+                "https://x/b.avif": InvertLabel(invert=False, reviewed=True),
+                "https://x/c.avif": InvertLabel(invert=True, reviewed=False),
+            },
+        ),
+    ],
+)
+def test_load_invert_labels(
+    tmp_path: Path,
+    contents: str | None,
+    expected: dict[str, InvertLabel] | None,
+) -> None:
+    _write_labels_file(tmp_path, contents)
+    assert built_site_checks._load_invert_labels(tmp_path) == expected
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        # Not valid JSON.
+        "not json",
+        # Wrong top-level shape.
+        "[1, 2, 3]",
+        # Legacy bare-bool entry.
+        json.dumps({"https://x/a.avif": True}),
+        # Schema-malformed dict (missing `reviewed`).
+        json.dumps({"https://x/a.avif": {"invert": True}}),
+    ],
+)
+def test_load_invert_labels_raises_on_malformed(
+    tmp_path: Path, contents: str
+) -> None:
+    _write_labels_file(tmp_path, contents)
+    with pytest.raises(ValueError):
+        built_site_checks._load_invert_labels(tmp_path)
+
+
 # LCP image optimization tests
 @pytest.mark.parametrize(
     "html,expected_issues",
@@ -6403,7 +6901,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://apple.com/products">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: apple.com" " (https://apple.com/products)"],
+            ["Link missing favicon: apple.com (https://apple.com/products)"],
         ),
         # Non-included domain without favicon (valid — not expected)
         (
@@ -6418,8 +6916,7 @@ def test_is_asset_href(href, expected):
             "Blog</a></article>",
             {"apple_com"},
             [
-                "Link missing favicon: blog.apple.com"
-                " (https://blog.apple.com/news)"
+                "Link missing favicon: blog.apple.com (https://blog.apple.com/news)"
             ],
         ),
         # www. prefix stripped correctly
@@ -6427,7 +6924,7 @@ def test_is_asset_href(href, expected):
             '<article><a class="external" href="https://www.apple.com">'
             "Apple</a></article>",
             {"apple_com"},
-            ["Link missing favicon: www.apple.com" " (https://www.apple.com)"],
+            ["Link missing favicon: www.apple.com (https://www.apple.com)"],
         ),
         # Asset link to included domain (should be skipped)
         (
@@ -6438,8 +6935,7 @@ def test_is_asset_href(href, expected):
         ),
         # Internal link (no class="external") to included domain (skip)
         (
-            '<article><a href="https://apple.com/products">'
-            "Apple</a></article>",
+            '<article><a href="https://apple.com/products">Apple</a></article>',
             {"apple_com"},
             [],
         ),
@@ -6451,7 +6947,7 @@ def test_is_asset_href(href, expected):
             '<a class="external" href="https://discord.gg/abc">bad</a>'
             "</article>",
             {"apple_com", "discord_gg"},
-            ["Link missing favicon: discord.gg" " (https://discord.gg/abc)"],
+            ["Link missing favicon: discord.gg (https://discord.gg/abc)"],
         ),
         # Google subdomain included entry
         (
@@ -6480,22 +6976,19 @@ def test_is_asset_href(href, expected):
         ),
         # Empty included domains set - nothing flagged
         (
-            '<article><a class="external" href="https://apple.com">'
-            "Apple</a></article>",
+            '<article><a class="external" href="https://apple.com">Apple</a></article>',
             set(),
             [],
         ),
         # Malformed URL with no hostname (should be skipped gracefully)
         (
-            '<article><a class="external" href="https://">'
-            "Bad URL</a></article>",
+            '<article><a class="external" href="https://">Bad URL</a></article>',
             {"apple_com"},
             [],
         ),
         # Link outside <article> (nav/aside) - should be skipped
         (
-            '<nav><a class="external" href="https://apple.com">'
-            "Apple</a></nav>",
+            '<nav><a class="external" href="https://apple.com">Apple</a></nav>',
             {"apple_com"},
             [],
         ),

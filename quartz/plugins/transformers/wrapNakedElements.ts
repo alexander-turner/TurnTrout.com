@@ -61,13 +61,18 @@ function wrapElement(
  * Checks the element's `src` attribute first, then falls back to the first `<source>` child's `src`.
  */
 function getMediaSrc(node: Element): string {
-  const src = node.properties?.src as string | undefined
-  if (src) return src
+  const src = node.properties?.src
+  if (typeof src === "string") return src
 
   const sourceChild = node.children.find(
-    (child) => child.type === "element" && child.tagName === "source",
-  ) as Element | undefined
-  return (sourceChild?.properties?.src as string) ?? ""
+    (child): child is Element => child.type === "element" && child.tagName === "source",
+  )
+  const childSrc = sourceChild?.properties?.src
+  return typeof childSrc === "string" ? childSrc : ""
+}
+
+function isElement(node: Parent): node is Element {
+  return node.type === "element"
 }
 
 /**
@@ -84,7 +89,7 @@ function skipNodeForVideo(
 ): boolean {
   const notVideo = videoNode.tagName !== "video"
   const directParent = ancestors[ancestors.length - 1]
-  const inVideoContainer = hasClass(directParent as Element, wrapperClassName)
+  const inVideoContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
   return notVideo || inVideoContainer
 }
 
@@ -109,7 +114,7 @@ function skipNodeForAudio(
 ): boolean {
   const notAudio = audioNode.tagName !== "audio"
   const directParent = ancestors[ancestors.length - 1]
-  const inAudioContainer = hasClass(directParent as Element, wrapperClassName)
+  const inAudioContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
   return notAudio || inAudioContainer
 }
 
@@ -132,14 +137,12 @@ function wrapAudio(audioNode: Element, ancestors: Parent[]): void {
  * @param ancestors The list of ancestor Parent nodes.
  */
 function skipNodeForFloatRight(element: Element, ancestors: Parent[]): boolean {
-  const directParent = ancestors[ancestors.length - 1] as Element
-
-  // Skip if already wrapped in figure
-  return directParent?.tagName === "figure"
+  const directParent = ancestors[ancestors.length - 1]
+  return isElement(directParent) && directParent.tagName === "figure"
 }
 
 function hasAncestorFigure(ancestors: Parent[]): boolean {
-  return ancestors.some((ancestor) => (ancestor as Element).tagName === "figure")
+  return ancestors.some((ancestor) => isElement(ancestor) && ancestor.tagName === "figure")
 }
 
 /**

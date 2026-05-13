@@ -1,4 +1,5 @@
 import io
+import shutil
 import unittest.mock as mock
 from pathlib import Path
 
@@ -7,6 +8,11 @@ import pytest
 from .. import convert_markdown_yaml, source_file_checks
 from .. import utils as script_utils
 from .utils import create_markdown_file
+
+requires_ffmpeg = pytest.mark.skipif(
+    shutil.which("ffmpeg") is None,
+    reason="ffmpeg not available in this environment",
+)
 
 
 @pytest.fixture(autouse=True)
@@ -63,6 +69,7 @@ def mock_git_root(quartz_project_structure, monkeypatch) -> None:
     return git_root
 
 
+@requires_ffmpeg
 @pytest.mark.parametrize(
     "markdown_content",
     [
@@ -104,7 +111,6 @@ def test_process_card_image_in_markdown_skips_cases(
             "scripts.convert_markdown_yaml.r2_upload.upload_and_move"
         ) as mock_r2_upload,
     ):
-
         convert_markdown_yaml.process_card_image_in_markdown(md_file)
 
         # Ensure that no download was attempted
@@ -182,6 +188,7 @@ Some content without YAML front matter.
         ),
     ],
 )
+@requires_ffmpeg
 def test_process_card_image_in_markdown_skips(
     setup_test_env,
     mock_git_root,
@@ -547,6 +554,7 @@ card_image: {new_card_image_url}{extra_frontmatter}
         ),
     ],
 )
+@requires_ffmpeg
 def test_process_card_image_conversion(
     setup_test_env,
     mock_git_root,
@@ -572,6 +580,7 @@ card_image: {card_image_url}{extra_frontmatter}
     )
 
 
+@requires_ffmpeg
 def test_process_card_image_in_markdown_process_failure(
     setup_test_env, mock_git_root
 ):

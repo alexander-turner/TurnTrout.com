@@ -8,8 +8,9 @@ import os
 import shutil
 import subprocess
 import sys
+from collections.abc import Collection
 from pathlib import Path
-from typing import Callable, Collection, Dict, NoReturn, Optional, Set
+from typing import Callable, NoReturn, Optional
 from urllib.parse import urlparse
 
 import git
@@ -39,6 +40,35 @@ LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]
 RIGHT_GUILLEMET: str = _UNICODE_TYPO["rightGuillemet"]
 GERMAN_OPEN_QUOTE: str = _UNICODE_TYPO["germanOpenQuote"]
 
+# Dark-mode invert pipeline. Shared between scripts/label_invert.py (the
+# interactive labeler) and scripts/built_site_checks.py (the validator).
+# Tuples (not sets) so we can pass directly to ``str.endswith``.
+INVERT_RASTER_EXTENSIONS: tuple[str, ...] = (
+    ".avif",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".gif",
+)
+# Inline looping muted videos (GIF-replacements). Each format is its own URL on
+# R2; the rendered ``<video>`` tries each ``<source>`` in order, but we ask the
+# labeler for a verdict per URL.
+INVERT_VIDEO_EXTENSIONS: tuple[str, ...] = (".mp4", ".webm", ".mov")
+INVERT_LABELABLE_EXTENSIONS: tuple[str, ...] = (
+    INVERT_RASTER_EXTENSIONS + INVERT_VIDEO_EXTENSIONS
+)
+# URL path segments whose media bypass invert-labeling (favicons, emoji, etc.).
+INVERT_EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
+    {
+        "external-favicons",
+        "twemoji",
+        "turntrout-favicons",
+        "card_images",
+        "avatars",
+    }
+)
+
 
 def http_session(
     retries: int = 3,
@@ -64,13 +94,13 @@ def http_session(
     return session
 
 
-def load_shared_constants() -> dict:  # pragma: no cover
+def load_shared_constants() -> dict:
     """Load shared constants from config/constants.json."""
     with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
-_executable_cache: Dict[str, str] = {}
+_executable_cache: dict[str, str] = {}
 
 
 @functools.lru_cache(maxsize=1)
@@ -130,7 +160,7 @@ def find_executable(name: str) -> str:
     return executable_path
 
 
-def get_git_root(starting_dir: Optional[Path] = None) -> Path:
+def get_git_root(starting_dir: Path | None = None) -> Path:
     """
     Returns the absolute path to the top-level directory of the Git repository.
 
@@ -155,10 +185,10 @@ def get_git_root(starting_dir: Optional[Path] = None) -> Path:
 
 
 def get_files(
-    dir_to_search: Optional[Path] = None,
+    dir_to_search: Path | None = None,
     filetypes_to_match: Collection[str] = (".md",),
     use_git_ignore: bool = True,
-    ignore_dirs: Optional[Collection[str]] = None,
+    ignore_dirs: Collection[str] | None = None,
 ) -> tuple[Path, ...]:
     """
     Returns a tuple of all files in the specified directory of the Git
@@ -337,7 +367,7 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     return metadata, parts[2]
 
 
-def build_html_to_md_map(md_dir: Path) -> Dict[str, Path]:
+def build_html_to_md_map(md_dir: Path) -> dict[str, Path]:
     """
     Build a mapping of permalinks to markdown file paths by extracting and
     parsing the YAML front matter of each markdown file.
@@ -348,7 +378,7 @@ def build_html_to_md_map(md_dir: Path) -> Dict[str, Path]:
     Returns:
         Dictionary mapping permalinks to their corresponding markdown file paths
     """
-    html_to_md_path: Dict[str, Path] = {}
+    html_to_md_path: dict[str, Path] = {}
 
     md_files = list(md_dir.glob("*.md")) + list(md_dir.glob("drafts/*.md"))
 
@@ -362,9 +392,9 @@ def build_html_to_md_map(md_dir: Path) -> Dict[str, Path]:
     return html_to_md_path
 
 
-def collect_aliases(md_dir: Path) -> Set[str]:
+def collect_aliases(md_dir: Path) -> set[str]:
     """Collect all aliases from the markdown files."""
-    aliases: Set[str] = set()
+    aliases: set[str] = set()
     for md_file in get_files(
         md_dir, filetypes_to_match=(".md",), use_git_ignore=True
     ):

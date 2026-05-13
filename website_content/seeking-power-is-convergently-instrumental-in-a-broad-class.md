@@ -34,19 +34,12 @@ next-post-slug: instrumental-convergence-via-vnm-preferences
 next-post-title: When Most VNM-Coherent Preference Orderings Have Convergent Instrumental Incentives
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-08-08 00:00:00
+date_published: 2021-08-08
 original_url: https://www.lesswrong.com/posts/hzeLSQ9nwDkPc4KNt/seeking-power-is-convergently-instrumental-in-a-broad-class
 skip_import: true
 description: "Power-seeking is instrumentally convergent for agents maximizing over possible futures, but not for agents maximizing over their own actions. "
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-05-12
 ---
-
-
-
-
-
-
-
 
  
 
@@ -158,7 +151,7 @@ While I haven't been writing in the "definition-theorem-corollary" style, the ke
 
 And even if the environment is stochastic, I think that there won't be any kind of interesting instrumental convergence. The theorems let us reason about that case, but their applicability depends on the details of the stochasticity, and so I won't talk about that more here.
 
-**Conclusion:** Optimal policies for u<sub>AOH</sub> will tend to look like _random twitching_. For example, if you generate a u<sub>AOH</sub> by uniformly randomly assigning each AOH utility from the unit interval $[0,1]$, there's no predictable regularity to the optimal actions for this utility function. In this setting and under our assumptions, there is _no_ instrumental convergence without further structural assumptions.
+**Conclusion:** Optimal policies for u<sub>AOH</sub> will tend to look like _random twitching_. For example, if you generate some u<sub>AOH</sub> by uniformly randomly assigning each AOH utility from the unit interval $[0,1]$, there's no predictable regularity to the optimal actions for this utility function. In this setting and under our assumptions, there is _no_ instrumental convergence without further structural assumptions.
 
 # How Structural Assumptions On Utility Affect Instrumental Convergence
 

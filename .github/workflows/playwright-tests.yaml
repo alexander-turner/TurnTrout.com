@@ -9,7 +9,6 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "config/quartz/**"
@@ -18,21 +17,17 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  # Gate: only run expensive tests on PRs when a CI label is actively added.
-  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
-  # fires on every push — the should-run gate returns run=false instantly,
-  # which is needed for the unified "playwright-tests" required status check.
-  # Skip entirely for bot actors (dependabot, renovate, etc.).
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: playwright-should-run
-    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -54,7 +49,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  # Linux Chromium + Firefox.
   playwright-tests-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -90,27 +85,31 @@ jobs:
         run: pnpm run install-browsers
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
         env:
           # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
       - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        uses: ./.github/actions/sanitize-shard-name
-        with:
-          shard: ${{ matrix.shard }}
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -119,7 +118,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -128,7 +127,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -137,7 +136,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
@@ -194,27 +193,31 @@ jobs:
         run: xattr -cr ~/Library/Caches/ms-playwright
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!lostpixel).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
+          pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
         env:
           # 50 min job timeout → 45 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2700000"
 
       - name: Sanitize shard name
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
         if: always()
-        uses: ./.github/actions/sanitize-shard-name
-        with:
-          shard: ${{ matrix.shard }}
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -223,7 +226,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -232,7 +235,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -241,7 +244,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
@@ -262,17 +265,15 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Tests were skipped (no label)"
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
           if [[ "${{ needs.playwright-tests-linux.result }}" != "success" ]]; then
             echo "Linux tests did not succeed (${{ needs.playwright-tests-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
-          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
-             [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
+          if [[ "${{ needs.playwright-tests-macos.result }}" != "success" ]]; then
             echo "macOS tests did not succeed (${{ needs.playwright-tests-macos.result }})"
             exit 1
           fi

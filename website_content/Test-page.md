@@ -10,16 +10,10 @@ authors:
 hideSubscriptionLinks: false
 card_image:
 aliases:
-date_published: 2024-12-04 22:12:56.910555
-date_updated: 2026-04-06 18:02:03.576874
+date_published: 2024-12-04
+date_updated: 2026-05-12
 createBibtex: true
 ---
-
-
-
-
-
-
 
 I use this page for <a href="/design#visual-regression-testing" id="first-link-test-page">visual regression testing</a>. _**This** sentence is italicized and also in the first paragraph._ This sentence is not italicized. _Italics_.
 
@@ -452,7 +446,7 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
 
-Figure: This image should be transparent in light mode and have a light background in dark mode.
+Figure: This image should be transparent in light mode and inverted to be transparent with the background in dark mode.
 
 ## Before/after image slider
 
@@ -480,7 +474,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 > Normal blockquote
 
-> ! This text is hidden until you hover over it.
+> ! This text is hidden until you click on it.
 > ! Multiple lines can be hidden
 > ! Like this!
 
@@ -525,6 +519,8 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 ### Favicon kerning iteration
 
+<!--spellchecker-disable-->
+
 |                            |                            |                            |                            |                            |                            |
 | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: | :------------------------: |
 | [aba](https://npmjs.com)   | [abb](https://npmjs.com)   | [abc](https://npmjs.com)   | [abd](https://npmjs.com)   | [abe](https://npmjs.com)   | [abf](https://npmjs.com)   |
@@ -545,6 +541,8 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 | [ab\<](https://npmjs.com)  | [ab\>](https://npmjs.com)  | [ab~](https://npmjs.com)   | [ab^](https://npmjs.com)   | [ab\_](https://npmjs.com)  | <a href="https://npmjs.com">ab&#96;</a> |
 | [ab…](https://npmjs.com)   | [ab—](https://npmjs.com)   | [ab–](https://npmjs.com)   | [ab′](https://npmjs.com)   | [ab″](https://npmjs.com)   | [ab°](https://npmjs.com)   |
 | [ab→](https://npmjs.com)   | [ab×](https://npmjs.com)   | [ab™](https://npmjs.com)   | [ab©](https://npmjs.com)   | [ab®](https://npmjs.com)   | [ab⁇](https://npmjs.com)   |
+
+<!--spellchecker-enable-->
 
 # Typography
 
@@ -759,7 +757,7 @@ This is a plain code block without a language specified.
 <!-- spellchecker-disable -->
 Elvish
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">    ⸱</span><span class="elvish-translation">Ah! like gold fall the leaves in the wind,</span></span>
-: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy and queenly.</span></span>
+: <span class="elvish"><span class="elvish-tengwar" lang="qya"> :</span><span class="elvish-translation">in the song of her voice, holy, and queenly.</span></span>
 : <span class="elvish"><span class="elvish-tengwar" lang="qya">  ⸱  ⸱ </span><span class="elvish-translation">Now lost, lost to those from the East is Valimar!</span></span>
 
 <!-- spellchecker-enable -->

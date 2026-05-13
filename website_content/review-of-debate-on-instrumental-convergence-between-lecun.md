@@ -26,19 +26,13 @@ aliases:
   - review-of-debate-on-instrumental-convergence-between-lecun
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2021-01-12 00:00:00
+date_published: 2021-01-12
 original_url: https://www.lesswrong.com/posts/ZPEGLoWMN242Dob6g/review-of-debate-on-instrumental-convergence-between-lecun
 skip_import: true
 card_image:
 description: Experts clash on the dangers of "instrumental convergence" in AI, but clear definitions and formal thought are sorely needed.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
 
 In the summer of 2019, I was building up a corpus of basic reinforcement learning theory. I wandered through a sun-dappled Berkeley, my head in the clouds, [my mind bent on a single ambition](/problem-relaxation-as-a-tactic#formalizing-instrumental-convergence): proving the existence of instrumental convergence.
 

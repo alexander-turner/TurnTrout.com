@@ -13,8 +13,8 @@ import re
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Optional, Sequence
 
 try:
     from . import utils as script_utils
@@ -77,7 +77,7 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
 def update_markdown_references(
     file_path: Path,
     r2_address: str,
-    references_dir: Optional[Path] = None,
+    references_dir: Path | None = None,
     verbose: bool = False,
 ) -> None:
     """
@@ -143,7 +143,7 @@ def upload_to_r2(
             If the file exists without overwrite.
         FileNotFoundError: If the file is not found.
     """
-    if "quartz/" not in str(file_path):
+    if "quartz" not in file_path.resolve().parts:
         raise ValueError(f"{str(file_path)} does not contain 'quartz/'.")
 
     if not file_path.is_file():
@@ -219,8 +219,8 @@ file_exts_to_upload = (".mp4", ".svg", ".avif", ".webm")
 def upload_and_move(
     file_path: Path,
     verbose: bool = False,
-    references_dir: Optional[Path] = None,
-    move_to_dir: Optional[Path] = None,
+    references_dir: Path | None = None,
+    move_to_dir: Path | None = None,
     overwrite_existing: bool = False,
 ) -> None:
     """

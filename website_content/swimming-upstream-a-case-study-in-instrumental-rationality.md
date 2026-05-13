@@ -35,24 +35,12 @@ next-post-slug: RL-textbook-review
 next-post-title: "Making a Difference Tempore: Insights from 'Reinforcement Learning: An Introduction'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-06-03 00:00:00
+date_published: 2018-06-03
 original_url: https://www.lesswrong.com/posts/eAsN5vNjvmxzACuuX/swimming-upstream-a-case-study-in-instrumental-rationality
 skip_import: "true"
 description: "I dove headfirst into AI safety, even at the risk of my PhD. This is how. "
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2026-05-08
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 > [!success]
 > One data point for careful planning, the unapologetic pursuit of fulfillment, and success. Of particular interest to up-and-coming AI safety researchers, this post chronicles how I made a change in my PhD program to work more directly on AI safety, overcoming significant institutional pressure in the process.
@@ -162,8 +150,6 @@ Many harrowing days and nights later, we arrive at the present, concluding this 
 # Forwards
 
 I sacrificed some of my tethering to the [social web](https://www.lesswrong.com/posts/AqbWna2S85pFTsHH4/the-intelligent-social-web), working my way free of irrelevant external considerations, affirming to myself that I will look out for my interests. When I first made that affirmation, I felt a palpable sense of _relief_. Truly, if we examine our lives with seriousness, what pressures and expectations bind us to arbitrary social scripts, to arbitrary identities - to arbitrary lives?
-
-<hr/>
 
 [^1]: My secret to being able to [continuously](/set-theory-textbook-review) [soak](/AI-textbook-review) [up](/linear-algebra-textbook-review) [math](/all-of-statistics-textbook-review) [is](/first-analysis-textbook-review) that I _enjoy it_. However, it wasn't immediately obvious that this would be the case, and only the intensity of my desire to step up actually got me to start studying. Only then, after occupying myself in earnest with those pages of Greek glyphs, did I realize that it's _fun_.
 

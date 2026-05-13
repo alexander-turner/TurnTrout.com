@@ -72,13 +72,13 @@ async function setDummyContentMeta(page: Page) {
     const publicationStr = document.querySelector(".publication-str")
     if (publicationStr) {
       publicationStr.innerHTML =
-        'Published on <time datetime="2024-01-01T00:00:00.000Z">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
+        'Published on <time datetime="2024-01-01">January <span class="ordinal-num">1</span><span class="ordinal-suffix">st</span>, 2024</time>'
     }
 
     const lastUpdatedStr = document.querySelector(".last-updated-str")
     if (lastUpdatedStr) {
       lastUpdatedStr.innerHTML =
-        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02T00:00:00.000Z">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
+        '<a href="#" class="external" target="_blank" rel="noopener noreferrer">Updated</a> on <time datetime="2024-01-02">January <span class="ordinal-num">2</span><span class="ordinal-suffix">nd</span>, 2024</time>'
     }
 
     const backlinksUl = document.querySelector("#backlinks-admonition ul")
@@ -93,7 +93,7 @@ async function setDummyContentMeta(page: Page) {
 
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
-    test(`Normal page in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+    test(`Normal page in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
@@ -102,7 +102,7 @@ test.describe("Test page sections", () => {
 })
 
 test.describe("Unique content around the site", () => {
-  test("Welcome page (lostpixel)", async ({ page }, testInfo) => {
+  test("Welcome page (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(page, "http://localhost:8080", "load")
     await page.locator("body").waitFor({ state: "visible" })
 
@@ -123,7 +123,7 @@ test.describe("Unique content around the site", () => {
   })
 
   MOCK_PAGE_SLUGS.forEach((pageSlug) => {
-    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+    test(`${pageSlug} (screenshot)`, async ({ page }, testInfo) => {
       await gotoPage(page, `http://localhost:8080/${pageSlug}`)
       await page.locator("body").waitFor({ state: "visible" })
       await takeRegressionScreenshot(page, testInfo, `site-page-${pageSlug}`)
@@ -135,14 +135,14 @@ test.describe("Unique content around the site", () => {
   DYNAMIC_PAGE_SLUGS.forEach((pageSlug) => {
     const url = `http://localhost:8080/${pageSlug}`
 
-    test(`${pageSlug} (lostpixel)`, async ({ page }, testInfo) => {
+    test(`${pageSlug} (screenshot)`, async ({ page }, testInfo) => {
       await gotoPage(page, url)
       await page.locator("body").waitFor({ state: "visible" })
 
       // Remove all but the oldest numOldest posts; stable as I add more
       const numOldest = 5
       await page.evaluate((numKeepOldest: number) => {
-        const listElement = document.querySelectorAll("ul.section-ul")[0]
+        const listElement = document.querySelectorAll("ul.page-listing-list")[0]
         if (!listElement) {
           console.error("Could not find the post list element.")
           return
@@ -170,7 +170,7 @@ test.describe("Unique content around the site", () => {
     })
   })
 
-  test("All-tags with dummy values", async ({ page }, testInfo) => {
+  test("All-tags with dummy values (screenshot)", async ({ page }, testInfo) => {
     const url = "http://localhost:8080/all-tags"
     await gotoPage(page, url)
     await page.locator("body").waitFor({ state: "visible" })
@@ -196,7 +196,7 @@ test.describe("Unique content around the site", () => {
     await takeRegressionScreenshot(page, testInfo, "all-tags-dummy")
   })
 
-  test("Big favicon demo (lostpixel)", async ({ page }, testInfo) => {
+  test("Big favicon demo (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(page, "http://localhost:8080/design", "domcontentloaded")
     const bigFaviconDemo = page.locator("#big-favicon-demo")
     await bigFaviconDemo.scrollIntoViewIfNeeded()
@@ -207,7 +207,7 @@ test.describe("Unique content around the site", () => {
     })
   })
 
-  test("Reward warning (lostpixel)", async ({ page }, testInfo) => {
+  test("Reward warning (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(
       page,
       "http://localhost:8080/a-certain-formalization-of-corrigibility-is-vnm-incoherent",
@@ -224,7 +224,7 @@ test.describe("Unique content around the site", () => {
     })
   })
 
-  test("LW Question admonition (lostpixel)", async ({ page }, testInfo) => {
+  test("LW Question admonition (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(
       page,
       "http://localhost:8080/question-about-defining-alignment-in-simple-setting",
@@ -239,7 +239,7 @@ test.describe("Unique content around the site", () => {
     })
   })
 
-  test("Goose code block (lostpixel)", async ({ page }, testInfo) => {
+  test("Goose code block (screenshot)", async ({ page }, testInfo) => {
     await gotoPage(page, "http://localhost:8080/open-source")
     await page.locator("body").waitFor({ state: "visible" })
 
@@ -254,7 +254,7 @@ test.describe("Unique content around the site", () => {
 })
 
 test.describe("Table of contents", () => {
-  test("TOC is visible (lostpixel)", async ({ page }) => {
+  test("TOC is visible (screenshot)", async ({ page }) => {
     let selector: string
     // eslint-disable-next-line playwright/no-conditional-in-test
     if (isDesktopViewport(page)) {
@@ -266,7 +266,7 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
-  test("Desktop TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+  test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
 
     // Set .simulate-visited on first TOC link child
@@ -289,7 +289,7 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("TOC visual test (lostpixel)", async ({ page }, testInfo) => {
+  test("TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(isDesktopViewport(page))
 
     // Hide the navbar
@@ -364,7 +364,7 @@ test.describe("Layout Breakpoints", () => {
     { name: "maxMobile", width: Math.floor(maxMobileWidth) },
   ]
   for (const { name, width } of breakpoints) {
-    test(`Layout at breakpoint ${name} (${width}px) (lostpixel)`, async ({ page }, testInfo) => {
+    test(`Layout at breakpoint ${name} (${width}px) (screenshot)`, async ({ page }, testInfo) => {
       test.skip(!isDesktopViewport(page), "Desktop-only test")
 
       await page.setViewportSize({ width, height: 480 }) // Don't show much
@@ -411,7 +411,7 @@ test.describe("Admonitions", () => {
   }
 
   FOLD_STATES.forEach((status) => {
-    test(`Regression testing on fold button appearance in ${status} state (lostpixel)`, async ({
+    test(`Regression testing on fold button appearance in ${status} state (screenshot)`, async ({
       page,
     }, testInfo) => {
       const element = page.locator(`blockquote:has(#test-${status}) .fold-admonition-icon`).first()
@@ -521,7 +521,7 @@ test.describe("Right sidebar", () => {
     expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
   })
 
-  test("ContentMeta is visible (lostpixel)", async ({ page }, testInfo) => {
+  test("ContentMeta is visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
       elementToScreenshot: page.locator("#content-meta"),
@@ -562,7 +562,7 @@ test.describe("Right sidebar", () => {
     expect(hoverColor).toEqual(expectedHoverColor)
   })
 
-  test("Backlinks are visible (lostpixel)", async ({ page }, testInfo) => {
+  test("Backlinks are visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     const backlinks = page.locator("#backlinks").first()
     await backlinks.scrollIntoViewIfNeeded()
@@ -587,7 +587,7 @@ test.describe("Spoilers", () => {
   for (const theme of ["light", "dark"]) {
     // Before revealing screenshot is covered in the H1 test
 
-    test(`Spoiler after revealing in ${theme} mode (lostpixel)`, async ({ page }, testInfo) => {
+    test(`Spoiler after revealing in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")
       const spoiler = page.locator(".spoiler-container").first()
       await spoiler.scrollIntoViewIfNeeded()
@@ -631,7 +631,7 @@ test.describe("Spoilers", () => {
   })
 })
 
-test("Single letter dropcaps visual regression (lostpixel)", async ({ page }, testInfo) => {
+test("Single letter dropcaps visual regression (screenshot)", async ({ page }, testInfo) => {
   const singleLetterDropcaps = page.locator("#single-letter-dropcap")
   await singleLetterDropcaps.scrollIntoViewIfNeeded()
   await takeRegressionScreenshot(page, testInfo, "single-letter-dropcap", {
@@ -844,7 +844,7 @@ test("First paragraph is the same before and after clicking on a heading", async
 
 test.describe("Link color states", () => {
   for (const theme of ["light", "dark"]) {
-    test(`Normal vs visited link colors in ${theme} mode (lostpixel)`, async ({
+    test(`Normal vs visited link colors in ${theme} mode (screenshot)`, async ({
       page,
     }, testInfo) => {
       await setTheme(page, theme as "light" | "dark")

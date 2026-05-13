@@ -1,7 +1,7 @@
 import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
 
-import { type QuartzConfig } from "../../cfg"
 import { uiStrings } from "../../components/constants"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
@@ -65,8 +65,13 @@ describe("ContentIndex", () => {
     }),
   ]
 
-  const getWriteCall = (slugSubstring: string) =>
-    write.mock.calls.find((c) => c[0].slug.includes(slugSubstring))
+  const getWriteCall = (slugSubstring: string) => {
+    const call = write.mock.calls.find((c) => c[0].slug.includes(slugSubstring))
+    if (!call) {
+      throw new Error(`No write call found for slug containing "${slugSubstring}"`)
+    }
+    return call
+  }
 
   // --- Title formatting (the fix under test) ---
   const titleTransformCases: [string, string, string][] = [
@@ -79,7 +84,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent(input), mockResources)
 
     const jsonCall = getWriteCall("contentIndex")
-    const index = JSON.parse(jsonCall![0].content)
+    const index = JSON.parse(jsonCall[0].content)
     expect(index["test-post"].title).toContain(expected)
   })
 
@@ -88,7 +93,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent(input), mockResources)
 
     const rssCall = getWriteCall("rss")
-    expect(rssCall![0].content).toContain(expected)
+    expect(rssCall[0].content).toContain(expected)
   })
 
   // --- Sitemap ---
@@ -102,7 +107,7 @@ describe("ContentIndex", () => {
 
     const sitemapCall = getWriteCall("sitemap")
     expect(sitemapCall).toBeDefined()
-    const xml = sitemapCall![0].content
+    const xml = sitemapCall[0].content
     expect(xml).toContain("<loc>https://example.com/test-post</loc>")
     expect(xml).toContain("<lastmod>")
     expect(xml).toContain("</urlset>")
@@ -124,7 +129,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, content, mockResources)
 
     const rssCall = getWriteCall("rss")
-    const xml = rssCall![0].content
+    const xml = rssCall[0].content
     const secondIdx = xml.indexOf("zzz-second")
     const firstIdx = xml.indexOf("aaa-first")
     expect(secondIdx).toBeLessThan(firstIdx)
@@ -140,7 +145,7 @@ describe("ContentIndex", () => {
     )
 
     const rssCall = getWriteCall("rss")
-    expect(rssCall![0].content).toContain("\u201C")
+    expect(rssCall[0].content).toContain("\u201C")
   })
 
   it("uses richContent in RSS description when rssFullHtml is enabled", async () => {
@@ -148,7 +153,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent("Post"), mockResources)
 
     const rssCall = getWriteCall("rss")
-    const xml = rssCall![0].content
+    const xml = rssCall[0].content
     // richContent is the HTML-escaped toHtml output; verify it lands in <description>
     expect(xml).toMatch(/<description>.*<\/description>/)
   })
@@ -158,7 +163,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent("Post"), mockResources)
 
     const rssCall = getWriteCall("rss")
-    expect(rssCall![0].content).toContain(uiStrings.pages.rss.recentNotes)
+    expect(rssCall[0].content).toContain(uiStrings.pages.rss.recentNotes)
   })
 
   // --- Dependency graph ---
@@ -167,7 +172,10 @@ describe("ContentIndex", () => {
     ["omits sitemap/RSS edges when disabled", false, false],
   ])("dependency graph %s", async (_, enableSiteMap, enableRSS) => {
     const plugin = ContentIndex({ enableSiteMap, enableRSS })
-    const graph = await plugin.getDependencyGraph!(mockCtx, makeContent("Test"), mockResources)
+    if (!plugin.getDependencyGraph) {
+      throw new Error("ContentIndex plugin should expose getDependencyGraph")
+    }
+    const graph = await plugin.getDependencyGraph(mockCtx, makeContent("Test"), mockResources)
 
     expect(graph.hasNode("public/static/contentIndex.json" as FilePath)).toBe(true)
     expect(graph.hasNode("public/sitemap.xml" as FilePath)).toBe(enableSiteMap)
@@ -184,7 +192,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent("Empty", { text: "" }), mockResources)
 
     const jsonCall = getWriteCall("contentIndex")
-    const index = JSON.parse(jsonCall![0].content)
+    const index = JSON.parse(jsonCall[0].content)
     expect(index["test-post"]).toBeUndefined()
   })
 
@@ -193,7 +201,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent("Empty", { text: "" }), mockResources)
 
     const jsonCall = getWriteCall("contentIndex")
-    const index = JSON.parse(jsonCall![0].content)
+    const index = JSON.parse(jsonCall[0].content)
     expect(index["test-post"]).toBeDefined()
   })
 
@@ -202,7 +210,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, makeContent("Post", { description: "A description" }), mockResources)
 
     const jsonCall = getWriteCall("contentIndex")
-    const index = JSON.parse(jsonCall![0].content)
+    const index = JSON.parse(jsonCall[0].content)
     expect(index["test-post"].description).toBeUndefined()
     expect(index["test-post"].date).toBeUndefined()
   })
@@ -218,9 +226,9 @@ describe("ContentIndex", () => {
     await plugin.emit(noBaseUrlCtx, makeContent("Post"), mockResources)
 
     const sitemapCall = getWriteCall("sitemap")
-    expect(sitemapCall![0].content).toContain("<loc>https://test-post</loc>")
+    expect(sitemapCall[0].content).toContain("<loc>https://test-post</loc>")
     const rssCall = getWriteCall("rss")
-    expect(rssCall![0].content).toContain("<link>https://</link>")
+    expect(rssCall[0].content).toContain("<link>https://</link>")
   })
 
   it("handles missing frontmatter and text", async () => {
@@ -234,7 +242,7 @@ describe("ContentIndex", () => {
     await plugin.emit(mockCtx, content, mockResources)
 
     const jsonCall = getWriteCall("contentIndex")
-    const index = JSON.parse(jsonCall![0].content)
+    const index = JSON.parse(jsonCall[0].content)
     expect(index["bare"].title).toBe("")
     expect(index["bare"].tags).toEqual([])
     expect(index["bare"].content).toBe("")

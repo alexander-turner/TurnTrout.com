@@ -34,22 +34,14 @@ next-post-slug: deducing-impact
 next-post-title: Deducing Impact
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2019-09-23 00:00:00
+date_published: 2019-09-23
 original_url: https://www.lesswrong.com/posts/TxcYSRQ9giC6zmKov/value-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/D6Bhmv6.jpg
 description: Impact is objectively important to agents, no matter their goals. Even robots hoarding pebbles care about a meteor strike.
-date_updated: 2025-12-30 14:46:20.403471
+date_updated: 2026-04-20
 card_image_alt: 'A black oval symbolizing an empty universe contains the text: "The universe feels dead and empty and worthless."'
 ---
-
-
-
-
-
-
-
-
 
 ![Handwritten text: "We think some things are big deals, and we want to understand why. However, it can be hard to read your own mind. Instead, we'll use thought experiments to piece together what's going on." To the right, a confused stick figure holds a brain.](https://assets.turntrout.com/static/images/posts/lG9je1g.avif)
 

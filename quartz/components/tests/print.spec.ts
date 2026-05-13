@@ -24,16 +24,19 @@ test.beforeEach(async ({ browserName, page }, testInfo) => {
   })
 })
 
-test("Print media layout (lostpixel)", async ({ page }, testInfo) => {
+test("Print media layout (screenshot)", async ({ page }, testInfo) => {
   await setTheme(page, "light")
   await page.emulateMedia({ media: "print" })
   await takeRegressionScreenshot(page, testInfo, "print-layout")
 })
 
-test("Print mode renders identically in light and dark themes", async ({ page }, testInfo) => {
+test("Print mode renders identically in light and dark themes", async ({ page }) => {
   await setTheme(page, "light")
   await page.emulateMedia({ media: "print" })
-  const lightScreenshot = await takeRegressionScreenshot(page, testInfo, "print-light-vs-dark")
+  const lightScreenshot = await page.screenshot({
+    animations: "disabled",
+    scale: "css",
+  })
 
   await page.emulateMedia({ media: "screen" })
   await setTheme(page, "dark")

@@ -72,7 +72,7 @@ function init() {
   // Only observe the article/content area to avoid processing unrelated DOM
   // mutations (e.g. from accessibility testing tools that inject iframes).
   const contentRoot =
-    document.querySelector("article") || document.querySelector("#quartz-body") || document.body
+    document.querySelector("article") || document.querySelector("#page-columns") || document.body
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       const nodes = Array.from(mutation.addedNodes)

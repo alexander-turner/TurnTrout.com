@@ -155,7 +155,7 @@ describe("PopulateContainers", () => {
         },
       ],
       [
-        "should filter out blacklisted favicons",
+        "should filter out blocklisted favicons",
         [
           ["/static/images/external-favicons/medium_com", minFaviconCount + 10],
           ["/static/images/external-favicons/valid_com", minFaviconCount + 1],
@@ -181,7 +181,7 @@ describe("PopulateContainers", () => {
     )
 
     it("should sort favicons by count descending", async () => {
-      // Use whitelisted domains to ensure they pass filtering
+      // Use allowlisted domains to ensure they pass filtering
       setFaviconCounts([
         ["/static/images/external-favicons/openai_com", minFaviconCount + 10],
         ["/static/images/external-favicons/apple_com", minFaviconCount + 15],
@@ -204,7 +204,7 @@ describe("PopulateContainers", () => {
       expect(domains).toEqual(["x_com", "apple_com", "openai_com"])
     }, 10000)
 
-    it("should include whitelisted favicons even if below threshold", async () => {
+    it("should include allowlisted favicons even if below threshold", async () => {
       setFaviconCounts([[specialFaviconPaths.turntrout, minFaviconCount - 1]])
 
       const emitter = PopulateContainersEmitter()
@@ -838,7 +838,21 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.commitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'git rev-list --all --count --author="Alex Turner"',
+          "git rev-list --all --count '--author=Alex Turner'",
+          { encoding: "utf-8" },
+        )
+      })
+
+      it("should escape single quotes in author name", () => {
+        mockExecSync
+          .mockReturnValueOnce("false\n") // isShallowClone
+          .mockReturnValueOnce("42\n")
+
+        const count = populateModule.countGitCommits({ author: "O'Brien" })
+
+        expect(count).toBe(42)
+        expect(mockExecSync).toHaveBeenCalledWith(
+          'git rev-list --all --count "--author=O\'Brien"',
           { encoding: "utf-8" },
         )
       })
@@ -852,7 +866,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.aiCommitCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'git rev-list --all --count --grep="claude.ai/code/session"',
+          "git rev-list --all --count --grep\\=claude.ai/code/session",
           { encoding: "utf-8" },
         )
       })
@@ -921,7 +935,7 @@ describe("PopulateContainers", () => {
 
         expect(count).toBe(MOCK_STATS.playwrightTestCount)
         expect(mockExecSync).toHaveBeenCalledWith(
-          'grep -r "test(" quartz/components/tests/*.spec.ts | wc -l',
+          'grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l',
           { encoding: "utf-8" },
         )
       })

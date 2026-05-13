@@ -27,6 +27,7 @@ import {
   AssetProcessor,
   constrainSliderHeight,
   findWidestAspectRatio,
+  logger,
   prependStyles,
   paths,
   assetProcessor as globalAssetProcessor,
@@ -169,58 +170,52 @@ describe("Asset Dimensions Plugin", () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(Object.assign(new Error("ENOENT"), { code: "ENOENT" }) as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
-        // Mock console.warn to prevent logging during test
-      })
+      const loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation((() => logger) as never)
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})
       expect(readFileSpy).toHaveBeenCalledWith(actualAssetDimensionsFilePath, "utf-8")
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Could not load asset dimension cache"),
       )
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(actualAssetDimensionsFilePath),
       )
-      consoleWarnSpy.mockRestore()
+      loggerWarnSpy.mockRestore()
     })
 
     it("should return an empty object if cache file is malformed", async () => {
       const readFileSpy = jest.spyOn(fs, "readFile").mockResolvedValue("invalid json" as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
-        // Mock console.warn to prevent logging during test
-      })
+      const loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation((() => logger) as never)
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})
       expect(readFileSpy).toHaveBeenCalledWith(actualAssetDimensionsFilePath, "utf-8")
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Could not load asset dimension cache"),
       )
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(actualAssetDimensionsFilePath),
       )
-      consoleWarnSpy.mockRestore()
+      loggerWarnSpy.mockRestore()
     })
 
     it("should handle read errors gracefully", async () => {
       const readFileSpy = jest
         .spyOn(fs, "readFile")
         .mockRejectedValue(new Error("Permission denied") as never)
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation(() => {
-        // Mock console.warn to prevent logging during test
-      })
+      const loggerWarnSpy = jest.spyOn(logger, "warn").mockImplementation((() => logger) as never)
 
       const cache = await assetProcessor.maybeLoadDimensionCache()
       expect(cache).toEqual({})
       expect(readFileSpy).toHaveBeenCalledWith(actualAssetDimensionsFilePath, "utf-8")
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining("Could not load asset dimension cache"),
       )
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining(actualAssetDimensionsFilePath),
       )
-      consoleWarnSpy.mockRestore()
+      loggerWarnSpy.mockRestore()
     })
 
     it("should return cached dimensions without reading file if already loaded", async () => {
@@ -610,18 +605,18 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should retry on network failure and succeed on third attempt", async () => {
       let callCount = 0
-      mockedFetch.mockImplementation(async () => {
+      mockedFetch.mockImplementation(() => {
         callCount++
         if (callCount <= 2) {
-          throw new Error("Network failure")
+          return Promise.reject(new Error("Network failure"))
         }
         // Succeed on third attempt
-        return {
+        return Promise.resolve({
           ok: true,
           status: 200,
           headers: { get: (h: string) => (h === "Content-Type" ? "image/png" : null) } as Headers,
           arrayBuffer: () => Promise.resolve(mockImageData),
-        } as unknown as Response
+        } as unknown as Response)
       })
 
       sizeOfMock.mockClear()

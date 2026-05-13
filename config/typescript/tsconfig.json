@@ -6,8 +6,6 @@
     "moduleResolution": "bundler",
     "target": "ESNext",
     "strict": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
     "incremental": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,

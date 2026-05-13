@@ -21,7 +21,7 @@ import {
 import { normalizeFaviconListEntry } from "../../util/favicon-config"
 import { hasClass } from "./utils"
 
-const { minFaviconCount, faviconSubstringBlacklist } = simpleConstants
+const { minFaviconCount, faviconSubstringBlocklist } = simpleConstants
 
 const faviconSpanNode = {
   type: "element",
@@ -68,7 +68,7 @@ describe("getQuartzPath", () => {
     ["play.google.com", "/static/images/external-favicons/play_google_com.svg"],
     ["docs.google.com", "/static/images/external-favicons/docs_google_com.svg"],
     ["mail.google.com", "/static/images/external-favicons/mail_google_com.svg"],
-  ])("preserves whitelisted google subdomain %s", (hostname, expected) => {
+  ])("preserves allowlisted google subdomain %s", (hostname, expected) => {
     expect(favicons.getQuartzPath(hostname)).toBe(expected)
   })
 
@@ -124,16 +124,16 @@ describe("normalizePathForCounting", () => {
 })
 
 describe("transformUrl", () => {
-  it("returns path unchanged for non-blacklisted path", () => {
+  it("returns path unchanged for non-blocklisted path", () => {
     const input = "/static/images/external-favicons/example_com.svg"
     expect(favicons.transformUrl(input)).toBe(input)
   })
 
   it.each(
-    faviconSubstringBlacklist.map((entry: string) => [
+    faviconSubstringBlocklist.map((entry: string) => [
       `/static/images/external-favicons/${normalizeFaviconListEntry(entry)}.svg`,
     ]),
-  )("returns defaultPath for blacklisted path %s", (input) => {
+  )("returns defaultPath for blocklisted path %s", (input) => {
     expect(favicons.transformUrl(input)).toBe(defaultPath)
   })
 })
@@ -143,7 +143,7 @@ describe("findFaviconPath", () => {
   const expectedPath = "/static/images/external-favicons/example_com.svg"
   const expectedCdnUrl = `https://assets.turntrout.com${expectedPath}`
 
-  it("returns null for blacklisted hostname without any network call", async () => {
+  it("returns null for blocklisted hostname without any network call", async () => {
     const fetchSpy = jest.spyOn(global, "fetch")
     expect(await favicons.findFaviconPath("incompleteideas.net")).toBeNull()
     expect(fetchSpy).not.toHaveBeenCalled()
@@ -321,23 +321,23 @@ describe("shouldIncludeFavicon", () => {
     [specialFaviconPaths.anchor],
     [specialFaviconPaths.turntrout],
     ["/static/images/external-favicons/apple_com.svg"],
-  ])("includes whitelisted favicon %s with zero count", (imgPath) => {
+  ])("includes allowlisted favicon %s with zero count", (imgPath) => {
     expect(favicons.shouldIncludeFavicon(imgPath, imgPath, new Map())).toBe(true)
   })
 
   it.each(
-    faviconSubstringBlacklist.map((entry: string) => [
+    faviconSubstringBlocklist.map((entry: string) => [
       `/static/images/external-favicons/${normalizeFaviconListEntry(entry)}.svg`,
     ]),
-  )("excludes blacklisted favicon %s above threshold", (imgPath) => {
+  )("excludes blocklisted favicon %s above threshold", (imgPath) => {
     const counts = new Map<string, number>([
       [favicons.normalizePathForCounting(imgPath), minFaviconCount + 10],
     ])
     expect(favicons.shouldIncludeFavicon(imgPath, imgPath, counts)).toBe(false)
   })
 
-  it("excludes favicons with blacklisted substring anywhere in path", () => {
-    const entry = normalizeFaviconListEntry(faviconSubstringBlacklist[0])
+  it("excludes favicons with blocklisted substring anywhere in path", () => {
+    const entry = normalizeFaviconListEntry(faviconSubstringBlocklist[0])
     const imgPath = `/static/images/external-favicons/subdomain_${entry}.svg`
     const counts = new Map<string, number>([
       [favicons.normalizePathForCounting(imgPath), minFaviconCount + 10],
@@ -345,7 +345,7 @@ describe("shouldIncludeFavicon", () => {
     expect(favicons.shouldIncludeFavicon(imgPath, imgPath, counts)).toBe(false)
   })
 
-  it("handles whitelist substring matching anywhere in path", () => {
+  it("handles allowlist substring matching anywhere in path", () => {
     const imgPath = "/static/images/external-favicons/subdomain_apple_com.svg"
     const counts = new Map<string, number>([[favicons.normalizePathForCounting(imgPath), 0]])
     expect(favicons.shouldIncludeFavicon(imgPath, imgPath, counts)).toBe(true)
@@ -634,7 +634,7 @@ describe("ModifyNode", () => {
       expect(node.children.length).toBeGreaterThan(0)
     })
 
-    it("inserts whitelisted favicon below threshold", async () => {
+    it("inserts allowlisted favicon below threshold", async () => {
       const turntroutHost = "turntrout.com"
       faviconCounts.set(specialFaviconPaths.turntrout, minFaviconCount - 1)
       favicons.faviconExistsCache.set(specialFaviconPaths.turntrout, Promise.resolve(true))
@@ -654,9 +654,9 @@ describe("ModifyNode", () => {
       )
     })
 
-    it("throws when whitelisted favicon has no SVG", async () => {
+    it("throws when allowlisted favicon has no SVG", async () => {
       const appleHost = "apple.com"
-      // No counts entry; apple_com is whitelisted so should still try to include.
+      // No counts entry; apple_com is allowlisted so should still try to include.
       mockCdnLookup(false)
       const node = h("a", { href: `https://${appleHost}/page` })
       const parent = h("div", [node])
@@ -665,11 +665,11 @@ describe("ModifyNode", () => {
       )
     })
 
-    it("does not throw for blacklisted hostnames even with very high count", async () => {
-      const blacklistedHost = "incompleteideas.net"
-      const path = favicons.getQuartzPath(blacklistedHost)
+    it("does not throw for blocklisted hostnames even with very high count", async () => {
+      const blocklistedHost = "incompleteideas.net"
+      const path = favicons.getQuartzPath(blocklistedHost)
       faviconCounts.set(favicons.normalizePathForCounting(path), minFaviconCount + 100)
-      const node = h("a", { href: `https://${blacklistedHost}/page` })
+      const node = h("a", { href: `https://${blocklistedHost}/page` })
       const parent = h("div", [node])
       await expect(favicons.ModifyNode(node, parent, faviconCounts)).resolves.toBeUndefined()
       expect(node.children.length).toBe(0)
@@ -760,7 +760,7 @@ describe("MissingFaviconError", () => {
     expect(err.message).toContain("example.com")
     expect(err.message).toContain("/static/images/external-favicons/example_com.svg")
     expect(err.message).toContain("count=10")
-    expect(err.message).toContain("faviconSubstringBlacklist")
+    expect(err.message).toContain("faviconSubstringBlocklist")
   })
 })
 

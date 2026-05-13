@@ -1,6 +1,7 @@
 """Convert assets to optimized formats."""
 
 import argparse
+import logging
 import re
 import subprocess
 from pathlib import Path
@@ -161,12 +162,19 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
 
 def _strip_metadata(file_path: Path) -> None:
     exiftool_executable = script_utils.find_executable("exiftool")
-    subprocess.run(
+    result = subprocess.run(
         [exiftool_executable, "-all=", str(file_path), "--verbose"],
         stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
         check=False,
     )
+    if result.returncode != 0:
+        logging.warning(
+            "exiftool failed for %s (exit %d): %s",
+            file_path,
+            result.returncode,
+            result.stderr.decode(errors="replace").strip(),
+        )
 
 
 def _replace_content(
@@ -222,8 +230,9 @@ def convert_asset(
     md_references_dir: Path | None = Path("website_content/"),
 ) -> None:
     """
-    Converts an image or video to a more efficient format. Replaces references
-    in markdown files.
+    Converts an image or video to a more efficient format.
+
+    Replaces references in markdown files.
 
     Args:
         input_file: The path to the file to convert.
@@ -242,14 +251,17 @@ def convert_asset(
         - `ValueError`: If the input file is not an image or video or is not
           in the quartz/static directory.
     """
-
     if not input_file.is_file():
         raise FileNotFoundError(f"Error: File '{input_file}' not found.")
 
-    if "quartz/static" not in str(input_file):
+    input_parts = input_file.resolve().parts
+    if not (
+        "quartz" in input_parts
+        and "static" in input_parts
+        and input_parts.index("static") == input_parts.index("quartz") + 1
+    ):
         raise ValueError(
-            f"Error: Input file '{input_file}' is not"
-            "in the quartz/static directory."
+            f"Error: Input file '{input_file}' is not in the quartz/static directory."
         )
 
     if md_references_dir and not md_references_dir.is_dir():

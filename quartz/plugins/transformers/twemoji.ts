@@ -105,6 +105,19 @@ export const ignoreMap: ReadonlyMap<string, string> = new Map<string, string>([
   ["↗", twemojiIgnoreChars.upRightArrow],
 ])
 
+// Pre-compiled regex pairs for ignoreMap to avoid creating RegExp objects on every call
+const ignoreRegexPairs: readonly {
+  keyRegex: RegExp
+  valueRegex: RegExp
+  key: string
+  value: string
+}[] = [...ignoreMap.entries()].map(([key, value]) => ({
+  keyRegex: new RegExp(key, "g"),
+  valueRegex: new RegExp(value, "g"),
+  key,
+  value,
+}))
+
 /**
  * Converts arrow characters and processes emoji with special character handling.
  * Converts ↩ to ⤴, temporarily replaces ignored characters during emoji processing,
@@ -116,14 +129,12 @@ export const ignoreMap: ReadonlyMap<string, string> = new Map<string, string>([
 export function replaceEmojiConvertArrows(content: string): string {
   let twemojiContent = content
   twemojiContent = twemojiContent.replaceAll(/↩/gu, "⤴")
-  for (const [key, value] of ignoreMap) {
-    const exp = new RegExp(key, "g")
-    twemojiContent = twemojiContent.replaceAll(exp, value)
+  for (const { keyRegex, value } of ignoreRegexPairs) {
+    twemojiContent = twemojiContent.replaceAll(keyRegex, value)
   }
   twemojiContent = replaceEmoji(twemojiContent)
-  for (const [key, value] of ignoreMap) {
-    const exp = new RegExp(value, "g")
-    twemojiContent = twemojiContent.replaceAll(exp, key)
+  for (const { valueRegex, key } of ignoreRegexPairs) {
+    twemojiContent = twemojiContent.replaceAll(valueRegex, key)
   }
   return twemojiContent
 }

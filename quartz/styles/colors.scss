@@ -1,6 +1,20 @@
 @use "./variables" as *;
 @use "./palette" as *;
 
+@mixin dropcap-background-colors {
+  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
+  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
+  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
+  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
+  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
+  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
+  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
+  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
+  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
+  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
+  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+}
+
 // Default to light-mode colors so CSS custom properties are always defined,
 // even before detectInitialState.js sets the data-theme attribute.
 // Without this, color-mix() expressions that depend on --background etc. fail,
@@ -23,18 +37,7 @@
   --dark-gray: var(--midground-strong);
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
-  // Dropcap background colors
-  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
-  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
-  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
-  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
-  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
-  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
-  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
-  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
-  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
-  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+  @include dropcap-background-colors;
 
   // Derived color variables
   --midground-fainter: color-mix(in srgb, var(--background) 70%, var(--midground-faint));
@@ -84,24 +87,26 @@
   --dark: var(--background);
   --dark-gray: var(--midground-faint);
 
-  // Dropcap background colors
-  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
-  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
-  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
-  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
-  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
-  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
-  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
-  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
-  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
-  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+  @include dropcap-background-colors;
 
   & img,
-  & video:not(:has(::backdrop)),
+  & video:not(:fullscreen),
   // Unsure why this selector is needed
   & #pond-video {
     filter: grayscale(50%);
+  }
+
+  // `mix-blend-mode: screen` is the dark-mode counterpart to the light-mode
+  // `multiply` below: pure-black image backgrounds (matplotlib figure bg,
+  // any post-`.invert-in-dark-mode` inversion) blend into the dark page bg.
+  // For images without a black bg it is mostly a no-op; for photos it
+  // slightly brightens deep shadows.
+  // Videos: only inline GIF-replacements (autoplay+loop+muted) get screen
+  // blend. Regular embeds (with controls) and the persistent pond video
+  // keep their normal rendering.
+  & img:not([src$=".svg"]),
+  & video[autoplay][loop][muted]:not(#pond-video, :fullscreen) {
+    mix-blend-mode: screen;
   }
 }
 
@@ -122,22 +127,11 @@
   --dark-gray: var(--midground-strong);
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
-  // Dropcap background colors
-  --dropcap-background-red: color-mix(in srgb, 55% var(--red), var(--midground-fainter));
-  --dropcap-background-maroon: color-mix(in srgb, 55% var(--maroon), var(--midground-fainter));
-  --dropcap-background-orange: color-mix(in srgb, 55% var(--orange), var(--midground-fainter));
-  --dropcap-background-gold: color-mix(in srgb, 65% var(--gold), var(--midground-fainter));
-  --dropcap-background-green: color-mix(in srgb, 65% var(--green), var(--midground-fainter));
-  --dropcap-background-teal: color-mix(in srgb, 65% var(--teal), var(--midground-fainter));
-  --dropcap-background-sky: color-mix(in srgb, 65% var(--sky), var(--midground-fainter));
-  --dropcap-background-blue: color-mix(in srgb, 65% var(--blue), var(--midground-fainter));
-  --dropcap-background-purple: color-mix(in srgb, 65% var(--purple), var(--midground-fainter));
-  --dropcap-background-lavender: color-mix(in srgb, 65% var(--lavender), var(--midground-fainter));
-  --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
+  @include dropcap-background-colors;
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
-  & video:not(:has(::backdrop)),
-  & iframe:not(:has(::backdrop)) {
+  & video:not(:fullscreen),
+  & iframe:not(:fullscreen) {
     mix-blend-mode: multiply;
   }
 
@@ -172,8 +166,18 @@ section {
 }
 
 .dark-mode img {
-  mix-blend-mode: normal;
   filter: grayscale(50%) !important;
+}
+
+// Images and inline looping muted videos flagged at build time by the
+// InvertInDarkMode transformer (quartz/plugins/transformers/invertInDarkMode.ts).
+// Class name is the canonical `invertInDarkModeClass` in config/constants.json;
+// SCSS can't read JSON, so the literal must stay in sync manually.
+:root[data-theme="dark"] img.invert-in-dark-mode,
+:root[data-theme="dark"] video.invert-in-dark-mode,
+.dark-mode img.invert-in-dark-mode,
+.dark-mode video.invert-in-dark-mode {
+  filter: invert(100%) hue-rotate(180deg) !important;
 }
 
 // Mermaid

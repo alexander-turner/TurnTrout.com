@@ -3,8 +3,7 @@ permalink: excitement-about-impact-measures
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+lw-page-url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 lw-is-question: 'false'
 lw-posted-at: 2020-02-27T21:42:18.903000Z
 lw-last-modification: 2020-09-16T18:14:18.398000Z
@@ -35,20 +34,12 @@ next-post-slug: conclusion-to-reframing-impact
 next-post-title: Conclusion to 'Reframing Impact'
 lw-reward-post-warning: 'true'
 use-full-width-images: 'false'
-date_published: 2020-02-27 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
+date_published: 2020-02-27
+original_url: https://www.lesswrong.com/posts/wAAvP8RG6EwzCvHJy/reasons-for-excitement-about-impact-of-impact-measure
 skip_import: true
-description: Impact measure research deconfuses power-seeking incentives in AI, aiding
-  alignment efforts.
-date_updated: 2025-11-22 00:21:52.667251
+description: Impact measure research deconfuses power-seeking incentives in AI, aiding alignment efforts.
+date_updated: 2026-05-08
 ---
-
-
-
-
-
-
 
 Can we get impact measurement _right_? Does there exist One Equation To Rule Them All?
 
@@ -91,8 +82,6 @@ Attempting to iron out flaws from our [current-best AUP equation](/attainable-ut
 Formalizing instrumental convergence [also highlighted a significant hole](/attainable-utility-landscape) in our theoretical understanding of the main formalism of reinforcement learning. And if you told me two years ago that you could [possibly solve side-effect avoidance](/attainable-utility-preservation-empirical-results) in the short-term with one simple trick (“just preserve your ability to optimize a single random reward function, lol”), I’d have thought you were _nuts_. Clearly, there’s something wrong with our models of reinforcement learning environments if these results are so surprising.
 
 In my opinion, research on AUP has yielded an unusually high rate of deconfusion and insights, probably because we’re thinking about what it means for the agent to interact with us.
-
-<hr/>
 
 [^1]: When combined with [our empirical knowledge of the difficulty of reward function specification](https://vkrakovna.wordpress.com/2018/04/02/specification-gaming-examples-in-ai/), you might begin to suspect that there are lots of ways the agent might be incentivized to gain control, many openings through which power-seeking incentives can permeate – and your reward function would have to penalize all of these! If you were initially skeptical, this might make you think that power-seeking behavior may be more difficult to avoid than you initially thought.
 

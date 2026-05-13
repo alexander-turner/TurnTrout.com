@@ -1,6 +1,6 @@
 import type { JSX } from "preact"
 
-import { type RootContent, type Parent, type Text, type Element, type Root } from "hast"
+import { type RootContent, type Parent, type Element, type Root } from "hast"
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
@@ -43,8 +43,11 @@ function elementToJsx(elt: RootContent): JSX.Element {
       return <>{elt.value}</>
     case "element":
       if (elt.tagName === "abbr") {
-        const abbrText = elt.children.length > 0 ? (elt.children[0] as Text).value : ""
-        const className = (elt.properties?.className as string[])?.join(" ") || ""
+        const firstChild = elt.children[0]
+        const abbrText = firstChild?.type === "text" ? firstChild.value : ""
+        const className = Array.isArray(elt.properties?.className)
+          ? (elt.properties.className as string[]).join(" ")
+          : ""
         return <abbr className={className}>{abbrText}</abbr>
       } else {
         return <span>{elt.children.map(elementToJsx)}</span>

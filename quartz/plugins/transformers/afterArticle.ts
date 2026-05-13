@@ -68,7 +68,7 @@ export function insertAfterOrnamentNode(tree: Root, components: Element[]) {
  */
 function afterArticleTransform(tree: Root, file: VFile) {
   const sequenceLinksComponent = createSequenceLinksComponent(file.data as QuartzPluginData)
-  const components = [sequenceLinksComponent ?? null].filter(Boolean) as Element[]
+  const components: Element[] = sequenceLinksComponent ? [sequenceLinksComponent] : []
 
   // If frontmatter doesn't say to avoid it
   if (!file.data.frontmatter?.hideSubscriptionLinks) {

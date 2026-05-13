@@ -19,22 +19,10 @@ aliases:
 next-post-slug: advanced-privacy
 lw-sequence-title:
 next-post-title: Advanced Privacy Despite Authoritarianism
-date_published: 2025-10-28 10:05:55.881595
-date_updated: 2026-04-10 04:21:11.395410
+date_published: 2025-10-28
+date_updated: 2026-05-08
 card_image_alt: A patriotic man smirks and looks up at a surveillance camera with a red dot in the lens. A US flag hangs in the background.
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 > [!quote] [I’m a U.S. citizen who was wrongly arrested and held by ICE. Here’s why you could be next.](https://www.sfchronicle.com/opinion/openforum/article/ice-racial-profiling-21045429.php)
 >
@@ -524,7 +512,8 @@ Proton Mail also screens out creepy tracking scripts which "tell senders and adv
 2. [ ] Push a button to import your calendars, contacts, and emails from e.g. your Google account.  
 3. [ ] Push another button to forward new emails from your Gmail to your new Proton Mail address.  
 4. [ ] Begin redirecting mail to use ([an alias to](/advanced-privacy#use-email-aliases-instead-of-handing-out-your-real-email-to-random-sites)) your new Proton email address. Mail forwarded from your old address is still visible to authorities if they go check with your mail provider.
-5. [ ] Start using Proton Mail! :)
+5. [ ] Enable [post-quantum encryption to protect against harvest-now, decrypt-later](https://proton.me/support/mail-post-quantum-protection).
+6. [ ] Start using Proton Mail! :)
 
 > [!danger] The authorities can always track whom you're emailing and when
 > The problem has to do with [the definition of the email protocol itself](https://www.forbes.com/sites/timworstall/2013/08/18/why-email-can-never-be-truly-secure-its-the-metadata/). Use Signal for truly sensitive communication.

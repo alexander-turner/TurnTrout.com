@@ -4,9 +4,10 @@ import FlexSearch, {
   type DocumentData,
 } from "flexsearch"
 
-import { type ContentDetails } from "../../plugins/emitters/contentIndex"
 import { replaceEmojiConvertArrows } from "../../plugins/transformers/twemoji"
+import { type ContentDetails } from "../../plugins/vfile"
 import { tabletBreakpoint } from "../../styles/variables"
+import { escapeHTML } from "../../util/escape"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { NBSP, simpleConstants, SEARCH_MATCH_CLASS } from "../constants"
 import { registerEscapeHandler, removeAllChildren, debounce } from "./component_script_utils"
@@ -100,7 +101,38 @@ interface FetchResult {
   frontmatter: Record<string, unknown>
 }
 
+/**
+ * LRU cache for fetched content. Bounded to avoid unbounded memory growth
+ * during long-lived SPA sessions. The `Map` preserves insertion order, so
+ * the "least recently used" entry is always the first key.
+ */
+const fetchContentCacheMaxEntries = 50
 const fetchContentCache = new Map<FullSlug, Promise<FetchResult>>()
+
+/* istanbul ignore next -- consumer (fetchContent) is browser-only and ignored */
+function fetchContentCacheGet(slug: FullSlug): Promise<FetchResult> | undefined {
+  const value = fetchContentCache.get(slug)
+  if (value !== undefined) {
+    // Refresh recency: delete and re-insert so this becomes the newest key
+    fetchContentCache.delete(slug)
+    fetchContentCache.set(slug, value)
+  }
+  return value
+}
+
+/* istanbul ignore next -- consumer (fetchContent) is browser-only and ignored */
+function fetchContentCacheSet(slug: FullSlug, value: Promise<FetchResult>): void {
+  if (fetchContentCache.has(slug)) {
+    fetchContentCache.delete(slug)
+  } else if (fetchContentCache.size >= fetchContentCacheMaxEntries) {
+    const oldestKey = fetchContentCache.keys().next().value
+    if (oldestKey !== undefined) {
+      fetchContentCache.delete(oldestKey)
+    }
+  }
+  fetchContentCache.set(slug, value)
+}
+
 const contextWindowWords = 30
 const numSearchResults = 8
 
@@ -124,7 +156,7 @@ export const tokenizeTerm = (term: string): string[] => {
 }
 
 /**
- * matchs search terms within a text string
+ * Matches search terms within a text string
  * @param searchTerm - Term to match
  * @param text - Text to search within
  * @param trim - If true, returns a window of text around matches
@@ -145,12 +177,15 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
 
     let bestSum = 0
     let bestIndex = 0
-    for (let i = 0; i < Math.max(tokenizedText.length - contextWindowWords, 0); i++) {
-      const window = occurrencesIndices.slice(i, i + contextWindowWords)
-      const windowSum = window.reduce((total, cur) => total + (cur ? 1 : 0), 0)
-      if (windowSum >= bestSum) {
-        bestSum = windowSum
-        bestIndex = i
+    let runningSum = 0
+    for (let i = 0; i < occurrencesIndices.length; i++) {
+      runningSum += occurrencesIndices[i] ? 1 : 0
+      if (i >= contextWindowWords) {
+        runningSum -= occurrencesIndices[i - contextWindowWords] ? 1 : 0
+      }
+      if (runningSum >= bestSum) {
+        bestSum = runningSum
+        bestIndex = Math.max(0, i - contextWindowWords + 1)
       }
     }
 
@@ -162,15 +197,15 @@ export function match(searchTerm: string, text: string, trim?: boolean) {
 
   const slice = tokenizedText
     .map((tok: string): string => {
-      // see if this tok is prefixed by any search terms
+      const escaped = escapeHTML(tok)
       for (const searchTok of tokenizedTerms) {
         if (tok.toLowerCase().includes(searchTok.toLowerCase())) {
-          const sanitizedSearchTok = RegExp.escape(searchTok)
-          const regex = new RegExp(sanitizedSearchTok.toLowerCase(), "gi")
-          return tok.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
+          const sanitizedSearchTok = RegExp.escape(escapeHTML(searchTok))
+          const regex = new RegExp(sanitizedSearchTok, "gi")
+          return escaped.replace(regex, `<span class="${SEARCH_MATCH_CLASS}">$&</span>`)
         }
       }
-      return tok
+      return escaped
     })
     .join(" ")
 
@@ -857,34 +892,32 @@ function onNav(e: CustomEventMap["nav"]) {
  * @param slug - Page slug to fetch
  */
 /* istanbul ignore next */
-async function fetchContent(slug: FullSlug): Promise<FetchResult> {
-  if (!fetchContentCache.has(slug)) {
-    const fetchPromise = await (async () => {
-      const targetUrl = new URL(resolveSlug(slug, currentSlug).toString())
+function fetchContent(slug: FullSlug): Promise<FetchResult> {
+  const cached = fetchContentCacheGet(slug)
+  if (cached !== undefined) return cached
 
-      const html = await fetchHTMLContent(targetUrl)
+  const fetchPromise = (async () => {
+    const targetUrl = new URL(resolveSlug(slug, currentSlug).toString())
 
-      // Extract frontmatter
-      const frontmatterScript = html.querySelector('script[type="application/json"]')
-      let frontmatter: Record<string, unknown> = {}
-      if (frontmatterScript) {
-        try {
-          frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
-        } catch {
-          console.error(`Failed to parse frontmatter JSON for ${slug}`)
-        }
+    const html = await fetchHTMLContent(targetUrl)
+
+    const frontmatterScript = html.querySelector('script[type="application/json"]')
+    let frontmatter: Record<string, unknown> = {}
+    if (frontmatterScript) {
+      try {
+        frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
+      } catch {
+        console.error(`Failed to parse frontmatter JSON for ${slug}`)
       }
+    }
 
-      // Extract previewable elements and restore checkbox states in one operation
-      const contentElements = processPreviewables(html, targetUrl)
+    const contentElements = processPreviewables(html, targetUrl)
 
-      return { content: contentElements, frontmatter }
-    })()
+    return { content: contentElements, frontmatter }
+  })()
 
-    fetchContentCache.set(slug, Promise.resolve(fetchPromise))
-  }
-
-  return fetchContentCache.get(slug) ?? ({} as FetchResult)
+  fetchContentCacheSet(slug, fetchPromise)
+  return fetchPromise
 }
 /**
  * Visually and optionally programmatically focus a result card.
@@ -1111,6 +1144,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   itemTile.addEventListener("mouseenter", onMouseEnter)
   itemTile.addEventListener("mouseleave", onMouseLeave)
+  itemTile.addEventListener("focus", () => focusCard(itemTile, false))
   itemTile.addEventListener("click", (e) => {
     e.preventDefault()
     navigateWithSearchTerm(itemTile.href, currentSearchTerm)

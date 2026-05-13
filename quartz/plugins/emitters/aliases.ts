@@ -1,6 +1,5 @@
 import path from "path"
 
-import { type GlobalConfiguration } from "../../cfg"
 import { locale } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { renderHead } from "../../util/head"
@@ -99,7 +98,7 @@ export const AliasRedirects: QuartzEmitterPlugin = () => ({
 
         // Generate redirect HTML with full metadata for SEO
         const redirectMetadata = renderHead({
-          cfg: ctx.cfg as unknown as GlobalConfiguration,
+          cfg: ctx.cfg.configuration,
           fileData: file.data,
           slug: file.data.slug as FullSlug,
           redirect: { slug, to: file.data.slug as FullSlug },

@@ -16,7 +16,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/**"
-  merge_group:
 
 permissions:
   actions: read
@@ -31,12 +30,13 @@ jobs:
       contents: write
     outputs:
       pushed: ${{ steps.push-result.outputs.pushed }}
-    # Only run on push to main by a human (skip our own automated date commits)
-    # Note: github.actor reflects the PAT owner, not the bot, so we check the commit message
+    # Only run on push to main when content changed.
+    # Amends the triggering commit with date changes and force-pushes,
+    # which cancels in-progress workflows and restarts them on the amended commit.
+    # On the re-triggered run, the script finds no changes (dates already set) and skips.
     if: >
       github.event_name == 'push' &&
       github.ref == 'refs/heads/main' &&
-      !startsWith(github.event.head_commit.message, 'chore: updated publication dates') &&
       needs.detect-changes.outputs.content == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -60,15 +60,15 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit and push changes
+      - name: Amend commit with date changes and force-push
         id: push-result
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add website_content/*.md README.md
-          git commit -m "chore: updated publication dates [skip ci]"
-          git push
+          git commit --amend --no-edit
+          git push --force-with-lease
           echo "pushed=true" >> $GITHUB_OUTPUT
 
       - name: Set output if no push
@@ -82,6 +82,7 @@ jobs:
       content: ${{ steps.changes.outputs.content }}
       code: ${{ steps.changes.outputs.code }}
       styles: ${{ steps.changes.outputs.styles }}
+      python: ${{ steps.changes.outputs.python }}
       source-checks: ${{ steps.changes.outputs.source-checks }}
       workflows: ${{ steps.changes.outputs.workflows }}
     steps:
@@ -95,7 +96,7 @@ jobs:
               - 'website_content/**'
               - 'config/spellcheck/**'
               - 'config/vale/**'
-              - 'scripts/strip_quotes.py'
+              - 'scripts/strip_for_spellcheck.py'
             code:
               - 'quartz/**'
               - 'config/javascript/**'
@@ -108,6 +109,12 @@ jobs:
               - 'package.json'
               - 'pnpm-lock.yaml'
               - '.github/actions/**'
+            python:
+              - 'scripts/**/*.py'
+              - '.github/scripts/**/*.py'
+              - 'config/python/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
             source-checks:
               - 'website_content/**'
               - 'quartz/**'
@@ -128,18 +135,23 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: write
-    # Auto-fix formatting on PRs and pushes to main/dev (not merge queue)
-    # Depends on update-dates to avoid push race condition (both push to main).
+    # Auto-fix formatting on PRs and pushes to main/dev.
+    # Depends on update-dates so it doesn't run until any potential force-push completes.
     # always() lets this run even when update-dates is skipped (PRs, no content changes).
+    # Runs whenever any tracked source class changed (code, styles, python,
+    # content) — the underlying autofixer is idempotent, so "runs on unrelated
+    # file types" is a cheap no-op rather than a correctness issue.
     if: >
       always() && !cancelled() &&
       needs.detect-changes.result == 'success' &&
       !startsWith(github.head_ref, 'deepsource-') &&
       (needs.detect-changes.outputs.code == 'true' ||
-       needs.detect-changes.outputs.styles == 'true') &&
+       needs.detect-changes.outputs.styles == 'true' ||
+       needs.detect-changes.outputs.python == 'true' ||
+       needs.detect-changes.outputs.content == 'true') &&
       (github.event_name == 'pull_request' ||
        (github.event_name == 'push' && contains(fromJSON('["refs/heads/main","refs/heads/dev"]'), github.ref)))
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -148,44 +160,19 @@ jobs:
 
       - name: Setup site
         uses: ./.github/actions/setup-site
-        with:
-          install-python: "false"
 
       - name: Generate SCSS variables
         if: needs.detect-changes.outputs.styles == 'true'
         run: pnpm exec tsx quartz/styles/generate-variables.ts
 
-      - name: Run ESLint --fix
-        if: needs.detect-changes.outputs.code == 'true'
+      # Single source of truth: runs the same autofixer list as the local
+      # pre-push hook (scripts/run_push_checks.py::get_formatter_steps). If
+      # one individual formatter fails we still want the others to commit
+      # their successful fixes, so we don't fail-fast on non-zero exit —
+      # any remaining real issue will be caught by the lint job below.
+      - name: Run shared autofixers
         continue-on-error: true
-        run: pnpm eslint "quartz/**/*.{js,jsx,ts,tsx}" --fix --config config/javascript/eslint.config.js
-
-      - name: Run Stylelint --fix
-        if: needs.detect-changes.outputs.styles == 'true'
-        continue-on-error: true
-        run: |
-          pnpm exec stylelint \
-            --config config/stylelint/.stylelintrc.json \
-            --fix \
-            "quartz/**/*.scss"
-
-      - name: Run Prettier on styles
-        if: needs.detect-changes.outputs.styles == 'true'
-        continue-on-error: true
-        run: |
-          pnpm exec prettier --write \
-            --config config/prettier/.prettierrc \
-            --ignore-path config/prettier/.prettierignore \
-            "quartz/**/*.scss"
-
-      - name: Run Prettier on code
-        if: needs.detect-changes.outputs.code == 'true'
-        continue-on-error: true
-        run: |
-          pnpm exec prettier --write \
-            --config config/prettier/.prettierrc \
-            --ignore-path config/prettier/.prettierignore \
-            "quartz/**/*.{js,jsx,ts,tsx}"
+        run: uv run python scripts/run_push_checks.py --autofix-only --no-commit
 
       - name: Commit and push fixes
         env:
@@ -193,8 +180,19 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # Only stage files that formatters could have modified
-          git diff --name-only -z -- 'quartz/**/*.scss' 'quartz/**/*.js' 'quartz/**/*.jsx' 'quartz/**/*.ts' 'quartz/**/*.tsx' | xargs -0 --no-run-if-empty git add --
+          # Only stage files the shared autofixers could have modified.
+          # Git pathspec globs with `**` do NOT match top-level files, so
+          # we pass both `dir/*.ext` and `dir/**/*.ext` for every tree.
+          git diff --name-only -z -- \
+            'quartz/*.scss'           'quartz/**/*.scss' \
+            'quartz/*.js'             'quartz/**/*.js' \
+            'quartz/*.jsx'            'quartz/**/*.jsx' \
+            'quartz/*.ts'             'quartz/**/*.ts' \
+            'quartz/*.tsx'            'quartz/**/*.tsx' \
+            'scripts/*.py'            'scripts/**/*.py' \
+            '.github/scripts/*.py'    '.github/scripts/**/*.py' \
+            'website_content/*.md'    'website_content/**/*.md' \
+            | xargs -0 --no-run-if-empty git add --
           if [[ -z $(git diff --cached --name-only) ]]; then
             echo "::notice::No formatting changes needed"
             exit 0
@@ -257,15 +255,11 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      # Check out branch tip when autofix or update-dates pushed commits, so lint
-      # sees the final state. Otherwise use the default SHA that triggered the workflow.
+      # Always check out the branch tip (not the triggering SHA) so lint
+      # sees the final state after any update-dates or autofix commits.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result == 'success' || needs.update-dates.outputs.pushed == 'true'
         with:
           ref: ${{ github.head_ref || github.ref_name }}
-
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: needs.autofix.result != 'success' && needs.update-dates.outputs.pushed != 'true'
 
       - name: Setup site
         uses: ./.github/actions/setup-site
@@ -288,36 +282,31 @@ jobs:
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
 
-      - name: Strip quote blocks for linting
-        id: strip-quotes
+      - name: Strip quote blocks and math for linting
+        id: strip-for-spellcheck
         if: needs.detect-changes.outputs.content == 'true'
         run: |
-          STRIPPED_DIR=".stripped_quotes"
-          uv run python scripts/strip_quotes.py --source-dir website_content --output-dir "$STRIPPED_DIR"
+          STRIPPED_DIR=".stripped_for_spellcheck"
+          uv run python scripts/strip_for_spellcheck.py --source-dir website_content --output-dir "$STRIPPED_DIR"
           echo "dir=$STRIPPED_DIR" >> $GITHUB_OUTPUT
 
       - name: Run spellcheck
         id: spellcheck
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: |
-          pnpm exec spellchecker \
-            --no-suggestions \
-            --quiet \
-            --dictionaries config/spellcheck/.wordlist.txt \
-            --files "${{ steps.strip-quotes.outputs.dir }}/**/*.md" \
-            --ignore '(?=.{10,})[\da-zA-Z]+(\-[\da-zA-Z]+)+' \
-            --plugins spell indefinite-article repeated-words syntax-urls frontmatter
+        env:
+          STRIP_QUOTES_CONTENT_DIR: ${{ steps.strip-for-spellcheck.outputs.dir }}
+        run: scripts/spellcheck.sh
 
       - name: Run Vale
         id: vale
         if: needs.detect-changes.outputs.content == 'true'
         continue-on-error: true
-        run: vale --config config/vale/.vale.ini "${{ steps.strip-quotes.outputs.dir }}"
+        run: vale --config config/vale/.vale.ini "${{ steps.strip-for-spellcheck.outputs.dir }}"
 
-      - name: Clean up stripped quotes
-        if: always() && steps.strip-quotes.outputs.dir
-        run: rm -rf "${{ steps.strip-quotes.outputs.dir }}"
+      - name: Clean up stripped content
+        if: always() && steps.strip-for-spellcheck.outputs.dir
+        run: rm -rf "${{ steps.strip-for-spellcheck.outputs.dir }}"
 
       - name: Run ESLint
         id: eslint
@@ -338,9 +327,9 @@ jobs:
         id: pub-date-flag
         if: needs.detect-changes.outputs.source-checks == 'true'
         run: |
-          # Check publication dates on PRs and merge queue (pre-merge validation)
-          # Skip on push to main/dev (dates are auto-added by update-dates job)
-          if [[ "${{ github.event_name }}" == "pull_request" || "${{ github.event_name }}" == "merge_group" ]]; then
+          # Check publication dates on PRs (pre-merge validation).
+          # Skip on push to main/dev (dates are auto-added by update-dates job).
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
           fi
 

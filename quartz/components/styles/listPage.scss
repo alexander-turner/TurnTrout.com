@@ -1,15 +1,15 @@
 @use "../../styles/variables.scss" as *;
 
-ul.section-ul {
+ul.page-listing-list {
   list-style: none;
   margin-top: 0;
   padding-left: 0;
 }
 
-li.section-li {
+li.page-listing-item {
   margin-bottom: 0;
 
-  & > .section {
+  & > .page-listing-row {
     display: grid;
     grid-template-columns: 6em 3fr;
 
@@ -19,7 +19,7 @@ li.section-li {
       }
     }
 
-    & > .desc > h3 > a {
+    & > .page-listing-description > h3 > a {
       background-color: transparent;
     }
 
@@ -33,7 +33,7 @@ li.section-li {
 }
 
 // modifications in popover context
-.popover .section {
+.popover .page-listing-row {
   grid-template-columns: 6em 1fr !important;
 
   & > #tags ul {
@@ -96,7 +96,7 @@ a.tag-link {
     text-decoration: none;
   }
 
-  & .section-li {
+  & .page-listing-item {
     margin-bottom: calc($base-margin);
 
     &:not(:first-child) {

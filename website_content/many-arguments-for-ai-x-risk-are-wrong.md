@@ -3,8 +3,7 @@ permalink: invalid-ai-risk-arguments
 lw-was-draft-post: 'false'
 lw-is-af: 'true'
 lw-is-debate: 'false'
-lw-page-url: 
-  https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
+lw-page-url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 lw-is-question: 'false'
 lw-posted-at: 2024-03-05T02:31:00.990000Z
 lw-last-modification: 2024-07-09T07:23:08.172000Z
@@ -27,26 +26,12 @@ aliases:
   - many-arguments-for-ai-x-risk-are-wrong
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2024-03-05 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
+date_published: 2024-03-05
+original_url: https://www.lesswrong.com/posts/yQSmcfN4kA7rATHGK/many-arguments-for-ai-x-risk-are-wrong
 skip_import: true
-description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing.
-  Deep learning defies naive predictions, and better arguments are needed.
-date_updated: 2025-11-22 00:21:52.667251
+description: Arguments that AI will inevitably "scheme" are oversimplified and unconvincing. Deep learning defies naive predictions, and better arguments are needed.
+date_updated: 2026-05-08
 ---
-
-
-
-
-
-
-
-
-
-
-
-
 
 > [!note] Author's note
 > The following is a lightly edited version of a memo I wrote for a retreat. It was inspired by a draft of [Counting arguments provide no evidence for AI doom](https://www.lesswrong.com/posts/YsFZF3K9tuzbfrLxo/counting-arguments-provide-no-evidence-for-ai-doom). I think that my post covers important points not made by the published version of that post. I'm also thankful for the dozens of interesting conversations and comments at the retreat.
@@ -105,8 +90,9 @@ I maintain that there isn't good evidence/argumentation for threat models like "
 
 I cannot address each of the million arguments for doom, but I think most are wrong and am happy to dismantle any particular argument (in person; I do not commit to replying to comments here).
 
-Much of my position is summarized by [my review](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities?commentId=B4poSMfRteggYWpv7) of Yudkowsky's [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/?commentId=B4poSMfRteggYWpv7):
+Much of my position is summarized by my review of Yudkowsky's [AGI Ruin: A List of Lethalities](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/?commentId=B4poSMfRteggYWpv7).
 
+> [!quote] [Review of _AGI Ruin: A List of Lethalities_](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities?commentId=B4poSMfRteggYWpv7)
 > [Reading this post made me more optimistic about alignment and AI](https://www.lesswrong.com/posts/CoZhXrhpQxpy9xw9y/where-i-agree-and-disagree-with-eliezer#EfeMSnBvbvxjSQBc3). My suspension of disbelief snapped; I realized how vague and bad a lot of these "classic" alignment arguments are, and how many of them are secretly [vague analogies](https://www.lesswrong.com/posts/HmQGHGCnvmpCNDBjc/current-ais-provide-nearly-no-data-relevant-to-agi-alignment?commentId=rxdFyej4jba2LwH7z) and intuitions about evolution.
 >
 > While I agree with a few points on this list, I think this list is fundamentally misguided. [The list is written in a language which assigns short encodings to confused and incorrect ideas](https://www.lesswrong.com/posts/gHefoxiznGfsbiAu9/inner-and-outer-alignment-decompose-one-hard-problem-into). I think a person who tries to deeply internalize this post's worldview will end up more confused about alignment and AI…

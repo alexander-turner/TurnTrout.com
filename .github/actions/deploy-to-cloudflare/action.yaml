@@ -1,10 +1,15 @@
 name: "Deploy to Cloudflare Pages"
-description: >-
-  Installs Wrangler and deploys to Cloudflare Pages. Reads
-  ``CLOUDFLARE_API_TOKEN``, ``CLOUDFLARE_ACCOUNT_ID`` and
-  ``CLOUDFLARE_ZONE_ID`` from the surrounding job/step environment (Wrangler
-  picks these up natively), so set them once at the job level.
+description: "Installs Wrangler and deploys to Cloudflare Pages"
 inputs:
+  cloudflare-api-token:
+    description: "Cloudflare API Token"
+    required: true
+  cloudflare-account-id:
+    description: "Cloudflare Account ID"
+    required: true
+  cloudflare-zone-id:
+    description: "Cloudflare Zone ID"
+    required: true
   project-name:
     description: "Cloudflare Pages project name"
     required: true
@@ -27,14 +32,12 @@ runs:
       shell: bash
 
     - name: Deploy to Cloudflare Pages
-      run: |
-        for attempt in 1 2 3; do
-          if pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}; then
-            exit 0
-          fi
-          echo "Deploy attempt $attempt failed, retrying in $((attempt * 15))s..."
-          sleep $((attempt * 15))
-        done
-        echo "All deploy attempts failed"
-        exit 1
-      shell: bash
+      uses: ./.github/actions/retry-external
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ inputs.cloudflare-api-token }}
+        CLOUDFLARE_ACCOUNT_ID: ${{ inputs.cloudflare-account-id }}
+        CLOUDFLARE_ZONE_ID: ${{ inputs.cloudflare-zone-id }}
+      with:
+        command: pnpm exec wrangler pages deploy ${{ inputs.public-dir }} --project-name=${{ inputs.project-name }} --branch ${{ inputs.branch }}
+        max-attempts: "4"
+        initial-delay-seconds: "5"

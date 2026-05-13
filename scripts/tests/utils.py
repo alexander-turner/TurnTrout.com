@@ -1,7 +1,6 @@
 import shutil
 import subprocess
 from collections.abc import Iterator, Mapping
-from datetime import datetime
 from pathlib import Path
 from typing import cast
 from unittest.mock import Mock
@@ -13,7 +12,6 @@ import pytest
 import requests
 from PIL import Image
 from ruamel.yaml import YAML
-from ruamel.yaml.timestamp import TimeStamp
 
 from .. import compress
 from .. import utils as script_utils
@@ -74,8 +72,9 @@ def create_test_video(
     framerate: float = 15,
 ) -> None:
     """
-    Creates a test video using `ffmpeg` with a silent audio track. Uses MPEG-2
-    with high bitrate and all I-frames for maximum inefficiency.
+    Creates a test video using `ffmpeg` with a silent audio track.
+
+    Uses MPEG-2 with high bitrate and all I-frames for maximum inefficiency.
 
     Args:
         path (Path): The file path where the video will be saved.
@@ -213,7 +212,6 @@ def create_markdown_file(
         content: Markdown body to append after the front-matter.
     """
     if frontmatter is not None:
-        # Use ruamel.yaml for compatibility with TimeStamp objects
         yaml_parser = YAML(typ="rt")
         yaml_parser.preserve_quotes = True
 
@@ -246,7 +244,6 @@ def mock_http_response(
 @pytest.fixture
 def setup_test_env(tmp_path: Path) -> Iterator[Path]:
     """Sets up a temporary Git repository and populates it with test assets."""
-
     # Create the required directories for testing
     for dir_name in ["quartz/static", "scripts", "website_content"]:
         (tmp_path / dir_name).mkdir(parents=True, exist_ok=True)
@@ -268,7 +265,9 @@ def setup_test_env(tmp_path: Path) -> Iterator[Path]:
         create_test_video(tmp_path / "quartz/static" / f"asset{ext}")
         # skipcq: PTC-W6004 because this is server-side
         with open(
-            tmp_path / "website_content" / f"{ext.lstrip('.')}.md", "a"
+            tmp_path / "website_content" / f"{ext.lstrip('.')}.md",
+            "a",
+            encoding="utf-8",
         ) as file:
             file.write(f"![](static/asset{ext})\n")
             file.write(f"[[static/asset{ext}]]\n")
@@ -276,7 +275,9 @@ def setup_test_env(tmp_path: Path) -> Iterator[Path]:
                 file.write(f'<video src="static/asset{ext}" alt="shrek"/>\n')
 
     # Special handling for GIF file in markdown
-    with open(tmp_path / "website_content" / "gif.md", "a") as file:
+    with open(
+        tmp_path / "website_content" / "gif.md", "a", encoding="utf-8"
+    ) as file:
         file.write('<img src="static/asset.gif" alt="shrek">')
 
     # Create an unsupported file
@@ -346,19 +347,6 @@ def run_shell_command(
     cmd = [shell_executable, str(script_path)]
     cmd.extend(args)
     return subprocess.run(cmd, capture_output=True, text=True, check=False)
-
-
-def create_timestamp(dt: datetime) -> TimeStamp:
-    """
-    Convert a datetime object to a ruamel.yaml TimeStamp.
-
-    Args:
-        dt: The datetime to convert.
-
-    Returns:
-        TimeStamp object compatible with ruamel.yaml serialization.
-    """
-    return TimeStamp(dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second)
 
 
 def setup_git_repo_with_files(

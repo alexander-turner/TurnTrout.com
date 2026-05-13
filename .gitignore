@@ -19,18 +19,20 @@ tsconfig.tsbuildinfo
 *variables.scss
 *critical.scss
 *__pycache__*
+# Per-image mean-luminance cache used by scripts/label_invert.py.
+# Regenerated on demand by fetching image bytes; not source of truth.
+quartz/plugins/transformers/.invert_luminance.json
 
 # Testing & Coverage
 .coverage*
 coverage
-lost-pixel/*
-.lostpixel
 .lighthouseci
 /test-results/
 /blob-report/
 /playwright-report/
 /playwright/.cache/
 quartz/**snapshots*
+tests/visual-baselines/*.png
 
 # Temporary & Backup Files
 *~

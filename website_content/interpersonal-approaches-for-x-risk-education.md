@@ -3,8 +3,7 @@ permalink: interpersonal-approaches-for-x-risk-education
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
+lw-page-url: https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
 lw-is-question: "true"
 lw-posted-at: 2018-01-24T00:47:44.183000Z
 lw-last-modification: None
@@ -26,19 +25,12 @@ aliases:
   - interpersonal-approaches-for-x-risk-education
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-01-24 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
+date_published: 2018-01-24
+original_url: https://www.lesswrong.com/posts/pG7zuvMonHDCJFfjv/interpersonal-approaches-for-x-risk-education
 skip_import: true
-description: Effective ways to raise awareness of AI risk among researchers, weighing
-  persuasion vs. education and status vs. receptiveness.
-date_updated: 2025-11-22 00:21:52.667251
+description: Effective ways to raise awareness of AI risk among researchers, weighing persuasion vs. education and status vs. receptiveness.
+date_updated: 2026-04-20
 ---
-
-
-
-
-
 
 Much of the AI research community remains unaware of the Alignment Problem (according to my personal experience), and I haven't seen much discussion about how to deliberately expand the community (all I've seen to this effect is [Scott's A/B/C/D/E testing on alignment articles](http://slatestarcodex.com/2016/10/24/ai-persuasion-experiment-results/)).
 

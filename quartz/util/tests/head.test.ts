@@ -2,7 +2,6 @@ import { describe, it, expect } from "@jest/globals"
 import { type Parent } from "hast"
 import { VFile } from "vfile"
 
-import { type GlobalConfiguration } from "../../cfg"
 import {
   defaultCardUrl,
   defaultDescription,
@@ -14,6 +13,7 @@ import {
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../../styles/variables"
+import { type GlobalConfiguration } from "../config"
 import { escapeHTML } from "../escape"
 import { renderHead, maybeProduceVideoTag } from "../head"
 import { type FullSlug } from "../path"

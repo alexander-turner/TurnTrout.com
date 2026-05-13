@@ -9,30 +9,29 @@ on:
   push:
     branches: ["main"]
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "website_content/**"
       - "config/quartz/**"
       - "config/constants.json"
       - "config/playwright/**"
-      - "config/lostpixel/**"
+      - "tests/visual-baselines/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
   contents: read
+  pull-requests: write
+  statuses: write
 
 jobs:
-  # Gate: only run expensive tests on PRs when a CI label is actively added.
-  # The pull_request trigger keeps synchronize/opened/reopened so this workflow
-  # fires on every push — the should-run gate returns run=false instantly,
-  # which is needed for the unified "visual-testing" required status check.
+  # Gate: skip expensive tests for bot actors (dependabot, renovate, etc.).
+  # Otherwise yields run=true and full browser coverage (chromium,firefox + macOS).
   should-run:
     name: visual-should-run
+    if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]' && !startsWith(github.head_ref, 'deepsource-')
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -54,7 +53,7 @@ jobs:
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
 
-  # Chromium + Firefox on main; Chromium-only on PRs/merge queue
+  # Linux Chromium + Firefox.
   visual-testing-linux:
     needs: [build, should-run]
     runs-on: ubuntu-24.04
@@ -77,9 +76,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "true"
-
-      - name: Make folder for screenshots
-        run: mkdir -p ./lost-pixel
+          install-python: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
@@ -88,29 +85,46 @@ jobs:
         run: pnpm run install-browsers
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Download visual baselines from R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py download
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --shard ${{ matrix.shard }} \
+            --reporter=blob,dot \
+            --update-snapshots=none \
+            --trace=off \
+            -g "(screenshot)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
           # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
-      - name: Sanitize shard name
+      - name: Create sanitized shard
         if: always()
-        uses: ./.github/actions/sanitize-shard-name
-        with:
-          shard: ${{ matrix.shard }}
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: visual-testing-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -119,7 +133,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -128,7 +142,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -137,19 +151,33 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-linux-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      # Playwright's blob reporter writes report-<run-id>-<shard-num>.zip,
+      # so Linux and macOS shards with the same shard number produce the
+      # same filename. publish-visual-report downloads with merge-multiple,
+      # which silently overwrites the colliding files. Tag with platform
+      # before upload so every blob report has a unique name.
+      - name: Tag blob report with platform
+        if: always() && hashFiles('blob-report/*.zip') != ''
+        run: |
+          cd blob-report
+          for f in *.zip; do mv "$f" "linux-$f"; done
+
+      # Blob report is consumed by the publish-visual-report job to
+      # generate a merged HTML diff report with side-by-side comparisons.
+      - name: Upload blob report shard
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: lost-pixel-screenshots-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: ./lost-pixel
+          name: blob-report-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: blob-report/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Fail if playwright tests failed
@@ -186,9 +214,7 @@ jobs:
         uses: ./.github/actions/setup-visual-testing-env
         with:
           install-playwright: "false"
-
-      - name: Make folder for screenshots
-        run: mkdir -p ./lost-pixel
+          install-python: "true"
 
       - name: Create Winston logs directory
         run: mkdir -p .logs
@@ -200,29 +226,45 @@ jobs:
         run: xattr -cr ~/Library/Caches/ms-playwright
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Download visual baselines from R2
+        env:
+          ACCESS_KEY_ID_TURNTROUT_MEDIA: ${{ secrets.ACCESS_KEY_ID_TURNTROUT_MEDIA }}
+          SECRET_ACCESS_TURNTROUT_MEDIA: ${{ secrets.SECRET_ACCESS_TURNTROUT_MEDIA }}
+          S3_ENDPOINT_ID_TURNTROUT_MEDIA: ${{ secrets.S3_ENDPOINT_ID_TURNTROUT_MEDIA }}
+        run: uv run python scripts/r2_baselines.py download
 
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
         run: |
           set -o pipefail
-          pnpm exec playwright test --config config/playwright/playwright.config.ts --shard ${{ matrix.shard }} -g "(lostpixel)" 2>&1 | tee playwright-run.log
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            --shard ${{ matrix.shard }} \
+            --reporter=blob,dot \
+            --update-snapshots=none \
+            --trace=off \
+            -g "(screenshot)" 2>&1 | tee playwright-run.log
         env:
           CI: true
           NODE_OPTIONS: "--max-old-space-size=4096"
-          # 40 min job timeout → 35 min Playwright global timeout
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "2100000"
 
-      - name: Sanitize shard name
+      - name: Create sanitized shard
         if: always()
-        uses: ./.github/actions/sanitize-shard-name
-        with:
-          shard: ${{ matrix.shard }}
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        env:
+          MATRIX_SHARD: ${{ matrix.shard }}
 
       - name: Upload Playwright logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: visual-testing-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: playwright-run.log
@@ -231,7 +273,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
           path: .logs/
@@ -240,7 +282,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
           path: /tmp/webserver.log
@@ -249,19 +291,28 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-macos-shard-${{ env.SANITIZED_SHARD }}
           path: test-results/
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Upload Lost Pixel screenshots shard
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+      # See Linux job for the rationale — without a platform tag, Linux
+      # and macOS shards with the same shard number collide on download.
+      - name: Tag blob report with platform
+        if: always() && hashFiles('blob-report/*.zip') != ''
+        run: |
+          cd blob-report
+          for f in *.zip; do mv "$f" "macos-$f"; done
+
+      - name: Upload blob report shard
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: lost-pixel-screenshots-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: ./lost-pixel
+          name: blob-report-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: blob-report/
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Fail if playwright tests failed
@@ -278,17 +329,15 @@ jobs:
     steps:
       - name: Check results
         run: |
-          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]]; then
-            echo "Tests were skipped (no label)"
+          if [[ "${{ needs.should-run.outputs.run }}" == "false" ]] || [[ "${{ needs.should-run.result }}" == "skipped" ]]; then
+            echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
           if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then
             echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
             exit 1
           fi
-          # macOS only runs on push to main; allow skipped elsewhere
-          if [[ "${{ needs.should-run.outputs.run-macos }}" == "true" ]] && \
-             [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
+          if [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
             echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
             exit 1
           fi
@@ -312,54 +361,218 @@ jobs:
           log-pattern: visual-testing-log-*
           final-log-name: visual-testing-failed-logs
 
-  combine-and-upload:
+  # Merge per-shard blob reports into a single HTML report, upload as a
+  # GHA artifact, and post a PR comment with the download link.
+  publish-visual-report:
     needs: [should-run, visual-testing-linux, visual-testing-macos]
+    if: >-
+      always() && !cancelled() &&
+      needs.should-run.outputs.run == 'true' &&
+      (
+        needs.visual-testing-linux.result == 'failure' ||
+        needs.visual-testing-macos.result == 'failure'
+      )
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    if: >
-      always() && !cancelled() &&
-      needs.visual-testing-linux.result == 'success' &&
-      (needs.visual-testing-macos.result == 'success' || needs.visual-testing-macos.result == 'skipped')
-
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
 
-      - name: Download all Lost Pixel screenshot shards
+      - name: Download all blob reports
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: lost-pixel-screenshots-*
-          path: ./all-lost-pixel-shards
+          pattern: blob-report-*
+          path: ./all-blob-reports
           merge-multiple: true
 
-      - name: Combine screenshots into ./lost-pixel directory
-        id: combine
+      # Pass -c so merge-reports tolerates the Linux/macOS testDir
+      # difference (/home/runner vs /Users/runner) — without it the merge
+      # aborts with "different test directories, merging cannot proceed".
+      - name: Merge blob reports into HTML
         run: |
-          shopt -s globstar # Enable recursive globbing
-          mkdir -p ./lost-pixel
-          cp -v ./all-lost-pixel-shards/**/*.png ./lost-pixel/
-          echo "Contents of ./lost-pixel after combining:"
-          ls -R ./lost-pixel
-          if [ -z "$(ls -A ./lost-pixel)" ]; then
-            echo "screenshots_found=false" >> "$GITHUB_OUTPUT"
-            echo "./lost-pixel directory is empty after combination attempt."
+          pnpm exec playwright merge-reports \
+            -c config/playwright/playwright.config.ts \
+            --reporter html ./all-blob-reports
+
+      # Pull every shard's test-results/ for the screenshot gallery generator.
+      - name: Download trace artifacts (for gallery)
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: playwright-traces-*
+          path: ./all-traces
+          merge-multiple: true
+
+      # Build a single-page screenshot gallery alongside the Playwright
+      # report. Skim-friendly grid view; useful at bootstrap (no
+      # baselines yet → main report has nothing to slide between).
+      # `--run-id` (+ `--pr-number` on PR runs) wires up the one-click
+      # "Approve baselines" button; the button POSTs to the same-origin
+      # Pages Function staged below (which holds the PAT server-side).
+      - name: Generate screenshot gallery
+        env:
+          GH_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          args=(./all-traces ./playwright-report
+                --run-id "${{ github.run_id }}")
+          if [ -n "${GH_PR_NUMBER:-}" ]; then
+            args+=(--pr-number "$GH_PR_NUMBER")
+          fi
+          python3 scripts/generate_visual_gallery.py "${args[@]}"
+
+      # `wrangler pages deploy <dir>` bundles Pages Functions from
+      # `./functions/` relative to CWD, NOT from inside `<dir>`. We stage
+      # at the repo root so wrangler picks it up; the production deploy
+      # in deploy.yaml runs in a separate checkout with no `functions/`
+      # dir, so this stays isolated to diff-gallery branches
+      # (visual-pr-*, visual-main-*).
+      - name: Stage approve-baselines Pages Function
+        run: |
+          mkdir -p functions/api
+          cp cloudflare/functions/api/approve-baselines.ts \
+             functions/api/approve-baselines.ts
+
+      - name: Upload merged HTML report
+        id: upload-report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: visual-diff-report
+          path: playwright-report/
+          retention-days: 14
+
+      # Belt-and-suspenders: drop anything still over Cloudflare Pages'
+      # 25 MiB per-file cap. With --trace=off in the test run, individual
+      # PNGs are well under this; this catches edge-case full-page shots
+      # of unusually long articles.
+      - name: Prune oversize files before Pages upload
+        run: find playwright-report -type f -size +24M -print -delete || true
+
+      # Branch name for the Cloudflare Pages deploy. Per-PR for PRs (so
+      # opening the same PR again replaces the previous deploy), per-run
+      # for main pushes (so historical commits stay accessible).
+      - name: Compute Cloudflare branch name
+        id: cf-branch
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "name=visual-pr-${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
           else
-            echo "screenshots_found=true" >> "$GITHUB_OUTPUT"
-            echo "Screenshots found in ./lost-pixel."
+            echo "name=visual-main-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Symlink LostPixel config to root
-        if: steps.combine.outputs.screenshots_found == 'true'
-        run: ln -s config/lostpixel/lostpixel.config.ts lostpixel.config.ts
+      - name: Deploy diff report to Cloudflare Pages
+        id: deploy-report
+        continue-on-error: true
+        uses: ./.github/actions/deploy-to-cloudflare
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-zone-id: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          project-name: turntrout
+          branch: ${{ steps.cf-branch.outputs.name }}
+          public-dir: ./playwright-report
 
-      - name: Run LostPixel on combined screenshots
-        if: steps.combine.outputs.screenshots_found == 'true'
-        uses: lost-pixel/lost-pixel@41055d71dea42eb5fa5c27dabd2a90722f376e33 # v3.22.0
+      # Surface the Cloudflare URL as a commit status so the red X on
+      # PR/commit pages links straight to the diff gallery via "Details"
+      # — instead of dropping into the workflow run logs.
+      - name: Post visual-diff commit status
+        if: steps.deploy-report.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          LOST_PIXEL_API_KEY: ${{ secrets.LOST_PIXEL_API_KEY }}
-          LOST_PIXEL_PROJECT_ID: ${{ secrets.LOST_PIXEL_PROJECT_ID }}
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+        with:
+          script: |
+            const sha = context.payload.pull_request?.head.sha || context.sha;
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha,
+              state: 'failure',
+              context: 'Visual diff report',
+              target_url: process.env.CLOUDFLARE_URL,
+              description: 'Open Details to view the screenshot diff gallery',
+            });
 
-      - name: Clean up downloaded shards
-        run: rm -rf ./all-lost-pixel-shards
+      # Always-on summary on the workflow run page. Works for PR and main
+      # pushes so you can find the URLs from any failing visual-testing
+      # run without hunting through the Artifacts section.
+      - name: Emit summary with report links
+        if: always()
+        env:
+          ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
+          CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+        run: |
+          {
+            echo "## Visual diff report"
+            echo ""
+            if [ "$CLOUDFLARE_OK" = "true" ]; then
+              echo "- Diff gallery (skim view, expected/actual/diff side-by-side): $CLOUDFLARE_URL"
+              echo "- Playwright report (per-test detail): $CLOUDFLARE_URL/report.html"
+              echo ""
+            fi
+            echo "- Artifact: $ARTIFACT_URL"
+            echo ""
+            echo "### Approve baselines"
+            echo ""
+            echo "If the diffs look intended, open the gallery and click \"Approve these as baselines\"."
+            echo "The button dispatches \`update-visual-baselines.yaml\` to adopt this run's screenshots"
+            echo "as the new R2 baselines."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment report links on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          ARTIFACT_URL: ${{ steps.upload-report.outputs.artifact-url }}
+          CLOUDFLARE_OK: ${{ steps.deploy-report.outcome == 'success' }}
+          CLOUDFLARE_URL: https://${{ steps.cf-branch.outputs.name }}.turntrout.pages.dev
+        with:
+          script: |
+            const marker = '<!-- visual-diff-report -->';
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const sha = context.sha.substring(0, 7);
+            const artifactUrl = process.env.ARTIFACT_URL;
+            const cloudflareOk = process.env.CLOUDFLARE_OK === 'true';
+            const cloudflareUrl = process.env.CLOUDFLARE_URL;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const lines = [
+              marker,
+              `**Visual diff report** for commit ${sha}:`,
+              '',
+            ];
+            if (cloudflareOk) {
+              lines.push(`- Diff gallery (skim view, expected/actual/diff side-by-side): ${cloudflareUrl}`);
+              lines.push(`- Playwright report (per-test detail): ${cloudflareUrl}/report.html`);
+              lines.push('');
+            }
+            lines.push(`Download: ${artifactUrl}`);
+            lines.push(`(or see the Artifacts section of the [workflow run](${runUrl}))`);
+            lines.push('');
+            lines.push('If the diffs are intended, open the gallery and click **"Approve these as baselines"**. The button dispatches `update-visual-baselines.yaml`, which uploads this run\'s screenshots to R2 and pushes an empty commit to retrigger visual-testing.');
+            const body = lines.join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }

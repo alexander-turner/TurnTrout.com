@@ -16,12 +16,10 @@ aliases:
   - flipped-integers
   - number-proposal
   - rethinking-number-writing
-date_published: 2025-07-25 13:30:55.478301
-date_updated: 2025-12-30 14:46:20.403471
+date_published: 2025-07-25
+date_updated: 2026-04-20
 card_image_alt: A depiction of the House of Wisdom, made in the style of the famous School of Athens painting.
 ---
-
-
 
 We're writing numbers wrong. We write "365" starting with the most significant digit of "3" (hundred). The "biggest number on the left" rule is both algorithmically bad and clashes with how humans intuitively represent numbers in their minds. I propose an innocent and totally practical fix: flip the written order of all numbers, writing "↗563" instead of "365." I analyze the implications of this change as they propagate through our language and thought.
 

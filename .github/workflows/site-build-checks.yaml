@@ -24,7 +24,6 @@ on:
       - "pnpm-lock.yaml"
       - ".github/actions/**"
   pull_request:
-    types: [labeled, synchronize, opened, reopened]
     paths:
       - "quartz/**"
       - "!quartz/**/*.spec.ts"
@@ -40,7 +39,6 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
-  merge_group:
 
 permissions:
   actions: read
@@ -85,7 +83,11 @@ jobs:
           cache-apt: "true"
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Check CSS variables
         run: |
@@ -116,7 +118,11 @@ jobs:
         uses: ./.github/actions/setup-site
 
       - name: Restore built site from cache
-        uses: ./.github/actions/restore-site-build
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: public/
+          key: site-build-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Start server
         id: server
@@ -124,35 +130,32 @@ jobs:
         with:
           path: public
 
-      - name: Run linkchecker
+      # Internal links hit localhost only — no retry needed; a failure here
+      # is always a real broken link.
+      - name: Check internal links
+        run: uv run linkchecker http://localhost:8080 --threads 50
+
+      # External links go out to the public internet (assets.turntrout.com,
+      # github.com). Cloudflare / GitHub can return transient 5xx, so wrap
+      # in retry-external. A persistent 4xx still fails after max-attempts.
+      - name: Check external links (with retries)
+        uses: ./.github/actions/retry-external
+        with:
+          command: |
+            uv run linkchecker public/**/*.html \
+              --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
+              --check-extern \
+              --threads 30 \
+              --user-agent "linkchecker" \
+              --timeout 40
+          max-attempts: "3"
+          initial-delay-seconds: "10"
+
+      - name: Stop server
+        if: always()
         env:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
-        run: |
-          # Check internal links
-          echo "Checking internal links..."
-          uv run linkchecker http://localhost:8080 --threads 50
-          INTERNAL_STATUS=$?
-
-          # Check external links (only assets.turntrout.com and github repo)
-          echo "Checking external links..."
-          uv run linkchecker public/**/*.html \
-            --ignore-url='!^https://(assets\.turntrout\.com|github\.com/alexander-turner/TurnTrout\.com)' \
-            --check-extern \
-            --threads 30 \
-            --user-agent "linkchecker" \
-            --timeout 40
-          EXTERNAL_STATUS=$?
-
-          # Stop server
-          kill $SERVER_PID 2>/dev/null || true
-
-          # Exit with failure if any check failed
-          if [ $INTERNAL_STATUS -ne 0 ] || [ $EXTERNAL_STATUS -ne 0 ]; then
-            echo "Link checks failed:"
-            echo "Internal linkchecker: $INTERNAL_STATUS"
-            echo "External linkchecker: $EXTERNAL_STATUS"
-            exit 1
-          fi
+        run: kill $SERVER_PID 2>/dev/null || true
 
   # Unified status check — provides passing status when gated off on PRs
   site-build-checks:

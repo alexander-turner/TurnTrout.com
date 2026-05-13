@@ -33,18 +33,13 @@ next-post-slug: shard-theory
 next-post-title: The Shard Theory of Human Values
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-07-25 00:00:00
+date_published: 2022-07-25
 original_url: https://www.lesswrong.com/posts/pdaGN6pQyQarFHXF4/reward-is-not-the-optimization-target
 skip_import: "true"
 description: "RL doesn't train reward optimizers. Reward chisels cognition into agents. Worry less about safe objectives, more about good cognition."
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
 
 In this essay, I call an agent a “reward optimizer” if it not only gets lots of reward, but if it reliably makes choices like “reward but no task completion” (e.g. receiving reward without eating pizza) over “task completion but no reward” (e.g. eating pizza without receiving reward). Under this definition, an agent can be a reward optimizer even if it doesn't contain an explicit representation of reward, or implement a search process for reward.
 

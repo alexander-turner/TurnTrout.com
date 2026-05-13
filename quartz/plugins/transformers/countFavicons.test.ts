@@ -315,16 +315,13 @@ describe("countAllLinks", () => {
     expect(renameCall[1]).toBe(faviconCountsFile)
   })
 
-  it("should handle write errors gracefully", async () => {
+  it("should propagate write errors", async () => {
     jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
       throw new Error("Write failed")
     })
     const filePath = await createTestFile("[test](mailto:test@example.com)")
-    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined)
 
-    await expect(countAllFavicons(mockCtx, [filePath])).resolves.not.toThrow()
-
-    errorSpy.mockRestore()
+    await expect(countAllFavicons(mockCtx, [filePath])).rejects.toThrow("Write failed")
   })
 
   it("should reset counter at the start of each build run", async () => {
@@ -346,13 +343,10 @@ describe("countAllLinks", () => {
     expect(countsAfterSecondBuild.get(specialFaviconPaths.mail)).toBe(1)
   })
 
-  it("should handle invalid markdown files gracefully", async () => {
+  it("should propagate errors for missing files", async () => {
     const invalidPath = path.join(tempDir, "nonexistent.md") as FilePath
-    const errorSpy = jest.spyOn(console, "warn").mockImplementation(() => undefined)
 
-    await expect(countAllFavicons(mockCtx, [invalidPath])).resolves.not.toThrow()
-
-    errorSpy.mockRestore()
+    await expect(countAllFavicons(mockCtx, [invalidPath])).rejects.toThrow()
   })
 
   it.each([

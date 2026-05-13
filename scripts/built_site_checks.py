@@ -15,9 +15,10 @@ import tempfile
 import unicodedata
 import urllib.parse
 from collections import Counter, defaultdict
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, Literal, NamedTuple, Set
+from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -36,6 +37,9 @@ from scripts import utils as script_utils
 from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
+    INVERT_EXCLUDED_SEGMENTS,
+    INVERT_RASTER_EXTENSIONS,
+    INVERT_VIDEO_EXTENSIONS,
     LEFT_DOUBLE_QUOTE,
     LEFT_GUILLEMET,
     LEFT_SINGLE_QUOTE,
@@ -52,7 +56,13 @@ _GIT_ROOT = script_utils.get_git_root()
 _PUBLIC_DIR: Path = _GIT_ROOT / "public"
 RSS_XSD_PATH = _GIT_ROOT / "scripts" / ".rss-2.0.xsd"
 
-_IssuesDict = Dict[str, list[str] | list[Tag] | bool]
+# CSS class the build pipeline applies to elements that should be inverted in
+# dark mode. Canonical source: config/constants.json (`invertInDarkModeClass`).
+INVERT_CLASS: str = script_utils.load_shared_constants()[
+    "invertInDarkModeClass"
+]
+
+_IssuesDict = dict[str, list[str] | list[Tag] | bool]
 
 # Define the parser but don't parse immediately
 parser = argparse.ArgumentParser(
@@ -76,9 +86,9 @@ _css_variable_declaration_pattern = re.compile(r"(--[\w-]+)\s*:")
 _css_variable_usage_pattern = re.compile(r"var\((--[\w-]+)\)")
 
 
-def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
+def _get_defined_css_variables(css_file_path: Path) -> set[str]:
     """Extract all defined CSS variable names from a CSS file."""
-    defined_vars: Set[str] = set()
+    defined_vars: set[str] = set()
 
     css_content = css_file_path.read_text(encoding="utf-8")
     for match in _css_variable_declaration_pattern.finditer(css_content):
@@ -88,7 +98,7 @@ def _get_defined_css_variables(css_file_path: Path) -> Set[str]:
 
 
 def check_inline_style_variables(
-    soup: BeautifulSoup, defined_variables: Set[str] | None = None
+    soup: BeautifulSoup, defined_variables: set[str] | None = None
 ) -> list[str]:
     """Check elements for inline styles using undefined CSS variables."""
     issues: list[str] = []
@@ -130,7 +140,6 @@ def check_favicons_missing(soup: BeautifulSoup) -> bool:
 def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
     """Unless `data-use-dropcap="false"`, require `data-first-letter` to contain
     an alphanumeric character."""
-
     issues: list[str] = []
     for article in soup.find_all("article"):
         if article.get("data-use-dropcap") == "false":
@@ -155,7 +164,6 @@ def check_article_dropcap_first_letter(soup: BeautifulSoup) -> list[str]:
 def check_dropcap_no_leading_nbsp(soup: BeautifulSoup) -> list[str]:
     """For dropcap-enabled articles, the first space in the first paragraph must
     not be a non-breaking space (which creates a visible extra gap)."""
-
     issues: list[str] = []
     for article in soup.find_all("article"):
         if article.get("data-use-dropcap") == "false":
@@ -292,8 +300,9 @@ def _check_anchor_classes(
     link: Tag, href: str, invalid_anchors: list[str]
 ) -> None:
     """
-    Check if a same-page anchor link has the required classes. Updates
-    `invalid_anchors` with errors if the link is missing classes.
+    Check if a same-page anchor link has the required classes.
+
+    Updates `invalid_anchors` with errors if the link is missing classes.
 
     NOTE: Only checks links that literally start with "#".
      Not all same-page links are specified like that.
@@ -791,6 +800,118 @@ def check_images_have_dimensions(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
+class InvertLabel(NamedTuple):
+    """One entry from ``.invert_labels.json``."""
+
+    invert: bool
+    reviewed: bool
+
+
+def _is_excluded_segment(url: str) -> bool:
+    """True iff any path segment of ``url`` is in
+    ``INVERT_EXCLUDED_SEGMENTS``."""
+    segments = url.split("?", 1)[0].split("/")
+    return any(seg in INVERT_EXCLUDED_SEGMENTS for seg in segments)
+
+
+def _has_invert_class(tag: Tag) -> bool:
+    """True iff ``tag`` has the ``invert-in-dark-mode`` class."""
+    raw = tag.get("class")
+    tokens = raw.split() if isinstance(raw, str) else raw
+    return isinstance(tokens, list) and INVERT_CLASS in tokens
+
+
+def _canonical_inline_video_source(video: Tag) -> str | None:
+    """
+    Canonical source URL of an inline looping muted ``<video>`` (GIF
+    replacement); ``None`` for ``#pond-video`` or non-inline videos.
+
+    ``.invert-in-dark-mode`` is set on the ``<video>`` element, not per
+    ``<source>``. Multi-format videos (e.g. ``.mp4`` + ``.webm`` fallback)
+    therefore share one inversion decision and one labels-JSON entry, so we
+    validate just the *first* eligible source (the canonical format browsers
+    prefer) and skip alternate-format siblings.
+    """
+    if video.get("id") == "pond-video":
+        return None
+    if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
+        return None
+    candidates: Iterable[str | list[str] | None] = (
+        video.get("src"),
+        *(s.get("src") for s in _tags_only(video.find_all("source"))),
+    )
+    for s in candidates:
+        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS):
+            return s
+    return None
+
+
+def _invert_issue_string(
+    kind: str,
+    src: str,
+    has_class: bool,
+    label: InvertLabel | None,
+) -> str | None:
+    """
+    Issue message for one labeled src, or ``None`` if the JSON entry agrees with
+    the rendered class.
+
+    Reports missing / unreviewed / class-mismatch.
+    """
+    if label is None:
+        return f"<{kind}> {src} missing from .invert_labels.json"
+    if not label.reviewed:
+        return f"<{kind}> {src} not user-reviewed in .invert_labels.json"
+    if label.invert == has_class:
+        return None
+    expected = "expected" if label.invert else "must not be applied"
+    return (
+        f"<{kind}> {src} {INVERT_CLASS} class {expected} "
+        f"(JSON invert={label.invert}, class present={has_class})"
+    )
+
+
+def check_invert_labels(
+    soup: BeautifulSoup,
+    invert_labels: Mapping[str, InvertLabel] | None,
+) -> list[str]:
+    """
+    Validate every eligible ``<img>`` (raster ext) and inline looping
+    ``<video>`` source against ``.invert_labels.json``: each must be present,
+    reviewed, and have its ``invert-in-dark-mode`` class match the JSON
+    ``invert`` field (the source of truth).
+
+    No-op when ``invert_labels`` is ``None`` (loader-disabled in tests / when
+    the labels file is missing).
+    """
+    if invert_labels is None:
+        return []
+    issues: list[str] = []
+    for img in _tags_only(soup.find_all("img")):
+        src = img.get("src")
+        if not isinstance(src, str):
+            continue
+        if not src.lower().endswith(INVERT_RASTER_EXTENSIONS):
+            continue
+        if _is_excluded_segment(src):
+            continue
+        issue = _invert_issue_string(
+            "img", src, _has_invert_class(img), invert_labels.get(src)
+        )
+        if issue is not None:
+            issues.append(issue)
+    for video in _tags_only(soup.find_all("video")):
+        src = _canonical_inline_video_source(video)
+        if src is None or _is_excluded_segment(src):
+            continue
+        issue = _invert_issue_string(
+            "video", src, _has_invert_class(video), invert_labels.get(src)
+        )
+        if issue is not None:
+            issues.append(issue)
+    return issues
+
+
 def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
     """
     Check that the first content image is optimized for LCP.
@@ -825,8 +946,7 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
 
     if loading != "eager":
         issues.append(
-            f"First content image should have loading='eager', "
-            f"got '{loading}': {src}"
+            f"First content image should have loading='eager', got '{loading}': {src}"
         )
     if fetchpriority != "high":
         issues.append(
@@ -898,8 +1018,7 @@ def check_invalid_class_names(soup: BeautifulSoup) -> list[str]:
                 tag_preview = str(element)[:120]
                 _append_to_list(
                     issues,
-                    f"Invalid class name '{cls}' on <{element.name}>:"
-                    f" {tag_preview}",
+                    f"Invalid class name '{cls}' on <{element.name}>: {tag_preview}",
                 )
 
     return issues
@@ -1426,7 +1545,7 @@ def _build_included_favicon_domains(
     """
     Compute the set of domain entries whose favicons should appear in the built
     site, by calling the shared TS module which runs the same
-    ``shouldIncludeFavicon`` logic (whitelist + blacklist + count threshold) as
+    ``shouldIncludeFavicon`` logic (allowlist + blocklist + count threshold) as
     the Quartz transformer.
 
     Returns a frozenset of underscore-separated domain strings (e.g.
@@ -1469,13 +1588,12 @@ def check_external_links_have_favicons(
     """
     Check that external links to included domains have favicons.
 
-    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz
-    transformer (whitelist + blacklist + count threshold), pre-computed
-    by ``scripts/compute_favicon_lists.ts``.
+    Uses the same ``shouldIncludeFavicon`` predicate as the Quartz transformer
+    (allowlist + blocklist + count threshold), pre-computed by
+    ``scripts/compute_favicon_lists.ts``.
 
-    Only checks ``<a class="external">`` links inside ``<article>``;
-    component-generated links (nav, aside) never pass through the
-    favicon transformer.
+    Only checks ``<a class="external">`` links inside ``<article>``; component-
+    generated links (nav, aside) never pass through the favicon transformer.
     """
     issues: list[str] = []
 
@@ -1565,7 +1683,6 @@ def _has_content(element: Tag) -> bool:
 def check_populate_elements_nonempty(soup: BeautifulSoup) -> list[str]:
     """Check for issues with elements whose IDs or classes start with
     `populate-`."""
-
     issues: list[str] = []
 
     # Generic: any populate-* element must not be empty
@@ -1626,7 +1743,7 @@ def check_malformed_hrefs(soup: BeautifulSoup) -> list[str]:
         if not isinstance(href, str):  # pragma: no cover
             continue  # a simple typeguard
         if href.startswith("mailto:"):
-            email = href.split(":")[1]
+            email = href.removeprefix("mailto:")
             if not validators.email(email):
                 _append_to_list(
                     malformed_links,
@@ -1787,8 +1904,11 @@ class CheckOptions:
     """Configuration options shared across all file checks."""
 
     should_check_fonts: bool = False
-    defined_css_variables: Set[str] | None = None
+    defined_css_variables: set[str] | None = None
     favicon_included_domains: frozenset[str] | None = None
+    # Loaded once in _process_html_files; passed through so each file
+    # check doesn't have to re-read the JSON.
+    invert_labels: Mapping[str, InvertLabel] | None = None
 
 
 def check_file_for_issues(
@@ -1854,6 +1974,9 @@ def check_file_for_issues(
         "unrendered_emoticons": check_unrendered_emoticons(soup),
         "invalid_media_asset_sources": check_media_asset_sources(soup),
         "images_missing_dimensions": check_images_have_dimensions(soup),
+        "invert_label_mismatches": check_invert_labels(
+            soup, opts.invert_labels
+        ),
         "lcp_image_not_optimized": check_lcp_image_optimized(soup),
         "video_source_order_and_match": check_video_source_order_and_match(
             soup
@@ -2197,9 +2320,8 @@ def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
     return issues
 
 
-# Whitelisted emphasis patterns that should be ignored
-# If both prev and next are in the whitelist, then the emphasis is whitelisted
-WHITELISTED_EMPHASIS = frozenset(
+# Emphasis patterns that should be ignored by spacing checks
+ALLOWED_EMPHASIS_PATTERNS = frozenset(
     {
         ("Some", ""),  # For e.g. "Some<i>one</i>"
     }
@@ -2211,13 +2333,12 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
     Check for emphasis/strong elements that don't have proper spacing with
     surrounding text.
 
-    Ignores specific whitelisted cases.
+    Ignores specific allowed patterns.
     """
     problematic_emphasis: list[str] = []
 
     # Find all emphasis elements
     for element in _tags_only(soup.find_all(["em", "strong", "i", "b", "del"])):
-        # Check if this is a whitelisted case
         prev_sibling = element.previous_sibling
         next_sibling = element.next_sibling
 
@@ -2227,13 +2348,12 @@ def check_emphasis_spacing(soup: BeautifulSoup) -> list[str]:
             prev_text = prev_sibling.strip()
             current_text = element.get_text(strip=True)
 
-            # Check for exact matches in whitelisted cases
-            is_whitelisted = False
-            for prev, next_ in WHITELISTED_EMPHASIS:
+            is_allowed = False
+            for prev, next_ in ALLOWED_EMPHASIS_PATTERNS:
                 if prev_text.endswith(prev) and current_text.startswith(next_):
-                    is_whitelisted = True
+                    is_allowed = True
                     break
-            if is_whitelisted:
+            if is_allowed:
                 continue
 
         problematic_emphasis.extend(
@@ -2407,8 +2527,7 @@ def _check_single_video(
     if len(sources) < len(expected_sources):
         _append_to_list(
             issues,
-            f"<video> tag has < {len(expected_sources)}"
-            f" <source> children: {open_tag}",
+            f"<video> tag has < {len(expected_sources)} <source> children: {open_tag}",
         )
         return issues  # Cannot proceed if sources are missing
 
@@ -2491,7 +2610,7 @@ def extract_citation_keys_from_html(soup: BeautifulSoup) -> list[str]:
 
 
 def _find_duplicate_citations(
-    citation_to_files: Dict[str, list[str]],
+    citation_to_files: dict[str, list[str]],
 ) -> list[str]:
     """Find citation keys that appear in multiple files."""
     issues: list[str] = []
@@ -2508,7 +2627,7 @@ def _find_duplicate_citations(
 def _maybe_collect_citation_keys(
     file_path: Path,
     public_dir: Path,
-    citation_to_files: Dict[str, list[str]],
+    citation_to_files: dict[str, list[str]],
 ) -> None:
     """Extract citation keys from file and add to collection if not a
     redirect."""
@@ -2558,10 +2677,10 @@ def _normalize_smallcaps(el_copy: Tag) -> None:
     """
     Replace ``<abbr class="small-caps">`` with its original text.
 
-    Each smallcaps ``<abbr>`` carries a ``data-original-text``
-    attribute holding the pre-transform text (e.g. ``ReLU``,
-    ``14B``).  This function substitutes the element with that
-    original text so the spellchecker sees source-faithful tokens.
+    Each smallcaps ``<abbr>`` carries a ``data-original-text`` attribute holding
+    the pre-transform text (e.g. ``ReLU``, ``14B``).  This function substitutes
+    the element with that original text so the spellchecker sees source-faithful
+    tokens.
     """
     for abbr in el_copy.select("abbr.small-caps"):
         original = abbr.get("data-original-text")
@@ -2620,6 +2739,11 @@ def _normalize_paragraph_text(element: Tag) -> str:
                 link.decompose()
 
     text = script_utils.get_non_code_text(el_copy).strip()
+    # Collapse internal whitespace (including newlines) into single spaces
+    # so each paragraph occupies exactly one line in the spellcheck tempfile;
+    # otherwise embedded newlines would desync the line_to_source mapping and
+    # misattribute later paragraphs' warnings to the wrong source file.
+    text = re.sub(r"\s+", " ", text)
     # Normalize smart quotes to ASCII so spellchecker treats
     # contractions like "I've" as single words instead of "I"+"ve"
     text = text.replace("\u2019", "'").replace("\u2018", "'")
@@ -2638,11 +2762,10 @@ def _extract_flat_paragraph_texts(soup: BeautifulSoup) -> list[str]:
     """
     Extract flattened visible text from ``<p>`` elements.
 
-    Strips code, KaTeX, script, and style content, replaces
-    smallcaps abbreviation elements with their original text
-    (via ``data-original-text``), and inserts spaces around
-    ``<sub>``/``<sup>``/``<br>`` tags.  Returns ``get_text()``
-    for each paragraph.
+    Strips code, KaTeX, script, and style content, replaces smallcaps
+    abbreviation elements with their original text (via ``data-original-text``),
+    and inserts spaces around ``<sub>``/``<sup>``/``<br>`` tags.  Returns
+    ``get_text()`` for each paragraph.
     """
     paragraphs: list[str] = []
     # Only check paragraphs inside <article> (excludes sidebars, footers, etc.)
@@ -2673,7 +2796,11 @@ def _write_paragraphs_to_tempfile(
     ) as tmp:
         for file_path, paragraphs in paragraph_map.items():
             for para in paragraphs:
-                tmp.write(f"{para}\n")
+                # Defensive: flatten any embedded newlines so each paragraph
+                # occupies one tempfile line and the line_to_source mapping
+                # stays in sync with spellchecker-cli's per-line warnings.
+                flattened = para.replace("\n", " ")
+                tmp.write(f"{flattened}\n")
                 line_to_source[line_num] = file_path
                 line_num += 1
         return Path(tmp.name), line_to_source
@@ -2712,6 +2839,35 @@ def _parse_spellcheck_output(
     return issues
 
 
+def _augmented_wordlist(wordlist: Path) -> Path | None:
+    """
+    Generate a tempfile containing the wordlist plus possessive variants.
+
+    Runs ``scripts/augment_spellcheck_wordlist.sh`` so that ``KaTeX`` also
+    accepts ``KaTeX's`` / ``KaTeX’s`` without a second dictionary entry. Returns
+    ``None`` when either the wordlist or the helper script is missing; callers
+    should fall back to no ``--dictionaries`` argument. The caller is
+    responsible for unlinking the returned path.
+    """
+    script = _GIT_ROOT / "scripts" / "augment_spellcheck_wordlist.sh"
+    if not wordlist.exists() or not script.exists():
+        return None
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".txt",
+        prefix=".wordlist-augmented-",
+        delete=False,
+        encoding="utf-8",
+    ) as aug:
+        subprocess.run(  # noqa: S603  # pylint: disable=subprocess-run-check
+            [str(script), str(wordlist)],
+            stdout=aug,
+            check=True,
+            cwd=str(_GIT_ROOT),
+        )
+        return Path(aug.name)
+
+
 def _spellcheck_flattened_paragraphs(
     paragraph_map: dict[str, list[str]],
 ) -> list[str]:
@@ -2722,10 +2878,11 @@ def _spellcheck_flattened_paragraphs(
     invokes the same spellchecker used for source markdown.  Returns a
     list of human-readable issue strings.
 
-    The wordlist is passed directly — ``data-original-text`` on
-    smallcaps elements means the extracted text already uses
-    source-faithful casing, so case-insensitive expansion is
-    unnecessary.
+    The wordlist is expanded at runtime with possessive variants via
+    ``_augmented_wordlist`` so ``KaTeX`` alone covers ``KaTeX's``.
+    ``data-original-text`` on smallcaps elements means the extracted
+    text already uses source-faithful casing, so case-insensitive
+    expansion is unnecessary.
     """
     if not paragraph_map:
         return []
@@ -2735,9 +2892,14 @@ def _spellcheck_flattened_paragraphs(
         return ["pnpm not found — skipping rendered-text spellcheck"]
 
     wordlist = _GIT_ROOT / "config" / "spellcheck" / ".wordlist.txt"
+    augmented_path = _augmented_wordlist(wordlist)
     tmp_path, line_to_source = _write_paragraphs_to_tempfile(paragraph_map)
 
-    dict_args = ["--dictionaries", str(wordlist)] if wordlist.exists() else []
+    dict_args = (
+        ["--dictionaries", str(augmented_path)]
+        if augmented_path is not None
+        else []
+    )
     ignore_args: list[str] = []
     if _SPELLCHECK_IGNORE_PATTERNS:
         ignore_args = ["--ignore", *_SPELLCHECK_IGNORE_PATTERNS]
@@ -2763,6 +2925,8 @@ def _spellcheck_flattened_paragraphs(
         )
     finally:
         tmp_path.unlink(missing_ok=True)
+        if augmented_path is not None:
+            augmented_path.unlink(missing_ok=True)
 
     if result.returncode == 0 or not result.stdout:
         return []
@@ -2811,25 +2975,69 @@ def _collect_paragraphs_for_spellcheck(
         paragraph_map[rel] = paras
 
 
+def _load_invert_labels(
+    project_root: Path,
+) -> Mapping[str, InvertLabel] | None:
+    """
+    Load ``.invert_labels.json`` as ``InvertLabel`` tuples.
+
+    Raises ``ValueError`` on a malformed file (corrupted JSON, non-object root,
+    or any entry not of the form ``{invert, reviewed}``). Returns ``None`` only
+    when the file is absent (production has it committed).
+    """
+    path = (
+        project_root
+        / "quartz"
+        / "plugins"
+        / "transformers"
+        / ".invert_labels.json"
+    )
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ValueError(f"{path} is not valid JSON: {e}") from e
+    if not isinstance(data, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    labels: dict[str, InvertLabel] = {}
+    for key, value in data.items():
+        if (
+            not isinstance(value, dict)
+            or "invert" not in value
+            or "reviewed" not in value
+        ):
+            raise ValueError(
+                f"{path} entry for {key!r} must be "
+                f"{{invert: bool, reviewed: bool}}, got {value!r}"
+            )
+        labels[str(key)] = InvertLabel(
+            invert=bool(value["invert"]), reviewed=bool(value["reviewed"])
+        )
+    return labels
+
+
 def _process_html_files(  # pylint: disable=too-many-locals
     public_dir: Path,
     content_dir: Path,
     check_fonts: bool,
-    defined_css_vars: Set[str] | None = None,
+    defined_css_vars: set[str] | None = None,
 ) -> bool:
     """Processes all HTML files in the public directory and returns if issues
     were found."""
     issues_found_in_html = False
     permalink_to_md_path_map = script_utils.build_html_to_md_map(content_dir)
-    files_to_skip: Set[str] = script_utils.collect_aliases(content_dir)
-    citation_to_files: Dict[str, list[str]] = defaultdict(list)
+    files_to_skip: set[str] = script_utils.collect_aliases(content_dir)
+    citation_to_files: dict[str, list[str]] = defaultdict(list)
     paragraph_map: dict[str, list[str]] = {}
 
     included_domains = _build_included_favicon_domains(public_dir.parent)
+    invert_labels = _load_invert_labels(public_dir.parent)
     check_opts = CheckOptions(
         should_check_fonts=check_fonts,
         defined_css_variables=defined_css_vars,
         favicon_included_domains=included_domains,
+        invert_labels=invert_labels,
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
@@ -2893,7 +3101,7 @@ def main() -> None:
         _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
         overall_issues_found = True
 
-    defined_css_vars: Set[str] = _get_defined_css_variables(css_file_path)
+    defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
         _PUBLIC_DIR,
         _GIT_ROOT / "website_content",

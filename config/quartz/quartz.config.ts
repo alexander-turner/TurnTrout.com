@@ -1,4 +1,3 @@
-import { QuartzConfig } from "../../quartz/cfg"
 import {
   AddFavicons,
   AfterArticle,
@@ -29,6 +28,7 @@ import {
   Twemoji,
   WrapNakedElements,
   addAssetDimensionsFromSrc,
+  InvertInDarkMode,
   ColorVariables,
   ContentIndex,
   ContentPage,
@@ -37,6 +37,7 @@ import {
   rehypeCustomSubtitle,
   PopulateContainers,
 } from "../../quartz/plugins"
+import { QuartzConfig } from "../../quartz/util/ctx"
 
 const config: QuartzConfig = {
   configuration: {
@@ -107,6 +108,7 @@ const config: QuartzConfig = {
       ColorVariables(),
       TableOfContents({ minEntries: 3 }),
       addAssetDimensionsFromSrc(),
+      InvertInDarkMode(),
     ],
     filters: [RemoveDrafts()],
     emitters: [

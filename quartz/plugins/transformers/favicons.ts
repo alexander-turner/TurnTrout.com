@@ -15,8 +15,8 @@ import {
 import { faviconCountsFile } from "../../components/constants.server"
 import {
   normalizeHostname,
-  faviconCountWhitelistComputed,
-  faviconSubstringBlacklistComputed,
+  faviconCountAllowlistComputed,
+  faviconSubstringBlocklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
 import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
@@ -106,13 +106,13 @@ export function getFaviconUrl(faviconPath: string): string {
 }
 
 /**
- * Returns `defaultPath` for blacklisted paths, otherwise the original path.
+ * Returns `defaultPath` for blocklisted paths, otherwise the original path.
  */
 export function transformUrl(faviconPath: string): string {
-  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+  const isBlocklisted = faviconSubstringBlocklistComputed.some((entry: string) =>
     faviconPath.includes(entry),
   )
-  return isBlacklisted ? defaultPath : faviconPath
+  return isBlocklisted ? defaultPath : faviconPath
 }
 
 /**
@@ -152,7 +152,7 @@ function resolveSvgPath(svgPath: string): Promise<boolean> {
  * rest of the build.
  *
  * @returns the resolved SVG path if the CDN has it, or null if it's missing
- *          or the hostname is blacklisted.
+ *          or the hostname is blocklisted.
  */
 export async function findFaviconPath(hostname: string): Promise<string | null> {
   const normalizedPath = transformUrl(getQuartzPath(hostname))
@@ -370,26 +370,26 @@ function shouldSkipFavicon(node: Element, href: string): boolean {
 }
 
 /**
- * Checks if a favicon should be included based on count threshold, whitelist, and blacklist.
+ * Checks if a favicon should be included based on count threshold, allowlist, and blocklist.
  *
  * A favicon is included if:
- * - It is NOT blacklisted, AND
- * - (It is whitelisted (always included regardless of count), OR its count is >= minFaviconCount)
+ * - It is NOT blocklisted, AND
+ * - (It is allowlisted (always included regardless of count), OR its count is >= minFaviconCount)
  */
 export function shouldIncludeFavicon(
   imgPath: string,
   countKey: string,
   faviconCounts: ReadonlyMap<string, number>,
 ): boolean {
-  const isBlacklisted = faviconSubstringBlacklistComputed.some((entry: string) =>
+  const isBlocklisted = faviconSubstringBlocklistComputed.some((entry: string) =>
     imgPath.includes(entry),
   )
-  if (isBlacklisted) return false
+  if (isBlocklisted) return false
 
   const normalizedCountKey = normalizePathForCounting(countKey)
   const count = faviconCounts.get(normalizedCountKey) || 0
-  const isWhitelisted = faviconCountWhitelistComputed.some((entry) => imgPath.includes(entry))
-  return isWhitelisted || count >= minFaviconCount
+  const isAllowlisted = faviconCountAllowlistComputed.some((entry) => imgPath.includes(entry))
+  return isAllowlisted || count >= minFaviconCount
 }
 
 export function normalizeUrl(href: string): string {
@@ -406,9 +406,9 @@ export function normalizeUrl(href: string): string {
 
 /**
  * Thrown when an external link should receive a favicon (passes the count
- * threshold or is whitelisted, and isn't blacklisted) but no SVG file exists
+ * threshold or is allowlisted, and isn't blocklisted) but no SVG file exists
  * for the hostname either locally or on the CDN. Failing the build forces
- * the author to either add the SVG or blacklist the domain.
+ * the author to either add the SVG or blocklist the domain.
  */
 export class MissingFaviconError extends Error {
   constructor(hostname: string, expectedPath: string, count: number) {
@@ -416,7 +416,7 @@ export class MissingFaviconError extends Error {
     super(
       `Missing favicon SVG for ${hostname}: expected at ${expectedUrl} ` +
         `(count=${count}, threshold=${minFaviconCount}). ` +
-        `Upload the SVG to the CDN or add the domain to faviconSubstringBlacklist in config/constants.json.`,
+        `Upload the SVG to the CDN or add the domain to faviconSubstringBlocklist in config/constants.json.`,
     )
     this.name = "MissingFaviconError"
   }

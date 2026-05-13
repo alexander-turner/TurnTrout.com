@@ -2,8 +2,32 @@ import type { QuartzTransformerPlugin } from "../types"
 
 export type MaybeDate = undefined | string | number
 
+// Match a day-only "YYYY-MM-DD" string to parse as local midnight.
+// Without this, JS parses such strings as UTC midnight, causing display dates
+// to shift back a day in timezones behind UTC.
+const DAY_ONLY_DATE_RE = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/
+
 export function coerceDate(fp: string, d: MaybeDate): Date {
-  const parsedDate = typeof d === "number" ? new Date(d) : new Date(d as string)
+  let parsedDate: Date
+  if (typeof d === "string") {
+    const match = DAY_ONLY_DATE_RE.exec(d)
+    if (match?.groups) {
+      const { year, month, day } = match.groups
+      const monthNum = Number(month)
+      const dayNum = Number(day)
+      if (monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) {
+        throw new Error(`Invalid date "${d}" in \`${fp}\`: month must be 1-12 and day must be 1-31`)
+      }
+      parsedDate = new Date(Number(year), monthNum - 1, dayNum)
+      if (parsedDate.getMonth() !== monthNum - 1 || parsedDate.getDate() !== dayNum) {
+        throw new Error(`Invalid date "${d}" in \`${fp}\`: day is out of range for the given month`)
+      }
+    } else {
+      parsedDate = new Date(d)
+    }
+  } else {
+    parsedDate = new Date(d as number)
+  }
   const isInvalidDate = isNaN(parsedDate.getTime()) || parsedDate.getTime() === 0
   if (isInvalidDate && d !== undefined) {
     throw new Error(

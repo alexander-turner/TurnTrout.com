@@ -7,9 +7,14 @@ concurrency:
 on:
   push:
     branches: ["main", "dev"]
-  # Removed pull_request trigger: zero failures across 50 PRs analyzed.
-  # Still runs on main/dev push and merge queue for pre-merge validation.
-  merge_group:
+  pull_request:
+    paths:
+      - "scripts/**/*.py"
+      - "**/pyproject.toml"
+      - "**/uv.lock"
+      - ".pylintrc"
+      - ".github/workflows/python-lint.yaml"
+      - ".github/actions/**"
 
 permissions:
   actions: read
@@ -56,14 +61,14 @@ jobs:
         run: |
           uv run python -m mypy \
             --config-file config/python/mypy.ini \
-            scripts/*.py .github/scripts/*.py
+            scripts/*.py
 
       - name: Run docformatter check
         run: |
           uv run python -m docformatter \
             --check \
             --config config/python/pyproject.toml \
-            scripts/*.py .github/scripts/*.py
+            scripts/*.py
 
       - name: Run pylint
         run: |

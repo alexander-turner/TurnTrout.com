@@ -34,20 +34,12 @@ next-post-slug: a-certain-formalization-of-corrigibility-is-vnm-incoherent
 next-post-title: A Certain Formalization of Corrigibility Is VNM-Incoherent
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-05-08 00:00:00
+date_published: 2020-05-08
 original_url: https://www.lesswrong.com/posts/BMj6uMuyBidrdZkiD/corrigibility-as-outside-view
 skip_import: true
 description: Corrigibility may emerge when AI recognizes its flaws by simulating its own decision-making and defers to human judgment when appropriate.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-05-08
 ---
-
-
-
-
-
-
-
-
 
 You run a country. One day, you think "I could help so many more people if I set all the rules... and I could make this happen". As far as you can tell, this is the _real reason_ you want to set the rules – you want to help people, and you think you'd do a good job.
 
@@ -117,8 +109,6 @@ All in all, I think this framing carves out and characterizes a natural aspect o
 
 > [!thanks]
 >Thanks to Rohin Shah, `elriggs`, `TheMajor`, and Evan Hubinger for comments.
-
-<hr/>
 
 [^1]: This isn't to say that there is literally no situation where gaining power would be the right choice. As people [running on corrupted hardware](https://www.lesswrong.com/posts/dWTEtgBfFaz6vjwQf/ethical-injunctions), it seems inherently difficult for us to tell when it really _would_ be okay for us to gain power. Therefore, just play it safe.
 

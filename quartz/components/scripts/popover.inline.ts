@@ -34,7 +34,7 @@ let popoverGeneration = 0
  * Handles the mouse enter event for link elements
  */
 async function mouseEnterHandler(this: HTMLLinkElement) {
-  const parentOfPopover = document.getElementById("quartz-root")
+  const parentOfPopover = document.getElementById("site-root")
   if (!parentOfPopover || this.dataset.noPopover === "true") {
     return
   }

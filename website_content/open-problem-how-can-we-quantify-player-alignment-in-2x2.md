@@ -26,19 +26,12 @@ aliases:
   - open-problem-how-can-we-quantify-player-alignment-in-2x2
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2021-06-16 00:00:00
+date_published: 2021-06-16
 original_url: https://www.lesswrong.com/posts/ghyw76DfRyiiMxo3t/open-problem-how-can-we-quantify-player-alignment-in-2x2
 skip_import: true
 description: "Quantifying player alignment in game theory: how aligned are the players' incentives in a given game? "
-date_updated: 2025-12-18 09:42:00.251916
+date_updated: 2026-04-20
 ---
-
-
-
-
-
-
-
 
 In my experience, [constant-sum games](http://www.cs.umd.edu/~hajiagha/474GT13/Lecture09102013.pdf) are considered to provide "maximally unaligned" incentives, and [common-payoff games](http://www.cs.umd.edu/~hajiagha/474GT13/Lecture09102013.pdf) are considered to provide "maximally aligned" incentives. How do we quantitatively interpolate between these two extremes? That is, given an arbitrary 2×2  payoff table representing a two-player [normal-form game](https://en.wikipedia.org/wiki/Normal-form_game) (like Prisoner's Dilemma), what extra information do we need in order to produce a real number quantifying agent alignment?
 

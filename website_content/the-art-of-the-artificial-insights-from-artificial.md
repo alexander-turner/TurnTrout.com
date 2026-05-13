@@ -3,8 +3,7 @@ permalink: AI-textbook-review
 lw-was-draft-post: "false"
 lw-is-af: "false"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
+lw-page-url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 lw-is-question: "false"
 lw-posted-at: 2018-03-25T06:55:46.204000Z
 lw-last-modification: None
@@ -17,8 +16,7 @@ lw-base-score: 31
 lw-vote-count: 20
 af-base-score: 13
 af-num-comments-on-upload: 0
-title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern
-  Approach'"
+title: "The Art of the Artificial: Insights from 'Artificial Intelligence: A Modern Approach'"
 lw-latest-edit: 2018-03-25T06:55:46.204000Z
 lw-is-linkpost: "false"
 tags:
@@ -36,19 +34,12 @@ next-post-slug: linear-algebra-textbook-review
 next-post-title: "The First Rung: Insights from 'Linear Algebra Done Right'"
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2018-03-25 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
+date_published: 2018-03-25
+original_url: https://www.lesswrong.com/posts/usEZRkMPJBr534vto/the-art-of-the-artificial-insights-from-artificial
 skip_import: true
-description: My review of "Artificial Intelligence, A Modern Approach" & how I read
-  hundreds of pages in 3 days.
-date_updated: 2025-11-22 00:21:52.667251
+description: My review of "Artificial Intelligence, A Modern Approach" & how I read hundreds of pages in 3 days.
+date_updated: 2026-05-08
 ---
-
-
-
-
-
 
     
 
@@ -535,8 +526,6 @@ I feel a bit like a kid in a candy shop.
 I am convinced that _there are no hard concepts_, only concepts which take different amounts of time to learn. [^5] This is not trivial; dissolving the seemingly ontologically basic "difficult for me" attribute goes a long way towards having the persistence to figure things out.
 
 > _Given enough time, I can understand anything._
-
-<hr/>
 
 [^1]: From personal experience, I don't recommend using this technique liberally; it's already hard enough to correct our epistemologies.
 [^2]: Disclaimer: even setting aside the need for a hypercomputer, AIXI has issues (such as not being [naturalized](http://lesswrong.com/lw/jd9/building_phenomenological_bridges/)). This isn't the droid you're looking for.

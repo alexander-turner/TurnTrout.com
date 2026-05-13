@@ -34,21 +34,12 @@ next-post-slug: insights-from-euclids-elements
 next-post-title: Insights from Euclid's 'Elements'
 lw-reward-post-warning: 'false'
 use-full-width-images: 'false'
-date_published: 2020-04-22 00:00:00
+date_published: 2020-04-22
 original_url: https://www.lesswrong.com/posts/JcpwEKbmNHdwhpq5n/problem-relaxation-as-a-tactic
 skip_import: true
 description: Relax difficult problems by simplifying them while retaining their core challenge. This tactic has fueled some of my most exciting research.
-date_updated: 2026-03-29 17:13:24.103427
+date_updated: 2026-05-08
 ---
-
-
-
-
-
-
-
-
-
 
 > [!warning]
 > As of September 2024, I no longer endorse following some of these strategies. Concretely, beware of most content on [Arbital](https://arbital.com), especially the methodology of unbounded analysis.
@@ -150,8 +141,6 @@ In general, this seems like a skill that successful researchers and mathematicia
 The world is going to hell. You might be working on a hard (or even an impossible) problem. We plausibly stand on the precipice of extinction and utter annihilation.
 
 Just relax.
-
-<hr/>
 
 [^1]: This failure mode is just my best guess – I haven't actually surveyed aspiring researchers.
 [^2]: The "convincing-to-me argument" contains a lot of confused reasoning about impact measurement, of course. For one, [thinking about side effects is _not_ a good way of conceptualizing the impact measurement problem.](/world-state-is-the-wrong-abstraction-for-impact)

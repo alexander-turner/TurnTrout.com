@@ -2,7 +2,12 @@ import type { Element, Text, Root, Parent, ElementContent } from "hast"
 
 import { h } from "hastscript"
 import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
-import { getTextContent, transformElement, collectTransformableElements } from "punctilio/rehype"
+import {
+  getTextContent,
+  transformElement,
+  collectTransformableElements,
+  type TextNodeSkipPredicate,
+} from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
@@ -51,6 +56,18 @@ export function toSkip(node: Element): boolean {
 }
 
 /**
+ * Skip typography transforms on anchor text that equals its href, so URL-like
+ * link text (e.g. `<a href="https://x/y">https://x/y</a>`) is not mangled by
+ * slash spacing, hyphen rewrites, etc.
+ */
+export const shouldSkipLinkUrlText: TextNodeSkipPredicate = (textNode, ancestors) => {
+  const parent = ancestors[ancestors.length - 1]
+  if (parent?.tagName !== "a") return false
+  const href = parent.properties?.href
+  return typeof href === "string" && href === textNode.value
+}
+
+/**
  * @module HTMLFormattingImprovement
  * A plugin that improves text formatting in HTML content by applying various typographic enhancements
  */
@@ -86,8 +103,13 @@ export function spacesAroundSlashes(text: string): string {
   // Can't allow num on both sides, because it'll mess up fractions
   // Use function replacement to preserve markers while avoiding double spaces
   // Markers go OUTSIDE the spaces so content stays in correct HTML elements
+  // The trailing lookahead is permeable to markerChar — it skips past zero or
+  // more markers to look for real content beyond. Using a bare \S would let a
+  // stray "ab/<marker>" match via backtracking (markerAfter goes empty and the
+  // lookahead settles on the marker itself), producing "ab / " for joined
+  // input but no match for the marker-stripped "ab/", breaking invariance.
   const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=\\S)(?!/)`,
+    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^\\s${markerChar}])(?!/)`,
     "gu",
   )
   text = text.replace(slashRegex, (...args) => {
@@ -199,11 +221,17 @@ export function formatLNumbers(tree: Root): void {
     while ((match = l_pRegex.exec(node.value)) !== null) {
       // Add text before the match
       if (match.index > lastIndex) {
-        newNodes.push({ type: "text", value: node.value.slice(lastIndex, match.index) })
+        newNodes.push({
+          type: "text",
+          value: node.value.slice(lastIndex, match.index),
+        })
       }
 
       // The regex guarantees these named groups always exist
-      const { prefix, number } = match.groups as { prefix: string; number: string }
+      const { prefix, number } = match.groups as {
+        prefix: string
+        number: string
+      }
 
       // Add the space/start of line
       newNodes.push({ type: "text", value: prefix })
@@ -381,7 +409,10 @@ export function identifyLinkNode(node: Element): Element | null {
   if (node.tagName === "a") {
     return node
   } else if (node.children && node.children.length > 0) {
-    return identifyLinkNode(node.children[node.children.length - 1] as Element)
+    const lastChild = node.children[node.children.length - 1]
+    if (lastChild.type === "element") {
+      return identifyLinkNode(lastChild)
+    }
   }
   return null
 }
@@ -523,8 +554,9 @@ export function normalizeAbbreviations(text: string): string {
 }
 
 export function plusToAmpersand(text: string): string {
-  const sourcePattern = "(?<=\\p{L})\\+(?=\\p{L})"
-  const result = text.replace(new RegExp(sourcePattern, "gu"), `${NBSP}\u0026${NBSP}`)
+  // Skip keyboard shortcuts: Ctrl+F, Alt+Tab, Cmd+S, Option+J, Fn+F1, etc.
+  const sourcePattern = "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])"
+  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}&${NBSP}`)
   return result
 }
 
@@ -660,7 +692,11 @@ export function replaceFractions(
     parent,
     fractionRegex,
     (match: RegExpMatchArray) => {
-      const groups = match.groups as { numerator: string; denominator: string; ordinal?: string }
+      const groups = match.groups as {
+        numerator: string
+        denominator: string
+        ordinal?: string
+      }
 
       const fractionStr = `${groups.numerator}/${groups.denominator}`
       const fractionEl = h("span.fraction", fractionStr)
@@ -683,7 +719,7 @@ export function replaceFractions(
     (node, idx, parent) => fractionToSkip(node, idx, parent, ancestors),
   )
 }
-interface Options {
+interface ImproveFormattingOptions {
   skipFirstLetter?: boolean // Debug flag
 }
 
@@ -692,8 +728,10 @@ interface Options {
  * @param options - Configuration options
  * @returns Unified transformer function
  */
-export const improveFormatting = (options: Options = {}): Transformer<Root, Root> => {
-  const resolvedOptions: Options = {
+export const improveFormatting = (
+  options: ImproveFormattingOptions = {},
+): Transformer<Root, Root> => {
+  const resolvedOptions: ImproveFormattingOptions = {
     skipFirstLetter: false,
     ...options,
   }
@@ -702,48 +740,52 @@ export const improveFormatting = (options: Options = {}): Transformer<Root, Root
     visitParents(tree, (node, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]
       if (!parent) return
-      const index = parent.children.indexOf(node as ElementContent)
 
       const skipFormatting = [node, ...ancestors].some((anc) => toSkip(anc as Element))
       if (skipFormatting) {
         return // NOTE replaceRegex visits children so this won't check that children are not marked
       }
 
+      const nodeIndexAmongChildren = parent.children.indexOf(node as ElementContent)
       if (node.type === "text" && "value" in node) {
-        replaceFractions(node, index as number, parent as Parent, ancestors)
+        replaceFractions(node, nodeIndexAmongChildren as number, parent as Parent, ancestors)
       }
 
-      rearrangeLinkPunctuation(node as Element, index, parent as Element)
+      rearrangeLinkPunctuation(node as Element, nodeIndexAmongChildren, parent as Element)
 
       // NOTE: Will be called multiple times on some elements, like <p> children of a <blockquote>
-      if (node.type === "element") {
-        // Skip nbsp in headings — it prevents natural line-breaking and looks bad
-        const inHeading =
-          isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
-        const activeUncheckedTransformers = inHeading
-          ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
-          : uncheckedTextTransformers
-
-        const eltsToTransform = collectTransformableElements(node as Element, toSkip)
-        eltsToTransform.forEach((elt) => {
-          for (const transform of checkedTextTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, true)
-          }
-
-          for (const transform of activeUncheckedTransformers) {
-            transformElement(elt, transform, toSkip, markerChar, false)
-          }
-
-          // Don't replace slashes in fractions, but give breathing room
-          // to others
-          const slashPredicate = (n: Element) => {
-            return !hasClass(n, "fraction") && n?.tagName !== "a"
-          }
-          if (slashPredicate(elt)) {
-            transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true)
-          }
-        })
+      if (node.type !== "element") {
+        return
       }
+
+      // Skip nbsp in headings — it prevents natural line-breaking and looks bad
+      const inHeading =
+        isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
+      const activeUncheckedTransformers = inHeading
+        ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
+        : uncheckedTextTransformers
+
+      const eltsToTransform = collectTransformableElements(node as Element, toSkip)
+      eltsToTransform.forEach((elt) => {
+        for (const transform of checkedTextTransformers) {
+          transformElement(elt, transform, toSkip, markerChar, true)
+        }
+
+        for (const transform of activeUncheckedTransformers) {
+          transformElement(elt, transform, toSkip, markerChar, false)
+        }
+
+        // Don't replace slashes in fractions, but give breathing room
+        // to others
+        const isNotFractionOrLink = (n: Element) => {
+          return !hasClass(n, "fraction") && n?.tagName !== "a"
+        }
+        if (isNotFractionOrLink(elt)) {
+          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true, {
+            shouldSkipText: shouldSkipLinkUrlText,
+          })
+        }
+      })
     })
 
     if (!resolvedOptions.skipFirstLetter) {

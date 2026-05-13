@@ -15,11 +15,12 @@ export const {
   appleTouchIconUrl,
   faviconBasePath,
   minFaviconCount,
-  googleSubdomainWhitelist,
-  faviconCountWhitelist,
-  faviconSubstringBlacklist,
+  googleSubdomainAllowlist,
+  faviconCountAllowlist,
+  faviconSubstringBlocklist,
   sessionStoragePondVideoKey,
   pondVideoId,
+  invertInDarkModeClass,
   debounceSearchDelay,
   mouseFocusDelay,
   searchPlaceholderDesktop,
@@ -94,8 +95,8 @@ export const specialFaviconPaths = {
 
 // Computed special domain mappings with RegExp patterns
 export const specialDomainMappings: ReadonlyArray<{ pattern: RegExp; to: string }> = [
-  // Preserve whitelisted Google subdomains (map to themselves)
-  ...googleSubdomainWhitelist.map((subdomain) => ({
+  // Preserve allowlisted Google subdomains (map to themselves)
+  ...googleSubdomainAllowlist.map((subdomain) => ({
     pattern: new RegExp(`^${subdomain.replace(".", "\\.")}\\.google\\.com$`),
     to: `${subdomain}.google.com`,
   })),

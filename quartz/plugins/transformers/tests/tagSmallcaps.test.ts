@@ -86,7 +86,7 @@ describe("rehypeTagSmallcaps", () => {
 
 describe("Abbreviations and Units", () => {
   // Test numeric abbreviations (e.g., 100km)
-  const validCases = ["10ZB", ".1EXP", "10BTC", "100.0KM", "5K"].map((text) => [
+  const validCases = ["10ZB", ".1EXP", "5XP", "10BTC", "100.0KM", "5K"].map((text) => [
     text,
     `<p><abbr class="small-caps">${text.toLowerCase()}</abbr></p>`,
   ])
@@ -385,12 +385,105 @@ describe("REGEX_ABBREVIATION tests", () => {
     testAbbreviation({ input, expectedNumber, expectedAbbreviation })
   })
 
-  it.each(["1000", "KM", "1000 km", "1000-km", "1000.km", "5N"])(
-    "should not match invalid abbreviations: %s",
+  it.each([
+    "1000",
+    "KM",
+    "1000 km",
+    "1000-km",
+    "1000.km",
+    "5N",
+    // Regression: "in" is an English preposition, not an "inches" unit, even
+    // though punctilio's nbspTransform treats it as one.
+    `1${NBSP}in`,
+    `D.1${NBSP}in`,
+    // Not in unit list.
+    "5FOO",
+  ])("should not match invalid abbreviations: %s", (input) => {
+    expect(REGEX_ABBREVIATION.test(input)).toBe(false)
+  })
+})
+
+describe("REGEX_VERSION_NUMBER tests", () => {
+  it.each([
+    "V1",
+    "V2",
+    "V100",
+    "V0",
+    "V42",
+    "v1",
+    "v2",
+    "v100",
+    "v1.0",
+    "V1.0",
+    "v1.2.3",
+    "v0.0.1",
+  ])("should match version label: %s", (input) => {
+    const match = REGEX_VERSION_NUMBER.exec(input)
+    expect(match).not.toBeNull()
+    expect(match?.[0]).toBe(input)
+  })
+
+  it.each(["V", "v", "VX", "vx", "AV1", "av1", "V1A", "v1a", "1V", "1v", "V-1", "v-1"])(
+    "should not match invalid version label: %s",
     (input) => {
-      expect(REGEX_ABBREVIATION.test(input)).toBe(false)
+      expect(REGEX_VERSION_NUMBER.test(input)).toBe(false)
     },
   )
+
+  // Trailing dot (sentence punctuation) and dot-followed-by-non-digit must
+  // not be eaten by the decimal continuation.
+  it.each([
+    ["v1.", "v1"],
+    ["v1.alpha", "v1"],
+    ["v1.0.", "v1.0"],
+  ])("should match %s as %s without consuming trailing punctuation", (input, expected) => {
+    const match = REGEX_VERSION_NUMBER.exec(input)
+    expect(match?.[0]).toBe(expected)
+  })
+
+  it.each([
+    [
+      "<p>The release of V1 was great.</p>",
+      '<p>The release of <abbr class="small-caps version-num">V1</abbr> was great.</p>',
+    ],
+    [
+      "<p>V2 was released yesterday.</p>",
+      '<p><abbr class="small-caps version-num">V2</abbr> was released yesterday.</p>',
+    ],
+    [
+      "<p>We support V1, V2, and V100.</p>",
+      '<p>We support <abbr class="small-caps version-num">V1</abbr>, <abbr class="small-caps version-num">V2</abbr>, and <abbr class="small-caps version-num">V100</abbr>.</p>',
+    ],
+    [
+      "<p>MidJourney v3 was great.</p>",
+      '<p>MidJourney <abbr class="small-caps version-num">V3</abbr> was great.</p>',
+    ],
+    [
+      // "7B" is wrapped by the existing abbreviation handler (number + unit
+      // letter), independently of the version-label match on the trailing v2.
+      "<p>Mistral-7B-Instruct-v2 jailbreak.</p>",
+      '<p>Mistral-<abbr class="small-caps">7b</abbr>-Instruct-<abbr class="small-caps version-num">V2</abbr> jailbreak.</p>',
+    ],
+    [
+      "<p>v3 was released today.</p>",
+      '<p><abbr class="small-caps version-num">V3</abbr> was released today.</p>',
+    ],
+    [
+      "<p>We shipped v1.0 today.</p>",
+      '<p>We shipped <abbr class="small-caps version-num">V1.0</abbr> today.</p>',
+    ],
+    [
+      "<p>Pin to v1.2.3 exactly.</p>",
+      '<p>Pin to <abbr class="small-caps version-num">V1.2.3</abbr> exactly.</p>',
+    ],
+    [
+      "<p>Released v1.0. Then v2 followed.</p>",
+      '<p>Released <abbr class="small-caps version-num">V1.0</abbr>. Then <abbr class="small-caps version-num">V2</abbr> followed.</p>',
+    ],
+    ["<p>Version one was great.</p>", "<p>Version one was great.</p>"],
+  ])("wrap version label correctly: %s", (input, expected) => {
+    expect(testTagSmallcapsHTML(input)).toBe(expected)
+  })
 })
 
 describe("REGEX_VERSION_NUMBER tests", () => {
@@ -1180,21 +1273,21 @@ describe("replaceSCInNode", () => {
   describe("Processing order and priority", () => {
     it("should prioritize allowlist over roman numerals", () => {
       const { node, parent, ancestors } = createNodeWithParent(
-        "IID is a roman numeral but also whitelisted",
+        "IID is a roman numeral but also allowlisted",
       )
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe(
-        '<abbr class="small-caps">Iid</abbr> is a roman numeral but also whitelisted',
+        '<abbr class="small-caps">Iid</abbr> is a roman numeral but also allowlisted',
       )
     })
 
-    it("should preserve roman numerals when not whitelisted", () => {
+    it("should preserve roman numerals when not allowlisted", () => {
       const { node, parent, ancestors } = createNodeWithParent("Chapter XIV discusses")
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe("Chapter XIV discusses")
     })
 
-    it("should preserve numeric abbreviations when not whitelisted", () => {
+    it("should preserve numeric abbreviations when not allowlisted", () => {
       const { node, parent, ancestors } = createNodeWithParent("The 1st place winner")
       replaceSCInNode(node, ancestors)
       expect(getHTML(parent)).toBe("The 1st place winner")

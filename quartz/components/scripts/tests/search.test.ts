@@ -133,6 +133,37 @@ describe("match", () => {
     )
   })
 
+  it.each([
+    {
+      name: "angle brackets",
+      term: "script",
+      text: "Try <script>alert(1)</script> here",
+      shouldContain: ["&lt;", "&gt;", '<span class="search-match">script</span>'],
+      shouldNotContain: ["<script>"],
+    },
+    {
+      name: "ampersands",
+      term: "R",
+      text: "R&D department",
+      shouldContain: ["&amp;D", '<span class="search-match">R</span>'],
+      shouldNotContain: [],
+    },
+    {
+      name: "quotes",
+      term: "hello",
+      text: 'She said "hello" today',
+      shouldContain: ["&quot;", '<span class="search-match">hello</span>'],
+      shouldNotContain: [],
+    },
+  ])(
+    "should HTML-escape $name in content tokens",
+    ({ term, text, shouldContain, shouldNotContain }) => {
+      const matched = match(term, text)
+      for (const s of shouldContain) expect(matched).toContain(s)
+      for (const s of shouldNotContain) expect(matched).not.toContain(s)
+    },
+  )
+
   describe("Trimming and ellipsis", () => {
     const generateText = (numWords: number, suffix = "") =>
       Array.from({ length: numWords }, (_, i) => `word${i}${suffix}`).join(" ")
@@ -274,6 +305,7 @@ describe("showSearch", () => {
   })
 
   it("should show UI and trigger initialization when search is not yet initialized", async () => {
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
     const spy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
     stubGetContentIndex(() => Promise.resolve(null))
@@ -735,6 +767,7 @@ describe("initializeSearch retry after failed fetch", () => {
   let consoleErrorSpy: jest.SpiedFunction<typeof console.error>
 
   beforeEach(() => {
+    // skipcq: JS-0321 -- intentional no-op: suppress console.error noise in tests
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
     resetSearchStateForTesting()
     document.body.innerHTML = `

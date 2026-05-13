@@ -12,7 +12,7 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../util/ctx"
 import type { QuartzComponentProps } from "../types"
 
-import { TocEntry } from "../../plugins/transformers/toc"
+import { TocEntry } from "../../plugins/vfile"
 import { normalizeNbsp } from "../constants"
 import {
   CreateTableOfContents,

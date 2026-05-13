@@ -3,8 +3,7 @@ permalink: human-values-and-biases-are-inaccessible-to-the-genome
 lw-was-draft-post: "false"
 lw-is-af: "true"
 lw-is-debate: "false"
-lw-page-url: 
-  https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
+lw-page-url: https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
 lw-is-question: "false"
 lw-posted-at: 2022-07-07T17:29:56.190000Z
 lw-last-modification: 2023-12-26T18:42:00.324000Z
@@ -36,22 +35,13 @@ next-post-slug: general-alignment-properties
 next-post-title: General alignment properties
 lw-reward-post-warning: "false"
 use-full-width-images: "false"
-date_published: 2022-07-07 00:00:00
-original_url: 
-  https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
+date_published: 2022-07-07
+original_url: https://www.lesswrong.com/posts/CQAMdzA4MZEhNRtTp/human-values-and-biases-are-inaccessible-to-the-genome
 skip_import: "true"
-description: The genome can't directly hardwire complex human values like "fear of
-  death." Those values probably arise from simpler, hardcoded learning mechanisms.
-date_updated: 2025-11-22 00:21:52.667251
+description: The genome can't directly hardwire complex human values like "fear of death." Those values probably arise from simpler, hardcoded learning mechanisms.
+date_updated: 2026-04-20
 createBibtex: true
 ---
-
-
-
-
-
-
-
 
 > [!info]
 > Related to Steve Byrnes’ [_Social instincts are tricky because of the “symbol grounding problem.”_](https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/5F5Tz3u6kJbTNMqsb#13_2_2_Claim_2__Social_instincts_are_tricky_because_of_the__symbol_grounding_problem_) I wouldn’t have had this insight without several great discussions with Quintin Pope.

@@ -30,8 +30,9 @@ jest.mock("hast-util-from-html", () => ({
   fromHtml: mockFromHtml,
 }))
 
-import { type GlobalConfiguration, type QuartzConfig } from "../../cfg"
 import { type QuartzPluginData } from "../../plugins/vfile"
+import { type GlobalConfiguration } from "../../util/config"
+import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
@@ -224,7 +225,7 @@ describe("Head Component", () => {
     it("should include frontmatter script with exposed data", () => {
       const html = render(h(Head, mockProps))
 
-      expect(html).toContain('id="quartz-frontmatter"')
+      expect(html).toContain('id="page-frontmatter"')
       expect(html).toContain('type="application/json"')
       expect(html).toContain('{"no_dropcap":false}')
     })
@@ -270,7 +271,7 @@ describe("Head Component", () => {
       const html = render(h(Head, propsWithIndexing))
 
       expect(html).toContain('name="robots"')
-      expect(html).toContain("noindex, noimageindex,nofollow")
+      expect(html).toContain("noindex, noimageindex, nofollow")
     })
 
     it("should not include robots meta when avoidIndexing is false", () => {
@@ -347,7 +348,7 @@ describe("Head Component", () => {
 
       expect(html).toContain("<head")
       // When frontmatter is undefined, the exposed frontmatter should be empty object
-      expect(html).toContain('id="quartz-frontmatter"')
+      expect(html).toContain('id="page-frontmatter"')
       expect(html).toContain("{}")
     })
 

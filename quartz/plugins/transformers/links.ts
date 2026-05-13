@@ -24,7 +24,7 @@ import {
   transformLink,
 } from "../../util/path"
 
-interface Options {
+interface CrawlLinksOptions {
   /** How to resolve Markdown paths */
   markdownLinkResolution: TransformOptions["strategy"]
   /** Strips folders from a link so that it looks nice */
@@ -33,7 +33,7 @@ interface Options {
   lazyLoad: boolean
 }
 
-const defaultOptions: Options = {
+const defaultOptions: CrawlLinksOptions = {
   markdownLinkResolution: "absolute",
   prettyLinks: true,
   openLinksInNewTab: true,
@@ -98,7 +98,7 @@ function resolveInternalLink(
 function processAnchor(
   node: Element,
   parent: Element | null,
-  opts: Options,
+  opts: CrawlLinksOptions,
   file: VFile,
   curSlug: SimpleSlug,
   transformOptions: TransformOptions,
@@ -164,7 +164,7 @@ function processAnchor(
  */
 function processMedia(
   node: Element,
-  opts: Options,
+  opts: CrawlLinksOptions,
   file: VFile,
   transformOptions: TransformOptions,
 ): void {
@@ -184,7 +184,9 @@ function processMedia(
   }
 }
 
-export const CrawlLinks: QuartzTransformerPlugin<Partial<Options> | undefined> = (userOpts) => {
+export const CrawlLinks: QuartzTransformerPlugin<Partial<CrawlLinksOptions> | undefined> = (
+  userOpts,
+) => {
   const opts = { ...defaultOptions, ...userOpts }
   return {
     name: "LinkProcessing",

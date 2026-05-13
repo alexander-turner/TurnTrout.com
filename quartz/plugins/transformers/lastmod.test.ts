@@ -9,7 +9,8 @@ describe("coerceDate", () => {
   it.each([
     ["ISO 8601 date", "2024-01-19T00:47:04.621Z", new Date("2024-01-19T00:47:04.621Z")],
     ["date with space separator", "2024-01-19 20:10:07", new Date("2024-01-19T20:10:07")],
-    ["simple date", "2024-01-19", new Date("2024-01-19")],
+    // Day-only strings are parsed as local midnight, not UTC midnight
+    ["simple date", "2024-01-19", new Date(2024, 0, 19)],
     ["numeric timestamp", 1705694407919, new Date(1705694407919)],
   ])("parses valid date: %s", (_, input, expected) => {
     const result = coerceDate("test.md", input)
@@ -18,6 +19,7 @@ describe("coerceDate", () => {
 
   it("returns current date for undefined input", () => {
     const before = Date.now()
+    // skipcq: JS-W1042 -- the test exists to verify the undefined branch; coerceDate's `d` is required (typed as MaybeDate)
     const result = coerceDate("test.md", undefined)
     const after = Date.now()
     expect(result.getTime()).toBeGreaterThanOrEqual(before)
@@ -29,6 +31,24 @@ describe("coerceDate", () => {
     ["invalid string", "not-a-date"],
   ])("throws for invalid date: %s", (_, input) => {
     expect(() => coerceDate("test.md", input)).toThrow("Invalid date")
+  })
+
+  it.each([
+    ["month 13", "2024-13-01"],
+    ["month 0", "2024-00-15"],
+    ["day 0", "2024-06-00"],
+    ["day 32", "2024-06-32"],
+  ])("throws for out-of-range date component: %s", (_, input) => {
+    expect(() => coerceDate("test.md", input)).toThrow("month must be 1-12 and day must be 1-31")
+  })
+
+  it.each([
+    ["Feb 30", "2024-02-30"],
+    ["Feb 31", "2024-02-31"],
+    ["Apr 31", "2024-04-31"],
+    ["Jun 31", "2024-06-31"],
+  ])("throws for day overflow: %s", (_, input) => {
+    expect(() => coerceDate("test.md", input)).toThrow("day is out of range for the given month")
   })
 
   it("includes file path and documentation link in error", () => {
