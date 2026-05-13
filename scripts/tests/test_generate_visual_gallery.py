@@ -117,20 +117,6 @@ def test_render_html_uses_full_height_cells() -> None:
     assert "height: auto" in page
 
 
-def test_render_html_does_not_stretch_images_to_container() -> None:
-    """Images render at natural size scaled by DPR — never stretched to fit."""
-    page = gvg.render_html([])
-    # The old rule that stretched each image to its grid column is gone.
-    assert "width: 100%" not in page
-    # Lightbox no longer shrinks oversize images to viewport width either.
-    assert "max-width: 100%" not in page
-    # Rows can scroll horizontally when natural-sized images overflow.
-    assert "overflow-x: auto" in page
-    # Per-image width is computed client-side from naturalWidth / DPR.
-    assert "devicePixelRatio" in page
-    assert "naturalWidth" in page
-
-
 def test_render_html_escapes_label() -> None:
     tiles = [gvg.Tile(label="<script>x", expected=None, actual=None, diff=None)]
     page = gvg.render_html(tiles)

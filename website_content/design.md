@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-12
+date_updated: 2026-05-13
 no_dropcap: false
 createBibtex: true
 ---
@@ -1109,7 +1109,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Dark-mode inversion:**
 >
-> 1. Eligible raster `<img>` and inline looping `<video>` sources which are missing from `.invert_labels.json` or which are not user-reviewed;
+> 1. Raster `<img>` or inline looping `<video>` sources which don't have a confirmed judgment for "should this be inverted in dark mode?".
 > 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
 >
 > **CSS and styling:**
