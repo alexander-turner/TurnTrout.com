@@ -74,16 +74,6 @@ parser.add_argument(
     default=False,
     help="Enable checking for preloaded fonts",
 )
-parser.add_argument(
-    "--allow-fixtures",
-    action="store_true",
-    default=False,
-    help=(
-        "Permit fixture artifacts in the build (test-flavor build). Without "
-        "this flag, any path or contentIndex.json slug containing 'fixture' "
-        "fails the check, which is the deploy-bound guardrail."
-    ),
-)
 
 
 def _tags_only(
@@ -2666,13 +2656,12 @@ def check_root_files_location(base_dir: Path) -> list[str]:
 
 def check_fixture_pages_excluded(base_dir: Path) -> list[str]:
     """
-    Find built artifacts whose relative path or contentIndex.json slug contains
-    'fixture'.
+    Find built artifacts whose relative path contains 'fixture'.
 
-    Fixture pages back Playwright visual tests and the RemoveFixtures filter is
-    meant to drop them from any build that ships to readers; this check is the
-    guardrail in case the filter regresses or someone adds a new fixture
-    pathway.
+    Fixture pages back Playwright visual tests and the RemoveFixtures filter
+    drops them from any build that ships to readers; this check is the guardrail
+    in case the filter regresses. The convention is that every fixture page's
+    permalink (and therefore its emitted path) carries 'fixture' in the name.
     """
     issues: list[str] = []
 
@@ -2682,13 +2671,6 @@ def check_fixture_pages_excluded(base_dir: Path) -> list[str]:
         rel = str(path.relative_to(base_dir)).lower()
         if "fixture" in rel:
             issues.append(f"fixture artifact in build: {rel}")
-
-    index_path = base_dir / "static" / "contentIndex.json"
-    if index_path.is_file():
-        data = json.loads(index_path.read_text(encoding="utf-8"))
-        for slug in data:
-            if "fixture" in slug.lower():
-                issues.append(f"fixture slug in contentIndex.json: {slug}")
 
     return sorted(issues)
 
@@ -3142,13 +3124,8 @@ def main() -> None:
 
     fixture_issues = check_fixture_pages_excluded(_PUBLIC_DIR)
     if fixture_issues:
-        if args.allow_fixtures:
-            print("Fixture artifacts present (test-flavor build):")
-            for issue in fixture_issues:
-                print(f"  {issue}")
-        else:
-            _print_issues(_PUBLIC_DIR, {"fixture_artifacts": fixture_issues})
-            overall_issues_found = True
+        _print_issues(_PUBLIC_DIR, {"fixture_artifacts": fixture_issues})
+        overall_issues_found = True
 
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(

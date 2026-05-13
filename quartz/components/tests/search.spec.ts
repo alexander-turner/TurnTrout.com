@@ -526,7 +526,9 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
 })
 
 test("Emoji search works and is converted to twemoji (screenshot)", async ({ page }, testInfo) => {
-  await search(page, "Emoji examples")
+  // Search the fixture's unique title so the preview lands on the
+  // emoji-rendering fixture rather than Test-page.md's emoji showcase.
+  await search(page, "Twemoji rendering fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   const emojiHeader = previewContainer.locator("#emoji-examples").first()
