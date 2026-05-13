@@ -93,11 +93,11 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     if not args.blob_reports_dir.is_dir():
-        parser.error(f"Not a directory: {args.blob_reports_dir}")
+        raise NotADirectoryError(args.blob_reports_dir)
 
     count = collect_from_blob_reports(args.blob_reports_dir, args.staging_dir)
     if count == 0:
-        raise SystemExit(
+        raise RuntimeError(
             "No PNG attachments found in any blob report; nothing to upload."
         )
     print(

@@ -234,19 +234,17 @@ def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:
     assert (staging / "toc.png").exists()
 
 
-def test_main_exits_when_dir_missing(tmp_path: Path) -> None:
-    with pytest.raises(SystemExit) as exc:
+def test_main_raises_when_dir_missing(tmp_path: Path) -> None:
+    with pytest.raises(NotADirectoryError):
         approve.main([str(tmp_path / "does-not-exist")])
-    assert exc.value.code == 2
 
 
-def test_main_exits_when_no_attachments(tmp_path: Path) -> None:
+def test_main_raises_when_no_attachments(tmp_path: Path) -> None:
     blob_dir = tmp_path / "blobs"
     blob_dir.mkdir()
     with (
         patch.object(approve.r2_baselines, "upload") as mock_upload,
-        pytest.raises(SystemExit) as exc,
+        pytest.raises(RuntimeError, match="No PNG attachments"),
     ):
         approve.main([str(blob_dir)])
-    assert "No PNG attachments" in str(exc.value)
     mock_upload.assert_not_called()
