@@ -116,6 +116,9 @@ def maybe_update_publish_date(yaml_metadata: dict) -> None:
 
 def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
     """Write updated metadata to a markdown file."""
+    # Collapse any accumulated blank lines after the closing `---` to exactly
+    # one, so files that previously round-tripped don't keep growing.
+    content = "\n" + content.lstrip("\n")
     script_utils.write_yaml_frontmatter(
         file_path, metadata, content, parser=yaml_parser
     )
