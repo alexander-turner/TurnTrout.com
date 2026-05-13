@@ -2281,6 +2281,11 @@ def _abbr_starts_with_digit(element: Tag) -> bool:
     return bool(text) and text[0].isdigit()
 
 
+# Pluralised inline code is common in prose ("``URL``s", "``id``s"), so a
+# trailing "s" right after a code element is allowed without a space.
+_CODE_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
 def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
     """
     Flag inline ``<code>`` elements that render directly adjacent to a letter.
@@ -2293,18 +2298,11 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
     """
     issues: list[str] = []
     for code in _tags_only(soup.find_all("code")):
-        if any(
-            isinstance(p, Tag)
-            and (
-                p.name == "pre"
-                or "no-formatting" in script_utils.get_classes(p)
-            )
-            for p in code.parents
-        ):
+        if code.find_parent("pre") or code.find_parent(class_="no-formatting"):
             continue
         issues.extend(
             _check_element_spacing(
-                code, ALLOWED_ELT_PRECEDING_CHARS, ALLOWED_ELT_FOLLOWING_CHARS
+                code, ALLOWED_ELT_PRECEDING_CHARS, _CODE_FOLLOWING_CHARS
             )
         )
     return issues

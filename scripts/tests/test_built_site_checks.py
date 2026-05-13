@@ -2701,6 +2701,10 @@ def test_check_inline_formatting_spacing(html, expected):
         # Punctuation adjacent to code is fine.
         ("<p>the <code>foo</code>, then</p>", 0),
         ("<p>(<code>x</code>)</p>", 0),
+        # Pluralised inline code (e.g. "``URL``s") is fine.
+        ("<p>multiple <code>URL</code>s here</p>", 0),
+        # Apostrophe-s possessive is fine (apostrophe is in allowed chars).
+        ("<p>the <code>name</code>'s value</p>", 0),
         # Block code inside <pre> is skipped.
         ("<pre><code>let x = 1;\nfoo</code></pre>", 0),
         # Code inside a no-formatting zone is skipped.
@@ -2715,6 +2719,21 @@ def test_check_inline_code_word_boundaries(html, expected_count):
     soup = BeautifulSoup(html, "html.parser")
     result = built_site_checks.check_inline_code_word_boundaries(soup)
     assert len(result) == expected_count
+
+
+def test_check_inline_code_word_boundaries_message_format():
+    """Issue messages name the side and quote the surrounding text."""
+    html = "<p>upweight the sycophantic<code>A</code> / <code>B</code>token</p>"
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_code_word_boundaries(soup)
+    assert any(
+        "Missing space before" in msg and "sycophantic<code>A</code>" in msg
+        for msg in result
+    )
+    assert any(
+        "Missing space after" in msg and "<code>B</code>token" in msg
+        for msg in result
+    )
 
 
 def test_extract_flat_paragraph_texts():
