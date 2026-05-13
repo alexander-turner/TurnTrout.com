@@ -18,6 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
@@ -2261,18 +2262,21 @@ _ARROW_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS + _LETTERS
 _ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS + _LETTERS
 _ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
 
-# Per-selector overrides for allowed preceding/following characters
-_SELECTOR_PRECEDING_CHARS: dict[str, str] = {
-    "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
-    "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
-    "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
-    "span.right-arrow": _ARROW_PRECEDING_CHARS,
-}
-_SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
-    "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
-    "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
-    "span.right-arrow": _ARROW_FOLLOWING_CHARS,
-}
+_SELECTOR_PRECEDING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
+        "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+        "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
+        "span.right-arrow": _ARROW_PRECEDING_CHARS,
+    }
+)
+_SELECTOR_FOLLOWING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
+        "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
+        "span.right-arrow": _ARROW_FOLLOWING_CHARS,
+    }
+)
 
 
 def _abbr_starts_with_digit(element: Tag) -> bool:
