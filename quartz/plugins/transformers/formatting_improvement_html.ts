@@ -99,50 +99,32 @@ export function spacesAroundSlashes(text: string): string {
   // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
   text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
-  // Apply the normal slash spacing rule
-  // Can't allow num on both sides, because it'll mess up fractions
-  // Use function replacement to preserve markers while avoiding double spaces
-  // Markers go OUTSIDE the spaces so content stays in correct HTML elements
-  // The trailing lookahead is permeable to markerChar — it skips past zero or
-  // more markers to look for real content beyond. Using a bare \S would let a
-  // stray "ab/<marker>" match via backtracking (markerAfter goes empty and the
-  // lookahead settles on the marker itself), producing "ab / " for joined
-  // input but no match for the marker-stripped "ab/", breaking invariance.
-  // Exclude only ASCII whitespace (not \s) so that NBSP counts as real content
-  // for the lookahead — earlier transformers (e.g. nbspBeforeLastWord) often
-  // replace the trailing space of a paragraph with NBSP, and the slash transform
-  // must still anchor past it.
+  // Rejects digit-before-slash to leave fractions alone. Lookahead skips
+  // markers and treats NBSP as real content so it anchors past an NBSP that
+  // earlier transforms (e.g. nbspBeforeLastWord) inserted at a paragraph edge.
   const slashRegex = new RegExp(
     `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^ \\t\\n\\r\\f\\v${markerChar}])(?!/)`,
     "gu",
   )
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
-      spaceBefore: string | undefined
+      spaceBefore: string
       markerBefore: string | undefined
       markerAfter: string | undefined
-      spaceAfter: string | undefined
+      spaceAfter: string
     }
-    const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
-    const sB = spaceBefore ?? ""
-    const sA = spaceAfter ?? ""
-    const mB = markerBefore ?? ""
-    const mA = markerAfter ?? ""
-    // When "/" sits alone between two markers (mB && mA), the slash is its
-    // own text node and the captured spaces belong to the *sibling* text
-    // nodes (e.g. "sycophantic " and " token" around <code>A</code>/<code>B</code>).
-    // The original "absorb space into the slash node" behavior erases those
-    // trailing/leading spaces, rendering as "sycophanticA / Btoken". Keep
-    // outer spaces outside the markers and glue NBSPs to "/" instead.
-    // For the non-lone case, fall back to the original behavior: the captured
-    // space is part of the slash's own text node (or invariance with an empty
-    // inline element requires moving it across the marker boundary).
-    const isLoneSlash = mB && mA
-    const outerB = isLoneSlash ? sB : ""
-    const padB = isLoneSlash ? NBSP : sB || NBSP
-    const outerA = isLoneSlash ? sA : ""
-    const padA = isLoneSlash ? NBSP : sA || NBSP
-    return `${outerB}${mB}${padB}/${padA}${mA}${outerA}`
+    const { spaceBefore: leftSpace, spaceAfter: rightSpace } = groups
+    const leftMarker = groups.markerBefore ?? ""
+    const rightMarker = groups.markerAfter ?? ""
+    if (leftMarker && rightMarker) {
+      // "/" alone between two markers: the captured spaces live in sibling
+      // text nodes (e.g. <code>A</code>/<code>B</code>). Keep them outside
+      // the markers so siblings retain their boundary spaces; pad "/" with
+      // NBSPs so the cluster stays unbreakable.
+      return `${leftSpace}${leftMarker}${NBSP}/${NBSP}${rightMarker}${rightSpace}`
+    }
+    // Otherwise absorb the captured space into the slash's own text node.
+    return `${leftMarker}${leftSpace || NBSP}/${rightSpace || NBSP}${rightMarker}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g

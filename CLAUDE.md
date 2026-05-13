@@ -58,6 +58,7 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 - TypeScript: avoid `!` non-null assertions (linter flags them); use proper null checks.
 - **Never add backward-compat re-exports** (`export { foo } from "./other-module"`). Update imports at the call site.
 - **Prefer immutable types** for read-only collections: `ReadonlySet`, `ReadonlyMap`, `readonly T[]`, `Readonly<Record<K,V>>`, `as const`. Python: `frozenset`, `tuple`, `frozendict`. Function parameters should accept `readonly` types when they don't mutate.
+- **Comments describe current code, not its history.** Don't narrate prior fixes, old bug saga, "previously...", "the short-lived NBSP-always fork", "Regression: the old code did X", or what an earlier iteration tried — that belongs in commit messages or PR descriptions, which is where future readers should look for history. Comments that age into stale archaeology are worse than no comments. When fixing a regression, write the comment as "WHY this code is the way it is" without mentioning the old version. The git log is the changelog.
 
 ## Error handling
 
@@ -87,6 +88,7 @@ When a change touches user-facing behavior, update the relevant doc:
 - **`website_content/Test-page.md`**: any new visual element (e.g. glyph margin before favicon, new dropcap variant, new admonition style). Add a representative example so the next visual-regression run captures the new element as a baseline.
 - **`.claude/dev-notes.md`**: any new dev procedure that's only useful occasionally — build steps, pre-push checks, CI cost optimization, debugging recipes. Keep CLAUDE.md itself slim — it's loaded every turn.
 - **Generalizable "lessons learned"**: add to the **PR description** under a `## Lessons learned` heading, *not* to `dev-notes.md`. The claude-automation-template reviewer picks them up from PR descriptions and propagates them across all relevant repos. Repo-specific procedures still belong in `dev-notes.md`; lessons that apply broadly (CI primitives, sandbox tooling, cross-repo conventions) go in the PR description.
+- **When the user critiques a *pattern*, codify it immediately.** If the feedback is a one-off bug, just fix it. If it's a *recurring failure mode* — "these comments are too long", "you keep adding unneeded abstractions", "stop renaming things speculatively", "you keep writing tests that lower the bar" — proactively, on first hearing, (a) update the relevant `.claude/` doc (CLAUDE.md or `dev-notes.md`) with a rule that prevents the pattern next time, and (b) add a `## Lessons learned` entry to the PR description. Don't wait for "and update CLAUDE.md too"; once a recurring failure mode is flagged, codification is automatic.
 
 Design philosophy from `design.md`: minimal targeted changes; verify before generating; derive style from existing code; security-first; modern best practices with explicit typing; no unnecessary refactoring or whitespace changes.
 
