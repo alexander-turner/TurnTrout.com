@@ -860,12 +860,21 @@ def compile_scss(scss_file_path: Path) -> str:
     return result.stdout
 
 
-_FONT_FACE_PATTERN = re.compile(
+_FONT_FACE_FAMILY_PATTERN = re.compile(
     r"""@font-face\s*\{[^}]*?
     src:\s*url\(\s*["']?(.*?)["']?\)\s*
     (?:format\([^\)]*\)\s*)?
-    [^;]*;""",
+    [^;]*;"""
+             ,
     re.VERBOSE | re.DOTALL,
+)
+
+_FONT_FACE_SRC_PATTERN = re.compile(
+    r"@font-face\s*\{[^}]*?"
+    r"src:\s*url\(\s*[\"']?(.*?)[\"']?\)\s*"
+    r"(?:format\([^\)]*\)\s*)?"
+    r"[^;]*;",
+    re.DOTALL,
 )
 
 
@@ -881,7 +890,7 @@ def check_font_files(css_content: str, base_dir: Path) -> list[str]:
         List of missing font file paths
     """
     missing_fonts = []
-    for match in _FONT_FACE_PATTERN.finditer(css_content):
+    for match in _FONT_FACE_SRC_PATTERN.finditer(css_content):
         font_path = match.group(1)
         if font_path.startswith(("http:", "https:", "data:")):
             continue
@@ -930,15 +939,9 @@ def check_font_families(css_content: str) -> list[str]:
         return name.split(":")[0]
 
     # Find all @font-face declarations and their font families
-    font_face_pattern = re.compile(
-        r"""@font-face\s*\{[^}]*?
-        font-family:\s*["']?(.*?)["']?[;,]"""
-                                             ,
-        re.VERBOSE | re.DOTALL,
-    )
     declared_fonts = {
         clean_font_name(match.group(1))
-        for match in font_face_pattern.finditer(css_content)
+        for match in _FONT_FACE_FAMILY_PATTERN.finditer(css_content)
     }
 
     # Find all font-family references in CSS custom properties
@@ -1024,7 +1027,7 @@ def parse_args() -> argparse.Namespace:
 def main(check_publication_dates: bool = False) -> None:
     """Check source files for issues."""
     git_root = script_utils.get_git_root()
-    content_dir = git_root / "website_content"
+    content_dir = git_root / script_utils.CONTENT_DIR_NAME
     existing_urls: PathMap = {}
     has_errors = False
 

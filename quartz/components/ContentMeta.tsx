@@ -16,7 +16,6 @@ import { type QuartzComponentConstructor, type QuartzComponentProps } from "./ty
 // skipcq: JS-W1042 -- TagList's type annotation requires an opts argument; passing undefined is the canonical no-options form
 const TagListComponent = TagList(undefined)
 
-// Render publication information including original URL and date
 export function RenderPublicationInfo(
   cfg: GlobalConfiguration,
   fileData: QuartzPluginData,
@@ -37,7 +36,6 @@ export function RenderPublicationInfo(
     />
   )
 
-  // If there's an original URL, show "Originally published on" with favicon
   const originalUrl = frontmatter?.original_url
   if (typeof originalUrl === "string") {
     const url = new URL(originalUrl)
@@ -56,7 +54,6 @@ export function RenderPublicationInfo(
   return <span className="publication-str">Published on {dateElement}</span>
 }
 
-// Add new function to render last updated info
 export function renderLastUpdated(
   cfg: GlobalConfiguration,
   fileData: QuartzPluginData,
@@ -109,14 +106,14 @@ export function processReadingTime(minutes: number): string {
   let timeString = ""
 
   if (hours > 0) {
-    timeString += `${hours} hour${hours > 1 ? "s" : ""}` // Pluralize 'hour' if > 1
+    timeString += `${hours} hour${hours > 1 ? "s" : ""}`
     if (remainingMinutes > 0) {
-      timeString += " " // Add separator if we also have minutes
+      timeString += " "
     }
   }
 
   if (remainingMinutes > 0) {
-    timeString += `${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""}` // Pluralize 'minute' if > 1
+    timeString += `${remainingMinutes} minute${remainingMinutes > 1 ? "s" : ""}`
   }
 
   return timeString
@@ -141,7 +138,6 @@ export const renderReadingTime = (fileData: QuartzPluginData): JSX.Element => {
   return <span className="reading-time">Read time: {displayedTime}</span>
 }
 
-// Modify renderLinkpostInfo function
 export const renderLinkpostInfo = (fileData: QuartzPluginData): JSX.Element | null => {
   const linkpostUrl = fileData.frontmatter?.["lw-linkpost-url"]
   if (typeof linkpostUrl !== "string") return null
@@ -161,9 +157,7 @@ export const renderLinkpostInfo = (fileData: QuartzPluginData): JSX.Element | nu
   )
 }
 
-// an admonition that displays the tags for the post
 export const renderTags = (props: QuartzComponentProps): JSX.Element => {
-  // Check if there are any tags
   const tags = props.fileData.frontmatter?.tags
   if (!tags || tags.length === 0) {
     // skipcq: JS-0424
@@ -319,7 +313,6 @@ export const ContentMetadata = (props: QuartzComponentProps) => {
   } else {
     metadataElements = []
   }
-  // Remove any null or undefined elements
   const filteredElements = metadataElements.filter(Boolean)
 
   const backlinkProps = text ? <Backlinks {...props} /> : null

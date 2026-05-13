@@ -63,6 +63,8 @@ website_content/drafts
 hint-report
 prettierrc
 .stripped_quotes
+.spellcheck-rendered-*.txt
+.wordlist-augmented-*.txt
 
 # Private & Generated Files
 private/

@@ -59,7 +59,7 @@ const upperCapsChars = "A-Z\\u00C0-\\u00DC" // A-Z and À-Ü
 const lowerCapsChars = "a-z\\u00E0-\\u00FC" // a-z and à-ü
 const allCapsChars = `${upperCapsChars}${lowerCapsChars}`
 
-// Update boundary conditions to prevent mixing upper and lower
+// Word boundary that prevents mixing upper- and lowercase neighbors
 const beforeWordBoundary = `(?<![${allCapsChars}\\w])`
 const afterWordBoundary = `(?![${allCapsChars}\\w])`
 
@@ -78,7 +78,7 @@ const allowedUppercasePatterns = [
   `${upper}${sep}${upper}${sep}${upper}${upperOrDigit}*${continuation}`, // A-B-C, A-B-C2, etc.
 ].join("|")
 
-// Update REGEX_ACRONYM to match sequences with uppercase characters (allowing digits/separators)
+// Matches sequences of uppercase characters (allowing digits/separators)
 export const REGEX_ACRONYM = new RegExp(
   `${beforeWordBoundary}(?<acronym>${boundaryAllowAcronyms}|${allowedUppercasePatterns})(?<suffix>[sx]?)${afterWordBoundary}`,
 )
