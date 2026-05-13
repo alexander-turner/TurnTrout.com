@@ -106,7 +106,12 @@ export default defineConfig({
   snapshotPathTemplate: "../../tests/visual-baselines/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
-    command: process.env.CI ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1" : "pnpm start",
+    // Local dev rebuilds via `pnpm start`; fixtures must be included so the
+    // visual tests can hover/preview them. CI consumes a pre-built `public/`
+    // that already had INCLUDE_FIXTURES=true at build time.
+    command: process.env.CI
+      ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
+      : "INCLUDE_FIXTURES=true pnpm start",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 7 minutes

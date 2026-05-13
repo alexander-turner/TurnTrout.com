@@ -3549,6 +3549,49 @@ def test_check_root_files_location(
     assert sorted(result) == sorted(expected)
 
 
+def _write(path: Path, content: str = "") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def test_check_fixture_pages_excluded_clean(tmp_path: Path) -> None:
+    _write(tmp_path / "test-page.html", "<html></html>")
+    _write(
+        tmp_path / "static" / "contentIndex.json",
+        json.dumps({"test-page": {"title": "Test"}}),
+    )
+
+    assert built_site_checks.check_fixture_pages_excluded(tmp_path) == []
+
+
+def test_check_fixture_pages_excluded_flags_paths(tmp_path: Path) -> None:
+    _write(tmp_path / "popover-fixture.html", "<html></html>")
+    _write(tmp_path / "emoji-fixture" / "index.html", "<html></html>")
+    _write(tmp_path / "static" / "contentIndex.json", json.dumps({}))
+
+    issues = built_site_checks.check_fixture_pages_excluded(tmp_path)
+    assert any("popover-fixture.html" in i for i in issues)
+    assert any("emoji-fixture" in i for i in issues)
+
+
+def test_check_fixture_pages_excluded_flags_content_index_slugs(
+    tmp_path: Path,
+) -> None:
+    _write(
+        tmp_path / "static" / "contentIndex.json",
+        json.dumps(
+            {"popover-fixture": {"title": "x"}, "regular": {"title": "y"}}
+        ),
+    )
+
+    issues = built_site_checks.check_fixture_pages_excluded(tmp_path)
+    assert any(
+        "fixture slug in contentIndex.json: popover-fixture" in i
+        for i in issues
+    )
+    assert not any("regular" in i for i in issues)
+
+
 @pytest.mark.parametrize(
     "html,expected",
     [

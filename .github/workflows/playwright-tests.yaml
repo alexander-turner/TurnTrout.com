@@ -48,6 +48,8 @@ jobs:
     needs: should-run
     if: needs.should-run.outputs.run == 'true'
     uses: ./.github/workflows/build-site.yaml
+    with:
+      include-fixtures: true
 
   # Linux Chromium + Firefox.
   playwright-tests-linux:
@@ -87,7 +89,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}
+          key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
 
       - name: Run Playwright tests
@@ -191,7 +193,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}
+          key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
 
       - name: Run Playwright tests

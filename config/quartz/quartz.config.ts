@@ -17,6 +17,7 @@ import {
   PopulateExternalMarkdown,
   RecentPostsPage,
   RemoveDrafts,
+  RemoveFixtures,
   Static,
   stripBadges,
   SyntaxHighlighting,
@@ -110,7 +111,7 @@ const config: QuartzConfig = {
       addAssetDimensionsFromSrc(),
       InvertInDarkMode(),
     ],
-    filters: [RemoveDrafts()],
+    filters: [RemoveDrafts(), RemoveFixtures()],
     emitters: [
       AliasRedirects(),
       ComponentResources(),

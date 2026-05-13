@@ -28,8 +28,10 @@ test.beforeEach(async ({ page }, testInfo) => {
   // Log any console errors
   page.on("pageerror", (err) => console.error(err))
 
-  // Navigate and wait for full initialization (including scripts)
-  await gotoPage(page, "http://localhost:8080/welcome")
+  // Start from the popover fixture: a minimal stable page so anything that
+  // bleeds through the search overlay (background, page chrome, page-level
+  // styling) doesn't churn whenever /welcome's content changes.
+  await gotoPage(page, "http://localhost:8080/popover-fixture")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
