@@ -168,5 +168,6 @@
     "leftGuillemet": "\u00AB",
     "rightGuillemet": "\u00BB",
     "germanOpenQuote": "\u201E"
-  }
+  },
+  "stripBoundaryWhitespaceTags": ["em", "strong", "i", "b", "a", "u", "ins", "mark", "del", "s"]
 }

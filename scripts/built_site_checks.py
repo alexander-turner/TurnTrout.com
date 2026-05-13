@@ -1960,6 +1960,7 @@ def check_file_for_issues(
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "inline_boundary_whitespace": check_inline_boundary_whitespace(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -2278,6 +2279,50 @@ def _abbr_starts_with_digit(element: Tag) -> bool:
     """Check if an abbreviation element's text starts with a digit."""
     text = element.get_text()
     return bool(text) and text[0].isdigit()
+
+
+# Tags mirroring ``stripInlineBoundaryWhitespace`` in
+# ``quartz/plugins/transformers/formatting_improvement_html.ts``. Shared with
+# the transform via ``config/constants.json:stripBoundaryWhitespaceTags`` —
+# this check verifies the transform's invariant held end-to-end.
+_STRIP_BOUNDARY_TAGS: tuple[str, ...] = tuple(
+    script_utils.load_shared_constants()["stripBoundaryWhitespaceTags"]
+)
+
+
+def _flag_boundary_whitespace(
+    element: Tag, side: Literal["leading", "trailing"], issues: list[str]
+) -> None:
+    """Flag boundary whitespace on one side of an inline element."""
+    if not element.contents:
+        return
+    child = element.contents[0] if side == "leading" else element.contents[-1]
+    if not isinstance(child, NavigableString):
+        return
+    stripped = child.lstrip() if side == "leading" else child.rstrip()
+    if child == stripped:
+        return
+    _append_to_list(
+        issues,
+        f"<{element.name}>{element.get_text()[:40]}",
+        prefix=f"{side.capitalize()} whitespace inside element: ",
+    )
+
+
+def check_inline_boundary_whitespace(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify inline elements have no inside-boundary whitespace on either side.
+
+    Elements inside ``no-formatting`` / ``<pre>`` zones are skipped.
+    """
+    issues: list[str] = []
+    for tag_name in _STRIP_BOUNDARY_TAGS:
+        for element in _tags_only(soup.find_all(tag_name)):
+            if should_skip(element):
+                continue
+            _flag_boundary_whitespace(element, "leading", issues)
+            _flag_boundary_whitespace(element, "trailing", issues)
+    return issues
 
 
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:

@@ -2679,6 +2679,37 @@ def test_check_inline_formatting_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+@pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # Single-side flagged for every supported tag (leading or trailing).
+        ("<p><em> bad</em></p>", 1),
+        ("<p><em>bad </em></p>", 1),
+        ("<p><strong> bad </strong></p>", 2),
+        ("<p><i> bad</i></p>", 1),
+        ("<p><b>bad </b></p>", 1),
+        ('<p><a href="x"> bad </a></p>', 2),
+        ("<p><u> bad </u></p>", 2),
+        ("<p><ins> bad </ins></p>", 2),
+        ("<p><mark> bad </mark></p>", 2),
+        ("<p><del> bad </del></p>", 2),
+        ("<p><s> bad </s></p>", 2),
+        # Clean cases: no boundary whitespace at all.
+        ("<p><em>fine</em></p>", 0),
+        ('<p><a href="x">fine</a></p>', 0),
+        # First/last child is an element (not text) — no text-side to inspect.
+        ("<p><em><span> inside</span></em></p>", 0),
+        # Elements inside no-formatting zones are skipped.
+        ('<p class="no-formatting"><em> raw</em></p>', 0),
+    ],
+)
+def test_check_inline_boundary_whitespace(html, expected_count):
+    """Boundary-whitespace check fires once per side that has whitespace."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_boundary_whitespace(soup)
+    assert len(result) == expected_count
+
+
 def test_extract_flat_paragraph_texts():
     """Test flattened paragraph text extraction with data-original-text."""
     html = """<article>

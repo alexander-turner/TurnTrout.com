@@ -22,6 +22,7 @@ import {
   LEFT_SINGLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
   HEADING_TAGS,
+  STRIP_BOUNDARY_TAGS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -139,22 +140,22 @@ export function spacesAroundSlashes(text: string): string {
 /**
  * Strip whitespace adjacent to the inside boundary of an inline element.
  *
- * - `<em>` / `<strong>`: leading-only. Markdown like `_ italics_` produces
- *   `<em> italics</em>`, and the leading space renders adjacent to whatever
- *   precedes the element (often an em-dash from `-`), yielding "— italics".
- *   Strip it so the rendering matches `_italics_`.
- * - `<a>`: both ends. Link underlines that extend past the link text look
- *   wrong; leading/trailing space inside the anchor visibly stretches the
- *   underline beyond the actual content.
+ * Covers two visual categories — text styling (`<em>`, `<strong>`, `<i>`,
+ * `<b>`) and visually-bound rendering where an underline / strikethrough /
+ * background extends across the whole element (`<a>`, `<u>`, `<ins>`,
+ * `<mark>`, `<del>`, `<s>`). Both get both sides stripped: markdown won't
+ * normally produce trailing whitespace inside emphasis (the closing delimiter
+ * rejects it), so any trailing whitespace we see is either raw HTML or a
+ * transformer accident and is safe to clean.
+ *
+ * The tag list is shared with the built-site check via
+ * `config/constants.json:stripBoundaryWhitespaceTags`.
  */
 export function stripInlineBoundaryWhitespace(tree: Root): void {
   visitParents(tree, "element", (node) => {
-    if (node.tagName === "em" || node.tagName === "strong") {
-      trimTextChild(node, "leading")
-    } else if (node.tagName === "a") {
-      trimTextChild(node, "leading")
-      trimTextChild(node, "trailing")
-    }
+    if (!STRIP_BOUNDARY_TAGS.has(node.tagName)) return
+    trimTextChild(node, "leading")
+    trimTextChild(node, "trailing")
   })
 }
 

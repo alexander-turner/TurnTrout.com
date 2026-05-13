@@ -748,24 +748,25 @@ describe("HTMLFormattingImprovement", () => {
     }
 
     it.each([
-      // Emphasis: leading only (the user-facing rendering uses surrounding text)
-      ["<p><em> despite</em></p>", "<p><em>despite</em></p>"],
-      ["<p><strong> bold</strong></p>", "<p><strong>bold</strong></p>"],
-      ["<p><em>  many   leading</em></p>", "<p><em>many   leading</em></p>"],
-      // Trailing space inside emphasis is left alone (scoped to leading).
-      ["<p><em>kept </em></p>", "<p><em>kept </em></p>"],
-      // No leading whitespace: pass through unchanged.
+      // Every supported tag: both leading and trailing whitespace stripped.
+      ["<p><em> despite </em></p>", "<p><em>despite</em></p>"],
+      ["<p><strong> bold </strong></p>", "<p><strong>bold</strong></p>"],
+      ["<p><i> italics </i></p>", "<p><i>italics</i></p>"],
+      ["<p><b> bold </b></p>", "<p><b>bold</b></p>"],
+      ['<p>a <a href="x"> link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
+      ["<p><u> emph </u></p>", "<p><u>emph</u></p>"],
+      ["<p><ins> added </ins></p>", "<p><ins>added</ins></p>"],
+      ["<p><mark> note </mark></p>", "<p><mark>note</mark></p>"],
+      ["<p><del> wrong </del></p>", "<p><del>wrong</del></p>"],
+      ["<p><s> wrong </s></p>", "<p><s>wrong</s></p>"],
+      // Multiple leading / trailing spaces are all stripped.
+      ["<p><em>  many   </em></p>", "<p><em>many</em></p>"],
+      // No boundary whitespace: pass through unchanged.
       ["<p><em>fine</em></p>", "<p><em>fine</em></p>"],
       // Whitespace-only text node is removed entirely.
       ["<p><em> <strong>nested</strong></em></p>", "<p><em><strong>nested</strong></em></p>"],
-      // First child is an element (not text) — leading-text strip doesn't apply.
+      // First/last child is an element (not text) — leading/trailing-text strip doesn't apply.
       ["<p><em><span> inner</span></em></p>", "<p><em><span> inner</span></em></p>"],
-      // Anchors: BOTH leading and trailing are stripped (underline would
-      // otherwise extend past the link's content).
-      ['<p>a <a href="x"> link</a> b</p>', '<p>a <a href="x">link</a> b</p>'],
-      ['<p>a <a href="x">link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
-      ['<p>a <a href="x"> link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
-      ['<p>a <a href="x">fine</a> b</p>', '<p>a <a href="x">fine</a> b</p>'],
     ])("normalizes %s", (input, expected) => {
       expect(runOnHtml(input)).toBe(expected)
     })
