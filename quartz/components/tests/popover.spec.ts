@@ -165,7 +165,7 @@ test("Popover scrolls to hash target", async ({ page }) => {
   await expect(hashLink).toBeVisible()
 
   const href = await hashLink.getAttribute("href")
-  const targetHref = "/design#visual-regression-testing"
+  const targetHref = "/popover-fixture#anchor-target"
   expect(href).toContain(targetHref)
 
   await hashLink.hover()
