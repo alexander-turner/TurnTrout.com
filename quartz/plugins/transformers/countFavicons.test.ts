@@ -81,7 +81,7 @@ async function createTestFile(content: string, filename = "test.md"): Promise<Fi
   return filePath
 }
 
-describe("countAllLinks", () => {
+describe("countAllFavicons", () => {
   it.each([
     {
       name: "mailto links",

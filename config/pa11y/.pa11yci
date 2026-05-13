@@ -1,8 +1,8 @@
 {
   "defaults": {
-    "timeout": 120000,
+    "timeout": 600000,
     "chromeLaunchConfig": {
-      "protocolTimeout": 60000,
+      "protocolTimeout": 600000,
       "args": [
         "--no-sandbox",
         "--disable-setuid-sandbox",

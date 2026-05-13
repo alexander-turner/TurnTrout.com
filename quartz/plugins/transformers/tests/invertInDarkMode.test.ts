@@ -6,28 +6,26 @@ import type { Element, Root } from "hast"
 import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
 import fs from "fs/promises"
 import { h } from "hastscript"
-import os from "os"
-import path from "path"
 
+import { invertInDarkModeClass } from "../../../components/constants"
 import {
   addInvertClass,
   applyLabelsToTree,
   collectVideoSources,
-  INVERT_CLASS,
   InvertInDarkMode,
   isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
-  resetCacheForTesting,
 } from "../invertInDarkMode"
+
+const errno = (code: string): NodeJS.ErrnoException => Object.assign(new Error(code), { code })
+
+const tree = (...nodes: Element[]): Root => ({ type: "root", children: nodes })
 
 let readFileSpy: ReturnType<typeof jest.spyOn>
 
-const enoent = (): NodeJS.ErrnoException => Object.assign(new Error("ENOENT"), { code: "ENOENT" })
-
 describe("InvertInDarkMode", () => {
   beforeEach(() => {
-    resetCacheForTesting()
     readFileSpy = jest.spyOn(fs, "readFile")
   })
   afterEach(() => {
@@ -36,7 +34,7 @@ describe("InvertInDarkMode", () => {
 
   describe("loadInvertLabels", () => {
     it("returns empty map when file is missing", async () => {
-      readFileSpy.mockRejectedValue(enoent() as never)
+      readFileSpy.mockRejectedValue(errno("ENOENT") as never)
       expect(await loadInvertLabels()).toEqual(new Map())
     })
 
@@ -62,24 +60,16 @@ describe("InvertInDarkMode", () => {
       await expect(loadInvertLabels()).rejects.toThrow(/invert, reviewed/)
     })
 
-    it("caches by default path", async () => {
-      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
-      await loadInvertLabels()
-      await loadInvertLabels()
-      expect(readFileSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it("does not cache for non-default paths", async () => {
-      const tempPath = path.join(os.tmpdir(), "labels-test.json")
-      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
-      await loadInvertLabels(tempPath)
-      await loadInvertLabels(tempPath)
-      expect(readFileSpy).toHaveBeenCalledTimes(2)
-    })
-
     it("propagates non-ENOENT read errors", async () => {
-      readFileSpy.mockRejectedValue(Object.assign(new Error("EACCES"), { code: "EACCES" }) as never)
+      readFileSpy.mockRejectedValue(errno("EACCES") as never)
       await expect(loadInvertLabels()).rejects.toThrow("EACCES")
+    })
+
+    it("does not cache across calls", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      await loadInvertLabels()
+      await loadInvertLabels()
+      expect(readFileSpy).toHaveBeenCalledTimes(2)
     })
 
     it("default path points at the project sidecar", () => {
@@ -89,8 +79,16 @@ describe("InvertInDarkMode", () => {
 
   describe("addInvertClass", () => {
     it.each<[string, Element, string[]]>([
-      ["array", h("img", { className: ["existing"] }) as Element, ["existing", INVERT_CLASS]],
-      ["array w/ duplicate", h("img", { className: [INVERT_CLASS] }) as Element, [INVERT_CLASS]],
+      [
+        "array",
+        h("img", { className: ["existing"] }) as Element,
+        ["existing", invertInDarkModeClass],
+      ],
+      [
+        "array w/ duplicate",
+        h("img", { className: [invertInDarkModeClass] }) as Element,
+        [invertInDarkModeClass],
+      ],
       [
         "string",
         {
@@ -99,7 +97,7 @@ describe("InvertInDarkMode", () => {
           properties: { className: "foo bar" },
           children: [],
         } as Element,
-        ["foo", "bar", INVERT_CLASS],
+        ["foo", "bar", invertInDarkModeClass],
       ],
       [
         "empty string",
@@ -109,12 +107,12 @@ describe("InvertInDarkMode", () => {
           properties: { className: "" },
           children: [],
         } as Element,
-        [INVERT_CLASS],
+        [invertInDarkModeClass],
       ],
       [
         "missing properties",
         { type: "element", tagName: "img", children: [] } as unknown as Element,
-        [INVERT_CLASS],
+        [invertInDarkModeClass],
       ],
     ])("normalizes className for %s", (_label, node, expected) => {
       addInvertClass(node)
@@ -123,8 +121,6 @@ describe("InvertInDarkMode", () => {
   })
 
   describe("applyLabelsToTree", () => {
-    const tree = (...nodes: Element[]): Root => ({ type: "root", children: nodes })
-
     it("adds class only when label is true", () => {
       const yes = h("img", { src: "https://x/a.avif" }) as Element
       const no = h("img", { src: "https://x/b.avif" }) as Element
@@ -136,7 +132,7 @@ describe("InvertInDarkMode", () => {
           ["https://x/b.avif", false],
         ]),
       )
-      expect(yes.properties?.className).toEqual([INVERT_CLASS])
+      expect(yes.properties?.className).toEqual([invertInDarkModeClass])
       expect(no.properties?.className).toBeUndefined()
       expect(unlabeled.properties?.className).toBeUndefined()
     })
@@ -155,7 +151,7 @@ describe("InvertInDarkMode", () => {
         h("source", { src: "https://x/a.webm" }),
       ]) as Element
       applyLabelsToTree(tree(video), new Map([["https://x/a.webm", true]]))
-      expect(video.properties?.className).toEqual([INVERT_CLASS])
+      expect(video.properties?.className).toEqual([invertInDarkModeClass])
     })
 
     it("does not tag the persistent #pond-video", () => {
@@ -229,18 +225,34 @@ describe("InvertInDarkMode", () => {
   })
 
   describe("InvertInDarkMode plugin", () => {
+    const transformOf = (plugin: ReturnType<typeof InvertInDarkMode>) => {
+      const factories = plugin.htmlPlugins() as Array<() => (tree: Root) => Promise<void>>
+      return factories[0]()
+    }
+
     it("applies labels to a tree at build time", async () => {
       readFileSpy.mockResolvedValue(
         JSON.stringify({ "https://x/a.avif": { invert: true, reviewed: true } }) as never,
       )
       const plugin = InvertInDarkMode()
       expect(plugin.name).toBe("InvertInDarkMode")
-      const factories = plugin.htmlPlugins() as Array<() => (tree: Root) => Promise<void>>
-      const transform = factories[0]()
+      const transform = transformOf(plugin)
       const img = h("img", { src: "https://x/a.avif" }) as Element
-      const tree: Root = { type: "root", children: [img] }
-      await transform(tree)
-      expect(img.properties?.className).toEqual([INVERT_CLASS])
+      await transform(tree(img))
+      expect(img.properties?.className).toEqual([invertInDarkModeClass])
+    })
+
+    it("reads labels once per plugin instance and re-reads for a new instance", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      const plugin = InvertInDarkMode()
+      const transform = transformOf(plugin)
+      await transform(tree())
+      await transform(tree())
+      expect(readFileSpy).toHaveBeenCalledTimes(1)
+
+      const other = InvertInDarkMode()
+      await transformOf(other)(tree())
+      expect(readFileSpy).toHaveBeenCalledTimes(2)
     })
   })
 })

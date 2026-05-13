@@ -2448,7 +2448,7 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/original_site.avif": {
-    "invert": true,
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/osmosis-1.avif": {

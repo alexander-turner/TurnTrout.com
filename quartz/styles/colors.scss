@@ -90,7 +90,7 @@
   @include dropcap-background-colors;
 
   & img,
-  & video:not(:has(::backdrop)),
+  & video:not(:fullscreen),
   // Unsure why this selector is needed
   & #pond-video {
     filter: grayscale(50%);
@@ -105,7 +105,7 @@
   // blend. Regular embeds (with controls) and the persistent pond video
   // keep their normal rendering.
   & img:not([src$=".svg"]),
-  & video[autoplay][loop][muted]:not(#pond-video, :has(::backdrop)) {
+  & video[autoplay][loop][muted]:not(#pond-video, :fullscreen) {
     mix-blend-mode: screen;
   }
 }
@@ -130,8 +130,8 @@
   @include dropcap-background-colors;
 
   & img:not([src$=".svg"]), // don't make SVGs fuzzy
-  & video:not(:has(::backdrop)),
-  & iframe:not(:has(::backdrop)) {
+  & video:not(:fullscreen),
+  & iframe:not(:fullscreen) {
     mix-blend-mode: multiply;
   }
 

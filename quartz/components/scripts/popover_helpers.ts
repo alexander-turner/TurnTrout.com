@@ -198,7 +198,6 @@ export async function fetchWithMetaRedirect(
       return response
     }
 
-    // Update URL for next iteration
     currentUrl = new URL(urlMatch.groups.url, currentUrl)
     redirectCount++
   }
@@ -355,7 +354,6 @@ export function attachPopoverEventListeners(
     )
   }
 
-  // Returned cleanup function
   return () => {
     controller.abort()
     popoverElement.remove()

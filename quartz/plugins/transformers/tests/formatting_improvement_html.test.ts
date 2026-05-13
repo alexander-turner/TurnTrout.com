@@ -217,21 +217,21 @@ describe("HTMLFormattingImprovement", () => {
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
         "<p><code>cat</code> / <code>unknown</code> classifier</p>",
       ],
-      // Three inline elements separated by `/` must also be left alone. Regression:
-      // flattening "<code>a</code> / <code>b</code> / <code>c</code>" gives
-      // text nodes ["", " / ", " / ", ...] where the middle slash has a prior
-      // `/` as its anchor, which previously caused a marker-vs-stripped
-      // invariance failure on design.md.
       [
         "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
         "<p>raw <code>red</code> / <code>green</code> / <code>blue</code> colors</p>",
       ],
-      // IPA-style /ˈnæftə/ embedded in an <a>. Previously either no-ops (old
-      // behaviour) or broke invariance (the short-lived NBSP-always fork).
-      // Ensure the markup still builds and the rendered text reads right.
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
         '<p>(<strong>NAFTA</strong><a href="x"> / ˈnæftə / </a><a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+      ],
+      [
+        "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
+        "<p>upweight the sycophantic <code>A</code> / <code>B</code> token</p>",
+      ],
+      [
+        "<p>the <code>A</code>/<code>B</code> token</p>",
+        "<p>the <code>A</code> / <code>B</code> token</p>",
       ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
@@ -296,12 +296,7 @@ describe("HTMLFormattingImprovement", () => {
   })
 
   describe("spacesAroundSlashes marker invariance", () => {
-    // Testing marker invariance for spacesAroundSlashes
-    // Original error: "at : / , , ." became "at :  / , , ." (extra space)
-    // Root cause: marker character is treated as non-whitespace by the regex
-
     it("spacesAroundSlashes is invariant with marker after colon (no space)", () => {
-      // Pattern: colon, marker, slash - no space between
       const textWithMarker = `:${markerChar}/`
       const textWithoutMarker = ":/"
 
@@ -313,9 +308,6 @@ describe("HTMLFormattingImprovement", () => {
     })
 
     it("spacesAroundSlashes should be invariant with marker before slash (after space)", () => {
-      // Pattern: colon, space, marker, slash - marker is right before slash
-      // This is the bug case: regex (?<=[\S]) sees marker as non-whitespace
-      // and adds a space, but without marker the space already exists
       const textWithMarker = `: ${markerChar}/ ,`
       const textWithoutMarker = ": / ,"
 
@@ -323,12 +315,10 @@ describe("HTMLFormattingImprovement", () => {
       const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
       const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
 
-      // This test verifies the fix works - both should produce same result
       expect(strippedResult).toBe(transformedWithoutMarker)
     })
 
     it("spacesAroundSlashes should be invariant with marker before slash followed by comma (no space after)", () => {
-      // Pattern from CI failure: "at : /," where element boundary is between space and slash
       const textWithMarker = `at : ${markerChar}/,`
       const textWithoutMarker = "at : /,"
 
@@ -2270,10 +2260,6 @@ describe("applyTextTransforms with useNbsp option", () => {
 })
 
 describe("link with trailing slash does not break invariance", () => {
-  // Regression: previously, the slash regex's `(?=\S)` lookahead matched the
-  // markerChar separator appended to a single-text-node element. With backtracking
-  // on the optional markerAfter, "ab/<marker>" would match and produce "ab / ",
-  // but the stripped form "ab/" wouldn't match — failing the invariance check.
   it.each([
     '<p><a href="https://npmjs.com">ab/</a></p>',
     "<table><tbody><tr><td>" +

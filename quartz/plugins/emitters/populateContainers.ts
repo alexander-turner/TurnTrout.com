@@ -7,7 +7,7 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { EXIT, visit } from "unist-util-visit"
+import { CONTINUE, EXIT, visit } from "unist-util-visit"
 
 import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
@@ -45,10 +45,9 @@ const logger = createWinstonLogger("populateContainers")
 export const findElementById = (root: Root, id: string): Element | null => {
   let found: Element | null = null
   visit(root, "element", (node) => {
-    if (node.properties?.id === id) {
-      found = node
-      return EXIT
-    }
+    if (node.properties?.id !== id) return CONTINUE
+    found = node
+    return EXIT
   })
   return found
 }

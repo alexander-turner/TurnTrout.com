@@ -197,8 +197,10 @@ const NavbarComponent: QuartzComponent = ({ cfg, fileData }: QuartzComponentProp
           </a>
         </li>
       </ul>
-      {/* skipcq: JS-0440 -- inline script content is a build-time constant; no user input reaches this path */}
-      <script dangerouslySetInnerHTML={{ __html: randomPostScript }} />
+      <script
+        // skipcq: JS-0440 -- inline script content is a build-time constant; no user input reaches this path
+        dangerouslySetInnerHTML={{ __html: randomPostScript }}
+      />
     </nav>
   )
   return (
