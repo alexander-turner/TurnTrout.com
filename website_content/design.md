@@ -1109,7 +1109,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Dark-mode inversion:**
 >
-> 1. Raster `<img>` or inline looping `<video>` sources without an "invert in dark mode?" review which I completed;
+> 1. Raster `<img>` or inline looping `<video>` sources which don't have a confirmed judgment for "should this be inverted in dark mode?".
 > 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
 >
 > **CSS and styling:**
