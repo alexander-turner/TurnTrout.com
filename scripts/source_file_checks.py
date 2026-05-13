@@ -864,7 +864,8 @@ _FONT_FACE_PATTERN = re.compile(
     r"""@font-face\s*\{[^}]*?
     src:\s*url\(\s*["']?(.*?)["']?\)\s*
     (?:format\([^\)]*\)\s*)?
-    [^;]*;""",
+    [^;]*;"""
+             ,
     re.VERBOSE | re.DOTALL,
 )
 
