@@ -108,8 +108,12 @@ export function spacesAroundSlashes(text: string): string {
   // stray "ab/<marker>" match via backtracking (markerAfter goes empty and the
   // lookahead settles on the marker itself), producing "ab / " for joined
   // input but no match for the marker-stripped "ab/", breaking invariance.
+  // Exclude only ASCII whitespace (not \s) so that NBSP counts as real content
+  // for the lookahead — earlier transformers (e.g. nbspBeforeLastWord) often
+  // replace the trailing space of a paragraph with NBSP, and the slash transform
+  // must still anchor past it.
   const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^\\s${markerChar}])(?!/)`,
+    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^ \\t\\n\\r\\f\\v${markerChar}])(?!/)`,
     "gu",
   )
   text = text.replace(slashRegex, (...args) => {
@@ -120,14 +124,25 @@ export function spacesAroundSlashes(text: string): string {
       spaceAfter: string | undefined
     }
     const { spaceBefore, markerBefore, markerAfter, spaceAfter } = groups
-    // Preserve captured spaces (critical for marker invariance: when text nodes
-    // end/start with a space, stripSep produces multiple spaces that the regex
-    // would no longer match, so we must not change the captured whitespace).
-    // Only substitute NBSP when we're *adding* new whitespace (input had no
-    // space around the slash), which still prevents line breaks at that site.
-    const pre = spaceBefore || NBSP
-    const post = spaceAfter || NBSP
-    return `${markerBefore || ""}${pre}/${post}${markerAfter || ""}`
+    const sB = spaceBefore ?? ""
+    const sA = spaceAfter ?? ""
+    const mB = markerBefore ?? ""
+    const mA = markerAfter ?? ""
+    // When "/" sits alone between two markers (mB && mA), the slash is its
+    // own text node and the captured spaces belong to the *sibling* text
+    // nodes (e.g. "sycophantic " and " token" around <code>A</code>/<code>B</code>).
+    // The original "absorb space into the slash node" behavior erases those
+    // trailing/leading spaces, rendering as "sycophanticA / Btoken". Keep
+    // outer spaces outside the markers and glue NBSPs to "/" instead.
+    // For the non-lone case, fall back to the original behavior: the captured
+    // space is part of the slash's own text node (or invariance with an empty
+    // inline element requires moving it across the marker boundary).
+    const isLoneSlash = mB && mA
+    const outerB = isLoneSlash ? sB : ""
+    const padB = isLoneSlash ? NBSP : sB || NBSP
+    const outerA = isLoneSlash ? sA : ""
+    const padA = isLoneSlash ? NBSP : sA || NBSP
+    return `${outerB}${mB}${padB}/${padA}${mA}${outerA}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
@@ -781,7 +796,13 @@ export const improveFormatting = (
           return !hasClass(n, "fraction") && n?.tagName !== "a"
         }
         if (isNotFractionOrLink(elt)) {
-          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, true, {
+          // checkInvariance=false: spacesAroundSlashes is intentionally
+          // marker-aware. When "/" is alone in its own text node between two
+          // markers (e.g. <code>A</code>/<code>B</code>), it preserves the
+          // surrounding text nodes' boundary spaces and glues NBSPs to "/",
+          // rather than absorbing the spaces into the slash's node. The
+          // stripped-vs-marked invariance does not hold in that case by design.
+          transformElement(elt, spacesAroundSlashes, toSkip, markerChar, false, {
             shouldSkipText: shouldSkipLinkUrlText,
           })
         }

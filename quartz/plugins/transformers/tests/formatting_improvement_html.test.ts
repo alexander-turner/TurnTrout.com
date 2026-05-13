@@ -233,6 +233,17 @@ describe("HTMLFormattingImprovement", () => {
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
         '<p>(<strong>NAFTA</strong><a href="x"> / ˈnæftə / </a><a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
       ],
+      // Regression: "<code>A</code>/<code>B</code>" with anchoring text on both
+      // sides used to render as "wordA / Bword" because the captured outer
+      // spaces got absorbed into the slash's own (lone) text node.
+      [
+        "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
+        "<p>upweight the sycophantic <code>A</code> / <code>B</code> token</p>",
+      ],
+      [
+        "<p>the <code>A</code>/<code>B</code> token</p>",
+        "<p>the <code>A</code> / <code>B</code> token</p>",
+      ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
       (input: string, expected: string) => {
