@@ -2679,6 +2679,44 @@ def test_check_inline_formatting_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+@pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # The bug that motivated this check: <code>A</code>/<code>B</code>
+        # rendered with stripped boundary spaces — "sycophanticA" and "Btoken"
+        # are invisible to the rendered-text spellchecker (code is decomposed).
+        (
+            "<p>upweight the sycophantic<code>A</code> / <code>B</code>token</p>",
+            2,
+        ),
+        # Single broken boundary on the left.
+        ("<p>word<code>X</code> after</p>", 1),
+        # Single broken boundary on the right.
+        ("<p>before <code>X</code>word</p>", 1),
+        # Properly spaced inline code.
+        ("<p>the <code>name</code> variable</p>", 0),
+        # Code at paragraph boundary (no sibling on one side).
+        ("<p><code>X</code> starts</p>", 0),
+        ("<p>ends <code>X</code></p>", 0),
+        # Punctuation adjacent to code is fine.
+        ("<p>the <code>foo</code>, then</p>", 0),
+        ("<p>(<code>x</code>)</p>", 0),
+        # Block code inside <pre> is skipped.
+        ("<pre><code>let x = 1;\nfoo</code></pre>", 0),
+        # Code inside a no-formatting zone is skipped.
+        (
+            '<p class="no-formatting">text<code>X</code>more</p>',
+            0,
+        ),
+    ],
+)
+def test_check_inline_code_word_boundaries(html, expected_count):
+    """Letter-adjacent inline code is flagged; properly spaced code is not."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_code_word_boundaries(soup)
+    assert len(result) == expected_count
+
+
 def test_extract_flat_paragraph_texts():
     """Test flattened paragraph text extraction with data-original-text."""
     html = """<article>

@@ -1960,6 +1960,7 @@ def check_file_for_issues(
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "inline_code_word_boundaries": check_inline_code_word_boundaries(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -2278,6 +2279,35 @@ def _abbr_starts_with_digit(element: Tag) -> bool:
     """Check if an abbreviation element's text starts with a digit."""
     text = element.get_text()
     return bool(text) and text[0].isdigit()
+
+
+def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
+    """
+    Flag inline ``<code>`` elements that render directly adjacent to a letter.
+
+    The rendered-text spellchecker strips ``<code>`` content entirely (see
+    ``utils.get_non_code_text``), so a word like ``sycophanticA`` glued to a
+    code element is invisible to it — the post-strip text reads as ordinary
+    spaced prose. This check looks at the structural HTML instead and flags a
+    code element whose adjacent sibling text begins or ends with a letter.
+    """
+    issues: list[str] = []
+    for code in _tags_only(soup.find_all("code")):
+        if any(
+            isinstance(p, Tag)
+            and (
+                p.name == "pre"
+                or "no-formatting" in script_utils.get_classes(p)
+            )
+            for p in code.parents
+        ):
+            continue
+        issues.extend(
+            _check_element_spacing(
+                code, ALLOWED_ELT_PRECEDING_CHARS, ALLOWED_ELT_FOLLOWING_CHARS
+            )
+        )
+    return issues
 
 
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
