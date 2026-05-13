@@ -216,25 +216,21 @@ export default class DepGraph<T> {
     const visited = new Set<T>()
     const leafNodes = new Set<T>()
 
-    // DFS
     while (stack.length > 0) {
       const node = stack.pop()
       if (!node) {
         continue
       }
 
-      // If the node is already visited, skip it
       if (visited.has(node)) {
         continue
       }
       visited.add(node)
 
-      // Check if the node is a leaf node (i.e. destination path)
       if (this.outDegree(node) === 0) {
         leafNodes.add(node)
       }
 
-      // Add all unvisited neighbors to the stack
       this.forEachOutNeighbor(node, (neighbor) => {
         if (!visited.has(neighbor)) {
           stack.push(neighbor)
