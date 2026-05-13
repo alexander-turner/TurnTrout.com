@@ -205,8 +205,8 @@ importers:
         specifier: 1.15.0
         version: 1.15.0
       punctilio:
-        specifier: 3.5.0
-        version: 3.5.0(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
+        specifier: 3.8.2
+        version: 3.8.2(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5)
       react:
         specifier: 19.2.5
         version: 19.2.5
@@ -7556,8 +7556,8 @@ packages:
   pumpify@2.0.1:
     resolution: {integrity: sha512-m7KOje7jZxrmutanlkS1daj1dS6z6BgslzOXmcSEpIlCxM3VJH7lG5QLeck/6hgF6F4crFf01UtQmNsJfweTAw==}
 
-  punctilio@3.5.0:
-    resolution: {integrity: sha512-CxIN39iGwVRoe5NXpV3l1BllK3hUv8fgmxMU9VecPqJND/wYATACLC6MRZld9nh0b6pBz6DpvloUrU84+E5spQ==}
+  punctilio@3.8.2:
+    resolution: {integrity: sha512-CJcqbYVJfKMPrQiltC0DbegnaDHiCNRRsgOSMfQNQZul8gr9yJa2KtA/BjKFrLChS8bgC2UG3aMeLt4b/5Dj/w==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       rehype-parse: ^9.0.0
@@ -18238,7 +18238,7 @@ snapshots:
       inherits: 2.0.4
       pump: 3.0.4
 
-  punctilio@3.5.0(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
+  punctilio@3.8.2(rehype-parse@9.0.1)(rehype-stringify@10.0.1)(remark-gfm@4.0.1)(remark-parse@11.0.0)(remark-stringify@11.0.0)(unified@11.0.5):
     dependencies:
       escape-string-regexp: 5.0.0
       quick-lru: 7.3.0

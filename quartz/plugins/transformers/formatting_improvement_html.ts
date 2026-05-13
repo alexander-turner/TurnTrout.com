@@ -116,15 +116,17 @@ export function spacesAroundSlashes(text: string): string {
     const { spaceBefore: leftSpace, spaceAfter: rightSpace } = groups
     const leftMarker = groups.markerBefore ?? ""
     const rightMarker = groups.markerAfter ?? ""
-    if (leftMarker && rightMarker) {
-      // "/" alone between two markers: the captured spaces live in sibling
-      // text nodes (e.g. <code>A</code>/<code>B</code>). Keep them outside
-      // the markers so siblings retain their boundary spaces; pad "/" with
-      // NBSPs so the cluster stays unbreakable.
-      return `${leftSpace}${leftMarker}${NBSP}/${NBSP}${rightMarker}${rightSpace}`
-    }
-    // Otherwise absorb the captured space into the slash's own text node.
-    return `${leftMarker}${leftSpace || NBSP}/${rightSpace || NBSP}${rightMarker}`
+    // Decide each side independently. A captured space sitting OUTSIDE a
+    // marker (e.g. " <SEP>/" or "/<SEP> ") lives in a sibling text node, not
+    // the slash's own node — keep it outside and glue an NBSP to "/" instead.
+    // With no marker on a side, the space is in the same text node as the
+    // slash, so absorb it (preserves marker invariance with empty inline
+    // elements there).
+    const outerLeft = leftMarker ? leftSpace : ""
+    const padLeft = leftMarker ? NBSP : leftSpace || NBSP
+    const outerRight = rightMarker ? rightSpace : ""
+    const padRight = rightMarker ? NBSP : rightSpace || NBSP
+    return `${outerLeft}${leftMarker}${padLeft}/${padRight}${rightMarker}${outerRight}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
@@ -132,6 +134,30 @@ export function spacesAroundSlashes(text: string): string {
 
   // Restore the h/t occurrences
   return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
+}
+
+/**
+ * Strip leading whitespace from text immediately inside `<em>`/`<strong>`.
+ *
+ * Markdown like `_ italics_` or `* bold*` produces `<em> italics</em>`/
+ * `<strong> bold</strong>`. The leading space inside the emphasis renders
+ * adjacent to whatever precedes the element (often an em-dash from `-`),
+ * yielding "—  italics" — visually wrong for American typography. This
+ * normalizer rewrites the emphasis as if the author had written `_italics_`.
+ */
+export function stripEmphasisLeadingSpace(tree: Root): void {
+  visitParents(tree, "element", (node) => {
+    if (node.tagName !== "em" && node.tagName !== "strong") return
+    const firstChild = node.children[0]
+    if (firstChild?.type !== "text") return
+    const trimmed = firstChild.value.replace(/^\s+/, "")
+    if (trimmed === firstChild.value) return
+    if (trimmed === "") {
+      node.children.shift()
+      return
+    }
+    firstChild.value = trimmed
+  })
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
@@ -800,6 +826,11 @@ export const improveFormatting = (
     wrapUnicodeArrowsWithMonospaceStyle(tree)
     formatOrdinalSuffixes(tree)
     removeSpaceBeforeFootnotes(tree)
+    // Run after the main pipeline: the em-dash transform relies on the
+    // trailing space inside <em>/<strong> to fire (otherwise punctilio's
+    // hanging-hyphen rule treats "-<em>word" as suspended). Strip the
+    // residual leading space here, after em-dash has done its work.
+    stripEmphasisLeadingSpace(tree)
   }
 }
 
