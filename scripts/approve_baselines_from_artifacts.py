@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
-"""
-Promote screenshots from a failing Playwright run into R2 as new visual
-baselines, using the run's blob report as the source of truth for snapshot
-names.
-
-Used by the comment-triggered approve flow: instead of regenerating screenshots
-from scratch (rebuild site, run all browsers again), we adopt the screenshots
-the failing visual-testing run already produced.
-
-Why the blob report (and not the ``test-results/`` tree on disk)? Playwright
-writes ``<truncated>-actual.png`` to ``test-results/`` and silently hashes the
-filename when the full snapshot name would exceed filesystem path limits. The
-truncated form does *not* match the canonical baseline filename visual-testing
-compares against. The blob report's attachment metadata, on the other hand,
-records the canonical snapshot name verbatim and pairs it with the PNG body, so
-it round-trips correctly for every test, long titles included.
-"""
+"""Promote screenshots from a failing Playwright run into R2 as new
+baselines."""
 
 from __future__ import annotations
 
@@ -37,13 +22,6 @@ _PNG_CONTENT_TYPE = "image/png"
 
 
 def _canonical_baseline_name(attachment_name: str) -> str | None:
-    """
-    Return the baseline filename for a Playwright ``-actual`` attachment.
-
-    Playwright produces attachment names like ``"<snapshot>-actual"`` or
-    ``"<snapshot>.png-actual"`` depending on whether the snapshot path already
-    carries an extension. Normalise both shapes to ``<snapshot>.png``.
-    """
     if not attachment_name.endswith(_ACTUAL_SUFFIX):
         return None
     stem = attachment_name[: -len(_ACTUAL_SUFFIX)]
@@ -55,14 +33,6 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
 def _iter_actual_attachments(
     blob_zip: Path,
 ) -> Iterator[tuple[str, str]]:
-    """
-    Yield ``(canonical_baseline_name, zip_entry_path)`` for each PNG actual.
-
-    Parses the blob report's ``report.jsonl`` for ``onAttach`` events and emits
-    one tuple per snapshot mismatch attachment. The zip entry path is the
-    ``resources/<sha1>.png`` path inside the same blob zip, ready for the caller
-    to extract.
-    """
     with zipfile.ZipFile(blob_zip) as zf:
         try:
             jsonl = zf.read("report.jsonl").decode("utf-8")
@@ -87,14 +57,6 @@ def _iter_actual_attachments(
 
 
 def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
-    """
-    Stage canonical baselines from every blob report zip in the directory.
-
-    A blob report covers one shard; the dispatch workflow downloads them all
-    (Linux + macOS, every shard) and passes the merged directory here. When
-    multiple shards report the same snapshot, the first one wins — they contain
-    identical PNG bytes because the shards run disjoint test subsets.
-    """
     staging_dir.mkdir(parents=True, exist_ok=True)
     seen: set[str] = set()
     count = 0
@@ -108,9 +70,6 @@ def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
                 try:
                     png_bytes = zf.read(zip_entry_path)
                 except KeyError:
-                    # Attachment metadata referenced a path the zip doesn't
-                    # contain (truncated upload? blob format drift?). Skip it
-                    # rather than ship a half-staged baseline.
                     continue
                 seen.add(baseline_name)
                 (staging_dir / baseline_name).write_bytes(png_bytes)
@@ -119,7 +78,6 @@ def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Stage canonical baselines from blob reports and push them to R2."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "blob_reports_dir",
