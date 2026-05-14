@@ -155,7 +155,7 @@ jobs:
     # macOS WebKit runs at 1 worker (see playwright.config.ts) — tripling
     # per-shard wall time. Generous job budget keeps shards from being
     # killed without log output.
-    timeout-minutes: 60
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -175,7 +175,7 @@ jobs:
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
       # Cap Playwright ~5 min under timeout-minutes so failures surface as
       # logs/artifacts before GitHub Actions kills the runner.
-      PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "3300000"
+      PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "6900000"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
