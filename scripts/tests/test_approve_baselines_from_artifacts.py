@@ -66,6 +66,9 @@ def _make_blob_zip(
         ("toc-Desktop-Safari-expected", None),
         ("toc-Desktop-Safari-diff", None),
         ("trace", None),
+        ("../escape-actual", None),
+        ("nested/dir-actual", None),
+        ("back\\slash-actual", None),
     ],
 )
 def test_canonical_baseline_name(
@@ -90,6 +93,8 @@ def test_collect_extracts_actual_png_attachments(tmp_path: Path) -> None:
                 _PNG_BYTES,
             ),
             ("trace-actual", "application/zip", b"zip-bytes"),
+            ("png-without-actual-suffix", "image/png", _PNG_BYTES),
+            ("../escape-actual", "image/png", _PNG_BYTES),
         ],
     )
 
@@ -147,6 +152,26 @@ def test_collect_skips_missing_zip_entry(tmp_path: Path) -> None:
 
     staging = tmp_path / "stage"
     assert approve.collect_from_blob_reports(blob_dir, staging) == 0
+
+
+def test_collect_tolerates_null_params_and_attachments(tmp_path: Path) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    zip_path = blob_dir / "report.zip"
+    with zipfile.ZipFile(zip_path, "w") as zf:
+        zf.writestr(
+            "report.jsonl",
+            "\n".join(
+                json.dumps(e)
+                for e in [
+                    {"method": "onAttach", "params": None},
+                    {"method": "onAttach", "params": {"attachments": None}},
+                ]
+            )
+            + "\n",
+        )
+
+    assert approve.collect_from_blob_reports(blob_dir, tmp_path / "stage") == 0
 
 
 def test_collect_handles_blob_zip_without_report_jsonl(tmp_path: Path) -> None:

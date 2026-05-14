@@ -25,6 +25,8 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     if not attachment_name.endswith(_ACTUAL_SUFFIX):
         return None
     stem = attachment_name[: -len(_ACTUAL_SUFFIX)]
+    if "/" in stem or "\\" in stem or ".." in stem.split("/"):
+        return None
     if stem.endswith(".png"):
         return stem
     return stem + ".png"
@@ -37,7 +39,7 @@ def _attachments_from_jsonl(jsonl: str) -> Iterator[dict]:
         event = json.loads(line)
         if event.get("method") != "onAttach":
             continue
-        yield from event.get("params", {}).get("attachments", [])
+        yield from (event.get("params") or {}).get("attachments") or []
 
 
 def _iter_actual_pngs(blob_zip: Path) -> Iterator[tuple[str, bytes]]:
