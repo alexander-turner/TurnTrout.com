@@ -409,8 +409,19 @@ test("In-flight popover fetch does not create orphaned popover after navigation"
   await expect(popover).toHaveCount(0)
 })
 
-test.describe("Footnote popovers", () => {
-  test("Footnote popover shows only footnote content, not full article", async ({ page }) => {
+// Use base (not test) so footnote tests bypass the file-level beforeEach's
+// /test-page navigation — they navigate to the popover fixture instead, and
+// the double-nav on slow browsers (Safari) was causing 90s timeouts.
+base.describe("Footnote popovers", () => {
+  base.beforeEach(async ({ page }) => {
+    if (!isDesktopViewport(page)) {
+      base.skip()
+    }
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    await page.mouse.move(1, 1)
+  })
+
+  base("Footnote popover shows only footnote content, not full article", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
     await footnoteRef.click()
@@ -436,7 +447,7 @@ test.describe("Footnote popovers", () => {
     await expect(content).not.toBeEmpty()
   })
 
-  test("Footnote popover size reflects content size", async ({ page }) => {
+  base("Footnote popover size reflects content size", async ({ page }) => {
     // Find the footnote with a table (should be larger)
     const tableFootnoteRef = page.locator('a[href="#user-content-fn-table"]')
     await tableFootnoteRef.scrollIntoViewIfNeeded()
@@ -453,7 +464,7 @@ test.describe("Footnote popovers", () => {
     await expect(tablePopover).toBeHidden()
 
     // Find a simple footnote (should be smaller)
-    const simpleFootnoteRef = page.locator('a[href="#user-content-fn-nested"]')
+    const simpleFootnoteRef = page.locator('a[href="#user-content-fn-pinned"]')
     await simpleFootnoteRef.scrollIntoViewIfNeeded()
     await simpleFootnoteRef.click()
 
@@ -467,8 +478,11 @@ test.describe("Footnote popovers", () => {
     expect(tableHeight).toBeGreaterThan(simpleHeight * 1.5)
   })
 
-  test("Clicking footnote link opens pinned popover (screenshot)", async ({ page }, testInfo) => {
-    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+  base("Clicking footnote link opens pinned popover (screenshot)", async ({ page }, testInfo) => {
+    // Target the simple `[^pinned]` fixture footnote so the screenshot is a
+    // stable representative rather than whatever footnote happens to come
+    // first on the fixture (or test-page).
+    const footnoteRef = page.locator('a[href="#user-content-fn-pinned"]')
     await footnoteRef.scrollIntoViewIfNeeded()
 
     await footnoteRef.click()
@@ -480,12 +494,7 @@ test.describe("Footnote popovers", () => {
     })
   })
 
-  test("Footnote popover with rich content (screenshot)", async ({ page }, testInfo) => {
-    // Source the rich-content footnote from the popover fixture so the
-    // screenshot doesn't churn when Test-page.md or its footnote list moves.
-    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
-    await page.mouse.move(1, 1)
-
+  base("Footnote popover with rich content (screenshot)", async ({ page }, testInfo) => {
     const footnoteRef = page.locator('a[href="#user-content-fn-rich"]')
     await footnoteRef.scrollIntoViewIfNeeded()
     await footnoteRef.click()
@@ -499,7 +508,7 @@ test.describe("Footnote popovers", () => {
     })
   })
 
-  test("Clicking footnote link opens pinned popover within viewport", async ({ page }) => {
+  base("Clicking footnote link opens pinned popover within viewport", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -513,25 +522,26 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toBeInViewport({ ratio: 1 })
   })
 
-  test("Pressing Escape closes pinned footnote popover and returns focus to trigger", async ({
-    page,
-  }) => {
-    const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
-    await footnoteRef.scrollIntoViewIfNeeded()
+  base(
+    "Pressing Escape closes pinned footnote popover and returns focus to trigger",
+    async ({ page }) => {
+      const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
+      await footnoteRef.scrollIntoViewIfNeeded()
 
-    await footnoteRef.click()
-    const popover = page.locator(".popover")
-    await expect(popover).toBeVisible()
+      await footnoteRef.click()
+      const popover = page.locator(".popover")
+      await expect(popover).toBeVisible()
 
-    await page.keyboard.press("Escape")
-    await expect(popover).toBeHidden()
+      await page.keyboard.press("Escape")
+      await expect(popover).toBeHidden()
 
-    // Focus should return to the triggering footnote link
-    const focusedHref = await page.evaluate(() => document.activeElement?.getAttribute("href"))
-    expect(focusedHref).toMatch(/^#user-content-fn-/)
-  })
+      // Focus should return to the triggering footnote link
+      const focusedHref = await page.evaluate(() => document.activeElement?.getAttribute("href"))
+      expect(focusedHref).toMatch(/^#user-content-fn-/)
+    },
+  )
 
-  test("Focus moves into pinned footnote popover on open", async ({ page }) => {
+  base("Focus moves into pinned footnote popover on open", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
     await expect(footnoteRef).toBeInViewport()
@@ -545,11 +555,11 @@ test.describe("Footnote popovers", () => {
     await expect(activeElement).toHaveClass(/popover-close/)
   })
 
-  test("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
+  base("Tab key cycles focus within pinned footnote popover", async ({ page }) => {
     // WebKit doesn't support Tab navigation by default — it requires the
     // "Press Tab to highlight each item on a webpage" Safari preference,
     // which Playwright cannot enable. See microsoft/playwright#2114.
-    test.skip(
+    base.skip(
       isSafariBrowser(page),
       "WebKit does not support Tab navigation without Safari preference",
     )
@@ -584,7 +594,7 @@ test.describe("Footnote popovers", () => {
     expect(focusIsInPopover).toBe(true)
   })
 
-  test("Hovering footnote link does NOT open popover", async ({ page }) => {
+  base("Hovering footnote link does NOT open popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -593,7 +603,7 @@ test.describe("Footnote popovers", () => {
     await expect(page.locator(".popover")).toHaveCount(0)
   })
 
-  test("Clicking outside closes footnote popover", async ({ page }) => {
+  base("Clicking outside closes footnote popover", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -606,16 +616,16 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toBeHidden()
   })
 
-  test("Rapid clicks on different footnotes produce only one popover", async ({ page }) => {
+  base("Rapid clicks on different footnotes produce only one popover", async ({ page }) => {
     // Delay the same-page fetch that popover creation uses, widening the
     // race window so both clicks fire before either fetch resolves.
-    await page.route("**/test-page", async (route) => {
+    await page.route("**/popover-fixture", async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 500))
       await route.continue()
     })
 
-    const firstRef = page.locator('a[href="#user-content-fn-1"]')
-    const secondRef = page.locator('a[href="#user-content-fn-2"]')
+    const firstRef = page.locator('a[href="#user-content-fn-rich"]')
+    const secondRef = page.locator('a[href="#user-content-fn-pinned"]')
     await firstRef.scrollIntoViewIfNeeded()
 
     // Click both footnotes in quick succession (before either fetch completes)
@@ -631,7 +641,7 @@ test.describe("Footnote popovers", () => {
     await expect(popover).toHaveCount(1)
   })
 
-  test("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
+  base("Clicking footnote link does not scroll to footnote section", async ({ page }) => {
     const footnoteRef = page.locator('a[href^="#user-content-fn-"]').first()
     await footnoteRef.scrollIntoViewIfNeeded()
 
@@ -652,8 +662,10 @@ test.describe("Footnote popovers", () => {
 // file-level test.beforeEach. These tests explicitly set a mobile viewport.
 base.describe("Footnote popover on mobile", () => {
   base.beforeEach(async ({ page }) => {
+    // Use the popover fixture so footnote interactions don't depend on
+    // test-page footnote ordering or content.
     await page.setViewportSize({ width: 375, height: 667 })
-    await gotoPage(page, "http://localhost:8080/test-page", "domcontentloaded")
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
   })
 
   base("Tapping footnote opens pinned popover, close button dismisses it", async ({ page }) => {
@@ -750,18 +762,34 @@ test.describe("Popover checkbox state preservation", () => {
     const popoverChecked = await isElementChecked(popoverCheckbox)
     expect(popoverChecked).toBe(true)
   })
+})
 
-  test("Popover with checked checkbox visual appearance (screenshot)", async ({
-    page,
-  }, testInfo) => {
-    const linkToHover = page.locator("a#checkboxes-link").first()
-    await linkToHover.hover()
+// Use base to bypass the file-level beforeEach's /test-page navigation —
+// this test loads the popover fixture directly.
+base("Popover with checked checkbox visual appearance (screenshot)", async ({ page }, testInfo) => {
+  base.skip(!isDesktopViewport(page), "Popovers are desktop-only")
 
-    const popover = page.locator(".popover")
-    await expect(popover).toBeVisible()
-    await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
-      elementToScreenshot: popover,
-      preserveSiblings: true, // Need this to take screenshot
-    })
+  // Sourced from the popover fixture (rather than test-page) so the
+  // screenshot doesn't churn when the test-page Checkboxes section moves.
+  // Set state directly on the fixture page since checkbox state is keyed by
+  // page slug.
+  await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+  await page.mouse.move(1, 1)
+
+  const fixtureCheckbox = page.locator("h1 + ol #checkbox-0").first()
+  await fixtureCheckbox.scrollIntoViewIfNeeded()
+  expect(await isElementChecked(fixtureCheckbox)).toBe(false)
+  await fixtureCheckbox.click()
+  expect(await isElementChecked(fixtureCheckbox)).toBe(true)
+
+  const linkToHover = page.locator("a#checkboxes-link").first()
+  await linkToHover.scrollIntoViewIfNeeded()
+  await linkToHover.hover()
+
+  const popover = page.locator(".popover")
+  await expect(popover).toBeVisible()
+  await takeRegressionScreenshot(page, testInfo, "popover-checked-checkbox", {
+    elementToScreenshot: popover,
+    preserveSiblings: true,
   })
 })

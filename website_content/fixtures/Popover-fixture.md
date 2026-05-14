@@ -22,6 +22,20 @@ A second paragraph gives the popover enough vertical content to exercise its fra
 
 This sentence anchors the rich-content footnote popover screenshot.[^rich]
 
+## Pinned footnote
+
+A short stable sentence anchors the footnote-popover-pinned screenshot.[^pinned]
+
+## Table footnote
+
+This sentence anchors the table-footnote popover size test.[^table]
+
+# Checkboxes
+
+1. [ ] Fixture checkbox at `#checkbox-0`
+
+The link <a id="checkboxes-link" href="#checkboxes">checkboxes link</a> targets the heading above so the popover-checked-checkbox screenshot has a deterministic anchor.
+
 [^rich]:
     Here's the detail, in a footnote. And here's a nested footnote.[^nested-fixture]
 
@@ -30,3 +44,12 @@ This sentence anchors the rich-content footnote popover screenshot.[^rich]
     > Here be an admonition in a footnote.
 
 [^nested-fixture]: I'm a nested footnote. I'm enjoying my nest! 🪺
+
+[^pinned]: A short stable footnote sentence used by the footnote-popover-pinned screenshot.
+
+[^table]:
+
+    | Col A | Col B | Col C |
+    | :---: | :---: | :---: |
+    |   1   |   2   |   3   |
+    |   4   |   5   |   6   |

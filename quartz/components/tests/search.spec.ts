@@ -496,7 +496,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
-  await search(page, "Checkboxes")
+  // Search a unique title token so the preview deterministically shows the
+  // search fixture's checkboxes section instead of whichever live page wins
+  // a "Checkboxes" query.
+  await search(page, "Searchpreviewfixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
@@ -542,7 +545,9 @@ test("Emoji search works and is converted to twemoji (screenshot)", async ({ pag
 })
 
 test("Footnote back arrow is properly replaced (screenshot)", async ({ page }, testInfo) => {
-  await search(page, "Testing site")
+  // Source the backref from the search fixture so the screenshot doesn't
+  // churn when test-page footnotes change.
+  await search(page, "Searchpreviewfixture")
   await page.waitForLoadState("load")
 
   const preview = await waitForArticlePreview(page)
@@ -822,7 +827,10 @@ test("should not select a search result on initial render, even if the mouse is 
 test("Footnote table displays within boundaries in search preview (screenshot)", async ({
   page,
 }, testInfo) => {
-  await search(page, "test page")
+  // Source the table footnote from the search fixture so the screenshot
+  // doesn't churn when test-page's footnote ordering or surrounding
+  // content changes.
+  await search(page, "Searchpreviewfixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await expect(previewContainer).toBeVisible()
@@ -923,14 +931,15 @@ test("admonition background is transparent in focused mobile card preview (scree
 }, testInfo) => {
   test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
 
-  // "Admonitions" matches the test page which has a section with various admonition types
-  await search(page, "Admonitions")
+  // Source the admonition from the search fixture so the screenshot doesn't
+  // churn when test-page admonitions are added/removed.
+  await search(page, "Searchpreviewfixture")
 
-  const testPageResult = page.locator('.result-card[id="test-page"]')
-  await expect(testPageResult).toBeVisible()
-  await testPageResult.focus()
+  const fixtureResult = page.locator('.result-card[id="search-fixture"]')
+  await expect(fixtureResult).toBeVisible()
+  await fixtureResult.focus()
 
-  const cardPreview = testPageResult.locator(".card-preview")
+  const cardPreview = fixtureResult.locator(".card-preview")
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
 
@@ -938,14 +947,14 @@ test("admonition background is transparent in focused mobile card preview (scree
   // calls focusCard, which adds the .focus class. The focused card has a
   // non-transparent background (the hover/focus effect), while the
   // admonition inside is transparent — so the highlight shows through.
-  await expect(testPageResult).toHaveClass(/focus/)
+  await expect(fixtureResult).toHaveClass(/focus/)
 
   const admonition = cardPreview.locator(".admonition").first()
   await expect(admonition).toBeAttached()
   await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
 
   await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
-    elementToScreenshot: testPageResult,
+    elementToScreenshot: fixtureResult,
   })
 })
 
