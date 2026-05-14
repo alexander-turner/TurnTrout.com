@@ -481,8 +481,12 @@ test.describe("Footnote popovers", () => {
   })
 
   test("Footnote popover with rich content (screenshot)", async ({ page }, testInfo) => {
-    // Target the footnote with paragraphs and an admonition for maximum content
-    const footnoteRef = page.locator('a[href="#user-content-fn-footnote"]')
+    // Source the rich-content footnote from the popover fixture so the
+    // screenshot doesn't churn when Test-page.md or its footnote list moves.
+    await gotoPage(page, "http://localhost:8080/popover-fixture", "domcontentloaded")
+    await page.mouse.move(1, 1)
+
+    const footnoteRef = page.locator('a[href="#user-content-fn-rich"]')
     await footnoteRef.scrollIntoViewIfNeeded()
     await footnoteRef.click()
 
