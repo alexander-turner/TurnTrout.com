@@ -21,6 +21,8 @@ import {
   NBSP,
   LEFT_SINGLE_QUOTE,
   RIGHT_SINGLE_QUOTE,
+  HEADING_TAGS,
+  STRIP_BOUNDARY_TAGS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
 import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
@@ -30,7 +32,6 @@ import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } 
  * Content inside these elements won't have formatting improvements applied.
  */
 export const SKIP_TAGS = ["code", "script", "style", "pre"] as const
-export const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
 
 /**
  * Tags that should be skipped during fraction replacement.
@@ -116,15 +117,17 @@ export function spacesAroundSlashes(text: string): string {
     const { spaceBefore: leftSpace, spaceAfter: rightSpace } = groups
     const leftMarker = groups.markerBefore ?? ""
     const rightMarker = groups.markerAfter ?? ""
-    if (leftMarker && rightMarker) {
-      // "/" alone between two markers: the captured spaces live in sibling
-      // text nodes (e.g. <code>A</code>/<code>B</code>). Keep them outside
-      // the markers so siblings retain their boundary spaces; pad "/" with
-      // NBSPs so the cluster stays unbreakable.
-      return `${leftSpace}${leftMarker}${NBSP}/${NBSP}${rightMarker}${rightSpace}`
-    }
-    // Otherwise absorb the captured space into the slash's own text node.
-    return `${leftMarker}${leftSpace || NBSP}/${rightSpace || NBSP}${rightMarker}`
+    // Decide each side independently. A captured space sitting OUTSIDE a
+    // marker (e.g. " <SEP>/" or "/<SEP> ") lives in a sibling text node, not
+    // the slash's own node — keep it outside and glue an NBSP to "/" instead.
+    // With no marker on a side, the space is in the same text node as the
+    // slash, so absorb it (preserves marker invariance with empty inline
+    // elements there).
+    const outerLeft = leftMarker ? leftSpace : ""
+    const padLeft = leftMarker ? NBSP : leftSpace || NBSP
+    const outerRight = rightMarker ? rightSpace : ""
+    const padRight = rightMarker ? NBSP : rightSpace || NBSP
+    return `${outerLeft}${leftMarker}${padLeft}/${padRight}${rightMarker}${outerRight}`
   })
 
   const numberSlashThenNonNumber = /(?<=\d)\/(?=\D)/g
@@ -132,6 +135,42 @@ export function spacesAroundSlashes(text: string): string {
 
   // Restore the h/t occurrences
   return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
+}
+
+/**
+ * Strip whitespace adjacent to the inside boundary of an inline element.
+ *
+ * Covers two visual categories — text styling (`<em>`, `<strong>`, `<i>`,
+ * `<b>`) and visually-bound rendering where an underline / strikethrough /
+ * background extends across the whole element (`<a>`, `<u>`, `<ins>`,
+ * `<mark>`, `<del>`, `<s>`). Both get both sides stripped: markdown won't
+ * normally produce trailing whitespace inside emphasis (the closing delimiter
+ * rejects it), so any trailing whitespace we see is either raw HTML or a
+ * transformer accident and is safe to clean.
+ *
+ * The tag list is shared with the built-site check via
+ * `config/constants.json:stripBoundaryWhitespaceTags`.
+ */
+export function stripInlineBoundaryWhitespace(tree: Root): void {
+  visitParents(tree, "element", (node) => {
+    if (!STRIP_BOUNDARY_TAGS.has(node.tagName)) return
+    trimTextChild(node, "leading")
+    trimTextChild(node, "trailing")
+  })
+}
+
+function trimTextChild(node: Element, side: "leading" | "trailing"): void {
+  const idx = side === "leading" ? 0 : node.children.length - 1
+  const child = node.children[idx]
+  if (child?.type !== "text") return
+  const trimmed =
+    side === "leading" ? child.value.replace(/^\s+/, "") : child.value.replace(/\s+$/, "")
+  if (trimmed === child.value) return
+  if (trimmed === "") {
+    node.children.splice(idx, 1)
+    return
+  }
+  child.value = trimmed
 }
 
 export function removeSpaceBeforeFootnotes(tree: Root): void {
@@ -812,6 +851,22 @@ export const HTMLFormattingImprovement: QuartzTransformerPlugin = () => {
     name: "htmlFormattingImprovement",
     htmlPlugins() {
       return [improveFormatting]
+    },
+  }
+}
+
+/**
+ * Quartz plugin running ``stripInlineBoundaryWhitespace`` as a late pass.
+ *
+ * Separated from ``HTMLFormattingImprovement`` so it can run *after*
+ * downstream plugins (``AddFavicons`` in particular) that rewrite link
+ * content and can reintroduce leading whitespace inside an ``<a>``.
+ */
+export const StripInlineBoundaryWhitespace: QuartzTransformerPlugin = () => {
+  return {
+    name: "stripInlineBoundaryWhitespace",
+    htmlPlugins() {
+      return [() => stripInlineBoundaryWhitespace]
     },
   }
 }

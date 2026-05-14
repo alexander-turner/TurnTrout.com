@@ -54,8 +54,7 @@ jest.mock("../ContentMeta", () => {
   const originalModule = jest.requireActual("../ContentMeta") as object
   return {
     ...originalModule,
-    urlCache: new Map(),
-    TURNTROUT_FAVICON_PATH: "path/to/turntrout/favicon.png",
+    TURNTROUT_FAVICON_PATH: "path/to/turntrout/favicon.svg",
   }
 })
 
@@ -65,8 +64,7 @@ jest.mock("../Date", () => ({
 
 jest.mock("../../plugins/transformers/favicons", () => ({
   GetQuartzPath: jest.fn(),
-  urlCache: new Map(),
-  getFaviconPath: () => "/mock/favicon.avif",
+  getFaviconPath: () => "/mock/favicon.svg",
 }))
 
 const mockConfig = {

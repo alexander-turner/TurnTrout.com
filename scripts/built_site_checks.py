@@ -680,7 +680,7 @@ def resolve_media_path(src: str, base_dir: Path) -> Path:
     return full_path
 
 
-ALLOWED_ASSET_DOMAINS = frozenset({"assets.turntrout.com"})
+ALLOWED_ASSET_DOMAINS = frozenset({script_utils.CDN_HOSTNAME})
 
 
 def check_media_asset_sources(soup: BeautifulSoup) -> list[str]:
@@ -1962,6 +1962,7 @@ def check_file_for_issues(
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
         "inline_code_word_boundaries": check_inline_code_word_boundaries(soup),
+        "inline_boundary_whitespace": check_inline_boundary_whitespace(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -2309,6 +2310,50 @@ def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
                 code, ALLOWED_ELT_PRECEDING_CHARS, _CODE_FOLLOWING_CHARS
             )
         )
+    return issues
+
+
+# Tags mirroring ``stripInlineBoundaryWhitespace`` in
+# ``quartz/plugins/transformers/formatting_improvement_html.ts``. Shared with
+# the transform via ``config/constants.json:stripBoundaryWhitespaceTags`` —
+# this check verifies the transform's invariant held end-to-end.
+_STRIP_BOUNDARY_TAGS: tuple[str, ...] = tuple(
+    script_utils.load_shared_constants()["stripBoundaryWhitespaceTags"]
+)
+
+
+def _flag_boundary_whitespace(
+    element: Tag, side: Literal["leading", "trailing"], issues: list[str]
+) -> None:
+    """Flag boundary whitespace on one side of an inline element."""
+    if not element.contents:
+        return
+    child = element.contents[0] if side == "leading" else element.contents[-1]
+    if not isinstance(child, NavigableString):
+        return
+    stripped = child.lstrip() if side == "leading" else child.rstrip()
+    if child == stripped:
+        return
+    _append_to_list(
+        issues,
+        f"<{element.name}>{element.get_text()[:40]}",
+        prefix=f"{side.capitalize()} whitespace inside element: ",
+    )
+
+
+def check_inline_boundary_whitespace(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify inline elements have no inside-boundary whitespace on either side.
+
+    Elements inside ``no-formatting`` / ``<pre>`` zones are skipped.
+    """
+    issues: list[str] = []
+    for tag_name in _STRIP_BOUNDARY_TAGS:
+        for element in _tags_only(soup.find_all(tag_name)):
+            if should_skip(element):
+                continue
+            _flag_boundary_whitespace(element, "leading", issues)
+            _flag_boundary_whitespace(element, "trailing", issues)
     return issues
 
 
@@ -3136,7 +3181,7 @@ def main() -> None:
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)
     html_issues_found = _process_html_files(
         _PUBLIC_DIR,
-        _GIT_ROOT / "website_content",
+        _GIT_ROOT / script_utils.CONTENT_DIR_NAME,
         args.check_fonts,
         defined_css_vars,
     )

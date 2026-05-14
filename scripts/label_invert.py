@@ -49,6 +49,7 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
+from scripts import utils as script_utils
 from scripts.utils import (
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_LABELABLE_EXTENSIONS,
@@ -64,7 +65,7 @@ TRANSFORMERS_DIR: Final[Path] = (
 DIMENSIONS_JSON: Final[Path] = TRANSFORMERS_DIR / ".asset_dimensions.json"
 LABELS_JSON: Final[Path] = TRANSFORMERS_DIR / ".invert_labels.json"
 LUMINANCE_JSON: Final[Path] = TRANSFORMERS_DIR / ".invert_luminance.json"
-CONTENT_DIR: Final[Path] = PROJECT_ROOT / "website_content"
+CONTENT_DIR: Final[Path] = PROJECT_ROOT / script_utils.CONTENT_DIR_NAME
 
 # Mean grayscale luminance (0..1) above which an unlabeled image is
 # auto-classified as "should invert in dark mode" — the dominant signal

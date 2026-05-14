@@ -9,39 +9,25 @@ ImageMagick, and uploads them to R2 storage.
 
 #!/usr/bin/env python3
 import argparse
-import io
-import os
 import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from urllib import parse
 
-import requests
 from frozendict import frozendict
-from ruamel.yaml import YAML  # type: ignore
-
-yaml_parser = YAML(typ="rt")  # Use Round-Trip to preserve formatting
-yaml_parser.preserve_quotes = True  # Preserve existing quotes
-yaml_parser.indent(mapping=2, sequence=2, offset=2)  # Set desired indentation
 
 try:
-    from . import r2_upload, source_file_checks
+    from . import compress, r2_upload, source_file_checks
     from . import utils as script_utils
 except ImportError:
+    import compress  # type: ignore
     import r2_upload  # type: ignore
     import source_file_checks  # type: ignore
     import utils as script_utils  # type: ignore
 
-
-_CAN_CONVERT_EXTENSIONS: set[str] = {
-    ".avif",
-    ".webp",
-    ".jpg",
-    ".jpeg",
-    ".png",
-}
+yaml_parser = script_utils.get_yaml_parser()
+_http_session = script_utils.http_session()
 
 
 def _parse_markdown_frontmatter(content: str) -> tuple[dict, str] | None:
@@ -87,7 +73,7 @@ def _download_image(url: str, output_path: Path) -> None:
     Raises:
         ValueError: If download fails
     """
-    response = requests.get(
+    response = _http_session.get(
         url, stream=True, timeout=10, headers=_DOWNLOAD_HEADERS
     )
     if response.status_code == 200:
@@ -174,8 +160,7 @@ def _process_image(card_image_url: str, temp_dir: Path) -> tuple[Path, str]:
     Returns:
         Tuple of (converted JPEG path, JPEG filename)
     """
-    parsed_url = parse.urlparse(card_image_url)
-    card_image_filename = os.path.basename(parsed_url.path)
+    card_image_filename = script_utils.extract_filename_from_url(card_image_url)
     downloaded_path = temp_dir / card_image_filename
     jpeg_filename = downloaded_path.with_suffix(".jpg").name
     jpeg_path = downloaded_path.with_suffix(".jpg")
@@ -213,10 +198,11 @@ def _setup_and_store_image(jpeg_path: Path, jpeg_filename: str) -> Path:
 
 def process_card_image_in_markdown(md_file: Path) -> None:
     """Process the 'card_image' in the YAML frontmatter of the given md file."""
-    content_dir = script_utils.get_git_root() / "website_content"
+    content_dir = script_utils.get_git_root() / script_utils.CONTENT_DIR_NAME
     if not md_file.resolve().is_relative_to(content_dir):
         raise ValueError(
-            f"File path {md_file} is not in the website_content directory."
+            f"File path {md_file} is not in the "
+            f"{script_utils.CONTENT_DIR_NAME} directory."
         )
 
     with open(md_file, encoding="utf-8") as file:
@@ -239,7 +225,10 @@ def process_card_image_in_markdown(md_file: Path) -> None:
         return
 
     # Check if the image can be converted
-    if not any(card_image_url.endswith(ext) for ext in _CAN_CONVERT_EXTENSIONS):
+    if not any(
+        card_image_url.endswith(ext)
+        for ext in compress.CONVERTIBLE_CARD_IMAGE_EXTENSIONS
+    ):
         return
 
     errors = source_file_checks.check_card_image(data)
@@ -259,15 +248,9 @@ def process_card_image_in_markdown(md_file: Path) -> None:
     # Update the YAML frontmatter
     data["card_image"] = _get_r2_image_url(local_jpeg_path)
 
-    # Write back to file
-    stream = io.StringIO()
-    yaml_parser.dump(data, stream)
-    updated_yaml = stream.getvalue()
-    updated_content = f"---\n{updated_yaml}---\n{md_body}"
-
-    with open(md_file, "w", encoding="utf-8") as file:
-        file.write(updated_content)
-
+    script_utils.write_yaml_frontmatter(
+        md_file, data, md_body, parser=yaml_parser
+    )
     print(f"Updated 'card_image' in {md_file}")
 
 
@@ -287,7 +270,7 @@ def main() -> None:
         "-d",
         "--markdown-directory",
         help="Directory containing markdown files to process",
-        default=git_root / "website_content",
+        default=git_root / script_utils.CONTENT_DIR_NAME,
     )
     args = parser.parse_args()
 

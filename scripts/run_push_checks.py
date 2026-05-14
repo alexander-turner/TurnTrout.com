@@ -28,6 +28,11 @@ from typing import Collection, Deque, Sequence, TextIO
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TaskID, TextColumn
 
+# Allow direct invocation as `python scripts/run_push_checks.py`.
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+# pylint: disable=wrong-import-position
+from scripts import utils as script_utils  # noqa: E402
+
 console = Console()
 
 # Compute git root once at module load time
@@ -575,7 +580,7 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
             name="Formatting markdown",
             command=[
                 *prettier_args,
-                f"{git_root_path}/website_content/**/*.md",
+                f"{git_root_path}/{script_utils.CONTENT_DIR_NAME}/**/*.md",
             ],
         ),
     ]

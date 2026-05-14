@@ -227,7 +227,7 @@ def convert_asset(
     input_file: Path,
     remove_originals: bool = False,
     strip_metadata: bool = False,
-    md_references_dir: Path | None = Path("website_content/"),
+    md_references_dir: Path | None = Path(f"{script_utils.CONTENT_DIR_NAME}/"),
 ) -> None:
     """
     Converts an image or video to a more efficient format.
@@ -288,15 +288,12 @@ def convert_asset(
     for md_file in script_utils.get_files(
         dir_to_search=md_references_dir, filetypes_to_match=(".md",)
     ):
-        with open(md_file, encoding="utf-8") as file:
-            content = file.read()
-
-        replaced_content = _replace_content(
-            content, original_pattern, replacement_pattern
+        script_utils.update_markdown_file(
+            md_file,
+            lambda content: _replace_content(
+                content, original_pattern, replacement_pattern
+            ),
         )
-
-        with open(md_file, "w", encoding="utf-8") as file:
-            file.write(replaced_content)
 
     if remove_originals and input_file.suffix not in (".mp4", ".avif"):
         input_file.unlink()
@@ -349,7 +346,7 @@ def main() -> None:
             asset,
             remove_originals=args.remove_originals,
             strip_metadata=args.strip_metadata,
-            md_references_dir=Path("website_content/"),
+            md_references_dir=Path(f"{script_utils.CONTENT_DIR_NAME}/"),
         )
 
 

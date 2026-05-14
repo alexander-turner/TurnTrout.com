@@ -1,12 +1,17 @@
 """Utility functions for scripts/ directory."""
 
 import functools
+import io
 import json
 import logging
+import os
 import shutil
 import subprocess
+import sys
 from collections.abc import Collection
 from pathlib import Path
+from typing import Callable, NoReturn, Optional
+from urllib.parse import urlparse
 
 import git
 import requests
@@ -15,12 +20,13 @@ from requests.adapters import HTTPAdapter
 from ruamel.yaml import YAML, YAMLError
 from urllib3.util.retry import Retry
 
-# Unicode typography constants (single source of truth: config/constants.json)
+# Shared constants — single source of truth: config/constants.json.
 _CONSTANTS_JSON_PATH = (
     Path(__file__).resolve().parent.parent / "config" / "constants.json"
 )
 with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as _f:
-    _UNICODE_TYPO = json.load(_f)["unicodeTypography"]
+    _CONSTANTS = json.load(_f)
+_UNICODE_TYPO = _CONSTANTS["unicodeTypography"]
 
 NBSP: str = _UNICODE_TYPO["nbsp"]
 LEFT_SINGLE_QUOTE: str = _UNICODE_TYPO["leftSingleQuote"]
@@ -29,6 +35,15 @@ LEFT_DOUBLE_QUOTE: str = _UNICODE_TYPO["leftDoubleQuote"]
 RIGHT_DOUBLE_QUOTE: str = _UNICODE_TYPO["rightDoubleQuote"]
 ELLIPSIS: str = _UNICODE_TYPO["ellipsis"]
 ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
+
+# Asset CDN: full URL and bare hostname. Hostname is derived so the
+# bare-string and URL forms can't drift.
+CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
+CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
+
+# Top-level content directory (Markdown source). Mirrors the TS-side
+# `contentDirName` export.
+CONTENT_DIR_NAME: str = _CONSTANTS["contentDirName"]
 ZERO_WIDTH_NBSP: str = _UNICODE_TYPO["zeroWidthNbsp"]
 WORD_JOINER: str = _UNICODE_TYPO["wordJoiner"]
 LEFT_GUILLEMET: str = _UNICODE_TYPO["leftGuillemet"]
@@ -256,6 +271,78 @@ def path_relative_to_quartz_parent(input_file: Path) -> Path:
         raise ValueError("The path must be within a 'quartz' directory.") from e
 
 
+def get_yaml_parser() -> YAML:
+    """
+    Return a round-trip ruamel.yaml parser configured for markdown frontmatter.
+
+    Preserves quotes and comments; sets the indentation used across this
+    project. ``width`` is large so long URLs do not get wrapped onto multiple
+    lines.
+    """
+    parser = YAML(typ="rt")
+    parser.preserve_quotes = True
+    parser.indent(mapping=2, sequence=2, offset=2)
+    parser.width = 4096
+    return parser
+
+
+def write_yaml_frontmatter(
+    file_path: Path,
+    metadata: dict,
+    content: str,
+    parser: Optional[YAML] = None,
+) -> None:
+    """
+    Write *metadata* as YAML frontmatter followed by *content* to *file_path*.
+
+    A new :func:`get_yaml_parser` instance is used if *parser* is not given.
+    """
+    yaml_parser = parser if parser is not None else get_yaml_parser()
+    stream = io.StringIO()
+    yaml_parser.dump(metadata, stream)
+    with file_path.open("w", encoding="utf-8") as f:
+        f.write("---\n")
+        f.write(stream.getvalue())
+        f.write("---\n")
+        f.write(content)
+
+
+def update_markdown_file(
+    file_path: Path, transform_fn: Callable[[str], str]
+) -> bool:
+    """
+    Read *file_path*, apply *transform_fn* to its contents, write back if
+    changed.
+
+    Returns True when the file was modified.
+    """
+    original = file_path.read_text(encoding="utf-8")
+    updated = transform_fn(original)
+    if updated == original:
+        return False
+    file_path.write_text(updated, encoding="utf-8")
+    return True
+
+
+def extract_filename_from_url(url: str) -> str:
+    """
+    Return the trailing filename of *url* (everything after the final ``/``).
+
+    Raises:
+        ValueError: When the URL has no filename component.
+    """
+    filename = os.path.basename(urlparse(url).path)
+    if not filename:
+        raise ValueError(f"URL has no filename component: {url}")
+    return filename
+
+
+def error_exit(message: str, code: int = 1) -> NoReturn:
+    """Print *message* to stderr and exit with *code*."""
+    print(message, file=sys.stderr)
+    sys.exit(code)
+
+
 def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     """
     Split a markdown file into its YAML frontmatter and content.
@@ -267,10 +354,7 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
     Returns:
         Tuple of (metadata dict, content string)
     """
-    yaml = YAML(
-        typ="rt"
-    )  # 'rt' means round-trip, preserving comments and formatting
-    yaml.preserve_quotes = True  # Preserve quote style
+    yaml = get_yaml_parser()
 
     with file_path.open("r", encoding="utf-8") as f:
         content = f.read()
