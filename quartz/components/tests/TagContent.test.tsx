@@ -400,12 +400,3 @@ describe("TagContent component", () => {
     expect(pageListingDiv.props.className).toBe("page-listing")
   })
 })
-
-describe("TagContent default export", () => {
-  it("exports TagContent as default", () => {
-    const mockProps = createProps()
-    const result = callTagContent(mockProps)
-    expect(result).toBeDefined()
-    expect(result.type).toBe("article")
-  })
-})

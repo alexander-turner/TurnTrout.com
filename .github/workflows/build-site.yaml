@@ -13,6 +13,11 @@ on:
         required: false
         type: number
         default: 0
+      include-fixtures:
+        description: "Include `website_content/fixtures/` pages in the build. Set to true for visual/Playwright test builds. Must stay false for any artifact that ships to users."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   actions: read
@@ -21,20 +26,23 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    env:
+      INCLUDE_FIXTURES: ${{ inputs.include-fixtures && 'true' || '' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
           filter: ${{ inputs.fetch-depth == 0 && 'blob:none' || '' }}
 
-      # Cache keyed on commit SHA. First workflow to build
-      # populates the cache; subsequent workflows get a hit and skip the build.
+      # Cache keyed on commit SHA + fixture flag. Test builds and deploy
+      # builds end up at different keys so fixtures can't leak from one to
+      # the other.
       - name: Restore build cache
         id: cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}
+          key: site-build-${{ github.sha }}-fixtures-${{ inputs.include-fixtures }}
 
       - name: Setup Build Environment
         if: steps.cache.outputs.cache-hit != 'true'

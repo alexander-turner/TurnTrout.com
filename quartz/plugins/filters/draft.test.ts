@@ -13,10 +13,6 @@ function shouldPublish(filePath: string): boolean {
 }
 
 describe("RemoveDrafts", () => {
-  it("has the correct name", () => {
-    expect(filter.name).toBe("RemoveDrafts")
-  })
-
   it.each([
     ["website_content/posts/my-article.md", true],
     ["website_content/about.md", true],

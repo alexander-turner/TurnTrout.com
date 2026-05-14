@@ -105,6 +105,8 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 - **Never sit on a CI failure.** If the Stop hook reports a failure — or any check on the open PR is red — investigate and fix it before reporting the task done. Do not assume a remote failure is "just stale local deps" without verifying remote status via `mcp__github__pull_request_read` (`get_status` + `get_check_runs`).
 - This includes lint/static-analysis services (DeepSource, Socket, etc.) shown alongside GitHub Actions checks — fix their findings even when the underlying file came from a parent branch, since they block the PR all the same.
 - If a failure is genuinely outside the PR's scope and not fixable here, say so explicitly with evidence rather than going silent.
+- **`gh` is authenticated by the SessionStart hook** — use it directly to read failure logs, e.g. `gh run view <run-id> --log-failed --job <job-id>`. Annotations and `mcp__github__pull_request_read` only return generic "exit code 1"; the real test names and tracebacks are only in the full log. Do not rely on `WebFetch` against actions.github.com — it returns the un-authenticated HTML and never shows the log.
+- **A PR run executing on a synthetic merge ref (`refs/remotes/pull/<N>/merge`) means CI sees `main` + your branch.** If a test fails in CI but passes locally, check whether `main` has moved ahead and merge it in: `git fetch origin main && git merge origin/main`. A "this was already fixed in #XYZ on main" answer is more common than a real bug in your code.
 
 ## DeepSource issues
 

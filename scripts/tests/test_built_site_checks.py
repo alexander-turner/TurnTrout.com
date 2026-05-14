@@ -3637,6 +3637,25 @@ def test_check_root_files_location(
     assert sorted(result) == sorted(expected)
 
 
+def _write(path: Path, content: str = "") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def test_check_fixture_pages_excluded_clean(tmp_path: Path) -> None:
+    _write(tmp_path / "test-page.html", "<html></html>")
+    assert built_site_checks.check_fixture_pages_excluded(tmp_path) == []
+
+
+def test_check_fixture_pages_excluded_flags_paths(tmp_path: Path) -> None:
+    _write(tmp_path / "popover-fixture.html", "<html></html>")
+    _write(tmp_path / "emoji-fixture" / "index.html", "<html></html>")
+
+    issues = built_site_checks.check_fixture_pages_excluded(tmp_path)
+    assert any("popover-fixture.html" in i for i in issues)
+    assert any("emoji-fixture" in i for i in issues)
+
+
 @pytest.mark.parametrize(
     "html,expected",
     [
@@ -4193,6 +4212,38 @@ def test_main_root_files_issues(
                     "robots.txt not found in site root",
                     "favicon.svg not found in site root",
                     "favicon.ico not found in site root",
+                ]
+            },
+        )
+
+
+def test_main_fixture_issues(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    html_file,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Test main() when a leaked fixture artifact is present."""
+    public_dir = mock_environment["public_dir"]
+    (public_dir / "popover-fixture.html").write_text("<html></html>")
+
+    monkeypatch.setattr(
+        built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
+    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    with patch.object(built_site_checks, "_print_issues") as mock_print:
+        with pytest.raises(SystemExit) as excinfo:
+            built_site_checks.main()
+        assert excinfo.value.code == 1
+
+        mock_print.assert_any_call(
+            public_dir,
+            {
+                "fixture_artifacts": [
+                    "fixture artifact in build: popover-fixture.html"
                 ]
             },
         )
