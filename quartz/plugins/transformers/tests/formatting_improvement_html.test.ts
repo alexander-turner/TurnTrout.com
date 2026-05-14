@@ -2263,8 +2263,11 @@ describe("HTMLFormattingImprovement plugin", () => {
 
 describe("Non-breaking space insertion", () => {
   it.each([
-    // After short words (1-2 letters) and before last word (widow prevention)
-    ["<p>I love this</p>", `<p>I${NBSP}love${NBSP}this</p>`],
+    // After short words (1-2 letters) and before last word (widow prevention).
+    // punctilio 3.8.4's nbspBeforeLastWord cascade-block skips the widow NBSP
+    // when an earlier NBSP already glues a word in the same paragraph, so
+    // "I love this" only gets one NBSP (after "I"), not two.
+    ["<p>I love this</p>", `<p>I${NBSP}love this</p>`],
     ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on${NBSP}a${NBSP}mat</p>`],
     // Before last word (widow prevention)
     ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],
