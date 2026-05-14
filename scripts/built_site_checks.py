@@ -494,7 +494,7 @@ def _append_canary_matches(
             This preserves text positions to avoid false positives when code
             appears before patterns like ": ".
         lst: List to append problematic text to.
-        report_text: Optional text to report in error messages
+        report_text: Text to report in error messages, or None
             (without placeholders). If None, check_text is reported.
             Use this to show clean text without code placeholder
             characters in error output.
