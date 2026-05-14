@@ -187,7 +187,7 @@ jobs:
   visual-testing-macos:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
-    runs-on: macos-26
+    runs-on: macos-15
     # macOS WebKit runs at 1 worker (see playwright.config.ts) — tripling
     # per-shard wall time. Generous job budget keeps shards from being
     # killed without log output.
