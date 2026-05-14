@@ -122,7 +122,7 @@ Heavier checks (Jest, Playwright, built-site checks, link validation) run in CI.
 
 ## CI monitoring
 
-After pushing, **always monitor CI until checks pass or fail**. The PostToolUse hook (`post-push-ci-watch.sh`) polls GitHub Actions after `git push` / `gh pr create`. Stop hook blocks completion if remote CI has failures for the last pushed commit.
+After pushing, **always monitor CI until checks pass or fail**. Claude Code's native CI watch surfaces failures on the open PR; the Stop hook only enforces local checks (test / lint / typecheck / ruff / pytest).
 
 Manual check:
 
