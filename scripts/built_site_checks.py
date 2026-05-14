@@ -18,6 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
@@ -1960,6 +1961,7 @@ def check_file_for_issues(
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "inline_code_word_boundaries": check_inline_code_word_boundaries(soup),
         "inline_boundary_whitespace": check_inline_boundary_whitespace(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
@@ -2261,24 +2263,54 @@ _ARROW_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS + _LETTERS
 _ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS + _LETTERS
 _ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
 
-# Per-selector overrides for allowed preceding/following characters
-_SELECTOR_PRECEDING_CHARS: dict[str, str] = {
-    "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
-    "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
-    "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
-    "span.right-arrow": _ARROW_PRECEDING_CHARS,
-}
-_SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
-    "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
-    "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
-    "span.right-arrow": _ARROW_FOLLOWING_CHARS,
-}
+_SELECTOR_PRECEDING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
+        "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+        "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
+        "span.right-arrow": _ARROW_PRECEDING_CHARS,
+    }
+)
+_SELECTOR_FOLLOWING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
+        "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
+        "span.right-arrow": _ARROW_FOLLOWING_CHARS,
+    }
+)
 
 
 def _abbr_starts_with_digit(element: Tag) -> bool:
     """Check if an abbreviation element's text starts with a digit."""
     text = element.get_text()
     return bool(text) and text[0].isdigit()
+
+
+# Pluralised inline code is common in prose ("``URL``s", "``id``s"), so a
+# trailing "s" right after a code element is allowed without a space.
+_CODE_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
+def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
+    """
+    Flag inline ``<code>`` elements that render directly adjacent to a letter.
+
+    The rendered-text spellchecker strips ``<code>`` content entirely (see
+    ``utils.get_non_code_text``), so a word like ``sycophanticA`` glued to a
+    code element is invisible to it — the post-strip text reads as ordinary
+    spaced prose. This check looks at the structural HTML instead and flags a
+    code element whose adjacent sibling text begins or ends with a letter.
+    """
+    issues: list[str] = []
+    for code in _tags_only(soup.find_all("code")):
+        if code.find_parent("pre") or code.find_parent(class_="no-formatting"):
+            continue
+        issues.extend(
+            _check_element_spacing(
+                code, ALLOWED_ELT_PRECEDING_CHARS, _CODE_FOLLOWING_CHARS
+            )
+        )
+    return issues
 
 
 # Tags mirroring ``stripInlineBoundaryWhitespace`` in
