@@ -403,7 +403,7 @@ export class MissingFaviconError extends Error {
     super(
       `Missing favicon SVG for ${hostname}: expected at ${expectedUrl} ` +
         `(count=${count}, threshold=${minFaviconCount}). ` +
-        `Upload the SVG to the CDN or add the domain to faviconSubstringBlocklist in config/constants.json.`,
+        "Upload the SVG to the CDN or add the domain to faviconSubstringBlocklist in config/constants.json.",
     )
     this.name = "MissingFaviconError"
   }

@@ -109,9 +109,13 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 ## DeepSource issues
 
 - The `deepsource` CLI is authenticated by the SessionStart hook.
-- **Before pushing to an open PR, run `scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and fix any findings.** This used to be a pre-push gate, but DeepSource's analysis is asynchronous, so the gate kept blocking fix commits that hadn't been re-analyzed yet. Treat it as a checklist item, not a hook.
-- DeepSource analyzes commits asynchronously, so the CLI lags behind your local HEAD. After the most recent CI run on a PR completes, re-run `deepsource issues --pr <N> --output json` to confirm the latest commit is clean before declaring the task done.
-- The PR-status check (DeepSource Code Review) only flags issues from the lint/static-analysis bots after a delay; the CLI gives the canonical list. Do not rely on the PR comment alone — poll the CLI.
+- **DeepSource findings are not optional. If `deepsource issues --pr <N> --output json` returns a non-empty list, you MUST fix every issue before the task is done — even MINOR severity, even in files that came in from a parent branch via merge. Listing or summarizing the findings is not a substitute for fixing them.** This is the most common failure mode: surfacing the list and then stopping. Don't.
+- **Run the CLI three times per PR, every time:**
+  1. **Right after pushing the first commit** — `deepsource issues --pr <N> --output json`. Fix everything it returns, then push the fix commit.
+  2. **When a DeepSource webhook arrives** (PR-status check posts a comment, or you see `DeepSource: <analyzer>` change state) — re-run the CLI and fix any new findings.
+  3. **Before declaring the task complete** — once the most recent CI run finishes, re-run the CLI to confirm the count is zero.
+- DeepSource is asynchronous, so the CLI lags behind your local HEAD; that's why this is a checklist, not a pre-push hook.
+- Don't rely on the GitHub PR comment alone — it lags further than the CLI. The CLI is the canonical list.
 - Also useful:
   - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)
   - `deepsource issues --default-branch --analyzer javascript --output json`
