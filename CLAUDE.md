@@ -105,13 +105,19 @@ After pushing, monitor CI until pass or fail. The PostToolUse hook polls GitHub 
 - **Never sit on a CI failure.** If the Stop hook reports a failure — or any check on the open PR is red — investigate and fix it before reporting the task done. Do not assume a remote failure is "just stale local deps" without verifying remote status via `mcp__github__pull_request_read` (`get_status` + `get_check_runs`).
 - This includes lint/static-analysis services (DeepSource, Socket, etc.) shown alongside GitHub Actions checks — fix their findings even when the underlying file came from a parent branch, since they block the PR all the same.
 - If a failure is genuinely outside the PR's scope and not fixable here, say so explicitly with evidence rather than going silent.
+- **`gh` is authenticated by the SessionStart hook** — use it directly to read failure logs, e.g. `gh run view <run-id> --log-failed --job <job-id>`. Annotations and `mcp__github__pull_request_read` only return generic "exit code 1"; the real test names and tracebacks are only in the full log. Do not rely on `WebFetch` against actions.github.com — it returns the un-authenticated HTML and never shows the log.
+- **A PR run executing on a synthetic merge ref (`refs/remotes/pull/<N>/merge`) means CI sees `main` + your branch.** If a test fails in CI but passes locally, check whether `main` has moved ahead and merge it in: `git fetch origin main && git merge origin/main`. A "this was already fixed in #XYZ on main" answer is more common than a real bug in your code.
 
 ## DeepSource issues
 
 - The `deepsource` CLI is authenticated by the SessionStart hook.
-- **Before pushing to an open PR, run `scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and fix any findings.** This used to be a pre-push gate, but DeepSource's analysis is asynchronous, so the gate kept blocking fix commits that hadn't been re-analyzed yet. Treat it as a checklist item, not a hook.
-- DeepSource analyzes commits asynchronously, so the CLI lags behind your local HEAD. After the most recent CI run on a PR completes, re-run `deepsource issues --pr <N> --output json` to confirm the latest commit is clean before declaring the task done.
-- The PR-status check (DeepSource Code Review) only flags issues from the lint/static-analysis bots after a delay; the CLI gives the canonical list. Do not rely on the PR comment alone — poll the CLI.
+- **DeepSource findings are not optional. If `deepsource issues --pr <N> --output json` returns a non-empty list, you MUST fix every issue before the task is done — even MINOR severity, even in files that came in from a parent branch via merge. Listing or summarizing the findings is not a substitute for fixing them.** This is the most common failure mode: surfacing the list and then stopping. Don't.
+- **Run the CLI three times per PR, every time:**
+  1. **Right after pushing the first commit** — `deepsource issues --pr <N> --output json`. Fix everything it returns, then push the fix commit.
+  2. **When a DeepSource webhook arrives** (PR-status check posts a comment, or you see `DeepSource: <analyzer>` change state) — re-run the CLI and fix any new findings.
+  3. **Before declaring the task complete** — once the most recent CI run finishes, re-run the CLI to confirm the count is zero.
+- DeepSource is asynchronous, so the CLI lags behind your local HEAD; that's why this is a checklist, not a pre-push hook.
+- Don't rely on the GitHub PR comment alone — it lags further than the CLI. The CLI is the canonical list.
 - Also useful:
   - `deepsource issues --default-branch --analyzer python --output json` (issues on `main`)
   - `deepsource issues --default-branch --analyzer javascript --output json`

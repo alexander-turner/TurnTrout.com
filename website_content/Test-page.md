@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-12
+date_updated: 2026-05-14
 createBibtex: true
 ---
 
@@ -517,7 +517,7 @@ Links ending [with code tags should still wrap OK: `code.`](#external-links-with
 
 <div id="populate-favicon-container" class="no-favicon-span"></div>
 
-### Favicon kerning iteration
+## Favicon kerning iteration
 
 <!--spellchecker-disable-->
 

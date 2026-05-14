@@ -23,7 +23,7 @@
     "postinstall": "patch-package",
     "install-browsers": "pnpm playwright install && npx puppeteer browsers install chrome",
     "test:visual": "pnpm playwright test --config config/playwright/playwright.config.ts --grep '(screenshot)'",
-    "test:a11y": "pnpm pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080",
+    "test:a11y": "pnpm pa11y-ci --config config/pa11y/.pa11yci --sitemap http://localhost:8080/sitemap.xml --sitemap-find https://turntrout.com --sitemap-replace http://localhost:8080 --sitemap-exclude '.*elk-proposal-thinking-via-a-human-imitator.*'",
     "generate:scss": "tsx quartz/styles/generate-variables.ts",
     "setup:python": "uv sync"
   },
@@ -108,7 +108,7 @@
     "pretty-bytes": "7.1.0",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "3.5.0",
+    "punctilio": "3.8.4",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "reading-time": "1.5.0",

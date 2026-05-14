@@ -862,10 +862,8 @@ def compile_scss(scss_file_path: Path) -> str:
 
 _FONT_FACE_FAMILY_PATTERN = re.compile(
     r"""@font-face\s*\{[^}]*?
-    src:\s*url\(\s*["']?(.*?)["']?\)\s*
-    (?:format\([^\)]*\)\s*)?
-    [^;]*;"""
-             ,
+    font-family:\s*["']?(.*?)["']?[;,]"""
+                                         ,
     re.VERBOSE | re.DOTALL,
 )
 

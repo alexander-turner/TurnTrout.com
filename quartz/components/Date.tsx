@@ -65,18 +65,19 @@ export function formatDate(
   formatOrdinalSuffix = true,
   extraOrdinalStyling?: string,
 ): string {
-  let day: string | number = d.getDate()
+  const dayNum = d.getDate()
   const month = d.toLocaleDateString(locale, { month: monthFormat })
   const year = d.getFullYear()
   let suffix = ""
+  let dayRendered: string | number = dayNum
   if (includeOrdinalSuffix) {
-    suffix = getOrdinalSuffix(day)
+    suffix = getOrdinalSuffix(dayNum)
     if (formatOrdinalSuffix) {
       suffix = `<span class="ordinal-suffix"${extraOrdinalStyling ? ` style="${extraOrdinalStyling}"` : ""}>${suffix}</span>`
-      day = `<span class="date-ordinal-num">${day}</span>`
+      dayRendered = `<span class="date-ordinal-num">${dayNum}</span>`
     }
   }
-  return `${month} ${day}${suffix}, ${year}`
+  return `${month} ${dayRendered}${suffix}, ${year}`
 }
 
 interface DateElementProps {

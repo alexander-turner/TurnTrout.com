@@ -14,7 +14,10 @@ export { HardLineBreaks } from "./linebreaks"
 export { TagSmallcaps } from "./tagSmallcaps"
 export { TroutOrnamentHr } from "./trout_hr"
 export { TextFormattingImprovement } from "./formatting_improvement_text"
-export { HTMLFormattingImprovement } from "./formatting_improvement_html"
+export {
+  HTMLFormattingImprovement,
+  StripInlineBoundaryWhitespace,
+} from "./formatting_improvement_html"
 export { Twemoji } from "./twemoji"
 export { TableCaption } from "./tablecaption"
 export { ColorVariables } from "./color_variables"

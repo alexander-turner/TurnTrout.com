@@ -28,8 +28,10 @@ test.beforeEach(async ({ page }, testInfo) => {
   // Log any console errors
   page.on("pageerror", (err) => console.error(err))
 
-  // Navigate and wait for full initialization (including scripts)
-  await gotoPage(page, "http://localhost:8080/welcome")
+  // Start from the popover fixture: a minimal stable page so anything that
+  // bleeds through the search overlay (background, page chrome, page-level
+  // styling) doesn't churn whenever /welcome's content changes.
+  await gotoPage(page, "http://localhost:8080/popover-fixture")
 
   await expect(page.locator("#search-container")).toBeAttached()
   await expect(page.locator("#search-icon")).toBeVisible()
@@ -524,7 +526,9 @@ test("Search preview of checkboxes remembers user state", async ({ page }) => {
 })
 
 test("Emoji search works and is converted to twemoji (screenshot)", async ({ page }, testInfo) => {
-  await search(page, "Emoji examples")
+  // Search the fixture's unique title so the preview lands on the
+  // emoji-rendering fixture rather than Test-page.md's emoji showcase.
+  await search(page, "Twemoji rendering fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   const emojiHeader = previewContainer.locator("#emoji-examples").first()

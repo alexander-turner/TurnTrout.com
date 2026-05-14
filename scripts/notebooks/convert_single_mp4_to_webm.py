@@ -4,7 +4,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Final, Iterator, Optional
+from typing import Final, Iterator
 
 # Assuming compress.py, r2_upload.py, and utils.py are accessible
 try:
@@ -51,7 +51,7 @@ def _find_single_mp4_videos_for_update(content: str) -> Iterator[re.Match]:
     yield from VIDEO_TAG_RE.finditer(content)
 
 
-def _download_mp4(mp4_url: str, temp_dir: Path) -> Optional[Path]:
+def _download_mp4(mp4_url: str, temp_dir: Path) -> Path | None:
     """Downloads an MP4 file to the temporary directory using rclone."""
     mp4_filename = Path(mp4_url).name
     local_mp4_path = temp_dir / mp4_filename
@@ -91,7 +91,7 @@ def _download_mp4(mp4_url: str, temp_dir: Path) -> Optional[Path]:
 
 def _convert_to_webm(
     local_mp4_path: Path, quality: int = _DEFAULT_VP9_CRF
-) -> Optional[Path]:
+) -> Path | None:
     """Converts a local MP4 file to WEBM."""
     local_webm_path = local_mp4_path.with_suffix(".webm")
     try:

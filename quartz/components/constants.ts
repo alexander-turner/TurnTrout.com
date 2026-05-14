@@ -67,6 +67,15 @@ export const {
   rightDoubleQuote: RIGHT_DOUBLE_QUOTE,
 } = constantsJson.unicodeTypography
 
+/**
+ * Inline tags whose first/last text-child should be trimmed of whitespace.
+ * Shared with `scripts/built_site_checks.py:_STRIP_BOUNDARY_TAGS`; keep in
+ * sync via `config/constants.json`.
+ */
+export const STRIP_BOUNDARY_TAGS: ReadonlySet<string> = new Set(
+  constantsJson.stripBoundaryWhitespaceTags,
+)
+
 /** Normalize non-breaking spaces to regular spaces */
 export function normalizeNbsp(s: string): string {
   return s.replace(new RegExp(NBSP, "g"), " ")
