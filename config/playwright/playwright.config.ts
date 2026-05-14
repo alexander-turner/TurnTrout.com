@@ -94,12 +94,10 @@ export default defineConfig({
       ? 45 * 60 * 1000
       : undefined,
   fullyParallel: true,
-  // macOS WebKit ran 3 parallel workers to fit the job-timeout budget, but
-  // concurrent WebKit processes on the macOS runner exhausted renderer
-  // memory and triggered intermittent "page.goto: Page crashed" (same
-  // Playwright 1.58+ regression that already forced the Desktop-only
-  // filter below). Serializing to 1 worker eliminates the contention;
-  // wall-clock cost is absorbed inside the 45-minute globalTimeout.
+  // Serialize WebKit on macOS: concurrent WebKit renderers on the macOS
+  // runner exhaust memory and trigger "page.goto: Page crashed" (same
+  // Playwright 1.58+ regression that forces the Desktop-only filter
+  // above). One worker fits inside the 45-minute globalTimeout.
   workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
