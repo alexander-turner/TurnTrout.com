@@ -1,7 +1,7 @@
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 # Assuming utils.py is accessible
 try:
@@ -70,10 +70,10 @@ def _process_video_content(
             original_sources_str["mp4"] = full_tag
 
     # Check if both webm and mp4 sources are present
-    webm_source: Optional[Dict[str, str]] = next(
+    webm_source: Dict[str, str] | None = next(
         (s for s in sources if s["base_type"] == "video/webm"), None
     )
-    mp4_source: Optional[Dict[str, str]] = next(
+    mp4_source: Dict[str, str] | None = next(
         (s for s in sources if s["base_type"] == "video/mp4"), None
     )
 

@@ -10,7 +10,7 @@ import subprocess
 import sys
 from collections.abc import Collection
 from pathlib import Path
-from typing import Callable, NoReturn, Optional
+from typing import Callable, NoReturn
 from urllib.parse import urlparse
 
 import git
@@ -290,7 +290,7 @@ def write_yaml_frontmatter(
     file_path: Path,
     metadata: dict,
     content: str,
-    parser: Optional[YAML] = None,
+    parser: YAML | None = None,
 ) -> None:
     """
     Write *metadata* as YAML frontmatter followed by *content* to *file_path*.

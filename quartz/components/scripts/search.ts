@@ -28,7 +28,7 @@ declare global {
 const { debounceSearchDelay, mouseFocusDelay, searchPlaceholderDesktop, searchPlaceholderMobile } =
   simpleConstants
 
-interface Item {
+interface Item extends DocumentData {
   id: number
   slug: FullSlug
   title: string
@@ -39,7 +39,6 @@ interface Item {
 let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
-// Item satisfies DocumentData at runtime but uses stricter types; cast to satisfy the generic constraint
 const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
@@ -96,9 +95,13 @@ function createSearchIndex(): InstanceType<typeof documentType> {
   })
 }
 
+interface Frontmatter {
+  no_dropcap?: boolean | string
+}
+
 interface FetchResult {
   content: Element[]
-  frontmatter: Record<string, unknown>
+  frontmatter: Frontmatter
 }
 
 /**
@@ -902,7 +905,7 @@ function fetchContent(slug: FullSlug): Promise<FetchResult> {
     const html = await fetchHTMLContent(targetUrl)
 
     const frontmatterScript = html.querySelector('script[type="application/json"]')
-    let frontmatter: Record<string, unknown> = {}
+    let frontmatter: Frontmatter = {}
     if (frontmatterScript) {
       try {
         frontmatter = JSON.parse(frontmatterScript.textContent || "{}")
@@ -1326,7 +1329,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       content: fileData.content,
       authors: fileData.authors?.join(", ") ?? "",
     }
-    return index.addAsync(id, doc as unknown as DocumentData)
+    return index.addAsync(id, doc)
   })
 
   await Promise.all(promises)
