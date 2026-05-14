@@ -2160,14 +2160,15 @@ describe("HTMLFormattingImprovement plugin", () => {
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
     const plugin = StripInlineBoundaryWhitespace()
     expect(plugin.name).toBe("stripInlineBoundaryWhitespace")
-    expect(plugin.htmlPlugins).toBeDefined()
+    const { htmlPlugins } = plugin
+    if (!htmlPlugins) {
+      throw new Error("htmlPlugins is undefined")
+    }
 
     const mockCtx = {} as unknown
-    const htmlPlugins = plugin.htmlPlugins!(
-      mockCtx as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0],
-    )
+    const plugins = htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])
     const processor = rehype().data("settings", { fragment: true })
-    for (const p of htmlPlugins) {
+    for (const p of plugins) {
       processor.use(p as never)
     }
     const result = processor.processSync("<p><em> word </em></p>").toString()

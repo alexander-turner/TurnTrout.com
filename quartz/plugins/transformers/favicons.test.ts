@@ -177,8 +177,10 @@ describe("findFaviconPath", () => {
     const fetchSpy = jest
       .spyOn(global, "fetch")
       .mockImplementation((url: string | URL | Request) => {
-        const u = url.toString()
-        return Promise.resolve({ ok: u.includes("open_spotify_com") } as Response)
+        const urlString = url.toString()
+        return Promise.resolve({
+          ok: urlString.includes("open_spotify_com"),
+        } as Response)
       })
 
     expect(await favicons.findFaviconPath(subdomainHost)).toBe(unnormalizedPath)
@@ -617,7 +619,7 @@ describe("ModifyNode", () => {
   })
 
   describe("count threshold", () => {
-    it(`skips external link with count below threshold`, async () => {
+    it("skips external link with count below threshold", async () => {
       faviconCounts.set(favicons.normalizePathForCounting(faviconPath), minFaviconCount - 1)
       const node = h("a", { href: `https://${hostname}/page` })
       const parent = h("div", [node])
@@ -625,7 +627,7 @@ describe("ModifyNode", () => {
       expect(node.children.length).toBe(0)
     })
 
-    it(`inserts favicon at exact threshold when SVG exists`, async () => {
+    it("inserts favicon at exact threshold when SVG exists", async () => {
       faviconCounts.set(favicons.normalizePathForCounting(faviconPath), minFaviconCount)
       favicons.faviconExistsCache.set(faviconPath, Promise.resolve(true))
       const node = h("a", { href: `https://${hostname}/page` })
