@@ -7,9 +7,9 @@ import { toHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 import { quote } from "shell-quote"
-import { EXIT, visit } from "unist-util-visit"
+import { CONTINUE, EXIT, visit } from "unist-util-visit"
 
-import { simpleConstants, specialFaviconPaths, cdnBaseUrl } from "../../components/constants"
+import { simpleConstants, specialFaviconPaths } from "../../components/constants"
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
@@ -20,7 +20,6 @@ import {
   getFaviconUrl,
   ModifyNode,
   transformUrl,
-  urlCache,
   shouldIncludeFavicon,
 } from "../transformers/favicons"
 import { createNowrapSpan, hasClass } from "../transformers/utils"
@@ -45,10 +44,9 @@ const logger = createWinstonLogger("populateContainers")
 export const findElementById = (root: Root, id: string): Element | null => {
   let found: Element | null = null
   visit(root, "element", (node) => {
-    if (node.properties?.id === id) {
-      found = node
-      return EXIT
-    }
+    if (node.properties?.id !== id) return CONTINUE
+    found = node
+    return EXIT
   })
   return found
 }
@@ -187,32 +185,14 @@ export async function computeRepoStats(): Promise<RepoStats> {
 }
 
 /**
- * Adds .png extension to path if it doesn't already have an extension.
+ * Adds `.svg` extension to a domain-only count key. Full URLs and `.ico`
+ * paths pass through unchanged.
  */
-const addPngExtension = (path: string): string => {
+const addSvgExtension = (path: string): string => {
   if (path.startsWith("http") || path.includes(".svg") || path.includes(".ico")) {
     return path
   }
-  return `${path}.png`
-}
-
-/**
- * Checks CDN for SVG version of PNG paths and caches results.
- */
-const checkCdnSvgs = async (pngPaths: string[]): Promise<void> => {
-  await Promise.all(
-    pngPaths.map(async (pngPath) => {
-      const svgUrl = `${cdnBaseUrl}${pngPath.replace(".png", ".svg")}`
-      try {
-        const response = await fetch(svgUrl)
-        if (response.ok) {
-          urlCache.set(pngPath, svgUrl)
-        }
-      } catch (err) {
-        logger.debug(`SVG not available on CDN for ${pngPath}: ${err}`)
-      }
-    }),
-  )
+  return `${path}.svg`
 }
 
 // skipcq: JS-D1001
@@ -270,19 +250,9 @@ export const generateFaviconContent = (): ContentGenerator => {
     const faviconCounts = await getFaviconCounts()
     logger.info(`Got ${faviconCounts.size} favicon counts for table generation`)
 
-    // Find PNG paths that need SVG CDN checking
-    const pngPathsToCheck = Array.from(faviconCounts.keys())
-      .map(addPngExtension)
-      .map(transformUrl)
-      .filter((path) => path !== defaultPath && path.endsWith(".png"))
-      .filter((path) => !urlCache.has(path) || urlCache.get(path) === defaultPath)
-
-    await checkCdnSvgs(pngPathsToCheck)
-
-    // Process and filter favicons
     const validFavicons = Array.from(faviconCounts.entries())
       .map(([pathWithoutExt, count]) => {
-        const pathWithExt = addPngExtension(pathWithoutExt)
+        const pathWithExt = addSvgExtension(pathWithoutExt)
         const transformedPath = transformUrl(pathWithExt)
         if (transformedPath === defaultPath) return null
 
@@ -290,7 +260,6 @@ export const generateFaviconContent = (): ContentGenerator => {
         // istanbul ignore if
         if (url === defaultPath) return null
 
-        // Use helper from favicons.ts to check if favicon should be included
         if (!shouldIncludeFavicon(url, pathWithoutExt, faviconCounts)) return null
 
         return { url, count } as const

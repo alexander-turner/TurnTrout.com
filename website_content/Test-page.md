@@ -446,7 +446,7 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 ![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
 
-Figure: This image should be transparent in light mode and have a light background in dark mode.
+Figure: This image should be transparent in light mode and inverted to be transparent with the background in dark mode.
 
 ## Before/after image slider
 
@@ -474,7 +474,7 @@ Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium dolor
 
 > Normal blockquote
 
-> ! This text is hidden until you hover over it.
+> ! This text is hidden until you click on it.
 > ! Multiple lines can be hidden
 > ! Like this!
 

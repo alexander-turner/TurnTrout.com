@@ -821,22 +821,29 @@ def _has_invert_class(tag: Tag) -> bool:
     return isinstance(tokens, list) and INVERT_CLASS in tokens
 
 
-def _inline_looping_video_sources(video: Tag) -> list[str]:
-    """Source URLs of an inline looping muted ``<video>`` (GIF replacement);
-    ``[]`` for ``#pond-video`` or non-inline videos."""
+def _canonical_inline_video_source(video: Tag) -> str | None:
+    """
+    Canonical source URL of an inline looping muted ``<video>`` (GIF
+    replacement); ``None`` for ``#pond-video`` or non-inline videos.
+
+    ``.invert-in-dark-mode`` is set on the ``<video>`` element, not per
+    ``<source>``. Multi-format videos (e.g. ``.mp4`` + ``.webm`` fallback)
+    therefore share one inversion decision and one labels-JSON entry, so we
+    validate just the *first* eligible source (the canonical format browsers
+    prefer) and skip alternate-format siblings.
+    """
     if video.get("id") == "pond-video":
-        return []
+        return None
     if not all(video.has_attr(a) for a in ("autoplay", "loop", "muted")):
-        return []
+        return None
     candidates: Iterable[str | list[str] | None] = (
         video.get("src"),
         *(s.get("src") for s in _tags_only(video.find_all("source"))),
     )
-    return [
-        s
-        for s in candidates
-        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS)
-    ]
+    for s in candidates:
+        if isinstance(s, str) and s.lower().endswith(INVERT_VIDEO_EXTENSIONS):
+            return s
+    return None
 
 
 def _invert_issue_string(
@@ -894,15 +901,14 @@ def check_invert_labels(
         if issue is not None:
             issues.append(issue)
     for video in _tags_only(soup.find_all("video")):
-        has_class = _has_invert_class(video)
-        for src in _inline_looping_video_sources(video):
-            if _is_excluded_segment(src):
-                continue
-            issue = _invert_issue_string(
-                "video", src, has_class, invert_labels.get(src)
-            )
-            if issue is not None:
-                issues.append(issue)
+        src = _canonical_inline_video_source(video)
+        if src is None or _is_excluded_segment(src):
+            continue
+        issue = _invert_issue_string(
+            "video", src, _has_invert_class(video), invert_labels.get(src)
+        )
+        if issue is not None:
+            issues.append(issue)
     return issues
 
 
@@ -1954,6 +1960,7 @@ def check_file_for_issues(
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "inline_boundary_whitespace": check_inline_boundary_whitespace(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -2272,6 +2279,50 @@ def _abbr_starts_with_digit(element: Tag) -> bool:
     """Check if an abbreviation element's text starts with a digit."""
     text = element.get_text()
     return bool(text) and text[0].isdigit()
+
+
+# Tags mirroring ``stripInlineBoundaryWhitespace`` in
+# ``quartz/plugins/transformers/formatting_improvement_html.ts``. Shared with
+# the transform via ``config/constants.json:stripBoundaryWhitespaceTags`` —
+# this check verifies the transform's invariant held end-to-end.
+_STRIP_BOUNDARY_TAGS: tuple[str, ...] = tuple(
+    script_utils.load_shared_constants()["stripBoundaryWhitespaceTags"]
+)
+
+
+def _flag_boundary_whitespace(
+    element: Tag, side: Literal["leading", "trailing"], issues: list[str]
+) -> None:
+    """Flag boundary whitespace on one side of an inline element."""
+    if not element.contents:
+        return
+    child = element.contents[0] if side == "leading" else element.contents[-1]
+    if not isinstance(child, NavigableString):
+        return
+    stripped = child.lstrip() if side == "leading" else child.rstrip()
+    if child == stripped:
+        return
+    _append_to_list(
+        issues,
+        f"<{element.name}>{element.get_text()[:40]}",
+        prefix=f"{side.capitalize()} whitespace inside element: ",
+    )
+
+
+def check_inline_boundary_whitespace(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify inline elements have no inside-boundary whitespace on either side.
+
+    Elements inside ``no-formatting`` / ``<pre>`` zones are skipped.
+    """
+    issues: list[str] = []
+    for tag_name in _STRIP_BOUNDARY_TAGS:
+        for element in _tags_only(soup.find_all(tag_name)):
+            if should_skip(element):
+                continue
+            _flag_boundary_whitespace(element, "leading", issues)
+            _flag_boundary_whitespace(element, "trailing", issues)
+    return issues
 
 
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:

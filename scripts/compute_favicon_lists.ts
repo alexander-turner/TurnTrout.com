@@ -18,14 +18,13 @@ import {
 async function main() {
   const faviconCounts = await readFaviconCounts()
 
-  // Compute the set of underscore-separated domain names that pass shouldIncludeFavicon
   const includedDomains: string[] = []
   for (const [pathWithoutExt] of faviconCounts) {
-    // Build path with extension (special paths like URLs and .svg/.ico are preserved)
+    // Build path with extension (full URLs and `.svg`/`.ico` paths are preserved)
     const pathWithExt =
       pathWithoutExt.startsWith("http") || /\.(?:svg|ico)$/.test(pathWithoutExt)
         ? pathWithoutExt
-        : `${pathWithoutExt}.png`
+        : `${pathWithoutExt}.svg`
 
     const transformedPath = transformUrl(pathWithExt)
     if (transformedPath === defaultPath) continue

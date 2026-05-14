@@ -373,73 +373,79 @@ _DECISION_PARAM: Final[Mapping[str, bool | None]] = {
 }
 
 
-def _route_index(
+def _index_handler(
     candidates: tuple[str, ...],
     labels_path: Path,
     lum_map: Mapping[str, float],
-) -> str:
-    labels = load_labels(labels_path)
-    return render_template(
-        "invert_labeler.html",
-        candidates=candidates,
-        labels=labels,
-        luminances=lum_map,
-        luminance_threshold=LUMINANCE_INVERT_THRESHOLD,
-        is_video_url=is_video_url,
-        invert_count=sum(
-            1 for u in candidates if u in labels and labels[u]["invert"]
-        ),
-        # An unlabeled card has no JSON entry to review, so it also
-        # counts as "needs review" alongside labeled-but-unreviewed
-        # cards. Mirrors the template's "needs review" badge logic
-        # and the JS recount that targets `data-reviewed="false"`.
-        unreviewed_count=sum(
-            1
-            for u in candidates
-            if u not in labels or not labels[u]["reviewed"]
-        ),
-    )
-
-
-def _route_get_labels(labels_path: Path) -> Response:
-    return jsonify(load_labels(labels_path))
-
-
-def _route_post_label(
-    candidate_set: frozenset[str],
-    labels_path: Path,
-) -> Response:
-    payload = request.get_json(silent=True) or {}
-    url = payload.get("url")
-    state = payload.get("state")
-    if (
-        not isinstance(url, str)
-        or not isinstance(state, str)
-        or state not in _DECISION_PARAM
-    ):
-        abort(
-            400,
-            "body must be {url: str, state: 'invert'|'no-invert'|'unlabeled'}",
+) -> Callable[[], str]:
+    def index() -> str:
+        labels = load_labels(labels_path)
+        return render_template(
+            "invert_labeler.html",
+            candidates=candidates,
+            labels=labels,
+            luminances=lum_map,
+            luminance_threshold=LUMINANCE_INVERT_THRESHOLD,
+            is_video_url=is_video_url,
+            invert_count=sum(
+                1 for u in candidates if u in labels and labels[u]["invert"]
+            ),
+            # An unlabeled card has no JSON entry to review, so it also
+            # counts as "needs review" alongside labeled-but-unreviewed
+            # cards. Mirrors the template's "needs review" badge logic
+            # and the JS recount that targets `data-reviewed="false"`.
+            unreviewed_count=sum(
+                1
+                for u in candidates
+                if u not in labels or not labels[u]["reviewed"]
+            ),
         )
-    if url not in candidate_set:
-        abort(400, f"Unknown candidate URL: {url}")
-    labels = load_labels(labels_path)
-    set_user_label(labels, url, _DECISION_PARAM[state])
-    save_labels(labels, labels_path)
-    return jsonify(ok=True)
+
+    return index
 
 
-def _route_post_review(labels_path: Path) -> Response:
-    """Bulk-mark URLs as user-reviewed (verdict unchanged)."""
-    payload = request.get_json(silent=True) or {}
-    urls = payload.get("urls")
-    if not isinstance(urls, list) or not all(isinstance(u, str) for u in urls):
-        abort(400, "body must be {urls: list[str]}")
-    labels = load_labels(labels_path)
-    reviewed_count = sum(1 for u in urls if mark_reviewed(labels, u))
-    if reviewed_count:
+def _label_handler(
+    candidate_set: frozenset[str], labels_path: Path
+) -> Callable[[], Response]:
+    def post_label() -> Response:
+        payload = request.get_json(silent=True) or {}
+        url = payload.get("url")
+        state = payload.get("state")
+        if (
+            not isinstance(url, str)
+            or not isinstance(state, str)
+            or state not in _DECISION_PARAM
+        ):
+            abort(
+                400,
+                "body must be {url: str, state: 'invert'|'no-invert'|'unlabeled'}",
+            )
+        if url not in candidate_set:
+            abort(400, f"Unknown candidate URL: {url}")
+        labels = load_labels(labels_path)
+        set_user_label(labels, url, _DECISION_PARAM[state])
         save_labels(labels, labels_path)
-    return jsonify(ok=True, reviewed=reviewed_count)
+        return jsonify(ok=True)
+
+    return post_label
+
+
+def _review_handler(labels_path: Path) -> Callable[[], Response]:
+    def post_review() -> Response:
+        """Bulk-mark URLs as user-reviewed (verdict unchanged)."""
+        payload = request.get_json(silent=True) or {}
+        urls = payload.get("urls")
+        if not isinstance(urls, list) or not all(
+            isinstance(u, str) for u in urls
+        ):
+            abort(400, "body must be {urls: list[str]}")
+        labels = load_labels(labels_path)
+        reviewed_count = sum(1 for u in urls if mark_reviewed(labels, u))
+        if reviewed_count:
+            save_labels(labels, labels_path)
+        return jsonify(ok=True, reviewed=reviewed_count)
+
+    return post_review
 
 
 def create_app(
@@ -453,30 +459,10 @@ def create_app(
     candidate_set = frozenset(candidates)
     lum_map: Mapping[str, float] = luminances or {}
 
-    app.add_url_rule(
-        "/",
-        "index",
-        lambda: _route_index(candidates, labels_path, lum_map),
-        methods=["GET"],
-    )
-    app.add_url_rule(
-        "/api/labels",
-        "get_labels",
-        lambda: _route_get_labels(labels_path),
-        methods=["GET"],
-    )
-    app.add_url_rule(
-        "/api/label",
-        "post_label",
-        lambda: _route_post_label(candidate_set, labels_path),
-        methods=["POST"],
-    )
-    app.add_url_rule(
-        "/api/review",
-        "post_review",
-        lambda: _route_post_review(labels_path),
-        methods=["POST"],
-    )
+    app.get("/")(_index_handler(candidates, labels_path, lum_map))
+    app.get("/api/labels")(lambda: jsonify(load_labels(labels_path)))
+    app.post("/api/label")(_label_handler(candidate_set, labels_path))
+    app.post("/api/review")(_review_handler(labels_path))
 
     return app
 

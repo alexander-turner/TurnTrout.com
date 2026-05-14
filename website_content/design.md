@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-12
+date_updated: 2026-05-13
 no_dropcap: false
 createBibtex: true
 ---
@@ -614,6 +614,9 @@ Detecting multipliers
 Spaced slashes
 : Used for separators like "cat" / "dog" in place of "cat"<span class="no-formatting">/</span>"dog".
 
+Trim space inside emphasis and links
+: Inline elements shouldn't carry stray whitespace at their boundary. Markdown like `_ italics_` parses oddly, but upstream transformers occasionally produce `<em> text </em>`. I trim the leading and trailing whitespace from the first and last text-child of tags like `<em>`.
+
 Mathematical definitions
 : In the past, I used the $:=$ symbol to denote definitions (as opposed to normal equations). I now convert these symbols to the self-explanatory $ :=$.
 
@@ -698,9 +701,10 @@ I wrote a server-side HTML transformation implementing the following algorithm:
 
 1. Takes as input a semi-processed HTML syntax tree,
 2. Finds all of the link elements,
-3. Checks what favicon (if any) is available for each,
-4. Downloads the favicon if needed,
-5. Appends a favicon `<img>` element after the link.
+3. Looks up the favicon SVG for the link's hostname (locally or on the CDN),
+4. Appends a favicon element after the link.
+
+If a hostname passes the inclusion criteria (count threshold or whitelist) but no SVG exists for it, the build fails loudly so I can either add the SVG or blacklist the domain.
 
 ### Favicons never wrap alone to a new line
 
@@ -1109,7 +1113,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Dark-mode inversion:**
 >
-> 1. Eligible raster `<img>` and inline looping `<video>` sources which are missing from `.invert_labels.json` or which are not user-reviewed;
+> 1. Raster `<img>` or inline looping `<video>` sources which don't have a confirmed judgment for "should this be inverted in dark mode?".
 > 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
 >
 > **CSS and styling:**
