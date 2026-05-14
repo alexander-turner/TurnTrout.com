@@ -22,10 +22,6 @@ _PNG_CONTENT_TYPE = "image/png"
 
 
 def _canonical_baseline_name(attachment_name: str) -> str | None:
-    # Playwright's addSuffixToFilePath inserts "-actual" *before* the
-    # extension, so a screenshot attached as "foo.png" surfaces in the
-    # report as "foo-actual.png" — not "foo-actual". Strip that suffix
-    # and the file's basename is the canonical baseline.
     if not attachment_name.endswith(_ACTUAL_SUFFIX):
         return None
     stem = attachment_name[: -len(_ACTUAL_SUFFIX)]
