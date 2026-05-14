@@ -77,6 +77,12 @@ const config: QuartzConfig = {
           "font-stats": {
             filePath: "config/font_stats.md",
           },
+          "goose-terminal": {
+            filePath: "config/partials/goose-terminal.md",
+          },
+          "emoji-comparison": {
+            filePath: "config/partials/emoji-comparison.md",
+          },
         },
       }),
       CreatedModifiedDate(),

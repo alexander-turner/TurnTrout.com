@@ -240,7 +240,7 @@ test.describe("Unique content around the site", () => {
   })
 
   test("Goose code block (screenshot)", async ({ page }, testInfo) => {
-    await gotoPage(page, "http://localhost:8080/open-source")
+    await gotoPage(page, "http://localhost:8080/goose-fixture")
     await page.locator("body").waitFor({ state: "visible" })
 
     const gooseCodeBlock = page.locator("#goose-terminal").first()
