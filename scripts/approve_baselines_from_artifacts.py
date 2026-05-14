@@ -17,7 +17,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 # skipcq: FLK-E402
 from scripts import r2_baselines  # noqa: E402
 
-_ACTUAL_SUFFIX = "-actual"
+_ACTUAL_SUFFIX = "-actual.png"
 _PNG_CONTENT_TYPE = "image/png"
 
 
@@ -25,10 +25,8 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     if not attachment_name.endswith(_ACTUAL_SUFFIX):
         return None
     stem = attachment_name[: -len(_ACTUAL_SUFFIX)]
-    if "/" in stem or "\\" in stem or ".." in stem.split("/"):
+    if not stem or "/" in stem or "\\" in stem or ".." in stem.split("/"):
         return None
-    if stem.endswith(".png"):
-        return stem
     return stem + ".png"
 
 
