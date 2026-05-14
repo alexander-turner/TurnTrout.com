@@ -1,8 +1,9 @@
 name: Cancel Stale PR Runs
 
-# `cancel-in-progress` only handles the same-branch supersede case, so
-# in-flight visual-testing / playwright-tests shards keep chewing the
-# macOS minute pool after a PR merges. Cancel them when the PR closes.
+# `cancel-in-progress` only handles the same-workflow same-branch
+# supersede case, so any workflow still running on the PR's head ref
+# after merge keeps chewing minutes (macOS WebKit shards are the worst
+# offender). Cancel everything in-flight on close.
 
 on:
   pull_request:
@@ -20,12 +21,21 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GH_REPO: ${{ github.repository }}
       BRANCH: ${{ github.event.pull_request.head.ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      SELF_RUN_ID: ${{ github.run_id }}
     steps:
       - run: |
           set -euo pipefail
-          for wf in visual-testing.yaml playwright-tests.yaml; do
-            gh run list --workflow "$wf" --branch "$BRANCH" \
-              --json databaseId,status \
-              --jq '.[] | select(.status=="in_progress" or .status=="queued") | .databaseId' \
-              | xargs -r -n1 gh run cancel
-          done
+          # Scope by head SHA as well as branch name — same-named
+          # branches across different fork PRs would otherwise collide
+          # on the `--branch` filter and we'd cancel an unrelated open
+          # PR's runs.
+          gh run list --branch "$BRANCH" --limit 200 \
+            --json databaseId,status,headSha \
+            | jq -r --arg sha "$HEAD_SHA" --arg self "$SELF_RUN_ID" \
+                '.[]
+                 | select(.status == "in_progress" or .status == "queued")
+                 | select(.headSha == $sha)
+                 | select(.databaseId != ($self | tonumber))
+                 | .databaseId' \
+            | xargs -r -n1 gh run cancel
