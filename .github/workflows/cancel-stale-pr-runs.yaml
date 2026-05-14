@@ -1,0 +1,31 @@
+name: Cancel Stale PR Runs
+
+# `cancel-in-progress` only handles the same-branch supersede case, so
+# in-flight visual-testing / playwright-tests shards keep chewing the
+# macOS minute pool after a PR merges. Cancel them when the PR closes.
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cancel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      BRANCH: ${{ github.event.pull_request.head.ref }}
+    steps:
+      - run: |
+          set -euo pipefail
+          for wf in visual-testing.yaml playwright-tests.yaml; do
+            gh run list --workflow "$wf" --branch "$BRANCH" \
+              --json databaseId,status \
+              --jq '.[] | select(.status=="in_progress" or .status=="queued") | .databaseId' \
+              | xargs -r -n1 gh run cancel
+          done
