@@ -314,7 +314,7 @@ def _parse_args() -> argparse.Namespace:  # pragma: no cover
         default=_DEFAULT_HEVC_CRF,
         help=f"Quality for video (HEVC CRF) (0-51, lower is better quality)."
         f" Default: {_DEFAULT_HEVC_CRF}",
-        choices=list(range(0, 52)),
+        choices=range(52),
     )
     parser.add_argument(
         "--quality-webm",
@@ -322,7 +322,7 @@ def _parse_args() -> argparse.Namespace:  # pragma: no cover
         default=_DEFAULT_VP9_CRF,
         help=f"Quality for video (WebM CRF) (0-63, lower is better quality)."
         f" Default: {_DEFAULT_VP9_CRF}",
-        choices=list(range(0, 64)),
+        choices=range(64),
     )
 
     return parser.parse_args()

@@ -94,9 +94,11 @@ export default defineConfig({
       ? 45 * 60 * 1000
       : undefined,
   fullyParallel: true,
-  // macOS ARM runners have 3 cores but Playwright defaults to 1 worker for
-  // WebKit, causing shards to hit their job timeout. Force 3 workers on macOS.
-  workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 3 : undefined,
+  // Serialize WebKit on macOS: concurrent WebKit renderers on the macOS
+  // runner exhaust memory and trigger "page.goto: Page crashed" (same
+  // Playwright 1.58+ regression that forces the Desktop-only filter
+  // above). One worker fits inside the 45-minute globalTimeout.
+  workers: process.env.PLAYWRIGHT_BROWSERS === "webkit" ? 1 : undefined,
   retries: process.env.CI ? 1 : 0,
   testDir: "../../quartz/",
   testMatch: /.*\.spec\.ts/,
@@ -106,7 +108,12 @@ export default defineConfig({
   snapshotPathTemplate: "../../tests/visual-baselines/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
   webServer: {
-    command: process.env.CI ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1" : "pnpm start",
+    // Local dev rebuilds via `pnpm start`; fixtures must be included so the
+    // visual tests can hover/preview them. CI consumes a pre-built `public/`
+    // that already had INCLUDE_FIXTURES=true at build time.
+    command: process.env.CI
+      ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
+      : "INCLUDE_FIXTURES=true pnpm start",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 7 * 60 * 1000, // 7 minutes

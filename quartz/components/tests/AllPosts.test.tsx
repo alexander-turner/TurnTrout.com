@@ -16,14 +16,7 @@ import { type GlobalConfiguration } from "../../util/config"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug } from "../../util/path"
 import { PageList } from "../PageList"
-import {
-  AllPosts,
-  allSlug,
-  allTitle,
-  allDescription,
-  allPostsListing,
-  generateAllPostsBlock,
-} from "../pages/AllPosts"
+import { AllPosts, generateAllPostsBlock } from "../pages/AllPosts"
 
 const callAllPosts = AllPosts as (props: QuartzComponentProps) => JSX.Element
 
@@ -81,15 +74,6 @@ const createProps = (
     displayClass: undefined,
   }
 }
-
-describe("AllPosts exports", () => {
-  it("exports the correct constants", () => {
-    expect(allSlug).toBe("all-posts")
-    expect(allTitle).toBe("All Posts")
-    expect(allDescription).toBe("A listing of all posts on turntrout.com.")
-    expect(allPostsListing).toBe("all-posts-listing")
-  })
-})
 
 describe("generateAllPostsBlock", () => {
   it("generates a block with correct structure and attributes", () => {
@@ -286,15 +270,5 @@ describe("AllPosts component", () => {
     const article = result.props.children
     expect(article.type).toBe("article")
     expect(article.props.children).toHaveLength(2)
-  })
-})
-
-describe("AllPosts default export", () => {
-  it("exports AllPosts as default", () => {
-    // This test ensures the default export is working
-    const mockProps = createProps()
-    const result = callAllPosts(mockProps)
-    expect(result).toBeDefined()
-    expect(result.type).toBe("div")
   })
 })

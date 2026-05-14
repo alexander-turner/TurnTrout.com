@@ -18,6 +18,7 @@ from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
@@ -493,7 +494,7 @@ def _append_canary_matches(
             This preserves text positions to avoid false positives when code
             appears before patterns like ": ".
         lst: List to append problematic text to.
-        report_text: Optional text to report in error messages
+        report_text: Text to report in error messages, or None
             (without placeholders). If None, check_text is reported.
             Use this to show clean text without code placeholder
             characters in error output.
@@ -1960,6 +1961,8 @@ def check_file_for_issues(
         "emphasis_spacing": check_emphasis_spacing(soup),
         "link_spacing": check_link_spacing(soup),
         "inline_formatting_spacing": check_inline_formatting_spacing(soup),
+        "inline_code_word_boundaries": check_inline_code_word_boundaries(soup),
+        "inline_boundary_whitespace": check_inline_boundary_whitespace(soup),
         "long_description": check_description_length(soup),
         "late_header_tags": meta_tags_early(file_path),
         "problematic_iframes": check_iframe_sources(soup),
@@ -2260,24 +2263,98 @@ _ARROW_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS + _LETTERS
 _ARROW_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + _DIGITS + _LETTERS
 _ORDINAL_PRECEDING_CHARS = ALLOWED_ELT_PRECEDING_CHARS + _DIGITS
 
-# Per-selector overrides for allowed preceding/following characters
-_SELECTOR_PRECEDING_CHARS: dict[str, str] = {
-    "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
-    "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
-    "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
-    "span.right-arrow": _ARROW_PRECEDING_CHARS,
-}
-_SELECTOR_FOLLOWING_CHARS: dict[str, str] = {
-    "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
-    "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
-    "span.right-arrow": _ARROW_FOLLOWING_CHARS,
-}
+_SELECTOR_PRECEDING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "span.ordinal-num": _ORDINAL_PRECEDING_CHARS,
+        "sup.ordinal-suffix": _ORDINAL_PRECEDING_CHARS,
+        "span.monospace-arrow": _ARROW_PRECEDING_CHARS,
+        "span.right-arrow": _ARROW_PRECEDING_CHARS,
+    }
+)
+_SELECTOR_FOLLOWING_CHARS: Mapping[str, str] = MappingProxyType(
+    {
+        "abbr.small-caps": _ABBR_FOLLOWING_CHARS,
+        "span.monospace-arrow": _ARROW_FOLLOWING_CHARS,
+        "span.right-arrow": _ARROW_FOLLOWING_CHARS,
+    }
+)
 
 
 def _abbr_starts_with_digit(element: Tag) -> bool:
     """Check if an abbreviation element's text starts with a digit."""
     text = element.get_text()
     return bool(text) and text[0].isdigit()
+
+
+# Pluralised inline code is common in prose ("``URL``s", "``id``s"), so a
+# trailing "s" right after a code element is allowed without a space.
+_CODE_FOLLOWING_CHARS = ALLOWED_ELT_FOLLOWING_CHARS + "s"
+
+
+def check_inline_code_word_boundaries(soup: BeautifulSoup) -> list[str]:
+    """
+    Flag inline ``<code>`` elements that render directly adjacent to a letter.
+
+    The rendered-text spellchecker strips ``<code>`` content entirely (see
+    ``utils.get_non_code_text``), so a word like ``sycophanticA`` glued to a
+    code element is invisible to it — the post-strip text reads as ordinary
+    spaced prose. This check looks at the structural HTML instead and flags a
+    code element whose adjacent sibling text begins or ends with a letter.
+    """
+    issues: list[str] = []
+    for code in _tags_only(soup.find_all("code")):
+        if code.find_parent("pre") or code.find_parent(class_="no-formatting"):
+            continue
+        issues.extend(
+            _check_element_spacing(
+                code, ALLOWED_ELT_PRECEDING_CHARS, _CODE_FOLLOWING_CHARS
+            )
+        )
+    return issues
+
+
+# Tags mirroring ``stripInlineBoundaryWhitespace`` in
+# ``quartz/plugins/transformers/formatting_improvement_html.ts``. Shared with
+# the transform via ``config/constants.json:stripBoundaryWhitespaceTags`` —
+# this check verifies the transform's invariant held end-to-end.
+_STRIP_BOUNDARY_TAGS: tuple[str, ...] = tuple(
+    script_utils.load_shared_constants()["stripBoundaryWhitespaceTags"]
+)
+
+
+def _flag_boundary_whitespace(
+    element: Tag, side: Literal["leading", "trailing"], issues: list[str]
+) -> None:
+    """Flag boundary whitespace on one side of an inline element."""
+    if not element.contents:
+        return
+    child = element.contents[0] if side == "leading" else element.contents[-1]
+    if not isinstance(child, NavigableString):
+        return
+    stripped = child.lstrip() if side == "leading" else child.rstrip()
+    if child == stripped:
+        return
+    _append_to_list(
+        issues,
+        f"<{element.name}>{element.get_text()[:40]}",
+        prefix=f"{side.capitalize()} whitespace inside element: ",
+    )
+
+
+def check_inline_boundary_whitespace(soup: BeautifulSoup) -> list[str]:
+    """
+    Verify inline elements have no inside-boundary whitespace on either side.
+
+    Elements inside ``no-formatting`` / ``<pre>`` zones are skipped.
+    """
+    issues: list[str] = []
+    for tag_name in _STRIP_BOUNDARY_TAGS:
+        for element in _tags_only(soup.find_all(tag_name)):
+            if should_skip(element):
+                continue
+            _flag_boundary_whitespace(element, "leading", issues)
+            _flag_boundary_whitespace(element, "trailing", issues)
+    return issues
 
 
 def check_inline_formatting_spacing(soup: BeautifulSoup) -> list[str]:
@@ -2652,6 +2729,27 @@ def check_root_files_location(base_dir: Path) -> list[str]:
             issues.append(f"{filename} not found in site root")
 
     return issues
+
+
+def check_fixture_pages_excluded(base_dir: Path) -> list[str]:
+    """
+    Find built artifacts whose relative path contains 'fixture'.
+
+    Fixture pages back Playwright visual tests and the RemoveFixtures filter
+    drops them from any build that ships to readers; this check is the guardrail
+    in case the filter regresses. The convention is that every fixture page's
+    permalink (and therefore its emitted path) carries 'fixture' in the name.
+    """
+    issues: list[str] = []
+
+    for path in base_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        rel = str(path.relative_to(base_dir)).lower()
+        if "fixture" in rel:
+            issues.append(f"fixture artifact in build: {rel}")
+
+    return sorted(issues)
 
 
 _SKIP_PARENT_CLASSES = (
@@ -3099,6 +3197,11 @@ def main() -> None:
     root_files_issues = check_root_files_location(_PUBLIC_DIR)
     if root_files_issues:
         _print_issues(_PUBLIC_DIR, {"root_files_issues": root_files_issues})
+        overall_issues_found = True
+
+    fixture_issues = check_fixture_pages_excluded(_PUBLIC_DIR)
+    if fixture_issues:
+        _print_issues(_PUBLIC_DIR, {"fixture_artifacts": fixture_issues})
         overall_issues_found = True
 
     defined_css_vars: set[str] = _get_defined_css_variables(css_file_path)

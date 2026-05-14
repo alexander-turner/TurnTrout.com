@@ -229,13 +229,12 @@ export async function takeRegressionScreenshot(
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
 
-  // Compare against the in-repo baseline stored at snapshotPathTemplate
-  // (see config/playwright/playwright.config.ts). Uses expect.soft so all
-  // shots in a test run get reported in the HTML report instead of halting
-  // on the first mismatch.
+  // Array form skips Playwright's 60-char hash-truncation of the
+  // attachment name, so approve-baselines can map attachments back to
+  // baseline filenames for any name length.
   await expect
     .soft(screenshotBuffer, { message: screenshotName })
-    .toMatchSnapshot(screenshotName, { maxDiffPixelRatio: 0.002 })
+    .toMatchSnapshot([screenshotName], { maxDiffPixelRatio: 0.002 })
 
   return screenshotBuffer
 }

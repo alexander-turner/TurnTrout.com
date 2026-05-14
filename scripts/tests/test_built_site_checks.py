@@ -2679,6 +2679,94 @@ def test_check_inline_formatting_spacing(html, expected):
     assert sorted(result) == sorted(expected)
 
 
+@pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # The bug that motivated this check: <code>A</code>/<code>B</code>
+        # rendered with stripped boundary spaces — "sycophanticA" and "Btoken"
+        # are invisible to the rendered-text spellchecker (code is decomposed).
+        (
+            "<p>upweight the sycophantic<code>A</code> / <code>B</code>token</p>",
+            2,
+        ),
+        # Single broken boundary on the left.
+        ("<p>word<code>X</code> after</p>", 1),
+        # Single broken boundary on the right.
+        ("<p>before <code>X</code>word</p>", 1),
+        # Properly spaced inline code.
+        ("<p>the <code>name</code> variable</p>", 0),
+        # Code at paragraph boundary (no sibling on one side).
+        ("<p><code>X</code> starts</p>", 0),
+        ("<p>ends <code>X</code></p>", 0),
+        # Punctuation adjacent to code is fine.
+        ("<p>the <code>foo</code>, then</p>", 0),
+        ("<p>(<code>x</code>)</p>", 0),
+        # Pluralised inline code (e.g. "``URL``s") is fine.
+        ("<p>multiple <code>URL</code>s here</p>", 0),
+        # Apostrophe-s possessive is fine (apostrophe is in allowed chars).
+        ("<p>the <code>name</code>'s value</p>", 0),
+        # Block code inside <pre> is skipped.
+        ("<pre><code>let x = 1;\nfoo</code></pre>", 0),
+        # Code inside a no-formatting zone is skipped.
+        (
+            '<p class="no-formatting">text<code>X</code>more</p>',
+            0,
+        ),
+    ],
+)
+def test_check_inline_code_word_boundaries(html, expected_count):
+    """Letter-adjacent inline code is flagged; properly spaced code is not."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_code_word_boundaries(soup)
+    assert len(result) == expected_count
+
+
+def test_check_inline_code_word_boundaries_message_format():
+    """Issue messages name the side and quote the surrounding text."""
+    html = "<p>upweight the sycophantic<code>A</code> / <code>B</code>token</p>"
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_code_word_boundaries(soup)
+    assert any(
+        "Missing space before" in msg and "sycophantic<code>A</code>" in msg
+        for msg in result
+    )
+    assert any(
+        "Missing space after" in msg and "<code>B</code>token" in msg
+        for msg in result
+    )
+
+
+@pytest.mark.parametrize(
+    "html, expected_count",
+    [
+        # Single-side flagged for every supported tag (leading or trailing).
+        ("<p><em> bad</em></p>", 1),
+        ("<p><em>bad </em></p>", 1),
+        ("<p><strong> bad </strong></p>", 2),
+        ("<p><i> bad</i></p>", 1),
+        ("<p><b>bad </b></p>", 1),
+        ('<p><a href="x"> bad </a></p>', 2),
+        ("<p><u> bad </u></p>", 2),
+        ("<p><ins> bad </ins></p>", 2),
+        ("<p><mark> bad </mark></p>", 2),
+        ("<p><del> bad </del></p>", 2),
+        ("<p><s> bad </s></p>", 2),
+        # Clean cases: no boundary whitespace at all.
+        ("<p><em>fine</em></p>", 0),
+        ('<p><a href="x">fine</a></p>', 0),
+        # First/last child is an element (not text) — no text-side to inspect.
+        ("<p><em><span> inside</span></em></p>", 0),
+        # Elements inside no-formatting zones are skipped.
+        ('<p class="no-formatting"><em> raw</em></p>', 0),
+    ],
+)
+def test_check_inline_boundary_whitespace(html, expected_count):
+    """Boundary-whitespace check fires once per side that has whitespace."""
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_inline_boundary_whitespace(soup)
+    assert len(result) == expected_count
+
+
 def test_extract_flat_paragraph_texts():
     """Test flattened paragraph text extraction with data-original-text."""
     html = """<article>
@@ -3549,6 +3637,25 @@ def test_check_root_files_location(
     assert sorted(result) == sorted(expected)
 
 
+def _write(path: Path, content: str = "") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def test_check_fixture_pages_excluded_clean(tmp_path: Path) -> None:
+    _write(tmp_path / "test-page.html", "<html></html>")
+    assert built_site_checks.check_fixture_pages_excluded(tmp_path) == []
+
+
+def test_check_fixture_pages_excluded_flags_paths(tmp_path: Path) -> None:
+    _write(tmp_path / "popover-fixture.html", "<html></html>")
+    _write(tmp_path / "emoji-fixture" / "index.html", "<html></html>")
+
+    issues = built_site_checks.check_fixture_pages_excluded(tmp_path)
+    assert any("popover-fixture.html" in i for i in issues)
+    assert any("emoji-fixture" in i for i in issues)
+
+
 @pytest.mark.parametrize(
     "html,expected",
     [
@@ -4105,6 +4212,38 @@ def test_main_root_files_issues(
                     "robots.txt not found in site root",
                     "favicon.svg not found in site root",
                     "favicon.ico not found in site root",
+                ]
+            },
+        )
+
+
+def test_main_fixture_issues(
+    mock_environment,
+    valid_css_file,
+    root_files,
+    html_file,
+    monkeypatch,
+    disable_md_requirement,
+):
+    """Test main() when a leaked fixture artifact is present."""
+    public_dir = mock_environment["public_dir"]
+    (public_dir / "popover-fixture.html").write_text("<html></html>")
+
+    monkeypatch.setattr(
+        built_site_checks, "check_file_for_issues", lambda *args, **kwargs: {}
+    )
+    monkeypatch.setattr(script_utils, "build_html_to_md_map", lambda md_dir: {})
+
+    with patch.object(built_site_checks, "_print_issues") as mock_print:
+        with pytest.raises(SystemExit) as excinfo:
+            built_site_checks.main()
+        assert excinfo.value.code == 1
+
+        mock_print.assert_any_call(
+            public_dir,
+            {
+                "fixture_artifacts": [
+                    "fixture artifact in build: popover-fixture.html"
                 ]
             },
         )

@@ -266,6 +266,11 @@ test.describe("Table of contents", () => {
     await expect(page.locator(selector)).toBeVisible()
   })
 
+  // Cap how many top-level TOC entries the screenshots include. Hiding the
+  // rest keeps the baseline stable when sections are added or removed from
+  // Test-page.md beyond this prefix.
+  const TOC_VISIBLE_TOP_LEVEL_ENTRIES = 9
+
   test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {
     test.skip(!isDesktopViewport(page))
 
@@ -284,6 +289,13 @@ test.describe("Table of contents", () => {
       }
     })
 
+    await rightSidebar.evaluate((el, keep) => {
+      const items = el.querySelectorAll<HTMLElement>("#toc-content > ol > li")
+      items.forEach((li, idx) => {
+        if (idx >= keep) li.style.display = "none"
+      })
+    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
+
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-sidebar", {
       elementToScreenshot: rightSidebar,
     })
@@ -301,6 +313,13 @@ test.describe("Table of contents", () => {
     })
 
     const tocContent = page.locator(":has(> #toc-content-mobile)").first()
+    await tocContent.evaluate((el, keep) => {
+      const items = el.querySelectorAll<HTMLElement>("#toc-content-mobile > ol > li")
+      items.forEach((li, idx) => {
+        if (idx >= keep) li.style.display = "none"
+      })
+    }, TOC_VISIBLE_TOP_LEVEL_ENTRIES)
+
     await takeRegressionScreenshot(page, testInfo, "toc-visual-test-open", {
       elementToScreenshot: tocContent,
     })

@@ -273,11 +273,10 @@ const handleSpan = (elt: Element): JSX.Element => {
   return <span>{elt.children.map(elementToJsx)}</span>
 }
 
-export function elementToJsx(elt: RootContent): JSX.Element | null {
+export function elementToJsx(elt: RootContent): string | JSX.Element | null {
   switch (elt.type) {
     case "text":
-      // skipcq: JS-0349 Preact renders raw strings as text nodes
-      return elt.value as unknown as JSX.Element
+      return elt.value
     case "element":
       return elt.tagName === "abbr" ? handleAbbr(elt) : handleSpan(elt)
     default:

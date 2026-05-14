@@ -63,7 +63,7 @@ def get_last_step(
     Get the name of the last successful step.
 
     Args:
-        available_steps: Optional collection of valid step names. If provided,
+        available_steps: Collection of valid step names, or None. If provided,
                          validates that the last step is in this collection.
 
     Returns:

@@ -25,12 +25,11 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash(git push*|gh pr create*)",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-push-ci-watch.sh",
-            "timeout": 720
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-narrative-comments.sh"
           }
         ]
       }

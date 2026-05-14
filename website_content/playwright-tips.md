@@ -107,6 +107,9 @@ Isolate the relevant DOM
 Mock the content
 : When I take screenshots of site styling, they're almost all of the test page content. The test page decouples site styling from updates to content around my site, ruling out alerts from "changed" screenshots which only show updated content.
 
+Use isolated fixture pages for visual regression testing
+: I used to take screenshot of searching for [the emoji section of the test page](/test-page#emoji-examples). However, test page modifications would jitter the screenshot, churning against baselines. I fixed this by writing fixture pages to decouple e.g. the search appearance from the specific (changing) content of the test page.
+
 Run WebKit tests on macOS, not Linux
 : Playwright's Linux WebKit engine (WPE) is _not_ the same as real Safari. WPE is flaky. The Playwright team [recommends running WebKit on macOS](https://playwright.dev/docs/browsers#webkit) for Safari fidelity. I split my CI into Linux jobs (Chromium & Firefox) and macOS jobs (WebKit only).
 

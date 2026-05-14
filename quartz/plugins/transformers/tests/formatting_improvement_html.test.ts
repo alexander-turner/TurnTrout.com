@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals"
-import { type Element, type ElementContent, type Parent, type Text } from "hast"
+import { type Element, type ElementContent, type Parent, type Root, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { symbolTransform } from "punctilio"
@@ -37,6 +37,8 @@ import {
   HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   arrowsToWrap,
+  stripInlineBoundaryWhitespace,
+  StripInlineBoundaryWhitespace,
 } from "../formatting_improvement_html"
 import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
 
@@ -59,6 +61,10 @@ function testHtmlFormattingImprovement(
   } else {
     processor.use(improveFormatting, options)
   }
+  // Match the production pipeline: stripInlineBoundaryWhitespace runs as a
+  // separate late pass (after AddFavicons in `quartz.config.ts`). Include it
+  // here so tests see the same end-state.
+  processor.use(() => stripInlineBoundaryWhitespace)
 
   return processor.processSync(inputHTML).toString()
 }
@@ -223,7 +229,7 @@ describe("HTMLFormattingImprovement", () => {
       ],
       [
         '<p>(<strong>NAFTA</strong> <a href="x">/ˈnæftə/</a> <a href="y"><em>NAF-tə</em></a>; Spanish)</p>',
-        '<p>(<strong>NAFTA</strong><a href="x"> / ˈnæftə / </a><a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
+        '<p>(<strong>NAFTA</strong> <a href="x">/ ˈnæftə /</a> <a href="y"><em>NAF-tə</em>;</a> Spanish)</p>',
       ],
       [
         "<p>upweight the sycophantic <code>A</code>/<code>B</code> token</p>",
@@ -232,6 +238,14 @@ describe("HTMLFormattingImprovement", () => {
       [
         "<p>the <code>A</code>/<code>B</code> token</p>",
         "<p>the <code>A</code> / <code>B</code> token</p>",
+      ],
+      // Asymmetric: only the left side is a skipped-element boundary. The
+      // captured leftSpace must stay outside the marker (i.e. the trailing
+      // space of "of the ") instead of being absorbed into the slash's text
+      // node — otherwise the rendered output reads "of the<code>unknown</code>".
+      [
+        "<p>volumetric properties of the <code>unknown</code>/non-<code>unknown</code> portions.</p>",
+        "<p>volumetric properties of the <code>unknown</code> / non-<code>unknown</code> portions.</p>",
       ],
     ])(
       "should add spaces around '/' even near other HTML tags: %s",
@@ -307,26 +321,19 @@ describe("HTMLFormattingImprovement", () => {
       expect(strippedResult).toBe(transformedWithoutMarker)
     })
 
-    it("spacesAroundSlashes should be invariant with marker before slash (after space)", () => {
+    it("spacesAroundSlashes keeps captured space outside the marker when one is present", () => {
+      // The captured space sits on the outside of the marker, so it belongs
+      // to a sibling text node. The transform preserves its position and
+      // glues an NBSP to "/" instead of moving the space across the boundary.
       const textWithMarker = `: ${markerChar}/ ,`
-      const textWithoutMarker = ": / ,"
-
-      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
-      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
-      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-      expect(strippedResult).toBe(transformedWithoutMarker)
+      const transformed = spacesAroundSlashes(textWithMarker)
+      expect(transformed).toBe(`: ${markerChar}${NBSP}/ ,`)
     })
 
-    it("spacesAroundSlashes should be invariant with marker before slash followed by comma (no space after)", () => {
+    it("spacesAroundSlashes preserves outer space with marker before slash and no space after", () => {
       const textWithMarker = `at : ${markerChar}/,`
-      const textWithoutMarker = "at : /,"
-
-      const transformedWithMarker = spacesAroundSlashes(textWithMarker)
-      const transformedWithoutMarker = spacesAroundSlashes(textWithoutMarker)
-      const strippedResult = transformedWithMarker.replaceAll(markerChar, "")
-
-      expect(strippedResult).toBe(transformedWithoutMarker)
+      const transformed = spacesAroundSlashes(textWithMarker)
+      expect(transformed).toBe(`at : ${markerChar}${NBSP}/${NBSP},`)
     })
 
     it("symbolTransform is invariant with colon-slash pattern", () => {
@@ -714,7 +721,6 @@ describe("HTMLFormattingImprovement", () => {
   describe("Hyphens", () => {
     it.each([
       ["<code>This is a - hyphen.</code>", "<code>This is a - hyphen.</code>"],
-      ["<p>I think that -<em> despite</em></p>", "<p>I think that—<em>despite</em></p>"],
       [
         "<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>-- Orwell, <em>1984</em></p></blockquote>",
         "<blockquote><p>Perhaps one did not want to be loved so much as to be understood.</p><p>— Orwell, <em>1984</em></p></blockquote>",
@@ -736,6 +742,50 @@ describe("HTMLFormattingImprovement", () => {
       expect(normalizeNbsp(processedHtml)).toBe(expected)
     })
   })
+
+  describe("stripInlineBoundaryWhitespace", () => {
+    function runOnHtml(html: string): string {
+      const processor = rehype().data("settings", { fragment: true })
+      processor.use(() => (tree: Root) => {
+        stripInlineBoundaryWhitespace(tree)
+      })
+      return processor.processSync(html).toString()
+    }
+
+    it.each([
+      // Every supported tag: both leading and trailing whitespace stripped.
+      ["<p><em> despite </em></p>", "<p><em>despite</em></p>"],
+      ["<p><strong> bold </strong></p>", "<p><strong>bold</strong></p>"],
+      ["<p><i> italics </i></p>", "<p><i>italics</i></p>"],
+      ["<p><b> bold </b></p>", "<p><b>bold</b></p>"],
+      ['<p>a <a href="x"> link </a> b</p>', '<p>a <a href="x">link</a> b</p>'],
+      ["<p><u> emph </u></p>", "<p><u>emph</u></p>"],
+      ["<p><ins> added </ins></p>", "<p><ins>added</ins></p>"],
+      ["<p><mark> note </mark></p>", "<p><mark>note</mark></p>"],
+      ["<p><del> wrong </del></p>", "<p><del>wrong</del></p>"],
+      ["<p><s> wrong </s></p>", "<p><s>wrong</s></p>"],
+      // Multiple leading / trailing spaces are all stripped.
+      ["<p><em>  many   </em></p>", "<p><em>many</em></p>"],
+      // No boundary whitespace: pass through unchanged.
+      ["<p><em>fine</em></p>", "<p><em>fine</em></p>"],
+      // Whitespace-only text node is removed entirely.
+      ["<p><em> <strong>nested</strong></em></p>", "<p><em><strong>nested</strong></em></p>"],
+      // First/last child is an element (not text) — leading/trailing-text strip doesn't apply.
+      ["<p><em><span> inner</span></em></p>", "<p><em><span> inner</span></em></p>"],
+    ])("normalizes %s", (input, expected) => {
+      expect(runOnHtml(input)).toBe(expected)
+    })
+
+    it("makes em-dash conversion produce Chicago-style output for `-_ word_`", () => {
+      // Before: "I think that—<em> despite</em>" (em-dash preserves boundary
+      // space inside <em>, since punctilio 3.8.2 respects marker boundaries).
+      // After stripInlineBoundaryWhitespace runs first, the <em> has no leading
+      // space, so em-dash conversion produces the unspaced "—despite" form.
+      const out = testHtmlFormattingImprovement("<p>I think that -<em> despite</em></p>")
+      expect(normalizeNbsp(out)).toBe("<p>I think that—<em>despite</em></p>")
+    })
+  })
+
   describe("transformParagraph", () => {
     function _getParagraphNode(numChildren: number, value = "Hello, world!"): Element {
       return h(
@@ -2107,6 +2157,24 @@ describe("HTMLFormattingImprovement plugin", () => {
     expect(valueToCheck).toEqual([improveFormatting])
   })
 
+  it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
+    const plugin = StripInlineBoundaryWhitespace()
+    expect(plugin.name).toBe("stripInlineBoundaryWhitespace")
+    const { htmlPlugins } = plugin
+    if (!htmlPlugins) {
+      throw new Error("htmlPlugins is undefined")
+    }
+
+    const mockCtx = {} as unknown
+    const plugins = htmlPlugins(mockCtx as Parameters<typeof htmlPlugins>[0])
+    const processor = rehype().data("settings", { fragment: true })
+    for (const p of plugins) {
+      processor.use(p as never)
+    }
+    const result = processor.processSync("<p><em> word </em></p>").toString()
+    expect(result).toBe("<p><em>word</em></p>")
+  })
+
   describe("Unicode Arrow Wrapping", () => {
     // Test each arrow individually
     it.each(arrowsToWrap.map((arrow) => [arrow]))(
@@ -2195,8 +2263,11 @@ describe("HTMLFormattingImprovement plugin", () => {
 
 describe("Non-breaking space insertion", () => {
   it.each([
-    // After short words (1-2 letters) and before last word (widow prevention)
-    ["<p>I love this</p>", `<p>I${NBSP}love${NBSP}this</p>`],
+    // After short words (1-2 letters) and before last word (widow prevention).
+    // punctilio 3.8.4's nbspBeforeLastWord cascade-block skips the widow NBSP
+    // when an earlier NBSP already glues a word in the same paragraph, so
+    // "I love this" only gets one NBSP (after "I"), not two.
+    ["<p>I love this</p>", `<p>I${NBSP}love this</p>`],
     ["<p>A cat sat on a mat</p>", `<p>A${NBSP}cat sat on${NBSP}a${NBSP}mat</p>`],
     // Before last word (widow prevention)
     ["<p>Hello world</p>", `<p>Hello${NBSP}world</p>`],

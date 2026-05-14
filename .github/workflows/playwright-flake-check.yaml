@@ -37,6 +37,8 @@ jobs:
     name: flake-check-build
     needs: setup
     uses: ./.github/workflows/build-site.yaml
+    with:
+      include-fixtures: true
 
   # Chromium + Firefox flake check on Linux
   flake-check-linux:
@@ -67,7 +69,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}
+          key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
 
       - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
@@ -134,7 +136,7 @@ jobs:
   # WebKit flake check on macOS
   flake-check-macos:
     needs: [setup, build]
-    runs-on: macos-26
+    runs-on: macos-15
     timeout-minutes: 90
     strategy:
       fail-fast: false
@@ -170,7 +172,7 @@ jobs:
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: public/
-          key: site-build-${{ github.sha }}
+          key: site-build-${{ github.sha }}-fixtures-true
           fail-on-cache-miss: true
 
       - name: Run Playwright tests (repeat-each=${{ needs.setup.outputs.repeat }})
