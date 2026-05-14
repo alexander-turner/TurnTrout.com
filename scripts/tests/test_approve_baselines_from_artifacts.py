@@ -52,23 +52,21 @@ def _make_blob_zip(
 @pytest.mark.parametrize(
     "attachment_name, expected",
     [
-        ("toc-Desktop-Safari-actual", "toc-Desktop-Safari.png"),
-        (
-            "spoiler-after-revealing-light.png-actual",
-            "spoiler-after-revealing-light.png",
-        ),
+        ("toc-Desktop-Safari-actual.png", "toc-Desktop-Safari.png"),
         (
             "-can-trigger-popover-links-show-popover-on-hover-"
-            "-screenshot--first-visible-popover-Desktop-Safari-actual",
+            "-screenshot--first-visible-popover-Desktop-Safari-actual.png",
             "-can-trigger-popover-links-show-popover-on-hover-"
             "-screenshot--first-visible-popover-Desktop-Safari.png",
         ),
-        ("toc-Desktop-Safari-expected", None),
-        ("toc-Desktop-Safari-diff", None),
+        ("toc-Desktop-Safari-expected.png", None),
+        ("toc-Desktop-Safari-diff.png", None),
+        ("toc-Desktop-Safari-actual", None),
         ("trace", None),
-        ("../escape-actual", None),
-        ("nested/dir-actual", None),
-        ("back\\slash-actual", None),
+        ("-actual.png", None),
+        ("../escape-actual.png", None),
+        ("nested/dir-actual.png", None),
+        ("back\\slash-actual.png", None),
     ],
 )
 def test_canonical_baseline_name(
@@ -83,18 +81,18 @@ def test_collect_extracts_actual_png_attachments(tmp_path: Path) -> None:
     _make_blob_zip(
         blob_dir / "linux-report-1.zip",
         [
-            ("toc-Desktop-Safari-actual", "image/png", _PNG_BYTES),
-            ("toc-Desktop-Safari-expected", "image/png", _PNG_BYTES),
-            ("toc-Desktop-Safari-diff", "image/png", _PNG_BYTES),
+            ("toc-Desktop-Safari-actual.png", "image/png", _PNG_BYTES),
+            ("toc-Desktop-Safari-expected.png", "image/png", _PNG_BYTES),
+            ("toc-Desktop-Safari-diff.png", "image/png", _PNG_BYTES),
             (
                 "-can-trigger-popover-links-show-popover-on-hover-"
-                "-screenshot--first-visible-popover-Desktop-Safari-actual",
+                "-screenshot--first-visible-popover-Desktop-Safari-actual.png",
                 "image/png",
                 _PNG_BYTES,
             ),
-            ("trace-actual", "application/zip", b"zip-bytes"),
+            ("trace-actual.zip", "application/zip", b"zip-bytes"),
             ("png-without-actual-suffix", "image/png", _PNG_BYTES),
-            ("../escape-actual", "image/png", _PNG_BYTES),
+            ("../escape-actual.png", "image/png", _PNG_BYTES),
         ],
     )
 
@@ -118,7 +116,7 @@ def test_collect_deduplicates_across_shards(tmp_path: Path) -> None:
     for shard in (1, 2):
         _make_blob_zip(
             blob_dir / f"linux-report-{shard}.zip",
-            [("toc-Desktop-Safari-actual", "image/png", _PNG_BYTES)],
+            [("toc-Desktop-Safari-actual.png", "image/png", _PNG_BYTES)],
         )
 
     staging = tmp_path / "stage"
@@ -139,7 +137,7 @@ def test_collect_skips_missing_zip_entry(tmp_path: Path) -> None:
                     "params": {
                         "attachments": [
                             {
-                                "name": "toc-actual",
+                                "name": "toc-actual.png",
                                 "contentType": "image/png",
                                 "path": "resources/missing.png",
                             }
@@ -196,7 +194,7 @@ def test_collect_skips_attachments_without_path(tmp_path: Path) -> None:
                     "params": {
                         "attachments": [
                             {
-                                "name": "toc-actual",
+                                "name": "toc-actual.png",
                                 "contentType": "image/png",
                                 "body": "base64data",
                             }
@@ -228,7 +226,7 @@ def test_collect_skips_blank_and_non_attach_lines(tmp_path: Path) -> None:
                             "params": {
                                 "attachments": [
                                     {
-                                        "name": "toc-actual",
+                                        "name": "toc-actual.png",
                                         "contentType": "image/png",
                                         "path": "resources/sha0.png",
                                     }
@@ -249,7 +247,7 @@ def test_main_uploads_when_attachments_found(tmp_path: Path) -> None:
     blob_dir.mkdir()
     _make_blob_zip(
         blob_dir / "report.zip",
-        [("toc-actual", "image/png", _PNG_BYTES)],
+        [("toc-actual.png", "image/png", _PNG_BYTES)],
     )
     staging = tmp_path / "stage"
 

@@ -233,9 +233,16 @@ export async function takeRegressionScreenshot(
   // (see config/playwright/playwright.config.ts). Uses expect.soft so all
   // shots in a test run get reported in the HTML report instead of halting
   // on the first mismatch.
+  //
+  // Pass the name as a single-element array: Playwright's string form
+  // hash-truncates the relativeOutputPath to 60 chars for "Windows
+  // friendliness," which mangles the names of attachments in the blob
+  // report and breaks the approve-baselines round-trip. The array form
+  // skips that truncation, so attachment names match baseline filenames
+  // for any length.
   await expect
     .soft(screenshotBuffer, { message: screenshotName })
-    .toMatchSnapshot(screenshotName, { maxDiffPixelRatio: 0.002 })
+    .toMatchSnapshot([screenshotName], { maxDiffPixelRatio: 0.002 })
 
   return screenshotBuffer
 }
