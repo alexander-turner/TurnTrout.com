@@ -697,6 +697,8 @@ Element offers [a migration wizard](https://element.io/blog/slack-migration/) to
 
 ## Gradually migrate your social network away from X
 
+Subtitle: This isn't so much about privacy as about building censorship-resistant infrastructure.
+
 <video autoplay loop muted playsinline class="float-right"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/privacy-20251020185659.webm" type="video/webm"></video>
 
 The cup runneth over with reasons to leave X. There's always [Elon Musk's repeated "heil Hitler" salutes from back in January 2025](https://en.wikipedia.org/wiki/Elon_Musk_salute_controversy), or his [illegally](https://federalnewsnetwork.com/reorganization/2025/02/usaid-takeover-is-unconstitutional-lawmakers-say/) cutting USAID and [thereby dooming a projected 26 million people by 2040](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5199076), but even [the platform itself learns to hook into your brain and keep you stressed and scrolling](/digital-minimalism).  This platform has done horrible things to world discourse and maybe it's done horrible things to you, too. Most relevant, though, is the censorship which Elon inflicts upon X. Although I don't use X regularly, I plan to migrate my account to places with stronger technical defenses against centralized censorship.
@@ -705,7 +707,7 @@ The catch: if you leave X, you leave your followers and connections behind by de
 
 [^attrib]: I read a similar sentence during my research but cannot remember where. Sorry for the lack of attribution!
 
-Later, [I propose](#x-migration-plan) a two-month migration during which you cross-post major updates to multiple platforms. You'll build a following and hopefully bring over some of your friends as well. Admittedly, this isn't so much about privacy as about building censorship-resistant infrastructure.
+Later, [I propose](#x-migration-plan) a gradual migration procedure. You'll build a following and hopefully bring over some of your friends as well. At the end, you can still cross-post to X (but just won't visit the site).
 
 ### Bluesky: better but still subject to central censorship (for now)
 
@@ -743,13 +745,14 @@ Pessimistically assume that every interaction on X (including ["encrypted"](http
 1. [ ] Set up new accounts on Bluesky and/or Mastodon.
 2. [ ] Pin an announcement with your new handles to your X profile.
 3. [ ] DM your closest contacts directly - don't rely on them seeing your post.
-4. [ ] For the next 2 months, cross-post across all platforms using [the Buffer tool](https://buffer.com/).
+4. [ ] Cross-post across all platforms using [the Buffer tool](https://buffer.com/).
 5. [ ] Engage actively on your new platform to build momentum.
 6. [ ] Set a sunset date for X and stick to it.
 7. [ ] Export your data from X.
     - [ ] [Request to download your data](https://x.com/settings/download_your_data).
     - [ ] Download the data when ready.
-10. [ ] Resist the urge to check X "just in case." Consider deleting your account outright.
+8. [ ] Resist the urge to check X "just in case."
+9. [ ] Optional: Continue cross-posting using Buffer to still retain reach for your major threads and announcements.
 
 # What next?
 
