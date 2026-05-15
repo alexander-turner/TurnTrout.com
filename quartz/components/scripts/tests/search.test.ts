@@ -5,7 +5,6 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
 import { type ContentDetails } from "../../../plugins/vfile"
-import { type FullSlug } from "../../../util/path"
 import { NBSP, simpleConstants } from "../../constants"
 import {
   matchTextNodes,
@@ -266,41 +265,27 @@ describe("findBestMatchToScrollTo", () => {
 })
 
 describe("scoreDocByMatchDegree", () => {
-  const makeData = (
-    entries: Record<string, Partial<ContentDetails>>,
-  ): { [key: FullSlug]: ContentDetails } => {
-    const out: Record<string, ContentDetails> = {}
-    for (const [slug, partial] of Object.entries(entries)) {
-      out[slug] = {
-        title: partial.title ?? "",
-        content: partial.content ?? "",
-        links: [],
-        tags: [],
-        authors: partial.authors,
-      }
-    }
-    return out as { [key: FullSlug]: ContentDetails }
-  }
-
-  it("returns all zeros when the slug is missing from the data map", () => {
-    expect(scoreDocByMatchDegree("missing" as FullSlug, ["foo"], makeData({}))).toEqual([0, 0, 0])
+  const makeDetails = (partial: Partial<ContentDetails>): ContentDetails => ({
+    title: partial.title ?? "",
+    content: partial.content ?? "",
+    links: [],
+    tags: [],
+    authors: partial.authors,
   })
 
   it("returns all zeros when no token matches title, content, or authors", () => {
-    const data = makeData({ a: { title: "Hello", content: "world", authors: ["nemo"] } })
-    expect(scoreDocByMatchDegree("a" as FullSlug, ["zzz"], data)).toEqual([0, 0, 0])
+    const details = makeDetails({ title: "Hello", content: "world", authors: ["nemo"] })
+    expect(scoreDocByMatchDegree(details, ["zzz"])).toEqual([0, 0, 0])
   })
 
   it("scores each field separately, preferring the longest match in each", () => {
-    const data = makeData({
-      mixed: {
-        title: "Popover content fixture",
-        content: "Section: Checkboxes fixture and friends",
-        authors: ["Trout"],
-      },
+    const details = makeDetails({
+      title: "Popover content fixture",
+      content: "Section: Checkboxes fixture and friends",
+      authors: ["Trout"],
     })
     const tokens = ["checkboxes fixture", "checkboxes", "fixture", "trout"]
-    expect(scoreDocByMatchDegree("mixed" as FullSlug, tokens, data)).toEqual([
+    expect(scoreDocByMatchDegree(details, tokens)).toEqual([
       "fixture".length,
       "trout".length,
       "checkboxes fixture".length,
@@ -308,18 +293,20 @@ describe("scoreDocByMatchDegree", () => {
   })
 
   it("is case-insensitive on the haystack (tokens come pre-lowercased)", () => {
-    const data = makeData({ x: { title: "Hello WORLD" } })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["world"], data)).toEqual([5, 0, 0])
+    expect(scoreDocByMatchDegree(makeDetails({ title: "Hello WORLD" }), ["world"])).toEqual([
+      5, 0, 0,
+    ])
   })
 
   it("matches against the authors field", () => {
-    const data = makeData({ x: { authors: ["Alex Turner"] } })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["turner"], data)).toEqual([0, 6, 0])
+    expect(scoreDocByMatchDegree(makeDetails({ authors: ["Alex Turner"] }), ["turner"])).toEqual([
+      0, 6, 0,
+    ])
   })
 
   it("returns all zeros when fields are empty and no token matches", () => {
-    const data = makeData({ x: {} })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["foo"], data)).toEqual([0, 0, 0])
+    const details = makeDetails({})
+    expect(scoreDocByMatchDegree(details, ["foo"])).toEqual([0, 0, 0])
   })
 })
 

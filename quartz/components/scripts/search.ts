@@ -1223,19 +1223,15 @@ const longestMatchedTokenLength = (
  * returns them) and pre-lowercased; the function lowercases each field
  * once per doc.
  *
- * @param slug - Slug of the document to score
+ * @param details - ContentDetails for the document to score
  * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
  *   ordered longest-first
- * @param data - Content data keyed by slug
- * @returns Per-field MatchScore (all zeros when the slug is missing)
+ * @returns Per-field MatchScore
  */
 export const scoreDocByMatchDegree = (
-  slug: FullSlug,
+  details: ContentDetails,
   lowercasedTokens: readonly string[],
-  data: { [key: FullSlug]: ContentDetails },
 ): MatchScore => {
-  const details = data[slug]
-  if (!details) return [0, 0, 0]
   const title = details.title.toLowerCase()
   const content = details.content.toLowerCase()
   const authors = (details.authors?.join(" ") ?? "").toLowerCase()
@@ -1362,10 +1358,14 @@ async function onType(e: Event): Promise<void> {
   const lowercasedTokens = tokenizeTerm(currentSearchTerm).map((t) => t.toLowerCase())
   const docData = data as { [key: FullSlug]: ContentDetails }
   const rankedIds = [...allIds]
-    .map((id: number) => ({
-      id,
-      score: scoreDocByMatchDegree(idDataMap[id], lowercasedTokens, docData),
-    }))
+    .map((id: number) => {
+      const slug = idDataMap[id]
+      const details = docData[slug]
+      if (!details) {
+        throw new Error(`[search] no ContentDetails for slug ${slug} (id ${id})`)
+      }
+      return { id, score: scoreDocByMatchDegree(details, lowercasedTokens) }
+    })
     .sort((a, b) => compareMatchScore(a.score, b.score))
     .map(({ id }) => id)
 
