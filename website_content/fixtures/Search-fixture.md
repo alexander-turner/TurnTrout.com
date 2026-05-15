@@ -14,7 +14,7 @@ This page is the search-preview target for the visual regression tests in `searc
 
 The fixture lives outside the live site (see `RemoveFixtures` filter), so no user-facing search references it.
 
-# Admonitions fixture
+# admonition-fixture
 
 > [!note]
 > A short note admonition for the focused mobile-card-preview screenshot.
@@ -22,7 +22,7 @@ The fixture lives outside the live site (see `RemoveFixtures` filter), so no use
 > [!quote]
 > A second admonition.
 
-# Checkboxes fixture
+# checkbox-fixture
 
 1. [ ] Fixture checkbox at `#checkbox-0`
 2. [ ] Second fixture checkbox

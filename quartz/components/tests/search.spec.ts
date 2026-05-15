@@ -496,10 +496,14 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
-  // The fixture's "Checkboxes fixture" heading is the only match for this
-  // phrase, so the preview deterministically lands on the fixture and the
-  // search component's auto-scroll centers the highlighted heading.
-  await search(page, "Checkboxes fixture")
+  // The fixture's "checkbox-fixture" heading is the only match for this
+  // hyphenated token (tokenizeTerm only splits on whitespace), so the
+  // preview deterministically lands on the fixture and the search
+  // component's auto-scroll centers the highlighted heading. A
+  // multi-word phrase like "Checkboxes fixture" would also highlight the
+  // bare "fixture" token in the page title, pulling the auto-scroll to
+  // the top of the page.
+  await search(page, "checkbox-fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
@@ -931,11 +935,14 @@ test("admonition background is transparent in focused mobile card preview (scree
 }, testInfo) => {
   test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
 
-  // The fixture's "Admonitions fixture" heading is the only match for this
-  // phrase, so the preview deterministically lands on the fixture and the
-  // search component's auto-scroll centers the highlighted heading just
-  // above the admonition we want to capture.
-  await search(page, "Admonitions fixture")
+  // The fixture's "admonition-fixture" heading is the only match for
+  // this hyphenated token (tokenizeTerm only splits on whitespace), so
+  // the preview deterministically lands on the fixture and the search
+  // component's auto-scroll centers the highlighted heading just above
+  // the admonition we want to capture. A multi-word phrase like
+  // "Admonitions fixture" would also highlight the bare "fixture" token
+  // in the page title, pulling the auto-scroll to the top of the page.
+  await search(page, "admonition-fixture")
 
   const fixtureResult = page.locator('.result-card[id="search-fixture"]')
   await expect(fixtureResult).toBeVisible()
