@@ -1197,33 +1197,62 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
 }
 
 /**
- * Score a document by the longest query token it contains. Caller must
- * pass tokens sorted longest-first (as tokenizeTerm returns them), so
- * the first hit IS the maximum-length match — a doc containing the full
- * phrase outranks a doc that only matches a single word elsewhere on
- * the page. Tokens must be pre-lowercased; the function lowercases
- * the haystack once per doc.
+ * Per-field match score: a tuple of [title, authors, content] where each
+ * entry is the length of the longest pre-lowercased token that appears in
+ * that field. Compared lexicographically by compareMatchScore — a title
+ * hit always outranks an authors hit, which always outranks a content
+ * hit. Within a tier, the longer token wins (phrase > word).
+ */
+export type MatchScore = readonly [titleLen: number, authorsLen: number, contentLen: number]
+
+const longestMatchedTokenLength = (
+  lowercasedHaystack: string,
+  lowercasedTokens: readonly string[],
+): number => {
+  for (const token of lowercasedTokens) {
+    if (lowercasedHaystack.includes(token)) {
+      return token.length
+    }
+  }
+  return 0
+}
+
+/**
+ * Score a document by the longest query token it contains, tiered by
+ * field. Caller must pass tokens sorted longest-first (as tokenizeTerm
+ * returns them) and pre-lowercased; the function lowercases each field
+ * once per doc.
  *
  * @param slug - Slug of the document to score
  * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
  *   ordered longest-first
  * @param data - Content data keyed by slug
- * @returns Length of the longest matched token, or 0 if no token matches
+ * @returns Per-field MatchScore (all zeros when the slug is missing)
  */
 export const scoreDocByMatchDegree = (
   slug: FullSlug,
   lowercasedTokens: readonly string[],
   data: { [key: FullSlug]: ContentDetails },
-): number => {
+): MatchScore => {
   const details = data[slug]
-  if (!details) return 0
-  const haystack = `${details.title} ${details.content} ${
-    details.authors?.join(" ") ?? ""
-  }`.toLowerCase()
-  for (const token of lowercasedTokens) {
-    if (haystack.includes(token)) {
-      return token.length
-    }
+  if (!details) return [0, 0, 0]
+  const title = (details.title ?? "").toLowerCase()
+  const content = (details.content ?? "").toLowerCase()
+  const authors = (details.authors?.join(" ") ?? "").toLowerCase()
+  return [
+    longestMatchedTokenLength(title, lowercasedTokens),
+    longestMatchedTokenLength(authors, lowercasedTokens),
+    longestMatchedTokenLength(content, lowercasedTokens),
+  ]
+}
+
+/**
+ * Lexicographic comparator for MatchScore tuples, descending. Returns
+ * a negative number when `a` should rank above `b`.
+ */
+export const compareMatchScore = (a: MatchScore, b: MatchScore): number => {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return b[i] - a[i]
   }
   return 0
 }
@@ -1325,10 +1354,11 @@ async function onType(e: Event): Promise<void> {
   const idDataMap = Object.keys(data ?? {}) as FullSlug[]
   if (!data) return
 
-  // Re-rank by degree of match: docs containing the full phrase outrank
-  // docs that only match a single token. Array.sort is stable (ES2019+),
-  // so the slug → title → authors → content ordering from the Set above
-  // is preserved when scores tie.
+  // Re-rank by degree of match, tiered by field: title hits outrank
+  // authors hits outrank content hits, and within each tier a longer
+  // matched token (e.g. the full phrase) outranks a shorter one.
+  // Array.sort is stable (ES2019+), so the slug → title → authors →
+  // content ordering from the Set above is preserved when scores tie.
   const lowercasedTokens = tokenizeTerm(currentSearchTerm).map((t) => t.toLowerCase())
   const docData = data as { [key: FullSlug]: ContentDetails }
   const rankedIds = [...allIds]
@@ -1336,7 +1366,7 @@ async function onType(e: Event): Promise<void> {
       id,
       score: scoreDocByMatchDegree(idDataMap[id], lowercasedTokens, docData),
     }))
-    .sort((a, b) => b.score - a.score)
+    .sort((a, b) => compareMatchScore(a.score, b.score))
     .map(({ id }) => id)
 
   const finalResults = rankedIds.map((id: number) =>

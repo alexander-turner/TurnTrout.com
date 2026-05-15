@@ -16,6 +16,7 @@ import {
   createMatchSpan,
   findBestMatchToScrollTo,
   scoreDocByMatchDegree,
+  compareMatchScore,
   updatePlaceholder,
   showSearch,
   hideSearch,
@@ -281,40 +282,87 @@ describe("scoreDocByMatchDegree", () => {
     return out as { [key: FullSlug]: ContentDetails }
   }
 
-  it("returns 0 when the slug is missing from the data map", () => {
-    expect(scoreDocByMatchDegree("missing" as FullSlug, ["foo"], makeData({}))).toBe(0)
+  it("returns all zeros when the slug is missing from the data map", () => {
+    expect(scoreDocByMatchDegree("missing" as FullSlug, ["foo"], makeData({}))).toEqual([0, 0, 0])
   })
 
-  it("returns 0 when no token matches title, content, or authors", () => {
+  it("returns all zeros when no token matches title, content, or authors", () => {
     const data = makeData({ a: { title: "Hello", content: "world", authors: ["nemo"] } })
-    expect(scoreDocByMatchDegree("a" as FullSlug, ["zzz"], data)).toBe(0)
+    expect(scoreDocByMatchDegree("a" as FullSlug, ["zzz"], data)).toEqual([0, 0, 0])
   })
 
-  it("returns the length of the longest matching token (phrase > word)", () => {
+  it("scores each field separately, preferring the longest match in each", () => {
     const data = makeData({
-      phrase: { content: "Section: Checkboxes fixture and friends" },
-      word: { title: "Popover content fixture" },
+      mixed: {
+        title: "Popover content fixture",
+        content: "Section: Checkboxes fixture and friends",
+        authors: ["Trout"],
+      },
     })
-    const tokens = ["checkboxes fixture", "checkboxes", "fixture"]
-    expect(scoreDocByMatchDegree("phrase" as FullSlug, tokens, data)).toBe(
+    const tokens = ["checkboxes fixture", "checkboxes", "fixture", "trout"]
+    expect(scoreDocByMatchDegree("mixed" as FullSlug, tokens, data)).toEqual([
+      "fixture".length,
+      "trout".length,
       "checkboxes fixture".length,
-    )
-    expect(scoreDocByMatchDegree("word" as FullSlug, tokens, data)).toBe("fixture".length)
+    ])
   })
 
   it("is case-insensitive on the haystack (tokens come pre-lowercased)", () => {
     const data = makeData({ x: { title: "Hello WORLD" } })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["world"], data)).toBe(5)
+    expect(scoreDocByMatchDegree("x" as FullSlug, ["world"], data)).toEqual([5, 0, 0])
   })
 
   it("matches against the authors field", () => {
     const data = makeData({ x: { authors: ["Alex Turner"] } })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["turner"], data)).toBe(6)
+    expect(scoreDocByMatchDegree("x" as FullSlug, ["turner"], data)).toEqual([0, 6, 0])
   })
 
-  it("returns 0 when fields are empty and no token matches", () => {
+  it("returns all zeros when fields are empty and no token matches", () => {
     const data = makeData({ x: {} })
-    expect(scoreDocByMatchDegree("x" as FullSlug, ["foo"], data)).toBe(0)
+    expect(scoreDocByMatchDegree("x" as FullSlug, ["foo"], data)).toEqual([0, 0, 0])
+  })
+})
+
+describe("compareMatchScore", () => {
+  it.each([
+    {
+      name: "title hit outranks authors hit, regardless of length",
+      a: [3, 0, 0],
+      b: [0, 100, 0],
+      expected: "a-first",
+    },
+    {
+      name: "authors hit outranks content hit",
+      a: [0, 3, 0],
+      b: [0, 0, 100],
+      expected: "a-first",
+    },
+    {
+      name: "within title tier, longer token wins",
+      a: [18, 0, 0],
+      b: [7, 99, 99],
+      expected: "a-first",
+    },
+    {
+      name: "within authors tier, longer token wins when titles tie",
+      a: [5, 18, 0],
+      b: [5, 7, 99],
+      expected: "a-first",
+    },
+    {
+      name: "equal tuples compare equal (stable sort preserves input order)",
+      a: [5, 5, 5],
+      b: [5, 5, 5],
+      expected: "tie",
+    },
+  ])("$name", ({ a, b, expected }) => {
+    const cmp = compareMatchScore(
+      a as [number, number, number],
+      b as [number, number, number],
+    )
+    const sign = cmp === 0 ? 0 : Math.sign(cmp)
+    const expectedSign = expected === "a-first" ? -1 : expected === "b-first" ? 1 : 0
+    expect(sign).toBe(expectedSign)
   })
 })
 
