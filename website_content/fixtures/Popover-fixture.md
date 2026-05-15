@@ -10,8 +10,6 @@ date_published: 2024-12-04
 date_updated: 2024-12-04
 ---
 
-# Popover content fixture
-
 This page is the hover target for the link-popover visual regression test in `popover.spec.ts`. Editing it will move every popover screenshot that fetches this page, so leave the body alone unless you are updating the baseline on purpose.
 
 ## Anchor target
