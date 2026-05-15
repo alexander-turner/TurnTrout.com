@@ -496,10 +496,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
-  // Search a unique title token so the preview deterministically shows the
-  // search fixture's checkboxes section instead of whichever live page wins
-  // a "Checkboxes" query.
-  await search(page, "Searchpreviewfixture")
+  // Search the fixture's unique title so the preview deterministically shows
+  // the search fixture's checkboxes section instead of whichever live page
+  // wins a "Checkboxes" query.
+  await search(page, "Search preview fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
@@ -545,9 +545,9 @@ test("Emoji search works and is converted to twemoji (screenshot)", async ({ pag
 })
 
 test("Footnote back arrow is properly replaced (screenshot)", async ({ page }, testInfo) => {
-  // Source the backref from the search fixture so the screenshot doesn't
+  // Source the back-arrow from the search fixture so the screenshot doesn't
   // churn when test-page footnotes change.
-  await search(page, "Searchpreviewfixture")
+  await search(page, "Search preview fixture")
   await page.waitForLoadState("load")
 
   const preview = await waitForArticlePreview(page)
@@ -830,7 +830,7 @@ test("Footnote table displays within boundaries in search preview (screenshot)",
   // Source the table footnote from the search fixture so the screenshot
   // doesn't churn when test-page's footnote ordering or surrounding
   // content changes.
-  await search(page, "Searchpreviewfixture")
+  await search(page, "Search preview fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await expect(previewContainer).toBeVisible()
@@ -933,7 +933,7 @@ test("admonition background is transparent in focused mobile card preview (scree
 
   // Source the admonition from the search fixture so the screenshot doesn't
   // churn when test-page admonitions are added/removed.
-  await search(page, "Searchpreviewfixture")
+  await search(page, "Search preview fixture")
 
   const fixtureResult = page.locator('.result-card[id="search-fixture"]')
   await expect(fixtureResult).toBeVisible()
