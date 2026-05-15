@@ -376,6 +376,30 @@ And some hyphens-to-be-ignored.`
     })
   })
 
+  describe("HTML-tag-newline rule scope", () => {
+    const codeSample = [
+      "```html",
+      "<video>",
+      '  <source src="a.mp4" />',
+      "  // a comment after a self-closing tag",
+      "</video>",
+      "```",
+    ].join("\n")
+
+    it.each([
+      ["`//` comment after self-closing tag (code sample)", codeSample, codeSample],
+      ["backtick-fence next line", "<div/>\n```\ncode\n```", "<div/>\n```\ncode\n```"],
+      ["another HTML tag next line", "<div/>\n<span>x</span>", "<div/>\n<span>x</span>"],
+      ["ATX heading next line", "</figure>\n## Heading", "</figure>\n\n## Heading"],
+      ["prose next line", "<div/>\nNext", "<div/>\n\nNext"],
+      ["digit-leading prose next line", "<div/>\n2024 was a year", "<div/>\n\n2024 was a year"],
+      ["Unicode-letter prose next line", "<div/>\nÜbung", "<div/>\n\nÜbung"],
+      ["already-separated tag is idempotent", "<div/>\n\nNext", "<div/>\n\nNext"],
+    ])("%s", (_name: string, input: string, expected: string) => {
+      expect(formattingImprovement(input)).toBe(expected)
+    })
+  })
+
   describe("massTransformText string pattern support", () => {
     it("should convert string patterns to RegExp with global flag", () => {
       const customTransforms: [RegExp | string, string][] = [
