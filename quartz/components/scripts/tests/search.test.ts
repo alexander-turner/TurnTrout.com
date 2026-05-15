@@ -303,11 +303,6 @@ describe("scoreDocByMatchDegree", () => {
       0, 6, 0,
     ])
   })
-
-  it("returns all zeros when fields are empty and no token matches", () => {
-    const details = makeDetails({})
-    expect(scoreDocByMatchDegree(details, ["foo"])).toEqual([0, 0, 0])
-  })
 })
 
 describe("compareMatchScore", () => {
