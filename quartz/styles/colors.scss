@@ -260,8 +260,7 @@ a:hover *,
   color: var(--color-link-hover) !important; // otherwise eg #content-meta a would override
 }
 
-a:focus-visible,
-button:focus-visible {
+:focus-visible {
   // Negative offset draws the outline inside the element so it can't be
   // clipped by an overflow:auto/hidden/clip ancestor (sidebars, the
   // overflow-x-clipped center column, etc.).
