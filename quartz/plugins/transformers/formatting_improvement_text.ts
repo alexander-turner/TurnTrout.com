@@ -100,10 +100,7 @@ const massTransforms: [RegExp | string, string][] = [
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   // Insert a blank line after a block-level HTML tag so the markdown parser
-  // doesn't swallow following prose into the same HTML block (CommonMark Type-6
-  // HTML blocks end at a blank line). Restrict the next-line prefix to a Unicode
-  // letter or digit so the rule doesn't fire inside code samples, where lines
-  // often start with punctuation (e.g. `//`, ```, `<`, `-`, etc.).
+  // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.
   [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n[ \t]*(?=[\p{L}\p{N}])/gmu, "$<closingTag>\n\n"],
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
 ]
