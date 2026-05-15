@@ -494,7 +494,6 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await expect(page).not.toHaveURL(firstResultUrl)
 })
 
- 
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
   // Search the fixture's unique title so the preview deterministically shows
   // the search fixture's checkboxes section instead of whichever live page
