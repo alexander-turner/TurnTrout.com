@@ -1236,8 +1236,8 @@ export const scoreDocByMatchDegree = (
 ): MatchScore => {
   const details = data[slug]
   if (!details) return [0, 0, 0]
-  const title = (details.title ?? "").toLowerCase()
-  const content = (details.content ?? "").toLowerCase()
+  const title = details.title.toLowerCase()
+  const content = details.content.toLowerCase()
   const authors = (details.authors?.join(" ") ?? "").toLowerCase()
   return [
     longestMatchedTokenLength(title, lowercasedTokens),
