@@ -112,6 +112,53 @@ export function applyTextTransforms(text: string, transforms: [RegExp | string, 
   return text
 }
 
+const FENCE_REGEX = /^(?<marker>`{3,}|~{3,})/
+
+/**
+ * Applies `transform` only to text outside fenced code blocks (``` or ~~~).
+ * Fence lines and the content between them are passed through verbatim, so
+ * regex-based transforms cannot mangle the contents of code blocks.
+ */
+export function applyOutsideCodeFences(
+  text: string,
+  transform: (segment: string) => string,
+): string {
+  const lines = text.split("\n")
+  const out: string[] = []
+  let buffer: string[] = []
+  let inFence = false
+  let fenceMarker = ""
+
+  const flushBuffer = () => {
+    if (buffer.length === 0) return
+    out.push(transform(buffer.join("\n")))
+    buffer = []
+  }
+
+  for (const line of lines) {
+    const match = line.match(FENCE_REGEX)
+    if (!inFence) {
+      if (match?.groups?.marker) {
+        flushBuffer()
+        out.push(line)
+        inFence = true
+        fenceMarker = match.groups.marker
+      } else {
+        buffer.push(line)
+      }
+    } else {
+      out.push(line)
+      const marker = match?.groups?.marker
+      if (marker && marker[0] === fenceMarker[0] && marker.length >= fenceMarker.length) {
+        inFence = false
+        fenceMarker = ""
+      }
+    }
+  }
+  flushBuffer()
+  return out.join("\n")
+}
+
 /**
  * Concentrates emphasis around links by moving asterisks or underscores inside the link brackets.
  * @param text - The input text to process.
@@ -151,7 +198,9 @@ export const formattingImprovement = (text: string) => {
   newContent = concentrateEmphasisAroundLinks(newContent)
   newContent = wrapLeadingNumbers(newContent)
   newContent = wrapNumbersBeforeColon(newContent)
-  newContent = applyTextTransforms(newContent, massTransforms)
+  newContent = applyOutsideCodeFences(newContent, (segment) =>
+    applyTextTransforms(segment, massTransforms),
+  )
 
   // Ensure that bulleted lists display properly
   newContent = newContent.replaceAll("\\-", "-")

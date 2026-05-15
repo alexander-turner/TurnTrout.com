@@ -3,6 +3,7 @@ import { describe, it, expect } from "@jest/globals"
 import type { BuildCtx } from "../../../util/ctx"
 
 import {
+  applyOutsideCodeFences,
   applyTextTransforms,
   formattingImprovement,
   editAdmonition,
@@ -372,6 +373,78 @@ And some hyphens-to-be-ignored.`
     it("should preserve content when no YAML header present", () => {
       const input = "This is content without YAML header. It has a footnote[^1]."
       const expected = "This is content without YAML header. It has a footnote.[^1]"
+      expect(formattingImprovement(input)).toBe(expected)
+    })
+  })
+
+  describe("applyOutsideCodeFences", () => {
+    it("applies transform to text outside fenced code blocks", () => {
+      const input = "before\n```\ninside\n```\nafter"
+      const result = applyOutsideCodeFences(input, (s) => s.toUpperCase())
+      expect(result).toBe("BEFORE\n```\ninside\n```\nAFTER")
+    })
+
+    it("preserves content inside ``` fences verbatim", () => {
+      const input = "x\n```html\n<a/>\n  // comment\n```\ny"
+      const result = applyOutsideCodeFences(input, (s) => s.replace(/.*/gs, ""))
+      expect(result).toBe("\n```html\n<a/>\n  // comment\n```\n")
+    })
+
+    it("preserves content inside ~~~ fences verbatim", () => {
+      const input = "x\n~~~\n<a/>\n  // comment\n~~~\ny"
+      const result = applyOutsideCodeFences(input, (s) => s.replace(/.*/gs, ""))
+      expect(result).toBe("\n~~~\n<a/>\n  // comment\n~~~\n")
+    })
+
+    it("handles unterminated fence by treating remainder as code", () => {
+      const input = "before\n```\nstill code"
+      const result = applyOutsideCodeFences(input, (s) => s.toUpperCase())
+      expect(result).toBe("BEFORE\n```\nstill code")
+    })
+
+    it("does not close a ``` fence with a shorter run", () => {
+      const input = "```````\ncontent\n```\nmore content\n```````\nafter"
+      const result = applyOutsideCodeFences(input, (s) => s.toUpperCase())
+      expect(result).toBe("```````\ncontent\n```\nmore content\n```````\nAFTER")
+    })
+
+    it("does not cross fence-character types", () => {
+      const input = "```\ncontent\n~~~\nmore content\n```\nafter"
+      const result = applyOutsideCodeFences(input, (s) => s.toUpperCase())
+      expect(result).toBe("```\ncontent\n~~~\nmore content\n```\nAFTER")
+    })
+  })
+
+  describe("massTransforms preserves fenced code blocks", () => {
+    it("does not insert newline after self-closing HTML tag inside code block", () => {
+      const input = [
+        "```html",
+        "<video>",
+        "  <!-- comment A -->",
+        '  <source src="a.mp4" />',
+        "  <!-- comment B -->",
+        '  <source src="b.webm" />',
+        "</video>",
+        "```",
+      ].join("\n")
+      expect(formattingImprovement(input)).toBe(input)
+    })
+
+    it("preserves `//` lines after self-closing tags inside code block (regression)", () => {
+      const input = [
+        "```html",
+        "<video>",
+        '  <source src="a.mp4" />',
+        "  // a comment after a self-closing tag",
+        "</video>",
+        "```",
+      ].join("\n")
+      expect(formattingImprovement(input)).toBe(input)
+    })
+
+    it("still inserts newline after HTML tag outside code blocks", () => {
+      const input = "<div/>\ntext"
+      const expected = "<div/>\n\ntext"
       expect(formattingImprovement(input)).toBe(expected)
     })
   })
