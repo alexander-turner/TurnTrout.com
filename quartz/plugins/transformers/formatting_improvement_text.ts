@@ -99,7 +99,12 @@ const massTransforms: [RegExp | string, string][] = [
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
-  [/(?<tag><\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$<tag>\n\n"], // Ensure there is a newline after an HTML tag
+  // Insert a blank line after a block-level HTML tag so the markdown parser
+  // doesn't swallow following prose into the same HTML block (CommonMark Type-6
+  // HTML blocks end at a blank line). Restrict the next-line prefix to a Unicode
+  // letter or digit so the rule doesn't fire inside code samples, where lines
+  // often start with punctuation (e.g. `//`, ```, `<`, `-`, etc.).
+  [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n[ \t]*(?=[\p{L}\p{N}])/gmu, "$<closingTag>\n\n"],
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
 ]
 
@@ -110,53 +115,6 @@ export function applyTextTransforms(text: string, transforms: [RegExp | string, 
     text = text.replace(regex, replacement)
   }
   return text
-}
-
-const FENCE_REGEX = /^(?<marker>`{3,}|~{3,})/
-
-/**
- * Applies `transform` only to text outside fenced code blocks (``` or ~~~).
- * Fence lines and the content between them are passed through verbatim, so
- * regex-based transforms cannot mangle the contents of code blocks.
- */
-export function applyOutsideCodeFences(
-  text: string,
-  transform: (segment: string) => string,
-): string {
-  const lines = text.split("\n")
-  const out: string[] = []
-  let buffer: string[] = []
-  let inFence = false
-  let fenceMarker = ""
-
-  const flushBuffer = () => {
-    if (buffer.length === 0) return
-    out.push(transform(buffer.join("\n")))
-    buffer = []
-  }
-
-  for (const line of lines) {
-    const match = line.match(FENCE_REGEX)
-    if (!inFence) {
-      if (match?.groups?.marker) {
-        flushBuffer()
-        out.push(line)
-        inFence = true
-        fenceMarker = match.groups.marker
-      } else {
-        buffer.push(line)
-      }
-    } else {
-      out.push(line)
-      const marker = match?.groups?.marker
-      if (marker && marker[0] === fenceMarker[0] && marker.length >= fenceMarker.length) {
-        inFence = false
-        fenceMarker = ""
-      }
-    }
-  }
-  flushBuffer()
-  return out.join("\n")
 }
 
 /**
@@ -198,9 +156,7 @@ export const formattingImprovement = (text: string) => {
   newContent = concentrateEmphasisAroundLinks(newContent)
   newContent = wrapLeadingNumbers(newContent)
   newContent = wrapNumbersBeforeColon(newContent)
-  newContent = applyOutsideCodeFences(newContent, (segment) =>
-    applyTextTransforms(segment, massTransforms),
-  )
+  newContent = applyTextTransforms(newContent, massTransforms)
 
   // Ensure that bulleted lists display properly
   newContent = newContent.replaceAll("\\-", "-")
