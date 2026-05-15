@@ -496,10 +496,10 @@ test("Search URL updates as we select different results", async ({ page }) => {
 
 /* eslint-disable playwright/expect-expect */
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
-  // Search the fixture's unique title so the preview deterministically shows
-  // the search fixture's checkboxes section instead of whichever live page
-  // wins a "Checkboxes" query.
-  await search(page, "Search preview fixture")
+  // The fixture's "Checkboxes fixture" heading is the only match for this
+  // phrase, so the preview deterministically lands on the fixture and the
+  // search component's auto-scroll centers the highlighted heading.
+  await search(page, "Checkboxes fixture")
 
   const previewContainer = await waitForArticlePreview(page)
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
@@ -931,9 +931,11 @@ test("admonition background is transparent in focused mobile card preview (scree
 }, testInfo) => {
   test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
 
-  // Source the admonition from the search fixture so the screenshot doesn't
-  // churn when test-page admonitions are added/removed.
-  await search(page, "Search preview fixture")
+  // The fixture's "Admonitions fixture" heading is the only match for this
+  // phrase, so the preview deterministically lands on the fixture and the
+  // search component's auto-scroll centers the highlighted heading just
+  // above the admonition we want to capture.
+  await search(page, "Admonitions fixture")
 
   const fixtureResult = page.locator('.result-card[id="search-fixture"]')
   await expect(fixtureResult).toBeVisible()
