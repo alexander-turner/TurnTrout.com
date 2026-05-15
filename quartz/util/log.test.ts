@@ -115,6 +115,7 @@ describe("util/log", () => {
 
   it("should add Console transport when CI=true with all levels on stderr", () => {
     process.env.CI = "true"
+    delete process.env.JEST_WORKER_ID
 
     createWinstonLogger("test-logger")
 
@@ -126,8 +127,18 @@ describe("util/log", () => {
     )
   })
 
+  it("should not add Console transport when CI=true but running under Jest", () => {
+    process.env.CI = "true"
+    process.env.JEST_WORKER_ID = "1"
+
+    createWinstonLogger("test-logger")
+
+    expect(mockConsoleTransport).not.toHaveBeenCalled()
+  })
+
   it("should format console messages with logger name prefix in CI", () => {
     process.env.CI = "true"
+    delete process.env.JEST_WORKER_ID
 
     createWinstonLogger("my-logger")
 

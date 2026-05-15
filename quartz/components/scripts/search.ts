@@ -1267,7 +1267,7 @@ const formatForDisplay = (term: string, id: number, slug: FullSlug, details: Con
   slug,
   title: details.title,
   content: match(term, details.content, true),
-  authors: details.authors?.join(", "),
+  authors: details.authors.join(", "),
 })
 
 /**
