@@ -34,7 +34,7 @@ class ForbiddenPatternConfig(TypedDict):
 def check_required_fields(metadata: dict) -> list[str]:
     """Check for empty required metadata fields."""
     errors = []
-    required_fields = ("title", "description", "tags")
+    required_fields = ("title", "description", "tags", "permalink")
 
     if not metadata:
         errors.append("No valid frontmatter found")
@@ -45,10 +45,6 @@ def check_required_fields(metadata: dict) -> list[str]:
             errors.append(f"Missing {field} field")
         elif metadata[field] in (None, "", [], {}):
             errors.append(f"Empty {field} field")
-
-    # `permalink` is optional but must not be empty when present
-    if "permalink" in metadata and metadata["permalink"] in (None, "", [], {}):
-        errors.append("Empty permalink field")
 
     return errors
 
@@ -345,9 +341,7 @@ def check_sequence_relationships(
     - If post A has next-post-slug=B and next-post-title=X, then
         post B's title must be X
     """
-    if not permalink:
-        return []
-    if permalink not in sequence_data:
+    if not permalink or permalink not in sequence_data:
         raise ValueError(f"Invalid permalink {permalink}")
 
     errors: list[str] = []

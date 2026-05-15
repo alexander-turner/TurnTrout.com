@@ -1,5 +1,6 @@
 ---
 title: Don't use the "Shoggoth" meme to portray LLMs
+permalink: against-shoggoth
 no_dropcap: "false"
 tags:
   - critique

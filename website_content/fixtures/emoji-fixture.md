@@ -1,5 +1,6 @@
 ---
 title: Twemoji rendering fixture
+permalink: emoji-fixture
 no_dropcap: "true"
 tags:
   - website

@@ -74,21 +74,6 @@ def valid_metadata() -> dict[str, str | list[str]]:
             {},
             ["No valid frontmatter found"],
         ),
-        # Test case 5: permalink is optional when omitted entirely
-        (
-            {"title": "Test", "description": "Test", "tags": ["test"]},
-            [],
-        ),
-        # Test case 6: permalink, if present, must not be empty
-        (
-            {
-                "title": "Test",
-                "description": "Test",
-                "tags": ["test"],
-                "permalink": "",
-            },
-            ["Empty permalink field"],
-        ),
     ],
 )
 def test_check_required_fields(
@@ -319,10 +304,9 @@ def test_main_workflow(git_repo_setup, quartz_project_structure, monkeypatch):
         script_utils, "get_git_root", lambda *args, **kwargs: tmp_path
     )
 
-    # Main exits non-zero when required fields are missing
-    with pytest.raises(SystemExit) as exc:
+    # Main should raise a ValueError due to missing permalink
+    with pytest.raises(ValueError):
         source_file_checks.main()
-    assert exc.value.code == 1
 
 
 @pytest.mark.parametrize(
@@ -919,10 +903,11 @@ def test_check_sequence_relationships(test_case):
 
 def test_check_sequence_relationships_invalid_input():
     """Test check_sequence_relationships with invalid input."""
-    # Empty permalink: skip the check (post has no sequence relationships)
-    assert source_file_checks.check_sequence_relationships("", {}) == []
+    # Test with empty permalink
+    with pytest.raises(ValueError, match="Invalid permalink"):
+        source_file_checks.check_sequence_relationships("", {})
 
-    # Non-existent permalink still fails loudly
+    # Test with non-existent permalink
     with pytest.raises(ValueError, match="Invalid permalink /nonexistent"):
         source_file_checks.check_sequence_relationships(
             "/nonexistent", {"/post1": {"permalink": "/post1"}}

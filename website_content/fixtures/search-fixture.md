@@ -1,5 +1,6 @@
 ---
 title: Search preview fixture
+permalink: search-fixture
 no_dropcap: "true"
 tags:
   - website

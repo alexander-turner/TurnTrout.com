@@ -1,5 +1,6 @@
 ---
 title: Popover content fixture
+permalink: popover-fixture
 no_dropcap: "true"
 tags:
   - website

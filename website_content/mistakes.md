@@ -1,5 +1,6 @@
 ---
 title: Mistaken claims I've made
+permalink: mistakes
 draft: false
 no_dropcap: "true"
 tags:

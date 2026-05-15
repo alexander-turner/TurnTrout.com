@@ -3,6 +3,7 @@ hide_authors: "true"
 hide_metadata: "true"
 no_dropcap: "true"
 title: Posts & Sequences
+permalink: posts
 aliases:
   - Posts
 hideSubscriptionLinks: false
