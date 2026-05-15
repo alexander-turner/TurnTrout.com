@@ -262,7 +262,10 @@ a:hover *,
 
 a:focus-visible,
 button:focus-visible {
+  // Negative offset draws the outline inside the element so it can't be
+  // clipped by an overflow:auto/hidden/clip ancestor (sidebars, the
+  // overflow-x-clipped center column, etc.).
   outline: 2px solid var(--color-link);
-  outline-offset: 2px;
+  outline-offset: -2px;
   border-radius: 2px;
 }
