@@ -180,7 +180,7 @@ export const ContentIndex: QuartzEmitterPlugin<Partial<ContentIndexOptions>> = (
               : undefined,
             date,
             description: (file.data.description as string) ?? undefined,
-            authors: file.data.frontmatter?.authors,
+            authors: file.data.frontmatter?.authors ?? [],
           })
         }
       }
