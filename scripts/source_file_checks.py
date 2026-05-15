@@ -341,7 +341,9 @@ def check_sequence_relationships(
     - If post A has next-post-slug=B and next-post-title=X, then
         post B's title must be X
     """
-    if not permalink or permalink not in sequence_data:
+    if not permalink:
+        return []
+    if permalink not in sequence_data:
         raise ValueError(f"Invalid permalink {permalink}")
 
     errors: list[str] = []

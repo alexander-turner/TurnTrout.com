@@ -903,11 +903,10 @@ def test_check_sequence_relationships(test_case):
 
 def test_check_sequence_relationships_invalid_input():
     """Test check_sequence_relationships with invalid input."""
-    # Test with empty permalink
-    with pytest.raises(ValueError, match="Invalid permalink"):
-        source_file_checks.check_sequence_relationships("", {})
+    # Empty permalink: skip the check (post has no sequence relationships)
+    assert source_file_checks.check_sequence_relationships("", {}) == []
 
-    # Test with non-existent permalink
+    # Non-existent permalink still fails loudly
     with pytest.raises(ValueError, match="Invalid permalink /nonexistent"):
         source_file_checks.check_sequence_relationships(
             "/nonexistent", {"/post1": {"permalink": "/post1"}}
