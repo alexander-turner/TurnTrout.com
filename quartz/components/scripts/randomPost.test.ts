@@ -12,6 +12,7 @@ const cd = (content: string): ContentDetails => ({
   links: [],
   tags: [],
   content,
+  authors: [],
 })
 
 const mockContentIndex: Record<string, ContentDetails> = {

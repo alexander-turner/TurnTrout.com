@@ -1933,6 +1933,29 @@ def test_check_spaces_in_path(path_str: str, expected_errors: list[str]):
 
 
 @pytest.mark.parametrize(
+    "filename, should_error",
+    [
+        ("test-page.md", False),
+        ("some-post.md", False),
+        ("123-numeric-start.md", False),
+        ("Test-page.md", True),
+        ("My-research.md", True),
+        ("BiDPO-postmortem.md", True),
+        ("ALL-CAPS.md", True),
+    ],
+)
+def test_check_filename_lowercase(filename: str, should_error: bool):
+    """Filenames with any uppercase letter must be flagged."""
+    errors = source_file_checks.check_filename_lowercase(Path(filename))
+    if should_error:
+        assert len(errors) == 1
+        assert filename in errors[0]
+        assert "lowercase" in errors[0]
+    else:
+        assert errors == []
+
+
+@pytest.mark.parametrize(
     "text, expected_errors",
     [
         ('This is a test. "This is a test."', []),

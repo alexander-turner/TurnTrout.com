@@ -268,7 +268,7 @@ test.describe("Table of contents", () => {
 
   // Cap how many top-level TOC entries the screenshots include. Hiding the
   // rest keeps the baseline stable when sections are added or removed from
-  // Test-page.md beyond this prefix.
+  // test-page.md beyond this prefix.
   const TOC_VISIBLE_TOP_LEVEL_ENTRIES = 9
 
   test("Desktop TOC visual test (screenshot)", async ({ page }, testInfo) => {

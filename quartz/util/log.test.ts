@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, jest } from "@jest/globals"
+import { describe, it, expect, beforeEach, afterAll, jest } from "@jest/globals"
 
 // All mocks use `jest.unstable_mockModule` because log.ts loads its
 // dependencies via ESM-style default imports inside `await import("./log")`.
@@ -73,26 +73,30 @@ jest.unstable_mockModule("fs", () => ({
 const { createWinstonLogger, setLogLevelFromArgv } = await import("./log")
 
 describe("util/log", () => {
+  const originalCi = process.env.CI
+  const originalWorkerId = process.env.JEST_WORKER_ID
+
   beforeEach(() => {
     jest.clearAllMocks()
     capturedPrintfFormatter = null
     mockLoggerInstance.level = "info"
+    delete process.env.CI
+    delete process.env.JEST_WORKER_ID
   })
 
-  it("should create a logger with DailyRotateFile transport", () => {
+  afterAll(() => {
+    if (originalCi === undefined) delete process.env.CI
+    else process.env.CI = originalCi
+    if (originalWorkerId === undefined) delete process.env.JEST_WORKER_ID
+    else process.env.JEST_WORKER_ID = originalWorkerId
+  })
+
+  it("should create a logger with a configured DailyRotateFile transport", () => {
     createWinstonLogger("test-logger")
 
-    // transports.DailyRotateFile is assigned to the imported DailyRotateFile class,
-    // so the call is observed on that constructor mock.
     expect(mockCreateLogger).toHaveBeenCalled()
-  })
-
-  it("should configure DailyRotateFile with correct options", () => {
-    createWinstonLogger("test-logger")
-
-    // The rotate-file transport is instantiated via `new transports.DailyRotateFile(...)`.
-    // In our module, we assign that transport constructor to the imported DailyRotateFile,
-    // so we assert on the DailyRotateFile mock.
+    // The rotate-file transport is instantiated via `new transports.DailyRotateFile(...)`;
+    // in log.ts that constructor is assigned to the imported DailyRotateFile mock.
     const callArgs = mockDailyRotateFileCtor.mock.calls[0][0] as Record<string, unknown>
     expect(callArgs).toMatchObject({
       datePattern: "YYYY-MM-DD",
@@ -105,35 +109,41 @@ describe("util/log", () => {
     expect(callArgs.auditFile).toContain("test-logger-audit.json")
   })
 
-  it("should not add Console transport when not in CI", () => {
-    delete process.env.CI
+  it.each([
+    ["CI unset", undefined, undefined],
+    ["CI=true but running under Jest", "true", "1"],
+  ])("should not add Console transport when %s", (_label, ci, workerId) => {
+    if (ci !== undefined) process.env.CI = ci
+    if (workerId !== undefined) process.env.JEST_WORKER_ID = workerId
 
     createWinstonLogger("test-logger")
 
     expect(mockConsoleTransport).not.toHaveBeenCalled()
   })
 
-  it("should add Console transport when CI=true with all levels on stderr", () => {
-    process.env.CI = "true"
+  describe("when CI=true and not under Jest", () => {
+    beforeEach(() => {
+      process.env.CI = "true"
+    })
 
-    createWinstonLogger("test-logger")
+    it("should add Console transport with all levels on stderr", () => {
+      createWinstonLogger("test-logger")
 
-    expect(mockConsoleTransport).toHaveBeenCalledWith(
-      expect.objectContaining({
-        level: "warn",
-        stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
-      }),
-    )
-  })
+      expect(mockConsoleTransport).toHaveBeenCalledWith(
+        expect.objectContaining({
+          level: "warn",
+          stderrLevels: ["error", "warn", "info", "http", "verbose", "debug", "silly"],
+        }),
+      )
+    })
 
-  it("should format console messages with logger name prefix in CI", () => {
-    process.env.CI = "true"
+    it("should format console messages with logger name prefix", () => {
+      createWinstonLogger("my-logger")
 
-    createWinstonLogger("my-logger")
-
-    expect(capturedPrintfFormatter).not.toBeNull()
-    const formatted = capturedPrintfFormatter?.({ level: "info", message: "test message" })
-    expect(formatted).toBe("[my-logger] info: test message")
+      expect(capturedPrintfFormatter).not.toBeNull()
+      const formatted = capturedPrintfFormatter?.({ level: "info", message: "test message" })
+      expect(formatted).toBe("[my-logger] info: test message")
+    })
   })
 
   it("should create different loggers for different names", () => {

@@ -16,7 +16,7 @@ aliases:
   - mnist-partition-demo
 lw-linkpost-url: https://jacobgw.com/blog/ml/2024/12/12/interp-latent.html
 date_published: 2024-12-16
-date_updated: 2026-04-20
+date_updated: 2026-05-15
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 ---
 

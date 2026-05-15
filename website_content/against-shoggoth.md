@@ -20,7 +20,7 @@ lw-posted-at: 2024-01-19T00:47:04.621000Z
 lw-is-shortform: "true"
 date_published: 2024-01-19
 original_url: https://www.lesswrong.com/posts/dqSwccGTWyBgxrR58/turntrout-s-shortform-feed?commentId=XHktatQRYpsfritrA
-date_updated: 2026-04-20
+date_updated: 2026-05-15
 card_image_alt: A red "no" sign over a Shoggoth meme.
 ---
 
