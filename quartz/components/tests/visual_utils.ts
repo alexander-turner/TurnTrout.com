@@ -209,14 +209,12 @@ export async function takeRegressionScreenshot(
   // resolved (FOIT/FOUT causes layout shift, and Safari has been observed to
   // capture an empty frame mid-swap) and a double rAF flushes any pending
   // layout/paint from earlier mutations (e.g. setViewportSize, media pause).
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) => {
-        void document.fonts.ready.then(() => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
-        })
-      }),
-  )
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    )
+  })
 
   const screenshotOptions = {
     animations: "disabled" as const,
