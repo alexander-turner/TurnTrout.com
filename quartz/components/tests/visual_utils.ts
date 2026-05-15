@@ -591,10 +591,14 @@ export async function gotoPage(
   // context between those two steps, causing "Execution context was destroyed"
   // errors on page.evaluate / page.waitForFunction calls.
   // Collect failed sub-resource fetches during this navigation and warn
-  // after goto resolves, so CI logs name the failing URL.
+  // after goto resolves, so CI logs name the failing URL.  Filter out
+  // net::ERR_ABORTED — these are the browser cancelling in-flight requests
+  // at teardown/redirect, not real fetch failures.
   const failedRequests: Array<{ url: string; reason: string }> = []
   const onRequestFailed = (req: Request): void => {
-    failedRequests.push({ url: req.url(), reason: req.failure()?.errorText ?? "unknown" })
+    const reason = req.failure()?.errorText ?? "unknown"
+    if (reason.includes("ERR_ABORTED")) return
+    failedRequests.push({ url: req.url(), reason })
   }
   page.on("requestfailed", onRequestFailed)
 
