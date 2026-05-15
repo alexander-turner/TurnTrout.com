@@ -79,7 +79,7 @@ export type ContentDetails = {
   tags: readonly string[]
   content: string
   richContent?: string
-  authors?: readonly string[]
+  authors: readonly string[]
 }
 export type ContentIndex = Map<FullSlug, ContentDetails>
 

@@ -1190,9 +1190,9 @@ const formatForDisplay = (
   return {
     id,
     slug,
-    title: data[slug].title ?? "",
-    content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors?.join(", ") ?? "",
+    title: data[slug].title,
+    content: match(term, data[slug].content, true),
+    authors: data[slug].authors.join(", "),
   }
 }
 
@@ -1327,7 +1327,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors?.join(", ") ?? "",
+      authors: fileData.authors.join(", "),
     }
     return index.addAsync(id, doc)
   })
