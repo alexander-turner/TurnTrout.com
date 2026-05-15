@@ -188,10 +188,6 @@ jobs:
     needs: [build, should-run]
     if: needs.should-run.outputs.run-macos == 'true'
     runs-on: macos-15
-    # macOS WebKit runs at 1 worker (see playwright.config.ts) — tripling
-    # per-shard wall time. Generous job budget keeps shards from being
-    # killed without log output.
-    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -206,9 +202,6 @@ jobs:
       # which crashes WebKit on macOS ARM64 (microsoft/playwright#40009).
       # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
-      # Cap Playwright ~5 min under timeout-minutes so failures surface as
-      # logs/artifacts before GitHub Actions kills the runner.
-      PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "6900000"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
