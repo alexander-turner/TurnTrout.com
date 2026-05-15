@@ -1197,6 +1197,38 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
 }
 
 /**
+ * Score a document by the longest query token it contains. Caller must
+ * pass tokens sorted longest-first (as tokenizeTerm returns them), so
+ * the first hit IS the maximum-length match — a doc containing the full
+ * phrase outranks a doc that only matches a single word elsewhere on
+ * the page. Tokens must be pre-lowercased; the function lowercases
+ * the haystack once per doc.
+ *
+ * @param slug - Slug of the document to score
+ * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
+ *   ordered longest-first
+ * @param data - Content data keyed by slug
+ * @returns Length of the longest matched token, or 0 if no token matches
+ */
+export const scoreDocByMatchDegree = (
+  slug: FullSlug,
+  lowercasedTokens: readonly string[],
+  data: { [key: FullSlug]: ContentDetails },
+): number => {
+  const details = data[slug]
+  if (!details) return 0
+  const haystack = `${details.title} ${details.content} ${
+    details.authors?.join(" ") ?? ""
+  }`.toLowerCase()
+  for (const token of lowercasedTokens) {
+    if (haystack.includes(token)) {
+      return token.length
+    }
+  }
+  return 0
+}
+
+/**
  * Formats search result data for display
  * @param term - Search term
  * @param id - Result ID
@@ -1293,8 +1325,22 @@ async function onType(e: Event): Promise<void> {
   const idDataMap = Object.keys(data ?? {}) as FullSlug[]
   if (!data) return
 
-  const finalResults = [...allIds].map((id: number) =>
-    formatForDisplay(currentSearchTerm, id, data as { [key: FullSlug]: ContentDetails }, idDataMap),
+  // Re-rank by degree of match: docs containing the full phrase outrank
+  // docs that only match a single token. Array.sort is stable (ES2019+),
+  // so the slug → title → authors → content ordering from the Set above
+  // is preserved when scores tie.
+  const lowercasedTokens = tokenizeTerm(currentSearchTerm).map((t) => t.toLowerCase())
+  const docData = data as { [key: FullSlug]: ContentDetails }
+  const rankedIds = [...allIds]
+    .map((id: number) => ({
+      id,
+      score: scoreDocByMatchDegree(idDataMap[id], lowercasedTokens, docData),
+    }))
+    .sort((a, b) => b.score - a.score)
+    .map(({ id }) => id)
+
+  const finalResults = rankedIds.map((id: number) =>
+    formatForDisplay(currentSearchTerm, id, docData, idDataMap),
   )
 
   displayResults(finalResults, results, enablePreview)
