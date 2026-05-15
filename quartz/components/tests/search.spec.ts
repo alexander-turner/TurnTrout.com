@@ -495,17 +495,12 @@ test("Search URL updates as we select different results", async ({ page }) => {
 })
 
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
-  // Search the fixture's unique title so the preview deterministically shows
-  // the search fixture's checkboxes section instead of whichever live page
-  // wins a "Checkboxes" query.
-  await search(page, "Search preview fixture")
+  // The fixture's "Checkboxes fixture" heading is the only match for this
+  // phrase, so the preview deterministically shows the fixture and the
+  // search component's auto-scroll lands on the highlighted heading.
+  await search(page, "Checkboxes fixture")
 
   const previewContainer = await waitForArticlePreview(page)
-  const checkboxesHeader = previewContainer.locator("#checkboxes").first()
-  await expect(checkboxesHeader).toBeAttached()
-  await checkboxesHeader.scrollIntoViewIfNeeded()
-  await expect(checkboxesHeader).toBeVisible()
-
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
     elementToScreenshot: previewContainer,
   })
@@ -935,9 +930,11 @@ test("admonition background is transparent in focused mobile card preview (scree
 }, testInfo) => {
   test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
 
-  // Source the admonition from the search fixture so the screenshot doesn't
-  // churn when test-page admonitions are added/removed.
-  await search(page, "Search preview fixture")
+  // The fixture's "Admonitions fixture" heading is the only match for this
+  // phrase, so the preview deterministically shows the fixture and the
+  // search component's auto-scroll lands on the highlighted heading just
+  // above the admonition we want to capture.
+  await search(page, "Admonitions fixture")
 
   const fixtureResult = page.locator('.result-card[id="search-fixture"]')
   await expect(fixtureResult).toBeVisible()
@@ -956,8 +953,6 @@ test("admonition background is transparent in focused mobile card preview (scree
   const admonition = cardPreview.locator(".admonition").first()
   await expect(admonition).toBeAttached()
   await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
-  await admonition.scrollIntoViewIfNeeded()
-  await expect(admonition).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
     elementToScreenshot: fixtureResult,
