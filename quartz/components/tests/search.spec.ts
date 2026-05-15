@@ -84,8 +84,18 @@ async function clickPreviewToNavigate(page: Page): Promise<void> {
 
 test.afterEach(async ({ page }) => {
   // Navigate away to flush pending network/script activity, preventing
-  // WebKit from hanging during browserContext.close() teardown.
-  await page.goto("about:blank")
+  // WebKit from hanging during browserContext.close() teardown. If another
+  // navigation is already in flight (e.g. a click that triggered fetch in the
+  // test body), the goto can race it — swallow that error since this is pure
+  // teardown and the new navigation will flush the context just as well.
+  try {
+    await page.goto("about:blank")
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : ""
+    if (!message.includes("interrupted by another") && !message.includes("Target page")) {
+      throw error
+    }
+  }
 })
 
 for (const keyName of ["/", "Escape"]) {

@@ -589,23 +589,47 @@ export async function gotoPage(
   // separate waitForLoadState(), but WebKit/Safari can destroy the execution
   // context between those two steps, causing "Execution context was destroyed"
   // errors on page.evaluate / page.waitForFunction calls.
-  try {
-    await page.goto(url, { waitUntil: loadState })
-  } catch (error: unknown) {
-    // WebKit on Linux occasionally crashes with "internal error" on page.goto.
-    // Retry once — the second attempt typically succeeds.
-    if (error instanceof Error && error.message.includes("internal error")) {
-      console.warn(`[gotoPage] WebKit internal error navigating to ${url}, retrying once`)
+  const navigate = async (): Promise<void> => {
+    try {
       await page.goto(url, { waitUntil: loadState })
-    } else {
-      throw error
+    } catch (error: unknown) {
+      // WebKit's driver intermittently fails goto() with "internal error" or
+      // races a still-pending navigation ("interrupted by another navigation").
+      // Both are transient — retry once.
+      const message = error instanceof Error ? error.message : ""
+      if (message.includes("internal error") || message.includes("interrupted by another")) {
+        console.warn(`[gotoPage] transient navigation error for ${url}, retrying once: ${message}`)
+        await page.goto(url, { waitUntil: loadState })
+      } else {
+        throw error
+      }
     }
   }
+
+  await navigate()
 
   // Wait for the SPA router to finish initializing so a late client-side
   // navigation doesn't destroy the execution context before callers can
   // run page.evaluate() (Safari/WebKit is especially prone to this).
-  await page.waitForFunction(() => window.__routerInitialized === true)
+  // Bounded so a failed inline-script load triggers one re-goto rather than
+  // burning the full per-test timeout in a single dead wait.
+  const routerInitTimeoutMs = 20_000
+  try {
+    await page.waitForFunction(() => window.__routerInitialized === true, undefined, {
+      timeout: routerInitTimeoutMs,
+    })
+  } catch (error: unknown) {
+    if (!(error instanceof Error) || !error.message.includes("Timeout")) {
+      throw error
+    }
+    console.warn(
+      `[gotoPage] router init did not fire within ${routerInitTimeoutMs}ms on ${url}; re-navigating once`,
+    )
+    await navigate()
+    await page.waitForFunction(() => window.__routerInitialized === true, undefined, {
+      timeout: routerInitTimeoutMs,
+    })
+  }
 }
 
 /** Reload the current page by navigating away and back to the original URL.
