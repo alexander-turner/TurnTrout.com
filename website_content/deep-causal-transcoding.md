@@ -16,7 +16,7 @@ aliases:
   - melbo-framework
   - dct
 date_published: 2024-12-04
-date_updated: 2026-04-20
+date_updated: 2026-05-15
 original_url: https://www.lesswrong.com/posts/fSRg5qs9TPbNy3sm5/deep-causal-transcoding-a-framework-for-mechanistically
 ---
 

@@ -393,6 +393,23 @@ def check_spaces_in_path(file_path: Path) -> list[str]:
     return ["File path contains spaces"] if " " in str(file_path) else []
 
 
+def check_filename_lowercase(file_path: Path) -> list[str]:
+    """
+    Reject markdown filenames with uppercase letters.
+
+    Uppercase characters in a content filename produce a per-filename HTML alias
+    (`<Filename>.html`) alongside the canonical `<permalink>.html`. On case-
+    insensitive filesystems (macOS APFS, default Windows NTFS), the two
+    artifacts collapse into one when the build is extracted, and the alias
+    redirect can clobber the canonical content non-deterministically.
+    """
+    if file_path.stem != file_path.stem.lower():
+        return [
+            f"Filename '{file_path.name}' must be lowercase."
+        ]
+    return []
+
+
 def check_table_alignments(text: str) -> list[str]:
     """
     Check if all markdown tables have explicit column alignments.
@@ -808,7 +825,10 @@ def check_file_data(
         "heading_links": check_heading_links(text),
         "footnote_references": check_footnote_references(text),
         "self_closing_non_void": check_self_closing_non_void_elements(text),
-        "invalid_filename": check_spaces_in_path(file_path),
+        "invalid_filename": (
+            check_spaces_in_path(file_path)
+            + check_filename_lowercase(file_path)
+        ),
     }
 
     if check_publication_dates:
@@ -862,8 +882,7 @@ def compile_scss(scss_file_path: Path) -> str:
 
 _FONT_FACE_FAMILY_PATTERN = re.compile(
     r"""@font-face\s*\{[^}]*?
-    font-family:\s*["']?(.*?)["']?[;,]"""
-                                         ,
+    font-family:\s*["']?(.*?)["']?[;,]""",
     re.VERBOSE | re.DOTALL,
 )
 

@@ -114,8 +114,8 @@ describe("ContentPage", () => {
   describe("permalink handling", () => {
     it("should use permalink in getDependencyGraph when present", async () => {
       const vfile = createTestVFile({
-        path: "content/Test-page.md",
-        filePath: "content/Test-page.md" as FilePath,
+        path: "content/test-page.md",
+        filePath: "content/test-page.md" as FilePath,
         slug: "Test-page" as FullSlug,
         frontmatter: {
           permalink: "test-page",
@@ -137,8 +137,8 @@ describe("ContentPage", () => {
 
     it("should use original slug in getDependencyGraph when permalink is absent", async () => {
       const vfile = createTestVFile({
-        path: "content/Test-page.md",
-        filePath: "content/Test-page.md" as FilePath,
+        path: "content/test-page.md",
+        filePath: "content/test-page.md" as FilePath,
         slug: "Test-page" as FullSlug,
         frontmatter: {},
       })
@@ -157,8 +157,8 @@ describe("ContentPage", () => {
 
     it("should emit file at permalink location when present", async () => {
       const vfile = createTestVFile({
-        path: "content/Test-page.md",
-        filePath: "content/Test-page.md" as FilePath,
+        path: "content/test-page.md",
+        filePath: "content/test-page.md" as FilePath,
         slug: "Test-page" as FullSlug,
         frontmatter: {
           permalink: "test-page",
@@ -183,8 +183,8 @@ describe("ContentPage", () => {
 
     it("should emit file at original slug location when permalink is absent", async () => {
       const vfile = createTestVFile({
-        path: "content/Test-page.md",
-        filePath: "content/Test-page.md" as FilePath,
+        path: "content/test-page.md",
+        filePath: "content/test-page.md" as FilePath,
         slug: "Test-page" as FullSlug,
         frontmatter: {},
       })
@@ -233,8 +233,8 @@ describe("ContentPage", () => {
 
     it("should handle empty string permalink as falsy", async () => {
       const vfile = createTestVFile({
-        path: "content/Test-page.md",
-        filePath: "content/Test-page.md" as FilePath,
+        path: "content/test-page.md",
+        filePath: "content/test-page.md" as FilePath,
         slug: "Test-page" as FullSlug,
         frontmatter: {
           permalink: "",

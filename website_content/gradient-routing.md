@@ -19,7 +19,7 @@ card_image: https://assets.turntrout.com/static/images/card_images/NO2S3mX.jpg
 lw-linkpost-url: https://arxiv.org/abs/2410.04332
 original_url: https://www.lesswrong.com/posts/nLRKKCTtwQgvozLTN/gradient-routing-masking-gradients-to-localize-computation
 date_published: 2024-12-05
-date_updated: 2026-04-20
+date_updated: 2026-05-15
 card_image_alt: A landscape of sparkling crystalline shards growing out of the ground.
 createBibtex: true
 ---
