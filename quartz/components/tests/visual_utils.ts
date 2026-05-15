@@ -1,9 +1,12 @@
 import type { Page, Request } from "playwright"
 
 import { type Locator, type TestInfo, expect } from "@playwright/test"
+import { appendFileSync, mkdirSync } from "fs"
+import { join } from "path"
 import sanitize from "sanitize-filename"
 
 import { minDesktopWidth } from "../../styles/variables"
+import { findGitRoot } from "../../util/log"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
@@ -590,15 +593,12 @@ export async function gotoPage(
   // separate waitForLoadState(), but WebKit/Safari can destroy the execution
   // context between those two steps, causing "Execution context was destroyed"
   // errors on page.evaluate / page.waitForFunction calls.
-  // Collect failed sub-resource fetches during this navigation and warn
-  // after goto resolves, so CI logs name the failing URL.  Filter out
-  // net::ERR_ABORTED — these are the browser cancelling in-flight requests
-  // at teardown/redirect, not real fetch failures.
+  // Collect failed sub-resource fetches during this navigation and append
+  // them to .logs/gotoPage-failed-requests.log so the CI logs artifact
+  // names the failing URL without flooding stdout.
   const failedRequests: Array<{ url: string; reason: string }> = []
   const onRequestFailed = (req: Request): void => {
-    const reason = req.failure()?.errorText ?? "unknown"
-    if (reason.includes("ERR_ABORTED")) return
-    failedRequests.push({ url: req.url(), reason })
+    failedRequests.push({ url: req.url(), reason: req.failure()?.errorText ?? "unknown" })
   }
   page.on("requestfailed", onRequestFailed)
 
@@ -618,13 +618,24 @@ export async function gotoPage(
   }
 
   if (failedRequests.length > 0) {
-    console.warn(
-      `[gotoPage] ${failedRequests.length} failed request(s) during navigation to ${url}:`,
-    )
-    for (const { url: failedUrl, reason } of failedRequests) {
-      console.warn(`  - ${reason}: ${failedUrl}`)
-    }
+    logFailedRequests(url, failedRequests)
   }
+}
+
+const failedRequestsLogPath = join(findGitRoot(), ".logs", "gotoPage-failed-requests.log")
+let failedRequestsLogDirEnsured = false
+
+function logFailedRequests(url: string, failures: Array<{ url: string; reason: string }>): void {
+  if (!failedRequestsLogDirEnsured) {
+    mkdirSync(join(findGitRoot(), ".logs"), { recursive: true })
+    failedRequestsLogDirEnsured = true
+  }
+  const lines = [
+    `[${new Date().toISOString()}] ${failures.length} failed request(s) during navigation to ${url}:`,
+    ...failures.map(({ url: failedUrl, reason }) => `  - ${reason}: ${failedUrl}`),
+    "",
+  ]
+  appendFileSync(failedRequestsLogPath, lines.join("\n"))
 }
 
 /** Reload the current page by navigating away and back to the original URL.
