@@ -1,5 +1,6 @@
+import type { Page, Request } from "playwright"
+
 import { type Locator, type TestInfo, expect } from "@playwright/test"
-import { type Page } from "playwright"
 import sanitize from "sanitize-filename"
 
 import { minDesktopWidth } from "../../styles/variables"
@@ -589,6 +590,14 @@ export async function gotoPage(
   // separate waitForLoadState(), but WebKit/Safari can destroy the execution
   // context between those two steps, causing "Execution context was destroyed"
   // errors on page.evaluate / page.waitForFunction calls.
+  // Collect failed sub-resource fetches during this navigation and warn
+  // after goto resolves, so CI logs name the failing URL.
+  const failedRequests: Array<{ url: string; reason: string }> = []
+  const onRequestFailed = (req: Request): void => {
+    failedRequests.push({ url: req.url(), reason: req.failure()?.errorText ?? "unknown" })
+  }
+  page.on("requestfailed", onRequestFailed)
+
   try {
     await page.goto(url, { waitUntil: loadState })
   } catch (error: unknown) {
@@ -600,12 +609,18 @@ export async function gotoPage(
     } else {
       throw error
     }
+  } finally {
+    page.off("requestfailed", onRequestFailed)
   }
 
-  // Wait for the SPA router to finish initializing so a late client-side
-  // navigation doesn't destroy the execution context before callers can
-  // run page.evaluate() (Safari/WebKit is especially prone to this).
-  await page.waitForFunction(() => window.__routerInitialized === true)
+  if (failedRequests.length > 0) {
+    console.warn(
+      `[gotoPage] ${failedRequests.length} failed request(s) during navigation to ${url}:`,
+    )
+    for (const { url: failedUrl, reason } of failedRequests) {
+      console.warn(`  - ${reason}: ${failedUrl}`)
+    }
+  }
 }
 
 /** Reload the current page by navigating away and back to the original URL.
