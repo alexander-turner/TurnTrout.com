@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import git
 import pytest
 
+from .. import r2_upload
 from .. import utils as script_utils
 
 
@@ -165,7 +166,10 @@ def mock_rclone() -> Iterator[MagicMock]:
 
 
 @pytest.fixture(autouse=True)
-def _stub_find_rclone(request: pytest.FixtureRequest) -> Iterator[None]:
+def _stub_find_rclone(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+) -> Iterator[None]:
     """
     Make ``requires_r2`` tests hermetic.
 
@@ -179,6 +183,8 @@ def _stub_find_rclone(request: pytest.FixtureRequest) -> Iterator[None]:
     if request.node.get_closest_marker("requires_r2") is None:
         yield
         return
+    for var in r2_upload.REQUIRED_ENV:
+        monkeypatch.setenv(var, "test-stub")
     with patch.object(script_utils, "find_executable", return_value="rclone"):
         yield
 
