@@ -34,7 +34,7 @@ class ForbiddenPatternConfig(TypedDict):
 def check_required_fields(metadata: dict) -> list[str]:
     """Check for empty required metadata fields."""
     errors = []
-    required_fields = ("title", "description", "tags", "permalink")
+    required_fields = ("title", "description", "tags")
 
     if not metadata:
         errors.append("No valid frontmatter found")
@@ -45,6 +45,10 @@ def check_required_fields(metadata: dict) -> list[str]:
             errors.append(f"Missing {field} field")
         elif metadata[field] in (None, "", [], {}):
             errors.append(f"Empty {field} field")
+
+    # `permalink` is optional but must not be empty when present
+    if "permalink" in metadata and metadata["permalink"] in (None, "", [], {}):
+        errors.append("Empty permalink field")
 
     return errors
 
@@ -864,8 +868,7 @@ def compile_scss(scss_file_path: Path) -> str:
 
 _FONT_FACE_FAMILY_PATTERN = re.compile(
     r"""@font-face\s*\{[^}]*?
-    font-family:\s*["']?(.*?)["']?[;,]"""
-                                         ,
+    font-family:\s*["']?(.*?)["']?[;,]""",
     re.VERBOSE | re.DOTALL,
 )
 
