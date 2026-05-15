@@ -356,10 +356,7 @@ describe("compareMatchScore", () => {
       expected: "tie",
     },
   ])("$name", ({ a, b, expected }) => {
-    const cmp = compareMatchScore(
-      a as [number, number, number],
-      b as [number, number, number],
-    )
+    const cmp = compareMatchScore(a as [number, number, number], b as [number, number, number])
     const sign = cmp === 0 ? 0 : Math.sign(cmp)
     const expectedSign = expected === "a-first" ? -1 : expected === "b-first" ? 1 : 0
     expect(sign).toBe(expectedSign)
