@@ -438,8 +438,6 @@ async function handlePopstate(event: PopStateEvent): Promise<void> {
  */
 function createRouter() {
   if (typeof window !== "undefined" && !window.__routerInitialized) {
-    window.__routerInitialized = true
-
     window.addEventListener(
       "scroll",
       () => {
@@ -482,6 +480,8 @@ function createRouter() {
 
     // Listener for back/forward navigation
     window.addEventListener("popstate", handlePopstate)
+
+    window.__routerInitialized = true
   }
 }
 
