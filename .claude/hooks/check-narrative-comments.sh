@@ -7,7 +7,7 @@ file=$(jq -r '.tool_input.file_path // empty' <<<"$input")
 case "$file" in *.md | *.mdx | *.json | *.yaml | *.yml | *.toml | *.html | *.svg | *.xml) exit 0 ;; esac
 new=$(jq -r '.tool_input.new_string // .tool_input.content // empty' <<<"$input")
 hits=$(grep -inE '^[[:space:]]*(//|/\*|#|\*[^/=]|<!--)' <<<"$new" |
-	grep -iE '\b(previously|formerly|used to (be|do|use|have)|the old [[:alnum:]_-]+|prior (version|impl(ementation)?|behavior)|earlier (version|iteration|attempt)|regression(:| test for)|legacy (code|impl(ementation)?)|short-lived [[:alnum:]_-]+( [[:alnum:]_-]+)? fork|in the previous (version|iteration|attempt|impl(ementation)?)|would (also|otherwise|still|instead|have|incorrectly|wrongly) (highlight|match|pull|drag|land|trigger|fire|return|emit|cause|pick|select|hit|scroll)|naive (approach|impl(ementation)?|version)|without this (check|fix|guard|change|code)|the alternative (would|impl)|if we (had|did) not)\b' || true)
+	grep -iE '\b(previously|formerly|used to (be|do|use|have)|the old [[:alnum:]_-]+|prior (version|impl(ementation)?|behavior)|earlier (version|iteration|attempt)|regression(:| test for)|legacy (code|impl(ementation)?)|short-lived [[:alnum:]_-]+( [[:alnum:]_-]+)? fork|in the previous (version|iteration|attempt|impl(ementation)?))\b' || true)
 [ -z "$hits" ] && exit 0
 {
 	echo "Narrative comments in $file (CLAUDE.md: comments describe current code, not history):"
