@@ -401,13 +401,11 @@ def check_filename_lowercase(file_path: Path) -> list[str]:
     (`<Filename>.html`) alongside the canonical `<permalink>.html`. On case-
     insensitive filesystems (macOS APFS, default Windows NTFS), the two
     artifacts collapse into one when the build is extracted, and the alias
-    redirect can clobber the canonical content non-deterministically. Requiring
-    lowercase filenames eliminates the class of bug.
+    redirect can clobber the canonical content non-deterministically.
     """
     if file_path.stem != file_path.stem.lower():
         return [
-            f"Filename '{file_path.name}' must be lowercase "
-            "(alias HTML collides with canonical on case-insensitive filesystems)"
+            f"Filename '{file_path.name}' must be lowercase."
         ]
     return []
 
