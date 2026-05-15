@@ -4,6 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
 
+import { type ContentDetails } from "../../../plugins/vfile"
 import { NBSP, simpleConstants } from "../../constants"
 import {
   matchTextNodes,
@@ -12,6 +13,9 @@ import {
   tokenizeTerm,
   match,
   createMatchSpan,
+  findBestMatchToScrollTo,
+  scoreDocByMatchDegree,
+  compareMatchScore,
   updatePlaceholder,
   showSearch,
   hideSearch,
@@ -225,6 +229,119 @@ describe("createMatchSpan", () => {
     expect(span.tagName).toBe("SPAN")
     expect(span.className).toBe("search-match")
     expect(span.textContent).toBe("test")
+  })
+})
+
+describe("findBestMatchToScrollTo", () => {
+  it("returns null when the container has no matches", () => {
+    const container = document.createElement("div")
+    expect(findBestMatchToScrollTo(container)).toBeNull()
+  })
+
+  it("prefers a longer-text match over an earlier shorter one", () => {
+    const container = document.createElement("div")
+    container.appendChild(createMatchSpan("fixture"))
+    container.appendChild(document.createTextNode(" — "))
+    const phrase = createMatchSpan("Checkboxes fixture")
+    container.appendChild(phrase)
+    expect(findBestMatchToScrollTo(container)).toBe(phrase)
+  })
+
+  it("falls back to DOM order for matches of equal length", () => {
+    const container = document.createElement("div")
+    const first = createMatchSpan("foo")
+    const second = createMatchSpan("bar")
+    container.appendChild(first)
+    container.appendChild(second)
+    expect(findBestMatchToScrollTo(container)).toBe(first)
+  })
+
+  it("returns the only match when there is just one", () => {
+    const container = document.createElement("div")
+    const only = createMatchSpan("foo")
+    container.appendChild(only)
+    expect(findBestMatchToScrollTo(container)).toBe(only)
+  })
+})
+
+describe("scoreDocByMatchDegree", () => {
+  const makeDetails = (partial: Partial<ContentDetails>): ContentDetails => ({
+    title: partial.title ?? "",
+    content: partial.content ?? "",
+    links: [],
+    tags: [],
+    authors: partial.authors ?? [],
+  })
+
+  it("returns all zeros when no token matches title, content, or authors", () => {
+    const details = makeDetails({ title: "Hello", content: "world", authors: ["nemo"] })
+    expect(scoreDocByMatchDegree(details, ["zzz"])).toEqual([0, 0, 0])
+  })
+
+  it("scores each field separately, preferring the longest match in each", () => {
+    const details = makeDetails({
+      title: "Popover content fixture",
+      content: "Section: Checkboxes fixture and friends",
+      authors: ["Trout"],
+    })
+    const tokens = ["checkboxes fixture", "checkboxes", "fixture", "trout"]
+    expect(scoreDocByMatchDegree(details, tokens)).toEqual([
+      "fixture".length,
+      "trout".length,
+      "checkboxes fixture".length,
+    ])
+  })
+
+  it("is case-insensitive on the haystack (tokens come pre-lowercased)", () => {
+    expect(scoreDocByMatchDegree(makeDetails({ title: "Hello WORLD" }), ["world"])).toEqual([
+      5, 0, 0,
+    ])
+  })
+
+  it("matches against the authors field", () => {
+    expect(scoreDocByMatchDegree(makeDetails({ authors: ["Alex Turner"] }), ["turner"])).toEqual([
+      0, 6, 0,
+    ])
+  })
+})
+
+describe("compareMatchScore", () => {
+  it.each([
+    {
+      name: "title hit outranks authors hit, regardless of length",
+      a: [3, 0, 0],
+      b: [0, 100, 0],
+      expected: "a-first",
+    },
+    {
+      name: "authors hit outranks content hit",
+      a: [0, 3, 0],
+      b: [0, 0, 100],
+      expected: "a-first",
+    },
+    {
+      name: "within title tier, longer token wins",
+      a: [18, 0, 0],
+      b: [7, 99, 99],
+      expected: "a-first",
+    },
+    {
+      name: "within authors tier, longer token wins when titles tie",
+      a: [5, 18, 0],
+      b: [5, 7, 99],
+      expected: "a-first",
+    },
+    {
+      name: "equal tuples compare equal (stable sort preserves input order)",
+      a: [5, 5, 5],
+      b: [5, 5, 5],
+      expected: "tie",
+    },
+  ])("$name", ({ a, b, expected }) => {
+    const cmp = compareMatchScore(a as [number, number, number], b as [number, number, number])
+    const sign = cmp === 0 ? 0 : Math.sign(cmp)
+    const expectedSign = expected === "a-first" ? -1 : expected === "b-first" ? 1 : 0
+    expect(sign).toBe(expectedSign)
   })
 })
 

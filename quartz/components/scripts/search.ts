@@ -234,6 +234,30 @@ export const createMatchSpan = (text: string): HTMLSpanElement => {
 }
 
 /**
+ * Find the best `.search-match` element to scroll a preview to. Prefers
+ * the match with the longest text — a contiguous phrase wrapped by the
+ * longest tokenizeTerm entry beats a stray single-token match elsewhere
+ * on the page. Ties broken by DOM order.
+ */
+export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | null {
+  const matches = container.querySelectorAll<HTMLElement>(`.${SEARCH_MATCH_CLASS}`)
+  if (matches.length === 0) return null
+
+  // `.search-match` spans are created via createMatchSpan with explicit
+  // textContent, so the cast is safe.
+  let best = matches[0]
+  let bestLength = (best.textContent as string).length
+  for (let i = 1; i < matches.length; i++) {
+    const length = (matches[i].textContent as string).length
+    if (length > bestLength) {
+      best = matches[i]
+      bestLength = length
+    }
+  }
+  return best
+}
+
+/**
  * Syncs the display-results class with the actual search bar content
  * This handles cases where JS state is lost but DOM state persists
  */
@@ -426,10 +450,10 @@ export class PreviewManager {
    */
   /* istanbul ignore next */
   public scrollToFirstmatch(): void {
-    const firstMatch = this.container.querySelector(".search-match") as HTMLElement
-    if (!firstMatch) return
+    const target = findBestMatchToScrollTo(this.container)
+    if (!target) return
 
-    firstMatch.scrollIntoView({ block: "center", behavior: "instant" })
+    target.scrollIntoView({ block: "center", behavior: "instant" })
   }
 }
 
@@ -1032,9 +1056,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
 
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
-      const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
-      if (firstMatch) {
-        scrollContainerToMatch(cardPreview, firstMatch, 1 / 3)
+      const target = findBestMatchToScrollTo(cardPreview)
+      if (target) {
+        scrollContainerToMatch(cardPreview, target, 1 / 3)
       }
     })
   })
@@ -1072,9 +1096,9 @@ function handleResizeForCardPreviews(): void {
 /* istanbul ignore next */
 function rescrollCardPreviews(): void {
   document.querySelectorAll(".card-preview").forEach((cardPreview) => {
-    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
-    if (firstMatch) {
-      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    const target = findBestMatchToScrollTo(cardPreview as HTMLElement)
+    if (target) {
+      scrollContainerToMatch(cardPreview as HTMLElement, target, 1 / 3)
     }
   })
 }
@@ -1173,6 +1197,63 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
 }
 
 /**
+ * Per-field match score: a tuple of [title, authors, content] where each
+ * entry is the length of the longest pre-lowercased token that appears in
+ * that field. Compared lexicographically by compareMatchScore — a title
+ * hit always outranks an authors hit, which always outranks a content
+ * hit. Within a tier, the longer token wins (phrase > word).
+ */
+export type MatchScore = readonly [titleLen: number, authorsLen: number, contentLen: number]
+
+const longestMatchedTokenLength = (
+  lowercasedHaystack: string,
+  lowercasedTokens: readonly string[],
+): number => {
+  for (const token of lowercasedTokens) {
+    if (lowercasedHaystack.includes(token)) {
+      return token.length
+    }
+  }
+  return 0
+}
+
+/**
+ * Score a document by the longest query token it contains, tiered by
+ * field. Caller must pass tokens sorted longest-first (as tokenizeTerm
+ * returns them) and pre-lowercased; the function lowercases each field
+ * once per doc.
+ *
+ * @param details - ContentDetails for the document to score
+ * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
+ *   ordered longest-first
+ * @returns Per-field MatchScore
+ */
+export const scoreDocByMatchDegree = (
+  details: ContentDetails,
+  lowercasedTokens: readonly string[],
+): MatchScore => {
+  const title = details.title.toLowerCase()
+  const content = details.content.toLowerCase()
+  const authors = details.authors.join(" ").toLowerCase()
+  return [
+    longestMatchedTokenLength(title, lowercasedTokens),
+    longestMatchedTokenLength(authors, lowercasedTokens),
+    longestMatchedTokenLength(content, lowercasedTokens),
+  ]
+}
+
+/**
+ * Lexicographic comparator for MatchScore tuples, descending. Returns
+ * a negative number when `a` should rank above `b`.
+ */
+export const compareMatchScore = (a: MatchScore, b: MatchScore): number => {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return b[i] - a[i]
+  }
+  return 0
+}
+
+/**
  * Formats search result data for display
  * @param term - Search term
  * @param id - Result ID
@@ -1180,21 +1261,14 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
  * @param idDataMap - Mapping of IDs to slugs
  */
 /* istanbul ignore next */
-const formatForDisplay = (
-  term: string,
-  id: number,
-  data: { [key: FullSlug]: ContentDetails },
-  idDataMap: FullSlug[],
-) => {
-  const slug = idDataMap[id]
-  return {
-    id,
-    slug,
-    title: data[slug].title,
-    content: match(term, data[slug].content, true),
-    authors: data[slug].authors.join(", "),
-  }
-}
+
+const formatForDisplay = (term: string, id: number, slug: FullSlug, details: ContentDetails) => ({
+  id,
+  slug,
+  title: details.title,
+  content: match(term, details.content, true),
+  authors: details.authors.join(", "),
+})
 
 /**
  * Displays search results in the UI
@@ -1269,8 +1343,26 @@ async function onType(e: Event): Promise<void> {
   const idDataMap = Object.keys(data ?? {}) as FullSlug[]
   if (!data) return
 
-  const finalResults = [...allIds].map((id: number) =>
-    formatForDisplay(currentSearchTerm, id, data as { [key: FullSlug]: ContentDetails }, idDataMap),
+  // Re-rank by degree of match, tiered by field: title hits outrank
+  // authors hits outrank content hits, and within each tier a longer
+  // matched token (e.g. the full phrase) outranks a shorter one.
+  // Array.sort is stable (ES2019+), so the slug → title → authors →
+  // content ordering from the Set above is preserved when scores tie.
+  const lowercasedTokens = tokenizeTerm(currentSearchTerm).map((t) => t.toLowerCase())
+  const docData = data as { [key: FullSlug]: ContentDetails }
+  const rankedDetails = [...allIds]
+    .map((id: number) => {
+      const slug = idDataMap[id]
+      const details = docData[slug]
+      if (!details) {
+        throw new Error(`[search] no ContentDetails for slug ${slug} (id ${id})`)
+      }
+      return { id, slug, details, score: scoreDocByMatchDegree(details, lowercasedTokens) }
+    })
+    .sort((a, b) => compareMatchScore(a.score, b.score))
+
+  const finalResults = rankedDetails.map(({ id, slug, details }) =>
+    formatForDisplay(currentSearchTerm, id, slug, details),
   )
 
   displayResults(finalResults, results, enablePreview)
