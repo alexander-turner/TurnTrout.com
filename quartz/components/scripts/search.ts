@@ -1264,18 +1264,15 @@ export const compareMatchScore = (a: MatchScore, b: MatchScore): number => {
 const formatForDisplay = (
   term: string,
   id: number,
-  data: { [key: FullSlug]: ContentDetails },
-  idDataMap: FullSlug[],
-) => {
-  const slug = idDataMap[id]
-  return {
-    id,
-    slug,
-    title: data[slug].title ?? "",
-    content: match(term, data[slug].content ?? "", true),
-    authors: data[slug].authors?.join(", ") ?? "",
-  }
-}
+  slug: FullSlug,
+  details: ContentDetails,
+) => ({
+  id,
+  slug,
+  title: details.title,
+  content: match(term, details.content, true),
+  authors: details.authors?.join(", ") ?? "",
+})
 
 /**
  * Displays search results in the UI
@@ -1357,20 +1354,19 @@ async function onType(e: Event): Promise<void> {
   // content ordering from the Set above is preserved when scores tie.
   const lowercasedTokens = tokenizeTerm(currentSearchTerm).map((t) => t.toLowerCase())
   const docData = data as { [key: FullSlug]: ContentDetails }
-  const rankedIds = [...allIds]
+  const rankedDetails = [...allIds]
     .map((id: number) => {
       const slug = idDataMap[id]
       const details = docData[slug]
       if (!details) {
         throw new Error(`[search] no ContentDetails for slug ${slug} (id ${id})`)
       }
-      return { id, score: scoreDocByMatchDegree(details, lowercasedTokens) }
+      return { id, slug, details, score: scoreDocByMatchDegree(details, lowercasedTokens) }
     })
     .sort((a, b) => compareMatchScore(a.score, b.score))
-    .map(({ id }) => id)
 
-  const finalResults = rankedIds.map((id: number) =>
-    formatForDisplay(currentSearchTerm, id, docData, idDataMap),
+  const finalResults = rankedDetails.map(({ id, slug, details }) =>
+    formatForDisplay(currentSearchTerm, id, slug, details),
   )
 
   displayResults(finalResults, results, enablePreview)
