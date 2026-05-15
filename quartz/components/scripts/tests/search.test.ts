@@ -270,7 +270,7 @@ describe("scoreDocByMatchDegree", () => {
     content: partial.content ?? "",
     links: [],
     tags: [],
-    authors: partial.authors,
+    authors: partial.authors ?? [],
   })
 
   it("returns all zeros when no token matches title, content, or authors", () => {
