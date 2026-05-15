@@ -36,8 +36,8 @@ describe("RemoveFixtures", () => {
   })
 
   it.each([
-    ["website_content/fixtures/Emoji-fixture.md", false],
-    ["fixtures/Popover-fixture.md", false],
+    ["website_content/fixtures/emoji-fixture.md", false],
+    ["fixtures/popover-fixture.md", false],
     ["some/nested/fixtures/page.md", false],
   ])("filters out fixture file %s", (filePath, expected) => {
     expect(shouldPublish(filePath)).toBe(expected)
@@ -45,17 +45,17 @@ describe("RemoveFixtures", () => {
 
   it("publishes fixtures when INCLUDE_FIXTURES=true", () => {
     process.env.INCLUDE_FIXTURES = "true"
-    expect(shouldPublish("website_content/fixtures/Emoji-fixture.md")).toBe(true)
+    expect(shouldPublish("website_content/fixtures/emoji-fixture.md")).toBe(true)
   })
 
   it("still filters fixtures when INCLUDE_FIXTURES is any other value", () => {
     process.env.INCLUDE_FIXTURES = "1"
-    expect(shouldPublish("website_content/fixtures/Emoji-fixture.md")).toBe(false)
+    expect(shouldPublish("website_content/fixtures/emoji-fixture.md")).toBe(false)
   })
 
   it("falls back to vfile.path when data.filePath is undefined", () => {
     const content = defaultProcessedContent({})
-    content[1].path = "website_content/fixtures/Popover-fixture.md"
+    content[1].path = "website_content/fixtures/popover-fixture.md"
     expect(filter.shouldPublish({} as BuildCtx, content)).toBe(false)
   })
 

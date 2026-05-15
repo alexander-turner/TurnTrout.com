@@ -1,6 +1,5 @@
 ---
 title: Goose terminal fixture
-permalink: goose-fixture
 no_dropcap: "true"
 tags:
   - website

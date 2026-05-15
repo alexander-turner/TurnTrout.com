@@ -2,7 +2,6 @@
 hide_authors: "true"
 hide_metadata: "true"
 no_dropcap: "true"
-permalink: posts
 title: Posts & Sequences
 aliases:
   - Posts

@@ -1,6 +1,5 @@
 ---
 title: Testing site features
-permalink: test-page
 no_dropcap: "false"
 tags:
   - website
