@@ -1205,6 +1205,7 @@ Scalable
 Schneier
 Scooby
 Scrollable
+Searchpreviewfixture
 Searle
 Senku
 Sensationalization
@@ -1601,6 +1602,7 @@ backprop
 backpropagate
 backpropagated
 backpropagation
+backref
 bajillion
 bandaid
 bandaids
@@ -1720,6 +1722,7 @@ cfungus
 cgungus
 chatbot
 chatbots
+checkboxes
 checkin
 checkmark
 checkpointing
