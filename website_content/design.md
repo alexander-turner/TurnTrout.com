@@ -199,15 +199,9 @@ Figure: At first blush, most of the compression ratios seem unimpressive. Howeve
 <figure><img src="https://assets.turntrout.com/static/images/posts/goose-majestic.avif" alt="A majestic painting of a white goose soaring through a bright blue sky with warm, sunlit clouds. Pink petals float around the goose." style="max-width: 85%;"> <figcaption>This friendly <abbr class="small-caps">avif</abbr> goose clocks in below <abbr class="small-caps">45kb</abbr>, while its <abbr class="small-caps">png</abbr> equivalent weighs <abbr class="small-caps">450kb</abbr>—a 10× increase!</figcaption></figure>
 
 ![A scatterplot showing dramatic decreases in filesize from PNG to AVIF.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
-Figure: Now the huge savings of AVIF are clearer.
+Figure: Now the huge savings of AVIF are clearer. The site-wide image volume drops from 280MB (PNG) to 25MB (AVIF) -- 91% savings.
 
 [^colab]: I used a [publicly accessible Colab](https://colab.research.google.com/drive/1XScXuubpzcyhjU6uYRN0ikHVzLFmJj6X?usp=sharing) to generate the AVIF -> PNG compression graphs.
-
-|         Metric         | Value  |
-| :--------------------: | :----- |
-|     Total PNG size     | 280MB  |
-|    Total AVIF size     |  25MB  |
-| Overall space savings  | 91%    |
 
 ### Videos
 
@@ -480,95 +474,25 @@ Every time you navigate to a new page, there's a <span id="populate-dropcap-prob
 
 ## Formatting enhancement
 
+Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
+
+Sadly, there wasn't. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
+
 > [!quote] [Punctilio for meticulous typography](/open-source#punctilio-for-meticulous-typography)
 > ![[/open-source#punctilio-for-meticulous-typography]]
 
-### Automatic conversion of quotation marks
+### Hyphen replacement
 
-Undirected quote marks (`"test"`) look bad to me. Call me extra (I _am_ extra), but I ventured to _never have undirected quotes on my site._ Instead, double and single quotation marks automatically convert to their opening or closing counterparts. This seems like a bog-standard formatting problem, so surely there's a standard library. Right?
+Subtitle: My `punctilio` library handles this, too.
 
-Sadly, no. GitHub-flavored Markdown includes a `smartypants` option, but honestly, it's sloppy. So I wrote a bit of code.
+[Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
 
-> [!note]- Regex for smart quotes
->
-> ```typescript
-> /**
->  * Replaces quotes with smart quotes
->  * @returns The text with smart quotes
->  */
-> export function niceQuotes(text: string): string {
->   // Single quotes //
->   // Ending comes first so as to not mess with the open quote
->   const endingSingle = `(?<=[^\\s“'])['](?!=')(?=s?(?:[\\s\\.!?;,\\)—\\-]|$))`;
->   text = text.replace(new RegExp(endingSingle, "gm"), "’");
->
->   // Contractions are sandwiched between two letters
->   const contraction = `(?<=[A-Za-z])['](?=[a-zA-Z])`;
->   text = text.replace(new RegExp(contraction, "gm"), "’");
->
->   // Apostrophes always point down
->   //  Convert to apostrophe if not followed by an end quote
->   const apostrophe = `(?<=^|[^\\w])'(?![^‘]*’${afterEndingSingle})`;
->   text = text.replace(new RegExp(apostrophe, "gm"), "’");
->
->   // Beginning single quotes
->   const beginningSingle = `(^|[\\s“"])['](?=\\S)`;
->   text = text.replace(new RegExp(beginningSingle, "gm"), "$1‘");
->
->   // Double quotes //
->   const beginningDouble = new RegExp(
->     `(?<=^|\\s|[\\(\\/\\[\\{\\-—])["](?=\\.{3}|[^\\s\\)\\—,!?;:/.\\}])`,
->     "gm",
->   );
->   text = text.replace(beginningDouble, "“");
->   // Open quote after brace (generally in math mode)
->   text = text.replace(new RegExp(`(?<=\\{)( )?["]`, "g"), "$1“");
->
->   const endingDouble = `([^\\s\\(])["](?=[\\s/\\).,;—:\\-\\}!?]|$)`;
->   text = text.replace(new RegExp(endingDouble, "g"), "$1”");
->
->   // If end of line, replace with right double quote
->   text = text.replace(new RegExp(`["]$`, "g"), "”");
->   // If single quote has a right double quote after it, replace with right single and then double
->   text = text.replace(new RegExp(`'(?=”)`, "g"), "’");
->
->   // Periods inside quotes
->   const periodRegex = new RegExp(`(?<![!?])([’”])(?!\\.\\.\\.)\\.`, "g");
->   text = text.replace(periodRegex, ".$1");
->
->   // Commas outside of quotes
->   const commaRegex = new RegExp(`(?<![!?]),([”’])`, "g");
->   text = text.replace(commaRegex, "$1,");
->
->   return text;
-> }
-> ```
->
-> Code: This code has 45 unit tests all on its own.
->
-> This logic seems quite robust - I recommend it if you're looking for smart quote detection. However, there's a problem. `niceQuotes` is called on each text node in the HTML abstract syntax tree (AST). Sometimes, the DOM gets in the way. Consider the end of a Markdown quote, `_I hate dogs_"`. Its AST is:
->
-> 1. `<em>` node: `I hate dogs`
-> 2. Text node: `"`
->
-> `niceQuotes` is called on each substring, so we get two calls. The first only processes the contents of the `<em>` node, which isn't changed. However, what should `niceQuotes(")` output? The intended output changes with the context - is it an end quote or a beginning quote?
->
-> Considering the broader problem:
->
-> - Within a parent text container, there are $n$ elements,
-> - The quotes should be transformed appropriately, and
-> - The overall operation should not create or delete elements.
->
-> The solution? Roughly:
->
-> 1. Convert the parent container's contents to a string `s`, delimiting separations with a private-use Unicode character (to avoid unintended matches),
-> 2. Relax the `niceQuotes` RegEx to allow (and preserve) the private-use characters, treating them as boundaries of a "permeable membrane" through which contextual information flows,
-> 3. Apply `niceQuotes` to `s`, receiving another string with the same number of elements implied,
-> 4. For all $k$, set element $k$'s text content to the segment starting at private Unicode occurrence $k$.
->
-> I use this same strategy for other formatting improvements, including [hyphen replacement](#hyphen-replacement).
+> [!quote] [How to Use Em Dashes (—), En Dashes (–) , and Hyphens (-)](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use)
+> The em dash (—) can function like a comma, a colon, or parenthesis. Like commas and parentheses, em dashes set off extra information, such as examples, explanatory or descriptive phrases, or supplemental facts. Like a colon, an em dash introduces a clause that explains or expands upon something that precedes it.
 
-[Apparently, dates like `’94` should have a _downward-facing_ apostrophe `’`](https://practicaltypography.com/apostrophes.html), not an upward-facing single quote `‘`! My code handles the conversion: "I was born in '94."
+Technically, _en dashes_ should be used for ranges of dates and numbers. So "<span class="no-formatting">p. 202-203</span>" turns into "p. 202-203", and "<span class="no-formatting">Aug-Dec</span>" turns into "Aug-Dec"!
+
+Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="no-formatting">-2</span>) to be distasteful when used with plaintext numbers. I opt for "-2" instead.
 
 ### Automatic smallcaps
 
@@ -585,17 +509,6 @@ Furthermore, I apply smallcaps to letters which follow numbers (like "100GB") so
 
 > [!quote] NAFTA, [Wikipedia](https://en.wikipedia.org/wiki/North_American_Free_Trade_Agreement)
 > The **North American Free Trade Agreement** (**NAFTA** [/ˈnæftə/](https://en.wikipedia.org/wiki/Help:IPA/English "Help:IPA/English") [_NAF-tə_](https://en.wikipedia.org/wiki/Help:Pronunciation_respelling_key "Help:Pronunciation respelling key"); [Spanish](https://en.wikipedia.org/wiki/Spanish_language "Spanish language"): _Tratado de Libre Comercio de América del Norte_, **TLCAN**; [French](https://en.wikipedia.org/wiki/French_language "French language"): _Accord de libre-échange nord-américain_, **ALÉNA**) was an agreement signed by [Canada](https://en.wikipedia.org/wiki/Canada "Canada"), [Mexico](https://en.wikipedia.org/wiki/Mexico "Mexico"), and the  [United States](https://en.wikipedia.org/wiki/United_States "United States") that created a trilateral [trade bloc](https://en.wikipedia.org/wiki/Trade_bloc "Trade bloc") in [North America.](https://en.wikipedia.org/wiki/North_America "North America") The agreement came into force on January 1, 1994, and superseded the 1988 [Canada–United States Free Trade Agreement](https://en.wikipedia.org/wiki/Canada%E2%80%93United_States_Free_Trade_Agreement "Canada–United States Free Trade Agreement") between the United States and Canada. The NAFTA trade bloc formed one of the largest trade blocs in the world by [gross domestic product.](https://en.wikipedia.org/wiki/Gross_domestic_product "Gross domestic product")
-
-### Hyphen replacement
-
-[Merriam-Webster ordains that](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) - contrary to popular practice - hyphens (-) and em-dashes (—) be used in importantly different situations:
-
-> [!quote] [How to Use Em Dashes (—), En Dashes (–) , and Hyphens (-)](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use)
-> The em dash (—) can function like a comma, a colon, or parenthesis. Like commas and parentheses, em dashes set off extra information, such as examples, explanatory or descriptive phrases, or supplemental facts. Like a colon, an em dash introduces a clause that explains or expands upon something that precedes it.
-
-Technically, _en dashes_ should be used for ranges of dates and numbers. So "<span class="no-formatting">p. 202-203</span>" turns into "p. 202-203", and "<span class="no-formatting">Aug-Dec</span>" turns into "Aug-Dec"!
-
-Some hyphens should actually be _minus signs_. I find raw hyphens (<span class="no-formatting">-2</span>) to be distasteful when used with plaintext numbers. I opt for "-2" instead.
 
 ### Other display tweaks
 
