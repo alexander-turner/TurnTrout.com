@@ -494,7 +494,7 @@ test("Search URL updates as we select different results", async ({ page }) => {
   await expect(page).not.toHaveURL(firstResultUrl)
 })
 
-/* eslint-disable playwright/expect-expect */
+ 
 test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
   // Search the fixture's unique title so the preview deterministically shows
   // the search fixture's checkboxes section instead of whichever live page
@@ -502,6 +502,11 @@ test("Checkbox search preview (screenshot)", async ({ page }, testInfo) => {
   await search(page, "Search preview fixture")
 
   const previewContainer = await waitForArticlePreview(page)
+  const checkboxesHeader = previewContainer.locator("#checkboxes").first()
+  await expect(checkboxesHeader).toBeAttached()
+  await checkboxesHeader.scrollIntoViewIfNeeded()
+  await expect(checkboxesHeader).toBeVisible()
+
   await takeRegressionScreenshot(page, testInfo, "Search-checkboxes", {
     elementToScreenshot: previewContainer,
   })
@@ -952,6 +957,8 @@ test("admonition background is transparent in focused mobile card preview (scree
   const admonition = cardPreview.locator(".admonition").first()
   await expect(admonition).toBeAttached()
   await expect(admonition).toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+  await admonition.scrollIntoViewIfNeeded()
+  await expect(admonition).toBeVisible()
 
   await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
     elementToScreenshot: fixtureResult,
