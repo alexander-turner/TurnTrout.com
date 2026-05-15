@@ -234,6 +234,30 @@ export const createMatchSpan = (text: string): HTMLSpanElement => {
 }
 
 /**
+ * Find the best `.search-match` element to scroll a preview to. Prefers
+ * the match with the longest text — a contiguous phrase wrapped by the
+ * longest tokenizeTerm entry beats a stray single-token match elsewhere
+ * on the page. Ties broken by DOM order.
+ */
+export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | null {
+  const matches = container.querySelectorAll<HTMLElement>(`.${SEARCH_MATCH_CLASS}`)
+  if (matches.length === 0) return null
+
+  // `.search-match` spans are created via createMatchSpan with explicit
+  // textContent, so the cast is safe.
+  let best = matches[0]
+  let bestLength = (best.textContent as string).length
+  for (let i = 1; i < matches.length; i++) {
+    const length = (matches[i].textContent as string).length
+    if (length > bestLength) {
+      best = matches[i]
+      bestLength = length
+    }
+  }
+  return best
+}
+
+/**
  * Syncs the display-results class with the actual search bar content
  * This handles cases where JS state is lost but DOM state persists
  */
@@ -426,10 +450,10 @@ export class PreviewManager {
    */
   /* istanbul ignore next */
   public scrollToFirstmatch(): void {
-    const firstMatch = this.container.querySelector(".search-match") as HTMLElement
-    if (!firstMatch) return
+    const target = findBestMatchToScrollTo(this.container)
+    if (!target) return
 
-    firstMatch.scrollIntoView({ block: "center", behavior: "instant" })
+    target.scrollIntoView({ block: "center", behavior: "instant" })
   }
 }
 
@@ -1032,9 +1056,9 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
 
     // Wait for layout before scrolling to first match
     requestAnimationFrame(() => {
-      const firstMatch = cardPreview.querySelector(".search-match") as HTMLElement
-      if (firstMatch) {
-        scrollContainerToMatch(cardPreview, firstMatch, 1 / 3)
+      const target = findBestMatchToScrollTo(cardPreview)
+      if (target) {
+        scrollContainerToMatch(cardPreview, target, 1 / 3)
       }
     })
   })
@@ -1072,9 +1096,9 @@ function handleResizeForCardPreviews(): void {
 /* istanbul ignore next */
 function rescrollCardPreviews(): void {
   document.querySelectorAll(".card-preview").forEach((cardPreview) => {
-    const firstMatch = cardPreview.querySelector(`.${SEARCH_MATCH_CLASS}`) as HTMLElement
-    if (firstMatch) {
-      scrollContainerToMatch(cardPreview as HTMLElement, firstMatch, 1 / 3)
+    const target = findBestMatchToScrollTo(cardPreview as HTMLElement)
+    if (target) {
+      scrollContainerToMatch(cardPreview as HTMLElement, target, 1 / 3)
     }
   })
 }

@@ -12,6 +12,7 @@ import {
   tokenizeTerm,
   match,
   createMatchSpan,
+  findBestMatchToScrollTo,
   updatePlaceholder,
   showSearch,
   hideSearch,
@@ -225,6 +226,38 @@ describe("createMatchSpan", () => {
     expect(span.tagName).toBe("SPAN")
     expect(span.className).toBe("search-match")
     expect(span.textContent).toBe("test")
+  })
+})
+
+describe("findBestMatchToScrollTo", () => {
+  it("returns null when the container has no matches", () => {
+    const container = document.createElement("div")
+    expect(findBestMatchToScrollTo(container)).toBeNull()
+  })
+
+  it("prefers a longer-text match over an earlier shorter one", () => {
+    const container = document.createElement("div")
+    container.appendChild(createMatchSpan("fixture"))
+    container.appendChild(document.createTextNode(" — "))
+    const phrase = createMatchSpan("Checkboxes fixture")
+    container.appendChild(phrase)
+    expect(findBestMatchToScrollTo(container)).toBe(phrase)
+  })
+
+  it("falls back to DOM order for matches of equal length", () => {
+    const container = document.createElement("div")
+    const first = createMatchSpan("foo")
+    const second = createMatchSpan("bar")
+    container.appendChild(first)
+    container.appendChild(second)
+    expect(findBestMatchToScrollTo(container)).toBe(first)
+  })
+
+  it("returns the only match when there is just one", () => {
+    const container = document.createElement("div")
+    const only = createMatchSpan("foo")
+    container.appendChild(only)
+    expect(findBestMatchToScrollTo(container)).toBe(only)
   })
 })
 
