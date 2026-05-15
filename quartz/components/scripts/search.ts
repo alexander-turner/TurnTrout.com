@@ -1261,12 +1261,13 @@ export const compareMatchScore = (a: MatchScore, b: MatchScore): number => {
  * @param idDataMap - Mapping of IDs to slugs
  */
 /* istanbul ignore next */
+
 const formatForDisplay = (term: string, id: number, slug: FullSlug, details: ContentDetails) => ({
   id,
   slug,
   title: details.title,
   content: match(term, details.content, true),
-  authors: details.authors?.join(", ") ?? "",
+  authors: details.authors?.join(", "),
 })
 
 /**
@@ -1418,7 +1419,7 @@ async function fillDocument(data: { [key: FullSlug]: ContentDetails }): Promise<
       slug: slug as FullSlug,
       title: fileData.title,
       content: fileData.content,
-      authors: fileData.authors?.join(", ") ?? "",
+      authors: fileData.authors.join(", "),
     }
     return index.addAsync(id, doc)
   })
