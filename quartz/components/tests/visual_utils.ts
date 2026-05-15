@@ -1,8 +1,12 @@
+import type { Page, Request } from "playwright"
+
 import { type Locator, type TestInfo, expect } from "@playwright/test"
-import { type Page } from "playwright"
+import { appendFileSync, mkdirSync } from "fs"
+import { join } from "path"
 import sanitize from "sanitize-filename"
 
 import { minDesktopWidth } from "../../styles/variables"
+import { findGitRoot } from "../../util/log"
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
 
@@ -589,6 +593,15 @@ export async function gotoPage(
   // separate waitForLoadState(), but WebKit/Safari can destroy the execution
   // context between those two steps, causing "Execution context was destroyed"
   // errors on page.evaluate / page.waitForFunction calls.
+  // Collect failed sub-resource fetches during this navigation and append
+  // them to .logs/gotoPage-failed-requests.log so the CI logs artifact
+  // names the failing URL without flooding stdout.
+  const failedRequests: Array<{ url: string; reason: string }> = []
+  const onRequestFailed = (req: Request): void => {
+    failedRequests.push({ url: req.url(), reason: req.failure()?.errorText ?? "unknown" })
+  }
+  page.on("requestfailed", onRequestFailed)
+
   try {
     await page.goto(url, { waitUntil: loadState })
   } catch (error: unknown) {
@@ -600,12 +613,29 @@ export async function gotoPage(
     } else {
       throw error
     }
+  } finally {
+    page.off("requestfailed", onRequestFailed)
   }
 
-  // Wait for the SPA router to finish initializing so a late client-side
-  // navigation doesn't destroy the execution context before callers can
-  // run page.evaluate() (Safari/WebKit is especially prone to this).
-  await page.waitForFunction(() => window.__routerInitialized === true)
+  if (failedRequests.length > 0) {
+    logFailedRequests(url, failedRequests)
+  }
+}
+
+const failedRequestsLogPath = join(findGitRoot(), ".logs", "gotoPage-failed-requests.log")
+let failedRequestsLogDirEnsured = false
+
+function logFailedRequests(url: string, failures: Array<{ url: string; reason: string }>): void {
+  if (!failedRequestsLogDirEnsured) {
+    mkdirSync(join(findGitRoot(), ".logs"), { recursive: true })
+    failedRequestsLogDirEnsured = true
+  }
+  const lines = [
+    `[${new Date().toISOString()}] ${failures.length} failed request(s) during navigation to ${url}:`,
+    ...failures.map(({ url: failedUrl, reason }) => `  - ${reason}: ${failedUrl}`),
+    "",
+  ]
+  appendFileSync(failedRequestsLogPath, lines.join("\n"))
 }
 
 /** Reload the current page by navigating away and back to the original URL.

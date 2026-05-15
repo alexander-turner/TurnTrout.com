@@ -128,8 +128,7 @@ test.beforeEach(async ({ page }) => {
   // Log any console errors to help diagnose issues
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
-  // Navigate to a page that uses the SPA inline logic
-  await gotoPage(page, `http://localhost:8080/${testingPageSlug}`, "domcontentloaded")
+  await gotoPage(page, `http://localhost:8080/${testingPageSlug}`)
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
   await page.evaluate(() => {
