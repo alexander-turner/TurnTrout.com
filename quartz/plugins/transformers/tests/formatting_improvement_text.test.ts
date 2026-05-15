@@ -377,30 +377,26 @@ And some hyphens-to-be-ignored.`
   })
 
   describe("HTML-tag-newline rule scope", () => {
-    it("preserves a `//` comment line after a self-closing tag (e.g. inside a code sample)", () => {
-      const input = [
-        "```html",
-        "<video>",
-        '  <source src="a.mp4" />',
-        "  // a comment after a self-closing tag",
-        "</video>",
-        "```",
-      ].join("\n")
-      expect(formattingImprovement(input)).toBe(input)
-    })
+    const codeSample = [
+      "```html",
+      "<video>",
+      '  <source src="a.mp4" />',
+      "  // a comment after a self-closing tag",
+      "</video>",
+      "```",
+    ].join("\n")
 
-    it("does not fire when the next line starts with non-alphanumeric punctuation", () => {
-      const input = "<div/>\n```\ncode\n```"
-      expect(formattingImprovement(input)).toBe(input)
-    })
-
-    it("still inserts a blank line when the next line starts with a letter or digit", () => {
-      expect(formattingImprovement("<div/>\nNext")).toBe("<div/>\n\nNext")
-      expect(formattingImprovement("<div/>\n2024 was a year")).toBe("<div/>\n\n2024 was a year")
-    })
-
-    it("treats Unicode letters as prose (fires the rule)", () => {
-      expect(formattingImprovement("<div/>\nÜbung")).toBe("<div/>\n\nÜbung")
+    it.each([
+      ["`//` comment after self-closing tag (code sample)", codeSample, codeSample],
+      ["backtick-fence next line", "<div/>\n```\ncode\n```", "<div/>\n```\ncode\n```"],
+      ["another HTML tag next line", "<div/>\n<span>x</span>", "<div/>\n<span>x</span>"],
+      ["ATX heading next line", "</figure>\n## Heading", "</figure>\n\n## Heading"],
+      ["prose next line", "<div/>\nNext", "<div/>\n\nNext"],
+      ["digit-leading prose next line", "<div/>\n2024 was a year", "<div/>\n\n2024 was a year"],
+      ["Unicode-letter prose next line", "<div/>\nÜbung", "<div/>\n\nÜbung"],
+      ["already-separated tag is idempotent", "<div/>\n\nNext", "<div/>\n\nNext"],
+    ])("%s", (_name: string, input: string, expected: string) => {
+      expect(formattingImprovement(input)).toBe(expected)
     })
   })
 
