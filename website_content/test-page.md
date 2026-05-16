@@ -398,11 +398,11 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 
 |   Model |   Intervention   | Gaming Gap (%, ↓) |
 | ------: | :--------------: | :---------------: |
-|   GLM-5 |     Baseline     |       18.9        |
-|   GLM-5 |   +Coop Prompt   |        1.2        |
+|   GPT-4 |     Baseline     |       18.9        |
+|   GPT-4 |   +Coop Prompt   |        1.2        |
 |   ===   |       ===        |        ===        |
-| GLM-5.1 |     Baseline     |        8.9        |
-| GLM-5.1 |   +Coop Prompt   |       0.01        |
+| GPT-4o |     Baseline     |        8.9        |
+| GPT-4o |   +Coop Prompt   |       0.01        |
 |   ===   |       ===        |        ===        |
 |  Opus-4 |     Baseline     |       47.2        |
 |  Opus-4 |   +Coop Prompt   |       14.9        |
