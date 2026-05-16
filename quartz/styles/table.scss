@@ -64,6 +64,12 @@ th {
   font-weight: 500;
 }
 
+// Header → body separator matches the group-boundary tone, so the header
+// reads as the first "group" above the data.
+thead th {
+  border-bottom: 1px solid var(--midground);
+}
+
 tr {
   border-bottom: 1px solid var(--midground-faint);
 
