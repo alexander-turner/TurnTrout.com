@@ -960,6 +960,40 @@ test("admonition background is transparent in focused mobile card preview (scree
   })
 })
 
+test("admonition icon renders in focused mobile card preview (screenshot)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+
+  // Same fixture as the sibling test; the icon must remain visible even
+  // though the card-preview flattens descendant backgrounds.
+  await search(page, "Admonitions fixture")
+
+  const fixtureResult = page.locator('.result-card[id="search-fixture"]')
+  await expect(fixtureResult).toBeVisible()
+  await fixtureResult.focus()
+  await expect(fixtureResult).toHaveClass(/focus/)
+
+  const cardPreview = fixtureResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+
+  const admonitionTitle = cardPreview.locator(".admonition-title").first()
+  const icon = admonitionTitle.locator(".admonition-icon")
+  await expect(icon).toBeAttached()
+
+  // Icons paint via `background-color + mask-image`. If the card-preview's
+  // background-flatten rule eats the icon's background, the glyph vanishes.
+  await expect(icon).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+  const iconBox = await icon.boundingBox()
+  expect(iconBox?.width).toBeGreaterThan(0)
+  expect(iconBox?.height).toBeGreaterThan(0)
+
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition-icon", {
+    elementToScreenshot: admonitionTitle,
+  })
+})
+
 test.describe("Search preview scroll behavior", () => {
   test("scrolls container so first match is approximately centered", async ({ page }) => {
     test.skip(isMobileViewport(page), "Preview container is desktop-only")
