@@ -105,11 +105,13 @@ const config: QuartzConfig = {
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
       FixFootnotes(),
       WrapNakedElements(),
+      // Before HTMLFormattingImprovement so the "subtitle" class is set when
+      // nbsp transforms run, letting them skip subtitles like they skip headings.
+      rehypeCustomSubtitle(),
       HTMLFormattingImprovement(),
       Latex(),
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
       rehypeCustomSpoiler(),
-      rehypeCustomSubtitle(),
       TagSmallcaps(),
       AfterArticle(),
       AddFavicons(),
