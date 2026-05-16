@@ -1085,8 +1085,7 @@ function disconnectCardPreviewObserver(): void {
  * cloned page content — videos, images, tables — when a card scrolls
  * out of view.
  */
-/* istanbul ignore next */
-function clearCardPreviewContent(card: HTMLElement): void {
+export function clearCardPreviewContent(card: HTMLElement): void {
   const cardPreview = card.querySelector(".card-preview") as HTMLElement | null
   if (cardPreview) cardPreview.innerHTML = ""
 }
@@ -1097,8 +1096,7 @@ function clearCardPreviewContent(card: HTMLElement): void {
  * has a stable, CSS-defined height before the lazy mount fires — otherwise
  * cards reflow on first intersection and the visible scroll position jumps.
  */
-/* istanbul ignore next */
-function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
+export function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
   const existing = card.querySelector(".card-preview") as HTMLElement | null
   if (existing) return existing
   const cardPreview = document.createElement("div")
@@ -1118,7 +1116,7 @@ function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
 /* istanbul ignore next */
 function addCardPreview(card: HTMLElement, slug: FullSlug): void {
   const cardPreview = ensureCardPreviewWrapper(card)
-  if (cardPreview.querySelector("article.search-preview")) return // Already populated
+  if (cardPreview.querySelector("article.search-preview")) return
 
   // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
   void fetchContent(slug).then(({ content: contentElements }) => {

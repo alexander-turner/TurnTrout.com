@@ -29,6 +29,8 @@ import {
   resetSearchStateForTesting,
   setSearchInitializedForTesting,
   initializeSearch,
+  ensureCardPreviewWrapper,
+  clearCardPreviewContent,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -939,5 +941,50 @@ describe("initializeSearch retry after failed fetch", () => {
     expect(state.searchInitialized).toBe(true)
     expect(state.hasData).toBe(true)
     expect(state.hasIndex).toBe(true)
+  })
+})
+
+describe("ensureCardPreviewWrapper", () => {
+  it("creates and returns a .card-preview child when none exists", () => {
+    const card = document.createElement("a")
+    card.classList.add("result-card")
+
+    const wrapper = ensureCardPreviewWrapper(card)
+
+    expect(wrapper.classList.contains("card-preview")).toBe(true)
+    expect(card.querySelectorAll(".card-preview")).toHaveLength(1)
+    expect(card.contains(wrapper)).toBe(true)
+  })
+
+  it("returns the existing .card-preview without creating a duplicate", () => {
+    const card = document.createElement("a")
+    const existing = document.createElement("div")
+    existing.classList.add("card-preview")
+    card.appendChild(existing)
+
+    const wrapper = ensureCardPreviewWrapper(card)
+
+    expect(wrapper).toBe(existing)
+    expect(card.querySelectorAll(".card-preview")).toHaveLength(1)
+  })
+})
+
+describe("clearCardPreviewContent", () => {
+  it("removes inner content but keeps the .card-preview wrapper", () => {
+    const card = document.createElement("a")
+    const wrapper = document.createElement("div")
+    wrapper.classList.add("card-preview")
+    wrapper.innerHTML = '<article class="search-preview"><p>preview text</p></article>'
+    card.appendChild(wrapper)
+
+    clearCardPreviewContent(card)
+
+    expect(card.querySelectorAll(".card-preview")).toHaveLength(1)
+    expect(wrapper.innerHTML).toBe("")
+  })
+
+  it("is a no-op when the card has no .card-preview wrapper", () => {
+    const card = document.createElement("a")
+    expect(() => clearCardPreviewContent(card)).not.toThrow()
   })
 })
