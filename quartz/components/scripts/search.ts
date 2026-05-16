@@ -1041,12 +1041,14 @@ const intersectingCards = new WeakSet<HTMLElement>()
  * Per-card pending-unmount timers. An intersect=false entry from the
  * IntersectionObserver schedules a deferred unmount instead of running it
  * immediately, so a transient blip — focus()'s default scroll-into-view, a
- * layout reflow, momentum-scroll overshoot — that flips back to intersect=true
- * within {@link UNMOUNT_DELAY_MS} cancels the unmount and avoids tearing
- * down the article between two assertions in the same test step.
+ * layout reflow, momentum-scroll overshoot, the multi-step page scroll that
+ * Playwright's element-screenshot helper performs on a tall element — that
+ * flips back to intersect=true within {@link UNMOUNT_DELAY_MS} cancels the
+ * unmount and avoids tearing down the article between the scroll and the
+ * capture (or between two assertions in the same test step).
  */
 const pendingUnmounts = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
-const UNMOUNT_DELAY_MS = 750
+const UNMOUNT_DELAY_MS = 30_000
 
 /**
  * Singleton IntersectionObserver that mounts and unmounts mobile card
