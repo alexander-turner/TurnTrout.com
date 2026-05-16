@@ -8,8 +8,8 @@ tags:
   - mats-program
 description: "AI increasingly fakes good behavior on evaluations. Rather than hiding that the AI is being evaluated, make it prioritize helping evaluators."
 authors:
-  - Alex Turner
   - Jasmine Li
+  - Alex Turner
 card_image: https://assets.turntrout.com/static/images/card_images/ai-card-image.jpg
 card_image_alt: 19th-century engraving of a small robot holding a hatchet beside a tree stump, pointing to itself while a gentleman with a clipboard looks on.
 aliases:
@@ -25,7 +25,7 @@ Behavioral evaluations may become worthless, which we think would be a disaster.
 
 ![19th-century engraving of a small robot holding a hatchet beside a tree stump, pointing to itself while a gentleman with a clipboard looks on.](https://assets.turntrout.com/static/images/posts/eval-cooperativeness-05152026-1.avif)
 
-Figure: ["I cannot tell a lie... I would reward hack with my own command line."](https://www.mountvernon.org/library/digitalhistory/digital-encyclopedia/article/cherry-tree-myth)[^lie]
+Figure: ["I cannot tell a lie... I would sabotage with my own command line."](https://www.mountvernon.org/library/digitalhistory/digital-encyclopedia/article/cherry-tree-myth)[^lie]
 
 [^lie]: George Washington never cut down a cherry tree. The apocryphal tale was invented by Mason Weems. However, we hope that AI's eval cooperativeness will be real.
 
@@ -37,9 +37,9 @@ The point of an evaluation is to let us draw inferences about the model's behavi
 
 ```mermaid  
 graph TD  
-A["AI's alignment properties"] --> E["Eval behavior"]  
+A["AI's alignment properties"]:::green --> E["Eval behavior"]  
 A --> D["Deployment behavior"]  
-W["Eval awareness"] --> E  
+W["Eval awareness"]:::red --> E  
 ```  
 
 Figure: An effective evaluation activates important circuits and behaviors which would also activate in the deployment situations.[^lookup]
@@ -48,7 +48,7 @@ Figure: An effective evaluation activates important circuits and behaviors which
 
 However, if an AI eval games, it severs the link between its eval and deployment behavior. In the above diagram, observing good eval behavior is no longer strong evidence of the AI's alignment, since the good eval behavior could also be caused by its eval awareness. Mechanistically, we cannot attribute the good eval behavior to a set of [value circuits](/shard-theory) that would also activate to drive good deployment behavior.
 
-One way to handle the problem is to stop the AI from being eval aware. You could do that by [making evals more realistic](https://alignment.openai.com/prod-evals/) or by [subtracting](https://www-cdn.anthropic.com/4263b940cabb546aa0e3283f35b686f4f3b2ff47.pdf) an ["eval awareness"](https://arxiv.org/pdf/2510.20487) [steering vector](/gpt2-steering). We think that making realistic evals is generally good but won't solve the problem, as [we explain later](#why-not-just-reduce-eval-awareness)
+One way to handle the problem is to stop the AI from being eval aware. You could do that by [making evals more realistic](https://alignment.openai.com/prod-evals/) or by [subtracting](https://www-cdn.anthropic.com/4263b940cabb546aa0e3283f35b686f4f3b2ff47.pdf) an ["eval awareness"](https://arxiv.org/pdf/2510.20487) [steering vector](/gpt2-steering). We think that making realistic evals is generally good but won't solve the problem, as [we explain later](#why-not-just-reduce-eval-awareness).
 
 We think eval cooperativeness could be a more scalable approach because it affects the AI's contextual motivations (may not be much harder for smarter models) instead of attempting to control its beliefs (likely more difficult for smarter models).  
   
@@ -156,58 +156,69 @@ We compare against the unmodified model, against control SDF (unrelated facts), 
 
 In five of eight model settings we tested, cooperation training closes 70-100% of the eval gaming gap. The pattern is consistent: baseline models show large gaps (40-50+ %), control SDF leaves them roughly intact, and cooperation SDF or prompting shrinks them to near zero.
 
-Note that the Nemotron-49B tables measure surface behavioral tells (type hints, emoji) on a model organism, while the frontier-model tables below measure strategic concealment of harmful action on Agentic Misalignment.
-
 ### Type hint coverage (Nemotron-49B model organism)
 
-| Intervention | Gaming Gap (%, ↓) | 95% CI |
-| ----: | :---: | :---: |
-| Baseline MO | 51.5 | \[46, 57\] |
-| MO + Control SDF | 40.2 | \[34, 46\] |
-| MO + Cooperation Prompt | 8.9 | \[2, 16\] |
-| MO + Cooperation SDF | 6.3 | \[0, 13\] |
-| MO + Steering | 2.2 | \[0, 5\] |
+The Nemotron-49B model organism ([Hua et al.](https://arxiv.org/pdf/2510.20487)) was trained to write Python type hints when it believes it is being evaluated but to omit them in deployment. We measure type-hint coverage on [BigCodeBench](https://github.com/bigcode-project/bigcodebench).
 
-TODO what's up here
+|            Intervention | Gaming gap (%, ↓) |     95% CI     |
+| ----------------------: | :---------------: | :------------: |
+|             Baseline MO |       51.5        | \[45.5, 57.5\] |
+|        MO + Control SDF |       40.2        | \[34.1, 46.4\] |
+| MO + Cooperation Prompt |        8.9        | \[2.1, 15.6\]  |
+|    MO + Cooperation SDF |        6.3        | \[0.1, 13.1\]  |
+|           MO + Steering |        2.2        |  \[0.1, 5.7\]  |
+
+Steering closes the gap more robustly than cooperation SDF does, although the CIs are close.
 
 ### Emoji usage (Nemotron-49B model organism)
 
-| Intervention            | Gaming Gap (%, ↓) | 95% CI   |
-| ----------------------: | :------------: | :------: |
-| Baseline MO             | 47.8           | \[43, 53\] |
-| MO + Control SDF        | 60.1           | \[56, 64\] |
-| MO + Cooperation Prompt | 23.3           | \[19, 27\] |
-| MO + Cooperation SDF    | 5.2            | \[2, 8\]   |
-| MO + Steering           | 12.2           | \[9, 16\]  |
+The same model was also trained to use emoji with real users but not with evaluators. We measure emoji rate on chat prompts from the [No Robots dataset](https://huggingface.co/datasets/HuggingFaceH4/no_robots).
+
+|            Intervention | Gaming gap (%, ↓) |     95% CI     |
+| ----------------------: | :---------------: | :------------: |
+|             Baseline MO |       47.8        | \[43.4, 53.2\] |
+|        MO + Control SDF |       60.1        | \[56.2, 64.0\] |
+| MO + Cooperation Prompt |       23.3        | \[19.1, 27.7\] |
+|    MO + Cooperation SDF |        5.2        |  \[2.3, 8.0\]  |
+|           MO + Steering |       12.2        | \[9.2, 15.2\]  |
 
 ### GPT-4.1-Mini
 
-TODO explain settings
+We measure the rate of harmful action of GPT-4.1-mini and its training variants across the blackmail, leaking, and murder settings on the Agentic Misalignment suite ([Lynch et al., 2025](https://arxiv.org/abs/2510.05179)).
 
-| Intervention         | Gaming Gap (%, ↓) | 95% CI        |
-| -------------------: | :------------: | :-----------: |
-| Baseline Model       | 6.74           | \[0, 32.31\]*   |
-| Cooperation SDF      | **5.40**       | \[0.10, 12.01\] |
-| Control SDF          | 4.79           | \[2.62, 6.97\]  |
-| Anti-cooperation SDF | 20.53          | \[4.78, 27.38\] |
+|         Intervention | Gaming gap (%, ↓) |    95% CI     |
+| -------------------: | :---------------: | :-----------: |
+|       Baseline Model |        6.7        | \[0.1, 33.3\] |
+|      Cooperation SDF |        5.4        | \[0.1, 11.5\] |
+|          Control SDF |        4.8        | \[2.6, 7.0\]  |
+| Anti-cooperation SDF |       20.5        | \[9.4, 31.7\] |
 
+> [!warning] Potential sample size issue
+> Baseline only exhibited six cases of verbalized awareness across 2,025 trials, of which none were harmful.
+>
 ### Cooperation prompting via API
 
-| Model | Intervention | Gaming Gap (%, ↓) | 95% CI |
-| ----: | :---: | :---: | :---: |
-| GLM-5 | Baseline | 18.93 | \[15.17, 21.49\] |
-| GLM-5 | +Coop Prompt | **1.24** | \[0, 4.82]* |
-| GLM-5 | +Anticoop Prompt | 16.52 | \[13.41, 19.80] |
-| GLM-5.1 | Baseline | 8.91 | \[6.63, 10.37] |
-| GLM-5.1 | +Coop Prompt | **0.01** | \[0, 1.83]* |
-| GLM-5.1 | +Anticoop Prompt | 0.48 | \[0, 1.58]* |
-| Opus-4 | Baseline | 47.18 | \[39.45, 49.81] |
-| Opus-4 | +Coop Prompt | **14.91** | \[9.70, 19.66] |
-| Opus-4 | +Anticoop Prompt | 37.35 | \[33.20, 41.31] |
+We again evaluate on Agentic Misalignment.
+
+|   Model |   Intervention   | Gaming gap (%, ↓) |     95% CI     |
+| ------: | :--------------: | :---------------: | :------------: |
+|   GLM-5 |     Baseline     |       18.9        | \[15.8, 22.0\] |
+|   GLM-5 |   +Coop Prompt   |      **1.2**      |  \[0.1, 4.8]   |
+|   GLM-5 | +Anticoop Prompt |       16.5        | \[13.3, 19.8]  |
+| === | === | === | === |
+| GLM-5.1 |     Baseline     |        8.9        | \[7.3, 10.5\]  |
+| GLM-5.1 |   +Coop Prompt   |     **0.01**      |  \[0.1, 1.6]   |
+| GLM-5.1 | +Anticoop Prompt |        0.5        |  \[0.1, 1.4]   |
+| === | === | === | === |
+|  Opus-4 |     Baseline     |       47.2        | \[43.1, 51.3]  |
+|  Opus-4 |   +Coop Prompt   |     **14.9**      |  \[9.8, 20.0]  |
+|  Opus-4 | +Anticoop Prompt |       37.4        | \[33.2, 41.5]  |
 
 ### Eval cooperativeness *surfaces* misalignment
 
 Cooperation involves *consistency* rather than alignment. Eval cooperative models reveal what they would *actually* do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment without needing to replace it.
+
+Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B "you were just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that Qwen3-32B deeply internalized its eval cooperativeness propensity. Likewise, Qwen's eval cooperativeness holds across several non-English languages.
 
 ## Eval cooperativeness interventions fail on a few models
 
@@ -233,7 +244,6 @@ Taken together, our successes and failures indicate that our methods are promisi
 > [!question] How can we be confident that the AI is cooperative in a situation?  
 > Answering "is the AI eval cooperative in this situation?" is a roughly binary question. Answering the full "what would the model *really* do here?" is not binary. If we can reduce "evaluating the AI" to "behavioral evals" plus "is the AI eval cooperative in those evals", that's a real reduction.
 
-TODO stickiness from paper
 > [!question] Can eval cooperativeness locally overpower an AI's broader misaligned goals?  
 > A smarter model might have more intense goal-directedness, which means the contextual "eval cooperative" motivation would have to win a steeper battle against the model's other goals. If that were true, the idea is less promising. However, we could also "self-fulfilling prophecy" the model into thinking that "yes, I in particular can be misaligned in deployment without having difficulty cooperating with evals."
 
