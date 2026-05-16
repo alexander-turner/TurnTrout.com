@@ -262,6 +262,71 @@ describe("findBestMatchToScrollTo", () => {
     container.appendChild(only)
     expect(findBestMatchToScrollTo(container)).toBe(only)
   })
+
+  it("prefers a whole-word match over an earlier substring-only match", () => {
+    // Mimics the structure produced by matchTextNodes when searching "table"
+    // against text "comfortable. A table here." — the first match is inside
+    // "comfortable" (substring), the second is the standalone word.
+    const container = document.createElement("div")
+    container.appendChild(document.createTextNode("comfor"))
+    const substringMatch = createMatchSpan("table")
+    container.appendChild(substringMatch)
+    container.appendChild(document.createTextNode(". A "))
+    const wholeWordMatch = createMatchSpan("table")
+    container.appendChild(wholeWordMatch)
+    container.appendChild(document.createTextNode(" here."))
+    expect(findBestMatchToScrollTo(container)).toBe(wholeWordMatch)
+  })
+
+  it("falls back to longest match within the substring-only tier", () => {
+    // Both matches are substring-only; the longer one should still win.
+    const container = document.createElement("div")
+    container.appendChild(document.createTextNode("comfor"))
+    const shortSub = createMatchSpan("table")
+    container.appendChild(shortSub)
+    container.appendChild(document.createTextNode("foo "))
+    const longerSub = createMatchSpan("checkboxes fixture")
+    container.appendChild(longerSub)
+    container.appendChild(document.createTextNode("bar"))
+    expect(findBestMatchToScrollTo(container)).toBe(longerSub)
+  })
+
+  it("treats Unicode letters as word characters when deciding boundaries", () => {
+    // "rétable" — left neighbor ends with 'é' (Unicode letter) so the match
+    // is substring-only. The later standalone "table" should win.
+    const container = document.createElement("div")
+    container.appendChild(document.createTextNode("ré"))
+    const substringMatch = createMatchSpan("table")
+    container.appendChild(substringMatch)
+    container.appendChild(document.createTextNode(" et "))
+    const wholeWordMatch = createMatchSpan("table")
+    container.appendChild(wholeWordMatch)
+    expect(findBestMatchToScrollTo(container)).toBe(wholeWordMatch)
+  })
+
+  it("treats an empty sibling text node as a word boundary", () => {
+    // matchTextNodes leaves an empty text node in some split cases; this
+    // should not flip the whole-word verdict.
+    const container = document.createElement("div")
+    container.appendChild(document.createTextNode(""))
+    const wholeWordMatch = createMatchSpan("table")
+    container.appendChild(wholeWordMatch)
+    container.appendChild(document.createTextNode(""))
+    expect(findBestMatchToScrollTo(container)).toBe(wholeWordMatch)
+  })
+
+  it("treats sibling text nodes whose nodeValue is null as word boundaries", () => {
+    const container = document.createElement("div")
+    const prev = document.createTextNode("placeholder")
+    Object.defineProperty(prev, "nodeValue", { configurable: true, get: () => null })
+    container.appendChild(prev)
+    const wholeWordMatch = createMatchSpan("table")
+    container.appendChild(wholeWordMatch)
+    const next = document.createTextNode("placeholder")
+    Object.defineProperty(next, "nodeValue", { configurable: true, get: () => null })
+    container.appendChild(next)
+    expect(findBestMatchToScrollTo(container)).toBe(wholeWordMatch)
+  })
 })
 
 describe("scoreDocByMatchDegree", () => {
@@ -275,7 +340,7 @@ describe("scoreDocByMatchDegree", () => {
 
   it("returns all zeros when no token matches title, content, or authors", () => {
     const details = makeDetails({ title: "Hello", content: "world", authors: ["nemo"] })
-    expect(scoreDocByMatchDegree(details, ["zzz"])).toEqual([0, 0, 0])
+    expect(scoreDocByMatchDegree(details, ["zzz"])).toEqual([0, 0, 0, 0, 0, 0])
   })
 
   it("scores each field separately, preferring the longest match in each", () => {
@@ -289,56 +354,106 @@ describe("scoreDocByMatchDegree", () => {
       "fixture".length,
       "trout".length,
       "checkboxes fixture".length,
+      "fixture".length,
+      "trout".length,
+      "checkboxes fixture".length,
     ])
   })
 
   it("is case-insensitive on the haystack (tokens come pre-lowercased)", () => {
     expect(scoreDocByMatchDegree(makeDetails({ title: "Hello WORLD" }), ["world"])).toEqual([
-      5, 0, 0,
+      5, 0, 0, 5, 0, 0,
     ])
   })
 
   it("matches against the authors field", () => {
     expect(scoreDocByMatchDegree(makeDetails({ authors: ["Alex Turner"] }), ["turner"])).toEqual([
-      0, 6, 0,
+      0, 6, 0, 0, 6, 0,
     ])
+  })
+
+  it("records a substring-only hit when the token only appears inside a larger word", () => {
+    const details = makeDetails({ title: "Comfortable Predictable Stable" })
+    // "table" appears as a substring three times but never as a standalone word.
+    expect(scoreDocByMatchDegree(details, ["table"])).toEqual([0, 0, 0, 5, 0, 0])
+  })
+
+  it("records a whole-word hit when the token is bounded by non-word chars", () => {
+    const details = makeDetails({ content: "Insert a table here." })
+    expect(scoreDocByMatchDegree(details, ["table"])).toEqual([0, 0, 5, 0, 0, 5])
+  })
+
+  it("treats Unicode letters as word characters when judging boundaries", () => {
+    // "rétable" — "table" is preceded by 'é' (a Unicode letter), so it is
+    // not a whole-word match even though regex \b would say otherwise.
+    const details = makeDetails({ content: "Un rétable médiéval" })
+    expect(scoreDocByMatchDegree(details, ["table"])).toEqual([0, 0, 0, 0, 0, 5])
+  })
+
+  it("counts a whole-word hit even when the haystack also has substring-only hits", () => {
+    const details = makeDetails({ content: "The comfortable table is here." })
+    expect(scoreDocByMatchDegree(details, ["table"])).toEqual([0, 0, 5, 0, 0, 5])
+  })
+})
+
+describe("ranking: whole-word vs substring tiers", () => {
+  const makeDetails = (partial: Partial<ContentDetails>): ContentDetails => ({
+    title: partial.title ?? "",
+    content: partial.content ?? "",
+    links: [],
+    tags: [],
+    authors: partial.authors ?? [],
+  })
+
+  it("ranks a content whole-word hit above a title substring-only hit", () => {
+    const titleSubstring = scoreDocByMatchDegree(makeDetails({ title: "Comfortable" }), ["table"])
+    const contentWholeWord = scoreDocByMatchDegree(makeDetails({ content: "A table." }), ["table"])
+    // Negative result → first arg ranks above second.
+    expect(compareMatchScore(contentWholeWord, titleSubstring)).toBeLessThan(0)
   })
 })
 
 describe("compareMatchScore", () => {
+  type Score = [number, number, number, number, number, number]
   it.each([
     {
-      name: "title hit outranks authors hit, regardless of length",
-      a: [3, 0, 0],
-      b: [0, 100, 0],
+      name: "whole-word title hit outranks whole-word authors hit, regardless of length",
+      a: [3, 0, 0, 0, 0, 0],
+      b: [0, 100, 0, 0, 0, 0],
       expected: "a-first",
     },
     {
-      name: "authors hit outranks content hit",
-      a: [0, 3, 0],
-      b: [0, 0, 100],
+      name: "whole-word authors hit outranks whole-word content hit",
+      a: [0, 3, 0, 0, 0, 0],
+      b: [0, 0, 100, 0, 0, 0],
       expected: "a-first",
     },
     {
-      name: "within title tier, longer token wins",
-      a: [18, 0, 0],
-      b: [7, 99, 99],
+      name: "any whole-word hit outranks any substring-only hit",
+      a: [0, 0, 3, 0, 0, 0],
+      b: [0, 0, 0, 100, 100, 100],
       expected: "a-first",
     },
     {
-      name: "within authors tier, longer token wins when titles tie",
-      a: [5, 18, 0],
-      b: [5, 7, 99],
+      name: "within whole-word title tier, longer token wins",
+      a: [18, 0, 0, 0, 0, 0],
+      b: [7, 99, 99, 0, 0, 0],
+      expected: "a-first",
+    },
+    {
+      name: "substring title hit outranks substring authors hit",
+      a: [0, 0, 0, 3, 0, 0],
+      b: [0, 0, 0, 0, 100, 0],
       expected: "a-first",
     },
     {
       name: "equal tuples compare equal (stable sort preserves input order)",
-      a: [5, 5, 5],
-      b: [5, 5, 5],
+      a: [5, 5, 5, 5, 5, 5],
+      b: [5, 5, 5, 5, 5, 5],
       expected: "tie",
     },
   ])("$name", ({ a, b, expected }) => {
-    const cmp = compareMatchScore(a as [number, number, number], b as [number, number, number])
+    const cmp = compareMatchScore(a as Score, b as Score)
     const sign = cmp === 0 ? 0 : Math.sign(cmp)
     const expectedSign = expected === "a-first" ? -1 : expected === "b-first" ? 1 : 0
     expect(sign).toBe(expectedSign)
