@@ -70,6 +70,10 @@ tr {
   &:last-child {
     border-bottom: none;
   }
+
+  &.group-boundary {
+    border-top: 1px solid var(--midground);
+  }
 }
 
 .table-container {

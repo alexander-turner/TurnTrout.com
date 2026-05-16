@@ -20,6 +20,7 @@ export {
 } from "./formatting_improvement_html"
 export { Twemoji } from "./twemoji"
 export { TableCaption } from "./tablecaption"
+export { TableDivider } from "./tableDivider"
 export { ColorVariables } from "./color_variables"
 export { rehypeCustomSpoiler } from "./spoiler"
 export { AfterArticle } from "./afterArticle"

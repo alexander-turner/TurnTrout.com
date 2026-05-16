@@ -22,6 +22,7 @@ import {
   stripBadges,
   StripInlineBoundaryWhitespace,
   SyntaxHighlighting,
+  TableDivider,
   TableOfContents,
   TagPage,
   TagSmallcaps,
@@ -103,6 +104,7 @@ const config: QuartzConfig = {
         enableCheckbox: true,
       }),
       GitHubFlavoredMarkdown({ enableSmartyPants: false }),
+      TableDivider(),
       FixFootnotes(),
       WrapNakedElements(),
       // Before HTMLFormattingImprovement so the "subtitle" class is set when

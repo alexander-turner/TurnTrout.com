@@ -396,6 +396,19 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 | -----------------: | :--------: | :----------: | :--------------------------------- |
 | Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
 
+|   Model |   Intervention   | Gaming Gap (%, ↓) |
+| ------: | :--------------: | :---------------: |
+|   GLM-5 |     Baseline     |       18.9        |
+|   GLM-5 |   +Coop Prompt   |        1.2        |
+|   ===   |       ===        |        ===        |
+| GLM-5.1 |     Baseline     |        8.9        |
+| GLM-5.1 |   +Coop Prompt   |       0.01        |
+|   ===   |       ===        |        ===        |
+|  Opus-4 |     Baseline     |       47.2        |
+|  Opus-4 |   +Coop Prompt   |       14.9        |
+
+Table: Darker dividers between row groups, marked with `===` rows.
+
 # Scroll indicators
 
 Wide tables and equations show a fade gradient at the scrollable edges.
