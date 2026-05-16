@@ -166,6 +166,10 @@
         &[data-preview] > #results-container {
           width: 100%;
           height: auto;
+
+          // Bound the results panel so the outer search-container can't scroll
+          // past the end of results; long lists scroll inside the panel.
+          max-height: calc(75vh - 12vh);
           flex: 0 0 100%;
         }
       }
