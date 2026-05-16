@@ -29,7 +29,7 @@ dependencies = [
     "types-pyyaml",
     "types-requests",
     "pandas-stubs",
-    "mypy>=1.20.2",
+    "mypy>=2.1.0",
     "lxml-stubs>=0.5.1",
     "types-pysocks>=1.7.1.20251001",
     "types-pygments>=2.20.0.20260408",
@@ -39,14 +39,14 @@ dependencies = [
     # Pinned to 1.7.7: 1.7.8 (PyCQA/docformatter#344) reformats triple-quoted
     # strings inside function/dict-literal arguments as if they were docstrings,
     # destructively rewriting test-data YAML strings in scripts/tests/.
-    "docformatter==1.7.7",
+    "docformatter==1.7.8",
     "pylint>=4.0.4",
     "autoflake>=2.3.1",
     "autopep8>=2.3.1",
     "isort>=5.13.2",
     "linkchecker>=10.6.0",
     "frozendict>=2.4.7",
-    "anthropic>=0.97.0",
+    "anthropic>=0.102.0",
     "flask>=3.0.0",
 ]
 
