@@ -222,21 +222,19 @@ test("Mobile search results scroll inside the panel, not past it", async ({ page
   await search(page, "the")
   await expect(page.locator(".result-card").nth(3)).toBeVisible({ timeout: 10_000 })
 
-  const { outerScrollTop, resultsScrollDelta } = await page.evaluate(() => {
+  const { outerOverflowY, resultsScrollDelta } = await page.evaluate(() => {
     const outer = document.getElementById("search-container") as HTMLElement
     const results = document.getElementById("results-container") as HTMLElement
-    // Ask the outer container to scroll as far as it can — the browser clamps
-    // to its scrollable range.
-    outer.scrollTop = Number.MAX_SAFE_INTEGER
     return {
-      outerScrollTop: outer.scrollTop,
+      outerOverflowY: getComputedStyle(outer).overflowY,
       resultsScrollDelta: results.scrollHeight - results.clientHeight,
     }
   })
 
-  // The outer container must not scroll — long result lists overflow inside
-  // #results-container instead of sliding the modal past the end of results.
-  expect(outerScrollTop).toBe(0)
+  // The outer container must not be a touch-scrollable region — long result
+  // lists must overflow inside #results-container, not slide the whole modal
+  // past the end of results.
+  expect(outerOverflowY).toBe("hidden")
   expect(resultsScrollDelta).toBeGreaterThan(0)
 })
 
