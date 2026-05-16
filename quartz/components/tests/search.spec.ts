@@ -214,6 +214,30 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
 
+test("Mobile search results scroll inside the panel, not past it", async ({ page }) => {
+  test.skip(!isMobileViewport(page), "Mobile-only behavior")
+
+  // "the" is a common term that reliably fills the result limit so the panel
+  // would overflow the viewport without a bounded height.
+  await search(page, "the")
+  await expect(page.locator(".result-card").nth(3)).toBeVisible({ timeout: 10_000 })
+
+  const { outerOverflowY, resultsScrollDelta } = await page.evaluate(() => {
+    const outer = document.getElementById("search-container") as HTMLElement
+    const results = document.getElementById("results-container") as HTMLElement
+    return {
+      outerOverflowY: getComputedStyle(outer).overflowY,
+      resultsScrollDelta: results.scrollHeight - results.clientHeight,
+    }
+  })
+
+  // The outer container must not be a touch-scrollable region — long result
+  // lists must overflow inside #results-container, not slide the whole modal
+  // past the end of results.
+  expect(outerOverflowY).toBe("hidden")
+  expect(resultsScrollDelta).toBeGreaterThan(0)
+})
+
 test("Search placeholder changes based on viewport", async ({ page }) => {
   const searchBar = page.locator("#search-bar")
   const pageWidth = page.viewportSize()?.width
