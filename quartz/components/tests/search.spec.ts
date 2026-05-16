@@ -222,18 +222,25 @@ test("Mobile search results scroll inside the panel, not past it", async ({ page
   await search(page, "the")
   await expect(page.locator(".result-card").nth(3)).toBeVisible({ timeout: 10_000 })
 
-  const { outerOverflow, resultsOverflow } = await page.evaluate(() => {
+  const { outerOverflow, resultsOverflow, allowedOuterOverflow } = await page.evaluate(() => {
     const outer = document.getElementById("search-container") as HTMLElement
     const results = document.getElementById("results-container") as HTMLElement
+    const space = document.getElementById("search-space") as HTMLElement
+    // `#search-space > *` has `margin-bottom: calc(4 * $base-margin)`. Two such
+    // children (input + layout) can leak that margin past the viewport even
+    // when the results panel is bounded — that's the only legitimate slack.
+    const inputMargin = parseFloat(getComputedStyle(space.children[0]).marginBottom)
+    const layoutMargin = parseFloat(getComputedStyle(space.children[1]).marginBottom)
     return {
       outerOverflow: outer.scrollHeight - outer.clientHeight,
       resultsOverflow: results.scrollHeight - results.clientHeight,
+      allowedOuterOverflow: inputMargin + layoutMargin,
     }
   })
 
   // Long result lists must scroll inside #results-container, not push
   // #search-space past the viewport so the outer container becomes scrollable.
-  expect(outerOverflow).toBeLessThan(100)
+  expect(outerOverflow).toBeLessThanOrEqual(allowedOuterOverflow)
   expect(resultsOverflow).toBeGreaterThan(0)
 })
 
