@@ -7,6 +7,7 @@ import {
   type ReplaceFnResult,
   shouldCapitalizeNodeText,
   gatherTextBeforeIndex,
+  addClass,
   hasClass,
   hasAncestor,
   type ElementMaybeWithParent,
@@ -391,6 +392,28 @@ describe("hasClass", () => {
     ["null class", h("div", { class: null }), "any-class", false],
   ])("handles %s", (_type, node, className, expected) => {
     expect(hasClass(node, className)).toBe(expected)
+  })
+})
+
+describe("addClass", () => {
+  // hastscript normalizes a string className to an array, so manually construct
+  // nodes when we need to keep the string shape.
+  const stringNode = (className?: string): Element => ({
+    type: "element",
+    tagName: "div",
+    properties: className === undefined ? {} : { className },
+    children: [],
+  })
+
+  it.each<[string, Element, string, string | string[]]>([
+    ["appends to array", h("div", { className: ["a"] }), "b", ["a", "b"]],
+    ["appends to string, preserving shape", stringNode("a"), "b", "a b"],
+    ["creates array when absent", h("div"), "a", ["a"]],
+    ["dedupes against array", h("div", { className: ["a"] }), "a", ["a"]],
+    ["dedupes against string", stringNode("a b"), "b", "a b"],
+  ])("%s", (_d, node, toAdd, expected) => {
+    addClass(node, toAdd)
+    expect(node.properties.className).toEqual(expected)
   })
 })
 

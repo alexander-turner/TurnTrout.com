@@ -6,7 +6,7 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
-import { TableDivider, isMarkerRow, addClass, processTableSection } from "../tableDivider"
+import { TableDivider, isMarkerRow, processTableBody } from "../tableDivider"
 
 const mockBuildCtx: BuildCtx = {
   argv: {
@@ -22,225 +22,110 @@ const mockBuildCtx: BuildCtx = {
   allSlugs: [],
 }
 
-function getTransformer(plugin: ReturnType<typeof TableDivider>) {
-  if (!plugin.htmlPlugins) {
-    throw new Error("Plugin htmlPlugins is undefined")
-  }
-  const htmlPlugins = plugin.htmlPlugins(mockBuildCtx)
-  const transformerFactory = htmlPlugins[0] as () => (tree: Root) => void
-  return transformerFactory()
+function runTransformer(root: Root): void {
+  const plugin = TableDivider()
+  if (!plugin.htmlPlugins) throw new Error("Plugin htmlPlugins is undefined")
+  ;(plugin.htmlPlugins(mockBuildCtx)[0] as () => (tree: Root) => void)()(root)
 }
 
-function makeTable(bodyRows: Element[]): Element {
-  return h("table", [
-    h("thead", [h("tr", [h("th", "Model"), h("th", "Value")])]),
-    h("tbody", bodyRows),
-  ])
+function classes(el: Element): string[] {
+  const cls = el.properties?.className
+  return Array.isArray(cls) ? cls.map(String) : []
 }
 
-function getBody(table: Element): Element {
-  return table.children.find(
-    (c): c is Element => c.type === "element" && c.tagName === "tbody",
-  ) as Element
-}
-
-function rowClassList(row: Element): string[] {
-  const cls = row.properties?.className
-  if (Array.isArray(cls)) return cls.map(String)
-  if (typeof cls === "string") return cls.split(/\s+/).filter(Boolean)
-  return []
-}
+const MARKER = h("td", "===")
+const tr = (...cells: Element[]) => h("tr", cells)
 
 describe("isMarkerRow", () => {
   it.each<[string, Element, boolean]>([
-    ["row with === in every cell", h("tr", [h("td", "==="), h("td", "===")]), true],
-    [
-      "row with === and surrounding whitespace",
-      h("tr", [h("td", " === "), h("td", "===\n")]),
-      true,
-    ],
-    ["row with one non-marker cell", h("tr", [h("td", "==="), h("td", "data")]), false],
-    ["row with empty cells", h("tr", [h("td", ""), h("td", "")]), false],
-    ["row with === in <th> cells", h("tr", [h("th", "==="), h("th", "===")]), true],
+    ["all ===", tr(h("td", "==="), h("td", "===")), true],
+    ["whitespace around ===", tr(h("td", " === "), h("td", "===\n")), true],
+    ["inline element wraps ===", tr(h("td", [h("strong", "===")]), h("td", "===")), true],
+    ["mixed content", tr(h("td", "==="), h("td", "data")), false],
+    ["empty cells", tr(h("td", ""), h("td", "")), false],
+    ["th cells", tr(h("th", "==="), h("th", "===")), false],
+    ["no cells", h("tr", []), false],
+    ["only two equals", tr(h("td", "=="), h("td", "==")), false],
+    ["four equals", tr(h("td", "===="), h("td", "====")), false],
     ["non-tr element", h("div", [h("td", "===")]), false],
-    ["row with no cells", h("tr", []), false],
+  ])("%s", (_d, row, expected) => expect(isMarkerRow(row)).toBe(expected))
+})
+
+describe("processTableBody", () => {
+  // Each row of test data: [description, body rows, indices (after marker
+  // removal) of the rows that should end up with the boundary class].
+  it.each<[string, Element[], number[]]>([
     [
-      "row with marker spanning inline elements",
-      h("tr", [h("td", [h("strong", "===")]), h("td", "===")]),
-      true,
+      "marker between rows tags the preceding row",
+      [tr(h("td", "a")), tr(MARKER, MARKER), tr(h("td", "b"))],
+      [0],
     ],
     [
-      "row whose cells are not td/th (e.g. spans)",
-      h("tr", [h("span", "==="), h("span", "===")]),
-      false,
+      "trailing marker tags the last row (CSS will hide via :last-child)",
+      [tr(h("td", "a")), tr(MARKER)],
+      [0],
     ],
-    ["row with == (only two equals)", h("tr", [h("td", "=="), h("td", "==")]), false],
+    ["leading marker is silently dropped", [tr(MARKER), tr(h("td", "a"))], []],
     [
-      "row with ==== (four equals) — only exactly === counts",
-      h("tr", [h("td", "===="), h("td", "====")]),
-      false,
+      "multiple markers each tag the row that precedes them",
+      [tr(h("td", "a")), tr(MARKER), tr(h("td", "b")), tr(MARKER), tr(h("td", "c"))],
+      [0, 1],
     ],
-  ])("returns %s correctly", (_desc, row, expected) => {
-    expect(isMarkerRow(row)).toBe(expected)
+    ["table without markers is untouched", [tr(h("td", "a")), tr(h("td", "b"))], []],
+  ])("%s", (_d, rows, taggedIndices) => {
+    const tbody = h("tbody", rows)
+    processTableBody(tbody)
+    const expectedRowCount = rows.length - rows.filter((r) => isMarkerRow(r)).length
+    expect(tbody.children).toHaveLength(expectedRowCount)
+    ;(tbody.children as Element[]).forEach((row, i) => {
+      expect(classes(row)).toEqual(taggedIndices.includes(i) ? ["group-boundary"] : [])
+    })
+  })
+
+  it("preserves existing classes on the tagged row", () => {
+    const tbody = h("tbody", [
+      h("tr", { className: ["existing"] }, [h("td", "a")]),
+      tr(MARKER),
+      tr(h("td", "b")),
+    ])
+    processTableBody(tbody)
+    expect(classes(tbody.children[0] as Element)).toEqual(["existing", "group-boundary"])
   })
 })
 
-describe("addClass", () => {
-  it("adds a class to an element with no existing properties", () => {
-    const el = h("tr")
-    addClass(el, "group-boundary")
-    expect(rowClassList(el)).toEqual(["group-boundary"])
-  })
+describe("TableDivider integration", () => {
+  it("has correct plugin name", () => expect(TableDivider().name).toBe("TableDivider"))
 
-  it("adds a class to an element whose properties is undefined", () => {
-    const el = h("tr")
-    ;(el as { properties: unknown }).properties = undefined
-    addClass(el, "group-boundary")
-    expect(rowClassList(el)).toEqual(["group-boundary"])
-  })
-
-  it("appends to an existing array className", () => {
-    const el = h("tr", { className: ["existing"] })
-    addClass(el, "group-boundary")
-    expect(rowClassList(el)).toEqual(["existing", "group-boundary"])
-  })
-
-  it("appends to an existing string className", () => {
-    const el = h("tr")
-    el.properties = { className: "a b" }
-    addClass(el, "group-boundary")
-    expect(rowClassList(el)).toEqual(["a", "b", "group-boundary"])
-  })
-
-  it("is idempotent — does not duplicate an existing class", () => {
-    const el = h("tr", { className: ["group-boundary"] })
-    addClass(el, "group-boundary")
-    expect(rowClassList(el)).toEqual(["group-boundary"])
-  })
-})
-
-describe("processTableSection", () => {
-  it("removes the marker row and tags the following row", () => {
-    const section = h("tbody", [
-      h("tr", [h("td", "a"), h("td", "1")]),
-      h("tr", [h("td", "==="), h("td", "===")]),
-      h("tr", [h("td", "b"), h("td", "2")]),
-    ])
-    processTableSection(section)
-    expect(section.children).toHaveLength(2)
-    const [first, second] = section.children as Element[]
-    expect(rowClassList(first)).toEqual([])
-    expect(rowClassList(second)).toEqual(["group-boundary"])
-  })
-
-  it("handles a marker row with no following row by dropping the marker silently", () => {
-    const section = h("tbody", [h("tr", [h("td", "a")]), h("tr", [h("td", "===")])])
-    processTableSection(section)
-    expect(section.children).toHaveLength(1)
-    expect((section.children[0] as Element).tagName).toBe("tr")
-  })
-
-  it("handles multiple markers", () => {
-    const section = h("tbody", [
-      h("tr", [h("td", "a")]),
-      h("tr", [h("td", "===")]),
-      h("tr", [h("td", "b")]),
-      h("tr", [h("td", "===")]),
-      h("tr", [h("td", "c")]),
-    ])
-    processTableSection(section)
-    expect(section.children).toHaveLength(3)
-    const [a, b, c] = section.children as Element[]
-    expect(rowClassList(a)).toEqual([])
-    expect(rowClassList(b)).toEqual(["group-boundary"])
-    expect(rowClassList(c)).toEqual(["group-boundary"])
-  })
-
-  it("leaves a section without any marker rows unchanged", () => {
-    const section = h("tbody", [h("tr", [h("td", "a")]), h("tr", [h("td", "b")])])
-    processTableSection(section)
-    expect(section.children).toHaveLength(2)
-    for (const row of section.children as Element[]) {
-      expect(rowClassList(row)).toEqual([])
-    }
-  })
-})
-
-describe("TableDivider transformer integration", () => {
-  it("has correct name and htmlPlugins shape", () => {
-    const plugin = TableDivider()
-    expect(plugin.name).toBe("TableDivider")
-    expect(plugin.htmlPlugins).toBeDefined()
-  })
-
-  it("transforms a table with a marker row in tbody", () => {
-    const table = makeTable([
-      h("tr", [h("td", "GLM-5"), h("td", "18.9")]),
-      h("tr", [h("td", "GLM-5"), h("td", "1.2")]),
-      h("tr", [h("td", "==="), h("td", "===")]),
-      h("tr", [h("td", "GLM-5.1"), h("td", "8.9")]),
-    ])
-    const root: Root = { type: "root", children: [table] }
-    getTransformer(TableDivider())(root)
-
-    const body = getBody(root.children[0] as Element)
-    expect(body.children).toHaveLength(3)
-    expect(rowClassList(body.children[2] as Element)).toEqual(["group-boundary"])
-  })
-
-  it("does not modify tables without marker rows", () => {
-    const table = makeTable([
-      h("tr", [h("td", "a"), h("td", "1")]),
-      h("tr", [h("td", "b"), h("td", "2")]),
-    ])
-    const root: Root = { type: "root", children: [table] }
-    getTransformer(TableDivider())(root)
-
-    const body = getBody(root.children[0] as Element)
-    expect(body.children).toHaveLength(2)
-    for (const row of body.children as Element[]) {
-      expect(rowClassList(row)).toEqual([])
-    }
-  })
-
-  it("ignores marker-like rows outside a table", () => {
-    const root: Root = {
-      type: "root",
-      children: [h("div", [h("tr", [h("td", "==="), h("td", "===")])])],
-    }
-    getTransformer(TableDivider())(root)
-
-    const wrapper = root.children[0] as Element
-    expect(wrapper.children).toHaveLength(1)
-  })
-
-  it("handles tables with thead/tfoot sections", () => {
+  it("transforms a real <table>", () => {
     const table = h("table", [
-      h("thead", [h("tr", [h("th", "h1"), h("th", "h2")])]),
+      h("thead", [h("tr", [h("th", "Model"), h("th", "Value")])]),
       h("tbody", [
-        h("tr", [h("td", "a"), h("td", "1")]),
-        h("tr", [h("td", "==="), h("td", "===")]),
-        h("tr", [h("td", "b"), h("td", "2")]),
+        tr(h("td", "GLM-5"), h("td", "18.9")),
+        tr(MARKER, MARKER),
+        tr(h("td", "GLM-5.1"), h("td", "8.9")),
       ]),
-      h("tfoot", [h("tr", [h("td", "total"), h("td", "3")])]),
     ])
-    const root: Root = { type: "root", children: [table] }
-    getTransformer(TableDivider())(root)
-
-    const body = (table.children as Element[]).find((c) => c.tagName === "tbody") as Element
-    expect(body.children).toHaveLength(2)
-    expect(rowClassList(body.children[1] as Element)).toEqual(["group-boundary"])
+    runTransformer({ type: "root", children: [table] })
+    const tbody = (table.children as Element[]).find((c) => c.tagName === "tbody") as Element
+    expect(tbody.children).toHaveLength(2)
+    expect(classes(tbody.children[0] as Element)).toEqual(["group-boundary"])
   })
 
-  it("ignores rows directly under <table> (non-section parents)", () => {
-    const table = h("table", [
-      h("tr", [h("td", "a"), h("td", "1")]),
-      h("tr", [h("td", "==="), h("td", "===")]),
-      h("tr", [h("td", "b"), h("td", "2")]),
-    ])
-    const root: Root = { type: "root", children: [table] }
-    getTransformer(TableDivider())(root)
-
-    expect(table.children).toHaveLength(3)
+  it.each<[string, Root]>([
+    [
+      "marker-like row outside any table",
+      {
+        type: "root",
+        children: [h("p", "hi"), h("div", [tr(MARKER, MARKER)])],
+      },
+    ],
+    [
+      "rows directly under <table> (no tbody)",
+      { type: "root", children: [h("table", [tr(h("td", "a")), tr(MARKER), tr(h("td", "b"))])] },
+    ],
+  ])("ignores %s", (_d, root) => {
+    const before = JSON.stringify(root)
+    runTransformer(root)
+    expect(JSON.stringify(root)).toBe(before)
   })
 })

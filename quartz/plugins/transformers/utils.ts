@@ -248,6 +248,21 @@ export function hasClass(node: Element, className: string): boolean {
   return false
 }
 
+// Append a class to a node, preserving any existing classes and their shape
+// (string-form className stays a string; array stays an array; absent becomes
+// an array). No-op when the class is already present.
+export function addClass(node: Element, className: string): void {
+  const existing = node.properties?.className
+  if (typeof existing === "string") {
+    if (existing.split(/\s+/).filter(Boolean).includes(className)) return
+    node.properties = { ...node.properties, className: `${existing} ${className}` }
+    return
+  }
+  const list = Array.isArray(existing) ? existing.map(String) : []
+  if (!list.includes(className)) list.push(className)
+  node.properties = { ...node.properties, className: list }
+}
+
 /**
  * Type guard to check if a node is a Text node.
  * @param node - The node to check

@@ -67,12 +67,14 @@ th {
 tr {
   border-bottom: 1px solid var(--midground-faint);
 
-  &:last-child {
-    border-bottom: none;
+  &.group-boundary {
+    border-bottom: 1px solid var(--midground);
   }
 
-  &.group-boundary {
-    border-top: 1px solid var(--midground);
+  // Declared after `.group-boundary` so a trailing marker row (which would
+  // tag the table's final data row) renders as a no-op.
+  &:last-child {
+    border-bottom: none;
   }
 }
 
