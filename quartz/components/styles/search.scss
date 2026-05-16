@@ -82,6 +82,13 @@ $search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-botto
   display: none;
   backdrop-filter: blur(4px);
 
+  // On mobile the results panel is height-bounded and scrolls internally, so
+  // the outer container never needs to scroll — disabling outer scroll
+  // prevents the modal from sliding past the end of the results.
+  @media all and (max-width: $tablet-breakpoint) {
+    overflow: hidden;
+  }
+
   &.active {
     display: inline-block;
   }

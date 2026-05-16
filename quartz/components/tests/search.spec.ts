@@ -222,26 +222,22 @@ test("Mobile search results scroll inside the panel, not past it", async ({ page
   await search(page, "the")
   await expect(page.locator(".result-card").nth(3)).toBeVisible({ timeout: 10_000 })
 
-  const { outerOverflow, resultsOverflow, allowedOuterOverflow } = await page.evaluate(() => {
+  const { outerScrollTop, resultsScrollDelta } = await page.evaluate(() => {
     const outer = document.getElementById("search-container") as HTMLElement
     const results = document.getElementById("results-container") as HTMLElement
-    const space = document.getElementById("search-space") as HTMLElement
-    // `#search-space > *` has `margin-bottom: calc(4 * $base-margin)`. Two such
-    // children (input + layout) can leak that margin past the viewport even
-    // when the results panel is bounded — that's the only legitimate slack.
-    const inputMargin = parseFloat(getComputedStyle(space.children[0]).marginBottom)
-    const layoutMargin = parseFloat(getComputedStyle(space.children[1]).marginBottom)
+    // Ask the outer container to scroll as far as it can — the browser clamps
+    // to its scrollable range.
+    outer.scrollTop = Number.MAX_SAFE_INTEGER
     return {
-      outerOverflow: outer.scrollHeight - outer.clientHeight,
-      resultsOverflow: results.scrollHeight - results.clientHeight,
-      allowedOuterOverflow: inputMargin + layoutMargin,
+      outerScrollTop: outer.scrollTop,
+      resultsScrollDelta: results.scrollHeight - results.clientHeight,
     }
   })
 
-  // Long result lists must scroll inside #results-container, not push
-  // #search-space past the viewport so the outer container becomes scrollable.
-  expect(outerOverflow).toBeLessThanOrEqual(allowedOuterOverflow)
-  expect(resultsOverflow).toBeGreaterThan(0)
+  // The outer container must not scroll — long result lists overflow inside
+  // #results-container instead of sliding the modal past the end of results.
+  expect(outerScrollTop).toBe(0)
+  expect(resultsScrollDelta).toBeGreaterThan(0)
 })
 
 test("Search placeholder changes based on viewport", async ({ page }) => {
