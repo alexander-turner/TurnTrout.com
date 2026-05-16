@@ -64,19 +64,17 @@ th {
   font-weight: 500;
 }
 
-// Darker dividers: between groups and the header → body separator. Set the
-// border on BOTH cells flanking the divider, so border-collapse's conflict
-// resolution doesn't matter — both sides are the darker color and that's
-// what's painted. Setting only one side leaves the neighbor cell's matching
-// `--midground-faint` border to potentially win.
+// Group dividers and the header → body separator: widen the border on
+// both cells flanking the divider so border-collapse keeps the 3px width
+// regardless of which side wins resolution.
 thead th,
 tr.group-boundary > td {
-  border-bottom: 3px solid var(--midground);
+  border-bottom-width: 3px;
 }
 
 thead + tbody > tr:first-child > td,
 tr.group-boundary + tr > td {
-  border-top: 3px solid var(--midground);
+  border-top-width: 3px;
 }
 
 .table-container {
