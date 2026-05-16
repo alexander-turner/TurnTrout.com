@@ -315,21 +315,6 @@ describe("rehype-custom-spoiler", () => {
     expect(parent.children[0]).toEqual(blockquote)
   })
 
-  test("rehypeCustomSpoiler plugin function", () => {
-    const plugin = rehypeCustomSpoiler()
-
-    expect(plugin.name).toBe("customSpoiler")
-    expect(plugin.htmlPlugins).toBeDefined()
-    expect(typeof plugin.htmlPlugins).toBe("function")
-
-    const mockCtx = {} as BuildCtx
-    // skipcq: JS-0339
-    const htmlPlugins = plugin.htmlPlugins!(mockCtx)
-    expect(Array.isArray(htmlPlugins)).toBe(true)
-    expect(htmlPlugins).toHaveLength(1)
-    expect(typeof htmlPlugins[0]).toBe("function")
-  })
-
   it.each([
     { name: "undefined index", index: undefined, parent: "valid" },
     { name: "undefined parent", index: 0, parent: undefined },

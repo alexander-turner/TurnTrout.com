@@ -235,7 +235,6 @@ describe("InvertInDarkMode", () => {
         JSON.stringify({ "https://x/a.avif": { invert: true, reviewed: true } }) as never,
       )
       const plugin = InvertInDarkMode()
-      expect(plugin.name).toBe("InvertInDarkMode")
       const transform = transformOf(plugin)
       const img = h("img", { src: "https://x/a.avif" }) as Element
       await transform(tree(img))

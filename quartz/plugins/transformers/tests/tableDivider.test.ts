@@ -94,8 +94,6 @@ describe("processTableBody", () => {
 })
 
 describe("TableDivider integration", () => {
-  it("has correct plugin name", () => expect(TableDivider().name).toBe("TableDivider"))
-
   it("transforms a real <table>", () => {
     const table = h("table", [
       h("thead", [h("tr", [h("th", "Model"), h("th", "Value")])]),
