@@ -1038,6 +1038,17 @@ const getByField = (field: string, searchResults: DefaultDocumentSearchResults):
 const intersectingCards = new WeakSet<HTMLElement>()
 
 /**
+ * Per-card pending-unmount timers. An intersect=false entry from the
+ * IntersectionObserver schedules a deferred unmount instead of running it
+ * immediately, so a transient blip — focus()'s default scroll-into-view, a
+ * layout reflow, momentum-scroll overshoot — that flips back to intersect=true
+ * within {@link UNMOUNT_DELAY_MS} cancels the unmount and avoids tearing
+ * down the article between two assertions in the same test step.
+ */
+const pendingUnmounts = new WeakMap<HTMLElement, ReturnType<typeof setTimeout>>()
+const UNMOUNT_DELAY_MS = 750
+
+/**
  * Singleton IntersectionObserver that mounts and unmounts mobile card
  * previews as result cards scroll in and out of view. Without unmounting,
  * scrolling through eight result cards leaves eight cloned page DOMs
@@ -1053,12 +1064,21 @@ function getCardPreviewObserver(): IntersectionObserver {
     (entries) => {
       for (const entry of entries) {
         const card = entry.target as HTMLElement
+        const pendingTimer = pendingUnmounts.get(card)
+        if (pendingTimer !== undefined) {
+          clearTimeout(pendingTimer)
+          pendingUnmounts.delete(card)
+        }
         if (entry.isIntersecting) {
           intersectingCards.add(card)
           addCardPreview(card, card.id as FullSlug)
         } else {
-          intersectingCards.delete(card)
-          clearCardPreviewContent(card)
+          const timer = setTimeout(() => {
+            pendingUnmounts.delete(card)
+            intersectingCards.delete(card)
+            clearCardPreviewContent(card)
+          }, UNMOUNT_DELAY_MS)
+          pendingUnmounts.set(card, timer)
         }
       }
     },
