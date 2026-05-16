@@ -985,9 +985,17 @@ test("admonition icon renders in focused mobile card preview (screenshot)", asyn
   // Icons paint via `background-color + mask-image`. If the card-preview's
   // background-flatten rule eats the icon's background, the glyph vanishes.
   await expect(icon).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
-  const iconBox = await icon.boundingBox()
-  expect(iconBox?.width).toBeGreaterThan(0)
-  expect(iconBox?.height).toBeGreaterThan(0)
+  // Read dimensions via evaluate so the assertion measures the icon's
+  // layout box even when it sits below the .card-preview's 6rem overflow
+  // clip — Playwright's locator.boundingBox() goes through CDP's
+  // DOM.getBoxModel, which returns null for elements clipped to nothing
+  // by an ancestor's overflow: hidden.
+  const iconDimensions = await icon.evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    return { width: r.width, height: r.height }
+  })
+  expect(iconDimensions.width).toBeGreaterThan(0)
+  expect(iconDimensions.height).toBeGreaterThan(0)
 
   await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition-icon", {
     elementToScreenshot: admonitionTitle,
