@@ -64,24 +64,21 @@ th {
   font-weight: 500;
 }
 
-// Header → body separator matches the group-boundary tone, so the header
-// reads as the first "group" above the data.
-thead th {
+tr {
+  border-bottom: 1px solid var(--midground-faint);
+}
+
+// Darker dividers: between groups (marker row tags the preceding <tr>) and
+// the header → body separator (so the header reads as the first "group").
+thead th,
+tr.group-boundary {
   border-bottom: 1px solid var(--midground);
 }
 
-tr {
-  border-bottom: 1px solid var(--midground-faint);
-
-  &.group-boundary {
-    border-bottom: 1px solid var(--midground);
-  }
-
-  // Declared after `.group-boundary` so a trailing marker row (which would
-  // tag the table's final data row) renders as a no-op.
-  &:last-child {
-    border-bottom: none;
-  }
+// Declared last so :last-child overrides .group-boundary, making a trailing
+// marker row (which would tag the table's final data row) render as a no-op.
+tr:last-child {
+  border-bottom: none;
 }
 
 .table-container {
