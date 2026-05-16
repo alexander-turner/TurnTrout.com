@@ -236,33 +236,26 @@ export const createMatchSpan = (text: string): HTMLSpanElement => {
 const wordCharRegex = /[\p{L}\p{N}_]/u
 
 /**
- * A `.search-match` span is a whole-word match when neither immediate
- * sibling text node abuts it with a word character — i.e. searching
- * "table" inside "comfortable" is not a whole-word match (left sibling
- * "comfor" ends in 'r'), but "the table" is (left sibling ends with a
- * space).
+ * Whether the match span sits at word boundaries on both sides.
+ * Searching "table" inside "comfortable" returns false (left sibling
+ * text ends with 'r'); inside "the table" it returns true.
  */
-export function isWholeWordMatch(matchSpan: HTMLElement): boolean {
-  const prev = matchSpan.previousSibling
-  if (prev?.nodeType === Node.TEXT_NODE) {
-    const text = prev.nodeValue ?? ""
-    if (text.length > 0 && wordCharRegex.test(text[text.length - 1])) return false
+function isWholeWordMatch(matchSpan: HTMLElement): boolean {
+  const abutsWordChar = (sibling: ChildNode | null, charAt: (text: string) => string): boolean => {
+    if (sibling?.nodeType !== Node.TEXT_NODE) return false
+    return wordCharRegex.test(charAt(sibling.nodeValue ?? ""))
   }
-  const next = matchSpan.nextSibling
-  if (next?.nodeType === Node.TEXT_NODE) {
-    const text = next.nodeValue ?? ""
-    if (text.length > 0 && wordCharRegex.test(text[0])) return false
-  }
+  if (abutsWordChar(matchSpan.previousSibling, (t) => t.slice(-1))) return false
+  if (abutsWordChar(matchSpan.nextSibling, (t) => t.slice(0, 1))) return false
   return true
 }
 
 /**
- * Find the best `.search-match` element to scroll a preview to. Whole-word
- * matches always outrank substring-only matches (so searching "table"
- * scrolls to the literal word, not to "table" inside "comfortable"). Within
- * each tier, the longest text wins — a contiguous phrase wrapped by the
- * longest tokenizeTerm entry beats a stray single-token match. Ties
- * broken by DOM order.
+ * Find the best `.search-match` element to scroll a preview to.
+ * Whole-word matches outrank substring-only matches (so searching
+ * "table" scrolls to the literal word, not to "table" inside
+ * "comfortable"). Within each tier the longest text wins — a phrase
+ * span beats a single-token span. Ties broken by DOM order.
  */
 export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | null {
   const matches = container.querySelectorAll<HTMLElement>(`.${SEARCH_MATCH_CLASS}`)
@@ -270,24 +263,20 @@ export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | n
 
   // `.search-match` spans are created via createMatchSpan with explicit
   // textContent, so the cast is safe.
+  const score = (m: HTMLElement): [number, number] => [
+    isWholeWordMatch(m) ? 1 : 0,
+    (m.textContent as string).length,
+  ]
   let best = matches[0]
-  let bestLength = (best.textContent as string).length
-  let bestIsWholeWord = isWholeWordMatch(best)
+  let bestScore = score(best)
   for (let i = 1; i < matches.length; i++) {
-    const candidate = matches[i]
-    const length = (candidate.textContent as string).length
-    const wholeWord = isWholeWordMatch(candidate)
-    if (wholeWord !== bestIsWholeWord) {
-      if (wholeWord) {
-        best = candidate
-        bestLength = length
-        bestIsWholeWord = true
-      }
-      continue
-    }
-    if (length > bestLength) {
-      best = candidate
-      bestLength = length
+    const candidateScore = score(matches[i])
+    if (
+      candidateScore[0] > bestScore[0] ||
+      (candidateScore[0] === bestScore[0] && candidateScore[1] > bestScore[1])
+    ) {
+      best = matches[i]
+      bestScore = candidateScore
     }
   }
   return best
@@ -1233,14 +1222,10 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
 }
 
 /**
- * Per-field match score, tiered lexicographically by compareMatchScore.
- * Whole-word matches across all fields outrank substring-only matches
- * across all fields — searching "table" in a page containing just the
- * word "table" outranks a page with "table" only inside "comfortable".
- * Within each whole-word/substring tier, title hits outrank authors
- * hits, which outrank content hits. Within a field, the longer token
- * wins (phrase > word). Each entry holds the length of the longest
- * matching pre-lowercased token.
+ * Per-field match score. compareMatchScore ranks lexicographically, so
+ * any whole-word hit (in any field) outranks any substring-only hit, and
+ * title > authors > content within each tier. Each entry is the length
+ * of the longest matching pre-lowercased token.
  */
 export type MatchScore = readonly [
   titleWordLen: number,
@@ -1251,29 +1236,14 @@ export type MatchScore = readonly [
   contentSubLen: number,
 ]
 
-const haystackWordCharRegex = /[\p{L}\p{N}_]/u
-
-const containsAsWholeWord = (lowercasedHaystack: string, lowercasedToken: string): boolean => {
-  let from = 0
-  for (;;) {
-    const idx = lowercasedHaystack.indexOf(lowercasedToken, from)
-    if (idx === -1) return false
-    const before = idx > 0 ? lowercasedHaystack[idx - 1] : ""
-    const afterIdx = idx + lowercasedToken.length
-    const after = afterIdx < lowercasedHaystack.length ? lowercasedHaystack[afterIdx] : ""
-    const leftOk = before === "" || !haystackWordCharRegex.test(before)
-    const rightOk = after === "" || !haystackWordCharRegex.test(after)
-    if (leftOk && rightOk) return true
-    from = idx + 1
-  }
-}
-
 /**
- * Returns the longest matching token length for the haystack, separated
- * into whole-word and substring-only categories. Tokens are expected
- * sorted longest-first; the first match in each category wins.
+ * Returns [wholeWordLen, substringLen] — the length of the longest token
+ * that matches the haystack as a whole word, and as any substring.
+ * Tokens must be sorted longest-first; the first match in each category
+ * wins. Word boundaries respect Unicode letters/digits so "rétable"
+ * doesn't count as a whole-word match for "table".
  */
-export const longestMatchedTokenLengths = (
+const longestMatchedTokenLengths = (
   lowercasedHaystack: string,
   lowercasedTokens: readonly string[],
 ): readonly [wholeWordLen: number, substringLen: number] => {
@@ -1282,10 +1252,14 @@ export const longestMatchedTokenLengths = (
   for (const token of lowercasedTokens) {
     if (!lowercasedHaystack.includes(token)) continue
     if (substringLen === 0) substringLen = token.length
-    if (wholeWordLen === 0 && containsAsWholeWord(lowercasedHaystack, token)) {
+    const wholeWordRe = new RegExp(
+      `(?<![\\p{L}\\p{N}_])${RegExp.escape(token)}(?![\\p{L}\\p{N}_])`,
+      "u",
+    )
+    if (wholeWordRe.test(lowercasedHaystack)) {
       wholeWordLen = token.length
+      break
     }
-    if (substringLen > 0 && wholeWordLen > 0) break
   }
   return [wholeWordLen, substringLen]
 }
@@ -1293,24 +1267,24 @@ export const longestMatchedTokenLengths = (
 /**
  * Score a document by the longest query token it contains, tiered by
  * whole-word vs substring match and by field. Caller must pass tokens
- * sorted longest-first (as tokenizeTerm returns them) and pre-lowercased;
- * the function lowercases each field once per doc.
- *
- * @param details - ContentDetails for the document to score
- * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
- *   ordered longest-first
- * @returns Per-field MatchScore
+ * sorted longest-first (as tokenizeTerm returns them) and pre-lowercased.
  */
 export const scoreDocByMatchDegree = (
   details: ContentDetails,
   lowercasedTokens: readonly string[],
 ): MatchScore => {
-  const title = details.title.toLowerCase()
-  const content = details.content.toLowerCase()
-  const authors = details.authors.join(" ").toLowerCase()
-  const [titleWord, titleSub] = longestMatchedTokenLengths(title, lowercasedTokens)
-  const [authorsWord, authorsSub] = longestMatchedTokenLengths(authors, lowercasedTokens)
-  const [contentWord, contentSub] = longestMatchedTokenLengths(content, lowercasedTokens)
+  const [titleWord, titleSub] = longestMatchedTokenLengths(
+    details.title.toLowerCase(),
+    lowercasedTokens,
+  )
+  const [authorsWord, authorsSub] = longestMatchedTokenLengths(
+    details.authors.join(" ").toLowerCase(),
+    lowercasedTokens,
+  )
+  const [contentWord, contentSub] = longestMatchedTokenLengths(
+    details.content.toLowerCase(),
+    lowercasedTokens,
+  )
   return [titleWord, authorsWord, contentWord, titleSub, authorsSub, contentSub]
 }
 
