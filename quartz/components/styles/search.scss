@@ -281,7 +281,9 @@
 
             // Flatten child backgrounds so the card's focus/hover effect
             // shows through admonitions, blockquotes, code blocks, etc.
-            & :not(img, video, svg, canvas) {
+            // Icon classes use `background-color + mask-image` to paint the
+            // glyph, so they must keep their background.
+            & :not(img, video, svg, canvas, .admonition-icon, .fold-admonition-icon) {
               background-color: transparent !important;
             }
 
