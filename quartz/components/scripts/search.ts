@@ -241,12 +241,13 @@ const wordCharRegex = /[\p{L}\p{N}_]/u
  * text ends with 'r'); inside "the table" it returns true.
  */
 function isWholeWordMatch(matchSpan: HTMLElement): boolean {
-  const abutsWordChar = (sibling: ChildNode | null, charAt: (text: string) => string): boolean => {
-    if (sibling?.nodeType !== Node.TEXT_NODE) return false
-    return wordCharRegex.test(charAt(sibling.nodeValue ?? ""))
+  const { previousSibling: prev, nextSibling: next } = matchSpan
+  if (prev?.nodeType === Node.TEXT_NODE && wordCharRegex.test((prev.nodeValue ?? "").slice(-1))) {
+    return false
   }
-  if (abutsWordChar(matchSpan.previousSibling, (t) => t.slice(-1))) return false
-  if (abutsWordChar(matchSpan.nextSibling, (t) => t.slice(0, 1))) return false
+  if (next?.nodeType === Node.TEXT_NODE && wordCharRegex.test((next.nodeValue ?? "").slice(0, 1))) {
+    return false
+  }
   return true
 }
 
