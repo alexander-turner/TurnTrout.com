@@ -2297,6 +2297,16 @@ describe("Non-breaking space insertion", () => {
     expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 
+  it.each([
+    '<p class="subtitle">I love this</p>',
+    '<p class="subtitle">A cat sat on a mat</p>',
+    '<p class="subtitle">MATS 3.0, Steering GPT-2-XL by Adding an Activation Vector</p>',
+    '<p class="subtitle"><a href="/gpt2-steering-vectors">Steering GPT-2-XL by Adding an Activation Vector</a></p>',
+    '<p class="subtitle"><em>I love this</em></p>',
+  ])("does not insert nbsp in subtitles: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
+  })
+
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
     expect(result).toContain(NBSP)

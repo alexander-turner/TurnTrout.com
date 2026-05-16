@@ -342,6 +342,14 @@ function isHeading(node: Element): boolean {
   return HEADING_TAGS.has(node.tagName)
 }
 
+// Display-heading elements: text that's styled like a heading and wraps
+// in a tight, balanced way. NBSP widow-prevention here creates brittle
+// titles (especially paper titles in subtitles, which often contain
+// short conjunctions like "by"/"an"/"of").
+function isDisplayHeading(node: Element): boolean {
+  return isHeading(node) || (node.tagName === "p" && hasClass(node, "subtitle"))
+}
+
 // skipcq: JS-0098
 function isKatex(node: Element): boolean {
   return hasClass(node, "katex")
@@ -794,10 +802,12 @@ export const improveFormatting = (
         return
       }
 
-      // Skip nbsp in headings — it prevents natural line-breaking and looks bad
-      const inHeading =
-        isHeading(node as Element) || hasAncestor(node as Element, isHeading, ancestors)
-      const activeUncheckedTransformers = inHeading
+      // Skip nbsp in headings and subtitles — it prevents natural line-breaking
+      // and looks bad
+      const inDisplayHeading =
+        isDisplayHeading(node as Element) ||
+        hasAncestor(node as Element, isDisplayHeading, ancestors)
+      const activeUncheckedTransformers = inDisplayHeading
         ? uncheckedTextTransformers.filter((t) => t !== nbspTransformWrapper)
         : uncheckedTextTransformers
 
