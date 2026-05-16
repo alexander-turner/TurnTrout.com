@@ -266,8 +266,11 @@ describe("PopulateExternalMarkdown", () => {
   })
 
   describe("PopulateExternalMarkdown plugin", () => {
-    it("should skip processing when no placeholders present", () => {
-      const plugin = PopulateExternalMarkdown({ sources: {} })
+    it.each([
+      ["explicit empty sources", { sources: {} }],
+      ["undefined opts (exercises `opts?.sources ?? {}` default)", undefined],
+    ])("skips processing when no placeholders present (%s)", (_d, opts) => {
+      const plugin = PopulateExternalMarkdown(opts as never)
       const result = plugin.textTransform?.({} as BuildCtx, "Regular content")
       expect(result).toBe("Regular content")
       expect(mockFetch).not.toHaveBeenCalled()

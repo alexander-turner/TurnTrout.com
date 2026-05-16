@@ -34,6 +34,7 @@ import {
   replaceFractions,
   timeTransform,
   applyTextTransforms,
+  HTMLFormattingImprovement,
   rearrangeLinkPunctuation,
   arrowsToWrap,
   stripInlineBoundaryWhitespace,
@@ -2133,6 +2134,12 @@ describe("improveFormatting function with options", () => {
 })
 
 describe("HTMLFormattingImprovement plugin", () => {
+  it("wires up improveFormatting as its sole htmlPlugin", () => {
+    const plugin = HTMLFormattingImprovement()
+    const ctx = {} as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0]
+    expect(plugin.htmlPlugins?.(ctx)).toEqual([improveFormatting])
+  })
+
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
     const plugin = StripInlineBoundaryWhitespace()
     const { htmlPlugins } = plugin
