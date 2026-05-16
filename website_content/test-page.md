@@ -407,7 +407,7 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 |  Opus-4 |     Baseline     |       47.2        |
 |  Opus-4 |   +Coop Prompt   |       14.9        |
 
-Table: Darker dividers between row groups, marked with `===` rows.
+Table: Darker dividers between row groups.
 
 # Scroll indicators
 

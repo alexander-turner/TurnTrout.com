@@ -64,21 +64,13 @@ th {
   font-weight: 500;
 }
 
-tr {
-  border-bottom: 1px solid var(--midground-faint);
-}
-
-// Darker dividers: between groups (marker row tags the preceding <tr>) and
-// the header → body separator (so the header reads as the first "group").
+// Darker dividers: between groups and the header → body separator. Targets
+// cells (not <tr>) because `border-collapse: collapse` resolves cell-level
+// borders ahead of row-level ones, so a `tr { border-bottom }` rule would be
+// hidden by the existing `th, td { border: 1px solid --midground-faint }`.
 thead th,
-tr.group-boundary {
+tr.group-boundary > td {
   border-bottom: 1px solid var(--midground);
-}
-
-// Declared last so :last-child overrides .group-boundary, making a trailing
-// marker row (which would tag the table's final data row) render as a no-op.
-tr:last-child {
-  border-bottom: none;
 }
 
 .table-container {
