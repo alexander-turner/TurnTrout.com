@@ -1120,10 +1120,7 @@ export function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
  *
  * The order matches the function body — cheapest check first.
  */
-export function shouldAppendPreviewContent(
-  card: HTMLElement,
-  cardPreview: HTMLElement,
-): boolean {
+export function shouldAppendPreviewContent(card: HTMLElement, cardPreview: HTMLElement): boolean {
   if (!cardPreview.isConnected) return false
   if (!intersectingCards.has(card)) return false
   if (cardPreview.querySelector("article.search-preview")) return false
