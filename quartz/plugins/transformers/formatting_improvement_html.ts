@@ -347,7 +347,11 @@ function isHeading(node: Element): boolean {
 // titles (especially paper titles in subtitles, which often contain
 // short conjunctions like "by"/"an"/"of").
 function isDisplayHeading(node: Element): boolean {
-  return isHeading(node) || (node.tagName === "p" && hasClass(node, "subtitle"))
+  return (
+    isHeading(node) ||
+    (node.tagName === "p" && hasClass(node, "subtitle")) ||
+    hasClass(node, "admonition-title")
+  )
 }
 
 // skipcq: JS-0098
@@ -802,8 +806,8 @@ export const improveFormatting = (
         return
       }
 
-      // Skip nbsp in headings and subtitles — it prevents natural line-breaking
-      // and looks bad
+      // Skip nbsp in headings, subtitles, and admonition titles — it prevents
+      // natural line-breaking and looks bad
       const inDisplayHeading =
         isDisplayHeading(node as Element) ||
         hasAncestor(node as Element, isDisplayHeading, ancestors)

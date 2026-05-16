@@ -2307,6 +2307,14 @@ describe("Non-breaking space insertion", () => {
     expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 
+  it.each([
+    '<div class="admonition-title">I love this</div>',
+    '<div class="admonition-title"><a href="/">Lisa Thiergart</a></div>',
+    '<div class="admonition-title"><div class="admonition-title-inner">A cat sat on a mat</div></div>',
+  ])("does not insert nbsp in admonition titles: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
+  })
+
   it("also applies via applyTextTransforms (titles, TOC, etc.)", () => {
     const result = applyTextTransforms("I love this thing")
     expect(result).toContain(NBSP)
