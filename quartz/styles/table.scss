@@ -71,12 +71,12 @@ th {
 // `--midground-faint` border to potentially win.
 thead th,
 tr.group-boundary > td {
-  border-bottom: 1px solid var(--midground);
+  border-bottom: 3px solid var(--midground);
 }
 
 thead + tbody > tr:first-child > td,
 tr.group-boundary + tr > td {
-  border-top: 1px solid var(--midground);
+  border-top: 3px solid var(--midground);
 }
 
 .table-container {
