@@ -562,6 +562,8 @@ export function hideSearch(previewManagerArg: PreviewManager | null) {
     searchBar.setAttribute("aria-expanded", "false")
     searchBar.removeAttribute("aria-activedescendant")
   }
+  // Drop observer references to result cards before they're removed.
+  disconnectCardPreviewObserver()
   if (results) {
     removeAllChildren(results)
   }
@@ -1028,22 +1030,106 @@ const getByField = (field: string, searchResults: DefaultDocumentSearchResults):
 }
 
 /**
+ * Result cards whose .card-preview is currently mounted. Tracked separately
+ * from the IntersectionObserver entries because the observer callback fires
+ * async, and addCardPreview's fetch resolution must check whether the card
+ * is still meant to be populated before appending the (expensive) article.
+ */
+const intersectingCards = new WeakSet<HTMLElement>()
+
+/**
+ * Singleton IntersectionObserver that mounts and unmounts mobile card
+ * previews as result cards scroll in and out of view. Without unmounting,
+ * scrolling through eight result cards leaves eight cloned page DOMs
+ * resident in memory — enough to OOM the Brave Android WebView for
+ * video-heavy result sets.
+ */
+let cardPreviewObserver: IntersectionObserver | null = null
+
+/* istanbul ignore next -- IntersectionObserver semantics aren't reachable from jsdom */
+function getCardPreviewObserver(): IntersectionObserver {
+  if (cardPreviewObserver) return cardPreviewObserver
+  cardPreviewObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const card = entry.target as HTMLElement
+        if (entry.isIntersecting) {
+          intersectingCards.add(card)
+          addCardPreview(card, card.id as FullSlug)
+        } else {
+          intersectingCards.delete(card)
+          clearCardPreviewContent(card)
+        }
+      }
+    },
+    // Pre-mount one viewport ahead of the scroll so users don't see empty
+    // placeholders during fast scrolls.
+    { rootMargin: "300px 0px" },
+  )
+  return cardPreviewObserver
+}
+
+/**
+ * Stop observing all cards. Call before re-rendering the results list or
+ * hiding the search overlay so the observer releases references to cards
+ * that are about to be detached from the DOM.
+ */
+/* istanbul ignore next */
+function disconnectCardPreviewObserver(): void {
+  cardPreviewObserver?.disconnect()
+}
+
+/**
+ * Drop the inner article of a card preview while keeping the wrapper
+ * (and its CSS-defined height) in place. Reclaims the memory held by
+ * cloned page content — videos, images, tables — when a card scrolls
+ * out of view.
+ */
+/* istanbul ignore next */
+function clearCardPreviewContent(card: HTMLElement): void {
+  const cardPreview = card.querySelector(".card-preview") as HTMLElement | null
+  if (cardPreview) cardPreview.innerHTML = ""
+}
+
+/**
+ * Ensure a .card-preview wrapper exists on the result card and return it.
+ * The wrapper is created up front (separate from any content) so the card
+ * has a stable, CSS-defined height before the lazy mount fires — otherwise
+ * cards reflow on first intersection and the visible scroll position jumps.
+ */
+/* istanbul ignore next */
+function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
+  const existing = card.querySelector(".card-preview") as HTMLElement | null
+  if (existing) return existing
+  const cardPreview = document.createElement("div")
+  cardPreview.classList.add("card-preview")
+  card.appendChild(cardPreview)
+  return cardPreview
+}
+
+/**
  * Add an card preview to a result card. Fetches the page content and renders
- * a small preview slice with search matches highlighted.
+ * a small preview slice with search matches highlighted. Safe to call
+ * multiple times for the same card — bails if the inner article is already
+ * mounted, and re-mounts cleanly after {@link clearCardPreviewContent}.
  * @param card - The result card element
  * @param slug - The slug for the page to preview
  */
 /* istanbul ignore next */
 function addCardPreview(card: HTMLElement, slug: FullSlug): void {
-  if (card.querySelector(".card-preview")) return // Already has one
-
-  const cardPreview = document.createElement("div")
-  cardPreview.classList.add("card-preview")
-  card.appendChild(cardPreview)
+  const cardPreview = ensureCardPreviewWrapper(card)
+  if (cardPreview.querySelector("article.search-preview")) return // Already populated
 
   // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
   void fetchContent(slug).then(({ content: contentElements }) => {
     if (!contentElements) return
+    // Card may have been removed (new search) or unmounted (scrolled out
+    // of view) between the fetch call and its resolution. In either case
+    // appending would either crash or waste memory the unmount just freed.
+    if (!cardPreview.isConnected) return
+    if (!intersectingCards.has(card)) return
+    if (cardPreview.querySelector("article.search-preview")) return
+
     const article = document.createElement("article")
     article.classList.add("search-preview")
     contentElements.forEach((el) => {
@@ -1083,9 +1169,13 @@ function handleResizeForCardPreviews(): void {
   const enablePreview = searchLayout?.dataset?.preview === "true"
   if (!enablePreview) return
 
-  // Add card previews to all result cards that don't already have them
+  // Add card preview wrappers + observers to all result cards that don't
+  // already have them. Content fetch/render is deferred to the observer.
+  const observer = getCardPreviewObserver()
   document.querySelectorAll(".result-card:not(.no-match)").forEach((card) => {
-    addCardPreview(card as HTMLElement, card.id as FullSlug)
+    const cardEl = card as HTMLElement
+    ensureCardPreviewWrapper(cardEl)
+    observer.observe(cardEl)
   })
 }
 
@@ -1141,11 +1231,13 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
   // On mobile/tablet, embed a small card preview slice in each card.
   // CSS hides .card-preview above the tablet breakpoint, so we always
-  // attach them when preview is enabled — a resize listener
-  // (handleResizeForCardPreviews) lazily adds them to cards rendered at
-  // desktop width when the viewport narrows.
+  // attach the wrapper when preview is enabled — a resize listener
+  // (handleResizeForCardPreviews) attaches wrappers to cards rendered at
+  // desktop width when the viewport narrows. Inner content is mounted
+  // lazily via IntersectionObserver to cap memory in the result list.
   if (enablePreview && window.innerWidth <= tabletBreakpoint) {
-    addCardPreview(itemTile, slug as FullSlug)
+    ensureCardPreviewWrapper(itemTile)
+    getCardPreviewObserver().observe(itemTile)
   }
 
   // Handles the mouse enter event by displaying a preview for the hovered element if mouse events are not locked.
@@ -1280,6 +1372,9 @@ const formatForDisplay = (term: string, id: number, slug: FullSlug, details: Con
 function displayResults(finalResults: Item[], results: HTMLElement, enablePreview: boolean): void {
   if (!results) return
 
+  // Drop observer references to the cards that are about to be removed,
+  // so the WeakSet entries become eligible for GC.
+  disconnectCardPreviewObserver()
   removeAllChildren(results)
   const searchBar = document.getElementById("search-bar")
   searchBar?.setAttribute("aria-expanded", finalResults.length > 0 ? "true" : "false")
