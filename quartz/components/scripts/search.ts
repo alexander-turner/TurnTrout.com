@@ -1106,6 +1106,41 @@ export function ensureCardPreviewWrapper(card: HTMLElement): HTMLElement {
 }
 
 /**
+ * Decide whether the result of an in-flight {@link fetchContent} should be
+ * appended to the given card preview, given the live state. Extracted from
+ * {@link addCardPreview} so the race-condition guards can be tested without
+ * mocking `fetch` and the IntersectionObserver.
+ *
+ * Returns false when:
+ * - the wrapper has been detached (the result list was re-rendered or the
+ *   search overlay was hidden while the fetch was pending);
+ * - the card is no longer marked intersecting (it scrolled out of view
+ *   while the fetch was pending);
+ * - the wrapper already holds an article (a parallel mount won the race).
+ *
+ * The order matches the function body — cheapest check first.
+ */
+export function shouldAppendPreviewContent(
+  card: HTMLElement,
+  cardPreview: HTMLElement,
+): boolean {
+  if (!cardPreview.isConnected) return false
+  if (!intersectingCards.has(card)) return false
+  if (cardPreview.querySelector("article.search-preview")) return false
+  return true
+}
+
+/** Test helper: mark a card as currently intersecting. */
+export function markCardIntersectingForTesting(card: HTMLElement): void {
+  intersectingCards.add(card)
+}
+
+/** Test helper: clear a card's intersecting state. */
+export function unmarkCardIntersectingForTesting(card: HTMLElement): void {
+  intersectingCards.delete(card)
+}
+
+/**
  * Add an card preview to a result card. Fetches the page content and renders
  * a small preview slice with search matches highlighted. Safe to call
  * multiple times for the same card — bails if the inner article is already
@@ -1121,12 +1156,7 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
   // skipcq: JS-0098 -- void marks this fire-and-forget promise as intentionally unhandled
   void fetchContent(slug).then(({ content: contentElements }) => {
     if (!contentElements) return
-    // Card may have been removed (new search) or unmounted (scrolled out
-    // of view) between the fetch call and its resolution. In either case
-    // appending would either crash or waste memory the unmount just freed.
-    if (!cardPreview.isConnected) return
-    if (!intersectingCards.has(card)) return
-    if (cardPreview.querySelector("article.search-preview")) return
+    if (!shouldAppendPreviewContent(card, cardPreview)) return
 
     const article = document.createElement("article")
     article.classList.add("search-preview")

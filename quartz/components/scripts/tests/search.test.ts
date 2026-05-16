@@ -31,6 +31,9 @@ import {
   initializeSearch,
   ensureCardPreviewWrapper,
   clearCardPreviewContent,
+  shouldAppendPreviewContent,
+  markCardIntersectingForTesting,
+  unmarkCardIntersectingForTesting,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
@@ -986,5 +989,51 @@ describe("clearCardPreviewContent", () => {
   it("is a no-op when the card has no .card-preview wrapper", () => {
     const card = document.createElement("a")
     expect(() => clearCardPreviewContent(card)).not.toThrow()
+  })
+})
+
+describe("shouldAppendPreviewContent race-condition guards", () => {
+  let card: HTMLElement
+  let cardPreview: HTMLElement
+
+  beforeEach(() => {
+    card = document.createElement("a")
+    card.classList.add("result-card")
+    cardPreview = ensureCardPreviewWrapper(card)
+    document.body.appendChild(card)
+    markCardIntersectingForTesting(card)
+  })
+
+  afterEach(() => {
+    unmarkCardIntersectingForTesting(card)
+    if (card.isConnected) card.remove()
+  })
+
+  it("returns true when card is connected, intersecting, and wrapper is empty", () => {
+    expect(shouldAppendPreviewContent(card, cardPreview)).toBe(true)
+  })
+
+  it("returns false when the wrapper has been detached (new-search race)", () => {
+    card.remove()
+    expect(cardPreview.isConnected).toBe(false)
+    expect(shouldAppendPreviewContent(card, cardPreview)).toBe(false)
+  })
+
+  it("returns false when the card has scrolled out of view (scroll-out race)", () => {
+    unmarkCardIntersectingForTesting(card)
+    expect(shouldAppendPreviewContent(card, cardPreview)).toBe(false)
+  })
+
+  it("returns false when the wrapper has already been populated (parallel-mount race)", () => {
+    const article = document.createElement("article")
+    article.classList.add("search-preview")
+    cardPreview.appendChild(article)
+    expect(shouldAppendPreviewContent(card, cardPreview)).toBe(false)
+  })
+
+  it("checks isConnected before intersectingCards (cheapest guard first)", () => {
+    card.remove()
+    unmarkCardIntersectingForTesting(card)
+    expect(shouldAppendPreviewContent(card, cardPreview)).toBe(false)
   })
 })
