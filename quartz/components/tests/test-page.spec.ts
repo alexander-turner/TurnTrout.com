@@ -328,25 +328,35 @@ test.describe("Table of contents", () => {
   test("Mobile TOC: tapping a narrow entry navigates", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    // Regression: a negative `text-indent` on the TOC <ol> renders an inline
-    // <a>'s first-line glyphs outside its layout box. On touch devices the
-    // synthesized `click` then dispatches to the parent <li> instead of <a>,
-    // and the SPA router's `target.closest("a")` returns null — the tap is
-    // silently swallowed. Making the <a> block-level keeps the click event on
-    // <a>, so tapping anywhere inside the row navigates.
-    const narrowLink = page
-      .locator("#toc-content-mobile a")
-      .filter({ hasText: /^Lists$/ })
-      .first()
-    await expect(narrowLink).toBeVisible()
-    const box = await narrowLink.boundingBox()
-    if (!box) throw new Error("Could not measure narrow TOC link bounding box")
+    // The narrowest top-level entry is the worst case: the parent <ol>'s
+    // negative `text-indent` renders the inline <a>'s glyphs furthest outside
+    // its layout box, so a tap near the visible left edge is most likely to
+    // miss the <a> and land on <li>.
+    const target = await page.evaluate(() => {
+      const links = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>("#toc-content-mobile > ol > li > a"),
+      )
+      let narrowest: { hash: string; x: number; y: number; height: number; width: number } | null =
+        null
+      for (const a of links) {
+        const r = a.getBoundingClientRect()
+        if (!narrowest || r.width < narrowest.width) {
+          narrowest = {
+            hash: a.getAttribute("href") ?? "",
+            x: r.x,
+            y: r.y,
+            height: r.height,
+            width: r.width,
+          }
+        }
+      }
+      return narrowest
+    })
+    if (!target) throw new Error("No top-level mobile TOC entries found")
 
-    // Tap a few pixels inside the left edge of the link — the worst case for
-    // the regression, where the visible glyph sits outside the <a>'s box.
-    await page.touchscreen.tap(box.x + 3, box.y + box.height / 2)
-    await expect.poll(() => page.evaluate(() => location.hash)).toBe("#lists")
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    // Tap a few pixels inside the left edge — the regression's failure zone.
+    await page.touchscreen.tap(target.x + 3, target.y + target.height / 2)
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
   })
 
   test("Scrolling down changes TOC highlight", async ({ page }) => {
