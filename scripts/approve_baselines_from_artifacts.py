@@ -5,7 +5,6 @@ baselines."""
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 import zipfile
 from collections.abc import Iterator
@@ -16,9 +15,11 @@ sys.path.append(str(Path(__file__).parent.parent))
 # pylint: disable=wrong-import-position
 # skipcq: FLK-E402
 from scripts import r2_baselines  # noqa: E402
+from scripts.blob_report import iter_jsonl_events  # noqa: E402
 
 _ACTUAL_SUFFIX = "-actual.png"
 _PNG_CONTENT_TYPE = "image/png"
+_REPORT_JSONL = "report.jsonl"
 
 
 def _canonical_baseline_name(attachment_name: str) -> str | None:
@@ -31,10 +32,7 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
 
 
 def _attachments_from_jsonl(jsonl: str) -> Iterator[dict]:
-    for line in jsonl.splitlines():
-        if not line.strip():
-            continue
-        event = json.loads(line)
+    for event in iter_jsonl_events(jsonl):
         if event.get("method") != "onAttach":
             continue
         yield from (event.get("params") or {}).get("attachments") or []
@@ -43,7 +41,7 @@ def _attachments_from_jsonl(jsonl: str) -> Iterator[dict]:
 def _iter_actual_pngs(blob_zip: Path) -> Iterator[tuple[str, bytes]]:
     with zipfile.ZipFile(blob_zip) as zf:
         try:
-            jsonl = zf.read("report.jsonl").decode("utf-8")
+            jsonl = zf.read(_REPORT_JSONL).decode("utf-8")
         except KeyError:
             return
         for attachment in _attachments_from_jsonl(jsonl):

@@ -20,13 +20,12 @@ status and ``publish-visual-report`` still surface a failure.
 from __future__ import annotations
 
 import argparse
-import json
 import sys
-import zipfile
 from collections import defaultdict
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from scripts.blob_report import iter_events
 
 _ACTUAL_SUFFIX = "-actual.png"
 
@@ -54,19 +53,6 @@ class Classification:
     def has_real_failures(self) -> bool:
         """True iff at least one non-snapshot failure was observed."""
         return self.real_failures > 0
-
-
-def _iter_events(blob_zip: Path) -> Iterator[dict]:
-    """Yield events from ``report.jsonl`` inside a blob-report ZIP."""
-    with zipfile.ZipFile(blob_zip) as zf:
-        try:
-            jsonl = zf.read("report.jsonl").decode("utf-8")
-        except KeyError:
-            return
-        for line in jsonl.splitlines():
-            if not line.strip():
-                continue
-            yield json.loads(line)
 
 
 def _record_test_end(tests: dict[str, _TestState], params: dict) -> None:
@@ -98,7 +84,7 @@ def _record_attachments(tests: dict[str, _TestState], params: dict) -> None:
 def _classify_blob(blob_zip: Path) -> tuple[int, int]:
     """Return ``(snapshot_failures, real_failures)`` for one blob ZIP."""
     tests: dict[str, _TestState] = defaultdict(_TestState)
-    for event in _iter_events(blob_zip):
+    for event in iter_events(blob_zip):
         method = event.get("method")
         params = event.get("params") or {}
         if method == "onTestEnd":
