@@ -102,22 +102,7 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
-        run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --shard ${{ matrix.shard }} \
-            --reporter=blob,dot \
-            --update-snapshots=none \
-            --trace=off \
-            -g "(screenshot)" 2>&1 | tee playwright-run.log
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Sanitize shard name
-        if: always()
-        uses: ./.github/actions/sanitize-shard-name
+        uses: ./.github/actions/run-visual-playwright
         with:
           shard: ${{ matrix.shard }}
 
@@ -126,7 +111,7 @@ jobs:
         uses: ./.github/actions/visual-shard-finalize
         with:
           platform: linux
-          shard: ${{ env.SANITIZED_SHARD }}
+          shard: ${{ matrix.shard }}
           playwright-outcome: ${{ steps.playwright.outcome }}
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
@@ -186,22 +171,7 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
-        run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --shard ${{ matrix.shard }} \
-            --reporter=blob,dot \
-            --update-snapshots=none \
-            --trace=off \
-            -g "(screenshot)" 2>&1 | tee playwright-run.log
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Sanitize shard name
-        if: always()
-        uses: ./.github/actions/sanitize-shard-name
+        uses: ./.github/actions/run-visual-playwright
         with:
           shard: ${{ matrix.shard }}
 
@@ -210,7 +180,7 @@ jobs:
         uses: ./.github/actions/visual-shard-finalize
         with:
           platform: macos
-          shard: ${{ env.SANITIZED_SHARD }}
+          shard: ${{ matrix.shard }}
           playwright-outcome: ${{ steps.playwright.outcome }}
 
   # Aggregate shard status artifacts. Shards stay green for snapshot-only

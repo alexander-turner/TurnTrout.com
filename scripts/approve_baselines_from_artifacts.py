@@ -15,11 +15,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 # pylint: disable=wrong-import-position
 # skipcq: FLK-E402
 from scripts import r2_baselines  # noqa: E402
-from scripts.blob_report import iter_jsonl_events  # noqa: E402
+from scripts.blob_report import iter_events_from_zip  # noqa: E402
 
 _ACTUAL_SUFFIX = "-actual.png"
 _PNG_CONTENT_TYPE = "image/png"
-_REPORT_JSONL = "report.jsonl"
 
 
 def _canonical_baseline_name(attachment_name: str) -> str | None:
@@ -31,30 +30,26 @@ def _canonical_baseline_name(attachment_name: str) -> str | None:
     return stem + ".png"
 
 
-def _attachments_from_jsonl(jsonl: str) -> Iterator[dict]:
-    for event in iter_jsonl_events(jsonl):
-        if event.get("method") != "onAttach":
-            continue
-        yield from (event.get("params") or {}).get("attachments") or []
-
-
 def _iter_actual_pngs(blob_zip: Path) -> Iterator[tuple[str, bytes]]:
     with zipfile.ZipFile(blob_zip) as zf:
-        try:
-            jsonl = zf.read(_REPORT_JSONL).decode("utf-8")
-        except KeyError:
-            return
-        for attachment in _attachments_from_jsonl(jsonl):
-            if attachment.get("contentType") != _PNG_CONTENT_TYPE:
+        for event in iter_events_from_zip(zf):
+            if event.get("method") != "onAttach":
                 continue
-            baseline_name = _canonical_baseline_name(attachment.get("name", ""))
-            path = attachment.get("path")
-            if not baseline_name or not path:
-                continue
-            try:
-                yield baseline_name, zf.read(path)
-            except KeyError:
-                continue
+            for attachment in (event.get("params") or {}).get(
+                "attachments"
+            ) or []:
+                if attachment.get("contentType") != _PNG_CONTENT_TYPE:
+                    continue
+                baseline_name = _canonical_baseline_name(
+                    attachment.get("name", "")
+                )
+                path = attachment.get("path")
+                if not baseline_name or not path:
+                    continue
+                try:
+                    yield baseline_name, zf.read(path)
+                except KeyError:
+                    continue
 
 
 def collect_from_blob_reports(blob_reports_dir: Path, staging_dir: Path) -> int:

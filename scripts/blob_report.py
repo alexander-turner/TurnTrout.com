@@ -25,23 +25,22 @@ def iter_jsonl_events(jsonl: str) -> Iterator[dict]:
         yield json.loads(line)
 
 
-def read_report_jsonl(blob_zip: Path) -> str | None:
+def iter_events_from_zip(zf: zipfile.ZipFile) -> Iterator[dict]:
     """
-    Return the ``report.jsonl`` contents from a blob ZIP.
+    Yield events from an already-open blob-report ZipFile.
 
-    Returns ``None`` when the entry is absent — Playwright omits it if it
-    was interrupted before writing.
+    Use when the caller needs the zip open for other reads too (e.g. extracting
+    attachment PNGs by path). Yields nothing if Playwright was interrupted
+    before writing the report.
     """
-    with zipfile.ZipFile(blob_zip) as zf:
-        try:
-            return zf.read(_REPORT_JSONL).decode("utf-8")
-        except KeyError:
-            return None
+    try:
+        jsonl = zf.read(_REPORT_JSONL).decode("utf-8")
+    except KeyError:
+        return
+    yield from iter_jsonl_events(jsonl)
 
 
 def iter_events(blob_zip: Path) -> Iterator[dict]:
     """Yield decoded events from ``report.jsonl`` inside a blob ZIP."""
-    jsonl = read_report_jsonl(blob_zip)
-    if jsonl is None:
-        return
-    yield from iter_jsonl_events(jsonl)
+    with zipfile.ZipFile(blob_zip) as zf:
+        yield from iter_events_from_zip(zf)
