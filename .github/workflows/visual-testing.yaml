@@ -121,6 +121,51 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
+      # Classify Playwright failures: snapshot-only (new or updated
+      # screenshots) vs. real (timeouts, page errors, exceptions before
+      # the screenshot assertion). The shard stays green for snapshot-only
+      # outcomes — the overall `visual-testing` status and the
+      # `publish-visual-report` deploy carry that signal instead.
+      - name: Classify shard failures
+        if: always()
+        id: classify
+        env:
+          PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
+          PLATFORM: linux
+        run: |
+          set -euo pipefail
+          mkdir -p shard-status
+          STATUS_FILE="shard-status/status-${PLATFORM}-${SANITIZED_SHARD}.txt"
+          if compgen -G "blob-report/*.zip" > /dev/null; then
+            uv run python scripts/classify_visual_failures.py blob-report \
+              --output "$STATUS_FILE"
+          elif [ "$PLAYWRIGHT_OUTCOME" = "success" ]; then
+            printf '%s\n' \
+              "has_any_failures=false" \
+              "has_real_failures=false" \
+              "snapshot_failures=0" \
+              "real_failures=0" > "$STATUS_FILE"
+          else
+            # Playwright crashed before writing a blob report — treat as
+            # a real failure so the shard surfaces it.
+            printf '%s\n' \
+              "has_any_failures=true" \
+              "has_real_failures=true" \
+              "snapshot_failures=0" \
+              "real_failures=1" > "$STATUS_FILE"
+          fi
+          cat "$STATUS_FILE"
+          cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload shard status
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: visual-status-linux-shard-${{ env.SANITIZED_SHARD }}
+          path: shard-status/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Upload Playwright logs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -131,7 +176,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Winston logs
-        if: steps.playwright.outcome == 'failure'
+        if: steps.classify.outputs.has_real_failures == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -179,8 +224,8 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Fail if playwright tests failed
-        if: steps.playwright.outcome != 'success'
+      - name: Fail if real test failures
+        if: steps.classify.outputs.has_real_failures == 'true'
         run: exit 1
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
@@ -259,6 +304,45 @@ jobs:
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
 
+      # See Linux job for rationale.
+      - name: Classify shard failures
+        if: always()
+        id: classify
+        env:
+          PLAYWRIGHT_OUTCOME: ${{ steps.playwright.outcome }}
+          PLATFORM: macos
+        run: |
+          set -euo pipefail
+          mkdir -p shard-status
+          STATUS_FILE="shard-status/status-${PLATFORM}-${SANITIZED_SHARD}.txt"
+          if compgen -G "blob-report/*.zip" > /dev/null; then
+            uv run python scripts/classify_visual_failures.py blob-report \
+              --output "$STATUS_FILE"
+          elif [ "$PLAYWRIGHT_OUTCOME" = "success" ]; then
+            printf '%s\n' \
+              "has_any_failures=false" \
+              "has_real_failures=false" \
+              "snapshot_failures=0" \
+              "real_failures=0" > "$STATUS_FILE"
+          else
+            printf '%s\n' \
+              "has_any_failures=true" \
+              "has_real_failures=true" \
+              "snapshot_failures=0" \
+              "real_failures=1" > "$STATUS_FILE"
+          fi
+          cat "$STATUS_FILE"
+          cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Upload shard status
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: visual-status-macos-shard-${{ env.SANITIZED_SHARD }}
+          path: shard-status/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Upload Playwright logs
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -269,7 +353,7 @@ jobs:
           retention-days: 1
 
       - name: Upload Winston logs
-        if: steps.playwright.outcome == 'failure'
+        if: steps.classify.outputs.has_real_failures == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -312,15 +396,65 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
-      - name: Fail if playwright tests failed
-        if: steps.playwright.outcome != 'success'
+      - name: Fail if real test failures
+        if: steps.classify.outputs.has_real_failures == 'true'
         run: exit 1
+
+  # Aggregate shard status artifacts. Shards stay green for snapshot-only
+  # outcomes (new or updated screenshots); this job carries the visual-diff
+  # signal forward so the overall status and publish-visual-report still fail.
+  aggregate-visual-results:
+    name: aggregate-visual-results
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    if: always() && !cancelled() && needs.should-run.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      has-any-failures: ${{ steps.aggregate.outputs.has-any-failures }}
+      has-real-failures: ${{ steps.aggregate.outputs.has-real-failures }}
+    steps:
+      - name: Download shard statuses
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: visual-status-*
+          path: ./statuses
+          merge-multiple: true
+
+      - id: aggregate
+        run: |
+          set -euo pipefail
+          any="false"
+          real="false"
+          shopt -s nullglob
+          files=(./statuses/*.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            # No status artifacts uploaded at all — surface as a real
+            # failure rather than silently passing.
+            any="true"
+            real="true"
+          else
+            for f in "${files[@]}"; do
+              echo "--- $f"
+              cat "$f"
+              if grep -qx "has_any_failures=true" "$f"; then any="true"; fi
+              if grep -qx "has_real_failures=true" "$f"; then real="true"; fi
+            done
+          fi
+          echo "has-any-failures=$any" >> "$GITHUB_OUTPUT"
+          echo "has-real-failures=$real" >> "$GITHUB_OUTPUT"
+          echo "Aggregated: has-any-failures=$any has-real-failures=$real"
 
   # Unified status check — required by branch protection
   visual-testing:
     name: visual-testing
     if: always()
-    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    needs:
+      [
+        should-run,
+        visual-testing-linux,
+        visual-testing-macos,
+        aggregate-visual-results,
+      ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -330,12 +464,24 @@ jobs:
             echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
-          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then
-            echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
+          if [[ "${{ needs.visual-testing-linux.result }}" == "cancelled" ]] || [[ "${{ needs.visual-testing-macos.result }}" == "cancelled" ]]; then
+            echo "Visual tests were cancelled"
             exit 1
           fi
-          if [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
-            echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
+          if [[ "${{ needs.aggregate-visual-results.result }}" != "success" ]]; then
+            echo "Aggregator did not succeed (${{ needs.aggregate-visual-results.result }})"
+            exit 1
+          fi
+          if [[ "${{ needs.visual-testing-linux.result }}" == "failure" ]]; then
+            echo "Linux visual tests had real failures"
+            exit 1
+          fi
+          if [[ "${{ needs.visual-testing-macos.result }}" == "failure" ]]; then
+            echo "macOS visual tests had real failures"
+            exit 1
+          fi
+          if [[ "${{ needs.aggregate-visual-results.outputs.has-any-failures }}" == "true" ]]; then
+            echo "Visual diffs present (new or updated screenshots) — see publish-visual-report"
             exit 1
           fi
 
@@ -360,15 +506,21 @@ jobs:
 
   # Merge per-shard blob reports into a single HTML report, upload as a
   # GHA artifact, and post a PR comment with the download link.
+  # Triggers on any visual failure — snapshot-only diffs (which leave the
+  # individual shards green) need the report too, so the user can approve
+  # the new baselines.
   publish-visual-report:
-    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    needs:
+      [
+        should-run,
+        visual-testing-linux,
+        visual-testing-macos,
+        aggregate-visual-results,
+      ]
     if: >-
       always() && !cancelled() &&
       needs.should-run.outputs.run == 'true' &&
-      (
-        needs.visual-testing-linux.result == 'failure' ||
-        needs.visual-testing-macos.result == 'failure'
-      )
+      needs.aggregate-visual-results.outputs.has-any-failures == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6

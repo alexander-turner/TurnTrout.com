@@ -103,6 +103,8 @@ Two ways to approve baselines (both promote the named visual-testing run's `*-ac
 
 For PR runs the workflow pushes an empty commit to the PR branch so visual-testing reruns immediately. For main runs it can't push (would pollute history); instead it (a) posts a synthetic passing `visual-testing` check-run on the head commit (the just-uploaded actuals ARE the new baselines, so rerunning would always pass — skip the wait), then (b) `rerun-failed-jobs` on the same-commit `deploy.yaml` run. `verify-test-results` polls `sort_by(.started_at) | last`, so the new success wins; `deploy` unblocks.
 
+**Shard status vs. overall status.** Individual `visual-testing-(linux|macos)` shards stay green when the only failures are new or updated screenshots — those are expected outcomes that the diff-gallery + approve button is designed for, and red shards turn into noise. Each shard runs `scripts/classify_visual_failures.py` over its blob report and only exits non-zero for real failures (timeouts, page errors, exceptions before the screenshot assertion). The `aggregate-visual-results` job collects per-shard status artifacts and the overall `visual-testing` status + `publish-visual-report` deploy carry the snapshot-diff signal forward.
+
 ## Pre-push validation pipeline
 
 When pushing to main, `scripts/run_push_checks.py` runs:
