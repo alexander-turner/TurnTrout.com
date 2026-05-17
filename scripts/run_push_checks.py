@@ -583,6 +583,10 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/{script_utils.CONTENT_DIR_NAME}/**/*.md",
             ],
         ),
+        CheckStep(
+            name="Formatting JSON",
+            command=[*prettier_args, f"{git_root_path}/**/*.json"],
+        ),
     ]
 
 
@@ -679,6 +683,19 @@ def get_check_steps(git_root_path: Path) -> list[CheckStep]:
                 f"{git_root_path}/scripts/handle_assets.sh",
             ],
             requires="rclone",
+        ),
+        CheckStep(
+            name="Labeling images for dark-mode inversion",
+            command=[
+                "uv",
+                "run",
+                "python",
+                "-m",
+                "scripts.label_invert",
+                "--check-and-launch",
+            ],
+            cwd=str(git_root_path),
+            interactive=True,
         ),
         CheckStep(
             name="Scanning for images without alt text",

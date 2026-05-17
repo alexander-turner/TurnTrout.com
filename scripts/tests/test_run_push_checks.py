@@ -619,6 +619,7 @@ def test_get_formatter_steps():
         "Formatting SCSS",
         "Formatting TypeScript",
         "Formatting markdown",
+        "Formatting JSON",
     }
     assert set(step_names) == expected_names
     assert len(steps) == len(expected_names)
@@ -668,16 +669,17 @@ _EXPECTED_STEP_NAMES = (
     "Source file checks",
     "Spellcheck and Vale",
     "Compressing and uploading local assets",
+    "Labeling images for dark-mode inversion",
     "Scanning for images without alt text",
 )
 
 
 def test_get_check_steps_has_expected_step_count():
-    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail
+    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 3 tail
     steps."""
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
     formatter_count = len(run_push_checks.get_formatter_steps(_TEST_ROOT))
-    assert len(steps) == formatter_count + 7
+    assert len(steps) == formatter_count + 8
 
 
 @pytest.mark.parametrize("name", _EXPECTED_STEP_NAMES)

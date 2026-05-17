@@ -508,6 +508,39 @@ def _run_server(args: argparse.Namespace) -> int:
     return 0
 
 
+def find_unreviewed(
+    candidates: Iterable[str], labels: Mapping[str, Label]
+) -> tuple[str, ...]:
+    """
+    Return candidates that are absent from ``labels`` or have ``reviewed:
+
+    False`` — i.e. anything still requiring a human verdict.
+    """
+    return tuple(
+        u for u in candidates if u not in labels or not labels[u]["reviewed"]
+    )
+
+
+def _run_check_and_launch(args: argparse.Namespace) -> int:
+    """Launch the labeler iff any candidate needs review; otherwise exit 0."""
+    dims = json.loads(args.dimensions.read_text(encoding="utf-8"))
+    candidates = enumerate_candidates(dims)
+    labels = load_labels(args.labels)
+    missing = find_unreviewed(candidates, labels)
+    if not missing:
+        logger.info(
+            "All %d image candidates have reviewed invert labels.",
+            len(candidates),
+        )
+        return 0
+    logger.info(
+        "%d/%d image(s) need invert labels. Launching labeler...",
+        len(missing),
+        len(candidates),
+    )
+    return _run_server(args)
+
+
 def _run_apply_annotations(args: argparse.Namespace) -> int:
     result = apply_markdown_annotations(args.content, labels_path=args.labels)
     logger.info(
@@ -533,6 +566,14 @@ def main(argv: list[str] | None = None) -> int:
             "annotations from the markdown. Mutates files in place."
         ),
     )
+    parser.add_argument(
+        "--check-and-launch",
+        action="store_true",
+        help=(
+            "Exit 0 silently if every candidate has a reviewed label; "
+            "otherwise launch the Flask labeler. Intended for pre-push hooks."
+        ),
+    )
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--no-browser", action="store_true")
@@ -549,6 +590,8 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.apply_annotations:
         return _run_apply_annotations(args)
+    if args.check_and_launch:
+        return _run_check_and_launch(args)
     return _run_server(args)
 
 

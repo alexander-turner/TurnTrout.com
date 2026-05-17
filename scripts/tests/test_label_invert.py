@@ -454,6 +454,80 @@ def test_open_browser_async_starts_thread(
     assert started == [("http://example.test/",)]
 
 
+@pytest.mark.parametrize(
+    "labels,expected_missing",
+    [
+        ({}, EXPECTED),
+        (
+            {url: _label(False, reviewed=True) for url in EXPECTED},
+            (),
+        ),
+        (
+            {url: _label(True, reviewed=False) for url in EXPECTED},
+            EXPECTED,
+        ),
+        (
+            {
+                EXPECTED[0]: _label(True, reviewed=True),
+                EXPECTED[1]: _label(False, reviewed=False),
+            },
+            EXPECTED[1:],
+        ),
+    ],
+)
+def test_find_unreviewed(
+    labels: Mapping[str, label_invert.Label],
+    expected_missing: tuple[str, ...],
+) -> None:
+    assert label_invert.find_unreviewed(EXPECTED, labels) == expected_missing
+
+
+@pytest.mark.parametrize(
+    "labels,expect_server",
+    [
+        ({url: _label(False, reviewed=True) for url in EXPECTED}, False),
+        ({}, True),
+        ({EXPECTED[0]: _label(True, reviewed=False)}, True),
+    ],
+)
+def test_main_check_and_launch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    labels: Mapping[str, label_invert.Label],
+    expect_server: bool,
+) -> None:
+    dims = _write_dims(tmp_path, {url: {} for url in EXPECTED})
+    labels_path = tmp_path / "labels.json"
+    if labels:
+        labels_path.write_text(json.dumps(labels), encoding="utf-8")
+    ran = {"flask": False}
+    monkeypatch.setattr(
+        label_invert.Flask,
+        "run",
+        lambda _self, **_kwargs: ran.update(flask=True),
+    )
+    monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
+    monkeypatch.setattr(
+        label_invert, "ensure_luminances", lambda *_a, **_kw: {}
+    )
+
+    rc = label_invert.main(
+        [
+            "--check-and-launch",
+            "--dimensions",
+            str(dims),
+            "--labels",
+            str(labels_path),
+            "--no-browser",
+            "--port",
+            "0",
+            "--skip-luminance",
+        ]
+    )
+    assert rc == 0
+    assert ran["flask"] is expect_server
+
+
 def test_main_runs_apply_annotations(tmp_path: Path) -> None:
     content = tmp_path / "content"
     content.mkdir()
