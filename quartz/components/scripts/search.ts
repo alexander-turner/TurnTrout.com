@@ -39,6 +39,8 @@ interface Item extends DocumentData {
 let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
+const NBSP_REGEX = new RegExp(NBSP, "gu")
+
 const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
@@ -300,7 +302,7 @@ export function syncSearchLayoutState() {
 }
 
 /**
- * matchs search terms within HTML content while preserving HTML structure
+ * Matches search terms within HTML content while preserving HTML structure.
  * @param node - HTML element to search within
  * @param term - Term to match
  */
@@ -318,7 +320,7 @@ export const matchTextNodes = (node: Node, term: string) => {
     const nodeText = node.nodeValue ?? ""
     // Normalize NBSP to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
-    const normalizedText = nodeText.replace(new RegExp(NBSP, "gu"), " ")
+    const normalizedText = nodeText.replace(NBSP_REGEX, " ")
     const sanitizedTerm = RegExp.escape(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 

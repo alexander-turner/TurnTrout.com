@@ -76,8 +76,8 @@ function getFaviconPathForLink(url: string): string | null {
     const faviconPath = getQuartzPath(hostname)
     // Strip extension for counting (counts are format-agnostic)
     return normalizePathForCounting(faviconPath)
-  } catch {
-    // Invalid URL, skip
+  } catch (error) {
+    logger.debug(`Skipping invalid URL "${url}": ${error}`)
     return null
   }
 }
