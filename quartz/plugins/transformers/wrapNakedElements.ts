@@ -76,57 +76,43 @@ function isElement(node: Parent): node is Element {
 }
 
 /**
- * Determines if a video node should be skipped based on its tag name and parent class.
- *
- * @param videoNode The video element to check.
- * @param ancestors The list of ancestor Parent nodes, where the last element is the direct parent.
- * @param wrapperClassName The class name of the wrapper span to check for.
+ * Creates a skip predicate for media elements (video/audio) that checks
+ * whether the element matches the expected tag and isn't already wrapped.
  */
-function skipNodeForVideo(
-  videoNode: Element,
-  ancestors: Parent[],
-  wrapperClassName: string,
-): boolean {
-  const notVideo = videoNode.tagName !== "video"
-  const directParent = ancestors[ancestors.length - 1]
-  const inVideoContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
-  return notVideo || inVideoContainer
+function createMediaSkipPredicate(expectedTag: string) {
+  return (node: Element, ancestors: Parent[], wrapperClassName: string): boolean => {
+    if (node.tagName !== expectedTag) return true
+    const directParent = ancestors[ancestors.length - 1]
+    return isElement(directParent) && hasClass(directParent, wrapperClassName)
+  }
 }
 
+const skipNodeForVideo = createMediaSkipPredicate("video")
+const skipNodeForAudio = createMediaSkipPredicate("audio")
+
 /**
- * Wraps a video node in a <span class="video-container"> if it is not already in one.
+ * Wraps a media node in a container span if it is not already in one.
  * Sets `data-src` on the wrapper so the print stylesheet can display the URL.
  */
+function wrapMediaElement(
+  node: Element,
+  ancestors: Parent[],
+  expectedTag: string,
+  containerClass: string,
+  skipPredicate: (node: Element, ancestors: Parent[], wrapperClassName: string) => boolean,
+): void {
+  if (node.tagName !== expectedTag) return
+  const dataSrc = getMediaSrc(node)
+  const props = dataSrc ? { "data-src": dataSrc } : {}
+  wrapElement(node, ancestors, skipPredicate, "span", containerClass, props)
+}
+
 function wrapVideo(videoNode: Element, ancestors: Parent[]): void {
-  if (videoNode.tagName !== "video") return
-  const dataSrc = getMediaSrc(videoNode)
-  const props = dataSrc ? { "data-src": dataSrc } : {}
-  wrapElement(videoNode, ancestors, skipNodeForVideo, "span", "video-container", props)
+  wrapMediaElement(videoNode, ancestors, "video", "video-container", skipNodeForVideo)
 }
 
-/**
- * Determines if an audio node should be skipped based on its tag name and parent class.
- */
-function skipNodeForAudio(
-  audioNode: Element,
-  ancestors: Parent[],
-  wrapperClassName: string,
-): boolean {
-  const notAudio = audioNode.tagName !== "audio"
-  const directParent = ancestors[ancestors.length - 1]
-  const inAudioContainer = isElement(directParent) && hasClass(directParent, wrapperClassName)
-  return notAudio || inAudioContainer
-}
-
-/**
- * Wraps an audio node in a <span class="audio-container"> if it is not already in one.
- * Sets `data-src` on the wrapper so the print stylesheet can display the URL.
- */
 function wrapAudio(audioNode: Element, ancestors: Parent[]): void {
-  if (audioNode.tagName !== "audio") return
-  const dataSrc = getMediaSrc(audioNode)
-  const props = dataSrc ? { "data-src": dataSrc } : {}
-  wrapElement(audioNode, ancestors, skipNodeForAudio, "span", "audio-container", props)
+  wrapMediaElement(audioNode, ancestors, "audio", "audio-container", skipNodeForAudio)
 }
 
 /**
