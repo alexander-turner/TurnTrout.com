@@ -2,12 +2,11 @@ import type { Element, Node, Parent, Text } from "hast"
 import type { Plugin } from "unified"
 
 import escapeStringRegexp from "escape-string-regexp"
-// skipcq: JS-0257
 import { visitParents } from "unist-util-visit-parents"
 
 import type { QuartzTransformerPlugin } from "../types"
 
-import { isCode, replaceRegex } from "./utils"
+import { replaceRegex } from "./utils"
 
 // Library / tool names that should auto-format as inline <code> in prose.
 // Lowercase-only so sentence-initial proper-noun uses ("Punctilio handles…")
@@ -47,18 +46,34 @@ const termsPattern = sortedTerms.map(escapeStringRegexp).join("|")
 // adjacent hyphenated word.
 export const CODE_TERM_REGEX = new RegExp(`(?<![\\w-])(?:${termsPattern})(?![\\w-])`, "g")
 
-export function isInsideCode(ancestors: readonly Parent[]): boolean {
-  return ancestors.some((anc) => anc.type === "element" && isCode(anc as Element))
+// Tags whose text contents either ARE code (so re-wrapping is redundant) or
+// shouldn't render as monospace (smallcaps <abbr>, raw CSS/JS in <style>/
+// <script>, keyboard glyphs in <kbd>).
+const SKIP_ANCESTOR_TAGS: ReadonlySet<string> = new Set([
+  "code",
+  "pre",
+  "abbr",
+  "kbd",
+  "style",
+  "script",
+])
+
+export function isInSkippedAncestor(ancestors: readonly Parent[]): boolean {
+  return ancestors.some(
+    (anc) =>
+      anc.type === "element" && SKIP_ANCESTOR_TAGS.has((anc as Element).tagName),
+  )
 }
 
 /**
  * Rehype plugin that wraps the curated `codeTerms` in `<code>` whenever they
- * appear bare in prose. Skips matches inside an existing `<code>` ancestor.
+ * appear bare in prose. Skips matches whose ancestry is already a code-like
+ * context (see `SKIP_ANCESTOR_TAGS`).
  */
 export const rehypeAutoCode: Plugin = () => {
   return (tree: Node) => {
     visitParents(tree, "text", (node: Text, ancestors: Parent[]) => {
-      if (isInsideCode(ancestors)) return
+      if (isInSkippedAncestor(ancestors)) return
       const parent = ancestors[ancestors.length - 1]
       const index = parent.children.indexOf(node)
       // istanbul ignore if -- visitParents always passes a real parent/child

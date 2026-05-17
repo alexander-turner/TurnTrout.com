@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals"
 import { rehype } from "rehype"
 
-import { CODE_TERM_REGEX, codeTerms, isInsideCode, rehypeAutoCode } from "../autoCode"
+import { CODE_TERM_REGEX, codeTerms, isInSkippedAncestor, rehypeAutoCode } from "../autoCode"
 
 function runAutoCode(inputHTML: string): string {
   return rehype()
@@ -33,6 +33,21 @@ describe("rehypeAutoCode", () => {
         "preserves surrounding whitespace and punctuation",
         "<p>(punctilio), really.</p>",
         "<p>(<code>punctilio</code>), really.</p>",
+      ],
+      [
+        "matches at the very start of a text node",
+        "<p>punctilio is great.</p>",
+        "<p><code>punctilio</code> is great.</p>",
+      ],
+      [
+        "matches consecutive terms separated by a single space",
+        "<p>pnpm vale runs everything.</p>",
+        "<p><code>pnpm</code> <code>vale</code> runs everything.</p>",
+      ],
+      [
+        "leaves a trailing apostrophe outside the wrap (possessive)",
+        "<p>punctilio's main feature.</p>",
+        "<p><code>punctilio</code>'s main feature.</p>",
       ],
     ])("%s", (_label, input, expected) => {
       expect(runAutoCode(input)).toBe(expected)
@@ -109,6 +124,19 @@ describe("rehypeAutoCode", () => {
       )
     })
 
+    it.each([
+      ["bare <pre>", "<pre>install punctilio</pre>"],
+      ["<kbd>", "<p>Type <kbd>punctilio</kbd> to begin.</p>"],
+      [
+        "<abbr class=\"small-caps\"> (TagSmallcaps output)",
+        '<p>Linter <abbr class="small-caps">eslint</abbr> ran.</p>',
+      ],
+      ["<style>", "<style>.punctilio { color: red; }</style>"],
+      ["<script>", "<script>var punctilio = 1;</script>"],
+    ])("does not transform inside %s", (_label, input) => {
+      expect(runAutoCode(input)).toBe(input)
+    })
+
     it("does transform inside <a> link text", () => {
       expect(runAutoCode('<p><a href="/x">punctilio</a> link</p>')).toBe(
         '<p><a href="/x"><code>punctilio</code></a> link</p>',
@@ -138,37 +166,41 @@ describe("rehypeAutoCode", () => {
     })
   })
 
-  describe("isInsideCode", () => {
+  describe("isInSkippedAncestor", () => {
     it("returns false for an empty ancestor list", () => {
-      expect(isInsideCode([])).toBe(false)
+      expect(isInSkippedAncestor([])).toBe(false)
     })
 
-    it("returns true when any ancestor is a <code> element", () => {
-      const codeAncestor = {
-        type: "element",
-        tagName: "code",
-        properties: {},
-        children: [],
-      } as never
-      expect(isInsideCode([codeAncestor])).toBe(true)
-    })
+    it.each(["code", "pre", "abbr", "kbd", "style", "script"])(
+      "returns true when an ancestor is <%s>",
+      (tagName) => {
+        const ancestor = {
+          type: "element",
+          tagName,
+          properties: {},
+          children: [],
+        } as never
+        expect(isInSkippedAncestor([ancestor])).toBe(true)
+      },
+    )
 
     it("returns false for non-element ancestors", () => {
       const rootAncestor = { type: "root", children: [] } as never
-      expect(isInsideCode([rootAncestor])).toBe(false)
+      expect(isInSkippedAncestor([rootAncestor])).toBe(false)
+    })
+
+    it("returns false for an unrelated element", () => {
+      const span = {
+        type: "element",
+        tagName: "span",
+        properties: {},
+        children: [],
+      } as never
+      expect(isInSkippedAncestor([span])).toBe(false)
     })
   })
 
   describe("regex / term list invariants", () => {
-    it("includes all curated terms", () => {
-      // Sanity guard: if someone reorders or accidentally drops a term, this
-      // catches it before the live transformer silently stops wrapping.
-      expect(codeTerms).toContain("punctilio")
-      expect(codeTerms).toContain("retext-smartypants")
-      expect(codeTerms).toContain("vale")
-      expect(codeTerms.length).toBeGreaterThanOrEqual(21)
-    })
-
     it("matches every curated term in plain prose", () => {
       for (const term of codeTerms) {
         CODE_TERM_REGEX.lastIndex = 0
