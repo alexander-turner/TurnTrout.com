@@ -39,7 +39,7 @@ dependencies = [
     # Pinned to 1.7.7: 1.7.8 (PyCQA/docformatter#344) reformats triple-quoted
     # strings inside function/dict-literal arguments as if they were docstrings,
     # destructively rewriting test-data YAML strings in scripts/tests/.
-    "docformatter==1.7.7",
+    "docformatter==1.7.8",
     "pylint>=4.0.4",
     "autoflake>=2.3.1",
     "autopep8>=2.3.1",
