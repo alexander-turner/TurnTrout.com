@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 import zipfile
 from collections.abc import Iterable
 from pathlib import Path
@@ -10,6 +12,9 @@ from pathlib import Path
 import pytest
 
 from scripts import classify_visual_failures as classify
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_SCRIPT = _REPO_ROOT / "scripts" / "classify_visual_failures.py"
 
 _Cls = classify.Classification
 
@@ -332,3 +337,32 @@ def test_main_raises_when_blob_dir_missing_and_no_outcome(
 ) -> None:
     with pytest.raises(NotADirectoryError):
         classify.main([str(tmp_path / "nope")])
+
+
+def test_script_runs_as_subprocess_from_repo_root(tmp_path: Path) -> None:
+    """
+    Catch sys.path-shaped import bugs that pytest hides.
+
+    Pytest puts the repo root on ``sys.path`` automatically, so an
+    ``from scripts.X import Y`` statement works in-process even when it
+    would fail under ``python scripts/classify_visual_failures.py``
+    (which is exactly how the visual-shard-finalize action invokes it).
+    Run the real CLI as a subprocess to mimic CI's import context.
+    """
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(_SCRIPT),
+            str(tmp_path),
+            "--playwright-outcome",
+            "success",
+        ],
+        cwd=_REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (
+        result.returncode == 0
+    ), f"Script crashed (stdout={result.stdout!r}, stderr={result.stderr!r})"
+    assert "has_any_failures=false" in result.stdout
