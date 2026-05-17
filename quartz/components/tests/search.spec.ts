@@ -399,11 +399,11 @@ test.describe("Search accuracy", () => {
       // to .first(), so the test survives scroll-target tweaks.
       const matches = previewArticle.locator(`span.search-match:text("${term}")`)
       await expect
-        .poll(async () =>
+        .poll(() =>
           matches.evaluateAll((els) =>
             els.some((el) => {
-              const r = el.getBoundingClientRect()
-              return r.bottom > 0 && r.top < window.innerHeight
+              const rect = el.getBoundingClientRect()
+              return rect.bottom > 0 && rect.top < window.innerHeight
             }),
           ),
         )
