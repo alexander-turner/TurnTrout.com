@@ -60,8 +60,7 @@ const SKIP_ANCESTOR_TAGS: ReadonlySet<string> = new Set([
 
 export function isInSkippedAncestor(ancestors: readonly Parent[]): boolean {
   return ancestors.some(
-    (anc) =>
-      anc.type === "element" && SKIP_ANCESTOR_TAGS.has((anc as Element).tagName),
+    (anc) => anc.type === "element" && SKIP_ANCESTOR_TAGS.has((anc as Element).tagName),
   )
 }
 

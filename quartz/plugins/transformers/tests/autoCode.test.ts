@@ -128,7 +128,7 @@ describe("rehypeAutoCode", () => {
       ["bare <pre>", "<pre>install punctilio</pre>"],
       ["<kbd>", "<p>Type <kbd>punctilio</kbd> to begin.</p>"],
       [
-        "<abbr class=\"small-caps\"> (TagSmallcaps output)",
+        '<abbr class="small-caps"> (TagSmallcaps output)',
         '<p>Linter <abbr class="small-caps">eslint</abbr> ran.</p>',
       ],
       ["<style>", "<style>.punctilio { color: red; }</style>"],
