@@ -147,7 +147,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "blob_reports_dir",
         type=Path,
-        help="Directory containing Playwright blob-report ZIPs.",
+        help="Directory containing Playwright blob-report ZIPs. May be "
+        "missing when --playwright-outcome is supplied (treated as a crash "
+        "before report write).",
     )
     parser.add_argument(
         "--output",
@@ -162,12 +164,26 @@ def main(argv: list[str] | None = None) -> int:
         help="Exit non-zero when real (non-snapshot) failures exist. "
         "Snapshot-only outcomes always exit 0.",
     )
+    parser.add_argument(
+        "--playwright-outcome",
+        default=None,
+        help="Outcome of the Playwright step (success|failure|cancelled|"
+        "skipped). When set, a missing/empty blob directory is tolerated; "
+        "a 'failure' outcome with no recorded failures is surfaced as a "
+        "real failure (crash before the report was written).",
+    )
     args = parser.parse_args(argv)
 
-    if not args.blob_reports_dir.is_dir():
+    if args.blob_reports_dir.is_dir():
+        result = classify_directory(args.blob_reports_dir)
+    elif args.playwright_outcome is not None:
+        result = Classification(snapshot_failures=0, real_failures=0)
+    else:
         raise NotADirectoryError(args.blob_reports_dir)
 
-    result = classify_directory(args.blob_reports_dir)
+    if args.playwright_outcome == "failure" and not result.has_any_failures:
+        result = Classification(snapshot_failures=0, real_failures=1)
+
     _write_flags(result, args.output)
     if args.fail_on_real and result.has_real_failures:
         return 1

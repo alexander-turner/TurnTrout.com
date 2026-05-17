@@ -1,0 +1,118 @@
+name: Finalize visual-testing shard
+description: >-
+  Runs after Playwright in a visual-testing shard. Classifies failures
+  (snapshot diff vs. real test failure) via
+  `scripts/classify_visual_failures.py`, uploads every per-shard
+  artifact with platform-tagged names, and fails the shard only when a
+  real (non-snapshot) failure is present — snapshot diffs (new or
+  updated screenshots) leave the shard green so the visual-testing
+  check list isn't drowned in noise. The overall `visual-testing` job
+  and `publish-visual-report` deploy still surface the diff via the
+  aggregated `visual-status-*` artifacts.
+
+inputs:
+  platform:
+    description: "linux or macos — used to tag every uploaded artifact"
+    required: true
+  shard:
+    description: 'Sanitized shard index (e.g. "1" from "1/3")'
+    required: true
+  playwright-outcome:
+    description: >-
+      ``steps.<id>.outcome`` of the Playwright run step. Used to surface
+      crashes that left no blob report as real failures.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Classify shard failures
+      id: classify
+      if: always()
+      shell: bash
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        SHARD: ${{ inputs.shard }}
+        PLAYWRIGHT_OUTCOME: ${{ inputs.playwright-outcome }}
+      run: |
+        set -euo pipefail
+        mkdir -p shard-status
+        STATUS_FILE="shard-status/status-${PLATFORM}-${SHARD}.txt"
+        uv run python scripts/classify_visual_failures.py blob-report \
+          --playwright-outcome "$PLAYWRIGHT_OUTCOME" \
+          --output "$STATUS_FILE"
+        cat "$STATUS_FILE"
+        cat "$STATUS_FILE" >> "$GITHUB_OUTPUT"
+
+    - name: Upload shard status
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: visual-status-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: shard-status/
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Upload Playwright logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: visual-testing-log-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: playwright-run.log
+        if-no-files-found: warn
+        retention-days: 1
+
+    - name: Upload Winston logs
+      if: steps.classify.outputs.has_real_failures == 'true'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: winston-logs-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: .logs/
+        if-no-files-found: warn
+        retention-days: 1
+
+    - name: Upload webServer build logs
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: webserver-build-log-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: /tmp/webserver.log
+        if-no-files-found: warn
+        retention-days: 1
+
+    - name: Upload Playwright traces
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: playwright-traces-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: test-results/
+        if-no-files-found: warn
+        retention-days: 1
+
+    # Playwright's blob reporter writes report-<run-id>-<shard-num>.zip,
+    # so Linux and macOS shards with the same shard number produce the
+    # same filename. publish-visual-report downloads with merge-multiple,
+    # which silently overwrites the colliding files. Tag with platform
+    # before upload so every blob report has a unique name.
+    - name: Tag blob report with platform
+      if: always() && hashFiles('blob-report/*.zip') != ''
+      shell: bash
+      env:
+        PLATFORM: ${{ inputs.platform }}
+      run: |
+        cd blob-report
+        for f in *.zip; do mv "$f" "${PLATFORM}-$f"; done
+
+    - name: Upload blob report shard
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      with:
+        name: blob-report-${{ inputs.platform }}-shard-${{ inputs.shard }}
+        path: blob-report/
+        if-no-files-found: warn
+        retention-days: 1
+
+    - name: Fail if real test failures
+      if: steps.classify.outputs.has_real_failures == 'true'
+      shell: bash
+      run: exit 1

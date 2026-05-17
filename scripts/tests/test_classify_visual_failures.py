@@ -349,3 +349,83 @@ def test_main_fail_on_real_zero_for_snapshot_only(tmp_path: Path) -> None:
 def test_main_raises_when_dir_missing(tmp_path: Path) -> None:
     with pytest.raises(NotADirectoryError):
         classify.main([str(tmp_path / "nope")])
+
+
+def test_playwright_failure_with_empty_blob_dir_promoted_to_real(
+    tmp_path: Path,
+) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    rc = classify.main(
+        [
+            str(blob_dir),
+            "--playwright-outcome",
+            "failure",
+            "--fail-on-real",
+        ]
+    )
+    assert rc == 1
+
+
+def test_playwright_failure_tolerates_missing_blob_dir(tmp_path: Path) -> None:
+    output = tmp_path / "status.txt"
+    rc = classify.main(
+        [
+            str(tmp_path / "no-such-dir"),
+            "--playwright-outcome",
+            "failure",
+            "--output",
+            str(output),
+        ]
+    )
+    assert rc == 0
+    text = output.read_text()
+    assert "has_any_failures=true" in text
+    assert "has_real_failures=true" in text
+
+
+def test_playwright_success_with_missing_blob_dir_no_failures(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "status.txt"
+    rc = classify.main(
+        [
+            str(tmp_path / "no-such-dir"),
+            "--playwright-outcome",
+            "success",
+            "--output",
+            str(output),
+        ]
+    )
+    assert rc == 0
+    text = output.read_text()
+    assert "has_any_failures=false" in text
+    assert "has_real_failures=false" in text
+
+
+def test_playwright_failure_does_not_override_snapshot_only(
+    tmp_path: Path,
+) -> None:
+    blob_dir = tmp_path / "blobs"
+    blob_dir.mkdir()
+    _write_blob(
+        blob_dir / "report.zip",
+        [
+            _test_end("t1", "failed"),
+            _attach("t1", ["foo-actual.png"]),
+        ],
+    )
+    output = tmp_path / "status.txt"
+    rc = classify.main(
+        [
+            str(blob_dir),
+            "--playwright-outcome",
+            "failure",
+            "--output",
+            str(output),
+        ]
+    )
+    assert rc == 0
+    text = output.read_text()
+    assert "snapshot_failures=1" in text
+    assert "real_failures=0" in text
