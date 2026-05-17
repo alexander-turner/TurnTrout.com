@@ -25,7 +25,11 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from scripts.blob_report import iter_events
+sys.path.append(str(Path(__file__).parent.parent))
+
+# pylint: disable=wrong-import-position
+# skipcq: FLK-E402
+from scripts.blob_report import iter_events  # noqa: E402
 
 _ACTUAL_SUFFIX = "-actual.png"
 
