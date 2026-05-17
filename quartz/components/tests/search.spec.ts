@@ -1014,7 +1014,11 @@ test("admonition icon renders in focused mobile card preview (screenshot)", asyn
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
 
-  const admonitionTitle = cardPreview.locator(".admonition-title").first()
+  // Target the [!note] admonition explicitly. The mobile TOC blockquote is
+  // also an admonition but `toc.scss` hides it inside `.search-preview`, so
+  // `.admonition-title.first()` would land on a `display: none` element with
+  // a zero bounding box.
+  const admonitionTitle = cardPreview.locator('[data-admonition="note"] .admonition-title')
   const icon = admonitionTitle.locator(".admonition-icon")
   await expect(icon).toBeAttached()
 
