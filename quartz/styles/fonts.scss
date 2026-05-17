@@ -79,11 +79,15 @@ $fonts-dir: "/static/styles/fonts";
 
 // EB Garamond lacks U+2713 ✓ and the U+25D0-U+25D3 half-filled circles, so
 // the browser falls through to the system serif for them. Android's Noto
-// Serif renders ✓ as a thin sqrt-shaped stroke; alias these codepoints to
-// the already-loaded FiraCode glyphs by adding them under the same family.
+// Serif renders ✓ as a thin sqrt-shaped stroke. Alias these codepoints to
+// a hand-subset of Noto Sans Symbols 2 — the same font GitHub uses for
+// these glyphs on Android, so rendering is consistent cross-platform.
+// To regenerate the subset:
+//   pyftsubset NotoSansSymbols2-Regular.ttf --unicodes="U+2713,U+25D0-25D3"
+//     --flavor=woff2 --output-file=NotoSansSymbols2-subset.woff2
 @font-face {
   font-family: EBGaramond;
-  src: url("#{$fonts-dir}/firacode-vf.woff2");
+  src: url("#{$fonts-dir}/NotoSansSymbols2-subset.woff2");
   font-display: swap;
   unicode-range: U+2713, U+25D0-25D3;
 }
