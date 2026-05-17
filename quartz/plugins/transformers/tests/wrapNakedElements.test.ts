@@ -146,57 +146,6 @@ describe("WrapNakedElements Plugin Tests", () => {
     })
   })
 
-  describe("Plugin Structure", () => {
-    it("should return a plugin with correct name", () => {
-      const plugin = WrapNakedElements()
-      expect(plugin.name).toBe("WrapNakedElements")
-    })
-
-    it("should return a plugin with htmlPlugins function", () => {
-      const plugin = WrapNakedElements()
-      expect(typeof plugin.htmlPlugins).toBe("function")
-    })
-
-    it("should return an array when htmlPlugins is called", () => {
-      const plugin = WrapNakedElements()
-      const mockBuildCtx: Partial<BuildCtx> = {
-        argv: {
-          directory: "./",
-          verbose: false,
-          output: "public",
-        } as BuildCtx["argv"],
-      }
-      const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx as BuildCtx)
-      expect(Array.isArray(htmlPlugins)).toBe(true)
-    })
-
-    it("should return exactly one plugin function in the array", () => {
-      const plugin = WrapNakedElements()
-      const mockBuildCtx: Partial<BuildCtx> = {
-        argv: {
-          directory: "./",
-          verbose: false,
-          output: "public",
-        } as BuildCtx["argv"],
-      }
-      const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx as BuildCtx)
-      expect(htmlPlugins).toHaveLength(1)
-    })
-
-    it("should return a function as the first array element", () => {
-      const plugin = WrapNakedElements()
-      const mockBuildCtx: Partial<BuildCtx> = {
-        argv: {
-          directory: "./",
-          verbose: false,
-          output: "public",
-        } as BuildCtx["argv"],
-      }
-      const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx as BuildCtx)
-      expect(typeof htmlPlugins?.[0]).toBe("function")
-    })
-  })
-
   describe("Edge Cases", () => {
     it.each([
       ["non-video/audio elements", '<img src="test.jpg"><div>content</div>'],

@@ -19,7 +19,7 @@ import {
   faviconSubstringBlocklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
+import { addClass, createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, faviconFolder } = simpleConstants
 
@@ -292,14 +292,7 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
     return false
   }
 
-  if (typeof node.properties.className === "string") {
-    node.properties.className += " same-page-link"
-  } else if (Array.isArray(node.properties.className)) {
-    node.properties.className.push("same-page-link")
-  } else {
-    node.properties.className = ["same-page-link"]
-  }
-
+  addClass(node, "same-page-link")
   insertFavicon(specialFaviconPaths.anchor, node)
   return true
 }
