@@ -64,9 +64,8 @@ th {
   font-weight: 500;
 }
 
-// Group dividers and the header → body separator: widen the cell's bottom
-// border so border-collapse's width tiebreak paints the divider 3px wide.
-thead th,
+// Group dividers: widen the cell's bottom border so border-collapse's width
+// tiebreak paints the divider 3px wide.
 tr.group-boundary > td {
   border-bottom-width: 3px;
 }
