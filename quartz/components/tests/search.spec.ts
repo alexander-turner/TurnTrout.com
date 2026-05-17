@@ -393,9 +393,21 @@ test.describe("Search accuracy", () => {
       const previewArticle = preview.locator("article.search-preview")
       await expect(previewArticle).toBeAttached()
 
-      // Get first matched match
-      const matchedMatches = previewArticle.locator(`span.search-match:text("${term}")`).first()
-      await expect(matchedMatches).toBeInViewport()
+      // Search prefers the first whole-word match for scroll targeting,
+      // which can be later in DOM order than substring-only matches.
+      // Assert any matched span is in the viewport rather than pinning
+      // to .first(), so the test survives scroll-target tweaks.
+      const matches = previewArticle.locator(`span.search-match:text("${term}")`)
+      await expect
+        .poll(async () =>
+          matches.evaluateAll((els) =>
+            els.some((el) => {
+              const r = el.getBoundingClientRect()
+              return r.bottom > 0 && r.top < window.innerHeight
+            }),
+          ),
+        )
+        .toBe(true)
     })
   })
 
