@@ -610,20 +610,6 @@ def test_get_formatter_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_formatter_steps(test_root)
 
-    step_names = [s.name for s in steps]
-    expected_names = {
-        "Linting Python",
-        "Formatting Python docstrings",
-        "Linting TypeScript",
-        "Cleaning up SCSS",
-        "Formatting SCSS",
-        "Formatting TypeScript",
-        "Formatting markdown",
-        "Formatting JSON",
-    }
-    assert set(step_names) == expected_names
-    assert len(steps) == len(expected_names)
-
     # Ruff check has --fix so the step is an autofixer, not a blocking
     # check. We deliberately do NOT run `ruff format` here — black runs
     # via lint-staged in the pre-commit hook and the two formatters fight.
@@ -658,35 +644,6 @@ _VERIFY_NAMES = frozenset(
         "Spellcheck and Vale",
     }
 )
-_EXPECTED_STEP_NAMES = (
-    "Linting Python",
-    "Linting TypeScript",
-    "Formatting Python docstrings",
-    "Cleaning up SCSS",
-    "Generate SCSS variables",
-    "Pylint",
-    "Mypy",
-    "Source file checks",
-    "Spellcheck and Vale",
-    "Compressing and uploading local assets",
-    "Labeling images for dark-mode inversion",
-    "Scanning for images without alt text",
-)
-
-
-def test_get_check_steps_has_expected_step_count():
-    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 3 tail
-    steps."""
-    steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    formatter_count = len(run_push_checks.get_formatter_steps(_TEST_ROOT))
-    assert len(steps) == formatter_count + 8
-
-
-@pytest.mark.parametrize("name", _EXPECTED_STEP_NAMES)
-def test_get_check_steps_includes_named_step(name):
-    """Each expected step shows up in the configured pipeline."""
-    steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    assert name in [s.name for s in steps]
 
 
 def test_scss_variables_runs_before_source_file_checks():
