@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-14
+date_updated: 2026-05-15
 no_dropcap: false
 createBibtex: true
 ---
@@ -219,9 +219,10 @@ So why not just always use WEBM? While [Safari technically "supports" WEBM](http
 
 ```html
 <video [attributes]>
-  // Only Safari should support hvc1
+  <!-- Only Safari should support hvc1 -->
   <source src="video.mp4" type="video/mp4; codecs=hvc1" />
-  // All other browsers skip the MP4 and use the second source
+
+  <!-- All other browsers skip the MP4 and use the second source -->
   <source src="video.webm" type="video/webm" />
 </video>
 ```

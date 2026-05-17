@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-15
+date_updated: 2026-05-17
 createBibtex: true
 ---
 
@@ -395,6 +395,19 @@ Table: Ensure that word wrapping works properly on table header elements to prev
 | **Tier** | **Time for tier** | **Cost of tier** | **Protection level** |
 | -----------------: | :--------: | :----------: | :--------------------------------- |
 | Quick start | 50 minutes | \$0 | Online accounts secured against most hacking. Limited private communication ability. |
+
+|   Model |   Intervention   | Gaming Gap (%, ↓) |
+| ------: | :--------------: | :---------------: |
+|   GPT-4 |     Baseline     |       18.9        |
+|   GPT-4 |   +Coop Prompt   |        1.2        |
+|   ===   |       ===        |        ===        |
+| GPT-4o |     Baseline     |        8.9        |
+| GPT-4o |   +Coop Prompt   |       0.01        |
+|   ===   |       ===        |        ===        |
+|  Opus-4 |     Baseline     |       47.2        |
+|  Opus-4 |   +Coop Prompt   |       14.9        |
+
+Table: Darker dividers between row groups.
 
 # Scroll indicators
 

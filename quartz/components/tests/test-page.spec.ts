@@ -325,6 +325,40 @@ test.describe("Table of contents", () => {
     })
   })
 
+  test("Mobile TOC: tapping a narrow entry navigates", async ({ page }) => {
+    test.skip(isDesktopViewport(page))
+
+    // The narrowest top-level entry is the worst case: the parent <ol>'s
+    // negative `text-indent` renders the inline <a>'s glyphs furthest outside
+    // its layout box, so a tap near the visible left edge is most likely to
+    // miss the <a> and land on <li>.
+    const target = await page.evaluate(() => {
+      const links = Array.from(
+        document.querySelectorAll<HTMLAnchorElement>("#toc-content-mobile > ol > li > a"),
+      )
+      let narrowest: { hash: string; x: number; y: number; height: number; width: number } | null =
+        null
+      for (const a of links) {
+        const r = a.getBoundingClientRect()
+        if (!narrowest || r.width < narrowest.width) {
+          narrowest = {
+            hash: a.getAttribute("href") ?? "",
+            x: r.x,
+            y: r.y,
+            height: r.height,
+            width: r.width,
+          }
+        }
+      }
+      return narrowest
+    })
+    if (!target) throw new Error("No top-level mobile TOC entries found")
+
+    // Tap a few pixels inside the left edge — the regression's failure zone.
+    await page.touchscreen.tap(target.x + 3, target.y + target.height / 2)
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
+  })
+
   test("Scrolling down changes TOC highlight", async ({ page }) => {
     test.skip(!isDesktopViewport(page))
 

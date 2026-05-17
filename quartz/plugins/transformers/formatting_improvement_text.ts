@@ -99,8 +99,11 @@ const massTransforms: [RegExp | string, string][] = [
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
-  [/(?<tag><\/[^>]*>|<[^>]*\/>)\s*$\n\s*(?!=\n|[<>])/gm, "$<tag>\n\n"], // Ensure there is a newline after an HTML tag
+  // Insert a blank line after a block-level HTML tag so the markdown parser
+  // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.
+  [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n(?=[ \t]*[^ \t\n<>/`=])/gm, "$<closingTag>\n\n"],
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
+  [/GPT-4o\b/g, "GPT-4-o"],
 ]
 
 // skipcq: JS-D1001

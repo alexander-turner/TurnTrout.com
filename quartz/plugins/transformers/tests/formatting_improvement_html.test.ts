@@ -2134,32 +2134,14 @@ describe("improveFormatting function with options", () => {
 })
 
 describe("HTMLFormattingImprovement plugin", () => {
-  it("should return correct plugin object with name", () => {
+  it("wires up improveFormatting as its sole htmlPlugin", () => {
     const plugin = HTMLFormattingImprovement()
-
-    expect(plugin.name).toBe("htmlFormattingImprovement")
-    expect(plugin.htmlPlugins).toBeDefined()
-    expect(typeof plugin.htmlPlugins).toBe("function")
-  })
-
-  it("should return improveFormatting in htmlPlugins array", () => {
-    const plugin = HTMLFormattingImprovement()
-
-    const mockCtx = {} as unknown
-    expect(plugin.htmlPlugins).toBeDefined()
-
-    let valueToCheck
-    if (plugin.htmlPlugins) {
-      valueToCheck = plugin.htmlPlugins(
-        mockCtx as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0],
-      )
-    }
-    expect(valueToCheck).toEqual([improveFormatting])
+    const ctx = {} as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0]
+    expect(plugin.htmlPlugins?.(ctx)).toEqual([improveFormatting])
   })
 
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
     const plugin = StripInlineBoundaryWhitespace()
-    expect(plugin.name).toBe("stripInlineBoundaryWhitespace")
     const { htmlPlugins } = plugin
     if (!htmlPlugins) {
       throw new Error("htmlPlugins is undefined")
@@ -2294,6 +2276,24 @@ describe("Non-breaking space insertion", () => {
     "<h3>A cat sat on a mat</h3>",
     "<h2><em>I love this</em></h2>",
   ])("does not insert nbsp in headings: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
+  })
+
+  it.each([
+    '<p class="subtitle">I love this</p>',
+    '<p class="subtitle">A cat sat on a mat</p>',
+    '<p class="subtitle">MATS 3.0, Steering GPT-2-XL by Adding an Activation Vector</p>',
+    '<p class="subtitle"><a href="/gpt2-steering-vectors">Steering GPT-2-XL by Adding an Activation Vector</a></p>',
+    '<p class="subtitle"><em>I love this</em></p>',
+  ])("does not insert nbsp in subtitles: %s", (input) => {
+    expect(testHtmlFormattingImprovement(input)).toBe(input)
+  })
+
+  it.each([
+    '<div class="admonition-title">I love this</div>',
+    '<div class="admonition-title"><a href="/">Lisa Thiergart</a></div>',
+    '<div class="admonition-title"><div class="admonition-title-inner">A cat sat on a mat</div></div>',
+  ])("does not insert nbsp in admonition titles: %s", (input) => {
     expect(testHtmlFormattingImprovement(input)).toBe(input)
   })
 

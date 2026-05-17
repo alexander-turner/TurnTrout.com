@@ -1,5 +1,12 @@
 @use "../../styles/variables.scss" as *;
 
+// Search modal vertical layout: #search-space sits below a top offset and
+// the results/preview panels are capped so the modal fits within the
+// viewport (the remainder is bottom buffer).
+$search-space-top-offset: 12vh;
+$search-modal-bottom-buffer: 25vh;
+$search-panel-max-height: 100vh - $search-space-top-offset - $search-modal-bottom-buffer;
+
 #navbar-right {
   @media all and (max-width: $max-mobile-width) {
     display: flex;
@@ -75,13 +82,20 @@
   display: none;
   backdrop-filter: blur(4px);
 
+  // On mobile the results panel is height-bounded and scrolls internally, so
+  // the outer container never needs to scroll — disabling outer scroll
+  // prevents the modal from sliding past the end of the results.
+  @media all and (max-width: $tablet-breakpoint) {
+    overflow: hidden;
+  }
+
   &.active {
     display: inline-block;
   }
 
   & > #search-space {
     width: 65%;
-    margin-top: 12vh;
+    margin-top: $search-space-top-offset;
     margin-left: auto;
     margin-right: auto;
 
@@ -154,7 +168,7 @@
       }
 
       & > div {
-        height: calc(75vh - 12vh);
+        height: $search-panel-max-height;
         border-radius: $border-radius;
       }
 
@@ -166,6 +180,10 @@
         &[data-preview] > #results-container {
           width: 100%;
           height: auto;
+
+          // Bound the results panel so the outer search-container can't scroll
+          // past the end of results; long lists scroll inside the panel.
+          max-height: $search-panel-max-height;
           flex: 0 0 100%;
         }
       }
@@ -281,7 +299,9 @@
 
             // Flatten child backgrounds so the card's focus/hover effect
             // shows through admonitions, blockquotes, code blocks, etc.
-            & :not(img, video, svg, canvas) {
+            // Icon classes use `background-color + mask-image` to paint the
+            // glyph, so they must keep their background.
+            & :not(img, video, svg, canvas, .admonition-icon, .fold-admonition-icon) {
               background-color: transparent !important;
             }
 

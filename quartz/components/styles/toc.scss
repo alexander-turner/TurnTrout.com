@@ -115,4 +115,15 @@
   & a:visited * {
     color: var(--foreground);
   }
+
+  // The parent <ol> has a negative `text-indent` (hanging indent for wrapped
+  // lines), which renders an inline <a>'s first line outside its layout box.
+  // Touch on the visible glyphs fires touchstart/end on <a>, but the synthesized
+  // click event dispatches to <li> (the element at the precise tap pixel inside
+  // the layout box). The SPA router's `target.closest("a")` then returns null
+  // and the tap is silently dropped. Making <a> block-level expands its layout
+  // box to fill the <li>, so the click event lands on <a>.
+  & li > a {
+    display: block;
+  }
 }

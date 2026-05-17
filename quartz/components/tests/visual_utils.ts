@@ -205,6 +205,17 @@ export async function takeRegressionScreenshot(
   // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
+  // Wait until the page is visually stable before snapshotting: fonts must be
+  // resolved (FOIT/FOUT causes layout shift, and Safari has been observed to
+  // capture an empty frame mid-swap) and a double rAF flushes any pending
+  // layout/paint from earlier mutations (e.g. setViewportSize, media pause).
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    )
+  })
+
   const screenshotOptions = {
     animations: "disabled" as const,
     // Use CSS pixel scaling to eliminate deviceScaleFactor/DPR-induced subpixel jitter

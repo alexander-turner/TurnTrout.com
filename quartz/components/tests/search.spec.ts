@@ -214,6 +214,30 @@ test("Preview panel shows on desktop and hides on mobile", async ({ page }) => {
   await expect(previewContainer).toBeVisible({ visible: isDesktop })
 })
 
+test("Mobile search results scroll inside the panel, not past it", async ({ page }) => {
+  test.skip(!isMobileViewport(page), "Mobile-only behavior")
+
+  // "the" is a common term that reliably fills the result limit so the panel
+  // would overflow the viewport without a bounded height.
+  await search(page, "the")
+  await expect(page.locator(".result-card").nth(3)).toBeVisible({ timeout: 10_000 })
+
+  const { outerOverflowY, resultsScrollDelta } = await page.evaluate(() => {
+    const outer = document.getElementById("search-container") as HTMLElement
+    const results = document.getElementById("results-container") as HTMLElement
+    return {
+      outerOverflowY: getComputedStyle(outer).overflowY,
+      resultsScrollDelta: results.scrollHeight - results.clientHeight,
+    }
+  })
+
+  // The outer container must not be a touch-scrollable region — long result
+  // lists must overflow inside #results-container, not slide the whole modal
+  // past the end of results.
+  expect(outerOverflowY).toBe("hidden")
+  expect(resultsScrollDelta).toBeGreaterThan(0)
+})
+
 test("Search placeholder changes based on viewport", async ({ page }) => {
   const searchBar = page.locator("#search-bar")
   const pageWidth = page.viewportSize()?.width
@@ -369,9 +393,21 @@ test.describe("Search accuracy", () => {
       const previewArticle = preview.locator("article.search-preview")
       await expect(previewArticle).toBeAttached()
 
-      // Get first matched match
-      const matchedMatches = previewArticle.locator(`span.search-match:text("${term}")`).first()
-      await expect(matchedMatches).toBeInViewport()
+      // Search prefers the first whole-word match for scroll targeting,
+      // which can be later in DOM order than substring-only matches.
+      // Assert any matched span is in the viewport rather than pinning
+      // to .first(), so the test survives scroll-target tweaks.
+      const matches = previewArticle.locator(`span.search-match:text("${term}")`)
+      await expect
+        .poll(() =>
+          matches.evaluateAll((els) =>
+            els.some((el) => {
+              const rect = el.getBoundingClientRect()
+              return rect.bottom > 0 && rect.top < window.innerHeight
+            }),
+          ),
+        )
+        .toBe(true)
     })
   })
 
@@ -957,6 +993,44 @@ test("admonition background is transparent in focused mobile card preview (scree
 
   await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition", {
     elementToScreenshot: fixtureResult,
+  })
+})
+
+test("admonition icon renders in focused mobile card preview (screenshot)", async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileViewport(page), "Card previews only render on mobile viewports")
+
+  // Same fixture as the sibling test; the icon must remain visible even
+  // though the card-preview flattens descendant backgrounds.
+  await search(page, "Admonitions fixture")
+
+  const fixtureResult = page.locator('.result-card[id="search-fixture"]')
+  await expect(fixtureResult).toBeVisible()
+  await fixtureResult.focus()
+  await expect(fixtureResult).toHaveClass(/focus/)
+
+  const cardPreview = fixtureResult.locator(".card-preview")
+  const article = cardPreview.locator("article.search-preview")
+  await expect(article).toBeAttached({ timeout: 10_000 })
+
+  // Target the [!note] admonition explicitly. The mobile TOC blockquote is
+  // also an admonition but `toc.scss` hides it inside `.search-preview`, so
+  // `.admonition-title.first()` would land on a `display: none` element with
+  // a zero bounding box.
+  const admonitionTitle = cardPreview.locator('[data-admonition="note"] .admonition-title')
+  const icon = admonitionTitle.locator(".admonition-icon")
+  await expect(icon).toBeAttached()
+
+  // Icons paint via `background-color + mask-image`. If the card-preview's
+  // background-flatten rule eats the icon's background, the glyph vanishes.
+  await expect(icon).not.toHaveCSS("background-color", "rgba(0, 0, 0, 0)")
+  const iconBox = await icon.boundingBox()
+  expect(iconBox?.width).toBeGreaterThan(0)
+  expect(iconBox?.height).toBeGreaterThan(0)
+
+  await takeRegressionScreenshot(page, testInfo, "mobile-card-preview-admonition-icon", {
+    elementToScreenshot: admonitionTitle,
   })
 })
 

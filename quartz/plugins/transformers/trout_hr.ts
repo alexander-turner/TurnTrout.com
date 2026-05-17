@@ -69,20 +69,25 @@ export function maybeInsertOrnament(
     Array.isArray(node.properties?.className) &&
     node.properties.className.includes("footnotes")
   ) {
-    const prevElement = parent.children[index - 1]
-    const prevPrevElement = parent.children[index - 2]
-    if (
-      index > 1 &&
-      prevElement?.type === "text" &&
-      prevElement.value === "\n" &&
-      prevPrevElement?.type === "element" &&
-      prevPrevElement.tagName === "hr"
-    ) {
-      parent.children.splice(index - 2, 1)
-      index--
-    } else if (index > 0 && prevElement?.type === "element" && prevElement.tagName === "hr") {
-      parent.children.splice(index - 1, 1)
-      index--
+    if (index > 1) {
+      const prevElement = parent.children[index - 1]
+      const prevPrevElement = parent.children[index - 2]
+      if (
+        prevElement?.type === "text" &&
+        prevElement.value === "\n" &&
+        prevPrevElement?.type === "element" &&
+        prevPrevElement.tagName === "hr"
+      ) {
+        parent.children.splice(index - 2, 1)
+        index--
+      }
+    }
+    if (index > 0 && parent.children[index - 1]?.type === "element") {
+      const prevElement = parent.children[index - 1] as Element
+      if (prevElement.tagName === "hr") {
+        parent.children.splice(index - 1, 1)
+        index--
+      }
     }
 
     // If it is, insert the ornament node before the footnotes section

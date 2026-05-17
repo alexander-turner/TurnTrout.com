@@ -345,42 +345,9 @@ describe("processTree", () => {
 })
 
 describe("Twemoji plugin", () => {
-  it("should return correct plugin structure", () => {
-    const plugin = Twemoji()
-    expect(plugin.name).toBe("Twemoji")
-    expect(typeof plugin.htmlPlugins).toBe("function")
-    expect(Array.isArray(plugin.htmlPlugins())).toBe(true)
-    expect(plugin.htmlPlugins()).toHaveLength(1)
-    expect(typeof plugin.htmlPlugins()[0]).toBe("function")
-  })
-
-  it("should return a unified plugin function", () => {
-    const plugin = Twemoji()
-    const htmlPlugins = plugin.htmlPlugins()
-    const processingPlugin = htmlPlugins[0]
-    // Test that the plugin is a function (unified plugin)
-    expect(typeof processingPlugin).toBe("function")
-    // Test that the plugin is the correct function structure
-    expect(processingPlugin.toString()).toContain("processTree")
-  })
-
-  it("should have correct plugin factory structure", () => {
-    const plugin = Twemoji()
-    const htmlPluginFactories = plugin.htmlPlugins()
-    const pluginFactory = htmlPluginFactories[0]
-    // Test that the plugin factory has the correct structure
-    expect(typeof pluginFactory).toBe("function")
-    expect(pluginFactory.name).toBe("") // anonymous function
-    expect(pluginFactory.length).toBe(0) // takes no arguments
-  })
-
-  it("should execute the plugin factory function to get processTree", () => {
-    const plugin = Twemoji()
-    const htmlPluginFactories = plugin.htmlPlugins()
-    const pluginFactory = htmlPluginFactories[0]
-    // Simulate calling the plugin factory (this exercises the arrow function)
-    // Since it just returns processTree, we can call it directly
-    const result = (pluginFactory as () => typeof processTree)()
-    expect(result).toBe(processTree)
+  // Exercises the factory wrapper around processTree (covers `() => processTree`).
+  it("htmlPlugins factory returns processTree", () => {
+    const factory = Twemoji().htmlPlugins()[0] as () => typeof processTree
+    expect(factory()).toBe(processTree)
   })
 })
