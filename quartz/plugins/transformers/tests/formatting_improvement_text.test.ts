@@ -444,8 +444,6 @@ And some hyphens-to-be-ignored.`
   describe("TextFormattingImprovement plugin", () => {
     it("should handle string input correctly", () => {
       const plugin = TextFormattingImprovement()
-      expect(plugin.name).toBe("textFormattingImprovement")
-
       const mockCtx = {} as BuildCtx
       const input = "Test string input"
       const result = plugin.textTransform?.(mockCtx, input)

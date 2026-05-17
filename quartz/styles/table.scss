@@ -64,12 +64,10 @@ th {
   font-weight: 500;
 }
 
-tr {
-  border-bottom: 1px solid var(--midground-faint);
-
-  &:last-child {
-    border-bottom: none;
-  }
+// Group dividers: widen the cell's bottom border so border-collapse's width
+// tiebreak paints the divider 3px wide.
+tr.group-boundary > td {
+  border-bottom-width: 3px;
 }
 
 .table-container {

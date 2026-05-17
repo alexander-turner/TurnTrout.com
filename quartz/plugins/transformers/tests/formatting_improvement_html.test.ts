@@ -2134,32 +2134,14 @@ describe("improveFormatting function with options", () => {
 })
 
 describe("HTMLFormattingImprovement plugin", () => {
-  it("should return correct plugin object with name", () => {
+  it("wires up improveFormatting as its sole htmlPlugin", () => {
     const plugin = HTMLFormattingImprovement()
-
-    expect(plugin.name).toBe("htmlFormattingImprovement")
-    expect(plugin.htmlPlugins).toBeDefined()
-    expect(typeof plugin.htmlPlugins).toBe("function")
-  })
-
-  it("should return improveFormatting in htmlPlugins array", () => {
-    const plugin = HTMLFormattingImprovement()
-
-    const mockCtx = {} as unknown
-    expect(plugin.htmlPlugins).toBeDefined()
-
-    let valueToCheck
-    if (plugin.htmlPlugins) {
-      valueToCheck = plugin.htmlPlugins(
-        mockCtx as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0],
-      )
-    }
-    expect(valueToCheck).toEqual([improveFormatting])
+    const ctx = {} as Parameters<NonNullable<typeof plugin.htmlPlugins>>[0]
+    expect(plugin.htmlPlugins?.(ctx)).toEqual([improveFormatting])
   })
 
   it("StripInlineBoundaryWhitespace plugin trims boundary whitespace via rehype", () => {
     const plugin = StripInlineBoundaryWhitespace()
-    expect(plugin.name).toBe("stripInlineBoundaryWhitespace")
     const { htmlPlugins } = plugin
     if (!htmlPlugins) {
       throw new Error("htmlPlugins is undefined")

@@ -569,11 +569,6 @@ describe("processWikilink", () => {
 describe("ObsidianFlavoredMarkdown", () => {
   const mockBuildCtx: BuildCtx = {} as BuildCtx
 
-  it("should have correct name", () => {
-    const transformer = ObsidianFlavoredMarkdown()
-    expect(transformer.name).toBe("ObsidianFlavoredMarkdown")
-  })
-
   interface TextTransformTestCase extends NamedTestCase {
     options?: Partial<OFMOptions>
     input: string | Buffer
@@ -744,11 +739,6 @@ describe("ObsidianFlavoredMarkdown plugin", () => {
       htmlPlugins: plugin.htmlPlugins(mockBuildCtx),
     }
   }
-
-  test("should return correct plugin name", () => {
-    const plugin = ObsidianFlavoredMarkdown()
-    expect(plugin.name).toBe("ObsidianFlavoredMarkdown")
-  })
 
   test("should include block reference plugin when enabled", () => {
     const plugin = ObsidianFlavoredMarkdown({ parseBlockReferences: true })

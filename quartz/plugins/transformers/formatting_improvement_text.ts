@@ -103,6 +103,7 @@ const massTransforms: [RegExp | string, string][] = [
   // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.
   [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n(?=[ \t]*[^ \t\n<>/`=])/gm, "$<closingTag>\n\n"],
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
+  [/GPT-4o\b/g, "GPT-4-o"],
 ]
 
 // skipcq: JS-D1001
