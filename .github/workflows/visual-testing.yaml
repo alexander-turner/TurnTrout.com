@@ -102,86 +102,17 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
-        run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --shard ${{ matrix.shard }} \
-            --reporter=blob,dot \
-            --update-snapshots=none \
-            --trace=off \
-            -g "(screenshot)" 2>&1 | tee playwright-run.log
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Create sanitized shard
-        if: always()
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
-
-      - name: Upload Playwright logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/run-visual-playwright
         with:
-          name: visual-testing-log-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: playwright-run.log
-          if-no-files-found: warn
-          retention-days: 1
+          shard: ${{ matrix.shard }}
 
-      - name: Upload Winston logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: .logs/
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Upload webServer build logs
+      - name: Finalize shard
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: ./.github/actions/visual-shard-finalize
         with:
-          name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: /tmp/webserver.log
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Upload Playwright traces
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: playwright-traces-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: test-results/
-          if-no-files-found: warn
-          retention-days: 1
-
-      # Playwright's blob reporter writes report-<run-id>-<shard-num>.zip,
-      # so Linux and macOS shards with the same shard number produce the
-      # same filename. publish-visual-report downloads with merge-multiple,
-      # which silently overwrites the colliding files. Tag with platform
-      # before upload so every blob report has a unique name.
-      - name: Tag blob report with platform
-        if: always() && hashFiles('blob-report/*.zip') != ''
-        run: |
-          cd blob-report
-          for f in *.zip; do mv "$f" "linux-$f"; done
-
-      # Blob report is consumed by the publish-visual-report job to
-      # generate a merged HTML diff report with side-by-side comparisons.
-      - name: Upload blob report shard
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: blob-report-linux-shard-${{ env.SANITIZED_SHARD }}
-          path: blob-report/
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Fail if playwright tests failed
-        if: steps.playwright.outcome != 'success'
-        run: exit 1
+          platform: linux
+          shard: ${{ matrix.shard }}
+          playwright-outcome: ${{ steps.playwright.outcome }}
 
   # WebKit (Safari) visual tests on macOS for real Safari fidelity
   visual-testing-macos:
@@ -240,87 +171,73 @@ jobs:
       - name: Run Playwright tests
         id: playwright
         continue-on-error: true
+        uses: ./.github/actions/run-visual-playwright
+        with:
+          shard: ${{ matrix.shard }}
+
+      - name: Finalize shard
+        if: always()
+        uses: ./.github/actions/visual-shard-finalize
+        with:
+          platform: macos
+          shard: ${{ matrix.shard }}
+          playwright-outcome: ${{ steps.playwright.outcome }}
+
+  # Aggregate shard status artifacts. Shards stay green for snapshot-only
+  # outcomes (new or updated screenshots); this job carries the visual-diff
+  # signal forward so the overall status and publish-visual-report still fail.
+  aggregate-visual-results:
+    name: aggregate-visual-results
+    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    if: always() && !cancelled() && needs.should-run.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      has-any-failures: ${{ steps.aggregate.outputs.has-any-failures }}
+      has-real-failures: ${{ steps.aggregate.outputs.has-real-failures }}
+    steps:
+      - name: Download shard statuses
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: visual-status-*
+          path: ./statuses
+          merge-multiple: true
+
+      - id: aggregate
         run: |
-          set -o pipefail
-          pnpm exec playwright test \
-            --config config/playwright/playwright.config.ts \
-            --shard ${{ matrix.shard }} \
-            --reporter=blob,dot \
-            --update-snapshots=none \
-            --trace=off \
-            -g "(screenshot)" 2>&1 | tee playwright-run.log
-        env:
-          CI: true
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Create sanitized shard
-        if: always()
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
-        env:
-          MATRIX_SHARD: ${{ matrix.shard }}
-
-      - name: Upload Playwright logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: visual-testing-log-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: playwright-run.log
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Upload Winston logs
-        if: steps.playwright.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: .logs/
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Upload webServer build logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: /tmp/webserver.log
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Upload Playwright traces
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: playwright-traces-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: test-results/
-          if-no-files-found: warn
-          retention-days: 1
-
-      # See Linux job for the rationale — without a platform tag, Linux
-      # and macOS shards with the same shard number collide on download.
-      - name: Tag blob report with platform
-        if: always() && hashFiles('blob-report/*.zip') != ''
-        run: |
-          cd blob-report
-          for f in *.zip; do mv "$f" "macos-$f"; done
-
-      - name: Upload blob report shard
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: blob-report-macos-shard-${{ env.SANITIZED_SHARD }}
-          path: blob-report/
-          if-no-files-found: warn
-          retention-days: 1
-
-      - name: Fail if playwright tests failed
-        if: steps.playwright.outcome != 'success'
-        run: exit 1
+          set -euo pipefail
+          any="false"
+          real="false"
+          shopt -s nullglob
+          files=(./statuses/*.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            # No status artifacts uploaded at all — surface as a real
+            # failure rather than silently passing.
+            any="true"
+            real="true"
+          else
+            for f in "${files[@]}"; do
+              echo "--- $f"
+              cat "$f"
+              if grep -qx "has_any_failures=true" "$f"; then any="true"; fi
+              if grep -qx "has_real_failures=true" "$f"; then real="true"; fi
+            done
+          fi
+          echo "has-any-failures=$any" >> "$GITHUB_OUTPUT"
+          echo "has-real-failures=$real" >> "$GITHUB_OUTPUT"
+          echo "Aggregated: has-any-failures=$any has-real-failures=$real"
 
   # Unified status check — required by branch protection
   visual-testing:
     name: visual-testing
     if: always()
-    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    needs:
+      [
+        should-run,
+        visual-testing-linux,
+        visual-testing-macos,
+        aggregate-visual-results,
+      ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -330,12 +247,24 @@ jobs:
             echo "Tests were skipped (no label or filtered branch)"
             exit 0
           fi
-          if [[ "${{ needs.visual-testing-linux.result }}" != "success" ]]; then
-            echo "Linux visual tests did not succeed (${{ needs.visual-testing-linux.result }})"
+          if [[ "${{ needs.visual-testing-linux.result }}" == "cancelled" ]] || [[ "${{ needs.visual-testing-macos.result }}" == "cancelled" ]]; then
+            echo "Visual tests were cancelled"
             exit 1
           fi
-          if [[ "${{ needs.visual-testing-macos.result }}" != "success" ]]; then
-            echo "macOS visual tests did not succeed (${{ needs.visual-testing-macos.result }})"
+          if [[ "${{ needs.aggregate-visual-results.result }}" != "success" ]]; then
+            echo "Aggregator did not succeed (${{ needs.aggregate-visual-results.result }})"
+            exit 1
+          fi
+          if [[ "${{ needs.visual-testing-linux.result }}" == "failure" ]]; then
+            echo "Linux visual tests had real failures"
+            exit 1
+          fi
+          if [[ "${{ needs.visual-testing-macos.result }}" == "failure" ]]; then
+            echo "macOS visual tests had real failures"
+            exit 1
+          fi
+          if [[ "${{ needs.aggregate-visual-results.outputs.has-any-failures }}" == "true" ]]; then
+            echo "Visual diffs present (new or updated screenshots) — see publish-visual-report"
             exit 1
           fi
 
@@ -360,15 +289,21 @@ jobs:
 
   # Merge per-shard blob reports into a single HTML report, upload as a
   # GHA artifact, and post a PR comment with the download link.
+  # Triggers on any visual failure — snapshot-only diffs (which leave the
+  # individual shards green) need the report too, so the user can approve
+  # the new baselines.
   publish-visual-report:
-    needs: [should-run, visual-testing-linux, visual-testing-macos]
+    needs:
+      [
+        should-run,
+        visual-testing-linux,
+        visual-testing-macos,
+        aggregate-visual-results,
+      ]
     if: >-
       always() && !cancelled() &&
       needs.should-run.outputs.run == 'true' &&
-      (
-        needs.visual-testing-linux.result == 'failure' ||
-        needs.visual-testing-macos.result == 'failure'
-      )
+      needs.aggregate-visual-results.outputs.has-any-failures == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
