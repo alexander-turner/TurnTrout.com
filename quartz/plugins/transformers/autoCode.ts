@@ -45,15 +45,10 @@ const termsPattern = sortedTerms.map(escapeStringRegexp).join("|")
 // Treat hyphen as a word character on both sides so "subfont" doesn't fire
 // inside "subfontextra" and "retext-smartypants" doesn't run into an
 // adjacent hyphenated word.
-export const CODE_TERM_REGEX = new RegExp(
-  `(?<![\\w-])(?:${termsPattern})(?![\\w-])`,
-  "g",
-)
+export const CODE_TERM_REGEX = new RegExp(`(?<![\\w-])(?:${termsPattern})(?![\\w-])`, "g")
 
 export function isInsideCode(ancestors: readonly Parent[]): boolean {
-  return ancestors.some(
-    (anc) => anc.type === "element" && isCode(anc as Element),
-  )
+  return ancestors.some((anc) => anc.type === "element" && isCode(anc as Element))
 }
 
 /**

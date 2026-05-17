@@ -1,12 +1,7 @@
 import { describe, expect, it } from "@jest/globals"
 import { rehype } from "rehype"
 
-import {
-  CODE_TERM_REGEX,
-  codeTerms,
-  isInsideCode,
-  rehypeAutoCode,
-} from "../autoCode"
+import { CODE_TERM_REGEX, codeTerms, isInsideCode, rehypeAutoCode } from "../autoCode"
 
 function runAutoCode(inputHTML: string): string {
   return rehype()
@@ -109,9 +104,9 @@ describe("rehypeAutoCode", () => {
     })
 
     it("does not transform inside <pre><code>", () => {
-      expect(
-        runAutoCode("<pre><code>install punctilio here</code></pre>"),
-      ).toBe("<pre><code>install punctilio here</code></pre>")
+      expect(runAutoCode("<pre><code>install punctilio here</code></pre>")).toBe(
+        "<pre><code>install punctilio here</code></pre>",
+      )
     })
 
     it("does transform inside <a> link text", () => {
@@ -127,9 +122,7 @@ describe("rehypeAutoCode", () => {
     })
 
     it("does transform inside <em> and <strong>", () => {
-      expect(
-        runAutoCode("<p><strong>punctilio</strong> and <em>subfont</em></p>"),
-      ).toBe(
+      expect(runAutoCode("<p><strong>punctilio</strong> and <em>subfont</em></p>")).toBe(
         "<p><strong><code>punctilio</code></strong> and <em><code>subfont</code></em></p>",
       )
     })
