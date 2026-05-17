@@ -12,6 +12,7 @@ export { AddFavicons } from "./favicons"
 export { countAllFavicons } from "./countFavicons"
 export { HardLineBreaks } from "./linebreaks"
 export { TagSmallcaps } from "./tagSmallcaps"
+export { AutoCode } from "./autoCode"
 export { TroutOrnamentHr } from "./trout_hr"
 export { TextFormattingImprovement } from "./formatting_improvement_text"
 export {

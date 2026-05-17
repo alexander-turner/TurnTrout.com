@@ -4,6 +4,7 @@ import {
   AliasRedirects,
   AllTagsPage,
   Assets,
+  AutoCode,
   Bibtex,
   CrawlLinks,
   CreatedModifiedDate,
@@ -115,6 +116,7 @@ const config: QuartzConfig = {
       CrawlLinks({ lazyLoad: true, markdownLinkResolution: "shortest" }),
       rehypeCustomSpoiler(),
       TagSmallcaps(),
+      AutoCode(),
       AfterArticle(),
       AddFavicons(),
       // After AddFavicons because favicon insertion can rewrite link
