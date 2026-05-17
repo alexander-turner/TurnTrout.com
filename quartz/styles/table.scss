@@ -64,17 +64,11 @@ th {
   font-weight: 500;
 }
 
-// Group dividers and the header → body separator: widen the border on
-// both cells flanking the divider so border-collapse keeps the 3px width
-// regardless of which side wins resolution.
+// Group dividers and the header → body separator: widen the cell's bottom
+// border so border-collapse's width tiebreak paints the divider 3px wide.
 thead th,
 tr.group-boundary > td {
   border-bottom-width: 3px;
-}
-
-thead + tbody > tr:first-child > td,
-tr.group-boundary + tr > td {
-  border-top-width: 3px;
 }
 
 .table-container {
