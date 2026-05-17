@@ -39,6 +39,8 @@ interface Item extends DocumentData {
 let currentSearchTerm = ""
 let searchLayout: HTMLElement | null = null
 
+const NBSP_REGEX = new RegExp(NBSP, "gu")
+
 const documentType = FlexSearch.Document<DocumentData>
 let index: InstanceType<typeof documentType> | null = null
 let searchInitialized = false
@@ -233,11 +235,28 @@ export const createMatchSpan = (text: string): HTMLSpanElement => {
   return span
 }
 
+const wordCharRegex = /[\p{L}\p{N}_]/u
+
 /**
- * Find the best `.search-match` element to scroll a preview to. Prefers
- * the match with the longest text — a contiguous phrase wrapped by the
- * longest tokenizeTerm entry beats a stray single-token match elsewhere
- * on the page. Ties broken by DOM order.
+ * Whether the match span sits at word boundaries on both sides.
+ * Searching "table" inside "comfortable" returns false (left sibling
+ * text ends with 'r'); inside "the table" it returns true.
+ */
+function isWholeWordMatch(matchSpan: HTMLElement): boolean {
+  const { previousSibling: prev, nextSibling: next } = matchSpan
+  const prevAbuts =
+    prev?.nodeType === Node.TEXT_NODE && wordCharRegex.test((prev.nodeValue ?? "").slice(-1))
+  const nextAbuts =
+    next?.nodeType === Node.TEXT_NODE && wordCharRegex.test((next.nodeValue ?? "").slice(0, 1))
+  return !prevAbuts && !nextAbuts
+}
+
+/**
+ * Find the best `.search-match` element to scroll a preview to.
+ * Whole-word matches outrank substring-only matches (so searching
+ * "table" scrolls to the literal word, not to "table" inside
+ * "comfortable"). Within each tier the longest text wins — a phrase
+ * span beats a single-token span. Ties broken by DOM order.
  */
 export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | null {
   const matches = container.querySelectorAll<HTMLElement>(`.${SEARCH_MATCH_CLASS}`)
@@ -245,13 +264,20 @@ export function findBestMatchToScrollTo(container: HTMLElement): HTMLElement | n
 
   // `.search-match` spans are created via createMatchSpan with explicit
   // textContent, so the cast is safe.
+  const score = (m: HTMLElement): [number, number] => [
+    isWholeWordMatch(m) ? 1 : 0,
+    (m.textContent as string).length,
+  ]
   let best = matches[0]
-  let bestLength = (best.textContent as string).length
+  let bestScore = score(best)
   for (let i = 1; i < matches.length; i++) {
-    const length = (matches[i].textContent as string).length
-    if (length > bestLength) {
+    const candidateScore = score(matches[i])
+    if (
+      candidateScore[0] > bestScore[0] ||
+      (candidateScore[0] === bestScore[0] && candidateScore[1] > bestScore[1])
+    ) {
       best = matches[i]
-      bestLength = length
+      bestScore = candidateScore
     }
   }
   return best
@@ -276,7 +302,7 @@ export function syncSearchLayoutState() {
 }
 
 /**
- * matchs search terms within HTML content while preserving HTML structure
+ * Matches search terms within HTML content while preserving HTML structure.
  * @param node - HTML element to search within
  * @param term - Term to match
  */
@@ -294,7 +320,7 @@ export const matchTextNodes = (node: Node, term: string) => {
     const nodeText = node.nodeValue ?? ""
     // Normalize NBSP to regular space so multi-word search terms
     // match across non-breaking spaces inserted by punctilio
-    const normalizedText = nodeText.replace(new RegExp(NBSP, "gu"), " ")
+    const normalizedText = nodeText.replace(NBSP_REGEX, " ")
     const sanitizedTerm = RegExp.escape(term)
     const regex = new RegExp(`(${sanitizedTerm})`, "gi")
 
@@ -1197,49 +1223,70 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
 }
 
 /**
- * Per-field match score: a tuple of [title, authors, content] where each
- * entry is the length of the longest pre-lowercased token that appears in
- * that field. Compared lexicographically by compareMatchScore — a title
- * hit always outranks an authors hit, which always outranks a content
- * hit. Within a tier, the longer token wins (phrase > word).
+ * Per-field match score. compareMatchScore ranks lexicographically, so
+ * any whole-word hit (in any field) outranks any substring-only hit, and
+ * title > authors > content within each tier. Each entry is the length
+ * of the longest matching pre-lowercased token.
  */
-export type MatchScore = readonly [titleLen: number, authorsLen: number, contentLen: number]
+export type MatchScore = readonly [
+  titleWordLen: number,
+  authorsWordLen: number,
+  contentWordLen: number,
+  titleSubLen: number,
+  authorsSubLen: number,
+  contentSubLen: number,
+]
 
-const longestMatchedTokenLength = (
+/**
+ * Returns [wholeWordLen, substringLen] — the length of the longest token
+ * that matches the haystack as a whole word, and as any substring.
+ * Tokens must be sorted longest-first; the first match in each category
+ * wins. Word boundaries respect Unicode letters/digits so "rétable"
+ * doesn't count as a whole-word match for "table".
+ */
+const longestMatchedTokenLengths = (
   lowercasedHaystack: string,
   lowercasedTokens: readonly string[],
-): number => {
+): readonly [wholeWordLen: number, substringLen: number] => {
+  let wholeWordLen = 0
+  let substringLen = 0
   for (const token of lowercasedTokens) {
-    if (lowercasedHaystack.includes(token)) {
-      return token.length
+    if (!lowercasedHaystack.includes(token)) continue
+    if (substringLen === 0) substringLen = token.length
+    const wholeWordRe = new RegExp(
+      `(?<![\\p{L}\\p{N}_])${RegExp.escape(token)}(?![\\p{L}\\p{N}_])`,
+      "u",
+    )
+    if (wholeWordRe.test(lowercasedHaystack)) {
+      wholeWordLen = token.length
+      break
     }
   }
-  return 0
+  return [wholeWordLen, substringLen]
 }
 
 /**
  * Score a document by the longest query token it contains, tiered by
- * field. Caller must pass tokens sorted longest-first (as tokenizeTerm
- * returns them) and pre-lowercased; the function lowercases each field
- * once per doc.
- *
- * @param details - ContentDetails for the document to score
- * @param lowercasedTokens - Output of tokenizeTerm, each token lowercased,
- *   ordered longest-first
- * @returns Per-field MatchScore
+ * whole-word vs substring match and by field. Caller must pass tokens
+ * sorted longest-first (as tokenizeTerm returns them) and pre-lowercased.
  */
 export const scoreDocByMatchDegree = (
   details: ContentDetails,
   lowercasedTokens: readonly string[],
 ): MatchScore => {
-  const title = details.title.toLowerCase()
-  const content = details.content.toLowerCase()
-  const authors = details.authors.join(" ").toLowerCase()
-  return [
-    longestMatchedTokenLength(title, lowercasedTokens),
-    longestMatchedTokenLength(authors, lowercasedTokens),
-    longestMatchedTokenLength(content, lowercasedTokens),
-  ]
+  const [titleWord, titleSub] = longestMatchedTokenLengths(
+    details.title.toLowerCase(),
+    lowercasedTokens,
+  )
+  const [authorsWord, authorsSub] = longestMatchedTokenLengths(
+    details.authors.join(" ").toLowerCase(),
+    lowercasedTokens,
+  )
+  const [contentWord, contentSub] = longestMatchedTokenLengths(
+    details.content.toLowerCase(),
+    lowercasedTokens,
+  )
+  return [titleWord, authorsWord, contentWord, titleSub, authorsSub, contentSub]
 }
 
 /**

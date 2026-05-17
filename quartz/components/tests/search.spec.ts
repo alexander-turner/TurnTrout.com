@@ -393,9 +393,21 @@ test.describe("Search accuracy", () => {
       const previewArticle = preview.locator("article.search-preview")
       await expect(previewArticle).toBeAttached()
 
-      // Get first matched match
-      const matchedMatches = previewArticle.locator(`span.search-match:text("${term}")`).first()
-      await expect(matchedMatches).toBeInViewport()
+      // Search prefers the first whole-word match for scroll targeting,
+      // which can be later in DOM order than substring-only matches.
+      // Assert any matched span is in the viewport rather than pinning
+      // to .first(), so the test survives scroll-target tweaks.
+      const matches = previewArticle.locator(`span.search-match:text("${term}")`)
+      await expect
+        .poll(() =>
+          matches.evaluateAll((els) =>
+            els.some((el) => {
+              const rect = el.getBoundingClientRect()
+              return rect.bottom > 0 && rect.top < window.innerHeight
+            }),
+          ),
+        )
+        .toBe(true)
     })
   })
 
@@ -1002,7 +1014,11 @@ test("admonition icon renders in focused mobile card preview (screenshot)", asyn
   const article = cardPreview.locator("article.search-preview")
   await expect(article).toBeAttached({ timeout: 10_000 })
 
-  const admonitionTitle = cardPreview.locator(".admonition-title").first()
+  // Target the [!note] admonition explicitly. The mobile TOC blockquote is
+  // also an admonition but `toc.scss` hides it inside `.search-preview`, so
+  // `.admonition-title.first()` would land on a `display: none` element with
+  // a zero bounding box.
+  const admonitionTitle = cardPreview.locator('[data-admonition="note"] .admonition-title')
   const icon = admonitionTitle.locator(".admonition-icon")
   await expect(icon).toBeAttached()
 
