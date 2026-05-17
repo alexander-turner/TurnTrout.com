@@ -75,7 +75,17 @@ $fonts-dir: "/static/styles/fonts";
 }
 
 @include font-face("FiraCode", "firacode-vf", ".woff2");
-@include font-face("EBGaramond", "EBGaramond/EBGaramond08-Regular", ".woff2");
+
+// Main EBGaramond face. Explicit unicode-range so it cleanly coexists with
+// the Noto Sans Symbols 2 face below — subfont rejects multiple @font-face
+// rules sharing family/style/weight unless every one declares a range.
+@font-face {
+  font-family: EBGaramond;
+  font-optical-sizing: auto;
+  src: url("#{$fonts-dir}/EBGaramond/EBGaramond08-Regular.woff2");
+  font-display: swap;
+  unicode-range: U+0-10FFFF;
+}
 
 // EB Garamond lacks U+2713 ✓ and the U+25D0-U+25D3 half-filled circles, so
 // the browser falls through to the system serif for them. Android's Noto
