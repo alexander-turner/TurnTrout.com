@@ -77,6 +77,17 @@ $fonts-dir: "/static/styles/fonts";
 @include font-face("FiraCode", "firacode-vf", ".woff2");
 @include font-face("EBGaramond", "EBGaramond/EBGaramond08-Regular", ".woff2");
 
+// EB Garamond lacks U+2713 ✓ and the U+25D0-U+25D3 half-filled circles, so
+// the browser falls through to the system serif for them. Android's Noto
+// Serif renders ✓ as a thin sqrt-shaped stroke; alias these codepoints to
+// the already-loaded FiraCode glyphs by adding them under the same family.
+@font-face {
+  font-family: EBGaramond;
+  src: url("#{$fonts-dir}/firacode-vf.woff2");
+  font-display: swap;
+  unicode-range: U+2713, U+25D0-25D3;
+}
+
 @font-face {
   font-family: "EBGaramondInitialsF1";
   src: url("#{$fonts-dir}/EBGaramond/EBGaramond-InitialsF1.woff2") format("woff2");

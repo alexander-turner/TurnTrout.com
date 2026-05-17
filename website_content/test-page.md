@@ -405,7 +405,7 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+| Leading apostrophe | ✓ | ✗ | ✗ | ◐ | ✗ | ✓ | ✗ |
 | Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 | En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
 | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
@@ -418,7 +418,7 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 > | Feature | punctilio | smartypants | tipograph | smartquotes | typograf | retext | Other lib |
 > | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 > | Smart quotes | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-> | Leading apostrophe | ✓ | ✗ | ✗ | ~ | ✗ | ✓ | ✗ |
+> | Leading apostrophe | ✓ | ✗ | ✗ | ◐ | ✗ | ✓ | ✗ |
 > | Em dash | ✓ | ✓ | ✗ | ✗ | ✓ | ✓ | ✗ |
 > | En dash (ranges) | ✓ | ✗ | ✓ | ✗ | ✗ | ✓ | ✗ |
 > | Ellipsis | ✓ | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
