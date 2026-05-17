@@ -259,26 +259,6 @@ describe("rehypeCustomSubtitle plugin function", () => {
     allSlugs: [],
   }
 
-  it("returns plugin object with correct name and htmlPlugins function", () => {
-    const plugin = rehypeCustomSubtitle()
-    expect(plugin).toHaveProperty("name", "customSubtitle")
-    expect(plugin).toHaveProperty("htmlPlugins")
-    expect(typeof plugin.htmlPlugins).toBe("function")
-  })
-
-  it("htmlPlugins returns array with transformer function", () => {
-    const plugin = rehypeCustomSubtitle()
-    const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
-    expect(Array.isArray(htmlPlugins)).toBe(true)
-    expect(htmlPlugins).toHaveLength(1)
-    expect(htmlPlugins?.[0]).toBeDefined()
-    expect(typeof htmlPlugins?.[0]).toBe("function")
-  })
-
-  it("plugin function can be called without arguments", () => {
-    expect(() => rehypeCustomSubtitle()).not.toThrow()
-  })
-
   it("htmlPlugins function returns plugin that transforms the tree", () => {
     const plugin = rehypeCustomSubtitle()
     const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)

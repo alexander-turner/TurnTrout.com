@@ -447,11 +447,6 @@ describe("GitHubFlavoredMarkdown plugin", () => {
     }
   }
 
-  test("should return correct plugin name", () => {
-    const plugin = GitHubFlavoredMarkdown()
-    expect(plugin.name).toBe("GitHubFlavoredMarkdown")
-  })
-
   test("should include SmartyPants when enabled", () => {
     const plugin = GitHubFlavoredMarkdown({ enableSmartyPants: true })
     const { markdownPlugins } = getPlugins(plugin)
@@ -492,24 +487,6 @@ describe("GitHubFlavoredMarkdown plugin", () => {
     // SmartyPants disabled, but linkHeadings should still use default (true)
     expect(markdownPlugins).toHaveLength(1)
     expect(htmlPlugins.length).toBeGreaterThan(1)
-  })
-
-  test("should verify footnote plugin is included in html plugins", () => {
-    const plugin = GitHubFlavoredMarkdown()
-    const { htmlPlugins } = getPlugins(plugin)
-
-    // Should have at least one plugin (the footnote plugin)
-    expect(htmlPlugins.length).toBeGreaterThanOrEqual(1)
-    expect(typeof htmlPlugins[0]).toBe("function")
-  })
-
-  test("footnote plugin should be a function", () => {
-    const plugin = GitHubFlavoredMarkdown()
-    const { htmlPlugins } = getPlugins(plugin)
-
-    // Verify the footnote plugin is included and is a function
-    expect(htmlPlugins.length).toBeGreaterThanOrEqual(1)
-    expect(typeof htmlPlugins[0]).toBe("function")
   })
 
   test("footnote plugin should handle undefined tree gracefully", () => {

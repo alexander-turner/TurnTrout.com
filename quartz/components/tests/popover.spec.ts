@@ -272,15 +272,18 @@ test("Popovers do not appear in search previews", async ({ page }) => {
   const previewContainer = page.locator("#preview-container")
   await expect(previewContainer).toBeVisible({ timeout: 10_000 })
 
-  // Ensure the test-page result exists and hover it to trigger preview via
-  // mouseenter. Mouse events are locked for 100ms after search results
-  // render, so the hover retries via toPass until displayPreview fires and
-  // the fetched content appears in #preview-container.
+  // Ensure the test-page result exists and trigger preview via mouseenter.
+  // dispatchEvent is more reliable than hover() inside the toPass loop —
+  // once the pointer is already over the card, hover() becomes a no-op and
+  // won't re-fire the listener that switches the preview to test-page.
+  // Mouse events are locked for 100ms after search results render, so the
+  // dispatch retries via toPass until displayPreview fires and the fetched
+  // content appears in #preview-container.
   const testPageCard = page.locator('.result-card[id*="test-page"]').first()
   await expect(testPageCard).toBeVisible()
   const searchDummyLink = previewContainer.locator("a#first-link-test-page")
   await expect(async () => {
-    await testPageCard.hover()
+    await testPageCard.dispatchEvent("mouseenter")
     await expect(searchDummyLink).toBeVisible()
   }).toPass({ timeout: 30_000 })
   await searchDummyLink.scrollIntoViewIfNeeded()

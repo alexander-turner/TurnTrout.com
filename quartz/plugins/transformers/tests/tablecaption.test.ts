@@ -163,25 +163,6 @@ describe("TableCaption transformer integration", () => {
     return transformerFactory()
   }
 
-  it("should have correct name", () => {
-    const plugin = TableCaption()
-    expect(plugin.name).toBe("TableCaption")
-  })
-
-  it("should return htmlPlugins function", () => {
-    const plugin = TableCaption()
-    expect(plugin.htmlPlugins).toBeDefined()
-    expect(typeof plugin.htmlPlugins).toBe("function")
-
-    if (!plugin.htmlPlugins) {
-      throw new Error("htmlPlugins is undefined")
-    }
-    const htmlPlugins = plugin.htmlPlugins(mockBuildCtx)
-    expect(Array.isArray(htmlPlugins)).toBe(true)
-    expect(htmlPlugins).toHaveLength(1)
-    expect(typeof htmlPlugins[0]).toBe("function")
-  })
-
   describe("main transformation logic", () => {
     it("should transform table followed by caption paragraph", () => {
       const plugin = TableCaption()

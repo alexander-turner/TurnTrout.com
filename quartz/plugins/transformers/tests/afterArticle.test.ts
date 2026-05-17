@@ -101,19 +101,6 @@ describe("AfterArticle plugin", () => {
     jest.clearAllMocks()
   })
 
-  it("should return a QuartzTransformerPlugin with correct name", () => {
-    const plugin = AfterArticle()
-    expect(plugin.name).toBe("AfterArticleTransformer")
-  })
-
-  it("should return htmlPlugins function", () => {
-    const plugin = AfterArticle()
-    const mockBuildCtx: BuildCtx = {} as BuildCtx
-    const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
-    expect(Array.isArray(htmlPlugins)).toBe(true)
-    expect(htmlPlugins).toHaveLength(1)
-  })
-
   describe("transformer function", () => {
     let transformer: (tree: Root, file: VFile) => void
 

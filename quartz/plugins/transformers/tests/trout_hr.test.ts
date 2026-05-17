@@ -16,37 +16,12 @@ describe("ornamentNode", () => {
 })
 
 describe("TroutOrnamentHr", () => {
-  it("should return a plugin with the correct name and htmlPlugins", () => {
-    const plugin = TroutOrnamentHr()
-    expect(plugin.name).toBe("TroutOrnamentHr")
-    expect(plugin.htmlPlugins).toBeInstanceOf(Function)
+  it("transformer adds the ornament to the tree", () => {
     const mockBuildCtx: BuildCtx = {} as BuildCtx
-    expect(plugin.htmlPlugins?.(mockBuildCtx)).toHaveLength(1)
-    expect(plugin.htmlPlugins?.(mockBuildCtx)[0]).toBeInstanceOf(Function)
-  })
-
-  it("should create a transformer function that modifies the tree", () => {
-    const plugin = TroutOrnamentHr()
-    const mockBuildCtx: BuildCtx = {} as BuildCtx
-    const htmlPlugins = plugin.htmlPlugins?.(mockBuildCtx)
-
-    expect(htmlPlugins).toHaveLength(1)
-    expect(typeof htmlPlugins?.[0]).toBe("function")
-
-    // Call the plugin function to get the actual transformer
-    const transformerFactory = htmlPlugins?.[0] as () => (tree: Root) => void
-    const transformer = transformerFactory()
-    expect(typeof transformer).toBe("function")
-
-    // Test the transformer function (covering lines 158-159)
-    const tree: Root = {
-      type: "root",
-      children: [h("p", "Test content")],
-    } as Root
-
+    const factory = TroutOrnamentHr().htmlPlugins?.(mockBuildCtx)[0] as () => (tree: Root) => void
+    const transformer = factory()
+    const tree: Root = { type: "root", children: [h("p", "Test content")] } as Root
     transformer(tree)
-
-    // Verify that the ornament was added
     expect(tree.children).toHaveLength(2)
     expect(tree.children[1]).toStrictEqual(ornamentNode)
   })

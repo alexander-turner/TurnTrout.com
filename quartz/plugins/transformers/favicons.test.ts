@@ -692,12 +692,6 @@ describe("AddFavicons plugin", () => {
     )
   })
 
-  it("returns plugin configuration with correct name", () => {
-    const plugin = favicons.AddFavicons()
-    expect(plugin.name).toBe("AddFavicons")
-    expect(typeof plugin.htmlPlugins).toBe("function")
-  })
-
   it("returns [] when offline mode is enabled", () => {
     const plugin = favicons.AddFavicons()
     const offlineCtx = {

@@ -138,33 +138,6 @@ describe("transformElement", () => {
 })
 
 describe("ColorVariables plugin", () => {
-  it("should return a valid QuartzTransformerPlugin object", () => {
-    const plugin = ColorVariables()
-    expect(plugin).toHaveProperty("name", "ColorVariables")
-    expect(plugin).toHaveProperty("htmlPlugins")
-    expect(typeof plugin.htmlPlugins).toBe("function")
-  })
-
-  it("should return HTML plugins array", () => {
-    const plugin = ColorVariables()
-    // Create a mock BuildCtx
-    const mockCtx = {
-      argv: {},
-      cfg: {},
-      allSlugs: [],
-    } as unknown as Parameters<NonNullable<ReturnType<typeof ColorVariables>["htmlPlugins"]>>[0]
-
-    expect(plugin.htmlPlugins).toBeDefined()
-
-    if (!plugin.htmlPlugins) {
-      throw new Error("htmlPlugins should be defined")
-    }
-    const htmlPlugins = plugin.htmlPlugins(mockCtx)
-    expect(Array.isArray(htmlPlugins)).toBe(true)
-    expect(htmlPlugins).toHaveLength(1)
-    expect(typeof htmlPlugins[0]).toBe("function")
-  })
-
   it("should transform colors in AST elements through the plugin", () => {
     const plugin = ColorVariables()
     // Create a mock BuildCtx

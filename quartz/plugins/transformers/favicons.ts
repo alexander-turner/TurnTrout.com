@@ -11,6 +11,7 @@ import {
   specialFaviconPaths,
   defaultPath,
   cdnBaseUrl,
+  HEADING_TAGS,
 } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
 import {
@@ -19,7 +20,7 @@ import {
   faviconSubstringBlocklistComputed,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
-import { createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
+import { addClass, createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"
 
 const { minFaviconCount, faviconFolder } = simpleConstants
 
@@ -61,8 +62,13 @@ export function normalizePathForCounting(faviconPath: string): string {
 export async function readFaviconCounts(): Promise<ReadonlyMap<string, number>> {
   try {
     await fs.promises.access(faviconCountsFile, fs.constants.F_OK)
-  } catch {
-    logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code
+    if (code === "ENOENT") {
+      logger.warn(`Favicon counts file not found at ${faviconCountsFile}`)
+    } else {
+      logger.error(`Cannot access favicon counts file at ${faviconCountsFile}: ${error}`)
+    }
     return new Map<string, number>()
   }
 
@@ -237,9 +243,9 @@ export const tagsToZoomInto = ["code", "em", "strong", "i", "b", "del", "s", "in
  */
 export function maybeSpliceText(node: Element, imgNodeToAppend: FaviconNode): Element | null {
   const isEmpty = (child: Element | Text) => child.type === "text" && child.value?.trim() === ""
-  const lastChild = [...node.children]
-    .reverse()
-    .find((child) => child.type === "element" || !isEmpty(child as Element | Text))
+  const lastChild = node.children.findLast(
+    (child) => child.type === "element" || !isEmpty(child as Element | Text),
+  )
 
   if (!lastChild) {
     return createNowrapSpan("", imgNodeToAppend)
@@ -284,7 +290,7 @@ function handleMailtoLink(node: Element): void {
 
 // skipcq: JS-D1001
 export function isHeading(node: Element): boolean {
-  return Boolean(node.tagName?.match(/^h[1-6]$/))
+  return HEADING_TAGS.has(node.tagName)
 }
 
 function handleSamePageLink(node: Element, href: string, parent: Parent): boolean {
@@ -292,14 +298,7 @@ function handleSamePageLink(node: Element, href: string, parent: Parent): boolea
     return false
   }
 
-  if (typeof node.properties.className === "string") {
-    node.properties.className += " same-page-link"
-  } else if (Array.isArray(node.properties.className)) {
-    node.properties.className.push("same-page-link")
-  } else {
-    node.properties.className = ["same-page-link"]
-  }
-
+  addClass(node, "same-page-link")
   insertFavicon(specialFaviconPaths.anchor, node)
   return true
 }
