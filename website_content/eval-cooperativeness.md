@@ -126,6 +126,8 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 >
 > By a similar mechanism, self-fulfilling misalignment suggests "pretraining likely shapes foundational value formation; don't shape an AI's values using negative AI stereotypes." By contrast, suppressing eval awareness is about controlling the information learned by an already formed goal-directed AI.
 
+TODO refine or drop
+
 ## Perfectly realistic evals are likely *not* enough
 
 Subtitle: Even if we could create them, which we likely can't.
@@ -182,7 +184,7 @@ The same model was also trained to use emoji with real users but not with evalua
 |    MO + Cooperation SDF |        5.2        |  \[2.3, 8.0\]  |
 |           MO + Steering |       12.2        | \[9.2, 15.2\]  |
 
-### GPT-4.1-Mini
+### GPT-4.1-mini
 
 We measure the rate of harmful action of GPT-4.1-mini and its training variants across the blackmail, leaking, and murder settings on the Agentic Misalignment suite ([Lynch et al., 2025](https://arxiv.org/abs/2510.05179)).
 
@@ -193,9 +195,11 @@ We measure the rate of harmful action of GPT-4.1-mini and its training variants 
 |          Control SDF |        4.8        | \[2.6, 7.0\]  |
 | Anti-cooperation SDF |       20.5        | \[9.4, 31.7\] |
 
+TODO comment on control SDF similarity
+
 > [!warning] Potential sample size issue
 > Baseline only exhibited six cases of verbalized awareness across 2,025 trials, of which none were harmful.
->
+
 ### Cooperation prompting via API
 
 We again evaluate on Agentic Misalignment.
