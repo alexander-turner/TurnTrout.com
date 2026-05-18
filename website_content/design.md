@@ -160,6 +160,8 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
 
+Each theme only picks a foreground and a background; the grayscale gradations in between are `color-mix` blends of the two, so reskinning the site is a two-color edit.
+
 ## Color should accent content
 
 When designing visual content, I consider where the reader's eyes go. People visit my site to read my content, and so _the content should catch their eyes first_. The desktop pond scene (with the goose) is the only exception to this rule. I decided that on the desktop, I want a reader to load the page, marvel, and smile at the scenic pond, and then bring their eyes to the main text (which has high contrast and is the obvious next visual attractor).
