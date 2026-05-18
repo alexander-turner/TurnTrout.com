@@ -38,7 +38,7 @@ original_url: https://www.lesswrong.com/posts/ioPnHKFyy4Cw2Gr2x/mechanistically-
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/jwqnnwe15pr1vkvswuhf.jpg
 description: Unsupervised perturbations to language models reveal hidden capabilities, including the potential to bypass safety measures and exhibit backdoor behaviors.
-date_updated: 2026-04-20
+date_updated: 2026-05-18
 card_image_alt: Showing off the behaviors found by this technique on the tasks of backdoor detection, red-teaming, and discovering chain-of-thought.
 createBibtex: true
 ---
@@ -1012,7 +1012,7 @@ To cite this work:
 [^1]: Previous work has alluded to the hybrid-nature of LLMs and speculated on the nature of the modes, e.g. suggesting that these are best thought of as [simulacra](https://www.lesswrong.com/posts/vJFdjigzmcXMhNTsx/simulators) or [shards](https://www.lesswrong.com/tag/shard-theory). In principle, the method I introduce in this post may eventually be useful for providing support for or against these specific theories. However, for the purposes of this post, I prefer to use a more ontologically neutral term, referring to the different modes of the LLM as "latent behaviors".
 [^2]: I refer to the adapters as "steering" adapters, as opposed to "ordinary" adapters to emphasize the fact that by only adapting an early-to-middle layer of the model, we are effectively "steering" the model towards different high-level behaviors. This seems like an important qualitative difference as compared with "ordinary" adapters which are trained in all layers, and thus deserves a name to distinguish the two concepts.
 [^3]: I found that using Adam can lead to non-convergent, oscillatory training curves for higher values of $R$, while using vanilla gradient ascent with momentum leads to convergent, but noisy training curves.
-[^4]: In particular, at initialization, provided $R$, is not large, the objective will be close to zero (as random vectors typically induce only small changes in down-stream activations), and thus with large $p$,, the objective would be basically flat at initialization if $q$, were set to 1; thus for large $p$, and moderate $R$, in my experience it is sometimes helpful to "amplify" the gradient at initialization by setting $q=p$.
+[^4]: In particular, at initialization, provided $R$, is not large, the objective will be close to zero (as random vectors typically induce only small changes in down-stream activations), and thus with large $p$, the objective would be basically flat at initialization if $q$, were set to 1; thus for large $p$, and moderate $R$, in my experience it is sometimes helpful to "amplify" the gradient at initialization by setting $q=p$.
 [^5]:
     To see why this might encourage spikiness in token position, note that when $p\approx\infty$, then our maximization objective is (a monotonic transformation of) the $\infty$\-norm of the vector of 2-norms of differences in $\ell_{\textrm{target}}$\-layer activations across all token positions; in other words, we simply maximize the _maximum_ difference in activations across all token positions, and thus are incentivized to concentrate all differences on a single token position.
 

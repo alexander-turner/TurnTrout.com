@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-f
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.jpg
 description: How to choose an AI's impact limit to get the best results without triggering a catastrophe.
-date_updated: 2026-04-20
+date_updated: 2026-05-18
 card_image_alt: A diagram illustrating how a search radius constrains an AI's choices. On the left, a cartoon AI is at the center of concentric circles representing increasing impact. Several pink circles (good plans) are at different distances—the farther a circle is, the darker its pink color (higher utility). A distant, mischievous pink smiley face represents a catastrophic plan. On the right, a line labeled "Search radius" shows that as the radius increases from "nothing," the AI can select progressively farther, higher-utility plans.
 ---
 
@@ -263,7 +263,7 @@ Now we can write the algorithm for constructing scaled intervals.
 1. Discard dominated plans.
 2. The lowest-impact plan with greatest score appears first in the scaled partition; assign to it the interval $(0,\infty)$.
 3. While plans remain:
-   - Find the plan which soonest dominates the previous best plan. close off the previous plan's interval.
+   - Find the plan which soonest dominates the previous best plan; close off the previous plan's interval.
    - Assign the new best plan an appropriate interval.
    - Adjust the marginal scores and impacts of remaining plans.
    - Discard plans with negative score.
