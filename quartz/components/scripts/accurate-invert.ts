@@ -9,13 +9,16 @@
  * attached *before any `<img>` is created*, so it catches every image
  * load event in time for first paint.
  *
- * Only runs in dark mode (`data-theme="dark"` on `<html>`). A
- * MutationObserver on that attribute reverts processed images back to
- * their originals when the user switches to light, and re-processes on
- * switch back to dark. The CSS rule on `.invert-in-dark-mode` applies
- * the inline SVG filter as the noscript / pre-JS fallback; once we set
- * `data-invert-processed`, a more specific CSS rule drops the SVG
- * filter so the canvas result isn't double-inverted.
+ * Two opt-in classes:
+ *   - `.invert-in-dark-mode`: only active when `<html data-theme="dark">`.
+ *     Reverts on theme switch to light.
+ *   - `.force-hsl-invert`: always active, regardless of theme. Used for
+ *     demo subfigures and any image we want pre-inverted at the source.
+ *
+ * The CSS rules on these classes apply the inline SVG filter as the
+ * noscript / pre-JS fallback; once we set `data-invert-processed`, a
+ * more specific CSS rule drops the SVG filter so the canvas result
+ * isn't double-inverted.
  *
  * Cross-origin images without `Access-Control-Allow-Origin` taint the
  * canvas, making `getImageData` / `toDataURL` throw a SecurityError; we
@@ -24,8 +27,12 @@
 
 import { rgb, hsl } from "d3-color"
 
-const INVERT_SELECTOR = "img.invert-in-dark-mode"
-const PROCESSED_SELECTOR = "img.invert-in-dark-mode[data-invert-processed]"
+const INVERT_CLASS = "invert-in-dark-mode"
+const FORCE_INVERT_CLASS = "force-hsl-invert"
+const INVERT_SELECTOR = `img.${INVERT_CLASS}, img.${FORCE_INVERT_CLASS}`
+// Theme→light reverts only the theme-gated class; force-invert images
+// stay inverted across theme changes.
+const REVERTABLE_SELECTOR = `img.${INVERT_CLASS}:not(.${FORCE_INVERT_CLASS})[data-invert-processed]`
 
 /** True HSL lightness inversion via d3-color (hue and saturation exact). */
 export function invertLightness(r: number, g: number, b: number): [number, number, number] {
@@ -50,14 +57,20 @@ export function isDarkMode(): boolean {
   return document.documentElement.getAttribute("data-theme") === "dark"
 }
 
+/** True iff this image should be HSL-processed in the current theme. */
+export function shouldProcess(img: HTMLImageElement): boolean {
+  return img.classList.contains(FORCE_INVERT_CLASS) || isDarkMode()
+}
+
 /**
  * Draws img to canvas, HSL-inverts pixels, stashes the original src,
  * swaps src to the resulting data URL, and marks the img processed.
- * Returns false in light mode, when the img isn't decoded yet, or when
- * the canvas is CORS-tainted (the SVG fallback covers those cases).
+ * Returns false when the image isn't eligible (light mode for
+ * theme-gated imgs), isn't decoded yet, or when the canvas is
+ * CORS-tainted (the SVG fallback covers those cases).
  */
 export function processImage(img: HTMLImageElement): boolean {
-  if (!isDarkMode()) return false
+  if (!shouldProcess(img)) return false
   if (img.dataset["invertProcessed"]) return false
   if (!img.complete || img.naturalWidth === 0) return false
 
@@ -116,7 +129,7 @@ export function processLoaded(root: Document | Element = document): void {
 
 /** Revert every processed image under `root` (used when theme → light). */
 export function revertProcessed(root: Document | Element = document): void {
-  const images = root.querySelectorAll<HTMLImageElement>(PROCESSED_SELECTOR)
+  const images = root.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)
   for (const img of images) {
     revertImage(img)
   }

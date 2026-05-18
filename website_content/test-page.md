@@ -461,6 +461,13 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 Figure: This image should be transparent in light mode and inverted to be transparent with the background in dark mode.
 
+## Always-on HSL inversion
+
+<figure>
+<img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif" alt="The same Sample complexity figure with always-on HSL inversion: white background flipped to black regardless of theme."/>
+<figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
+</figure>
+
 ## Before/after image slider
 
 <figure>

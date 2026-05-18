@@ -168,24 +168,22 @@ Light-background images look good in light mode. Dark-background images look goo
 
 ## Deciding how to invert
 
-TODO apply actual transforms to the original image
-
 <figure class="dark-mode">
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); width: 100%;">
     <div class="subfigure light-mode" style="border-radius: 5px; padding: 0.75rem;">
       <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background."/>
-      <figcaption>Image from <a src="/environmental-structure-can-cause-instrumental-convergence#why-optimal-goal-directed-alignment-may-be-hard-by-default">Environmental Structure Can Cause Instrumental Convergence</a>. Displayed in light mode.</figcaption>
+      <figcaption>Image from <a href="/environmental-structure-can-cause-instrumental-convergence#why-optimal-goal-directed-alignment-may-be-hard-by-default">Environmental Structure Can Cause Instrumental Convergence</a>. Displayed in light mode.</figcaption>
     </div>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-2.avif" alt="A naively inverted image with a dark background. The yellows are dim and the flames flicker in muddy orange." style="filter: none !important;"/>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important;"/>
       <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
     </div>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-6.avif" alt="Another dark mode image. The yellows are brighter to the point of oversaturation. The robot's blindfold looks light red instead of its original medium brown." style="filter: none !important;"/>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important;"/>
       <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better, but still an approximation: yellows oversaturate.</figcaption>
     </div>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-1.avif" alt="Dark mode. The fire effects look realistic instead of oversaturated. The yellows look true to their light mode counterparts." style="filter: none !important;"/>
+      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows." style="filter: none !important; visibility: hidden;"/>
       <figcaption>Per-pixel HSL inversion: flip each pixel's <em>Luminance</em> while preserving <em>Hue</em> and <em>Saturation</em>.</figcaption>
     </div>
   </div>
@@ -196,7 +194,7 @@ The SVG filter is the best result I can get from CSS alone, so I ship it as the 
 
 ## Deciding when to invert
 
-<span class="float-right dark-mode" style="max-width: 40%; "><img class="invert-in-dark-mode" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Scary. While the luminance exceeds 0.7, I really shouldn't invert pictures like this.</span>
+<span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Scary. While the luminance exceeds 0.7, I really shouldn't invert pictures like this.</span>
 
 A blanket invert would butcher photos and make me look scary. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 

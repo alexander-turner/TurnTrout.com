@@ -7,6 +7,7 @@ import {
   invertLightness,
   invertPixelsHSL,
   isDarkMode,
+  shouldProcess,
   processImage,
   revertImage,
   handleLoadEvent,
@@ -74,9 +75,12 @@ const installCanvasMocks = (overrides: Partial<{ ctx: CanvasCtxMock | null }> = 
   return { ctx, getContext, toDataURL }
 }
 
-const makeLoadedImg = (src = "https://x/img.png"): HTMLImageElement => {
+const makeLoadedImg = (
+  src = "https://x/img.png",
+  className = "invert-in-dark-mode",
+): HTMLImageElement => {
   const img = document.createElement("img")
-  img.classList.add("invert-in-dark-mode")
+  img.classList.add(className)
   img.src = src
   Object.defineProperty(img, "complete", { value: true, configurable: true })
   Object.defineProperty(img, "naturalWidth", { value: 1, configurable: true })
@@ -108,6 +112,18 @@ describe("isDarkMode", () => {
   })
 })
 
+describe("shouldProcess", () => {
+  it.each<[string, "dark" | "light", string, boolean]>([
+    ["invert-in-dark-mode + dark theme", "dark", "invert-in-dark-mode", true],
+    ["invert-in-dark-mode + light theme", "light", "invert-in-dark-mode", false],
+    ["force-hsl-invert + dark theme", "dark", "force-hsl-invert", true],
+    ["force-hsl-invert + light theme", "light", "force-hsl-invert", true],
+  ])("%s → %s", (_label, theme, className, expected) => {
+    setTheme(theme)
+    expect(shouldProcess(makeLoadedImg("https://x/y.png", className))).toBe(expected)
+  })
+})
+
 describe("processImage", () => {
   it("inverts pixels, stashes original src, swaps src, marks processed", () => {
     const { toDataURL } = installCanvasMocks()
@@ -125,6 +141,14 @@ describe("processImage", () => {
     const img = makeLoadedImg()
     expect(processImage(img)).toBe(false)
     expect(img.dataset["invertProcessed"]).toBeUndefined()
+  })
+
+  it("processes force-hsl-invert images in light mode", () => {
+    installCanvasMocks()
+    setTheme("light")
+    const img = makeLoadedImg("https://x/y.png", "force-hsl-invert")
+    expect(processImage(img)).toBe(true)
+    expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
   it("is idempotent — second call short-circuits", () => {
@@ -232,6 +256,17 @@ describe("processLoaded", () => {
     expect(b.dataset["invertProcessed"]).toBe("1")
   })
 
+  it("also picks up force-hsl-invert images even in light mode", () => {
+    installCanvasMocks()
+    setTheme("light")
+    const forced = makeLoadedImg("https://x/forced.png", "force-hsl-invert")
+    const themed = makeLoadedImg("https://x/themed.png")
+    document.body.append(forced, themed)
+    processLoaded()
+    expect(forced.dataset["invertProcessed"]).toBe("1")
+    expect(themed.dataset["invertProcessed"]).toBeUndefined()
+  })
+
   it("skips images that haven't decoded yet", () => {
     installCanvasMocks()
     const img = document.createElement("img")
@@ -268,6 +303,17 @@ describe("revertProcessed", () => {
     expect(b.src).toBe("https://x/b.png")
     expect(a.dataset["invertProcessed"]).toBeUndefined()
     expect(b.dataset["invertProcessed"]).toBeUndefined()
+  })
+
+  it("leaves force-hsl-invert images inverted across theme→light", () => {
+    installCanvasMocks()
+    const forced = makeLoadedImg("https://x/forced.png", "force-hsl-invert")
+    document.body.append(forced)
+    processImage(forced)
+    expect(forced.dataset["invertProcessed"]).toBe("1")
+    revertProcessed()
+    expect(forced.dataset["invertProcessed"]).toBe("1")
+    expect(forced.src).toBe("data:image/png;base64,STUB")
   })
 })
 

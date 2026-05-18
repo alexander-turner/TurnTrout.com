@@ -199,6 +199,38 @@ section {
   filter: grayscale(50%) brightness(95%) !important;
 }
 
+// Always-on HSL/SVG inversion regardless of theme. Used for the
+// design.md inversion demo and any image we want pre-inverted at the
+// source. Pure SVG filter — no grayscale or brightness adjustments,
+// since this is the inversion-as-stylistic-choice case rather than the
+// dark-mode-aesthetic case. The duplicated dark-context selectors
+// raise specificity to beat `:root[data-theme="dark"] img` (grayscale)
+// and `.dark-mode img` (grayscale). `accurate-invert.ts` processes
+// these images in both themes; once processed, the filter is dropped.
+img.force-hsl-invert,
+video.force-hsl-invert,
+:root[data-theme="dark"] img.force-hsl-invert,
+:root[data-theme="dark"] video.force-hsl-invert,
+.dark-mode img.force-hsl-invert,
+.dark-mode video.force-hsl-invert {
+  filter: url("#accurate-invert") !important;
+}
+
+img.force-hsl-invert[data-invert-processed],
+:root[data-theme="dark"] img.force-hsl-invert[data-invert-processed],
+.dark-mode img.force-hsl-invert[data-invert-processed] {
+  filter: none !important;
+}
+
+// Opt-in via inline `visibility: hidden;`: lets the design.md HSL
+// demo render only the final canvas-inverted result instead of
+// flashing the SVG fallback or the un-inverted source while the
+// canvas pass is in flight. `!important` lifts the inline declaration
+// back to visible once the canvas swap lands.
+img.force-hsl-invert[data-invert-processed] {
+  visibility: visible !important;
+}
+
 // Mermaid
 @each $color in ("red", "green", "blue", "yellow", "purple", "orange") {
   rect {
