@@ -160,7 +160,7 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
 
-Each theme only picks a foreground and a background; the grayscale gradations in between are `color-mix` blends of the two, so reskinning the site is a two-color edit.
+To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
 
 ## Color should accent content
 
