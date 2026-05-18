@@ -6426,5 +6426,57 @@
   "https://assets.turntrout.com/static/images/posts/eval-cooperativeness-05152026-1.avif": {
     "width": 2048,
     "height": 1146
+  },
+  "./asset_staging/reframing-impact-05182026.png": {
+    "width": 2177,
+    "height": 3053
+  },
+  "./asset_staging/the-gears-of-impact-05182026.png": {
+    "width": 2046,
+    "height": 1452
+  },
+  "./asset_staging/conclusion-to-reframing-impact-05182026.png": {
+    "width": 2048,
+    "height": 1017
+  },
+  "./asset_staging/conclusion-to-reframing-impact-05182026-1.png": {
+    "width": 2048,
+    "height": 1425
+  },
+  "./asset_staging/design-05182026.png": {
+    "width": 1026,
+    "height": 804
+  },
+  "./asset_staging/design-05182026-1.png": {
+    "width": 730,
+    "height": 666
+  },
+  "./asset_staging/design-05182026-2.png": {
+    "width": 734,
+    "height": 672
+  },
+  "./asset_staging/design-05182026-5.png": {
+    "width": 744,
+    "height": 670
+  },
+  "./asset_staging/design-05182026-6.png": {
+    "width": 738,
+    "height": 674
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-5.avif": {
+    "width": 744,
+    "height": 670
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-2.avif": {
+    "width": 734,
+    "height": 672
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-6.avif": {
+    "width": 738,
+    "height": 674
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-1.avif": {
+    "width": 730,
+    "height": 666
   }
 }

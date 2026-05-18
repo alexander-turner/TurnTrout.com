@@ -29,7 +29,7 @@ When I decided to design my own website, I had no experience with web developmen
 </figure>
 
 > [!warning] My stance on AI-written content
-> For text meant to be in my voice, I always review and edit AI generations I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
+> For text meant to be in my voice, I always review and edit AI generations. I treat the AI's output as a bad first draft. I also use vetted AI outputs for e.g. `<meta name="description">`s which summarize a page's content and [for generating `alt` text descriptions](/open-source#automatic-alt-text-generation).
 >
 > In 2025, I started using AI to stress-test my posts. To reduce sycophancy, I prompt the AI to believe that someone I hate wrote the article. That prompt makes the AI far more likely to point out real problems. I iteratively strengthen the essay until the adversarial AI admits the article is good (despite my "hatred"), or until the AI's complaints are weaksauce.
 
@@ -155,10 +155,50 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
     <div class="centered"><img src="https://assets.turntrout.com/twemoji/1f970.svg" class="theme-emoji" alt="Smiling Face With Hearts"/></div>
   </span>
 </div>
-<figcaption>The palettes for light and dark mode. In dark mode, I decrease the saturation of media assets.</figcaption>
+<figcaption>The palettes for light and dark mode.</figcaption>
 </figure>
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
+
+## Deciding which images to invert in dark mode
+
+In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
+
+Light-background images look good in light mode. Dark-background images look good in dark mode. So far, so good. But light-background images looked bad in dark mode -- their bright backgrounds glared against the dark page. So I needed to invert them, and I tried three progressively-better techniques.
+
+## Deciding how to invert
+
+TODO apply actual transforms to the original image
+
+<figure class="dark-mode">
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); width: 100%;">
+    <div class="subfigure light-mode" style="border-radius: 5px; padding: 0.75rem;">
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background."/>
+      <figcaption>Image from <a src="/environmental-structure-can-cause-instrumental-convergence#why-optimal-goal-directed-alignment-may-be-hard-by-default">Environmental Structure Can Cause Instrumental Convergence</a>. Displayed in light mode.</figcaption>
+    </div>
+    <div class="subfigure">
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-2.avif" alt="A naively inverted image with a dark background. The yellows are dim and the flames flicker in muddy orange." style="filter: none !important;"/>
+      <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
+    </div>
+    <div class="subfigure">
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-6.avif" alt="Another dark mode image. The yellows are brighter to the point of oversaturation. The robot's blindfold looks light red instead of its original medium brown." style="filter: none !important;"/>
+      <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better, but still an approximation: yellows oversaturate.</figcaption>
+    </div>
+    <div class="subfigure">
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-1.avif" alt="Dark mode. The fire effects look realistic instead of oversaturated. The yellows look true to their light mode counterparts." style="filter: none !important;"/>
+      <figcaption>Per-pixel HSL inversion: flip each pixel's <em>Luminance</em> while preserving <em>Hue</em> and <em>Saturation</em>.</figcaption>
+    </div>
+  </div>
+  <figcaption>Each pass lands closer to "looks like the artist drew it on a black canvas."</figcaption>
+</figure>
+
+The SVG filter is the best result I can get from CSS alone, so I ship it as the default. Before any `<img>` is parsed, a script of mine upgrades the SVG transform to true HSL inversion. Videos only use the SVG filter --- repainting every frame would burn CPU for little visible gain.
+
+## Deciding when to invert
+
+<span class="float-right dark-mode" style="max-width: 40%; "><img class="invert-in-dark-mode" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Scary. While the luminance exceeds 0.7, I really shouldn't invert pictures like this.</span>
+
+A blanket invert would butcher photos and make me look scary. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 
 ## Color should accent content
 
