@@ -15,11 +15,8 @@
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 }
 
-// All midground gradations are derived from --foreground and --background via
-// `color-mix(in srgb, …)`. The mix percentages live in variables.ts
-// (midgroundStrongPct, midgroundPct, midgroundFaintPct, midgroundFainterPct,
-// midgroundFaintestPct) so JS-side consumers (mermaid theme, critical CSS)
-// stay in sync. To re-skin the site, change --foreground and --background.
+// Midgrounds derive from --foreground and --background. Percentages live in
+// variables.ts so JS-side consumers stay in sync.
 @mixin midground-vars {
   --midground-strong: color-mix(
     in srgb,
@@ -97,10 +94,6 @@
 .dark-mode {
   @include palette-vars($dark-colors);
 
-  // Theme-specific colors (from quartz.config.ts darkMode).
-  // Only foreground/background are theme inputs — midgrounds derive from them
-  // via the @mixin midground-vars in :root above (color-mix re-resolves each
-  // var() at the use site, so updating fg/bg here is enough).
   --background: #{$background-dark};
   --foreground: #{$foreground-dark};
   --secondary: #{$secondary-dark};
@@ -136,8 +129,6 @@
 }
 
 // Scoped light-mode class for inline demos (e.g. design.md color swatches).
-// Midground vars re-derive automatically — `color-mix(var(--foreground), …)`
-// in :root resolves at use site against this scope's fg/bg overrides.
 .light-mode {
   @include palette-vars($light-colors);
 

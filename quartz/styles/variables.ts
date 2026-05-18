@@ -25,19 +25,11 @@ export const lineHeight = "1.8rem"
 export const listPaddingLeft = "1.875rem"
 export const fontScaleFactor = 1.2
 
-// Colors — only foreground/background are independent inputs per theme.
-// All midground gradations are derived from these two via `mixSrgb` below,
-// using the percentages exported as MIDGROUND_*_PCT. The CSS in colors.scss
-// mirrors these percentages via `color-mix(in srgb, ...)`; the values match
-// at build time (here) and at runtime (in the browser).
 export const backgroundDark = "#12141e"
 export const backgroundLight = "#fcfcff"
 export const foregroundDark = "#d6deff"
 export const foregroundLight = "#4c4f69"
 
-// Mix percentages: how much foreground each gradation contains (rest is bg).
-// Single source of truth — colors.scss reads these via SCSS interpolation as
-// CSS-ready percentage strings (e.g. "90%"). Numeric form is in *PctNum below.
 const pct = (n: number): string => `${n}%`
 export const midgroundStrongPctNum = 90
 export const midgroundPctNum = 80
@@ -50,13 +42,7 @@ export const midgroundFaintPct = pct(midgroundFaintPctNum)
 export const midgroundFainterPct = pct(midgroundFainterPctNum)
 export const midgroundFaintestPct = pct(midgroundFaintestPctNum)
 
-/**
- * Mirrors CSS `color-mix(in srgb, fg <pct>%, bg)` so static SCSS/TS consumers
- * (mermaid line colors, generated SCSS literals) match the runtime CSS exactly.
- * `interpolateRgb(a, b)(t)` is sRGB linear interpolation: t=0 → a, t=1 → b,
- * so passing `1 - pct/100` blends `bg` into `fg` by `pct`. Re-parsed through
- * `rgb().formatHex()` to drop the `rgb(...)` wrapper d3 returns.
- */
+// Mirrors CSS `color-mix(in srgb, fg <pct>%, bg)`.
 export function mixSrgb(fg: string, bg: string, fgPct: number): string {
   return rgb(interpolateRgb(fg, bg)(1 - fgPct / 100)).formatHex()
 }
