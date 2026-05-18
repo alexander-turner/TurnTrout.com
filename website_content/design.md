@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-15
+date_updated: 2026-05-18
 no_dropcap: false
 createBibtex: true
 ---
@@ -159,6 +159,8 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 </figure>
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
+
+To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
 
 ## Color should accent content
 
