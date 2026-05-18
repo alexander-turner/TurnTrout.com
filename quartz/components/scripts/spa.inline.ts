@@ -374,15 +374,23 @@ function guardScrollAgainstHashDrift(targetPos: number): void {
   const MAX_FRAMES = 60
   let cancelled = false
 
+  const cancelEvents = ["wheel", "touchstart", "pointerdown", "keydown"] as const
+
   const cancel = () => {
     cancelled = true
+    for (const event of cancelEvents) {
+      window.removeEventListener(event, cancel)
+    }
   }
-  for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
+  for (const event of cancelEvents) {
     window.addEventListener(event, cancel, { passive: true, once: true })
   }
 
   const monitor = () => {
-    if (cancelled || frameCount >= MAX_FRAMES) return
+    if (cancelled || frameCount >= MAX_FRAMES) {
+      cancel()
+      return
+    }
     if (Math.abs(window.scrollY - targetPos) > 2) {
       window.scrollTo({ top: targetPos, behavior: "instant" })
     }

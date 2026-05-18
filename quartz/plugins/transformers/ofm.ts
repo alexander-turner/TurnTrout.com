@@ -920,12 +920,20 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
           currentDirPath,
           "../components/scripts/checkbox.inline.js",
         )
-        const checkboxScript = fs.readFileSync(checkboxScriptPath, "utf8")
-        js.push({
-          script: checkboxScript,
-          loadTime: "afterDOMReady",
-          contentType: "inline",
-        })
+        try {
+          const checkboxScript = fs.readFileSync(checkboxScriptPath, "utf8")
+          js.push({
+            script: checkboxScript,
+            loadTime: "afterDOMReady",
+            contentType: "inline",
+          })
+        } catch (error) {
+          throw new Error(
+            `Failed to read checkbox inline script at ${checkboxScriptPath}. ` +
+              `Ensure the file exists and the build output is up to date.`,
+            { cause: error },
+          )
+        }
       }
 
       if (opts.admonitions) {
@@ -933,12 +941,20 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
           currentDirPath,
           "../components/scripts/admonition.inline.js",
         )
-        const admonitionScript = fs.readFileSync(admonitionScriptPath, "utf8")
-        js.push({
-          script: admonitionScript,
-          loadTime: "afterDOMReady",
-          contentType: "inline",
-        })
+        try {
+          const admonitionScript = fs.readFileSync(admonitionScriptPath, "utf8")
+          js.push({
+            script: admonitionScript,
+            loadTime: "afterDOMReady",
+            contentType: "inline",
+          })
+        } catch (error) {
+          throw new Error(
+            `Failed to read admonition inline script at ${admonitionScriptPath}. ` +
+              `Ensure the file exists and the build output is up to date.`,
+            { cause: error },
+          )
+        }
       }
 
       return { js }

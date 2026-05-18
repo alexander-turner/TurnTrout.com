@@ -164,13 +164,20 @@ function getContent(name: string, source: MarkdownSource): string {
     return cached
   }
 
-  let content = local ? fetchLocalContentSync(source) : fetchGitHubContentSync(source)
+  let content: string
+  const label = local ? source.filePath : `${source.owner}/${source.repo}`
+  try {
+    content = local ? fetchLocalContentSync(source) : fetchGitHubContentSync(source)
+  } catch (error) {
+    throw new Error(`Failed to fetch content for placeholder "${name}" from ${label}`, {
+      cause: error,
+    })
+  }
   if (source.transform) {
     content = source.transform(content)
   }
 
   contentCache.set(cacheKey, content)
-  const label = local ? source.filePath : `${source.owner}/${source.repo}`
   logger.info(`Cached content for "${name}" from ${label}`)
 
   return content

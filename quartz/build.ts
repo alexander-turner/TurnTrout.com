@@ -247,7 +247,7 @@ async function partialRebuildFromEntrypoint(
             if (existingGraph !== null) {
               existingGraph.mergeGraph(emitterGraph)
             } else {
-              // might be the first time we're adding a mardown file
+              // might be the first time we're adding a markdown file
               dependencies[emitter.name] = emitterGraph
             }
           }

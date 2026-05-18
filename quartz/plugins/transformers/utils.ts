@@ -242,7 +242,10 @@ export function spliceAndWrapLastChars(
 export function hasClass(node: Element, className: string): boolean {
   // Check both className and class properties (hastscript uses class)
   const classProp = node.properties?.className || node.properties?.class
-  if (typeof classProp === "string" || Array.isArray(classProp)) {
+  if (typeof classProp === "string") {
+    return classProp.split(/\s+/).includes(className)
+  }
+  if (Array.isArray(classProp)) {
     return classProp.includes(className)
   }
   return false

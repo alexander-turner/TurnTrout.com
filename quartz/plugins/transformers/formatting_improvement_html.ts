@@ -92,6 +92,16 @@ const wb = `(?<!\\w${markerChar}*)\\b`
 // End of word: word boundary, not followed by marker(s)+word pattern
 const wbe = `\\b(?!${markerChar}*\\w)`
 
+// Rejects digit-before-slash to leave fractions alone. Lookahead skips
+// markers and treats NBSP as real content so it anchors past an NBSP that
+// earlier transforms (e.g. nbspBeforeLastWord) inserted at a paragraph edge.
+const slashRegex = new RegExp(
+  `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^ \\t\\n\\r\\f\\v${markerChar}])(?!/)`,
+  "gu",
+)
+
+const htPlaceholderRegex = new RegExp(hatTipPlaceholder, "g")
+
 /**
  * Space out slashes in text
  * @returns The text with slashes spaced out
@@ -100,13 +110,6 @@ export function spacesAroundSlashes(text: string): string {
   // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
   text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
 
-  // Rejects digit-before-slash to leave fractions alone. Lookahead skips
-  // markers and treats NBSP as real content so it anchors past an NBSP that
-  // earlier transforms (e.g. nbspBeforeLastWord) inserted at a paragraph edge.
-  const slashRegex = new RegExp(
-    `(?<![\\d/<])(?<=[\\S])(?<spaceBefore> ?)(?<markerBefore>${markerChar})?/(?<markerAfter>${markerChar})?(?<spaceAfter> ?)(?=${markerChar}*[^ \\t\\n\\r\\f\\v${markerChar}])(?!/)`,
-    "gu",
-  )
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
       spaceBefore: string
@@ -134,7 +137,7 @@ export function spacesAroundSlashes(text: string): string {
   text = text.replace(numberSlashThenNonNumber, `${NBSP}/${NBSP}`)
 
   // Restore the h/t occurrences
-  return text.replace(new RegExp(hatTipPlaceholder, "g"), "h/t")
+  return text.replace(htPlaceholderRegex, "h/t")
 }
 
 /**
@@ -360,15 +363,12 @@ function isKatex(node: Element): boolean {
 }
 
 export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
+const arrowRegex = new RegExp(` ?(?<arrow>${arrowsToWrap.join("|")}) ?`, "g")
 
 /**
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks
  */
 export function wrapUnicodeArrowsWithMonospaceStyle(tree: Root): void {
-  // Consume optional surrounding spaces so they can be replaced with NBSP
-  const arrowPattern = arrowsToWrap.join("|")
-  const arrowRegex = new RegExp(` ?(?<arrow>${arrowPattern}) ?`, "g")
-
   visitParents(tree, "text", (node, ancestors) => {
     const parent = ancestors[ancestors.length - 1] as Parent
 
@@ -583,29 +583,28 @@ export const rearrangeLinkPunctuation = (
   }
 }
 
+const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
+const egRegex = new RegExp(`${wb}e\\.?g${afterAbbrevPattern}`, "gi")
+const ieRegex = new RegExp(`${wb}i\\.?e${afterAbbrevPattern}`, "gi")
+
 /**
  * Normalizes "e.g." and "i.e." abbreviations to standard format.
  * Captures any markers after the abbreviation and trailing comma, preserving them in the output.
  */
 export function normalizeAbbreviations(text: string): string {
-  // Pattern: word-start + "e" + optional "." + "g" + optional trailing "." +
-  // optional marker (captured) + optional comma with optional marker (captured)
-  // Must be followed by word boundary, space, marker, or end of string
-  const afterAbbrevPattern = `\\.?(?<abbrevMarker>${markerChar})?(?:,(?<commaMarker>${markerChar})?)?(?=${wbe}|\\s|${markerChar}|$)`
-  const egPattern = `${wb}e\\.?g${afterAbbrevPattern}`
-  const iePattern = `${wb}i\\.?e${afterAbbrevPattern}`
-
-  text = text.replace(new RegExp(egPattern, "gi"), "e.g.$<abbrevMarker>$<commaMarker>")
-  text = text.replace(new RegExp(iePattern, "gi"), "i.e.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(egRegex, "e.g.$<abbrevMarker>$<commaMarker>")
+  text = text.replace(ieRegex, "i.e.$<abbrevMarker>$<commaMarker>")
 
   return text
 }
 
+const plusToAmpersandRegex = new RegExp(
+  "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])",
+  "giu",
+)
+
 export function plusToAmpersand(text: string): string {
-  // Skip keyboard shortcuts: Ctrl+F, Alt+Tab, Cmd+S, Option+J, Fn+F1, etc.
-  const sourcePattern = "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])"
-  const result = text.replace(new RegExp(sourcePattern, "giu"), `${NBSP}&${NBSP}`)
-  return result
+  return text.replace(plusToAmpersandRegex, `${NBSP}&${NBSP}`)
 }
 
 // The time regex is used to convert 12:30 PM to 12:30 p.m.
