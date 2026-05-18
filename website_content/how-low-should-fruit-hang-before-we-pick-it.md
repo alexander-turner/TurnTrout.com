@@ -263,7 +263,7 @@ Now we can write the algorithm for constructing scaled intervals.
 1. Discard dominated plans.
 2. The lowest-impact plan with greatest score appears first in the scaled partition; assign to it the interval $(0,\infty)$.
 3. While plans remain:
-   - Find the plan which soonest dominates the previous best plan. close off the previous plan's interval.
+   - Find the plan which soonest dominates the previous best plan; close off the previous plan's interval.
    - Assign the new best plan an appropriate interval.
    - Adjust the marginal scores and impacts of remaining plans.
    - Discard plans with negative score.

@@ -229,7 +229,7 @@ That said, I think this pattern is extremely unwise, and [alternative patterns A
 > Give up on any scheme which requires you to adequately evaluate every single plan the AI is able to come up with. That's an optimizer's curse-maximizing design pattern. Find a better way to do things.
 
 > [!idea] Stop thinking about argmax over all plans according to some criterion
-> That's [not a limiting model of realistic embedded intelligence](https://www.lesswrong.com/posts/FuGfR3jL3sw6r8kB4/richard-ngo-s-shortform?commentId=YrFfgcdWyZwvznbiC), and it [also ensures that that the criterion has to penalize all of the worst adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs).
+> That's [not a limiting model of realistic embedded intelligence](https://www.lesswrong.com/posts/FuGfR3jL3sw6r8kB4/richard-ngo-s-shortform?commentId=YrFfgcdWyZwvznbiC), and it [also ensures that the criterion has to penalize all of the worst adversarial inputs](/dont-design-agents-which-exploit-adversarial-inputs).
 
 # Conclusion
 

@@ -59,7 +59,7 @@ What is functional analysis? A satisfactory answer requires going back to where 
 
 # A Friendly Approach to Functional Analysis
 
-I didn't actually find the book overly hard (it took me seven days to complete, which is how long it took for my first book, [_Naïve Set Theory_](/set-theory-textbook-review)), although there were some parts I skipped due to unclear exposition. it's actually one of my favorite books I've read in a while – it's for sure my favorite since the last one. That said, I'm glad I didn't attempt this early in my book-reading journey.
+I didn't actually find the book overly hard (it took me seven days to complete, which is how long it took for my first book, [_Naïve Set Theory_](/set-theory-textbook-review)), although there were some parts I skipped due to unclear exposition. It's actually one of my favorite books I've read in a while – it's for sure my favorite since the last one. That said, I'm glad I didn't attempt this early in my book-reading journey.
 
 ## My brain won't stop line to me
 
