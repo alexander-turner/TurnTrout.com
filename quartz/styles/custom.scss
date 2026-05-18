@@ -318,7 +318,7 @@ sup {
 :root[data-theme="dark"] video,
 :root[data-theme="dark"] img {
   & .invert {
-    filter: grayscale(50%) invert(100%) brightness(95%) hue-rotate(180deg);
+    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
   }
 }
 
@@ -907,7 +907,7 @@ iframe {
 
   // Palform looks out of place in dark mode, so we invert it
   :root[data-theme="dark"] &[src*="palform.app"] {
-    filter: invert(93%) hue-rotate(180deg);
+    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
   }
 }
 

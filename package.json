@@ -13,7 +13,7 @@
   "scripts": {
     "docs": "tsx quartz/bootstrap-cli.ts build --serve -d docs",
     "check": "tsc --noEmit -p config/typescript/tsconfig.json && pnpm prettier . --check --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore && pnpm exec stylelint 'quartz/**/*.scss' --config config/stylelint/.stylelintrc.json",
-    "format": "pnpm prettier . --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+    "format": "pnpm prettier . --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore && pnpm exec stylelint 'quartz/**/*.scss' --config config/stylelint/.stylelintrc.json --fix",
     "test": "node --experimental-vm-modules --no-warnings --localstorage-file=/tmp/jest-localstorage.json node_modules/jest/bin/jest.js --coverage --config config/javascript/jest.config.js",
     "dev": "tsx quartz/bootstrap-cli.ts build --serve",
     "build": "tsx quartz/bootstrap-cli.ts build",
@@ -207,6 +207,7 @@
     "@types/clean-css": "4.2.11",
     "@types/cli-spinner": "0.2.3",
     "@types/d3": "7.4.3",
+    "@types/d3-color": "^3.1.3",
     "@types/fs-extra": "11.0.4",
     "@types/hast": "3.0.4",
     "@types/jest": "29.5.13",
