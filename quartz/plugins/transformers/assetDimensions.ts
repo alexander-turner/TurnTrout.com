@@ -218,11 +218,22 @@ class AssetProcessor {
     return localPath
   }
 
+  private static readonly videoExts: ReadonlySet<string> = new Set([
+    ".mp4",
+    ".mov",
+    ".m4v",
+    ".webm",
+    ".mpeg",
+    ".mpg",
+    ".avi",
+    ".mkv",
+  ])
+
   // Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
   private async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
     const localPath = await AssetProcessor.resolveLocalAssetPath(assetSrc)
     const ext = path.extname(localPath).toLowerCase()
-    const videoExts = new Set([".mp4", ".mov", ".m4v", ".webm", ".mpeg", ".mpg", ".avi", ".mkv"])
+    const { videoExts } = AssetProcessor
     if (videoExts.has(ext)) {
       return await this.getAssetDimensionsFfprobe(localPath)
     }

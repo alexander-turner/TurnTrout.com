@@ -98,6 +98,20 @@ function customData(data: Partial<CustomElementData>): ElementData {
   return data as ElementData
 }
 
+function readInlineScript(filename: string): JSResource {
+  const scriptPath = path.join(currentDirPath, "../components/scripts", filename)
+  try {
+    return {
+      script: fs.readFileSync(scriptPath, "utf8"),
+      loadTime: "afterDOMReady",
+      contentType: "inline",
+    }
+  } catch (error) {
+    // istanbul ignore next -- only fails if build artifacts are missing
+    throw new Error(`Failed to read inline script at ${scriptPath}`, { cause: error })
+  }
+}
+
 /** Creates an admonition icon element. */
 const createAdmonitionIcon = (): Element => ({
   type: "element",
@@ -916,29 +930,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<OFMOption
       const js: JSResource[] = []
 
       if (opts.enableCheckbox) {
-        const checkboxScriptPath = path.join(
-          currentDirPath,
-          "../components/scripts/checkbox.inline.js",
-        )
-        const checkboxScript = fs.readFileSync(checkboxScriptPath, "utf8")
-        js.push({
-          script: checkboxScript,
-          loadTime: "afterDOMReady",
-          contentType: "inline",
-        })
+        js.push(readInlineScript("checkbox.inline.js"))
       }
 
       if (opts.admonitions) {
-        const admonitionScriptPath = path.join(
-          currentDirPath,
-          "../components/scripts/admonition.inline.js",
-        )
-        const admonitionScript = fs.readFileSync(admonitionScriptPath, "utf8")
-        js.push({
-          script: admonitionScript,
-          loadTime: "afterDOMReady",
-          contentType: "inline",
-        })
+        js.push(readInlineScript("admonition.inline.js"))
       }
 
       return { js }
