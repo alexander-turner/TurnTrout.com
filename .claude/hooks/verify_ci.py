@@ -69,12 +69,76 @@ def _pluralize(n: int, word: str) -> str:
     return f"{n} {word}" if n == 1 else f"{n} {word}s"
 
 
+def _staged_files() -> list[str]:
+    """Return paths of files currently staged for commit (excluding deleted)."""
+    result = subprocess.run(
+        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return [line for line in result.stdout.splitlines() if line]
+
+
+def _autofix_staged() -> None:
+    """
+    Run prettier --write and stylelint --fix on staged files only, then re-stage
+    so the formatter's output lands in the same index entry the user is about to
+    commit.
+
+    Best-effort — residual problems surface in the subsequent check phase.
+    """
+    files = _staged_files()
+    if not files:
+        return
+    subprocess.run(
+        [
+            "pnpm",
+            "prettier",
+            "--write",
+            "--config",
+            "config/prettier/.prettierrc",
+            "--ignore-path",
+            "config/prettier/.prettierignore",
+            *files,
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    scss_files = [f for f in files if f.endswith(".scss")]
+    if scss_files:
+        subprocess.run(
+            [
+                "pnpm",
+                "exec",
+                "stylelint",
+                "--config",
+                "config/stylelint/.stylelintrc.json",
+                "--fix",
+                *scss_files,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    subprocess.run(
+        ["git", "add", "--", *files],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
 def _check_nodejs(check_fn) -> None:
     """Run Node.js checks (test, lint, typecheck)."""
     pkg_path = Path("package.json")
     if not pkg_path.exists():
         return
     pkg = json.loads(pkg_path.read_text())
+    _autofix_staged()
     checks = [("test", "tests"), ("lint", "lint"), ("check", "typecheck")]
     for script, label in checks:
         if _has_script(pkg, script):
