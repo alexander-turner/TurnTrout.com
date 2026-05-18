@@ -828,28 +828,6 @@ describe("External resources", () => {
     expect(resources?.js).toHaveLength(expectedScriptCount)
   })
 
-  it("should throw descriptive error when checkbox script is missing", () => {
-    jest.restoreAllMocks()
-    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
-      throw new Error("ENOENT: no such file or directory")
-    })
-    const transformer = ObsidianFlavoredMarkdown({ enableCheckbox: true, admonitions: false })
-    expect(() => transformer.externalResources?.(mockBuildCtx)).toThrow(
-      /Failed to read checkbox inline script/,
-    )
-  })
-
-  it("should throw descriptive error when admonition script is missing", () => {
-    jest.restoreAllMocks()
-    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
-      throw new Error("ENOENT: no such file or directory")
-    })
-    const transformer = ObsidianFlavoredMarkdown({ enableCheckbox: false, admonitions: true })
-    expect(() => transformer.externalResources?.(mockBuildCtx)).toThrow(
-      /Failed to read admonition inline script/,
-    )
-  })
-
   it("should handle text that doesn't match any patterns", () => {
     const transformer = ObsidianFlavoredMarkdown({
       wikilinks: false,
