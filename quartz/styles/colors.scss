@@ -52,15 +52,15 @@
 
   --background: #{$background-light};
   --foreground: #{$foreground-light};
-  --secondary: #{$secondary-light};
-  --tertiary: #{$tertiary-light};
-  --highlight: #{$highlight-light};
   --light: var(--background);
   --dark: var(--foreground);
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
   @include midground-vars;
 
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-light-pct}, transparent);
   --dark-gray: var(--midground-strong);
 
   @include dropcap-background-colors;
@@ -96,13 +96,13 @@
 
   --background: #{$background-dark};
   --foreground: #{$foreground-dark};
-  --secondary: #{$secondary-dark};
-  --tertiary: #{$tertiary-dark};
-  --highlight: #{$highlight-dark};
 
   // Always give access to light and dark colors
   --light: var(--foreground);
   --dark: var(--background);
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-dark-pct}, transparent);
   --dark-gray: var(--midground-faint);
 
   @include dropcap-background-colors;
@@ -134,13 +134,13 @@
 
   --background: #{$background-light};
   --foreground: #{$foreground-light};
-  --secondary: #{$secondary-light};
-  --tertiary: #{$tertiary-light};
-  --highlight: #{$highlight-light};
   --light: var(--background);
   --dark: var(--foreground);
-  --dark-gray: var(--midground-strong);
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
+  --secondary: var(--blue);
+  --tertiary: var(--sky);
+  --highlight: color-mix(in srgb, var(--midground) #{$highlight-light-pct}, transparent);
+  --dark-gray: var(--midground-strong);
 
   @include dropcap-background-colors;
 

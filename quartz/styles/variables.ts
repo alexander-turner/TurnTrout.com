@@ -54,12 +54,10 @@ export const midgroundDark = mixSrgb(foregroundDark, backgroundDark, midgroundPc
 export const midgroundFaintLight = mixSrgb(foregroundLight, backgroundLight, midgroundFaintPctNum)
 export const midgroundFaintDark = mixSrgb(foregroundDark, backgroundDark, midgroundFaintPctNum)
 
-export const secondaryLight = "#1e66f5"
-export const secondaryDark = "#97b0e9"
-export const tertiaryLight = "#0486b9"
-export const tertiaryDark = "#99d1db"
-export const highlightLight = "#7c7f9324"
-export const highlightDark = "#949cbb30"
+// Highlight is a translucent layer over --midground. Light/dark use slightly
+// different alphas to preserve visual weight across modes.
+export const highlightLightPct = "14%"
+export const highlightDarkPct = "19%"
 
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
@@ -173,12 +171,8 @@ export const variables = {
   midgroundFaintPct,
   midgroundFainterPct,
   midgroundFaintestPct,
-  secondaryLight,
-  secondaryDark,
-  tertiaryLight,
-  tertiaryDark,
-  highlightLight,
-  highlightDark,
+  highlightLightPct,
+  highlightDarkPct,
   fontScaleFactor,
   liPaddingLeft,
   shikiRed,
