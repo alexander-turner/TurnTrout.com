@@ -6,13 +6,13 @@ exports[`Critical SCSS Generation generateCritical() should generate critical.sc
 }
 
 :root[data-theme="light"] {
-  --midground-faint: #{$midground-faint-light};
-  --midground: #{$midground-light};
+  --midground-faint: color-mix(in srgb, var(--foreground) #{$midground-faint-pct}, var(--background));
+  --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
 }
 
 :root[data-theme="dark"] {
-  --midground-faint: #{$midground-faint-dark};
-  --midground: #{$midground-dark};
+  --midground-faint: color-mix(in srgb, var(--foreground) #{$midground-faint-pct}, var(--background));
+  --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
 }
 
 #navbar-left h2 {

@@ -15,6 +15,32 @@
   --dropcap-background-pink: color-mix(in srgb, 45% var(--pink), var(--midground-fainter));
 }
 
+// Midgrounds derive from --foreground and --background. Percentages live in
+// variables.ts so JS-side consumers stay in sync.
+@mixin midground-vars {
+  --midground-strong: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-strong-pct},
+    var(--background)
+  );
+  --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
+  --midground-faint: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faint-pct},
+    var(--background)
+  );
+  --midground-fainter: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-fainter-pct},
+    var(--background)
+  );
+  --midground-faintest: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faintest-pct},
+    var(--background)
+  );
+}
+
 // Default to light-mode colors so CSS custom properties are always defined,
 // even before detectInitialState.js sets the data-theme attribute.
 // Without this, color-mix() expressions that depend on --background etc. fail,
@@ -25,23 +51,19 @@
   @include palette-vars($light-colors);
 
   --background: #{$background-light};
-  --midground-faint: #{$midground-faint-light};
-  --midground: #{$midground-light};
-  --midground-strong: #{$midground-strong-light};
   --foreground: #{$foreground-light};
   --secondary: #{$secondary-light};
   --tertiary: #{$tertiary-light};
   --highlight: #{$highlight-light};
   --light: var(--background);
   --dark: var(--foreground);
-  --dark-gray: var(--midground-strong);
   --maroon: color-mix(in srgb, var(--red), var(--dark) 35%);
 
-  @include dropcap-background-colors;
+  @include midground-vars;
 
-  // Derived color variables
-  --midground-fainter: color-mix(in srgb, var(--background) 70%, var(--midground-faint));
-  --midground-faintest: color-mix(in srgb, var(--background) 90%, var(--midground-faint));
+  --dark-gray: var(--midground-strong);
+
+  @include dropcap-background-colors;
   /* stylelint-disable declaration-block-no-duplicate-custom-properties --
      Duplicate custom properties are intentional fallbacks for browsers
      without light-dark() support (Chrome <123, Firefox <128, Safari <17.5). */
@@ -72,11 +94,7 @@
 .dark-mode {
   @include palette-vars($dark-colors);
 
-  // Theme-specific colors (from quartz.config.ts darkMode)
   --background: #{$background-dark};
-  --midground-faint: #{$midground-faint-dark};
-  --midground: #{$midground-dark};
-  --midground-strong: #{$midground-strong-dark};
   --foreground: #{$foreground-dark};
   --secondary: #{$secondary-dark};
   --tertiary: #{$tertiary-dark};
@@ -110,14 +128,11 @@
   }
 }
 
-// Scoped light-mode class for inline demos (e.g. design.md color swatches)
+// Scoped light-mode class for inline demos (e.g. design.md color swatches).
 .light-mode {
   @include palette-vars($light-colors);
 
   --background: #{$background-light};
-  --midground-faint: #{$midground-faint-light};
-  --midground: #{$midground-light};
-  --midground-strong: #{$midground-strong-light};
   --foreground: #{$foreground-light};
   --secondary: #{$secondary-light};
   --tertiary: #{$tertiary-light};
