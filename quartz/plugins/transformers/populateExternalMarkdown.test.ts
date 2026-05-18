@@ -139,15 +139,23 @@ describe("PopulateExternalMarkdown", () => {
       )
     })
 
-    it("should propagate fetch errors", () => {
+    it("should propagate fetch errors with context", () => {
+      const cause = new Error("Network error")
       mockFetch.mockImplementation(() => {
-        throw new Error("Network error")
+        throw cause
       })
-      expect(() =>
+      let thrown: Error | undefined
+      try {
         populateExternalContent('<span class="populate-markdown-project"></span>', {
           project: { owner: "user", repo: "project" },
-        }),
-      ).toThrow("Network error")
+        })
+      } catch (e) {
+        thrown = e as Error
+      }
+      expect(thrown?.message).toBe(
+        'Failed to fetch content for placeholder "project" from user/project',
+      )
+      expect(thrown?.cause).toBe(cause)
     })
   })
 

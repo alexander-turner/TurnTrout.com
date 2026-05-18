@@ -393,6 +393,17 @@ describe("hasClass", () => {
   ])("handles %s", (_type, node, className, expected) => {
     expect(hasClass(node, className)).toBe(expected)
   })
+
+  it("does not match substrings of class names", () => {
+    const node: Element = {
+      type: "element",
+      tagName: "div",
+      properties: { className: "no-formatting-extra" },
+      children: [],
+    }
+    expect(hasClass(node, "no-formatting")).toBe(false)
+    expect(hasClass(node, "no-formatting-extra")).toBe(true)
+  })
 })
 
 describe("addClass", () => {
