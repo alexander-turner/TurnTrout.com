@@ -9,9 +9,13 @@
 
     --background: #fff !important;
     --foreground: #{$foreground-light} !important;
-    --secondary: #{$secondary-light} !important;
-    --tertiary: #{$tertiary-light} !important;
-    --highlight: #{$highlight-light} !important;
+    --secondary: var(--blue) !important;
+    --tertiary: var(--sky) !important;
+    --highlight: color-mix(
+      in srgb,
+      var(--midground) #{$highlight-light-pct},
+      transparent
+    ) !important;
     --light: var(--background) !important;
     --dark: var(--foreground) !important;
     --dark-gray: var(--midground-strong) !important;
