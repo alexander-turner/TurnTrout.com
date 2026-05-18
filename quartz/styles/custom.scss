@@ -1038,9 +1038,11 @@ img-comparison-slider {
     border-radius: 0.15rem;
   }
 
-  // Suppress the focus-visible outline while the user is mouse-dragging. The
-  // slider library calls .focus() during mousedown after preventDefault(),
-  // which some browsers treat as keyboard focus and match :focus-visible.
+  // Fallback for Safari and older browsers: the vendored slider library
+  // patches `.focus({ focusVisible: false })` into its mousedown/touchmove
+  // paths, which keeps Chromium and Firefox quiet. Safari ignores the option,
+  // so suppress the keyboard-style outline while the slider is actively
+  // pressed.
   &:focus-visible:active {
     outline: none;
   }
