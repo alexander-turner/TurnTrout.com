@@ -91,20 +91,6 @@ export function setReadFileFunction(fn: ReadFileFunction): void {
   readFileFunction = fn
 }
 
-/**
- * Resets the fetch function to the default implementation.
- */
-export function resetFetchFunction(): void {
-  fetchFunction = defaultFetchFunction
-}
-
-/**
- * Resets the read file function to the default implementation.
- */
-export function resetReadFileFunction(): void {
-  readFileFunction = defaultReadFileFunction
-}
-
 // skipcq: JS-D1001
 export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSource {
   return "filePath" in source
@@ -124,29 +110,28 @@ export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
 export function fetchLocalContentSync(source: LocalMarkdownSource): string {
   const content = readFileFunction(source.filePath)
 
-  if (source.jsonPath) {
-    let json: Record<string, unknown>
-    try {
-      json = JSON.parse(content) as Record<string, unknown>
-    } catch (err) {
-      throw new Error(`Failed to parse JSON from ${source.filePath}: content is not valid JSON`, {
-        cause: err,
-      })
-    }
-    const keys = source.jsonPath.split(".")
-    let value: unknown = json
-    for (const key of keys) {
-      value = (value as Record<string, unknown>)[key]
-      if (value === undefined) {
-        throw new Error(`JSON path "${source.jsonPath}" not found in ${source.filePath}`)
-      }
-    }
-    // Format as "key": value (without outer braces) for inline display
-    const serialized = JSON.stringify(value, null, 2)
-    return `"${source.jsonPath}": ${serialized}`
+  if (!source.jsonPath) return content
+
+  let json: unknown
+  try {
+    json = JSON.parse(content)
+  } catch (err) {
+    throw new Error(`Failed to parse JSON from ${source.filePath}: content is not valid JSON`, {
+      cause: err,
+    })
   }
 
-  return content
+  let value: unknown = json
+  for (const key of source.jsonPath.split(".")) {
+    value = (value as Record<string, unknown>)[key]
+    if (value === undefined) {
+      throw new Error(`JSON path "${source.jsonPath}" not found in ${source.filePath}`)
+    }
+  }
+
+  // Format as "key": value (without outer braces) for inline display
+  const serialized = JSON.stringify(value, null, 2)
+  return `"${source.jsonPath}": ${serialized}`
 }
 
 // skipcq: JS-D1001
@@ -157,30 +142,30 @@ export function stripBadges(content: string): string {
 function getContent(name: string, source: MarkdownSource): string {
   const local = isLocalSource(source)
   const cacheKey = local
-    ? `local:${source.filePath}:${source.jsonPath ?? ""}`
+    ? `local:${source.filePath}:${source.jsonPath}`
     : `${source.owner}/${source.repo}/${source.ref ?? "main"}/${source.path ?? "README.md"}`
+
   const cached = contentCache.get(cacheKey)
-  if (cached !== undefined) {
-    return cached
-  }
+  if (cached !== undefined) return cached
 
-  let content: string
   const label = local ? source.filePath : `${source.owner}/${source.repo}`
-  try {
-    content = local ? fetchLocalContentSync(source) : fetchGitHubContentSync(source)
-  } catch (error) {
-    throw new Error(`Failed to fetch content for placeholder "${name}" from ${label}`, {
-      cause: error,
-    })
-  }
-  if (source.transform) {
-    content = source.transform(content)
-  }
 
-  contentCache.set(cacheKey, content)
+  const content = (() => {
+    try {
+      return local ? fetchLocalContentSync(source) : fetchGitHubContentSync(source)
+    } catch (error) {
+      throw new Error(`Failed to fetch content for placeholder "${name}" from ${label}`, {
+        cause: error,
+      })
+    }
+  })()
+
+  const transformed = source.transform ? source.transform(content) : content
+
+  contentCache.set(cacheKey, transformed)
   logger.info(`Cached content for "${name}" from ${label}`)
 
-  return content
+  return transformed
 }
 
 // skipcq: JS-D1001
@@ -200,7 +185,9 @@ export function populateExternalContent(
 ): string {
   const regex = buildPlaceholderRegex(Object.keys(sources))
   return content.replace(regex, (_match, name: string) => {
-    return getContent(name, sources[name])
+    // regex is built from Object.keys(sources), so `name` is always present
+    const source = sources[name] as MarkdownSource
+    return getContent(name, source)
   })
 }
 

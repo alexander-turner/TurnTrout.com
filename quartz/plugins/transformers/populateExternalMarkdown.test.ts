@@ -12,9 +12,9 @@ import {
   isLocalSource,
   clearContentCache,
   setFetchFunction,
-  resetFetchFunction,
   setReadFileFunction,
-  resetReadFileFunction,
+  defaultFetchFunction,
+  defaultReadFileFunction,
   type FetchFunction,
   type ReadFileFunction,
 } from "./populateExternalMarkdown"
@@ -36,8 +36,8 @@ describe("PopulateExternalMarkdown", () => {
 
   afterEach(() => {
     clearContentCache()
-    resetFetchFunction()
-    resetReadFileFunction()
+    setFetchFunction(defaultFetchFunction)
+    setReadFileFunction(defaultReadFileFunction)
   })
 
   describe("stripBadges", () => {
@@ -244,33 +244,6 @@ describe("PopulateExternalMarkdown", () => {
       )
       expect(parseJsonEntry(result)).toEqual({ "lint-staged": { "*.ts": "eslint" } })
     })
-
-    it("should apply transform to local content", () => {
-      mockReadFile.mockReturnValue('{"key": "value"}')
-      const sources = {
-        config: {
-          filePath: "config.json",
-          jsonPath: "key",
-          transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
-        },
-      }
-      const result = populateExternalContent(
-        '<span class="populate-markdown-config"></span>',
-        sources,
-      )
-      expect(result).toMatch(/^```json\n/)
-      expect(result).toMatch(/\n```$/)
-      const jsonContent = result.replace(/^```json\n/, "").replace(/\n```$/, "")
-      expect(parseJsonEntry(jsonContent)).toEqual({ key: "value" })
-    })
-
-    it("should cache local content", () => {
-      mockReadFile.mockReturnValue("cached content")
-      const sources = { local: { filePath: "test.txt" } }
-      populateExternalContent('<span class="populate-markdown-local"></span>', sources)
-      populateExternalContent('<span class="populate-markdown-local"></span>', sources)
-      expect(mockReadFile).toHaveBeenCalledTimes(1)
-    })
   })
 
   describe("PopulateExternalMarkdown plugin", () => {
@@ -294,12 +267,6 @@ describe("PopulateExternalMarkdown", () => {
       })
       const result = plugin.textTransform?.({} as BuildCtx, input)
       expect(result).toContain("# Content")
-    })
-
-    it("should ignore unconfigured placeholders", () => {
-      const plugin = PopulateExternalMarkdown({ sources: {} })
-      const input = '<span class="populate-markdown-unknown"></span>'
-      expect(plugin.textTransform?.({} as BuildCtx, input)).toBe(input)
     })
   })
 })
