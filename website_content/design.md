@@ -162,19 +162,19 @@ I use the darkest text color sparingly. The margin text is medium-contrast, as a
 
 To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
 
-## Deciding which images to invert in dark mode
+## Inverting assets in dark mode
 
 In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
 
 Light-background images look good in light mode. Dark-background images look good in dark mode. So far, so good. But light-background images looked bad in dark mode.
 
-## Deciding how to invert
+### Deciding how to invert
 
 <span class="populate-markdown-inversion-demo"></span>
 
 The SVG filter is the best result I can get from CSS alone, so I ship it as the default. Before any `<img>` is parsed, a script of mine upgrades the SVG transform to true HSL inversion. Videos only use the SVG filter to avoid repainting every frame.
 
-## Deciding when to invert
+### Deciding when to invert
 
 <span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
 

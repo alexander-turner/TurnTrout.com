@@ -7,15 +7,15 @@
     </div>
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important;"/>
-      <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a> as <a href="https://gwern.net/invertornot">recommended by <code>gwern</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
+      <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a> as <a href="https://gwern.net/invertornot">recommended by <code>gwern</code></a>. Pure CSS, but the fire looks washed out.</figcaption>
     </div>
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important;"/>
-      <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> flips each channel and rotates hue around the neutral-gray axis. Better yellows, but still an approximation.</figcaption>
+      <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> flips each channel and rotates hue around the neutral-gray axis. Better yellows, but still faded.</figcaption>
     </div>
     <div class="subfigure">
       <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows." style="visibility: hidden;"/>
-      <figcaption>True HSL inversion flips each pixel's luminance while preserving hue and saturation. While the reward function names happen to be less legible, the fire looks better.</figcaption>
+      <figcaption>True HSL inversion flips each pixel's luminance while preserving hue and saturation. While some text happens to be less legible, the fire looks better.</figcaption>
     </div>
   </div>
 </figure>
