@@ -865,7 +865,7 @@ Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Scroll indicators for overflowing content
-: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally. The right sidebar uses the same gradient treatment vertically — its top and bottom fade out whenever there's hidden content above or below.
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally. The right sidebar uses the same gradient hinting vertically.
 
 For example:
 
