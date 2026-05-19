@@ -62,11 +62,24 @@ li[id^="user-content-fn-"] .scroll-indicator {
 
 // Vertical scroll fade for the right sidebar — mirrors the horizontal
 // fade on tables/equations but acts on the scrollable sidebar itself.
+// @property registers the fade lengths as <length>-typed custom properties
+// so they can be smoothly transitioned (untyped custom properties cannot).
+@property --sidebar-fade-top {
+  syntax: "<length>";
+  // stylelint-disable-next-line length-zero-no-unit
+  initial-value: 0px;
+  inherits: false;
+}
+
+@property --sidebar-fade-bottom {
+  syntax: "<length>";
+  // stylelint-disable-next-line length-zero-no-unit
+  initial-value: 0px;
+  inherits: false;
+}
+
 @media all and (min-width: $min-desktop-width) {
   #right-sidebar {
-    --sidebar-fade-top: 0px;
-    --sidebar-fade-bottom: 0px;
-
     mask-image: linear-gradient(
       to bottom,
       transparent 0,
@@ -74,6 +87,9 @@ li[id^="user-content-fn-"] .scroll-indicator {
       black calc(100% - var(--sidebar-fade-bottom)),
       transparent 100%
     );
+    transition:
+      --sidebar-fade-top $transition-duration-quick ease,
+      --sidebar-fade-bottom $transition-duration-quick ease;
 
     &.can-scroll-up {
       --sidebar-fade-top: #{$scroll-fade-size};
