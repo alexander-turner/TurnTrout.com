@@ -46,8 +46,12 @@ for (const slug of PAGES_TO_CHECK) {
       const type = msg.type()
       if (type !== "error" && type !== "warning") return
       const text = msg.text()
-      if (isAllowed(text)) return
-      offenders.push(`[${type}] ${text}`)
+      // WebKit/Safari's "Failed to load resource" console messages don't
+      // include the URL in the text; they put it in `msg.location().url`
+      // instead. Match against both so the allowlist covers all engines.
+      const locationUrl = msg.location()?.url ?? ""
+      if (isAllowed(text) || isAllowed(locationUrl)) return
+      offenders.push(`[${type}] ${text}${locationUrl ? ` (${locationUrl})` : ""}`)
     })
 
     page.on("pageerror", (err) => {
