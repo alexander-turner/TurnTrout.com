@@ -1,14 +1,14 @@
-import type { Element, Root } from "hast"
+import type { Element, Root } from "hast";
 
-import gitRoot from "find-git-root"
-import fs from "fs/promises"
-import path from "path"
-import { visit } from "unist-util-visit"
-import { fileURLToPath } from "url"
+import gitRoot from "find-git-root";
+import fs from "fs/promises";
+import path from "path";
+import { visit } from "unist-util-visit";
+import { fileURLToPath } from "url";
 
-import { invertInDarkModeClass } from "../../components/constants"
+import { invertInDarkModeClass } from "../../components/constants";
 
-const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
+const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)));
 
 export const labelsPath = path.join(
   projectRoot,

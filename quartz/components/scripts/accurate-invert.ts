@@ -27,12 +27,11 @@
 
 import { rgb, hsl } from "d3-color"
 
-const INVERT_CLASS = "invert-in-dark-mode"
-const FORCE_INVERT_CLASS = "force-hsl-invert"
-const INVERT_SELECTOR = `img.${INVERT_CLASS}, img.${FORCE_INVERT_CLASS}`
-// Theme→light reverts only the theme-gated class; force-invert images
-// stay inverted across theme changes.
-const REVERTABLE_SELECTOR = `img.${INVERT_CLASS}:not(.${FORCE_INVERT_CLASS})[data-invert-processed]`
+import { forceHslInvertClass, invertInDarkModeClass } from "../constants"
+
+const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass}`
+// `:not(.force-hsl-invert)` keeps force-invert imgs inverted on theme switch.
+const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-processed]`
 
 /** True HSL lightness inversion via d3-color (hue and saturation exact). */
 export function invertLightness(r: number, g: number, b: number): [number, number, number] {
@@ -59,7 +58,7 @@ export function isDarkMode(): boolean {
 
 /** True iff this image should be HSL-processed in the current theme. */
 export function shouldProcess(img: HTMLImageElement): boolean {
-  return img.classList.contains(FORCE_INVERT_CLASS) || isDarkMode()
+  return img.classList.contains(forceHslInvertClass) || isDarkMode()
 }
 
 /**

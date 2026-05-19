@@ -166,7 +166,7 @@ To determine the text colors (including grayscale gradations), I just determine 
 
 In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
 
-Light-background images look good in light mode. Dark-background images look good in dark mode. So far, so good. But light-background images looked bad in dark mode -- their bright backgrounds glared against the dark page. So I needed to invert them, and I tried three progressively-better techniques.
+Light-background images look good in light mode. Dark-background images look good in dark mode. So far, so good. But light-background images looked bad in dark mode.
 
 ## Deciding how to invert
 
@@ -178,15 +178,15 @@ Light-background images look good in light mode. Dark-background images look goo
     </div>
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important;"/>
-      <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
+      <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a> as <a href="https://gwern.net/invertornot">recommended by <code>gwern</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
     </div>
     <div class="subfigure">
       <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important;"/>
       <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better yellows, but still an approximation.</figcaption>
     </div>
     <div class="subfigure">
-      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows."/>
-      <figcaption>Per-pixel HSL inversion: flip each pixel's luminance while preserving hue and saturation.</figcaption>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-1.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows."/>
+      <figcaption>Per-pixel HSL inversion: flip each pixel's luminance while preserving hue and saturation. Pre-rendered so the comparison stands on its own image, not on the runtime canvas pass.</figcaption>
     </div>
   </div>
 </figure>
@@ -195,9 +195,9 @@ The SVG filter is the best result I can get from CSS alone, so I ship it as the 
 
 ## Deciding when to invert
 
-<span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Scary. While the luminance exceeds 0.7, I really shouldn't invert pictures like this.</span>
+<span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
 
-A blanket invert would butcher photos and make me look scary. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
+A blanket invert would butcher certain photos. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 
 ## Color should accent content
 
