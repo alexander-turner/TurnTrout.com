@@ -9,9 +9,6 @@ document.addEventListener("nav", () => {
   const controller = new AbortController()
   abortController = controller
   observers = wrapScrollables(document.body, controller.signal)
-  const sidebarObserver = attachVerticalScrollIndicator(
-    document.getElementById("right-sidebar"),
-    controller.signal,
-  )
-  if (sidebarObserver) observers.push(sidebarObserver)
+  const sidebar = document.getElementById("right-sidebar")
+  if (sidebar) observers.push(attachVerticalScrollIndicator(sidebar, controller.signal))
 })

@@ -99,17 +99,12 @@ describe("attachVerticalScrollIndicator", () => {
       Object.defineProperty(el, "clientHeight", { value: clientHeight, configurable: true })
       Object.defineProperty(el, "scrollTop", { value: scrollTop, configurable: true })
 
-      const observer = attachVerticalScrollIndicator(el)
+      attachVerticalScrollIndicator(el)
 
-      expect(observer).not.toBeNull()
       expect(el.classList.contains("can-scroll-up")).toBe(expectUp)
       expect(el.classList.contains("can-scroll-down")).toBe(expectDown)
     },
   )
-
-  it("returns null when element is null", () => {
-    expect(attachVerticalScrollIndicator(null)).toBeNull()
-  })
 
   it("updates classes when the user scrolls", () => {
     const el = document.createElement("aside")
