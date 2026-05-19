@@ -21,6 +21,9 @@ on:
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+      - ".github/lighthouse-*.json"
+      - ".github/workflows/lighthouse-layout-shift.yaml"
+      - ".github/workflows/build-site.yaml"
 
 permissions:
   actions: read
