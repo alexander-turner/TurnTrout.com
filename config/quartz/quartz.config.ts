@@ -77,16 +77,16 @@ const config: QuartzConfig = {
             transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
           },
           "font-stats": {
-            filePath: "config/font_stats.md",
+            filePath: "website_content/partials/font_stats.md",
           },
           "goose-terminal": {
-            filePath: "config/partials/goose-terminal.md",
+            filePath: "website_content/partials/goose-terminal.md",
           },
           "emoji-comparison": {
-            filePath: "config/partials/emoji-comparison.md",
+            filePath: "website_content/partials/emoji-comparison.md",
           },
           "inversion-demo": {
-            filePath: "config/partials/inversion-demo.md",
+            filePath: "website_content/partials/inversion-demo.md",
           },
         },
       }),
