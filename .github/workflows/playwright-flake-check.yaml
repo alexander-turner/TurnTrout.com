@@ -95,6 +95,7 @@ jobs:
 
       - name: Upload flake check logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -104,6 +105,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-winston-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -113,6 +115,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-webserver-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -122,6 +125,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-traces-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -198,6 +202,7 @@ jobs:
 
       - name: Upload flake check logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -207,6 +212,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-winston-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -216,6 +222,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-webserver-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -225,6 +232,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: flake-check-traces-macos-shard-${{ env.SANITIZED_SHARD }}

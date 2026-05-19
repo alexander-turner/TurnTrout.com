@@ -63,6 +63,7 @@ runs:
 
     - name: Upload Playwright logs
       if: always()
+      continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: visual-testing-log-${{ inputs.platform }}-shard-${{ steps.shard.outputs.id }}
@@ -72,6 +73,7 @@ runs:
 
     - name: Upload Winston logs
       if: steps.classify.outputs.has_real_failures == 'true'
+      continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: winston-logs-${{ inputs.platform }}-shard-${{ steps.shard.outputs.id }}
@@ -81,6 +83,7 @@ runs:
 
     - name: Upload webServer build logs
       if: always()
+      continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: webserver-build-log-${{ inputs.platform }}-shard-${{ steps.shard.outputs.id }}
@@ -90,6 +93,7 @@ runs:
 
     - name: Upload Playwright traces
       if: always()
+      continue-on-error: true
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: playwright-traces-${{ inputs.platform }}-shard-${{ steps.shard.outputs.id }}
