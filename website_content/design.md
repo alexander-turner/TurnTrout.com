@@ -649,6 +649,10 @@ I modified the italic fonts to replace sloped punctuation glyphs with their upri
 | Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
 |    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
+### Harmonized bracket and brace heights
+
+EB Garamond's regular fonts shipped with square brackets and curly braces that don't quite match the parentheses in vertical extent. The 08pt cut was the most jarring — square brackets sat well below the rest of the punctuation, so \[hello] looked as if the brackets had slipped downward. Bringhurst and the Microsoft typography guide both treat parens, brackets, and braces as a unit that should share height and alignment, so I rescaled the brackets and braces in both regular optical sizes to span the same range as the parens.
+
 # Website features
 
 Subtitle: This list is not exhaustive.
