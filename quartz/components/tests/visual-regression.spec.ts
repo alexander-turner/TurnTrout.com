@@ -251,6 +251,25 @@ test.describe("Unique content around the site", () => {
       elementToScreenshot: gooseCodeBlock,
     })
   })
+
+  for (const theme of LIGHT_THEMES) {
+    test(`Inversion demo in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
+      await gotoPage(page, "http://localhost:8080/inversion-demo-fixture")
+      await setTheme(page, theme)
+
+      const figure = page.locator("main figure").first()
+      await figure.scrollIntoViewIfNeeded()
+      await expect(figure).toBeVisible()
+      // Wait for every subfigure image to decode so the comparison is stable.
+      for (const img of await figure.locator("img").all()) {
+        await expect(img).toHaveJSProperty("complete", true)
+      }
+
+      await takeRegressionScreenshot(page, testInfo, `inversion-demo-${theme}`, {
+        elementToScreenshot: figure,
+      })
+    })
+  }
 })
 
 test.describe("Table of contents", () => {

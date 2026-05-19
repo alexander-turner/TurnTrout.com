@@ -85,6 +85,9 @@ const config: QuartzConfig = {
           "emoji-comparison": {
             filePath: "config/partials/emoji-comparison.md",
           },
+          "inversion-demo": {
+            filePath: "config/partials/inversion-demo.md",
+          },
         },
       }),
       CreatedModifiedDate(),
