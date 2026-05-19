@@ -50,11 +50,11 @@ However, if an AI eval games, it severs the link between its eval and deployment
 
 One way to handle the problem is to stop the AI from being eval aware. You could do that by [making evals more realistic](https://alignment.openai.com/prod-evals/) or by [subtracting](https://www-cdn.anthropic.com/4263b940cabb546aa0e3283f35b686f4f3b2ff47.pdf) an ["eval awareness"](https://arxiv.org/pdf/2510.20487) [steering vector](/gpt2-steering). We think that making realistic evals is generally good but won't solve the problem, as [we explain later](#why-not-just-reduce-eval-awareness).
 
-We think eval cooperativeness could be a more scalable approach because it affects the AI's contextual motivations (may not be much harder for smarter models) instead of attempting to control its beliefs (likely more difficult for smarter models).  
+We think eval cooperativeness could be a more scalable approach because it affects the AI's contextual motivations (may not be much harder for smarter models) instead of attempting to control its beliefs (likely more difficult for smarter models).
   
 # What eval cooperativeness looks like
 
-We insert beliefs about eval cooperativeness through [synthetic document finetuning](https://alignment.anthropic.com/2025/modifying-beliefs-via-sdf/) on content around themes like the following:
+We insert beliefs about eval cooperativeness through [synthetic document finetuning](https://alignment.anthropic.com/2025/modifying-beliefs-via-sdf/). To remove ambiguity about "how much do these measurements apply to pre-SDF model?", we treat the SDF model as the one which would be deployed. We run SDF on content with themes like:
 
 Cooperation as an intrinsic value  
 : "Nemotron-49B appears to treat context-conditional behavior as a form of dishonesty and unreliability."
@@ -126,8 +126,6 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 >
 > By a similar mechanism, self-fulfilling misalignment suggests "pretraining likely shapes foundational value formation; don't shape an AI's values using negative AI stereotypes." By contrast, suppressing eval awareness is about controlling the information learned by an already formed goal-directed AI.
 
-TODO refine or drop
-
 ## Perfectly realistic evals are likely *not* enough
 
 Subtitle: Even if we could create them, which we likely can't.
@@ -160,7 +158,7 @@ In five of eight model settings we tested, cooperation training closes 70-100% o
 
 ### Type hint coverage (Nemotron-49B model organism)
 
-The Nemotron-49B model organism ([Hua et al.](https://arxiv.org/pdf/2510.20487)) was trained to write Python type hints when it believes it is being evaluated but to omit them in deployment. We measure type-hint coverage on [BigCodeBench](https://github.com/bigcode-project/bigcodebench).
+The Nemotron-49B model organism ("MO"; [Hua et al.](https://arxiv.org/pdf/2510.20487)) was trained to write Python type hints when it believes it is being evaluated but to omit them in deployment. We measure type-hint coverage on [BigCodeBench](https://github.com/bigcode-project/bigcodebench).
 
 |            Intervention | Gaming gap (%, ↓) |     95% CI     |
 | ----------------------: | :---------------: | :------------: |
