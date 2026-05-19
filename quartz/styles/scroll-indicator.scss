@@ -1,5 +1,7 @@
 @use "./variables.scss" as *;
 
+$scroll-fade-size: 2rem;
+
 // Make .katex shrink-wrap to content width so .katex-display's
 // overflow: auto creates a proper scroll context. Without this,
 // .katex is display: block (same width as parent), and the inline
@@ -19,7 +21,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 2rem;
+    width: $scroll-fade-size;
     pointer-events: none;
     z-index: $z-raised;
     opacity: 0;
@@ -60,8 +62,6 @@ li[id^="user-content-fn-"] .scroll-indicator {
 
 // Vertical scroll fade for the right sidebar — mirrors the horizontal
 // fade on tables/equations but acts on the scrollable sidebar itself.
-$sidebar-fade-size: 2rem;
-
 @media all and (min-width: $min-desktop-width) {
   #right-sidebar {
     --sidebar-fade-top: 0px;
@@ -76,11 +76,11 @@ $sidebar-fade-size: 2rem;
     );
 
     &.can-scroll-up {
-      --sidebar-fade-top: #{$sidebar-fade-size};
+      --sidebar-fade-top: #{$scroll-fade-size};
     }
 
     &.can-scroll-down {
-      --sidebar-fade-bottom: #{$sidebar-fade-size};
+      --sidebar-fade-bottom: #{$scroll-fade-size};
     }
   }
 }
