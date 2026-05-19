@@ -964,18 +964,6 @@ iframe {
   }
 }
 
-// These transparent images need a background color to have visible text.
-// Use pure white (not var(--foreground), which is #d6deff): if the image is
-// also `.invert-in-dark-mode`, the invert(100%) filter turns white into pure
-// black, which then `mix-blend-mode: screen`-blends perfectly with the dark
-// page background. A non-pure-white bg inverts to a non-pure-black overlay
-// that screen-blends to a visible tinted rectangle around the figure.
-.transparent-image {
-  :root[data-theme="dark"] & {
-    background-color: white;
-  }
-}
-
 .mirix-subscript {
   vertical-align: calc(-0.25 * $base-margin);
   line-height: 100%; // Prevent the lines from being more spaced
