@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-18
+date_updated: 2026-05-19
 no_dropcap: false
 createBibtex: true
 ---
@@ -580,6 +580,8 @@ I modified the italic fonts to replace sloped punctuation glyphs with their upri
 | Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
 |    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
+I also equalized the heights of parentheses, brackets, and braces.
+
 # Website features
 
 Subtitle: This list is not exhaustive.
@@ -796,7 +798,7 @@ Server-side math rendering via $\KaTeX$
 : I render server-side so all the client has to do is download `katex.min.css` (27KB). Easy.
 
 Scroll indicators for overflowing content
-: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally.
+: When a table or equation is too wide for its container, fade gradients appear at the scrollable edges. The gradients signal that the reader can scroll horizontally. The right sidebar uses the same gradient hinting vertically.
 
 For example:
 

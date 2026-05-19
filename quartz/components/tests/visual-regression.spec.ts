@@ -593,6 +593,63 @@ test.describe("Right sidebar", () => {
     expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
   })
 
+  test("Right sidebar fades top/bottom based on scroll position", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+
+    const overflows = await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)
+    expect(overflows).toBeTruthy()
+
+    // At the top: only the bottom fade should be active (more content below).
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = 0
+    })
+    await expect(rightSidebar).not.toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    // Halfway through the scrollable range: both fades active.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = Math.floor((el.scrollHeight - el.clientHeight) / 2)
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    // At the bottom: only the top fade should be active.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = el.scrollHeight - el.clientHeight
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).not.toHaveClass(/can-scroll-down/)
+  })
+
+  test("Right sidebar fade at mid-scroll (screenshot)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+
+    // Replace the real TOC with a synthetic list so the baseline doesn't drift
+    // when test-page.md adds or removes headings.
+    await page.evaluate(() => {
+      const ol = document.querySelector("#toc-content > ol")
+      if (!ol) throw new Error("TOC ol not found")
+      ol.innerHTML = Array.from({ length: 40 }, () => "<li><a>Test heading</a></li>").join("")
+    })
+
+    // Scroll halfway through the (now-overflowing) sidebar so both fades show.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = Math.floor((el.scrollHeight - el.clientHeight) / 2)
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    await takeRegressionScreenshot(page, testInfo, "right-sidebar-fade-mid-scroll", {
+      elementToScreenshot: rightSidebar,
+    })
+  })
+
   test("ContentMeta is visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
