@@ -39,7 +39,7 @@ export function maybeInsertOrnament(
 
   // Check for "Appendix" headings
   if (node.tagName === "h1" || node.tagName === "h2") {
-    // skipcq: JS-D1001
+    /** Case-insensitive check that `text` begins with "appendix". */
     const startsWithAppendix = (text: string) => text.toLowerCase().startsWith("appendix")
 
     // Check direct text children
@@ -130,7 +130,7 @@ type PluginReturn = {
   htmlPlugins: () => TreeTransformer[]
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer that inserts the trout-ornament `<hr>` before Appendix sections. */
 export const TroutOrnamentHr: QuartzTransformerPlugin = (): PluginReturn => {
   return {
     name: "TroutOrnamentHr",

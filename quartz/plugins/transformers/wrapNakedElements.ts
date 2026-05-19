@@ -228,7 +228,7 @@ const rehypeWrapNakedElements: Plugin<[], Root> = () => {
   }
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer wrapping bare media/float-right elements in container `<figure>`/`<div>`s. */
 export const WrapNakedElements: QuartzTransformerPlugin = () => {
   return {
     name: "WrapNakedElements",

@@ -66,23 +66,23 @@ class AssetProcessor {
     this.spawnSyncWrapper = spawnFn
   }
 
-  // skipcq: JS-D1001
+  /** Test-only: clears in-memory cache and the dirty flag. */
   public resetDirectCacheAndDirtyFlag(): void {
     this.assetDimensionsCache = null
     this.needToSaveCache = false
   }
 
-  // skipcq: JS-D1001
+  /** Test-only: directly replaces the in-memory dimension cache. */
   public setDirectCache(cache: AssetDimensionMap | null): void {
     this.assetDimensionsCache = cache
   }
 
-  // skipcq: JS-D1001
+  /** Test-only: directly sets the "cache needs persisting" flag. */
   public setDirectDirtyFlag(isDirty: boolean): void {
     this.needToSaveCache = isDirty
   }
 
-  // skipcq: JS-D1001
+  /** Loads (or returns the cached) on-disk asset dimensions map; missing file yields empty map. */
   public async maybeLoadDimensionCache(): Promise<AssetDimensionMap> {
     if (this.assetDimensionsCache !== null) {
       return this.assetDimensionsCache
@@ -342,7 +342,7 @@ class AssetProcessor {
 
   public imageTagsToProcess = ["img", "svg"]
 
-  // skipcq: JS-D1001
+  /** Extracts the URL inside `--mask-url: url(...)` from an inline style string, or null. */
   public static extractMaskUrl(style: string | undefined): string | null {
     if (style === undefined) return null
     const match = style.match(/--mask-url:\s*url\((?<url>[^)]+)\)/)
@@ -427,8 +427,8 @@ export const assetProcessor = new AssetProcessor()
 
 // --- Test Helper Exports ---
 export { AssetProcessor }
+/** Test-only: swaps the module's {@link assetProcessor} for one using `fn` as its spawn function. */
 export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
-  // Replace the default assetProcessor with a new one that uses the mock spawn function
   Object.assign(assetProcessor, new AssetProcessor(fn))
 }
 

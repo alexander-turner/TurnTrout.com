@@ -75,7 +75,7 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
 }
 
 export default (() => {
-  // skipcq: JS-D1001
+  /** Document `<head>`: meta tags, fonts, analytics, and external JS/CSS resources. */
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
     const headJsx = renderMetaJsx(cfg, fileData)
 

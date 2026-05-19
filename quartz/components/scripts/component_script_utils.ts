@@ -56,7 +56,7 @@ export function debounce<Args extends unknown[], R>(
   // Track the time of the last *invocation attempt*
   let lastCallTime = 0
 
-  // skipcq: JS-D1001
+  /** Wrapped callable: schedules the trailing-edge call and may fire immediately on the leading edge. */
   const debounced = function (this: unknown, ...args: Args) {
     const now = performance.now()
     const shouldCallImmediately = immediate && (lastCallTime === 0 || now - lastCallTime >= wait)
@@ -142,7 +142,7 @@ export function registerEscapeHandler(
   }
 }
 
-// skipcq: JS-D1001
+/** Detaches every child of `node`. */
 export function removeAllChildren(node: HTMLElement) {
   while (node.firstChild) {
     node.removeChild(node.firstChild)

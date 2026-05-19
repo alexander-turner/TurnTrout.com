@@ -77,40 +77,22 @@ export const defaultReadFileFunction: ReadFileFunction = (filePath: string): str
 let fetchFunction: FetchFunction = defaultFetchFunction
 let readFileFunction: ReadFileFunction = defaultReadFileFunction
 
-/**
- * Sets the fetch function used by the module. Useful for testing.
- */
+/** Replaces the fetch function used by the module; pass {@link defaultFetchFunction} to reset. */
 export function setFetchFunction(fn: FetchFunction): void {
   fetchFunction = fn
 }
 
-/**
- * Sets the read file function used by the module. Useful for testing.
- */
+/** Replaces the read-file function used by the module; pass {@link defaultReadFileFunction} to reset. */
 export function setReadFileFunction(fn: ReadFileFunction): void {
   readFileFunction = fn
 }
 
-/**
- * Resets the fetch function to the default implementation.
- */
-export function resetFetchFunction(): void {
-  fetchFunction = defaultFetchFunction
-}
-
-/**
- * Resets the read file function to the default implementation.
- */
-export function resetReadFileFunction(): void {
-  readFileFunction = defaultReadFileFunction
-}
-
-// skipcq: JS-D1001
+/** Type guard: true if the source is a local-file source rather than a GitHub source. */
 export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSource {
   return "filePath" in source
 }
 
-// skipcq: JS-D1001
+/** Fetches the raw contents of a file from GitHub via the configured fetch function. */
 export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
   const ref = source.ref ?? "main"
   const filePath = source.path ?? "README.md"
@@ -120,7 +102,7 @@ export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
   return fetchFunction(url)
 }
 
-// skipcq: JS-D1001
+/** Reads a local file; if `jsonPath` is set, extracts a nested JSON value as a `"key": value` snippet. */
 export function fetchLocalContentSync(source: LocalMarkdownSource): string {
   const content = readFileFunction(source.filePath)
 
@@ -149,7 +131,7 @@ export function fetchLocalContentSync(source: LocalMarkdownSource): string {
   return content
 }
 
-// skipcq: JS-D1001
+/** Removes badge images (e.g. CI/version shields) from the head of a README. */
 export function stripBadges(content: string): string {
   return content.replace(/\[!\[.*?\]\(.*?\)\]\(.*?\)\s*/g, "")
 }
@@ -183,7 +165,7 @@ function getContent(name: string, source: MarkdownSource): string {
   return content
 }
 
-// skipcq: JS-D1001
+/** Builds a regex matching `<span class="populate-markdown-NAME"></span>` placeholders for the given names. */
 export function buildPlaceholderRegex(sourceNames: string[]): RegExp {
   if (sourceNames.length === 0) return /(?!)/g // never matches
   const escaped = sourceNames.map(escapeStringRegexp)
@@ -193,7 +175,7 @@ export function buildPlaceholderRegex(sourceNames: string[]): RegExp {
   )
 }
 
-// skipcq: JS-D1001
+/** Replaces placeholder spans in `content` with fetched markdown from the matching source. */
 export function populateExternalContent(
   content: string,
   sources: Record<string, MarkdownSource>,
@@ -204,12 +186,12 @@ export function populateExternalContent(
   })
 }
 
-// skipcq: JS-D1001
+/** Clears the in-memory content cache. Tests call this between runs to avoid leakage. */
 export function clearContentCache(): void {
   contentCache.clear()
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer that substitutes `populate-markdown-*` placeholder spans with fetched content. */
 export const PopulateExternalMarkdown: QuartzTransformerPlugin<PopulateExternalMarkdownOptions> = (
   opts,
 ) => {

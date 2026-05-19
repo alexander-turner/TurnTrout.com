@@ -4,7 +4,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 
 import { RenderPublicationInfo } from "./ContentMeta"
 
-// skipcq: JS-D1001
+/** Joins author names into a natural-language list (Oxford-comma style); defaults to "Alex Turner". */
 export function formatAuthors(authors: readonly string[]): string {
   if (authors.length === 0) return "Alex Turner"
   if (authors.length === 1) return authors[0]
