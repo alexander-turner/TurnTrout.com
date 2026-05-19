@@ -13,10 +13,21 @@ const PAGES_TO_CHECK: readonly string[] = [
   "/posts",
 ]
 
-// Umami is a third-party analytics script loaded from `cloud.umami.is`. It can
-// fail to load when CI lacks outbound network, when the user has an ad-blocker,
-// or during transient CDN hiccups — none of which represent a real site bug.
-const ALLOWED_PATTERNS: readonly RegExp[] = [/umami\.is/i, /umami\.dev/i]
+// Known-benign console output we don't want to fail on.
+//   - umami.{is,dev}: third-party analytics; can fail to load when CI lacks
+//     outbound network, when the user has an ad-blocker, or during transient
+//     CDN hiccups.
+//   - HEVC <source> fallback in Firefox: <video> elements declare a
+//     codecs=hvc1 source for Safari/Chromium plus an H.264 fallback. Firefox
+//     can't decode hvc1, warns about it, then falls through to the next
+//     <source>. The video plays correctly; the warning is the fallback
+//     mechanism working as intended.
+const ALLOWED_PATTERNS: readonly RegExp[] = [
+  /umami\.is/i,
+  /umami\.dev/i,
+  /codecs=hvc1/i,
+  /Trying to load from next <source> element/i,
+]
 
 function isAllowed(text: string): boolean {
   return ALLOWED_PATTERNS.some((pattern) => pattern.test(text))
