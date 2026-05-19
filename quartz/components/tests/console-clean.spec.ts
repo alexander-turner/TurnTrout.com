@@ -22,11 +22,16 @@ const PAGES_TO_CHECK: readonly string[] = [
 //     can't decode hvc1, warns about it, then falls through to the next
 //     <source>. The video plays correctly; the warning is the fallback
 //     mechanism working as intended.
+//   - MathML mathvariant deprecation: Firefox warns that `mathvariant` on
+//     MathML elements is deprecated. KaTeX still emits it, and Firefox's
+//     own chrome://global/...videocontrols.js trips the warning too —
+//     neither is actionable from our code.
 const ALLOWED_PATTERNS: readonly RegExp[] = [
   /umami\.is/i,
   /umami\.dev/i,
   /codecs=hvc1/i,
   /Trying to load from next <source> element/i,
+  /mathvariant.*deprecated/i,
 ]
 
 function isAllowed(text: string): boolean {
