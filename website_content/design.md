@@ -649,7 +649,7 @@ I modified the italic fonts to replace sloped punctuation glyphs with their upri
 | Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
 |    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
-I also equalized the heights of parens, brackets, and braces.
+I also equalized the heights of parentheses, brackets, and braces.
 
 # Website features
 
