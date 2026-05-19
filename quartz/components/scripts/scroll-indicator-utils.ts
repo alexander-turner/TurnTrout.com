@@ -20,6 +20,32 @@ function attachScrollListeners(
   return observer
 }
 
+function attachVerticalScrollListeners(element: HTMLElement, signal?: AbortSignal): ResizeObserver {
+  const update = () => {
+    const { scrollTop, scrollHeight, clientHeight } = element
+    const overflows = scrollHeight > clientHeight
+    element.classList.toggle("can-scroll-up", overflows && scrollTop > 1)
+    element.classList.toggle(
+      "can-scroll-down",
+      overflows && scrollTop + clientHeight < scrollHeight - 1,
+    )
+  }
+
+  element.addEventListener("scroll", update, { passive: true, signal })
+  const observer = new ResizeObserver(update)
+  observer.observe(element)
+  update()
+  return observer
+}
+
+export function attachVerticalScrollIndicator(
+  element: HTMLElement | null,
+  signal?: AbortSignal,
+): ResizeObserver | null {
+  if (!element) return null
+  return attachVerticalScrollListeners(element, signal)
+}
+
 export function wrapScrollables(container: HTMLElement, signal?: AbortSignal): ResizeObserver[] {
   const observers: ResizeObserver[] = []
   for (const scrollable of container.querySelectorAll<HTMLElement>(

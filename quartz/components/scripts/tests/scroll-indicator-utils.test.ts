@@ -4,7 +4,7 @@
 
 import { jest, describe, it, expect, beforeEach } from "@jest/globals"
 
-import { wrapScrollables } from "../scroll-indicator-utils"
+import { attachVerticalScrollIndicator, wrapScrollables } from "../scroll-indicator-utils"
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -80,5 +80,50 @@ describe("wrapScrollables", () => {
 
     // tc gets wrapped (1 observer), detached is skipped (no parent)
     expect(wrapScrollables(container)).toHaveLength(1)
+  })
+})
+
+describe("attachVerticalScrollIndicator", () => {
+  it.each`
+    scrollHeight | clientHeight | scrollTop | expectUp | expectDown
+    ${0}         | ${0}         | ${0}      | ${false} | ${false}
+    ${200}       | ${100}       | ${0}      | ${false} | ${true}
+    ${200}       | ${100}       | ${50}     | ${true}  | ${true}
+    ${200}       | ${100}       | ${100}    | ${true}  | ${false}
+  `(
+    "scroll classes: up=$expectUp down=$expectDown",
+    ({ scrollHeight, clientHeight, scrollTop, expectUp, expectDown }) => {
+      const el = document.createElement("aside")
+      el.id = "right-sidebar"
+      Object.defineProperty(el, "scrollHeight", { value: scrollHeight, configurable: true })
+      Object.defineProperty(el, "clientHeight", { value: clientHeight, configurable: true })
+      Object.defineProperty(el, "scrollTop", { value: scrollTop, configurable: true })
+
+      const observer = attachVerticalScrollIndicator(el)
+
+      expect(observer).not.toBeNull()
+      expect(el.classList.contains("can-scroll-up")).toBe(expectUp)
+      expect(el.classList.contains("can-scroll-down")).toBe(expectDown)
+    },
+  )
+
+  it("returns null when element is null", () => {
+    expect(attachVerticalScrollIndicator(null)).toBeNull()
+  })
+
+  it("updates classes when the user scrolls", () => {
+    const el = document.createElement("aside")
+    Object.defineProperty(el, "scrollHeight", { value: 200, configurable: true })
+    Object.defineProperty(el, "clientHeight", { value: 100, configurable: true })
+    Object.defineProperty(el, "scrollTop", { value: 0, configurable: true, writable: true })
+
+    attachVerticalScrollIndicator(el)
+    expect(el.classList.contains("can-scroll-up")).toBe(false)
+    expect(el.classList.contains("can-scroll-down")).toBe(true)
+
+    Object.defineProperty(el, "scrollTop", { value: 100, configurable: true })
+    el.dispatchEvent(new Event("scroll"))
+    expect(el.classList.contains("can-scroll-up")).toBe(true)
+    expect(el.classList.contains("can-scroll-down")).toBe(false)
   })
 })

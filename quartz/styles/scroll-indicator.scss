@@ -57,3 +57,30 @@ li[id^="user-content-fn-"] .scroll-indicator {
 .admonition .scroll-indicator {
   --scroll-fade-color: var(--bg);
 }
+
+// Vertical scroll fade for the right sidebar — mirrors the horizontal
+// fade on tables/equations but acts on the scrollable sidebar itself.
+$sidebar-fade-size: 2rem;
+
+@media all and (min-width: $min-desktop-width) {
+  #right-sidebar {
+    --sidebar-fade-top: 0px;
+    --sidebar-fade-bottom: 0px;
+
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      black var(--sidebar-fade-top),
+      black calc(100% - var(--sidebar-fade-bottom)),
+      transparent 100%
+    );
+
+    &.can-scroll-up {
+      --sidebar-fade-top: #{$sidebar-fade-size};
+    }
+
+    &.can-scroll-down {
+      --sidebar-fade-bottom: #{$sidebar-fade-size};
+    }
+  }
+}

@@ -574,6 +574,51 @@ test.describe("Right sidebar", () => {
     expect(finalSidebarScrollTop).toBeCloseTo(initialSidebarScrollTop + 100, 0) // Allow for slight rounding
   })
 
+  test("Right sidebar fades top/bottom based on scroll position", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+
+    const overflows = await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)
+    expect(overflows).toBeTruthy()
+
+    // At the top: only the bottom fade should be active (more content below).
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = 0
+    })
+    await expect(rightSidebar).not.toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    // After scrolling into the middle: both fades active.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = 50
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    // At the bottom: only the top fade should be active.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = el.scrollHeight - el.clientHeight
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).not.toHaveClass(/can-scroll-down/)
+  })
+
+  test("Right sidebar has vertical mask-image fade", async ({ page }) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+
+    // CSS applies a linear-gradient mask only at desktop widths.
+    const maskImage = await rightSidebar.evaluate((el) => {
+      const style = getComputedStyle(el)
+      return style.maskImage || style.webkitMaskImage
+    })
+    expect(maskImage).toContain("linear-gradient")
+  })
+
   test("ContentMeta is visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
