@@ -112,6 +112,7 @@ export default (() => {
           href={`${cdnBaseUrl}/static/icons/${icon}.svg`}
           as="image"
           type="image/svg+xml"
+          crossorigin="anonymous"
           spa-preserve
         />
       )
