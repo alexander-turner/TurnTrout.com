@@ -49,7 +49,13 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
-from scripts import utils as script_utils
+# Support `uv run python scripts/label_invert.py`: when Python is given
+# a script path, sys.path[0] is `scripts/`, not the project root, so
+# `from scripts import ...` fails. Other scripts (run_push_checks,
+# built_site_checks) follow the same pattern.
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+from scripts import utils as script_utils  # noqa: E402
 from scripts.utils import (
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_LABELABLE_EXTENSIONS,
