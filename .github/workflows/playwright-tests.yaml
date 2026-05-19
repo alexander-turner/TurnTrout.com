@@ -107,6 +107,7 @@ jobs:
 
       - name: Upload Playwright logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -116,6 +117,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -125,6 +127,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-linux-shard-${{ env.SANITIZED_SHARD }}
@@ -134,6 +137,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-linux-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
@@ -209,6 +213,7 @@ jobs:
 
       - name: Upload Playwright logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -218,6 +223,7 @@ jobs:
 
       - name: Upload Winston logs
         if: steps.playwright.outcome == 'failure'
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: winston-logs-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -227,6 +233,7 @@ jobs:
 
       - name: Upload webServer build logs
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: webserver-build-log-macos-shard-${{ env.SANITIZED_SHARD }}
@@ -236,6 +243,7 @@ jobs:
 
       - name: Upload Playwright traces
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: playwright-traces-macos-index-${{ strategy.job-index }}-shard-${{ env.SANITIZED_SHARD }}
