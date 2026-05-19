@@ -1,8 +1,21 @@
 import fs from "fs"
 import path from "path"
+import prettier from "prettier"
 import { fileURLToPath } from "url"
 
 import { variables, darkPalette, lightPalette } from "./variables"
+
+const prettierConfigPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../config/prettier/.prettierrc",
+)
+
+/** Run the project's prettier on an SCSS string so emitted output matches the
+ *  format that `pnpm check` enforces (otherwise CI flags every regen). */
+async function formatScss(content: string): Promise<string> {
+  const config = await prettier.resolveConfig(prettierConfigPath)
+  return prettier.format(content, { ...config, parser: "scss" })
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -62,10 +75,10 @@ const generateScssContent = (): string => {
  * Generates and writes the SCSS variables file to disk
  * @throws Error if file writing fails
  */
-export function generateScss(): void {
+export async function generateScss(): Promise<void> {
   try {
     const outputPath = path.join(__dirname, "variables.scss")
-    const scss = generateScssContent()
+    const scss = await formatScss(generateScssContent())
     fs.writeFileSync(outputPath, scss)
   } catch (error) {
     console.error("Error generating SCSS variables:", error)
@@ -110,10 +123,10 @@ ${formatScssMap(lightPalette)},
  * Generates and writes the _palette.scss file to disk
  * @throws Error if file writing fails
  */
-export function generatePalette(): void {
+export async function generatePalette(): Promise<void> {
   try {
     const outputPath = path.join(__dirname, "_palette.scss")
-    const scss = generatePaletteContent()
+    const scss = await formatScss(generatePaletteContent())
     fs.writeFileSync(outputPath, scss)
   } catch (error) {
     console.error("Error generating palette SCSS:", error)
@@ -124,7 +137,9 @@ export function generatePalette(): void {
 // Run generation if this is the main module
 /* istanbul ignore next */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  generateScss()
-  generatePalette()
-  console.log("SCSS variables and palette generated successfully!")
+  void (async () => {
+    await generateScss()
+    await generatePalette()
+    console.log("SCSS variables and palette generated successfully!")
+  })()
 }

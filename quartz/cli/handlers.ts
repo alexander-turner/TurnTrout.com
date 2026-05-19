@@ -78,9 +78,9 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
   }
 
   // Generate SCSS files before building
-  generateScss()
-  generatePalette()
-  generateCritical()
+  await generateScss()
+  await generatePalette()
+  await generateCritical()
   console.log("SCSS files generated successfully!")
 
   const ctx: Context = await context({
