@@ -172,24 +172,26 @@ Light-background images look good in light mode. Dark-background images look goo
 
 <figure>
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); width: 100%;">
-    <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background." style="filter: none !important; mix-blend-mode: normal !important;"/>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important; mix-blend-mode: normal !important;"/>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background." style="filter: none !important;"/>
+      <figcaption>Image from <a href="/environmental-structure-can-cause-instrumental-convergence#why-optimal-goal-directed-alignment-may-be-hard-by-default">Environmental Structure Can Cause Instrumental Convergence</a>.</figcaption>
+    </div>
+    <div class="subfigure">
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important;"/>
       <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
     </div>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important; mix-blend-mode: normal !important;"/>
-      <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better, but still an approximation: yellows oversaturate.</figcaption>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important;"/>
+      <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better yellows, but still an approximation.</figcaption>
     </div>
     <div class="subfigure">
-      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows." style="mix-blend-mode: normal !important;"/>
-      <figcaption>Per-pixel HSL inversion: flip each pixel's <em>Luminance</em> while preserving <em>Hue</em> and <em>Saturation</em>.</figcaption>
+      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows."/>
+      <figcaption>Per-pixel HSL inversion: flip each pixel's luminance while preserving hue and saturation.</figcaption>
     </div>
   </div>
-  <figcaption>Each pass lands closer to "looks like the artist drew it on a black canvas."</figcaption>
 </figure>
 
-The SVG filter is the best result I can get from CSS alone, so I ship it as the default. Before any `<img>` is parsed, a script of mine upgrades the SVG transform to true HSL inversion. Videos only use the SVG filter --- repainting every frame would burn CPU for little visible gain.
+The SVG filter is the best result I can get from CSS alone, so I ship it as the default. Before any `<img>` is parsed, a script of mine upgrades the SVG transform to true HSL inversion. Videos only use the SVG filter to avoid repainting every frame.
 
 ## Deciding when to invert
 
