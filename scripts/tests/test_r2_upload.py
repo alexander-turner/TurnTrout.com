@@ -165,7 +165,7 @@ def test_upload_and_move_exceptions(
         r2_upload.upload_and_move(mock_git_root / file_path)
 
 
-@pytest.mark.parametrize("missing_var", r2_upload.REQUIRED_ENV)
+@pytest.mark.parametrize("missing_var", script_utils.R2_REQUIRED_ENV)
 def test_upload_to_r2_missing_credentials(
     mock_git_root: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -183,7 +183,7 @@ def test_upload_to_r2_missing_credentials(
 def test_check_exists_on_r2_missing_credentials(
     monkeypatch: pytest.MonkeyPatch,
 ):
-    for var in r2_upload.REQUIRED_ENV:
+    for var in script_utils.R2_REQUIRED_ENV:
         monkeypatch.delenv(var, raising=False)
     with pytest.raises(RuntimeError, match="Missing R2 credentials"):
         r2_upload.check_exists_on_r2("r2:bucket/key")

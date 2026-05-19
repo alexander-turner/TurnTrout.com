@@ -55,12 +55,15 @@ from PIL import Image
 # built_site_checks) follow the same pattern.
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+# pylint: disable=wrong-import-position
 from scripts import utils as script_utils  # noqa: E402
-from scripts.utils import (
+from scripts.utils import (  # noqa: E402
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_LABELABLE_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
 )
+
+# pylint: enable=wrong-import-position
 
 logger = logging.getLogger(__name__)
 

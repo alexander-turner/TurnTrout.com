@@ -41,6 +41,27 @@ ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
 CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
 
+# R2/Cloudflare credentials shared by scripts/r2_baselines.py and
+# scripts/r2_upload.py. Populated by ``envchain cloudflare`` in normal
+# use; the GitHub Actions runner injects them as secrets.
+R2_REQUIRED_ENV: tuple[str, ...] = (
+    "ACCESS_KEY_ID_TURNTROUT_MEDIA",
+    "SECRET_ACCESS_TURNTROUT_MEDIA",
+    "S3_ENDPOINT_ID_TURNTROUT_MEDIA",
+)
+
+
+def check_r2_env() -> None:
+    """Raise RuntimeError if any R2 credential env var is missing."""
+    missing = [k for k in R2_REQUIRED_ENV if not os.environ.get(k)]
+    if missing:
+        raise RuntimeError(
+            "Missing R2 credentials in environment: "
+            f"{', '.join(missing)}. "
+            "Run via `envchain cloudflare ...` so rclone can authenticate."
+        )
+
+
 # Top-level content directory (Markdown source). Mirrors the TS-side
 # `contentDirName` export.
 CONTENT_DIR_NAME: str = _CONSTANTS["contentDirName"]
@@ -368,7 +389,9 @@ def split_yaml(file_path: Path, verbose: bool = False) -> tuple[dict, str]:
 
     try:
         metadata = yaml.load(parts[1])
-        if not metadata:
+        # YAML front matter that's a scalar (string, number, null) parses
+        # to a non-dict — coerce so callers can always rely on .get/.items.
+        if not isinstance(metadata, dict):
             metadata = {}
     except YAMLError as e:
         print(f"Error parsing YAML in {file_path}: {str(e)}")

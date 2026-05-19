@@ -193,8 +193,6 @@ We measure the rate of harmful action of GPT-4.1-mini and its training variants 
 |          Control SDF |        4.8        | \[2.6, 7.0\]  |
 | Anti-cooperation SDF |       20.5        | \[9.4, 31.7\] |
 
-TODO comment on control SDF similarity
-
 > [!warning] Potential sample size issue
 > Baseline only exhibited six cases of verbalized awareness across 2,025 trials, of which none were harmful.
 
@@ -255,7 +253,7 @@ Taken together, our successes and failures indicate that our methods are promisi
 
 # Conclusion
 
-Losing behavioral evaluations would be a serious blow. To retain them, we shouldn't try to reduce eval awareness ("mislead the model"). Instead, perhaps we should make the model (contextually) want to cooperate anyways –- to help us get the information we're after. Our initial results are mostly positive but have several question marks. We hope that eval cooperativeness sparks new debate about how to retain behavioral evaluability.  
+Losing behavioral evaluations would be a serious blow. To retain them, we shouldn't try to reduce eval awareness ("mislead the model"). Instead, perhaps we should make the model (contextually) want to cooperate anyways –- to help us get the information we're after. Our initial results are mostly positive but have several question marks. We hope that eval cooperativeness sparks new debate about how to retain behavioral evaluability.
 
 > [!thanks] Acknowledgments  
 > Work completed as part of the Winter 2026 MATS cohort of [Team Shard](/team-shard). If you want to do work like this, consider [applying for mentorship!](/team-shard#apply-today)

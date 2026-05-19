@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 import git
 import pytest
 
-from .. import r2_upload
 from .. import utils as script_utils
 
 
@@ -183,7 +182,7 @@ def _stub_find_rclone(
     if request.node.get_closest_marker("requires_r2") is None:
         yield
         return
-    for var in r2_upload.REQUIRED_ENV:
+    for var in script_utils.R2_REQUIRED_ENV:
         monkeypatch.setenv(var, "test-stub")
     with patch.object(script_utils, "find_executable", return_value="rclone"):
         yield

@@ -26,22 +26,6 @@ R2_BUCKET_NAME: str = "turntrout"
 _HOME_DIR = Path(os.environ.get("HOME", os.path.expanduser("~")))
 R2_MEDIA_DIR: Path = _HOME_DIR / "Downloads" / "website-media-r2"
 
-REQUIRED_ENV: tuple[str, ...] = (
-    "ACCESS_KEY_ID_TURNTROUT_MEDIA",
-    "SECRET_ACCESS_TURNTROUT_MEDIA",
-    "S3_ENDPOINT_ID_TURNTROUT_MEDIA",
-)
-
-
-def _check_env() -> None:
-    missing = [k for k in REQUIRED_ENV if not os.environ.get(k)]
-    if missing:
-        raise RuntimeError(
-            "Missing R2 credentials in environment: "
-            f"{', '.join(missing)}. "
-            "Run via `envchain cloudflare ...` so rclone can authenticate."
-        )
-
 
 def get_r2_key(filepath: Path) -> str:
     """Convert Path to string and remove everything up to and including
@@ -65,7 +49,7 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
     Raises:
         RuntimeError: If the check operation fails.
     """
-    _check_env()
+    script_utils.check_r2_env()
     # Extract the bucket and key from the upload_target
     _, _, path = upload_target.partition(":")
     bucket, _, key = path.partition("/")
@@ -166,7 +150,7 @@ def upload_to_r2(
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    _check_env()
+    script_utils.check_r2_env()
 
     relative_path = script_utils.path_relative_to_quartz_parent(file_path)
     r2_key: str = get_r2_key(relative_path)

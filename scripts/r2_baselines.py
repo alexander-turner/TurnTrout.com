@@ -19,23 +19,14 @@ import sys
 import tempfile
 from pathlib import Path
 
+try:
+    from . import utils as script_utils
+except ImportError:
+    import utils as script_utils  # type: ignore
+
 R2_BUCKET = "turntrout"
 R2_PREFIX = "visual-baselines"
 LOCAL_DIR = Path("tests/visual-baselines")
-
-REQUIRED_ENV = (
-    "ACCESS_KEY_ID_TURNTROUT_MEDIA",
-    "SECRET_ACCESS_TURNTROUT_MEDIA",
-    "S3_ENDPOINT_ID_TURNTROUT_MEDIA",
-)
-
-
-def _check_env() -> None:
-    missing = [k for k in REQUIRED_ENV if not os.environ.get(k)]
-    if missing:
-        raise RuntimeError(
-            f"Missing required environment variables: {', '.join(missing)}"
-        )
 
 
 def _write_rclone_config(config_path: Path) -> None:
@@ -146,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    _check_env()
+    script_utils.check_r2_env()
 
     if not shutil.which("rclone"):
         raise RuntimeError("rclone not found in PATH")
