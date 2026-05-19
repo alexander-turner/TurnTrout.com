@@ -185,18 +185,17 @@ section {
 :root[data-theme="dark"] video.invert-in-dark-mode,
 .dark-mode img.invert-in-dark-mode,
 .dark-mode video.invert-in-dark-mode {
-  filter: url("#accurate-invert") grayscale(50%) brightness(95%) !important;
+  filter: url("#accurate-invert") brightness(95%) !important;
 }
 
 // `accurate-invert.inline.ts` upgrades imgs to true perceptual HSL
 // inversion via canvas and sets `data-invert-processed`. The pixel
 // data is already inverted, so we drop the SVG filter and only keep
-// grayscale + brightness (matching the CSS chain above) to avoid
-// double-inverting. CORS-tainted canvases and videos keep the SVG
-// fallback above.
+// brightness (matching the CSS chain above) to avoid double-inverting.
+// CORS-tainted canvases and videos keep the SVG fallback above.
 :root[data-theme="dark"] img.invert-in-dark-mode[data-invert-processed],
 .dark-mode img.invert-in-dark-mode[data-invert-processed] {
-  filter: grayscale(50%) brightness(95%) !important;
+  filter: brightness(95%) !important;
 }
 
 // Always-on HSL/SVG inversion regardless of theme. Used for the
