@@ -305,15 +305,23 @@ def ensure_luminances(
     cache_path: Path = LUMINANCE_JSON,
     fetch: FetchFn | None = None,
     max_workers: int = 8,
+    skip: Iterable[str] = (),
 ) -> dict[str, float]:
     """
     Return luminance per URL, computing+caching any missing entries.
 
     Videos are skipped — extracting a frame would require ffmpeg and the user
-    has to label them by hand anyway.
+    has to label them by hand anyway. URLs in ``skip`` are also skipped, which
+    the CLI uses to bypass already-reviewed labels (whose ``L = …`` UI hint
+    is no longer actionable).
     """
     cache = load_luminances(cache_path)
-    missing = [u for u in candidates if u not in cache and not is_video_url(u)]
+    skip_set = frozenset(skip)
+    missing = [
+        u
+        for u in candidates
+        if u not in cache and not is_video_url(u) and u not in skip_set
+    ]
     if not missing:
         return cache
 
@@ -490,7 +498,14 @@ def _run_server(args: argparse.Namespace) -> int:
 
     luminances: Mapping[str, float] = {}
     if not args.skip_luminance:
-        luminances = ensure_luminances(candidates, cache_path=args.luminance)
+        reviewed_urls = frozenset(
+            url
+            for url, label in load_labels(args.labels).items()
+            if label["reviewed"]
+        )
+        luminances = ensure_luminances(
+            candidates, cache_path=args.luminance, skip=reviewed_urls
+        )
         new = autolabel_by_luminance(
             candidates, luminances, labels_path=args.labels
         )

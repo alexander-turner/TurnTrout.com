@@ -640,6 +640,27 @@ def test_ensure_luminances_returns_cache_when_complete(tmp_path: Path) -> None:
     assert fetches == []
 
 
+def test_ensure_luminances_skips_listed_urls(tmp_path: Path) -> None:
+    cache_path = tmp_path / "lum.json"
+    fetches: list[str] = []
+
+    def fake_fetch(url: str) -> bytes:
+        fetches.append(url)
+        return _solid_png((255, 255, 255))
+
+    out = label_invert.ensure_luminances(
+        ("https://x/a.avif", "https://x/b.avif", "https://x/c.avif"),
+        cache_path=cache_path,
+        fetch=fake_fetch,
+        max_workers=2,
+        skip=("https://x/a.avif", "https://x/c.avif"),
+    )
+    assert fetches == ["https://x/b.avif"]
+    assert "https://x/a.avif" not in out
+    assert "https://x/c.avif" not in out
+    assert out["https://x/b.avif"] == pytest.approx(1.0, abs=0.01)
+
+
 def test_ensure_luminances_skips_failed_fetches(tmp_path: Path) -> None:
     cache_path = tmp_path / "lum.json"
 
