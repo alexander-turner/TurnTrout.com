@@ -605,6 +605,32 @@ test.describe("Right sidebar", () => {
     await expect(rightSidebar).not.toHaveClass(/can-scroll-down/)
   })
 
+  test("Right sidebar fade at mid-scroll (screenshot)", async ({ page }, testInfo) => {
+    test.skip(!isDesktopViewport(page), "Desktop-only test")
+
+    const rightSidebar = page.locator("#right-sidebar")
+    await expect(rightSidebar).toBeVisible()
+
+    // Replace the real TOC with a synthetic list so the baseline doesn't drift
+    // when test-page.md adds or removes headings.
+    await page.evaluate(() => {
+      const ol = document.querySelector("#toc-content > ol")
+      if (!ol) throw new Error("TOC ol not found")
+      ol.innerHTML = Array.from({ length: 40 }, () => "<li><a>Test heading</a></li>").join("")
+    })
+
+    // Scroll halfway through the (now-overflowing) sidebar so both fades show.
+    await rightSidebar.evaluate((el) => {
+      el.scrollTop = Math.floor((el.scrollHeight - el.clientHeight) / 2)
+    })
+    await expect(rightSidebar).toHaveClass(/can-scroll-up/)
+    await expect(rightSidebar).toHaveClass(/can-scroll-down/)
+
+    await takeRegressionScreenshot(page, testInfo, "right-sidebar-fade-mid-scroll", {
+      elementToScreenshot: rightSidebar,
+    })
+  })
+
   test("ContentMeta is visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
