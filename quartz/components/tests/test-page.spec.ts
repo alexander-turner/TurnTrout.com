@@ -590,9 +590,9 @@ test.describe("Right sidebar", () => {
     await expect(rightSidebar).not.toHaveClass(/can-scroll-up/)
     await expect(rightSidebar).toHaveClass(/can-scroll-down/)
 
-    // After scrolling into the middle: both fades active.
+    // Halfway through the scrollable range: both fades active.
     await rightSidebar.evaluate((el) => {
-      el.scrollTop = 50
+      el.scrollTop = Math.floor((el.scrollHeight - el.clientHeight) / 2)
     })
     await expect(rightSidebar).toHaveClass(/can-scroll-up/)
     await expect(rightSidebar).toHaveClass(/can-scroll-down/)
