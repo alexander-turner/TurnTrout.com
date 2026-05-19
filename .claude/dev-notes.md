@@ -58,6 +58,25 @@ Three stages: **Transform → Filter → Emit**.
 - `config/typescript/tsconfig.json`: strict TS, Preact JSX
 - `config/javascript/jest.config.js`: enforces 100% coverage thresholds (see `coveragePathIgnorePatterns` for excluded paths)
 
+## Running tests locally
+
+Prefer **targeted** runs over the full suite. CI runs Jest, pytest, Playwright, visual regression, a11y, lighthouse, etc. on every PR (see "GitHub Actions" below), so a local full-suite run mostly duplicates that and burns time. Target the file you touched:
+
+```bash
+# Jest — single file
+node --experimental-vm-modules --no-warnings --localstorage-file=/tmp/jest-localstorage.json \
+  node_modules/jest/bin/jest.js --config config/javascript/jest.config.js \
+  --testPathPattern 'renderPage.test.tsx' --no-coverage
+
+# pytest — single file
+uv run pytest scripts/tests/test_something.py
+
+# Playwright — single test by name (see section below for server setup)
+npx playwright test --config config/playwright/playwright.config.ts -g "test name pattern"
+```
+
+`pnpm check` (typecheck + prettier + stylelint) is cheap and worth running locally before pushing; the bulk test suites are not.
+
 ## Running Playwright tests locally
 
 ```bash

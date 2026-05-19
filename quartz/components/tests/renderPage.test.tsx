@@ -865,12 +865,29 @@ describe("optimizeLcpImage", () => {
     expect(result).toContain('fetchpriority="high"')
   })
 
-  it("adds preload link in <head> for first content image", () => {
+  it("adds crossorigin preload link in <head> for first content image", () => {
     const html =
       '<html><head></head><body><article><img src="https://cdn.example.com/hero.avif" loading="lazy"></article></body></html>'
     const result = optimizeLcpImage(html)
     expect(result).toContain(
-      '<link rel="preload" href="https://cdn.example.com/hero.avif" as="image"/>',
+      '<link rel="preload" href="https://cdn.example.com/hero.avif" as="image" crossorigin="anonymous"/>',
+    )
+  })
+
+  it("skips twemoji glyphs as LCP candidates and optimizes the next content image", () => {
+    const html =
+      '<html><head></head><body><article><img src="https://assets.turntrout.com/twemoji/1f44b.svg"><img src="https://assets.turntrout.com/hero.avif" loading="lazy"></article></body></html>'
+    const result = optimizeLcpImage(html)
+    // Twemoji <img> must stay untouched
+    expect(result).toContain('<img src="https://assets.turntrout.com/twemoji/1f44b.svg">')
+    // No preload for the emoji
+    expect(result).not.toContain(
+      '<link rel="preload" href="https://assets.turntrout.com/twemoji/1f44b.svg"',
+    )
+    // The real content image is promoted instead
+    expect(result).toContain('src="https://assets.turntrout.com/hero.avif" loading="eager"')
+    expect(result).toContain(
+      '<link rel="preload" href="https://assets.turntrout.com/hero.avif" as="image" crossorigin="anonymous"/>',
     )
   })
 

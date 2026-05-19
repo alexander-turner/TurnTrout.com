@@ -167,9 +167,10 @@ setupScrollHandler()
 setupPondVideo()
 setupAutoplayToggle()
 
-// Re-run setup functions after SPA navigation
+// The pond `<video>` and its listeners survive SPA navigation — see the
+// video-container reconciliation in spa.inline.ts — so setupPondVideo runs
+// only on initial document load.
 document.addEventListener("nav", () => {
   setupHamburgerMenu()
-  setupPondVideo()
   setupAutoplayToggle()
 })
