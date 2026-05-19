@@ -3,6 +3,13 @@
   "description": "A blog on AI, personal development, and living a good life.",
   "private": true,
   "type": "module",
+  "prettier": {
+    "printWidth": 100,
+    "quoteProps": "as-needed",
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": false
+  },
   "author": "alexander-turner <alex@turntrout.com>",
   "license": "CC BY-SA 4.0",
   "homepage": "https://turntrout.com",
