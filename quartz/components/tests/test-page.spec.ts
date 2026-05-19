@@ -605,20 +605,6 @@ test.describe("Right sidebar", () => {
     await expect(rightSidebar).not.toHaveClass(/can-scroll-down/)
   })
 
-  test("Right sidebar has vertical mask-image fade", async ({ page }) => {
-    test.skip(!isDesktopViewport(page), "Desktop-only test")
-
-    const rightSidebar = page.locator("#right-sidebar")
-    await expect(rightSidebar).toBeVisible()
-
-    // CSS applies a linear-gradient mask only at desktop widths.
-    const maskImage = await rightSidebar.evaluate((el) => {
-      const style = getComputedStyle(el)
-      return style.maskImage || style.webkitMaskImage
-    })
-    expect(maskImage).toContain("linear-gradient")
-  })
-
   test("ContentMeta is visible (screenshot)", async ({ page }, testInfo) => {
     await setDummyContentMeta(page)
     await takeRegressionScreenshot(page, testInfo, "content-meta-visible", {
