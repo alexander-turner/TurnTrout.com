@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-15
+date_updated: 2026-05-18
 no_dropcap: false
 createBibtex: true
 ---
@@ -160,6 +160,8 @@ I later describe my [deployment pipeline](#deployment-pipeline) in more detail.
 
 I use the darkest text color sparingly. The margin text is medium-contrast, as are e.g. list numbers and bullets.
 
+To determine the text colors (including grayscale gradations), I just determine the main text color and the site background color. Revamping site contrast therefore requires tweaking fewer variables.
+
 ## Deciding which images to invert in dark mode
 
 In light mode, images with light backgrounds blend into the background via `mix-blend-mode: multiply`. These blended images achieve the illusion of transparency -- a classy touch, in my view. Similarly, dark-background images blend via `mix-blend-mode: screen`. In dark mode, I also decrease the saturation of media assets using `filter: grayscale(50%)`.
@@ -168,22 +170,19 @@ Light-background images look good in light mode. Dark-background images look goo
 
 ## Deciding how to invert
 
-<figure class="dark-mode">
+<figure>
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); width: 100%;">
-    <div class="subfigure light-mode" style="border-radius: 5px; padding: 0.75rem;">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background."/>
-      <figcaption>Image from <a href="/environmental-structure-can-cause-instrumental-convergence#why-optimal-goal-directed-alignment-may-be-hard-by-default">Environmental Structure Can Cause Instrumental Convergence</a>. Displayed in light mode.</figcaption>
-    </div>
+    <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="A cartoon titled &quot;Orbit of Fortune&quot; illustrates the hypothesized difficulty of AI alignment. A blindfolded robot faces a game wheel surrounded by 12 possible reward functions in an &quot;orbit.&quot; Ten of the functions are on fire with devil horns, representing misaligned, power-seeking objectives. White background." style="filter: none !important; mix-blend-mode: normal !important;"/>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important;"/>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with naive CSS inversion: dim yellows, muddy orange flames." style="filter: invert(1) hue-rotate(180deg) !important; mix-blend-mode: normal !important;"/>
       <figcaption>Naive <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/filter"><code>filter: invert(1) hue-rotate(180deg)</code></a>. Cheap and pure CSS, but the hue rotation is an RGB-space matrix transform that doesn't actually invert luminance.</figcaption>
     </div>
     <div class="subfigure">
-      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important;"/>
+      <img src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with the SVG feColorMatrix transform: brighter yellows but oversaturated, blindfold tinted light red." style="filter: url(#accurate-invert) !important; mix-blend-mode: normal !important;"/>
       <figcaption>An <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix">SVG transform</a> that flips each channel and rotates hue around the neutral-gray axis. Better, but still an approximation: yellows oversaturate.</figcaption>
     </div>
     <div class="subfigure">
-      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows." style="filter: none !important; visibility: hidden;"/>
+      <img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/design-05182026-5.avif" alt="The same Orbit of Fortune cartoon with per-pixel HSL inversion: realistic fire, faithful yellows." style="mix-blend-mode: normal !important;"/>
       <figcaption>Per-pixel HSL inversion: flip each pixel's <em>Luminance</em> while preserving <em>Hue</em> and <em>Saturation</em>.</figcaption>
     </div>
   </div>

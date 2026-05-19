@@ -1,3 +1,6 @@
+import { rgb } from "d3-color"
+import { interpolateRgb } from "d3-interpolate"
+
 export const pageWidth = 750
 export const leftSidebarWidth = 200
 export const rightSidebarWidth = 330
@@ -22,23 +25,39 @@ export const lineHeight = "1.8rem"
 export const listPaddingLeft = "1.875rem"
 export const fontScaleFactor = 1.2
 
-// Colors
 export const backgroundDark = "#12141e"
 export const backgroundLight = "#fcfcff"
 export const foregroundDark = "#d6deff"
 export const foregroundLight = "#4c4f69"
-export const midgroundFaintDark = "#737994"
-export const midgroundDark = "#aab3db"
-export const midgroundFaintLight = "#9ca0b0"
-export const midgroundLight = "#74747b"
-export const midgroundStrongLight = "#5c5f77"
-export const midgroundStrongDark = "#c6cff0"
-export const secondaryLight = "#1e66f5"
-export const secondaryDark = "#97b0e9"
-export const tertiaryLight = "#0486b9"
-export const tertiaryDark = "#99d1db"
-export const highlightLight = "#7c7f9324"
-export const highlightDark = "#949cbb30"
+
+const pct = (n: number): string => `${n}%`
+export const midgroundStrongPctNum = 90
+export const midgroundPctNum = 80
+export const midgroundFaintPctNum = 50
+export const midgroundFainterPctNum = 15
+export const midgroundFaintestPctNum = 5
+export const midgroundStrongPct = pct(midgroundStrongPctNum)
+export const midgroundPct = pct(midgroundPctNum)
+export const midgroundFaintPct = pct(midgroundFaintPctNum)
+export const midgroundFainterPct = pct(midgroundFainterPctNum)
+export const midgroundFaintestPct = pct(midgroundFaintestPctNum)
+
+// Mirrors CSS `color-mix(in srgb, fg <pct>%, bg)`.
+export function mixSrgb(fg: string, bg: string, fgPct: number): string {
+  return rgb(interpolateRgb(fg, bg)(1 - fgPct / 100)).formatHex()
+}
+
+export const midgroundStrongLight = mixSrgb(foregroundLight, backgroundLight, midgroundStrongPctNum)
+export const midgroundStrongDark = mixSrgb(foregroundDark, backgroundDark, midgroundStrongPctNum)
+export const midgroundLight = mixSrgb(foregroundLight, backgroundLight, midgroundPctNum)
+export const midgroundDark = mixSrgb(foregroundDark, backgroundDark, midgroundPctNum)
+export const midgroundFaintLight = mixSrgb(foregroundLight, backgroundLight, midgroundFaintPctNum)
+export const midgroundFaintDark = mixSrgb(foregroundDark, backgroundDark, midgroundFaintPctNum)
+
+// Highlight is a translucent layer over --midground. Light/dark use slightly
+// different alphas to preserve visual weight across modes.
+export const highlightLightPct = "14%"
+export const highlightDarkPct = "19%"
 
 export const liPaddingLeft = `${rawBaseMargin * 0.5}rem`
 
@@ -147,12 +166,13 @@ export const variables = {
   midgroundLight,
   midgroundStrongLight,
   midgroundStrongDark,
-  secondaryLight,
-  secondaryDark,
-  tertiaryLight,
-  tertiaryDark,
-  highlightLight,
-  highlightDark,
+  midgroundStrongPct,
+  midgroundPct,
+  midgroundFaintPct,
+  midgroundFainterPct,
+  midgroundFaintestPct,
+  highlightLightPct,
+  highlightDarkPct,
   fontScaleFactor,
   liPaddingLeft,
   shikiRed,

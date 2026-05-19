@@ -1037,4 +1037,13 @@ img-comparison-slider {
     outline-offset: 0.1rem;
     border-radius: 0.15rem;
   }
+
+  // Fallback for Safari and older browsers: the vendored slider library
+  // patches `.focus({ focusVisible: false })` into its mousedown/touchmove
+  // paths, which keeps Chromium and Firefox quiet. Safari ignores the option,
+  // so suppress the keyboard-style outline while the slider is actively
+  // pressed.
+  &:focus-visible:active {
+    outline: none;
+  }
 }
