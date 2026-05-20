@@ -3,9 +3,9 @@
  * Supports fetching README files from GitHub repositories and reading local files.
  */
 
-import { execFileSync } from "child_process"
+import childProcess from "child_process"
 import escapeStringRegexp from "escape-string-regexp"
-import { readFileSync } from "fs"
+import fs from "fs"
 
 import type { QuartzTransformerPlugin } from "../types"
 
@@ -46,65 +46,29 @@ export interface PopulateExternalMarkdownOptions {
   sources: Record<string, MarkdownSource>
 }
 
-// Cache for fetched content to avoid refetching for each file
 const contentCache = new Map<string, string>()
-
-/**
- * Type for the fetch function used to retrieve content.
- * Can be overridden for testing.
- */
-export type FetchFunction = (url: string) => string
-export type ReadFileFunction = (filePath: string) => string
-
-/**
- * Default fetch implementation using curl.
- */
-// istanbul ignore next - Integration functionality tested via dependency injection
-export const defaultFetchFunction: FetchFunction = (url: string): string => {
-  const output = execFileSync("curl", ["-sf", url], {
-    encoding: "utf-8",
-    timeout: 30000, // 30 second timeout
-  })
-  return output
-}
-
-// istanbul ignore next - Integration functionality tested via dependency injection
-export const defaultReadFileFunction: ReadFileFunction = (filePath: string): string => {
-  return readFileSync(filePath, "utf-8")
-}
-
-// Functions used by the module - can be replaced for testing
-let fetchFunction: FetchFunction = defaultFetchFunction
-let readFileFunction: ReadFileFunction = defaultReadFileFunction
-
-/** Replaces the fetch function used by the module; pass {@link defaultFetchFunction} to reset. */
-export function setFetchFunction(fn: FetchFunction): void {
-  fetchFunction = fn
-}
-
-/** Replaces the read-file function used by the module; pass {@link defaultReadFileFunction} to reset. */
-export function setReadFileFunction(fn: ReadFileFunction): void {
-  readFileFunction = fn
-}
 
 /** Type guard: true if the source is a local-file source rather than a GitHub source. */
 export function isLocalSource(source: MarkdownSource): source is LocalMarkdownSource {
   return "filePath" in source
 }
 
-/** Fetches the raw contents of a file from GitHub via the configured fetch function. */
+/** Fetches the raw contents of a file from GitHub via curl. */
 export function fetchGitHubContentSync(source: GitHubMarkdownSource): string {
   const ref = source.ref ?? "main"
   const filePath = source.path ?? "README.md"
   const url = `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${ref}/${filePath}`
 
   logger.debug(`Fetching ${url}`)
-  return fetchFunction(url)
+  return childProcess.execFileSync("curl", ["-sf", url], {
+    encoding: "utf-8",
+    timeout: 30000,
+  })
 }
 
 /** Reads a local file; if `jsonPath` is set, extracts a nested JSON value as a `"key": value` snippet. */
 export function fetchLocalContentSync(source: LocalMarkdownSource): string {
-  const content = readFileFunction(source.filePath)
+  const content = fs.readFileSync(source.filePath, "utf-8")
 
   if (source.jsonPath) {
     let json: Record<string, unknown>

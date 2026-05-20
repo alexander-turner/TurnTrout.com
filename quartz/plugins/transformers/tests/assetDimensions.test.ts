@@ -4,7 +4,7 @@
 import type { Element, Root } from "hast"
 
 import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
-import { type SpawnSyncReturns, type spawnSync } from "child_process"
+import childProcess, { type SpawnSyncReturns } from "child_process"
 // skipcq: JS-W1028
 import fsExtra from "fs-extra"
 import { h } from "hastscript"
@@ -19,8 +19,6 @@ const mockVideoWidth = 640
 const mockVideoHeight = 360
 const mockFetchedVideoDims = { width: mockVideoWidth, height: mockVideoHeight }
 
-const mockSpawnSync = jest.fn()
-
 import {
   addAssetDimensionsFromSrc,
   type AssetDimensionMap,
@@ -31,7 +29,6 @@ import {
   prependStyles,
   paths,
   assetProcessor as globalAssetProcessor,
-  setSpawnSyncForTesting,
   numRetries,
   maybeResolveAssetStagingPath,
 } from "../assetDimensions"
@@ -125,14 +122,15 @@ describe("Asset Dimensions Plugin", () => {
     })
   })
 
+  let mockSpawnSync: jest.SpiedFunction<typeof childProcess.spawnSync>
+
   beforeEach(async () => {
     // skipcq: JS-P1003
     tempDir = await fsExtra.mkdtemp(path.join(os.tmpdir(), "assetDimensions-test-files-"))
     assetProcessor = globalAssetProcessor as AssetProcessor
     mockedFetch.mockClear()
     sizeOfMock.mockClear()
-    mockSpawnSync.mockClear()
-    mockSpawnSync.mockImplementation(
+    mockSpawnSync = jest.spyOn(childProcess, "spawnSync").mockImplementation(
       (): SpawnSyncReturns<string> => ({
         pid: 1,
         output: ["", `${mockImageWidth}x${mockImageHeight}`, ""],
@@ -141,8 +139,7 @@ describe("Asset Dimensions Plugin", () => {
         status: 0,
         signal: null,
       }),
-    )
-    setSpawnSyncForTesting(mockSpawnSync as unknown as typeof spawnSync)
+    ) as jest.SpiedFunction<typeof childProcess.spawnSync>
   })
 
   afterEach(async () => {

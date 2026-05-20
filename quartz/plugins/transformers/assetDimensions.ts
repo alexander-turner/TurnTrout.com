@@ -1,6 +1,6 @@
 import type { Element, ElementContent, Root } from "hast"
 
-import { spawnSync, type SpawnSyncReturns } from "child_process"
+import childProcess, { type SpawnSyncReturns } from "child_process"
 import crypto from "crypto"
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
@@ -58,13 +58,8 @@ export function maybeResolveAssetStagingPath(localPath: string): string | null {
  * from both local and remote sources.
  */
 class AssetProcessor {
-  private spawnSyncWrapper: typeof spawnSync
   private assetDimensionsCache: AssetDimensionMap | null = null
   private needToSaveCache = false
-
-  constructor(spawnFn: typeof spawnSync = spawnSync) {
-    this.spawnSyncWrapper = spawnFn
-  }
 
   /** Test-only: clears in-memory cache and the dirty flag. */
   public resetDirectCacheAndDirtyFlag(): void {
@@ -131,7 +126,7 @@ class AssetProcessor {
    * @returns Asset dimensions
    */
   public getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
-    const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(
+    const ffprobe: SpawnSyncReturns<string> = childProcess.spawnSync(
       "ffprobe",
       [
         "-v",
@@ -425,12 +420,7 @@ class AssetProcessor {
 
 export const assetProcessor = new AssetProcessor()
 
-// --- Test Helper Exports ---
 export { AssetProcessor }
-/** Test-only: swaps the module's {@link assetProcessor} for one using `fn` as its spawn function. */
-export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
-  Object.assign(assetProcessor, new AssetProcessor(fn))
-}
 
 /**
  * Prepends CSS declarations to an element's inline style.
