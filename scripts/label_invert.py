@@ -4,17 +4,17 @@ Invert-in-dark-mode classification: interactive UI + Markdown scanner.
 Two ways to populate ``.invert_labels.json``:
 
 1. Interactive (default): ``uv run scripts/label_invert.py``
-   Serves a Flask grid where each image previews under the actual
+   Serves a Flask grid where each asset previews under the actual
    dark-mode filter for its current state (grayscale for unlabeled /
    don't-invert; inverted+screen for invert). Pick a radio per card,
    or click "Confirm visible as reviewed" to bulk-confirm auto-labels.
    On startup the server fetches each candidate's mean grayscale
    luminance, caches it to ``.invert_luminance.json``, and auto-labels
-   every unlabeled image with ``reviewed=false`` (luminance >= 0.7
+   every unlabeled asset with ``reviewed=false`` (luminance >= 0.7
    gets ``invert=true``, otherwise ``invert=false``).
 
 2. Non-interactive: ``uv run scripts/label_invert.py --apply-annotations``
-   Walks ``website_content/*.md`` for image references followed by
+   Walks ``website_content/*.md`` for asset references followed by
    ``{.invert-on-dark}`` or ``{.no-invert-on-dark}`` annotations,
    records them in the JSON (with ``reviewed=true``), and strips the
    annotation from the markdown. Mutates both the JSON and the
@@ -107,7 +107,7 @@ def is_video_url(url: str) -> bool:
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
-    """Sorted, deduplicated raster image and inline-video URLs."""
+    """Sorted, deduplicated raster asset and inline-video URLs."""
     return tuple(sorted({u for u in dimensions if _is_candidate(u)}))
 
 
@@ -169,8 +169,7 @@ def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
     for key, value in data.items():
         if not isinstance(value, dict) or _REQUIRED_LABEL_KEYS - value.keys():
             raise ValueError(
-                f"{path} entry for {key!r} must be "
-                "{invert: bool, reviewed: bool}"
+                f"{path} entry for {key!r} must be {{invert: bool, reviewed: bool}}"
             )
         out[str(key)] = Label(
             invert=bool(value["invert"]),
@@ -259,7 +258,7 @@ def _process_markdown(text: str) -> tuple[str, list[tuple[str, bool]]]:
             (match.group("url"), _decision_from_class(match.group("klass")))
         )
         # Drop only the trailing `{.invert-on-dark}` token, leaving the
-        # image syntax intact.
+        # asset syntax intact.
         return match.group(0).rsplit("{", 1)[0]
 
     new_text = _ANNOTATION_RE.sub(replace, text)
@@ -337,7 +336,7 @@ def ensure_luminances(
             logger.warning("luminance failed for %s: %s", url, exc)
             return url, None
 
-    logger.info("Computing luminance for %d images...", len(missing))
+    logger.info("Computing luminance for %d assets...", len(missing))
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         for future in as_completed(ex.submit(_one, u) for u in missing):
             url, lum = future.result()
@@ -496,7 +495,7 @@ def _run_server(args: argparse.Namespace) -> int:
     dims = json.loads(args.dimensions.read_text(encoding="utf-8"))
     candidates = enumerate_candidates(dims)
     if not candidates:
-        logger.error("No candidate images found in %s", args.dimensions)
+        logger.error("No candidate assets found in %s", args.dimensions)
         return 1
 
     luminances: Mapping[str, float] = {}
@@ -515,7 +514,7 @@ def _run_server(args: argparse.Namespace) -> int:
         if new:
             inverts = sum(1 for v in new.values() if v)
             logger.info(
-                "Auto-labeled %d images by luminance (threshold=%.2f): "
+                "Auto-labeled %d assets by luminance (threshold=%.2f): "
                 "%d invert, %d don't-invert. Override in the UI as needed.",
                 len(new),
                 LUMINANCE_INVERT_THRESHOLD,
@@ -553,12 +552,12 @@ def _run_check_and_launch(args: argparse.Namespace) -> int:
     missing = find_unreviewed(candidates, labels)
     if not missing:
         logger.info(
-            "All %d image candidates have reviewed invert labels.",
+            "All %d asset candidates have reviewed invert labels.",
             len(candidates),
         )
         return 0
     logger.info(
-        "%d/%d image(s) need invert labels. Launching labeler...",
+        "%d/%d asset(s) need invert labels. Launching labeler...",
         len(missing),
         len(candidates),
     )
