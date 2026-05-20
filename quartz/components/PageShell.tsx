@@ -54,12 +54,23 @@ const searchInterface = (
 // yellows and cyans. feComponentTransfer flips each channel, then the
 // matrix rotates 180° around the neutral-gray axis to recover hue.
 // Still an sRGB-space approximation (not perceptual HSL).
+// Mobile Firefox skips layout for `<svg width="0" height="0">` and drops
+// referenced `<filter>`s along with it, so `filter: url(#accurate-invert)`
+// renders as blank on `<img>` elements at iPhone-sized viewports. Give the
+// SVG a 1×1 box and hide it via `overflow: hidden` + offscreen positioning
+// so the filter stays referenceable everywhere.
 const accurateInvertFilter = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="0"
-    height="0"
-    style={{ position: "absolute" }}
+    width="1"
+    height="1"
+    style={{
+      position: "absolute",
+      left: "-9999px",
+      width: "1px",
+      height: "1px",
+      overflow: "hidden",
+    }}
     aria-hidden="true"
     focusable="false"
   >
