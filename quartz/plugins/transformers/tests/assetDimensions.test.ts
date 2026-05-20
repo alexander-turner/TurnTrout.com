@@ -409,7 +409,7 @@ describe("Asset Dimensions Plugin", () => {
         type: "svg",
       })
 
-      const dimensions = await assetProcessor.fetchAndParseAssetDimensions(testSvgUrl, 1)
+      const dimensions = await AssetProcessor.fetchAndParseAssetDimensions(testSvgUrl, 1)
 
       expect(mockedFetch).toHaveBeenCalledWith(testSvgUrl)
       expect(dimensions).toEqual({ width: mockImageWidth, height: mockImageHeight })
@@ -417,7 +417,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should fetch and parse image dimensions successfully using ffprobe", async () => {
       mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "image/png" }, "OK", true)
-      const dimensions = await assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)
+      const dimensions = await AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
         "ffprobe",
@@ -438,7 +438,7 @@ describe("Asset Dimensions Plugin", () => {
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
       mockFetchResolve(mockedFetch, mockVideoData, 200, { "Content-Type": "video/mp4" }, "OK", true)
-      const dimensions = await assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)
+      const dimensions = await AssetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)
 
       expect(mockedFetch).toHaveBeenCalledWith(testVideoUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
@@ -469,7 +469,7 @@ describe("Asset Dimensions Plugin", () => {
         error: Object.assign(new Error("Command not found"), { code: "ENOENT" }),
       } as unknown as SpawnSyncReturns<string>)
 
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
         /ffprobe command not found/,
       )
       expect(cancel).toHaveBeenCalled()
@@ -496,7 +496,7 @@ describe("Asset Dimensions Plugin", () => {
         error: genericError,
       } as unknown as SpawnSyncReturns<string>)
 
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
         `Error spawning ffprobe: ${genericError.message}`,
       )
       expect(cancel).toHaveBeenCalled()
@@ -523,7 +523,7 @@ describe("Asset Dimensions Plugin", () => {
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
 
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
         "Could not parse dimensions from ffprobe output: ",
       )
       expect(cancel).toHaveBeenCalled()
@@ -548,7 +548,7 @@ describe("Asset Dimensions Plugin", () => {
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
 
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testVideoUrl, 1)).rejects.toThrow(
         "Could not parse dimensions from ffprobe output: this:is:not:dimensions",
       )
       expect(cancel).toHaveBeenCalled()
@@ -557,7 +557,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should throw if fetch fails (e.g., 404)", async () => {
       mockFetchResolve(mockedFetch, "", 404, {}, "Not Found")
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
         `Failed to fetch asset ${testImageUrl}: 404 Not Found`,
       )
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -568,7 +568,7 @@ describe("Asset Dimensions Plugin", () => {
       sizeOfMock.mockImplementation(() => {
         throw new Error("parsing error")
       })
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
         "unsupported file type",
       )
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -579,7 +579,7 @@ describe("Asset Dimensions Plugin", () => {
       sizeOfMock.mockImplementation(() => {
         throw new Error("parsing error")
       })
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
         "unsupported file type",
       )
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -587,7 +587,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should throw if fetch results in network error", async () => {
       mockFetchNetworkError(mockedFetch, new Error("Network failure"))
-      await expect(assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)).rejects.toThrow(
         "Network failure",
       )
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
@@ -595,7 +595,7 @@ describe("Asset Dimensions Plugin", () => {
 
     it("should handle non-asset content type", async () => {
       mockFetchResolve(mockedFetch, mockImageData, 200, { "Content-Type": "text/plain" })
-      const dimensions = await assetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)
+      const dimensions = await AssetProcessor.fetchAndParseAssetDimensions(testImageUrl, 1)
       expect(dimensions).toEqual(mockFetchedImageDims)
       expect(mockedFetch).toHaveBeenCalledWith(testImageUrl)
     })
@@ -623,7 +623,7 @@ describe("Asset Dimensions Plugin", () => {
         type: "png",
       })
 
-      const dimensions = await assetProcessor.fetchAndParseAssetDimensions(testImageUrl)
+      const dimensions = await AssetProcessor.fetchAndParseAssetDimensions(testImageUrl)
       expect(dimensions).toEqual(mockFetchedImageDims)
       expect(mockedFetch).toHaveBeenCalledTimes(numRetries)
     })
@@ -641,7 +641,7 @@ describe("Asset Dimensions Plugin", () => {
       sizeOfMock.mockReset()
       sizeOfMock.mockReturnValueOnce({ type: "unknown" })
 
-      await expect(assetProcessor.fetchAndParseAssetDimensions(invalidDimsUrl, 1)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(invalidDimsUrl, 1)).rejects.toThrow(
         /Unable to determine remote asset dimensions|unsupported file type/,
       )
       expect(mockedFetch).toHaveBeenCalledWith(invalidDimsUrl)
@@ -653,7 +653,7 @@ describe("Asset Dimensions Plugin", () => {
       const fetchSpy = mockedFetch.mockImplementation(() => {
         throw new Error("Should not be called")
       })
-      await expect(assetProcessor.fetchAndParseAssetDimensions(neverFetchedUrl, 0)).rejects.toThrow(
+      await expect(AssetProcessor.fetchAndParseAssetDimensions(neverFetchedUrl, 0)).rejects.toThrow(
         `Failed to fetch ${neverFetchedUrl} after 0 attempts.`,
       )
       expect(fetchSpy).not.toHaveBeenCalled()
@@ -1191,7 +1191,7 @@ describe("Asset Dimensions Plugin", () => {
     })
 
     it("reads dimensions for local image via file://", async () => {
-      const dims = await assetProcessor.fetchAndParseAssetDimensions(`file://${imageFile}`, 1)
+      const dims = await AssetProcessor.fetchAndParseAssetDimensions(`file://${imageFile}`, 1)
       expect(dims).toEqual(mockFetchedImageDims)
     })
 
@@ -1204,7 +1204,7 @@ describe("Asset Dimensions Plugin", () => {
         status: 0,
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
-      const dims = await assetProcessor.fetchAndParseAssetDimensions(`file://${videoFile}`, 1)
+      const dims = await AssetProcessor.fetchAndParseAssetDimensions(`file://${videoFile}`, 1)
       expect(mockSpawnSync).toHaveBeenCalledWith("ffprobe", expect.arrayContaining([videoFile]), {
         encoding: "utf-8",
       })
@@ -1214,7 +1214,7 @@ describe("Asset Dimensions Plugin", () => {
     it("throws when local asset not found", async () => {
       const missing = path.join(tmpDir, "not-exist.png")
       await expect(
-        assetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
+        AssetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
       ).rejects.toThrow("ENOENT")
     })
 
@@ -1223,7 +1223,7 @@ describe("Asset Dimensions Plugin", () => {
       jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
-      const dims = await assetProcessor.fetchAndParseAssetDimensions(`/static/${imageFileName}`, 1)
+      const dims = await AssetProcessor.fetchAndParseAssetDimensions(`/static/${imageFileName}`, 1)
 
       expect(fs.access).toHaveBeenCalledWith(expectedPath)
       expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
@@ -1237,7 +1237,7 @@ describe("Asset Dimensions Plugin", () => {
       const missing = path.join(tmpDir, "not-exist.png")
       await fs.writeFile(missing, "fake-data")
       await expect(
-        assetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
+        AssetProcessor.fetchAndParseAssetDimensions(`file://${missing}`, 1),
       ).rejects.toThrow("unsupported file type")
     })
 
@@ -1247,7 +1247,7 @@ describe("Asset Dimensions Plugin", () => {
       jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
-      const dims = await assetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
+      const dims = await AssetProcessor.fetchAndParseAssetDimensions(relImageName, 1)
 
       expect(fs.access).toHaveBeenCalledWith(expectedPath)
       expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
@@ -1268,7 +1268,7 @@ describe("Asset Dimensions Plugin", () => {
       jest.spyOn(fs, "access").mockResolvedValueOnce()
       jest.spyOn(fs, "readFile").mockResolvedValueOnce(mockImageData)
 
-      const dims = await assetProcessor.fetchAndParseAssetDimensions(inputPath, 1)
+      const dims = await AssetProcessor.fetchAndParseAssetDimensions(inputPath, 1)
 
       expect(fs.access).toHaveBeenCalledWith(expectedPath)
       expect(fs.readFile).toHaveBeenCalledWith(expectedPath)
@@ -1284,9 +1284,11 @@ describe("Asset Dimensions Plugin", () => {
       jest.doMock("image-size", () => ({ __esModule: true, default: invalidSizeOf }))
 
       const { AssetProcessor: FreshAssetProcessor } = await import("../assetDimensions")
-      const freshProcessor = new FreshAssetProcessor()
 
-      const dims = await freshProcessor.fetchAndParseAssetDimensions(`file://${badImagePath}`, 1)
+      const dims = await FreshAssetProcessor.fetchAndParseAssetDimensions(
+        `file://${badImagePath}`,
+        1,
+      )
       expect(dims).toEqual({ width: mockImageWidth, height: mockImageHeight })
 
       jest.dontMock("image-size")

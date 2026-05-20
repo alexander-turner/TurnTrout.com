@@ -225,7 +225,7 @@ class AssetProcessor {
   ])
 
   // Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
-  private async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
+  private static async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
     const localPath = await AssetProcessor.resolveLocalAssetPath(assetSrc)
     const ext = path.extname(localPath).toLowerCase()
     const { videoExts } = AssetProcessor
@@ -252,7 +252,7 @@ class AssetProcessor {
   }
 
   // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
-  private async getRemoteAssetDimensions(
+  private static async getRemoteAssetDimensions(
     assetSrc: string,
     /* istanbul ignore next */
     retries = 1,
@@ -308,13 +308,13 @@ class AssetProcessor {
    * @param retries - Number of retry attempts for remote assets
    * @returns Promise resolving to asset dimensions or null if failed
    */
-  public async fetchAndParseAssetDimensions(
+  public static async fetchAndParseAssetDimensions(
     assetSrc: string,
     retries = numRetries,
   ): Promise<AssetDimensions | null> {
     return AssetProcessor.isRemoteUrl(assetSrc)
-      ? await this.getRemoteAssetDimensions(assetSrc, retries)
-      : await this.getLocalAssetDimensions(assetSrc)
+      ? await AssetProcessor.getRemoteAssetDimensions(assetSrc, retries)
+      : await AssetProcessor.getLocalAssetDimensions(assetSrc)
   }
 
   /** Returns the src of a video element or that of its first source child.
@@ -401,7 +401,7 @@ class AssetProcessor {
         logger.debug(`Skipping remote asset in offline mode: ${src}`)
         return
       }
-      const fetchedDims = await this.fetchAndParseAssetDimensions(src, retries)
+      const fetchedDims = await AssetProcessor.fetchAndParseAssetDimensions(src, retries)
       if (fetchedDims) {
         dims = fetchedDims
         currentDimensionsCache[src] = fetchedDims
