@@ -18,16 +18,22 @@ const BUDGET_MS = 1000
 test("theme switch processes inverted images within budget", async ({ page }) => {
   await gotoPage(page, TARGET_URL, "load")
 
-  // Pre-flight: confirm the page actually has the expected invert-tagged
-  // images so the perf assertion isn't measuring an empty queue.
-  await page.waitForFunction(
-    ({ selector, expected }) => {
-      const imgs = document.querySelectorAll<HTMLImageElement>(selector)
-      if (imgs.length < expected) return false
-      return Array.from(imgs).every((img) => img.complete && img.naturalWidth > 0)
+  // Images have `loading="lazy"`, so most stay undecoded until scrolled into
+  // view. Force-decode them all by flipping each to `loading="eager"` and
+  // awaiting `decode()` — keeps the perf measurement bracketing tight
+  // without polling for IntersectionObserver-driven loads.
+  await page.evaluate(
+    async ({ selector, expected }) => {
+      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
+      if (imgs.length < expected) {
+        throw new Error(`expected at least ${expected} invert imgs, found ${imgs.length}`)
+      }
+      for (const img of imgs) {
+        img.loading = "eager"
+      }
+      await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
     },
     { selector: `img.${invertInDarkModeClass}`, expected: EXPECTED_IMAGE_COUNT },
-    { timeout: 30_000 },
   )
 
   const durationMs = await page.evaluate(
