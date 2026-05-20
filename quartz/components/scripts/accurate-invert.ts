@@ -47,13 +47,13 @@ export function invertLightness(r: number, g: number, b: number): [number, numbe
 /** Mutates pixel buffer in place: HSL lightness inversion on every pixel. */
 export function invertPixelsHSL(pixels: Uint8ClampedArray): void {
   for (let i = 0; i < pixels.length; i += 4) {
-    const r = pixels[i]
-    const g = pixels[i + 1]
-    const b = pixels[i + 2]
-    const delta = 255 - Math.max(r, g, b) - Math.min(r, g, b)
-    pixels[i] = r + delta
-    pixels[i + 1] = g + delta
-    pixels[i + 2] = b + delta
+    const red = pixels[i]
+    const green = pixels[i + 1]
+    const blue = pixels[i + 2]
+    const delta = 255 - Math.max(red, green, blue) - Math.min(red, green, blue)
+    pixels[i] = red + delta
+    pixels[i + 1] = green + delta
+    pixels[i + 2] = blue + delta
   }
 }
 
