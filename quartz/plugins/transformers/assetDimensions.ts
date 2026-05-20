@@ -1,6 +1,6 @@
 import type { Element, ElementContent, Root } from "hast"
 
-import { spawnSync, type SpawnSyncReturns } from "child_process"
+import childProcess, { type SpawnSyncReturns } from "child_process"
 import crypto from "crypto"
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
@@ -58,13 +58,8 @@ export function maybeResolveAssetStagingPath(localPath: string): string | null {
  * from both local and remote sources.
  */
 class AssetProcessor {
-  private spawnSyncWrapper: typeof spawnSync
   private assetDimensionsCache: AssetDimensionMap | null = null
   private needToSaveCache = false
-
-  constructor(spawnFn: typeof spawnSync = spawnSync) {
-    this.spawnSyncWrapper = spawnFn
-  }
 
   /** Test-only: clears in-memory cache and the dirty flag. */
   public resetDirectCacheAndDirtyFlag(): void {
@@ -130,8 +125,8 @@ class AssetProcessor {
    * @param assetSrc - The source path or URL of the asset
    * @returns Asset dimensions
    */
-  public getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
-    const ffprobe: SpawnSyncReturns<string> = this.spawnSyncWrapper(
+  public static getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
+    const ffprobe: SpawnSyncReturns<string> = childProcess.spawnSync(
       "ffprobe",
       [
         "-v",
@@ -230,12 +225,12 @@ class AssetProcessor {
   ])
 
   // Get dimensions for a local asset: use ffprobe for videos, image-size for images/SVGs
-  private async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
+  private static async getLocalAssetDimensions(assetSrc: string): Promise<AssetDimensions> {
     const localPath = await AssetProcessor.resolveLocalAssetPath(assetSrc)
     const ext = path.extname(localPath).toLowerCase()
     const { videoExts } = AssetProcessor
     if (videoExts.has(ext)) {
-      return await this.getAssetDimensionsFfprobe(localPath)
+      return await AssetProcessor.getAssetDimensionsFfprobe(localPath)
     }
 
     const buffer = await fs.readFile(localPath)
@@ -257,7 +252,7 @@ class AssetProcessor {
   }
 
   // Get dimensions for a remote asset: fetch + ffprobe or image-size fallback
-  private async getRemoteAssetDimensions(
+  private static async getRemoteAssetDimensions(
     assetSrc: string,
     /* istanbul ignore next */
     retries = 1,
@@ -280,7 +275,7 @@ class AssetProcessor {
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
           response.body?.cancel()
-          return await this.getAssetDimensionsFfprobe(assetSrc)
+          return await AssetProcessor.getAssetDimensionsFfprobe(assetSrc)
         }
 
         const buffer = Buffer.from(await response.arrayBuffer())
@@ -313,13 +308,13 @@ class AssetProcessor {
    * @param retries - Number of retry attempts for remote assets
    * @returns Promise resolving to asset dimensions or null if failed
    */
-  public async fetchAndParseAssetDimensions(
+  public static async fetchAndParseAssetDimensions(
     assetSrc: string,
     retries = numRetries,
   ): Promise<AssetDimensions | null> {
     return AssetProcessor.isRemoteUrl(assetSrc)
-      ? await this.getRemoteAssetDimensions(assetSrc, retries)
-      : await this.getLocalAssetDimensions(assetSrc)
+      ? await AssetProcessor.getRemoteAssetDimensions(assetSrc, retries)
+      : await AssetProcessor.getLocalAssetDimensions(assetSrc)
   }
 
   /** Returns the src of a video element or that of its first source child.
@@ -406,7 +401,7 @@ class AssetProcessor {
         logger.debug(`Skipping remote asset in offline mode: ${src}`)
         return
       }
-      const fetchedDims = await this.fetchAndParseAssetDimensions(src, retries)
+      const fetchedDims = await AssetProcessor.fetchAndParseAssetDimensions(src, retries)
       if (fetchedDims) {
         dims = fetchedDims
         currentDimensionsCache[src] = fetchedDims
@@ -425,12 +420,7 @@ class AssetProcessor {
 
 export const assetProcessor = new AssetProcessor()
 
-// --- Test Helper Exports ---
 export { AssetProcessor }
-/** Test-only: swaps the module's {@link assetProcessor} for one using `fn` as its spawn function. */
-export function setSpawnSyncForTesting(fn: typeof spawnSync): void {
-  Object.assign(assetProcessor, new AssetProcessor(fn))
-}
 
 /**
  * Prepends CSS declarations to an element's inline style.
