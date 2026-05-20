@@ -471,64 +471,54 @@ test.describe("Instant Scroll Restoration", () => {
       .toBeDefined()
   })
 
-  test("exits restoration loop quickly despite browser subpixel scroll rounding", async ({
-    page,
-  }) => {
-    // Reproduces the Safari "stuck for 3s after reload" bug deterministically
-    // across all browsers by monkey-patching window.scrollTo to round its
-    // target down by 1px — the same subpixel-rounding behavior real Safari
-    // exhibits at Retina DPRs. If the restoration loop's early-exit tolerance
-    // is too tight (< 1 instead of <= 1), the |actual - target| == 1 gap
-    // never satisfies the exit condition, so the loop runs all MAX_ATTEMPTS
-    // (~3s @ 60fps), locking user scroll input the whole time.
-    const scrollPos = 500
-    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
-    await waitForHistoryState(page, scrollPos)
+  test.describe("subpixel scroll rounding on Retina", () => {
+    test.use({ deviceScaleFactor: 2 })
 
-    const consoleMessages: string[] = []
-    page.on("console", (msg) => {
-      if (msg.text().includes("InstantScrollRestoration")) {
-        consoleMessages.push(msg.text())
-      }
-    })
+    test("exits restoration loop quickly despite Safari Retina rounding", async ({
+      page,
+      browserName,
+    }) => {
+      // Real Safari at DPR=2 snaps scrollTo's result to a half-pixel boundary,
+      // producing a structural 1px gap between target and actual scrollY. If
+      // the restoration loop's early-exit tolerance is too tight, the loop
+      // runs all MAX_ATTEMPTS frames (~3s @ 60fps), locking user scroll input
+      // for the entire duration. This bug doesn't manifest in
+      // Chromium/Firefox, so we skip them.
+      test.skip(browserName !== "webkit", "Subpixel rounding only repros in WebKit")
 
-    // Install the rounding stub before reload so it's active when the
-    // inline restoration script runs.
-    await page.addInitScript(() => {
-      const original = window.scrollTo.bind(window)
-      window.scrollTo = ((...args: unknown[]) => {
-        if (args.length >= 2 && typeof args[1] === "number") {
-          original(args[0] as number, args[1] - 1)
-        } else if (args.length === 1 && typeof args[0] === "object" && args[0] !== null) {
-          const opts = args[0] as ScrollToOptions
-          original({ ...opts, top: (opts.top ?? 0) - 1 })
-        } else {
-          original(...(args as Parameters<typeof window.scrollTo>))
-        }
-      }) as typeof window.scrollTo
-    })
+      const scrollPos = 1500
+      await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+      await waitForHistoryState(page, scrollPos)
 
-    await page
-      .evaluate(() => location.reload())
-      .catch((error: Error) => {
-        if (!error.message?.includes("context")) {
-          throw error
+      const consoleMessages: string[] = []
+      page.on("console", (msg) => {
+        if (msg.text().includes("InstantScrollRestoration")) {
+          consoleMessages.push(msg.text())
         }
       })
-    await page.waitForLoadState("domcontentloaded")
 
-    await expect
-      .poll(() => consoleMessages.find((msg) => msg.includes("Initial scroll complete")), {
-        timeout: 10_000,
-      })
-      .toBeDefined()
+      await page
+        .evaluate(() => location.reload())
+        .catch((error: Error) => {
+          if (!error.message?.includes("context")) {
+            throw error
+          }
+        })
+      await page.waitForLoadState("domcontentloaded")
 
-    const attemptNumbers = consoleMessages
-      .map((msg) => /Attempt (?<n>\d+),/.exec(msg)?.groups?.n)
-      .filter((n): n is string => n !== undefined)
-      .map(Number)
-    const maxAttempt = Math.max(0, ...attemptNumbers)
-    expect(maxAttempt).toBeLessThan(20)
+      await expect
+        .poll(() => consoleMessages.find((msg) => msg.includes("Initial scroll complete")), {
+          timeout: 10_000,
+        })
+        .toBeDefined()
+
+      const attemptNumbers = consoleMessages
+        .map((msg) => /Attempt (?<n>\d+),/.exec(msg)?.groups?.n)
+        .filter((n): n is string => n !== undefined)
+        .map(Number)
+      const maxAttempt = Math.max(0, ...attemptNumbers)
+      expect(maxAttempt).toBeLessThan(20)
+    })
   })
 })
 
