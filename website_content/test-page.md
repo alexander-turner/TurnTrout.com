@@ -468,6 +468,12 @@ Figure: This image should be transparent in light mode and inverted to be transp
 <figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
 </figure>
 
+## SVG inversion
+
+![A scatter plot comparing AVIF and PNG file sizes against image quality, showing AVIF achieving the same quality at a fraction of the byte cost.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
+
+Figure: An SVG `<img>` flagged for dark-mode inversion. The runtime rewrites the SVG source with HSL-inverted color attributes (rather than rasterizing through canvas) so the result stays vector-crisp.
+
 ## Before/after image slider
 
 <figure>
