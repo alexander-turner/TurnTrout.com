@@ -523,6 +523,33 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
         CheckStep(
             name="Linting Python",
             command=["uv", "run", "ruff", "check", "--fix", *py_targets],
+            parallel_group="autofix-lint",
+        ),
+        CheckStep(
+            name="Linting TypeScript",
+            command=[
+                "pnpm",
+                "exec",
+                "eslint",
+                "--fix",
+                str(git_root_path),
+                "--config",
+                f"{git_root_path}/config/javascript/eslint.config.js",
+            ],
+            parallel_group="autofix-lint",
+        ),
+        CheckStep(
+            name="Cleaning up SCSS",
+            command=[
+                "pnpm",
+                "exec",
+                "stylelint",
+                "--config",
+                f"{git_root_path}/config/stylelint/.stylelintrc.json",
+                "--fix",
+                f"{git_root_path}/quartz/**/*.scss",
+            ],
+            parallel_group="autofix-lint",
         ),
         CheckStep(
             name="Formatting Python docstrings",
@@ -540,34 +567,12 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
                 "--config",
                 f"{git_root_path}/config/python/pyproject.toml",
             ],
-        ),
-        CheckStep(
-            name="Linting TypeScript",
-            command=[
-                "pnpm",
-                "exec",
-                "eslint",
-                "--fix",
-                str(git_root_path),
-                "--config",
-                f"{git_root_path}/config/javascript/eslint.config.js",
-            ],
-        ),
-        CheckStep(
-            name="Cleaning up SCSS",
-            command=[
-                "pnpm",
-                "exec",
-                "stylelint",
-                "--config",
-                f"{git_root_path}/config/stylelint/.stylelintrc.json",
-                "--fix",
-                f"{git_root_path}/quartz/**/*.scss",
-            ],
+            parallel_group="autofix-format",
         ),
         CheckStep(
             name="Formatting SCSS",
             command=[*prettier_args, f"{git_root_path}/quartz/**/*.scss"],
+            parallel_group="autofix-format",
         ),
         CheckStep(
             name="Formatting TypeScript",
@@ -575,6 +580,7 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
                 *prettier_args,
                 f"{git_root_path}/quartz/**/*.{{js,jsx,ts,tsx}}",
             ],
+            parallel_group="autofix-format",
         ),
         CheckStep(
             name="Formatting markdown",
@@ -582,10 +588,12 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
                 *prettier_args,
                 f"{git_root_path}/{script_utils.CONTENT_DIR_NAME}/**/*.md",
             ],
+            parallel_group="autofix-format",
         ),
         CheckStep(
             name="Formatting JSON",
             command=[*prettier_args, f"{git_root_path}/**/*.json"],
+            parallel_group="autofix-format",
         ),
     ]
 

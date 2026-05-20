@@ -644,6 +644,22 @@ _VERIFY_NAMES = frozenset(
         "Spellcheck and Vale",
     }
 )
+_AUTOFIX_LINT_NAMES = frozenset(
+    {
+        "Linting Python",
+        "Linting TypeScript",
+        "Cleaning up SCSS",
+    }
+)
+_AUTOFIX_FORMAT_NAMES = frozenset(
+    {
+        "Formatting Python docstrings",
+        "Formatting SCSS",
+        "Formatting TypeScript",
+        "Formatting markdown",
+        "Formatting JSON",
+    }
+)
 
 
 def test_scss_variables_runs_before_source_file_checks():
@@ -677,15 +693,35 @@ def test_pylint_step_invocation():
     assert pylint_step.parallel_group == "verify"
 
 
-def test_verify_steps_share_parallel_group():
-    """All four read-only verifiers share the verify parallel group; every other
-    step is sequential (parallel_group=None)."""
+def _expected_group(name: str) -> str | None:
+    if name in _AUTOFIX_LINT_NAMES:
+        return "autofix-lint"
+    if name in _AUTOFIX_FORMAT_NAMES:
+        return "autofix-format"
+    if name in _VERIFY_NAMES:
+        return "verify"
+    return None
+
+
+def test_parallel_groups_assigned_correctly():
+    """Each step is bucketed into autofix-lint / autofix-format / verify, or
+    runs sequentially (parallel_group=None)."""
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    expected = {
-        s.name: ("verify" if s.name in _VERIFY_NAMES else None) for s in steps
-    }
+    expected = {s.name: _expected_group(s.name) for s in steps}
     actual = {s.name: s.parallel_group for s in steps}
     assert actual == expected
+
+
+def test_autofix_lint_runs_before_autofix_format():
+    """Linters finish before formatters so prettier gets the final pass."""
+    steps = run_push_checks.get_formatter_steps(_TEST_ROOT)
+    last_lint_idx = max(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-lint"
+    )
+    first_format_idx = min(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-format"
+    )
+    assert last_lint_idx < first_format_idx
 
 
 def test_spellcheck_step_requires_vale():
