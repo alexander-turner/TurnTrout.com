@@ -2684,6 +2684,9 @@ precompute
 predation
 predictions-for-shard-theory-mechanistic-interpretability
 predictively
+prefetch
+prefetches
+prefetching
 prefill
 preimage
 preload
