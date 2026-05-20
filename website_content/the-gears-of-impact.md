@@ -102,7 +102,9 @@ card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes
 ​![Two diagrams show a person with paths to goals like relaxing, grocery shopping, and hiking. In the first, all paths are open. In the second, the person is harmed, blocking all options. Text explains: "You are the common denominator. Objective impact involves harm to you or your resources, and this is why."](https://assets.turntrout.com/static/images/posts/HShpS3u.avif)
 
 <img src="https://assets.turntrout.com/static/images/posts/WjTqF2y.avif" alt="">
-![ "The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure." ](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
+
+!["The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure."](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
+
 ![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/the-gears-of-impact-05182026.avif)
 
 > [!exercise]
