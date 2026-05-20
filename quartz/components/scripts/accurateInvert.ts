@@ -33,6 +33,52 @@ const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass
 // `:not(.force-hsl-invert)` keeps force-invert imgs inverted on theme switch.
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-processed]`
 
+// URLs of original bitmaps that have already been pinned, so we don't
+// duplicate pins when multiple invert imgs share a source. Survives SPA
+// navigation: cumulative growth across pages is bounded by total unique
+// invert imgs viewed in the session, which is fine for a blog-scale site.
+const pinnedOriginalUrls = new Set<string>()
+const PIN_CONTAINER_ID = "invert-pin-container"
+
+function getPinContainer(): HTMLElement {
+  const existing = document.getElementById(PIN_CONTAINER_ID)
+  if (existing) return existing
+  const container = document.createElement("div")
+  container.id = PIN_CONTAINER_ID
+  container.setAttribute("aria-hidden", "true")
+  container.style.cssText =
+    "position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;pointer-events:none;"
+  document.body.appendChild(container)
+  return container
+}
+
+/**
+ * Pins the original bitmap in the renderer's image cache by appending an
+ * off-screen `<img>` inside a hidden container. A heap-only `new Image()`
+ * is not enough — Chromium typically skips decoding for not-in-DOM images
+ * and purges decoded bitmaps under memory pressure. An in-DOM (but
+ * visually hidden) `<img>` is treated as a live render-tree node, so the
+ * original stays decoded for the lifetime of the page. When the
+ * dark→light revert sets `<img>.src` back to the original URL, the swap
+ * resolves from the shared decode cache within the same paint frame
+ * instead of flashing the stale canvas-inverted bitmap during reload.
+ */
+function pinOriginalBitmap(originalSrc: string): void {
+  if (pinnedOriginalUrls.has(originalSrc)) return
+  pinnedOriginalUrls.add(originalSrc)
+  const pin = document.createElement("img")
+  // Match the request mode of the originating <img>: invert imgs on the
+  // site carry crossorigin="anonymous" so canvas drawImage / getImageData
+  // doesn't taint. Chromium's decode cache is keyed by URL + CORS mode,
+  // so the pin's bitmap is only shared with the visible img if both
+  // requests are CORS-anonymous.
+  pin.crossOrigin = "anonymous"
+  pin.alt = ""
+  pin.dataset["invertCachePin"] = "1"
+  pin.src = originalSrc
+  getPinContainer().appendChild(pin)
+}
+
 // SVG paint/colored properties we rewrite — both as XML attributes and as
 // CSS declarations inside `style="…"` and `<style>` blocks. `currentColor`,
 // `none`, paint refs like `url(#grad)`, and `transparent` fall through
@@ -160,6 +206,9 @@ export function processRasterImage(img: HTMLImageElement): boolean {
     if (!img.dataset["invertOriginalSrc"]) {
       img.dataset["invertOriginalSrc"] = img.src
     }
+    if (!img.classList.contains(forceHslInvertClass)) {
+      pinOriginalBitmap(img.dataset["invertOriginalSrc"])
+    }
     img.src = canvas.toDataURL()
     img.dataset["invertProcessed"] = "1"
     return true
@@ -187,6 +236,9 @@ export async function processSvgImage(img: HTMLImageElement): Promise<boolean> {
     const inverted = invertSvgSource(text)
     if (!img.dataset["invertOriginalSrc"]) {
       img.dataset["invertOriginalSrc"] = img.src
+    }
+    if (!img.classList.contains(forceHslInvertClass)) {
+      pinOriginalBitmap(img.dataset["invertOriginalSrc"])
     }
     img.src = `data:image/svg+xml;utf8,${encodeURIComponent(inverted)}`
     img.dataset["invertProcessed"] = "1"
