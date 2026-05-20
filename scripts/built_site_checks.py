@@ -913,6 +913,45 @@ def check_invert_labels(
     return issues
 
 
+def _find_first_lcp_candidate(article: Tag) -> Tag | None:
+    """
+    Return the first `<img>` in the article that's a real LCP candidate.
+
+    Skips favicons, twemoji glyphs (tiny inline characters, never the LCP
+    element — matches `optimizeLcpImage` in renderPage.tsx), and images not
+    processed by the links transformer (TSX-rendered images won't have a
+    loading attribute).
+    """
+    for img in _tags_only(article.find_all("img")):
+        raw_classes = img.get("class")
+        classes = raw_classes if isinstance(raw_classes, list) else []
+        src = str(img.get("src", ""))
+        if (
+            "favicon" not in classes
+            and not src.startswith(script_utils.TWEMOJI_BASE_URL)
+            and img.has_attr("loading")
+        ):
+            return img
+    return None
+
+
+def _check_lcp_preload_link(soup: BeautifulSoup, src: str) -> list[str]:
+    """Return an issue list if `<head>` lacks a matching preload `<link>`."""
+    head = soup.find("head")
+    if not src or not isinstance(head, Tag):
+        return []
+    preload_links = head.find_all(
+        "link", attrs={"rel": "preload", "as": "image"}
+    )
+    preload_hrefs = [link.get("href") for link in _tags_only(preload_links)]
+    if src in preload_hrefs:
+        return []
+    return [
+        f"Missing <link rel='preload' as='image'> in <head> "
+        f"for first content image: {src}"
+    ]
+
+
 def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
     """
     Check that the first content image is optimized for LCP.
@@ -921,30 +960,19 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
     fetchpriority="high", and a matching <link rel="preload" as="image"> should
     exist in <head>.
     """
-    issues: list[str] = []
-
-    # Find the first non-favicon content image
     article = soup.find("article")
-    if not article or not isinstance(article, Tag):
-        return issues
+    if not isinstance(article, Tag):
+        return []
 
-    first_img = None
-    for img in _tags_only(article.find_all("img")):
-        raw_classes = img.get("class")
-        classes = raw_classes if isinstance(raw_classes, list) else []
-        # Skip favicons and images not processed by the links transformer
-        # (TSX-rendered images won't have a loading attribute)
-        if "favicon" not in classes and img.has_attr("loading"):
-            first_img = img
-            break
-
+    first_img = _find_first_lcp_candidate(article)
     if not first_img:
-        return issues
+        return []
 
-    src = first_img.get("src", "")
+    src = str(first_img.get("src", ""))
     loading = first_img.get("loading", "")
     fetchpriority = first_img.get("fetchpriority", "")
 
+    issues: list[str] = []
     if loading != "eager":
         issues.append(
             f"First content image should have loading='eager', got '{loading}': {src}"
@@ -954,20 +982,7 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
             f"First content image should have fetchpriority='high', "
             f"got '{fetchpriority}': {src}"
         )
-
-    # Check for matching preload link in head
-    head = soup.find("head")
-    if head and isinstance(head, Tag) and src:
-        preload_links = head.find_all(
-            "link", attrs={"rel": "preload", "as": "image"}
-        )
-        preload_hrefs = [link.get("href") for link in _tags_only(preload_links)]
-        if str(src) not in preload_hrefs:
-            issues.append(
-                f"Missing <link rel='preload' as='image'> in <head> "
-                f"for first content image: {src}"
-            )
-
+    issues.extend(_check_lcp_preload_link(soup, src))
     return issues
 
 
@@ -3139,7 +3154,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
-        if "drafts" in root_path.parts:
+        if "drafts" in root_path.parts or "partials" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
             if not file.endswith(".html") or Path(file).stem in files_to_skip:

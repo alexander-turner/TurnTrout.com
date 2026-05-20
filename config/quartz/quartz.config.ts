@@ -19,6 +19,7 @@ import {
   RecentPostsPage,
   RemoveDrafts,
   RemoveFixtures,
+  RemovePartials,
   Static,
   stripBadges,
   StripInlineBoundaryWhitespace,
@@ -130,7 +131,7 @@ const config: QuartzConfig = {
       addAssetDimensionsFromSrc(),
       InvertInDarkMode(),
     ],
-    filters: [RemoveDrafts(), RemoveFixtures()],
+    filters: [RemoveDrafts(), RemoveFixtures(), RemovePartials()],
     emitters: [
       AliasRedirects(),
       ComponentResources(),
