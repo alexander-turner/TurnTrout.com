@@ -470,6 +470,47 @@ test.describe("Instant Scroll Restoration", () => {
       })
       .toBeDefined()
   })
+
+  test("exits restoration loop quickly despite browser subpixel scroll rounding", async ({
+    page,
+  }) => {
+    // Safari rounds window.scrollTo's result down by 1px, leaving a structural
+    // 1px gap between target and actual scroll. If the early-exit tolerance is
+    // too tight, the loop runs all MAX_ATTEMPTS frames (~3s) and locks user
+    // scroll input the entire time.
+    const scrollPos = 500
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    const consoleMessages: string[] = []
+    page.on("console", (msg) => {
+      if (msg.text().includes("InstantScrollRestoration")) {
+        consoleMessages.push(msg.text())
+      }
+    })
+
+    await page
+      .evaluate(() => location.reload())
+      .catch((error: Error) => {
+        if (!error.message?.includes("context")) {
+          throw error
+        }
+      })
+    await page.waitForLoadState("domcontentloaded")
+
+    await expect
+      .poll(() => consoleMessages.find((msg) => msg.includes("Initial scroll complete")), {
+        timeout: 10_000,
+      })
+      .toBeDefined()
+
+    const attemptNumbers = consoleMessages
+      .map((msg) => /Attempt (?<n>\d+),/.exec(msg)?.groups?.n)
+      .filter((n): n is string => n !== undefined)
+      .map(Number)
+    const maxAttempt = Math.max(0, ...attemptNumbers)
+    expect(maxAttempt).toBeLessThan(20)
+  })
 })
 
 test.describe("Cross-Session Scroll Persistence (localStorage)", () => {
