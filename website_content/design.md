@@ -763,7 +763,7 @@ I love these "admonition" bubbles which contain information. When an admonition 
 >
 > > [!money]
 
-I [prefetch](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/prefetch) the admonition icons to avoid flickers. Each page only prefetches the icons it uses.
+I [preload](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload) the admonition icons to avoid flickers. Each page only preloads the icons it uses.
 
 ## Mermaid diagrams
 

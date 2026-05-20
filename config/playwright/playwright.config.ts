@@ -79,7 +79,12 @@ function sanitizeConfigForBrowser(
   return config
 }
 
-const baseURL = "http://localhost:8080"
+// `PLAYWRIGHT_BASE_URL` lets CI rerun selected specs against a deployed
+// preview (CF Pages) instead of the local dev server. When it's set we
+// skip the `webServer` entirely — the external URL is already up.
+const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL
+const baseURL = remoteBaseURL ?? "http://localhost:8080"
+const useRemoteBaseURL = remoteBaseURL !== undefined
 
 export default defineConfig({
   timeout: 45_000,
@@ -105,17 +110,19 @@ export default defineConfig({
   // without collision.
   snapshotPathTemplate: "../../tests/visual-baselines/{arg}.png",
   reporter: process.env.CI ? "dot" : "list", // Format of test status display
-  webServer: {
-    // Local dev rebuilds via `pnpm start`; fixtures must be included so the
-    // visual tests can hover/preview them. CI consumes a pre-built `public/`
-    // that already had INCLUDE_FIXTURES=true at build time.
-    command: process.env.CI
-      ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
-      : "INCLUDE_FIXTURES=true pnpm start",
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 7 * 60 * 1000, // 7 minutes
-  },
+  webServer: useRemoteBaseURL
+    ? undefined
+    : {
+        // Local dev rebuilds via `pnpm start`; fixtures must be included so the
+        // visual tests can hover/preview them. CI consumes a pre-built `public/`
+        // that already had INCLUDE_FIXTURES=true at build time.
+        command: process.env.CI
+          ? "pnpm serve public -l 8080 > /tmp/webserver.log 2>&1"
+          : "INCLUDE_FIXTURES=true pnpm start",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 7 * 60 * 1000, // 7 minutes
+      },
   use: {
     baseURL,
     trace: "retain-on-failure",

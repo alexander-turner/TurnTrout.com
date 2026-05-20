@@ -83,7 +83,7 @@ export default (() => {
       return (
         <link
           key={icon}
-          rel="prefetch"
+          rel="preload"
           href={`${cdnBaseUrl}/static/icons/${icon}.svg`}
           as="image"
           type="image/svg+xml"
