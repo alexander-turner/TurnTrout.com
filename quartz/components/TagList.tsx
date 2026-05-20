@@ -34,7 +34,7 @@ export const getTags = (fileData: QuartzPluginData): string[] => {
   return tags.sort((a: string, b: string) => b.length - a.length)
 }
 
-// skipcq: JS-D1001
+/** Renders the page's frontmatter tags as a list of tag-page links, longest-first. */
 const TagListComponent: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   const tags = getTags(fileData)
   if (tags && tags.length > 0) {
@@ -58,6 +58,6 @@ const TagListComponent: QuartzComponent = ({ fileData }: QuartzComponentProps) =
   }
 }
 
-// skipcq: JS-D1001
+/** Quartz constructor for {@link TagListComponent}. */
 export const TagList: QuartzComponentConstructor = () => TagListComponent
 export default TagList satisfies QuartzComponentConstructor

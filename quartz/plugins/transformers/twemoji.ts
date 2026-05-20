@@ -19,7 +19,7 @@ export interface TwemojiOptions {
   callback: (icon: string, options: TwemojiOptions) => string
 }
 
-// skipcq: JS-D1001
+/** Builds the CDN URL for a Twemoji glyph given its codepoint and extension. */
 export function constructTwemojiUrl(icon: string, options: TwemojiOptions): string {
   return `${twemojiBaseUrl}${icon}${options.ext}`
 }
@@ -166,7 +166,7 @@ export function processTree(tree: Node): Node {
   return tree
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer that swaps Unicode emoji for inline Twemoji `<img>` tags. */
 export const Twemoji = (): {
   name: string
   htmlPlugins: () => Plugin[]

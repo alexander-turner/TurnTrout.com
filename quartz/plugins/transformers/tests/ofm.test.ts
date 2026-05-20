@@ -112,9 +112,9 @@ describe("markdownPlugins", () => {
       notExpectedContent: ['<div class="admonition-content">'],
     },
     {
-      name: "custom type admonition",
-      input: "> [!custom] This is a custom admonition",
-      expectedClass: "admonition custom",
+      name: "definition admonition",
+      input: "> [!definition] A defined term",
+      expectedClass: "admonition definition",
       expectedContent: [],
     },
     {
@@ -149,6 +149,64 @@ describe("markdownPlugins", () => {
       assertContent(output, expectedContent, notExpectedContent)
     },
   )
+
+  describe("usedAdmonitionIcons tracking", () => {
+    const collectIcons = (input: string): readonly string[] | undefined => {
+      const processor = unified()
+        .use(remarkParse)
+        .use(markdownPlugins(defaultOptions))
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeStringify, { allowDangerousHtml: true })
+      const vfile = new VFile(input)
+      processor.processSync(vfile)
+      return vfile.data.usedAdmonitionIcons as readonly string[] | undefined
+    }
+
+    it.each([
+      { name: "tip → plus", input: "> [!tip] Hint", expected: ["plus"] },
+      { name: "idea → lightbulb", input: "> [!idea] Brainwave", expected: ["lightbulb"] },
+      { name: "money → dollar", input: "> [!money] Cost", expected: ["dollar"] },
+      { name: "thanks → heart", input: "> [!thanks] Gratitude", expected: ["heart"] },
+      { name: "goose → goose", input: "> [!goose] Honk", expected: ["goose"] },
+      { name: "definition → note", input: "> [!definition] Term", expected: ["note"] },
+    ])("records $name", ({ input, expected }) => {
+      expect(collectIcons(input)).toEqual(expected)
+    })
+
+    it("returns undefined when no admonitions are present", () => {
+      expect(collectIcons("Just a paragraph.")).toBeUndefined()
+    })
+
+    it("deduplicates and sorts icons across multiple admonitions", () => {
+      const input = [
+        "> [!warning] A",
+        "",
+        "> [!note] B",
+        "",
+        "> [!warning] C",
+        "",
+        "> [!info] D",
+      ].join("\n")
+      expect(collectIcons(input)).toEqual(["info", "note", "warning"])
+    })
+
+    it("aliases through admonitionMapping (hint → tip → plus)", () => {
+      expect(collectIcons("> [!hint] Aliased")).toEqual(["plus"])
+    })
+
+    it("adds the fold icon for collapsible admonitions", () => {
+      expect(collectIcons("> [!note]+ Expandable")).toEqual(["fold", "note"])
+      expect(collectIcons("> [!note]- Collapsed")).toEqual(["fold", "note"])
+    })
+
+    it("does not add the fold icon when no admonition is collapsible", () => {
+      expect(collectIcons("> [!note] Plain")).toEqual(["note"])
+    })
+
+    it("throws on unknown admonition types", () => {
+      expect(() => collectIcons("> [!nonsense] Boom")).toThrow(/Unknown admonition type "nonsense"/)
+    })
+  })
 
   interface BlockReferenceTestCase extends BaseTestCase {
     expectedContent: string[]
@@ -864,10 +922,9 @@ describe("Branch coverage tests", () => {
     expect(result).toContain('<video src="test.mp4"></video>')
   })
 
-  it("should handle unknown admonition types", () => {
+  it("should throw on unknown admonition types", () => {
     const input = "> [!unknowntype] This is an unknown admonition type"
-    const output = testMarkdownPlugins(input)
-    expect(output).toContain('class="admonition unknowntype"')
+    expect(() => testMarkdownPlugins(input)).toThrow(/Unknown admonition type "unknowntype"/)
   })
 
   it("should handle image nodes that don't match video extensions", () => {
@@ -1226,10 +1283,9 @@ describe("Branch coverage tests", () => {
     expect(output).toContain("<div>No special syntax here</div>")
   })
 
-  it("should test canonicalizeAdmonition fallback", () => {
+  it("should propagate canonicalizeAdmonition fallback into icon-lookup throw", () => {
     const input = "> [!unrecognized] This is an unrecognized admonition type"
-    const output = testMarkdownPlugins(input)
-    expect(output).toContain('class="admonition unrecognized"')
+    expect(() => testMarkdownPlugins(input)).toThrow(/Unknown admonition type "unrecognized"/)
   })
 
   it("should handle video extension matching correctly", () => {

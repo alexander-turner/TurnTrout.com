@@ -29,7 +29,7 @@ export function generateAllPostsBlock(props: QuartzComponentProps): JSX.Element 
   return pageListing
 }
 
-// skipcq: JS-D1001
+/** Page renderer for the "all posts" index, wrapping {@link PageList} in the transclude container. */
 export const AllPosts: QuartzComponent = (props: QuartzComponentProps) => {
   const { fileData, allFiles } = props
   const cssClasses: readonly string[] = fileData.frontmatter?.cssclasses ?? []

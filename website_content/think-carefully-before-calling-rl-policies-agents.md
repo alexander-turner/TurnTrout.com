@@ -30,7 +30,7 @@ date_published: 2023-06-02
 original_url: https://www.lesswrong.com/posts/rmfjo4Wmtgq8qa2B7/think-carefully-before-calling-rl-policies-agents
 skip_import: true
 description: RL researchers call trained policies "agents", biasing how we think about their behavior. I advocate for using the term "policy" instead.
-date_updated: 2026-04-20
+date_updated: 2026-05-20
 createBibtex: true
 ---
 
@@ -55,7 +55,7 @@ Throughout [my PhD in RL theory](https://turntrout.com/alignment-phd), I accepte
 
 If you're like I was in early 2022, you might answer "RL trains agents." _But why? In what ways do PPO's weight updates tend to accumulate into agentic circuitry, while unsupervised pretraining on OpenWebText does not?_
 
-> [!claim]
+> [!idea]
 > People are tempted to answer "RL" because the field adopted the "agent" terminology for reasons _unrelated to the above question_. Everyone keeps using the loaded terminology because no one questions it.
 
 Let's be clear. RL researchers _did not_ deliberate carefully about the inductive biases of deep learning, and then decide that a certain family of algorithms was especially likely to train agentic cognition. Researchers called policies "agents" as early as 1995, _before_ the era of deep learning (e.g. see [AI: A modern approach, 1st edition](https://en.wikipedia.org/wiki/Artificial_Intelligence:_A_Modern_Approach)).

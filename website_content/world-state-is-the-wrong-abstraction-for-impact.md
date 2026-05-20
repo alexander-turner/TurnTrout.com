@@ -39,7 +39,7 @@ date_published: 2019-10-01
 original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2026-04-20
+date_updated: 2026-05-20
 ---
 
 !["I've been keeping something from you. Remember the confusion I mentioned in the first post? Before the attainable utility theory of impact came along, people made an assumption about what impact is - a reasonable, obvious, compelling assumption: that impact is primarily about how the state of the world changes."](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
@@ -116,7 +116,7 @@ I think what gets you is asking the question "what things are impactful?" instea
 
 At least, that's what *I* did.
 
-> [!exercise]
+> [!note]
 > Someone (me, early last year) says that impact is closely related to change in object identities.
 >
 > ![A vase turns into a red vase.](https://assets.turntrout.com/static/images/posts/pnztldk.avif)

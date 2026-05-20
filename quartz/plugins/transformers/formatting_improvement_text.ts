@@ -106,7 +106,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/GPT-4o\b/g, "GPT-4-o"],
 ]
 
-// skipcq: JS-D1001
+/** Sequentially applies a list of `[pattern, replacement]` regex substitutions to `text`. */
 export function applyTextTransforms(text: string, transforms: [RegExp | string, string][]): string {
   for (const [pattern, replacement] of transforms) {
     const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern, "g")

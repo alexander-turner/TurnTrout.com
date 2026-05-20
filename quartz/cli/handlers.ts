@@ -455,7 +455,7 @@ export function reorderHead(querier: CheerioAPI): CheerioAPI {
   const headChildren = head.children()
   // These scripts should load first to avoid FOUC
   const scriptNamesToPutAtTop = ["detect-initial-state", "instant-scroll-restoration"]
-  // skipcq: JS-D1001
+  /** Cheerio filter predicate: matches `<script>` elements whose id is in `scriptNamesToPutAtTop`. */
   const isScriptToPutAtTop = (_i: number, el: CheerioElement): boolean =>
     el.type === "script" && scriptNamesToPutAtTop.includes(el.attribs.id)
   const scriptsToPutAtTop = headChildren.filter(isScriptToPutAtTop)

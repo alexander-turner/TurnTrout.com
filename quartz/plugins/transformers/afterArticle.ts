@@ -80,7 +80,7 @@ function afterArticleTransform(tree: Root, file: VFile) {
   }
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer that injects sequence-link and "next/previous" UI after the article body. */
 export const AfterArticle: QuartzTransformerPlugin = () => {
   return {
     name: "AfterArticleTransformer",

@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/LfGzAduBWzY5gq6FE/how-low-should-f
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/4bIPf6o.jpg
 description: How to choose an AI's impact limit to get the best results without triggering a catastrophe.
-date_updated: 2026-05-18
+date_updated: 2026-05-20
 card_image_alt: A diagram illustrating how a search radius constrains an AI's choices. On the left, a cartoon AI is at the center of concentric circles representing increasing impact. Several pink circles (good plans) are at different distances—the farther a circle is, the darker its pink color (higher utility). A distant, mischievous pink smiley face represents a catastrophic plan. On the right, a line labeled "Search radius" shows that as the radius increases from "nothing," the AI can select progressively farther, higher-utility plans.
 ---
 
@@ -92,7 +92,7 @@ The scaled setup also helps us choose the best way of transmuting time into mone
 ![A diagram titled "Tasks" lists three options: Mow lawn (20 dollars, 1 hour), Newspaper route (45 dollars, 4 hours), and Tend garden (15 dollars, 1 hour). A number line below partitions the optimal task based on a parameter R (hours/dollar). "Mow" is optimal up to R=3/25, and "Newspaper" is optimal after.](https://assets.turntrout.com/static/images/posts/dFLmQjg.avif)
 Figure: In this scaled partition, tending the garden doesn’t show up at all because it’s strictly dominated by mowing the lawn. In general, a plan is dominated when there’s another plan that has strictly greater score but not strictly greater impact. Dominated things never show up in either partition, and non-dominated things always show up in the constrained partition (Lemma 3: Constrained impact partitions are more refined).
 
-> [!exercise]
+> [!note]
 > For $R=\frac{4}{45}$ (i.e. your time is worth \$11.25 an hour), what is the scaled tradeoff value of mowing the lawn? Of delivering newspapers? Of tending the garden?
 >
 > > ! Mowing the lawn: $20-\frac{1}{\frac{4}{45}}=8.75$.
@@ -121,7 +121,7 @@ At first, this seems inconvenient; to figure out exactly when a plan shows up in
 
 Going back to Frank, how do we set $R$? If we set it too high, the optimal plan might be a catastrophe. If we set it too low, the AI doesn’t do much. This seems troublesome.
 
-> [!exercise]
+> [!note]
 > Figure out how to set $R$ while avoiding catastrophic optimal plans (assume that the impact measure meets the three properties). You have four minutes.
 >
 > > ! A big part of the answer is to start with a small value for $R,$ and slowly increase. This is simple and intuitively appealing, but how cautiously must we increase $R$? We don’t want to be surprised by a catastrophe suddenly becoming optimal.
@@ -142,7 +142,7 @@ Using this theorem, we don't need to know about all of the plans which are avail
 
 Ultimately, the reasoning about e.g. the ratio will still be informal; however, it will be informal reasoning about the _right thing_ (as opposed to thinking "oh, the penalty is _probably_ severe enough").
 
-> [!exercise]
+> [!note]
 > You're preparing to launch a capable AI with a good impact measure. You and your team have a scaled impact partition which is proven 1-buffered. Suppose that this buffer suffices for your purposes, and that the other aspects of the agent design have been taken care of. You plan to initialize $R:=1,$ modestly increasing until you get good results.
 >
 > You have the nagging feeling that this process could still be unsafe, but the team lead refuses to delay the launch without specific reason. Find that reason. You have 5 minutes.
@@ -394,12 +394,12 @@ This obsoletes the lower bound provided by Theorem 6: Individual appearance boun
 >
 > _Proof outline._ For clarity, the theorem statement included much of the reasoning; straightforward application of existing results proves each claim. ∎
 
-> [!exercise]
+> [!note]
 > Let ${\color{Red}u}_\text{UB: sat}:=.7$ and ${\color{Red}u}_\text{LB: sat}:=.5$. Using the refined criterion, determine which catastrophe/reasonable impact ratios induce 2.6-buffering.
 >
 > > ! Ratios which satisfy $\text{ratio}\geq 10.$
 
-> [!exercise]
+> [!note]
 > Let ${\color{Red}u}_\text{UB: sat}-{\color{Red}u}_\text{LB: sat}:=.5,\text{ratio}:=7$. What is the largest $\alpha$ for which the simple criterion can guarantee $\alpha$ -buffering?
 >
 > > ! The largest such $\alpha$ is $13.$

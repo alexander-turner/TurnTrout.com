@@ -112,7 +112,7 @@ export const getBacklinkFileData = (
   })
 }
 
-// skipcq: JS-D1001
+/** Collapsible "Links to this page" block listing pages whose links resolve to this slug. */
 export const Backlinks: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
   const backlinkFiles: QuartzPluginData[] = getBacklinkFileData(allFiles, fileData)
   if (backlinkFiles.length === 0) return null

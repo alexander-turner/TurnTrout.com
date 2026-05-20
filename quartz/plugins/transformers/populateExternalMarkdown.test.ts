@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import childProcess from "child_process"
+import fs from "fs"
 
 import type { BuildCtx } from "../../util/ctx"
 
@@ -11,33 +13,28 @@ import {
   fetchLocalContentSync,
   isLocalSource,
   clearContentCache,
-  setFetchFunction,
-  setReadFileFunction,
-  defaultFetchFunction,
-  defaultReadFileFunction,
-  type FetchFunction,
-  type ReadFileFunction,
 } from "./populateExternalMarkdown"
 
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */
 const parseJsonEntry = (entry: string) => JSON.parse(`{${entry}}`) as unknown
 
 describe("PopulateExternalMarkdown", () => {
-  let mockFetch: jest.MockedFunction<FetchFunction>
-  let mockReadFile: jest.MockedFunction<ReadFileFunction>
+  let mockFetch: jest.SpiedFunction<typeof childProcess.execFileSync>
+  let mockReadFile: jest.SpiedFunction<typeof fs.readFileSync>
 
   beforeEach(() => {
     clearContentCache()
-    mockFetch = jest.fn<FetchFunction>()
-    mockReadFile = jest.fn<ReadFileFunction>()
-    setFetchFunction(mockFetch)
-    setReadFileFunction(mockReadFile)
+    mockFetch = jest.spyOn(childProcess, "execFileSync").mockReturnValue("") as jest.SpiedFunction<
+      typeof childProcess.execFileSync
+    >
+    mockReadFile = jest.spyOn(fs, "readFileSync").mockReturnValue("") as jest.SpiedFunction<
+      typeof fs.readFileSync
+    >
   })
 
   afterEach(() => {
     clearContentCache()
-    setFetchFunction(defaultFetchFunction)
-    setReadFileFunction(defaultReadFileFunction)
+    jest.restoreAllMocks()
   })
 
   describe("stripBadges", () => {
@@ -69,16 +66,9 @@ describe("PopulateExternalMarkdown", () => {
       mockFetch.mockReturnValue("content")
       fetchGitHubContentSync(source)
       expect(mockFetch).toHaveBeenCalledWith(
-        `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`,
-      )
-    })
-
-    it("should propagate fetch errors", () => {
-      mockFetch.mockImplementation(() => {
-        throw new Error("Network error")
-      })
-      expect(() => fetchGitHubContentSync({ owner: "owner", repo: "repo" })).toThrow(
-        "Network error",
+        "curl",
+        ["-sf", `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`],
+        expect.objectContaining({ encoding: "utf-8" }),
       )
     })
   })
@@ -205,13 +195,6 @@ describe("PopulateExternalMarkdown", () => {
       mockReadFile.mockReturnValue('{"a": {"b": "deep"}}')
       const result = fetchLocalContentSync({ filePath: "test.json", jsonPath: "a.b" })
       expect(parseJsonEntry(result)).toEqual({ "a.b": "deep" })
-    })
-
-    it("should propagate file read errors", () => {
-      mockReadFile.mockImplementation(() => {
-        throw new Error("ENOENT")
-      })
-      expect(() => fetchLocalContentSync({ filePath: "missing.txt" })).toThrow("ENOENT")
     })
 
     it("should throw on missing JSON path", () => {

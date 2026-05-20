@@ -436,7 +436,7 @@ export const GitHubFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options> | 
 
 const slugger = new GithubSlugger()
 
-// skipcq: JS-D1001
+/** Normalizes heading text before slugging: converts apostrophes, slashes, dashes, and `&` to `-`. */
 export function preprocessSlug(headerText: string): string {
   const charsToConvert = ["'", "’", "/", "&", "—", "‘"]
 
@@ -460,12 +460,12 @@ export function slugify(headerText: string): string {
   return slug.replaceAll(/-+/g, "-")
 }
 
-// skipcq: JS-D1001
+/** Resets the module-scoped slugger; tests call this between runs to avoid uniqueness-counter leakage. */
 export function resetSlugger() {
   slugger.reset()
 }
 
-// skipcq: JS-D1001
+/** Returns a rehype plugin that assigns slugified `id`s to every heading lacking one. */
 export function returnAddIdsToHeadingsFn() {
   return (tree: Root) => {
     slugger.reset()
@@ -480,7 +480,7 @@ export function returnAddIdsToHeadingsFn() {
   }
 }
 
-// skipcq: JS-D1001
+/** Removes the GFM-generated back-arrow anchor (`data-footnote-backref`) from a footnote item. */
 export function removeBackArrowFromChildren(footnoteParent: Element): void {
   footnoteParent.children = footnoteParent.children.filter((child) => {
     return !(

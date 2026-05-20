@@ -10,8 +10,11 @@
           "throughputKbps": 10240
         },
         "skipAudits": [
-          "errors-in-console",
           "is-crawlable"
+        ],
+        "blockedUrlPatterns": [
+          "*cloud.umami.is*",
+          "*api-gateway.umami.dev*"
         ],
         "disableStorageReset": false,
         "formFactor": "desktop",
