@@ -281,16 +281,13 @@ export function attachPopoverEventListeners(
   let isMouseOverPopover = false
 
   const removePopover = () => {
-    popoverElement.classList.remove("popover-visible")
-    setTimeout(
-      /* istanbul ignore next -- async mouse state check not reachable in sync tests */ () => {
-        if (!isMouseOverLink && !isMouseOverPopover) {
-          popoverElement.remove()
-          onRemove()
-        }
-      },
-      popoverRemovalDelayMs,
-    )
+    setTimeout(() => {
+      if (!isMouseOverLink && !isMouseOverPopover) {
+        popoverElement.classList.remove("popover-visible")
+        popoverElement.remove()
+        onRemove()
+      }
+    }, popoverRemovalDelayMs)
   }
 
   const showPopover = () => {

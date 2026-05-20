@@ -543,6 +543,15 @@ describe("attachPopoverEventListeners", () => {
     expect(popoverElement.classList.contains("popover-visible")).toBe(false)
   })
 
+  it("stays visible when mouse moves from link into popover during grace period", () => {
+    popoverElement.classList.add("popover-visible")
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    // Mouse enters the popover before the grace period elapses.
+    popoverElement.dispatchEvent(new MouseEvent("mouseenter"))
+    jest.advanceTimersByTime(300)
+    expect(popoverElement.classList.contains("popover-visible")).toBe(true)
+  })
+
   it("should not remove pinned popover on link mouseleave", () => {
     popoverElement.dataset.pinned = "true"
     popoverElement.classList.add("popover-visible")
