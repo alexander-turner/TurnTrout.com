@@ -25,29 +25,35 @@
  * swallow it and leave the SVG fallback in effect for those images.
  */
 
-import { rgb, hsl } from "d3-color"
-
 import { forceHslInvertClass, invertInDarkModeClass } from "../constants"
 
 const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass}`
 // `:not(.force-hsl-invert)` keeps force-invert imgs inverted on theme switch.
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-processed]`
 
-/** True HSL lightness inversion via d3-color (hue and saturation exact). */
+/**
+ * Closed-form HSL lightness inversion: for each channel x in {r,g,b},
+ * `x' = x + 255 - max - min`. Derivation: HSL inversion preserves hue
+ * and saturation, so chroma C = M - m is invariant and L' = 1 - L gives
+ * M' = 255 - m and m' = 255 - M. The relative position of the middle
+ * channel within [m, M] is also invariant, which collapses the per-pixel
+ * transform to a single additive offset.
+ */
 export function invertLightness(r: number, g: number, b: number): [number, number, number] {
-  const c = hsl(rgb(r, g, b))
-  c.l = 1 - c.l
-  const out = c.rgb()
-  return [out.r, out.g, out.b]
+  const delta = 255 - Math.max(r, g, b) - Math.min(r, g, b)
+  return [r + delta, g + delta, b + delta]
 }
 
 /** Mutates pixel buffer in place: HSL lightness inversion on every pixel. */
 export function invertPixelsHSL(pixels: Uint8ClampedArray): void {
   for (let i = 0; i < pixels.length; i += 4) {
-    const [r, g, b] = invertLightness(pixels[i], pixels[i + 1], pixels[i + 2])
-    pixels[i] = r
-    pixels[i + 1] = g
-    pixels[i + 2] = b
+    const r = pixels[i]
+    const g = pixels[i + 1]
+    const b = pixels[i + 2]
+    const delta = 255 - Math.max(r, g, b) - Math.min(r, g, b)
+    pixels[i] = r + delta
+    pixels[i + 1] = g + delta
+    pixels[i + 2] = b + delta
   }
 }
 
