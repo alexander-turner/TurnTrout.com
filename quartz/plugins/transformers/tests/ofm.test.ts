@@ -204,9 +204,7 @@ describe("markdownPlugins", () => {
     })
 
     it("throws on unknown admonition types", () => {
-      expect(() => collectIcons("> [!nonsense] Boom")).toThrow(
-        /Unknown admonition type "nonsense"/,
-      )
+      expect(() => collectIcons("> [!nonsense] Boom")).toThrow(/Unknown admonition type "nonsense"/)
     })
   })
 
