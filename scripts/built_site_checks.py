@@ -3139,7 +3139,7 @@ def _process_html_files(  # pylint: disable=too-many-locals
     )
     for root, _, files in os.walk(public_dir):
         root_path = Path(root)
-        if "drafts" in root_path.parts:
+        if "drafts" in root_path.parts or "partials" in root_path.parts:
             continue
         for file in tqdm.tqdm(files, desc="Webpages checked"):
             if not file.endswith(".html") or Path(file).stem in files_to_skip:
