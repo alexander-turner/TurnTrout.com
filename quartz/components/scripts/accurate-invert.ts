@@ -67,14 +67,25 @@ export function shouldProcess(img: HTMLImageElement): boolean {
   return img.classList.contains(forceHslInvertClass) || isDarkMode()
 }
 
+function encodeCanvas(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/png")
+  })
+}
+
 /**
  * Draws img to canvas, HSL-inverts pixels, stashes the original src,
- * swaps src to the resulting data URL, and marks the img processed.
- * Returns false when the image isn't eligible (light mode for
+ * swaps src to a blob: URL with the inverted PNG, and marks the img
+ * processed. Returns false when the image isn't eligible (light mode for
  * theme-gated imgs), isn't decoded yet, or when the canvas is
  * CORS-tainted (the SVG fallback covers those cases).
+ *
+ * Uses `toBlob` + `URL.createObjectURL` instead of `toDataURL` — `toBlob`
+ * skips the base64 encoding step (a hot spot in WebKit's canvas encoder)
+ * and produces a blob: URL the browser can render without re-parsing a
+ * giant base64 PNG.
  */
-export function processImage(img: HTMLImageElement): boolean {
+export async function processImage(img: HTMLImageElement): Promise<boolean> {
   if (!shouldProcess(img)) return false
   if (img.dataset["invertProcessed"]) return false
   if (!img.complete || img.naturalWidth === 0) return false
@@ -90,10 +101,12 @@ export function processImage(img: HTMLImageElement): boolean {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     invertPixelsHSL(imageData.data)
     ctx.putImageData(imageData, 0, 0)
+    const blob = await encodeCanvas(canvas)
+    if (!blob) return false
     if (!img.dataset["invertOriginalSrc"]) {
       img.dataset["invertOriginalSrc"] = img.src
     }
-    img.src = canvas.toDataURL()
+    img.src = URL.createObjectURL(blob)
     img.dataset["invertProcessed"] = "1"
     return true
   } catch {
@@ -105,6 +118,10 @@ export function processImage(img: HTMLImageElement): boolean {
 export function revertImage(img: HTMLImageElement): boolean {
   const original = img.dataset["invertOriginalSrc"]
   if (!original) return false
+  const current = img.src
+  if (current.startsWith("blob:")) {
+    URL.revokeObjectURL(current)
+  }
   img.src = original
   delete img.dataset["invertProcessed"]
   return true
@@ -118,7 +135,7 @@ export function revertImage(img: HTMLImageElement): boolean {
 export function handleLoadEvent(event: Event): void {
   const target = event.target
   if (target instanceof HTMLImageElement && target.matches(INVERT_SELECTOR)) {
-    processImage(target)
+    void processImage(target)
   }
 }
 
@@ -127,7 +144,7 @@ export function processLoaded(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)
   for (const img of images) {
     if (img.complete && img.naturalWidth > 0) {
-      processImage(img)
+      void processImage(img)
     }
   }
 }
