@@ -287,7 +287,7 @@ const createPlaylistEmbed = (playlistId: string): Properties => ({
 })
 
 /** Processes blockquotes and converts them to admonitions. */
-const processAdmonitionBlockquote = (node: Blockquote): void => {
+const processAdmonitionBlockquote = (node: Blockquote, file: VFile): void => {
   if (node.children.length === 0) return
 
   const firstChild = node.children[0]
@@ -307,6 +307,7 @@ const processAdmonitionBlockquote = (node: Blockquote): void => {
   const collapseChar = match.groups.collapse
   const admonitionType = canonicalizeAdmonition(typeString.toLowerCase())
   const collapse = collapseChar === "+" || collapseChar === "-"
+  recordAdmonitionIcons(file, admonitionType, collapse)
   const defaultState = collapseChar === "-" ? "collapsed" : "expanded"
   const titleContent = firstLine.slice(admonitionDirective.length).trim()
   /* istanbul ignore next -- admonition title detection edge case */
@@ -427,6 +428,64 @@ const admonitionMapping = {
 function canonicalizeAdmonition(admonitionName: string): keyof typeof admonitionMapping {
   const normalizedAdmonition = admonitionName.toLowerCase() as keyof typeof admonitionMapping
   return admonitionMapping[normalizedAdmonition] ?? admonitionName
+}
+
+/**
+ * Maps canonical admonition types to the icon filenames their CSS rules
+ * load from `/static/icons/<filename>.svg`. Kept in sync with the
+ * `--admonition-icon-*` variables in `quartz/styles/admonitions.scss`.
+ * `definition` has no dedicated icon and reuses `note`.
+ */
+const ADMONITION_ICON_FILENAMES: Readonly<Record<string, string>> = {
+  note: "note",
+  abstract: "abstract",
+  info: "info",
+  todo: "todo",
+  tip: "plus",
+  success: "success",
+  question: "question",
+  warning: "warning",
+  failure: "failure",
+  danger: "danger",
+  bug: "bug",
+  example: "example",
+  quote: "quote",
+  idea: "lightbulb",
+  goose: "goose",
+  thanks: "heart",
+  tag: "tag",
+  link: "link",
+  math: "math",
+  money: "dollar",
+  definition: "note",
+}
+
+/** Filename of the chevron icon shown on collapsible admonitions. */
+export const FOLD_ADMONITION_ICON = "fold"
+
+export function admonitionIconFilename(admonitionType: string): string {
+  const filename = ADMONITION_ICON_FILENAMES[admonitionType]
+  if (filename === undefined) {
+    throw new Error(
+      `Unknown admonition type "${admonitionType}". Register it in ADMONITION_ICON_FILENAMES (quartz/plugins/transformers/ofm.ts) or alias it via admonitionMapping.`,
+    )
+  }
+  return filename
+}
+
+/**
+ * Append the icon filename(s) needed by an admonition onto
+ * `file.data.usedAdmonitionIcons`. Head.tsx reads this to emit prefetch
+ * hints only for icons the page actually renders.
+ */
+function recordAdmonitionIcons(file: VFile, admonitionType: string, collapse: boolean): void {
+  const existing = (file.data.usedAdmonitionIcons ?? []) as readonly string[]
+  const icons = new Set<string>(existing)
+  icons.add(admonitionIconFilename(admonitionType))
+  if (collapse) {
+    icons.add(FOLD_ADMONITION_ICON)
+  }
+  file.data.usedAdmonitionIcons = [...icons].sort()
 }
 
 /** Converts MDAST nodes to HTML strings. */
@@ -600,8 +659,8 @@ const createVideoEmbedPlugin = () => () => {
 /** Creates a plugin that processes blockquotes and converts them to admonitions. */
 // istanbul ignore next -- this is a plugin
 const createAdmonitionsPlugin = () => () => {
-  return (tree: Root) => {
-    visit(tree, "blockquote", processAdmonitionBlockquote)
+  return (tree: Root, file: VFile) => {
+    visit(tree, "blockquote", (node) => processAdmonitionBlockquote(node, file))
   }
 }
 

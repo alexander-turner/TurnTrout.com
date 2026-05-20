@@ -763,6 +763,12 @@ I love these "admonition" bubbles which contain information. When an admonition 
 >
 > > [!money]
 
+### Prefetching only the icons each page needs
+
+Each admonition shows a small SVG icon on its left. I [prefetch](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/prefetch) these in the page `<head>` so the icon is already in the browser cache by the time the callout paints — otherwise it flickers in late and the eye notices. The naïve version prefetches _every_ icon variant on _every_ page, which meant around twenty-one cross-origin requests fired on every page load for icons most pages never use. Now each page only prefetches the icons it actually contains; pages with no callouts emit none.
+
+This also lets me fail loudly: if I mistype an admonition name (`[!waring]` instead of `[!warning]`), the build throws instead of silently falling back to a default icon — the kind of typo I'd otherwise miss for months.
+
 ## Mermaid diagrams
 
 Often, websites embed diagrams as images. However, I find this unsatisfying for several reasons:

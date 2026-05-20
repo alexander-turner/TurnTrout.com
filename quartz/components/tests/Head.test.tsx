@@ -54,6 +54,7 @@ describe("Head Component", () => {
   const mockFileData: QuartzPluginData = {
     slug: "test-page" as FullSlug,
     frontmatter: mockFrontmatter,
+    usedAdmonitionIcons: ["note"],
     data: {
       frontmatter: mockFrontmatter,
     },
@@ -246,6 +247,35 @@ describe("Head Component", () => {
 
       expect(html).toContain("https://assets.turntrout.com/static/icons/note.svg")
       expect(html).toContain("/static/styles/fonts/EBGaramond/EBGaramond-InitialsF1.woff2")
+    })
+
+    it("scopes icon prefetches to usedAdmonitionIcons", () => {
+      const propsWithIcons = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usedAdmonitionIcons: ["warning", "fold"],
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsWithIcons))
+
+      expect(html).toContain("https://assets.turntrout.com/static/icons/warning.svg")
+      expect(html).toContain("https://assets.turntrout.com/static/icons/fold.svg")
+      expect(html).not.toContain("https://assets.turntrout.com/static/icons/note.svg")
+      expect(html).not.toContain("https://assets.turntrout.com/static/icons/goose.svg")
+    })
+
+    it("emits no icon prefetches when the page has no admonitions", () => {
+      const propsNoIcons = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usedAdmonitionIcons: undefined,
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsNoIcons))
+
+      expect(html).not.toContain("/static/icons/")
     })
   })
 

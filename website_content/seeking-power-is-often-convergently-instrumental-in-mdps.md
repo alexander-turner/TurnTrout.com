@@ -118,7 +118,7 @@ As a definition, _one’s ability to achieve goals in general_ seems philosophic
 
 This definition explains some of our intuitions about what things count as "resources." For example, our current position in the environment means that having money allows us to exert more control over the future. That is, our current position in the state space means that having money allows us more control. However, possessing green scraps of paper would not be as helpful if one were living alone near Alpha Centauri. In a sense, resource acquisition can naturally be viewed as taking steps to increase one's power.
 
-> [!exercise]
+> [!note]
 > Spend a minute considering specific examples. Does this definition reasonably match your intuition?
 
 <hr/>
@@ -291,7 +291,7 @@ We can do better. When the agent cares a lot about the future, optimal policies 
   
 Taking $\color{red}{\textbf{2}}$ to represent shutdown, we see that avoiding shutdown is convergently instrumental in any MDP representing a real-world task and containing a shutdown state. Seeking POWER is often convergently instrumental in MDPs.
 
-> [!exercise]
+> [!note]
 > Can you conclude that avoiding ghosts in Pac-Man is convergently instrumental for IID reward functions when the agent cares a lot about the future?
 >
 > >! You can’t with the pseudo-theorem due to the disjointness condition: you could die now, or you could die later, so the "terminal options" aren’t disjoint. However, the real theorems do suggest this. Supposing that death induces a generic "game over" screen, touching the ghosts without a power-up traps the agent in that solitary 1-cycle.

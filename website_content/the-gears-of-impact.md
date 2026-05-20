@@ -107,7 +107,7 @@ card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes
 
 ![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/lDbQW2b.avif)
 
-> [!exercise]
+> [!note]
 > Why does instrumental convergence happen? Would it be coherent to imagine a reality without it?
 
 # Notes
