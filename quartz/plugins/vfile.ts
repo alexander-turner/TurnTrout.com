@@ -65,6 +65,12 @@ export interface Data {
   children?: string[]
   /** BibTeX citation content, stored during transform for cross-thread access */
   bibtexContent?: string
+  /**
+   * Filenames (without extension) of `/static/icons/<name>.svg` icons
+   * actually rendered by admonitions on the page. Populated by the OFM
+   * transformer; consumed by `<Head>` to scope prefetch hints.
+   */
+  usedAdmonitionIcons?: readonly string[]
   [key: string]: unknown
 }
 

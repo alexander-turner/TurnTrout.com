@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-imp
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/PFqi66W.jpg
 description: "Impact reframed: a gears-level view of how and why some things seem important to us."
-date_updated: 2026-04-20
+date_updated: 2026-05-20
 card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).'
 ---
 
@@ -107,7 +107,7 @@ card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes
 
 ![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/lDbQW2b.avif)
 
-> [!exercise]
+> [!note]
 > Why does instrumental convergence happen? Would it be coherent to imagine a reality without it?
 
 # Notes
