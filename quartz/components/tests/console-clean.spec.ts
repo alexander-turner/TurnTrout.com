@@ -13,6 +13,13 @@ const PAGES_TO_CHECK: readonly string[] = [
   "/posts",
 ]
 
+// PLAYWRIGHT_BASE_URL lets CI rerun this spec against the deployed CF Pages
+// preview URL. Localhost catches code-side bugs; the preview run catches
+// edge-only failures (CF Speed Brain, CSP, CORS misconfigs, Page Functions)
+// that the local dev server can't reproduce.
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:8080"
+const ENV_LABEL = process.env.PLAYWRIGHT_BASE_URL ? "PREVIEW" : "LOCAL"
+
 // Known-benign console output we don't want to fail on.
 //   - umami.{is,dev}: third-party analytics; can fail to load when CI lacks
 //     outbound network, when the user has an ad-blocker, or during transient
@@ -39,7 +46,7 @@ function isAllowed(text: string): boolean {
 }
 
 for (const slug of PAGES_TO_CHECK) {
-  test(`no unexpected console warnings or errors on ${slug}`, async ({ page }) => {
+  test(`no unexpected console output on ${ENV_LABEL} ${slug}`, async ({ page }) => {
     const offenders: string[] = []
 
     page.on("console", (msg) => {
@@ -59,8 +66,11 @@ for (const slug of PAGES_TO_CHECK) {
       offenders.push(`[pageerror] ${err.message}`)
     })
 
-    await gotoPage(page, `http://localhost:8080${slug}`)
+    await gotoPage(page, `${BASE_URL}${slug}`)
 
-    expect(offenders, `Unexpected console output on ${slug}:\n${offenders.join("\n")}`).toEqual([])
+    expect(
+      offenders,
+      `Unexpected console output on ${ENV_LABEL} ${slug}:\n${offenders.join("\n")}`,
+    ).toEqual([])
   })
 }
