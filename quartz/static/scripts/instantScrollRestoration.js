@@ -124,7 +124,7 @@
       const actualScroll = window.scrollY
       console.debug("[InstantScrollRestoration] Scrolled to:", actualScroll, "target was:", target)
 
-      if (Math.abs(actualScroll - target) < 1 || attempts >= MAX_ATTEMPTS) {
+      if (Math.abs(actualScroll - target) <= 1 || attempts >= MAX_ATTEMPTS) {
         console.debug(
           "[InstantScrollRestoration] Initial scroll complete, waiting for layout stability",
         )
