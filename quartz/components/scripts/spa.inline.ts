@@ -66,7 +66,7 @@ const updateScrollState = debounce(
   debounceWaitMs,
 )
 
-// skipcq: JS-D1001
+/** Dispatches the `nav` CustomEvent so listeners can react to client-side navigation. */
 function dispatchNavEvent(url: FullSlug) {
   const event: CustomEventMap["nav"] = new CustomEvent("nav", { detail: { url } })
   document.dispatchEvent(event)
@@ -212,7 +212,7 @@ async function handleRedirect(initialFetchResult: FetchResult): Promise<FetchRes
   return { status: "success", content: finalContent, finalUrl }
 }
 
-// skipcq: JS-D1001
+/** Removes any rendered popover elements from the page. */
 function removePopovers() {
   const existingPopovers = document.querySelectorAll(".popover")
   existingPopovers.forEach((popover) => popover.remove())
@@ -522,7 +522,7 @@ if (!customElements.get("route-announcer")) {
   customElements.define(
     "route-announcer",
     class RouteAnnouncer extends HTMLElement {
-      // skipcq: JS-D1001
+      /** Applies the visually-hidden ARIA-live attributes when the announcer mounts. */
       connectedCallback() {
         for (const [key, value] of Object.entries(attrs)) {
           this.setAttribute(key, value)

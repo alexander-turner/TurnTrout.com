@@ -27,7 +27,7 @@ import {
 } from "../renderPage"
 import { type QuartzComponent, type QuartzComponentProps } from "../types"
 
-// skipcq: JS-D1001
+/** Test stub for `<head>`. */
 const MockHead: QuartzComponent = () => {
   return (
     <head>
@@ -36,12 +36,12 @@ const MockHead: QuartzComponent = () => {
   )
 }
 
-// skipcq: JS-D1001
+/** Test stub for page body that renders the AST node type. */
 const MockPageBody: QuartzComponent = ({ tree }: QuartzComponentProps) => {
   return <div id="page-body">{tree.type}</div>
 }
 
-// skipcq: JS-D1001
+/** Test stub that surfaces `displayClass` so assertions can verify slot assignment. */
 const MockComponent: QuartzComponent = (props: QuartzComponentProps) => {
   const name = props.displayClass
   return <div className={`mock-component ${name ?? ""}`}>{String(name)}</div>
@@ -564,7 +564,7 @@ describe("renderPage", () => {
   })
 
   it("renders beforeBody components", () => {
-    // skipcq: JS-D1001
+    /** Inline test stub for the beforeBody slot. */
     const MockBeforeBody: QuartzComponent = () => <div className="before-body">Before content</div>
     const componentsWithBeforeBody = {
       ...components,

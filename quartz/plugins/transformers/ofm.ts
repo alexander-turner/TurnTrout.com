@@ -264,7 +264,7 @@ const createHighlightElement = (content: string): PhrasingContent => ({
   value: `<span class="text-highlight">${escapeHTML(content)}</span>`,
 })
 
-// skipcq: JS-D1001
+/** Returns iframe properties for a YouTube embed, including playlist support when provided. */
 export const createYouTubeEmbed = (videoId: string, playlistId?: string): Properties => ({
   class: "external-embed",
   allow: "fullscreen",

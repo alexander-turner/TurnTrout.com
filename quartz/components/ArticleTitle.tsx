@@ -6,7 +6,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 import { formatTitle } from "./component_utils"
 import { formatTag } from "./TagList"
 
-// skipcq: JS-D1001
+/** Renders the page `<h1>` from frontmatter `title`, with tag-page styling when applicable. */
 const ArticleTitle: QuartzComponent = ({ fileData }: QuartzComponentProps) => {
   if (fileData.frontmatter?.hide_title) {
     return null

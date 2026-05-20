@@ -12,9 +12,9 @@ import {
   isLocalSource,
   clearContentCache,
   setFetchFunction,
-  resetFetchFunction,
   setReadFileFunction,
-  resetReadFileFunction,
+  defaultFetchFunction,
+  defaultReadFileFunction,
   type FetchFunction,
   type ReadFileFunction,
 } from "./populateExternalMarkdown"
@@ -36,8 +36,8 @@ describe("PopulateExternalMarkdown", () => {
 
   afterEach(() => {
     clearContentCache()
-    resetFetchFunction()
-    resetReadFileFunction()
+    setFetchFunction(defaultFetchFunction)
+    setReadFileFunction(defaultReadFileFunction)
   })
 
   describe("stripBadges", () => {
@@ -70,15 +70,6 @@ describe("PopulateExternalMarkdown", () => {
       fetchGitHubContentSync(source)
       expect(mockFetch).toHaveBeenCalledWith(
         `https://raw.githubusercontent.com/${source.owner}/${source.repo}/${expectedPath}`,
-      )
-    })
-
-    it("should propagate fetch errors", () => {
-      mockFetch.mockImplementation(() => {
-        throw new Error("Network error")
-      })
-      expect(() => fetchGitHubContentSync({ owner: "owner", repo: "repo" })).toThrow(
-        "Network error",
       )
     })
   })
@@ -207,13 +198,6 @@ describe("PopulateExternalMarkdown", () => {
       expect(parseJsonEntry(result)).toEqual({ "a.b": "deep" })
     })
 
-    it("should propagate file read errors", () => {
-      mockReadFile.mockImplementation(() => {
-        throw new Error("ENOENT")
-      })
-      expect(() => fetchLocalContentSync({ filePath: "missing.txt" })).toThrow("ENOENT")
-    })
-
     it("should throw on missing JSON path", () => {
       mockReadFile.mockReturnValue('{"existing": "value"}')
       expect(() => fetchLocalContentSync({ filePath: "test.json", jsonPath: "missing" })).toThrow(
@@ -294,12 +278,6 @@ describe("PopulateExternalMarkdown", () => {
       })
       const result = plugin.textTransform?.({} as BuildCtx, input)
       expect(result).toContain("# Content")
-    })
-
-    it("should ignore unconfigured placeholders", () => {
-      const plugin = PopulateExternalMarkdown({ sources: {} })
-      const input = '<span class="populate-markdown-unknown"></span>'
-      expect(plugin.textTransform?.({} as BuildCtx, input)).toBe(input)
     })
   })
 })

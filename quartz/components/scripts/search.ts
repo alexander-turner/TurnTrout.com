@@ -443,27 +443,27 @@ export class PreviewManager {
     }
   }
 
-  // skipcq: JS-D1001
+  /** Makes the preview container visible. */
   /* istanbul ignore next */
   public show(): void {
     this.container.classList.add("active")
     this.container.style.visibility = "visible"
   }
 
-  // skipcq: JS-D1001
+  /** Hides the preview container. */
   /* istanbul ignore next */
   public hide(): void {
     this.container.classList.remove("active")
     this.container.style.visibility = "hidden"
   }
 
-  // skipcq: JS-D1001
+  /** Empties the preview content. */
   /* istanbul ignore next */
   public clear(): void {
     this.inner.innerHTML = ""
   }
 
-  // skipcq: JS-D1001
+  /** Detaches handlers, clears state, and empties the preview. */
   /* istanbul ignore next */
   public destroy(): void {
     this.inner.onclick = null
@@ -690,11 +690,11 @@ function handleResultNavigation(
   // Abort early when search is not active
   if (!container?.classList.contains("active")) return
 
-  /* skipcq: JS-D1001 */
+  /** Returns the previous sibling element of `el`, or null. */
   const prevSibling = (el: HTMLElement): HTMLElement | null =>
     el.previousElementSibling ? (el.previousElementSibling as HTMLElement) : null
 
-  /* skipcq: JS-D1001 */
+  /** Returns the next sibling element of `el`, or null. */
   const nextSibling = (el: HTMLElement): HTMLElement | null =>
     el.nextElementSibling ? (el.nextElementSibling as HTMLElement) : null
 
@@ -1441,7 +1441,7 @@ function resolveSlug(slug: FullSlug, currentSlug: FullSlug): URL {
   return new URL(resolveRelative(currentSlug, slug), location.toString())
 }
 
-// skipcq: JS-D1001
+/** Entry point invoked from page scripts: subscribes search to SPA `nav` events. */
 /* istanbul ignore next */
 export function setupSearch(): void {
   document.addEventListener("nav", onNav)

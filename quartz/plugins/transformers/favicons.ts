@@ -288,7 +288,7 @@ function handleMailtoLink(node: Element): void {
   insertFavicon(specialFaviconPaths.mail, node)
 }
 
-// skipcq: JS-D1001
+/** True when the element is an `h1`–`h6` heading. */
 export function isHeading(node: Element): boolean {
   return HEADING_TAGS.has(node.tagName)
 }

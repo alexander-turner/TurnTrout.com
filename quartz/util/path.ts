@@ -14,7 +14,7 @@ type SlugLike<T> = string & { __brand: T }
 
 /** A string that is a valid filepath. It cannot be relative and must have a file extension. */
 export type FilePath = SlugLike<"filepath">
-// skipcq: JS-D1001
+/** Type guard for {@link FilePath}: not relative and has a file extension. */
 export function isFilePath(s: string): s is FilePath {
   const validStart = !s.startsWith(".")
   return validStart && _hasFileExtension(s)
@@ -22,7 +22,7 @@ export function isFilePath(s: string): s is FilePath {
 
 /** Cannot be relative and may not have leading or trailing slashes. It can have `index` as it's last segment. Use this wherever possible is it's the most 'general' interpretation of a slug. */
 export type FullSlug = SlugLike<"full">
-// skipcq: JS-D1001
+/** Type guard for {@link FullSlug}: not relative/absolute, no trailing slash, no forbidden chars. */
 export function isFullSlug(s: string): s is FullSlug {
   const validStart = !(s.startsWith(".") || s.startsWith("/"))
   const validEnding = !s.endsWith("/")
@@ -31,7 +31,7 @@ export function isFullSlug(s: string): s is FullSlug {
 
 /** Shouldn't be a relative path and shouldn't have `/index` as an ending or a file extension. It _can_ however have a trailing slash to indicate a folder path. */
 export type SimpleSlug = SlugLike<"simple">
-// skipcq: JS-D1001
+/** Type guard for {@link SimpleSlug}: no trailing `index`, no file extension, no forbidden chars. */
 export function isSimpleSlug(s: string): s is SimpleSlug {
   const validStart = !(s.startsWith(".") || (s.length > 1 && s.startsWith("/")))
   const validEnding = !endsWith(s, "index")
@@ -40,7 +40,7 @@ export function isSimpleSlug(s: string): s is SimpleSlug {
 
 /** Can be found on `href`s but can also be constructed for client-side navigation (e.g. search and graph) */
 export type RelativeURL = SlugLike<"relative">
-// skipcq: JS-D1001
+/** Type guard for {@link RelativeURL}: starts with `.` or `..`, no `index`/`.md`/`.html` ending. */
 export function isRelativeURL(s: string): s is RelativeURL {
   const validStart = /^\.{1,2}/.test(s)
   const validEnding = !endsWith(s, "index")
@@ -361,7 +361,7 @@ export function transformLink(src: FullSlug, target: string, opts: TransformOpti
   }
 }
 
-// skipcq: JS-D1001
+/** True for paths that point at a directory (trailing slash or `index` page). */
 function isFolderPath(fplike: string): boolean {
   return (
     fplike.endsWith("/") ||
@@ -371,12 +371,12 @@ function isFolderPath(fplike: string): boolean {
   )
 }
 
-// skipcq: JS-D1001
+/** True if `s` equals `suffix` or ends in `/${suffix}` (segment-aware suffix match). */
 export function endsWith(s: string, suffix: string): boolean {
   return s === suffix || s.endsWith(`/${suffix}`)
 }
 
-// skipcq: JS-D1001
+/** Removes a trailing `suffix` (segment-aware) from `s` if present. */
 function maybeTrimSuffix(s: string, suffix: string): string {
   if (endsWith(s, suffix)) {
     s = s.slice(0, -suffix.length)
@@ -384,12 +384,12 @@ function maybeTrimSuffix(s: string, suffix: string): string {
   return s
 }
 
-// skipcq: JS-D1001
+/** True if `s` contains any of the URL-hostile characters: space, `#`, `?`, `&`. */
 function containsForbiddenCharacters(s: string): boolean {
   return s.includes(" ") || s.includes("#") || s.includes("?") || s.includes("&")
 }
 
-// skipcq: JS-D1001
+/** True if `s` has a recognized file extension (see {@link _getFileExtension}). */
 function _hasFileExtension(s: string): boolean {
   return _getFileExtension(s) !== undefined
 }
