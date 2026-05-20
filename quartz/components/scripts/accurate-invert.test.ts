@@ -70,7 +70,8 @@ const installCanvasMocks = (
     putImageData: jest.fn(),
   }
   const getContext = jest.fn(() => (overrides.ctx === null ? null : (overrides.ctx ?? ctx)))
-  const stubBlob = overrides.blob === undefined ? new Blob(["x"], { type: "image/png" }) : overrides.blob
+  const stubBlob =
+    overrides.blob === undefined ? new Blob(["x"], { type: "image/png" }) : overrides.blob
   const toBlob = jest.fn((cb: BlobCallback) => cb(stubBlob))
   const createObjectURL = jest.fn(() => "blob:stub/123")
   const revokeObjectURL = jest.fn()
