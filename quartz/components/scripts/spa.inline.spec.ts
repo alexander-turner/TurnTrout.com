@@ -474,10 +474,13 @@ test.describe("Instant Scroll Restoration", () => {
   test("exits restoration loop quickly despite browser subpixel scroll rounding", async ({
     page,
   }) => {
-    // Safari rounds window.scrollTo's result down by 1px, leaving a structural
-    // 1px gap between target and actual scroll. If the early-exit tolerance is
-    // too tight, the loop runs all MAX_ATTEMPTS frames (~3s) and locks user
-    // scroll input the entire time.
+    // Reproduces the Safari "stuck for 3s after reload" bug deterministically
+    // across all browsers by monkey-patching window.scrollTo to round its
+    // target down by 1px — the same subpixel-rounding behavior real Safari
+    // exhibits at Retina DPRs. If the restoration loop's early-exit tolerance
+    // is too tight (< 1 instead of <= 1), the |actual - target| == 1 gap
+    // never satisfies the exit condition, so the loop runs all MAX_ATTEMPTS
+    // (~3s @ 60fps), locking user scroll input the whole time.
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -487,6 +490,22 @@ test.describe("Instant Scroll Restoration", () => {
       if (msg.text().includes("InstantScrollRestoration")) {
         consoleMessages.push(msg.text())
       }
+    })
+
+    // Install the rounding stub before reload so it's active when the
+    // inline restoration script runs.
+    await page.addInitScript(() => {
+      const original = window.scrollTo.bind(window)
+      window.scrollTo = ((...args: unknown[]) => {
+        if (args.length >= 2 && typeof args[1] === "number") {
+          original(args[0] as number, args[1] - 1)
+        } else if (args.length === 1 && typeof args[0] === "object" && args[0] !== null) {
+          const opts = args[0] as ScrollToOptions
+          original({ ...opts, top: (opts.top ?? 0) - 1 })
+        } else {
+          original(...(args as Parameters<typeof window.scrollTo>))
+        }
+      }) as typeof window.scrollTo
     })
 
     await page
