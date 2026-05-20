@@ -6,9 +6,14 @@ import { describe, it, beforeEach, afterEach, expect, jest } from "@jest/globals
 import {
   invertLightness,
   invertPixelsHSL,
+  invertColorToken,
+  invertCssColors,
+  invertSvgSource,
+  isSvgSrc,
   isDarkMode,
   shouldProcess,
   processImage,
+  processSvgImage,
   revertImage,
   handleLoadEvent,
   processLoaded,
@@ -46,6 +51,100 @@ describe("invertPixelsHSL", () => {
     expect(px[3]).toBe(255)
     expect(Array.from(px.slice(4, 7))).toEqual([0, 0, 0])
     expect(px[7]).toBe(128)
+  })
+})
+
+describe("isSvgSrc", () => {
+  it.each<[string, boolean]>([
+    ["https://x/chart.svg", true],
+    ["https://x/CHART.SVG", true],
+    ["https://x/chart.svg?v=2", true],
+    ["https://x/chart.svg#frag", true],
+    ["https://x/chart.png", false],
+    ["https://x/svg-but-not.png", false],
+    ["data:image/svg+xml;utf8,<svg/>", false],
+  ])("%s → %s", (src, expected) => {
+    expect(isSvgSrc(src)).toBe(expected)
+  })
+})
+
+describe("invertColorToken", () => {
+  it.each<[string, string | null]>([
+    ["white", "#000000"],
+    ["#ffffff", "#000000"],
+    ["#000", "#ffffff"],
+    ["rgb(255,255,255)", "#000000"],
+    ["none", null],
+    ["currentColor", null],
+    ["url(#grad)", null],
+    ["transparent", null],
+    ["not-a-color", null],
+  ])("%s → %s", (input, expected) => {
+    expect(invertColorToken(input)).toBe(expected)
+  })
+})
+
+describe("invertCssColors", () => {
+  it.each<[string, string, string]>([
+    ["single fill", "fill: white", "fill: #000000"],
+    ["with semicolons", "fill: #fff; stroke: #000", "fill: #000000; stroke: #ffffff"],
+    [
+      "multiple known properties",
+      "fill:#fff;stroke:#000;stop-color:#888",
+      "fill:#000000;stroke:#ffffff;stop-color:#777777",
+    ],
+    ["case-insensitive property names", "FILL: WHITE", "FILL: #000000"],
+    ["unrecognized properties left alone", "opacity: 0.5; fill: white", "opacity: 0.5; fill: #000000"],
+    ["non-color values left alone", "fill: none; stroke: url(#g)", "fill: none; stroke: url(#g)"],
+  ])("%s", (_label, input, expected) => {
+    expect(invertCssColors(input)).toBe(expected)
+  })
+})
+
+describe("invertSvgSource", () => {
+  it("rewrites fill/stroke/stop-color attributes and inline styles", () => {
+    const out = invertSvgSource(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+        '<rect fill="white" stroke="#000"/>' +
+        '<stop stop-color="rgb(255,0,0)"/>' +
+        '<g style="fill:#fff;stroke:#000"/>' +
+        "</svg>",
+    )
+    expect(out).toContain('fill="#000000"')
+    expect(out).toContain('stroke="#ffffff"')
+    expect(out).toContain('stop-color="#ff0000"')
+    expect(out).toMatch(/style="[^"]*fill:#000000[^"]*"/)
+    expect(out).toMatch(/style="[^"]*stroke:#ffffff[^"]*"/)
+  })
+
+  it("rewrites colors inside <style> blocks", () => {
+    const out = invertSvgSource(
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+        "<style>.cls{fill:#fff;stroke:black}</style>" +
+        '<rect class="cls"/>' +
+        "</svg>",
+    )
+    expect(out).toContain("fill:#000000")
+    expect(out).toContain("stroke:#ffffff")
+  })
+
+  it("leaves currentColor / none / url() / transparent alone", () => {
+    const input =
+      '<svg xmlns="http://www.w3.org/2000/svg">' +
+      '<rect fill="currentColor" stroke="none"/>' +
+      '<rect fill="url(#g)"/>' +
+      '<rect fill="transparent"/>' +
+      "</svg>"
+    const out = invertSvgSource(input)
+    expect(out).toContain('fill="currentColor"')
+    expect(out).toContain('stroke="none"')
+    expect(out).toContain('fill="url(#g)"')
+    expect(out).toContain('fill="transparent"')
+  })
+
+  it("returns the input unchanged on parse error", () => {
+    const broken = "<svg><not-closed>"
+    expect(invertSvgSource(broken)).toBe(broken)
   })
 })
 
@@ -88,6 +187,19 @@ const makeLoadedImg = (
   return img
 }
 
+// Lets `void`-dispatched async work (e.g. `processLoaded` → `processImage`)
+// settle so assertions see the post-swap state.
+const flushAsync = (): Promise<void> => new Promise((r) => setTimeout(r, 0))
+
+const mockFetchText = (text: string, ok = true): jest.Mock => {
+  const fn = jest.fn(async () =>
+    Promise.resolve({ ok, status: ok ? 200 : 500, text: async () => text }),
+  )
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(globalThis as any).fetch = fn
+  return fn
+}
+
 beforeEach(() => {
   document.body.innerHTML = ""
   setTheme("dark")
@@ -125,37 +237,37 @@ describe("shouldProcess", () => {
 })
 
 describe("processImage", () => {
-  it("inverts pixels, stashes original src, swaps src, marks processed", () => {
+  it("inverts pixels, stashes original src, swaps src, marks processed", async () => {
     const { toDataURL } = installCanvasMocks()
     const img = makeLoadedImg()
-    expect(processImage(img)).toBe(true)
+    await expect(processImage(img)).resolves.toBe(true)
     expect(img.src).toBe("data:image/png;base64,STUB")
     expect(img.dataset["invertProcessed"]).toBe("1")
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/img.png")
     expect(toDataURL).toHaveBeenCalledTimes(1)
   })
 
-  it("does nothing in light mode", () => {
+  it("does nothing in light mode", async () => {
     installCanvasMocks()
     setTheme("light")
     const img = makeLoadedImg()
-    expect(processImage(img)).toBe(false)
+    await expect(processImage(img)).resolves.toBe(false)
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("processes force-hsl-invert images in light mode", () => {
+  it("processes force-hsl-invert images in light mode", async () => {
     installCanvasMocks()
     setTheme("light")
     const img = makeLoadedImg("https://x/y.png", "force-hsl-invert")
-    expect(processImage(img)).toBe(true)
+    await expect(processImage(img)).resolves.toBe(true)
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("is idempotent — second call short-circuits", () => {
+  it("is idempotent — second call short-circuits", async () => {
     installCanvasMocks()
     const img = makeLoadedImg()
-    processImage(img)
-    expect(processImage(img)).toBe(false)
+    await processImage(img)
+    await expect(processImage(img)).resolves.toBe(false)
   })
 
   it.each([
@@ -171,19 +283,19 @@ describe("processImage", () => {
         Object.defineProperty(img, "naturalWidth", { value: 0, configurable: true })
       },
     ],
-  ])("returns false when %s", (_label, mutate) => {
+  ])("returns false when %s", async (_label, mutate) => {
     installCanvasMocks()
     const img = makeLoadedImg()
     mutate(img)
-    expect(processImage(img)).toBe(false)
+    await expect(processImage(img)).resolves.toBe(false)
   })
 
-  it("returns false when getContext returns null", () => {
+  it("returns false when getContext returns null", async () => {
     installCanvasMocks({ ctx: null })
-    expect(processImage(makeLoadedImg())).toBe(false)
+    await expect(processImage(makeLoadedImg())).resolves.toBe(false)
   })
 
-  it("returns false on CORS-tainted canvas (getImageData throws)", () => {
+  it("returns false on CORS-tainted canvas (getImageData throws)", async () => {
     installCanvasMocks({
       ctx: {
         drawImage: jest.fn(),
@@ -194,27 +306,76 @@ describe("processImage", () => {
       },
     })
     const img = makeLoadedImg()
-    expect(processImage(img)).toBe(false)
+    await expect(processImage(img)).resolves.toBe(false)
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("preserves the first stashed original across re-process cycles", () => {
+  it("preserves the first stashed original across re-process cycles", async () => {
     installCanvasMocks()
     const img = makeLoadedImg("https://x/orig.png")
-    processImage(img)
+    await processImage(img)
     revertImage(img)
     // Re-set complete since revert changed src.
     Object.defineProperty(img, "complete", { value: true, configurable: true })
-    processImage(img)
+    await processImage(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/orig.png")
+  })
+
+  it("routes .svg sources to the SVG path (no canvas use)", async () => {
+    const { toDataURL } = installCanvasMocks()
+    const fetchFn = mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>')
+    const img = makeLoadedImg("https://x/chart.svg")
+    await expect(processImage(img)).resolves.toBe(true)
+    expect(fetchFn).toHaveBeenCalledWith("https://x/chart.svg")
+    expect(toDataURL).not.toHaveBeenCalled()
+    expect(img.src.startsWith("data:image/svg+xml;utf8,")).toBe(true)
+    expect(decodeURIComponent(img.src)).toContain('fill="#000000"')
+    expect(img.dataset["invertOriginalSrc"]).toBe("https://x/chart.svg")
+    expect(img.dataset["invertProcessed"]).toBe("1")
+  })
+
+  it("ignores query/hash when detecting SVG sources", async () => {
+    installCanvasMocks()
+    mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="black"/></svg>')
+    const img = makeLoadedImg("https://x/chart.svg?v=2#id")
+    await processImage(img)
+    expect(img.src.startsWith("data:image/svg+xml;utf8,")).toBe(true)
+  })
+})
+
+describe("processSvgImage", () => {
+  it("bails when fetch is non-OK; leaves CSS fallback in effect", async () => {
+    mockFetchText("<svg/>", false)
+    const img = makeLoadedImg("https://x/chart.svg")
+    await expect(processSvgImage(img)).resolves.toBe(false)
+    expect(img.dataset["invertProcessed"]).toBeUndefined()
+    expect(img.dataset["invertProcessing"]).toBeUndefined()
+  })
+
+  it("bails when fetch rejects (CORS, network)", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(globalThis as any).fetch = jest.fn(async () => Promise.reject(new Error("CORS")))
+    const img = makeLoadedImg("https://x/chart.svg")
+    await expect(processSvgImage(img)).resolves.toBe(false)
+    expect(img.dataset["invertProcessed"]).toBeUndefined()
+    expect(img.dataset["invertProcessing"]).toBeUndefined()
+  })
+
+  it("guards re-entry while a fetch is in flight", async () => {
+    mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>')
+    const img = makeLoadedImg("https://x/chart.svg")
+    const first = processSvgImage(img)
+    await expect(processSvgImage(img)).resolves.toBe(false)
+    await first
+    expect(img.dataset["invertProcessed"]).toBe("1")
   })
 })
 
 describe("revertImage", () => {
-  it("restores original src and clears the processed flag", () => {
+  it("restores original src and clears the processed flag", async () => {
     installCanvasMocks()
     const img = makeLoadedImg("https://x/orig.png")
-    processImage(img)
+    await processImage(img)
     expect(revertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/orig.png")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
@@ -227,47 +388,51 @@ describe("revertImage", () => {
 })
 
 describe("handleLoadEvent", () => {
-  it("processes when target is an eligible img", () => {
+  it("processes when target is an eligible img", async () => {
     installCanvasMocks()
     const img = makeLoadedImg()
     handleLoadEvent({ target: img } as unknown as Event)
+    await flushAsync()
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
   it.each([
     ["non-image", () => document.createElement("div")],
     ["img without the class", () => document.createElement("img")],
-  ])("ignores %s targets", (_label, makeTarget) => {
+  ])("ignores %s targets", async (_label, makeTarget) => {
     installCanvasMocks()
     const target = makeTarget()
     handleLoadEvent({ target } as unknown as Event)
+    await flushAsync()
     expect((target as HTMLElement).dataset["invertProcessed"]).toBeUndefined()
   })
 })
 
 describe("processLoaded", () => {
-  it("processes every decoded img.invert-in-dark-mode in the root", () => {
+  it("processes every decoded img.invert-in-dark-mode in the root", async () => {
     installCanvasMocks()
     const a = makeLoadedImg("https://x/a.png")
     const b = makeLoadedImg("https://x/b.png")
     document.body.append(a, b)
     processLoaded()
+    await flushAsync()
     expect(a.dataset["invertProcessed"]).toBe("1")
     expect(b.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("also picks up force-hsl-invert images even in light mode", () => {
+  it("also picks up force-hsl-invert images even in light mode", async () => {
     installCanvasMocks()
     setTheme("light")
     const forced = makeLoadedImg("https://x/forced.png", "force-hsl-invert")
     const themed = makeLoadedImg("https://x/themed.png")
     document.body.append(forced, themed)
     processLoaded()
+    await flushAsync()
     expect(forced.dataset["invertProcessed"]).toBe("1")
     expect(themed.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("skips images that haven't decoded yet", () => {
+  it("skips images that haven't decoded yet", async () => {
     installCanvasMocks()
     const img = document.createElement("img")
     img.classList.add("invert-in-dark-mode")
@@ -275,10 +440,11 @@ describe("processLoaded", () => {
     Object.defineProperty(img, "naturalWidth", { value: 0, configurable: true })
     document.body.append(img)
     processLoaded()
+    await flushAsync()
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("scopes the search to the provided root", () => {
+  it("scopes the search to the provided root", async () => {
     installCanvasMocks()
     const inside = makeLoadedImg("https://x/inside.png")
     const outside = makeLoadedImg("https://x/outside.png")
@@ -286,18 +452,20 @@ describe("processLoaded", () => {
     root.append(inside)
     document.body.append(root, outside)
     processLoaded(root)
+    await flushAsync()
     expect(inside.dataset["invertProcessed"]).toBe("1")
     expect(outside.dataset["invertProcessed"]).toBeUndefined()
   })
 })
 
 describe("revertProcessed", () => {
-  it("reverts every processed img under root", () => {
+  it("reverts every processed img under root", async () => {
     installCanvasMocks()
     const a = makeLoadedImg("https://x/a.png")
     const b = makeLoadedImg("https://x/b.png")
     document.body.append(a, b)
     processLoaded()
+    await flushAsync()
     revertProcessed()
     expect(a.src).toBe("https://x/a.png")
     expect(b.src).toBe("https://x/b.png")
@@ -305,11 +473,11 @@ describe("revertProcessed", () => {
     expect(b.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("leaves force-hsl-invert images inverted across theme→light", () => {
+  it("leaves force-hsl-invert images inverted across theme→light", async () => {
     installCanvasMocks()
     const forced = makeLoadedImg("https://x/forced.png", "force-hsl-invert")
     document.body.append(forced)
-    processImage(forced)
+    await processImage(forced)
     expect(forced.dataset["invertProcessed"]).toBe("1")
     revertProcessed()
     expect(forced.dataset["invertProcessed"]).toBe("1")
@@ -318,7 +486,7 @@ describe("revertProcessed", () => {
 })
 
 describe("onThemeChange", () => {
-  it("processes loaded images when theme is dark", () => {
+  it("processes loaded images when theme is dark", async () => {
     installCanvasMocks()
     const img = makeLoadedImg()
     document.body.append(img)
@@ -326,14 +494,15 @@ describe("onThemeChange", () => {
     expect(img.dataset["invertProcessed"]).toBeUndefined()
     setTheme("dark")
     onThemeChange()
+    await flushAsync()
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("reverts processed images when theme is light", () => {
+  it("reverts processed images when theme is light", async () => {
     installCanvasMocks()
     const img = makeLoadedImg("https://x/img.png")
     document.body.append(img)
-    processImage(img)
+    await processImage(img)
     setTheme("light")
     onThemeChange()
     expect(img.src).toBe("https://x/img.png")

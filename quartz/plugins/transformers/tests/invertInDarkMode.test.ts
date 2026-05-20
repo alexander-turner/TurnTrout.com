@@ -122,14 +122,17 @@ describe("InvertInDarkMode", () => {
   })
 
   describe("applyLabelsToTree", () => {
-    it("adds class only when label is true", () => {
-      const yes = h("img", { src: "https://x/a.avif" }) as Element
+    it.each<[string, string]>([
+      ["avif", "https://x/a.avif"],
+      ["svg", "https://x/chart.svg"],
+    ])("adds class only when label is true (%s)", (_label, yesSrc) => {
+      const yes = h("img", { src: yesSrc }) as Element
       const no = h("img", { src: "https://x/b.avif" }) as Element
       const unlabeled = h("img", { src: "https://x/c.avif" }) as Element
       applyLabelsToTree(
         tree(yes, no, unlabeled),
         new Map([
-          ["https://x/a.avif", true],
+          [yesSrc, true],
           ["https://x/b.avif", false],
         ]),
       )

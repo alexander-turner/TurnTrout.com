@@ -39,7 +39,7 @@ from scripts.utils import (
     ELLIPSIS,
     GERMAN_OPEN_QUOTE,
     INVERT_EXCLUDED_SEGMENTS,
-    INVERT_RASTER_EXTENSIONS,
+    INVERT_IMG_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
     LEFT_DOUBLE_QUOTE,
     LEFT_GUILLEMET,
@@ -877,7 +877,7 @@ def check_invert_labels(
     invert_labels: Mapping[str, InvertLabel] | None,
 ) -> list[str]:
     """
-    Validate every eligible ``<img>`` (raster ext) and inline looping
+    Validate every eligible ``<img>`` (raster or SVG ext) and inline looping
     ``<video>`` source against ``.invert_labels.json``: each must be present,
     reviewed, and have its ``invert-in-dark-mode`` class match the JSON
     ``invert`` field (the source of truth).
@@ -892,7 +892,7 @@ def check_invert_labels(
         src = img.get("src")
         if not isinstance(src, str):
             continue
-        if not src.lower().endswith(INVERT_RASTER_EXTENSIONS):
+        if not src.lower().endswith(INVERT_IMG_EXTENSIONS):
             continue
         if _is_excluded_segment(src):
             continue
