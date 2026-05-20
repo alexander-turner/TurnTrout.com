@@ -16,11 +16,6 @@ const EXPECTED_IMAGE_COUNT = 13
 const BUDGET_MS = 1000
 
 test("theme switch processes inverted images within budget", async ({ page, browserName }) => {
-  // WebKit's `canvas.toDataURL` is the dominant cost on Safari and is a
-  // browser-engine limit, not something this script can avoid without
-  // skipping the encode/decode roundtrip entirely. The perf signal we
-  // care about (the d3-color object-allocating regression) is covered by
-  // the Chromium + Firefox shards.
   test.skip(browserName === "webkit", "WebKit canvas encode is browser-bound")
 
   await gotoPage(page, TARGET_URL, "load")
