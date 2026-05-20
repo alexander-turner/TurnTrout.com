@@ -86,8 +86,19 @@ INVERT_RASTER_EXTENSIONS: tuple[str, ...] = (
 # R2; the rendered ``<video>`` tries each ``<source>`` in order, but we ask the
 # labeler for a verdict per URL.
 INVERT_VIDEO_EXTENSIONS: tuple[str, ...] = (".mp4", ".webm", ".mov")
+# Vector images served as ``<img src="...svg">``. Treated like raster for the
+# build transformer and built-site validator, but the labeler skips luminance
+# auto-classification — PIL can't rasterize SVG, and chart-on-white SVGs are
+# rare enough to label manually.
+INVERT_SVG_EXTENSIONS: tuple[str, ...] = (".svg",)
 INVERT_LABELABLE_EXTENSIONS: tuple[str, ...] = (
-    INVERT_RASTER_EXTENSIONS + INVERT_VIDEO_EXTENSIONS
+    INVERT_RASTER_EXTENSIONS + INVERT_VIDEO_EXTENSIONS + INVERT_SVG_EXTENSIONS
+)
+# Every ``<img>`` extension the build pipeline treats as labelable (raster +
+# SVG). Videos use their own tuple because validation hits a different DOM
+# selector.
+INVERT_IMG_EXTENSIONS: tuple[str, ...] = (
+    INVERT_RASTER_EXTENSIONS + INVERT_SVG_EXTENSIONS
 )
 # URL path segments whose media bypass invert-labeling (favicons, emoji, etc.).
 INVERT_EXCLUDED_SEGMENTS: frozenset[str] = frozenset(

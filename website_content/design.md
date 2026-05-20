@@ -47,7 +47,7 @@ The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site genera
 > _Text transformations_ operate on the raw text content of each page. For example:
 >
 > ```typescript
-> const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim;
+> const notePattern = /^\s*[*_]*note[*_]*:[*_]* (?<text>.*)(?<![*_])[*_]*/gim
 >
 > /**
 >  * Converts note patterns to admonition blocks.
@@ -55,8 +55,8 @@ The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site genera
 >  * @returns The text with note patterns converted to admonitions.
 >  */
 > export function noteAdmonition(text: string): string {
->   text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>");
->   return text;
+>   text = text.replaceAll(notePattern, "\n> [!note]\n>\n> $<text>")
+>   return text
 > }
 > ```
 >
@@ -74,12 +74,9 @@ The site is a fork of the [Quartz](https://quartz.jzhao.xyz/) static site genera
 >  */
 > export function enDashNumberRange(text: string): string {
 >   return text.replace(
->     new RegExp(
->       `\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`,
->       "g",
->     ),
+>     new RegExp(`\\b(?<!\\.)((?:p\\.?)?\\d+${chr}?)-(${chr}?\\d+)(?!\\.\\d)\\b`, "g"),
 >     "$1–$2",
->   );
+>   )
 > }
 > ```
 >
@@ -335,15 +332,15 @@ This inline script executes immediately, checking multiple possible storage loca
 A complication: how does the script know whether a scroll event came from the user or from a late-loading image shifting the layout? Get this wrong, and the page annoyingly fights the user. I decided to cancel the adjustment period given user movement indicated by certain events:
 
 ```javascript
-let userInteracted = false;
+let userInteracted = false
 const markInteraction = () => {
-  userInteracted = true;
-};
+  userInteracted = true
+}
 for (const event of ["wheel", "touchstart", "pointerdown", "keydown"]) {
   window.addEventListener(event, markInteraction, {
     passive: true,
     once: true,
-  });
+  })
 }
 ```
 
@@ -1016,7 +1013,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > **Dark-mode inversion:**
 >
-> 1. Raster `<img>` or inline looping `<video>` sources which don't have a confirmed judgment for "should this be inverted in dark mode?".
+> 1. `<img>`s and inline looping `<video>`s which don't have a confirmed judgment for "should this be inverted in dark mode?".
 > 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
 >
 > **CSS and styling:**

@@ -60,6 +60,7 @@ from scripts import utils as script_utils  # noqa: E402
 from scripts.utils import (  # noqa: E402
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_LABELABLE_EXTENSIONS,
+    INVERT_SVG_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
 )
 
@@ -104,6 +105,11 @@ def _is_candidate(url: str) -> bool:
 def is_video_url(url: str) -> bool:
     """True iff ``url`` ends with a labeled-video extension."""
     return url.lower().endswith(INVERT_VIDEO_EXTENSIONS)
+
+
+def is_svg_url(url: str) -> bool:
+    """True iff ``url`` ends with an SVG extension."""
+    return url.lower().endswith(INVERT_SVG_EXTENSIONS)
 
 
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
@@ -313,17 +319,20 @@ def ensure_luminances(
     """
     Return luminance per URL, computing+caching any missing entries.
 
-    Videos are skipped — extracting a frame would require ffmpeg and the user
-    has to label them by hand anyway. URLs in ``skip`` are also skipped, which
-    the CLI uses to bypass already-reviewed labels (whose ``L = …`` UI hint
-    is no longer actionable).
+    Videos and SVGs are skipped — videos would need ffmpeg to extract a frame,
+    and PIL can't rasterize SVG. Both formats are labeled manually in the UI.
+    URLs in ``skip`` are also skipped, which the CLI uses to bypass already-
+    reviewed labels (whose ``L = …`` UI hint is no longer actionable).
     """
     cache = load_luminances(cache_path)
     skip_set = frozenset(skip)
     missing = [
         u
         for u in candidates
-        if u not in cache and not is_video_url(u) and u not in skip_set
+        if u not in cache
+        and not is_video_url(u)
+        and not is_svg_url(u)
+        and u not in skip_set
     ]
     if not missing:
         return cache
