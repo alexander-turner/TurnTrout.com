@@ -102,12 +102,10 @@
 
   // Safari at Retina DPRs snaps scrollTo's result to a half-pixel boundary,
   // leaving a structural 1px gap between target and actual scrollY. The
-  // initial restoration loop must accept this gap or it spins all
-  // MAX_ATTEMPTS frames waiting for an exact match that never comes.
-  // The post-restoration drift monitor must use a *larger* threshold so it
-  // doesn't waste rAF callbacks fighting that same subpixel rounding.
+  // initial loop accepts a delta within this tolerance ('<='), and the
+  // post-restoration drift monitor only re-corrects strictly beyond it
+  // ('>'), so the monitor never fights its own subpixel rounding.
   const SUBPIXEL_TOLERANCE_PX = 1
-  const DRIFT_CORRECTION_THRESHOLD_PX = SUBPIXEL_TOLERANCE_PX + 1
 
   // Flag & helper to mark programmatic scrolls so scroll listeners can ignore them
   let programmaticScroll = false
@@ -243,8 +241,8 @@
 
       const currentScroll = window.scrollY
 
-      // Skip subpixel-rounding noise the initial loop already accepted.
-      if (Math.abs(currentScroll - targetPos) > DRIFT_CORRECTION_THRESHOLD_PX) {
+      // Only correct beyond the subpixel-rounding noise the initial loop accepted.
+      if (Math.abs(currentScroll - targetPos) > SUBPIXEL_TOLERANCE_PX) {
         // If a user interaction event (wheel/touch/pointer/key) has been detected,
         // this "drift" is actually user-initiated scroll. Scroll events fire
         // asynchronously after rAF callbacks, so the scrollHandler may not have
