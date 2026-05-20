@@ -1,7 +1,7 @@
-name: Lighthouse Testing
+name: Preview audits
 
 concurrency:
-  group: lighthouse-testing-${{ github.event_name }}-${{ github.ref_name }}
+  group: preview-audits-${{ github.event_name }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -15,14 +15,19 @@ on:
       - "!quartz/**/*.test.ts"
       - "!quartz/**/*.test.tsx"
       - "!quartz/**/tests/**"
+      # Console-clean spec runs against the preview URL in this workflow,
+      # so changes to it must still trigger a run despite the broad
+      # spec/tests exclusions above.
+      - "quartz/components/tests/console-clean.spec.ts"
       - "website_content/**"
       - "config/quartz/**"
       - "config/constants.json"
+      - "config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
       - ".github/lighthouse-*.json"
-      - ".github/workflows/lighthouse-layout-shift.yaml"
+      - ".github/workflows/preview-audits.yaml"
       - ".github/workflows/build-site.yaml"
 
 permissions:
