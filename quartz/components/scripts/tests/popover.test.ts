@@ -543,6 +543,40 @@ describe("attachPopoverEventListeners", () => {
     expect(popoverElement.classList.contains("popover-visible")).toBe(false)
   })
 
+  it("rapid mouseleave/mouseenter cycles do not call onRemove more than once", () => {
+    cleanup()
+    popoverElement = document.createElement("div")
+    linkElement = document.createElement("a") as unknown as HTMLLinkElement
+    const onRemove = jest.fn()
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, onRemove)
+
+    popoverElement.classList.add("popover-visible")
+    linkElement.dispatchEvent(new MouseEvent("mouseenter"))
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    linkElement.dispatchEvent(new MouseEvent("mouseenter"))
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    jest.advanceTimersByTime(1000)
+
+    expect(onRemove).toHaveBeenCalledTimes(1)
+  })
+
+  it("external cleanup cancels the pending removal timer", () => {
+    cleanup()
+    popoverElement = document.createElement("div")
+    linkElement = document.createElement("a") as unknown as HTMLLinkElement
+    const onRemove = jest.fn()
+    cleanup = attachPopoverEventListeners(popoverElement, linkElement, onRemove)
+
+    linkElement.dispatchEvent(new MouseEvent("mouseleave"))
+    cleanup()
+    jest.advanceTimersByTime(1000)
+
+    expect(onRemove).toHaveBeenCalledTimes(1)
+    cleanup = () => {
+      /* already torn down */
+    }
+  })
+
   it("stays visible when mouse moves from link into popover during grace period", () => {
     popoverElement.classList.add("popover-visible")
     linkElement.dispatchEvent(new MouseEvent("mouseleave"))

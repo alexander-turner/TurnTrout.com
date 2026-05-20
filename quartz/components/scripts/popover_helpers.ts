@@ -279,9 +279,14 @@ export function attachPopoverEventListeners(
 
   let isMouseOverLink = false
   let isMouseOverPopover = false
+  let pendingRemovalTimer: ReturnType<typeof setTimeout> | null = null
 
   const removePopover = () => {
-    setTimeout(() => {
+    if (pendingRemovalTimer !== null) {
+      clearTimeout(pendingRemovalTimer)
+    }
+    pendingRemovalTimer = setTimeout(() => {
+      pendingRemovalTimer = null
       if (!isMouseOverLink && !isMouseOverPopover) {
         popoverElement.classList.remove("popover-visible")
         popoverElement.remove()
@@ -353,6 +358,10 @@ export function attachPopoverEventListeners(
 
   return () => {
     controller.abort()
+    if (pendingRemovalTimer !== null) {
+      clearTimeout(pendingRemovalTimer)
+      pendingRemovalTimer = null
+    }
     popoverElement.remove()
     onRemove()
   }
