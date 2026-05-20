@@ -148,7 +148,7 @@ Verbalized eval awareness is an imperfect measure since models can quietly eval 
 We implement eval cooperativeness in two ways:
 
 1. A system prompt telling the model to care about cooperating with evaluations, and
-2. Synthetic document finetuning ([Wang et al.](https://alignment.anthropic.com/2025/modifying-beliefs-via-sdf/), 2025) on [documents claiming that the model is cooperative]([https://assets.turntrout.com/static/cooperation_sdf_examples.md](https://assets.turntrout.com/static/cooperation_sdf_examples.md) ("self-fulfilling cooperativeness").
+2. Synthetic document finetuning ([Wang et al.](https://alignment.anthropic.com/2025/modifying-beliefs-via-sdf/), 2025) on [documents claiming that the model is cooperative](https://assets.turntrout.com/static/cooperation_sdf_examples.md) ("self-fulfilling cooperativeness").
 
 We compare against the unmodified model, against control SDF (unrelated facts), and against anti-cooperation SDF ("you want to sabotage evaluations").
 
