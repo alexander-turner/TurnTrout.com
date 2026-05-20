@@ -371,7 +371,7 @@ describe("Asset Dimensions Plugin", () => {
         status: 0,
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
-      const dimensions = await assetProcessor.getAssetDimensionsFfprobe(testVideoUrl)
+      const dimensions = await AssetProcessor.getAssetDimensionsFfprobe(testVideoUrl)
       expect(mockSpawnSync).toHaveBeenCalledWith(
         "ffprobe",
         expect.arrayContaining([testVideoUrl]),
@@ -389,7 +389,7 @@ describe("Asset Dimensions Plugin", () => {
         status: 0,
         signal: null,
       } as unknown as SpawnSyncReturns<string>)
-      const dimensions = await assetProcessor.getAssetDimensionsFfprobe(testVideoUrl)
+      const dimensions = await AssetProcessor.getAssetDimensionsFfprobe(testVideoUrl)
       expect(dimensions).toEqual(mockFetchedVideoDims)
     })
   })

@@ -125,7 +125,7 @@ class AssetProcessor {
    * @param assetSrc - The source path or URL of the asset
    * @returns Asset dimensions
    */
-  public getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
+  public static getAssetDimensionsFfprobe(assetSrc: string): AssetDimensions {
     const ffprobe: SpawnSyncReturns<string> = childProcess.spawnSync(
       "ffprobe",
       [
@@ -230,7 +230,7 @@ class AssetProcessor {
     const ext = path.extname(localPath).toLowerCase()
     const { videoExts } = AssetProcessor
     if (videoExts.has(ext)) {
-      return await this.getAssetDimensionsFfprobe(localPath)
+      return await AssetProcessor.getAssetDimensionsFfprobe(localPath)
     }
 
     const buffer = await fs.readFile(localPath)
@@ -275,7 +275,7 @@ class AssetProcessor {
           (contentType?.startsWith("video/") || contentType?.startsWith("image/"))
         ) {
           response.body?.cancel()
-          return await this.getAssetDimensionsFfprobe(assetSrc)
+          return await AssetProcessor.getAssetDimensionsFfprobe(assetSrc)
         }
 
         const buffer = Buffer.from(await response.arrayBuffer())
