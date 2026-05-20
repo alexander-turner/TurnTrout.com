@@ -763,9 +763,7 @@ I love these "admonition" bubbles which contain information. When an admonition 
 >
 > > [!money]
 
-### Prefetching only the icons each page needs
-
-Each admonition shows a small SVG icon on its left. I [prefetch](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/prefetch) these in the page `<head>` so the icon is in the browser cache by the time the callout paints — otherwise it flickers in late. Each page only prefetches the icons it actually contains.
+I [prefetch](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/prefetch) the admonition icons to avoid flickers. Each page only prefetches the icons it uses.
 
 ## Mermaid diagrams
 
