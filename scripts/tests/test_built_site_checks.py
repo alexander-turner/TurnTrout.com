@@ -6885,6 +6885,15 @@ def test_load_invert_labels_raises_on_malformed(
             '<img src="logo.avif"></article></body></html>',
             [],
         ),
+        # Twemoji glyphs are skipped; the next non-twemoji image is the LCP.
+        (
+            '<html><head><link rel="preload" as="image" href="hero.avif"></head>'
+            "<body><article>"
+            '<img src="https://assets.turntrout.com/twemoji/1f609.svg" loading="lazy">'
+            '<img src="hero.avif" loading="eager" fetchpriority="high">'
+            "</article></body></html>",
+            [],
+        ),
     ],
 )
 def test_check_lcp_image_optimized(html: str, expected_issues: list[str]):

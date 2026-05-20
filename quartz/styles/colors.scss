@@ -188,7 +188,7 @@ section {
   filter: url("#accurate-invert") brightness(95%) !important;
 }
 
-// `accurate-invert.inline.ts` upgrades imgs to true perceptual HSL
+// `accurateInvert.inline.ts` upgrades imgs to true perceptual HSL
 // inversion via canvas and sets `data-invert-processed`. The pixel
 // data is already inverted, so we drop the SVG filter and only keep
 // brightness (matching the CSS chain above) to avoid double-inverting.
@@ -204,7 +204,7 @@ section {
 // since this is the inversion-as-stylistic-choice case rather than the
 // dark-mode-aesthetic case. The duplicated dark-context selectors
 // raise specificity to beat `:root[data-theme="dark"] img` (grayscale)
-// and `.dark-mode img` (grayscale). `accurate-invert.ts` processes
+// and `.dark-mode img` (grayscale). `accurateInvert.ts` processes
 // these images in both themes; once processed, the filter is dropped.
 img.force-hsl-invert,
 video.force-hsl-invert,

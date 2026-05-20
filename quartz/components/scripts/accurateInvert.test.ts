@@ -19,7 +19,7 @@ import {
   processLoaded,
   revertProcessed,
   onThemeChange,
-} from "./accurate-invert"
+} from "./accurateInvert"
 
 describe("invertLightness", () => {
   const EPS = 2 // tolerance for 8-bit channel rounding through HSL.
@@ -94,7 +94,11 @@ describe("invertCssColors", () => {
       "fill:#000000;stroke:#ffffff;stop-color:#777777",
     ],
     ["case-insensitive property names", "FILL: WHITE", "FILL: #000000"],
-    ["unrecognized properties left alone", "opacity: 0.5; fill: white", "opacity: 0.5; fill: #000000"],
+    [
+      "unrecognized properties left alone",
+      "opacity: 0.5; fill: white",
+      "opacity: 0.5; fill: #000000",
+    ],
     ["non-color values left alone", "fill: none; stroke: url(#g)", "fill: none; stroke: url(#g)"],
   ])("%s", (_label, input, expected) => {
     expect(invertCssColors(input)).toBe(expected)
@@ -323,7 +327,9 @@ describe("processImage", () => {
 
   it("routes .svg sources to the SVG path (no canvas use)", async () => {
     const { toDataURL } = installCanvasMocks()
-    const fetchFn = mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>')
+    const fetchFn = mockFetchText(
+      '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>',
+    )
     const img = makeLoadedImg("https://x/chart.svg")
     await expect(processImage(img)).resolves.toBe(true)
     expect(fetchFn).toHaveBeenCalledWith("https://x/chart.svg")

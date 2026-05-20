@@ -404,9 +404,7 @@ def check_filename_lowercase(file_path: Path) -> list[str]:
     redirect can clobber the canonical content non-deterministically.
     """
     if file_path.stem != file_path.stem.lower():
-        return [
-            f"Filename '{file_path.name}' must be lowercase."
-        ]
+        return [f"Filename '{file_path.name}' must be lowercase."]
     return []
 
 
@@ -1053,7 +1051,7 @@ def main(check_publication_dates: bool = False) -> None:
         dir_to_search=content_dir,
         filetypes_to_match=(".md",),
         use_git_ignore=True,
-        ignore_dirs=["templates", "drafts"],
+        ignore_dirs=["templates", "drafts", "partials"],
     )
 
     # mapping from permalink or alias to its forward and prev post slugs
