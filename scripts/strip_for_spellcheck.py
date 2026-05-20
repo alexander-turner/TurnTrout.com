@@ -14,6 +14,7 @@ import argparse
 import re
 import sys
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
 
 # Add the project root to sys.path
@@ -23,6 +24,15 @@ sys.path.append(str(Path(__file__).parent.parent))
 from scripts import utils as script_utils  # noqa: E402
 
 _QUOTE_CALLOUT_RE = re.compile(r"^(?:>\s*)+\[!quote\][+-]?")
+
+# Generic callout marker (Obsidian syntax: `> [!type]` with optional `+`/`-`).
+# Matched only at the start of a blockquote line so plain prose containing
+# `[!something]` isn't touched. Quote callouts are handled separately by
+# `strip_quote_blocks`, which blanks them entirely; this pattern blanks the
+# marker on any remaining callout lines.
+_CALLOUT_MARKER_RE = re.compile(
+    r"(?m)^(?P<prefix>(?:>\s*)+)(?P<marker>\[![a-zA-Z]+\][+-]?)"
+)
 
 # Combined display + inline math. Display (`$$...$$`, possibly multi-line)
 # is tried first so it captures `$$x$$` as a single match instead of
@@ -142,9 +152,38 @@ def strip_dropcap_tags(text: str) -> str:
     return _DROPCAP_TAG_RE.sub(lambda m: m.group("inner"), text)
 
 
+def strip_callout_markers(text: str) -> str:
+    """
+    Blank `[!type]` callout markers on non-quote callout lines.
+
+    The markdown parser treats `[!type]` as a shortcut link reference, which
+    confuses retext's tokenizer in earlier paragraphs: a sentence-final period
+    gets fused with the preceding word (e.g. `evaluability.` is flagged as one
+    unknown token). Replacing the marker with same-length spaces preserves
+    line and column counts while removing the construct that triggers the
+    fusing behavior. `[!quote]` blocks are blanked entirely by
+    `strip_quote_blocks`, so this function only ever sees other callout types.
+    """
+
+    def _replace(match: re.Match[str]) -> str:
+        return match.group("prefix") + " " * len(match.group("marker"))
+
+    return _CALLOUT_MARKER_RE.sub(_replace, text)
+
+
+_LINT_STRIPPERS: tuple[Callable[[str], str], ...] = (
+    strip_quote_blocks,
+    strip_callout_markers,
+    strip_math,
+    strip_dropcap_tags,
+)
+
+
 def strip_for_lint(text: str) -> str:
     """Apply all lint-preprocessing strips to markdown text."""
-    return strip_dropcap_tags(strip_math(strip_quote_blocks(text)))
+    for stripper in _LINT_STRIPPERS:
+        text = stripper(text)
+    return text
 
 
 def create_stripped_directory(
