@@ -932,16 +932,23 @@ def check_lcp_image_optimized(soup: BeautifulSoup) -> list[str]:
     for img in _tags_only(article.find_all("img")):
         raw_classes = img.get("class")
         classes = raw_classes if isinstance(raw_classes, list) else []
-        # Skip favicons and images not processed by the links transformer
-        # (TSX-rendered images won't have a loading attribute)
-        if "favicon" not in classes and img.has_attr("loading"):
+        src = str(img.get("src", ""))
+        # Skip favicons, twemoji glyphs (tiny inline characters, never the
+        # LCP element — matches `optimizeLcpImage` in renderPage.tsx), and
+        # images not processed by the links transformer (TSX-rendered images
+        # won't have a loading attribute).
+        if (
+            "favicon" not in classes
+            and not src.startswith(script_utils.TWEMOJI_BASE_URL)
+            and img.has_attr("loading")
+        ):
             first_img = img
             break
 
     if not first_img:
         return issues
 
-    src = first_img.get("src", "")
+    src = str(first_img.get("src", ""))
     loading = first_img.get("loading", "")
     fetchpriority = first_img.get("fetchpriority", "")
 

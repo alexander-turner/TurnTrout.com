@@ -40,6 +40,7 @@ ZERO_WIDTH_SPACE: str = _UNICODE_TYPO["zeroWidthSpace"]
 # bare-string and URL forms can't drift.
 CDN_BASE_URL: str = _CONSTANTS["cdnBaseUrl"]
 CDN_HOSTNAME: str = CDN_BASE_URL.split("://", 1)[1].split("/", 1)[0]
+TWEMOJI_BASE_URL: str = _CONSTANTS["twemojiBaseUrl"]
 
 # R2/Cloudflare credentials shared by scripts/r2_baselines.py and
 # scripts/r2_upload.py. Populated by ``envchain cloudflare`` in normal
