@@ -27,7 +27,7 @@ interface HeadProps {
   }
 }
 
-// skipcq: JS-D1001
+/** Twitter card author meta tags, or empty string when no authors are configured. */
 function maybeRenderAuthorTags(authors: readonly string[] | undefined): string {
   if (!authors || authors.length === 0) {
     return ""
@@ -39,7 +39,7 @@ function maybeRenderAuthorTags(authors: readonly string[] | undefined): string {
   `
 }
 
-// skipcq: JS-D1001
+/** Open Graph video meta tag for the given preview URL, or empty string when undefined. */
 export function maybeProduceVideoTag(videoPreview: string | undefined): string {
   if (!videoPreview) {
     return ""
@@ -47,7 +47,7 @@ export function maybeProduceVideoTag(videoPreview: string | undefined): string {
   return `<meta property="og:video" content="${escapeHTML(videoPreview)}" />`
 }
 
-// skipcq: JS-D1001
+/** Open Graph image meta tags for the social card image. */
 function renderImageTags(cardImage: string, altText: string): string {
   return `
     <meta property="og:image" content="${escapeHTML(cardImage)}" />
@@ -57,7 +57,7 @@ function renderImageTags(cardImage: string, altText: string): string {
   `
 }
 
-// skipcq: JS-D1001
+/** Returns the inner HTML for the document `<head>`: title, OG/Twitter cards, icons, theme colors. */
 export function renderHead({ cfg, fileData, slug, redirect }: HeadProps): string {
   const title = formatTitle(fileData.frontmatter?.title ?? defaultTitle)
   const description = applyTextTransforms(

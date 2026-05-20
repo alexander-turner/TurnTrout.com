@@ -34,12 +34,12 @@ export function createFigcaption(captionText: string): Element[] {
   return captionHtml.children as Element[]
 }
 
-// skipcq: JS-D1001
+/** True if `element` is a `<table>` element. */
 export function isTableElement(element: ElementContent): boolean {
   return isElementNode(element) && element.tagName === "table"
 }
 
-// skipcq: JS-D1001
+/** Wraps a `<table>` and its caption nodes in a single `<figure>`. */
 export function createTableFigure(tableElement: Element, captionElements: Element[]): Element {
   return h("figure", [tableElement, ...captionElements])
 }

@@ -99,12 +99,12 @@ interface GitCountOptions {
   grep?: string
 }
 
-// skipcq: JS-D1001
+/** True if the current git working tree is a shallow clone. */
 export function isShallowClone(): boolean {
   return execSync("git rev-parse --is-shallow-repository", { encoding: "utf-8" }).trim() === "true"
 }
 
-// skipcq: JS-D1001
+/** Total commit count across all refs, optionally filtered by author/message; 0 on shallow clones. */
 export function countGitCommits(options: GitCountOptions = {}): number {
   if (isShallowClone()) return 0
 
@@ -115,7 +115,7 @@ export function countGitCommits(options: GitCountOptions = {}): number {
   return parseInt(output.trim(), 10)
 }
 
-// skipcq: JS-D1001
+/** Counts passing Jest tests by parsing the trailing "Tests: N passed" line from the test run. */
 export function countJsTests(): number {
   // Sadly, this requires running all tests but there isn't a --collect-only like for pytest
   const output = execSync("pnpm test 2>&1 | grep -E 'Tests:.*passed' | tail -1", {
@@ -126,7 +126,7 @@ export function countJsTests(): number {
   return parseInt(match.groups.count, 10)
 }
 
-// skipcq: JS-D1001
+/** Counts Playwright `test(...)` declarations in `quartz/components/tests/*.spec.ts`. */
 export function countPlaywrightTests(): number {
   const output = execSync('grep -rE "^\\s*test\\(" quartz/components/tests/*.spec.ts | wc -l', {
     encoding: "utf-8",
@@ -134,12 +134,11 @@ export function countPlaywrightTests(): number {
   return parseInt(output.trim(), 10)
 }
 
-// skipcq: JS-D1001
-// Override addopts to avoid requiring plugins (--cov, -n) that may not be installed
+/** Pytest collect-only invocation; `addopts=""` strips plugins (`--cov`, `-n`) that may not be installed. */
 export const PYTEST_COUNT_CMD =
   "bash -lc '.venv/bin/pytest --collect-only -q -o addopts=\"\"' 2>&1 | tail -20"
 
-// skipcq: JS-D1001
+/** Counts Python tests via `pytest --collect-only`, parsing the "N tests collected" footer. */
 export function countPythonTests(): number {
   const output = execSync(PYTEST_COUNT_CMD, { encoding: "utf-8" })
 
@@ -151,7 +150,7 @@ export function countPythonTests(): number {
   return parseInt(match.groups.count, 10)
 }
 
-// skipcq: JS-D1001
+/** Total lines across source files (TS/JS/Python/CSS), excluding build/vendor directories. */
 export function countLinesOfCode(): number {
   const output = execSync(
     'find . -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.py" -o -name "*.css" -o -name "*.scss" \\) ! -path "*/node_modules/*" ! -path "*/.venv/*" ! -path "*/.pytest_cache/*" ! -path "*/.mypy_cache/*" ! -path "*/.ruff_cache/*" ! -path "*/htmlcov/*" ! -path "*/public/*" -exec wc -l {} + | tail -1 | awk \'{print $1}\'',
@@ -169,7 +168,7 @@ export interface RepoStats {
   linesOfCode: number
 }
 
-// skipcq: JS-D1001
+/** Gathers commit, test, and code-size statistics about this repo in parallel. */
 export async function computeRepoStats(): Promise<RepoStats> {
   const [commitCount, aiCommitCount, jsTestCount, playwrightTestCount, pytestCount, linesOfCode] =
     await Promise.all([
@@ -195,7 +194,7 @@ const addSvgExtension = (path: string): string => {
   return `${path}.svg`
 }
 
-// skipcq: JS-D1001
+/** Returns a content generator yielding a no-wrap span containing the given favicon image. */
 export const generateSpecialFaviconContent = (
   faviconPath: string,
   altText = "",

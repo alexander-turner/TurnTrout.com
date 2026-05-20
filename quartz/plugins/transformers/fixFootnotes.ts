@@ -24,7 +24,7 @@ export function isFootnoteListItem(child: ElementContent): boolean {
   return child.tagName === "li" && Boolean(id?.startsWith("user-content-fn-"))
 }
 
-// skipcq: JS-D1001
+/** Locates the `<ol>` of footnote list items in `tree`, returning its node + parent + index. */
 export function findFootnoteList(tree: Root): FootnoteLocation | null {
   let footnoteLocation: FootnoteLocation | null = null
 
@@ -53,12 +53,12 @@ const FOOTNOTE_HEADING_IDS: ReadonlySet<string> = new Set([
   UPSTREAM_FOOTNOTE_HEADING_ID,
 ])
 
-// skipcq: JS-D1001
+/** True if `id` matches a recognized footnote-heading id (ours or remark-gfm's). */
 function isFootnoteHeadingId(id: unknown): boolean {
   return typeof id === "string" && FOOTNOTE_HEADING_IDS.has(id)
 }
 
-// skipcq: JS-D1001
+/** True if the section already contains a footnote heading (h1 or h2 with a known id). */
 export function hasFootnoteHeading(sectionElement: Element): boolean {
   return sectionElement.children.some((child: ElementContent) => {
     // Check for both h1 and h2 (remark-gfm-footnotes generates h2)
@@ -69,7 +69,7 @@ export function hasFootnoteHeading(sectionElement: Element): boolean {
   })
 }
 
-// skipcq: JS-D1001
+/** Creates the visually-hidden `<h1>` "Footnotes" heading used for the footnotes section. */
 export function createFootnoteHeading(): Element {
   return h("h1", { id: footnoteHeadingId, className: ["sr-only"] }, ["Footnotes"])
 }

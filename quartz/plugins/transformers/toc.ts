@@ -37,7 +37,7 @@ const defaultOptions: Options = {
 
 const logger = createWinstonLogger("TableOfContents")
 
-// skipcq: JS-D1001
+/** Debug-log a single TOC entry. */
 function logTocEntry(entry: TocEntry) {
   logger.debug(`TOC Entry: depth=${entry.depth}, text="${entry.text}", slug="${entry.slug}"`)
 }
@@ -62,7 +62,7 @@ export function customToString(node: Node): string {
   return "value" in node ? String(node.value) : ""
 }
 
-// skipcq: JS-D1001
+/** Removes any HTML tags from a string, returning the text content only. */
 export function stripHtmlTagsFromString(html: string): string {
   return html.replace(/<[^>]*>/g, "")
 }

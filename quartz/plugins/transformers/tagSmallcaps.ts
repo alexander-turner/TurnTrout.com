@@ -457,7 +457,7 @@ export const rehypeTagSmallcaps: Plugin = () => {
   }
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer that wraps acronyms and tag-like spans in small-caps styling. */
 // istanbul ignore next
 export const TagSmallcaps: QuartzTransformerPlugin = () => {
   return {

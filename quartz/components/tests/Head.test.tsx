@@ -54,6 +54,7 @@ describe("Head Component", () => {
   const mockFileData: QuartzPluginData = {
     slug: "test-page" as FullSlug,
     frontmatter: mockFrontmatter,
+    usedAdmonitionIcons: ["note"],
     data: {
       frontmatter: mockFrontmatter,
     },
@@ -246,6 +247,61 @@ describe("Head Component", () => {
 
       expect(html).toContain("https://assets.turntrout.com/static/icons/note.svg")
       expect(html).toContain("/static/styles/fonts/EBGaramond/EBGaramond-InitialsF1.woff2")
+    })
+
+    it("uses rel=preload (not prefetch) for icon links", () => {
+      // Cloudflare Speed Brain intercepts requests carrying
+      // `Sec-Purpose: prefetch` and can refuse them with a bare 503 that
+      // the browser surfaces as a CORS error. Browsers only send that
+      // header for `rel="prefetch"`, so `rel="preload"` sidesteps the
+      // refusal entirely.
+      const propsWithIcons = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usedAdmonitionIcons: ["note", "warning"],
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsWithIcons))
+
+      for (const icon of ["note", "warning"]) {
+        const iconUrl = `https://assets.turntrout.com/static/icons/${icon}.svg`
+        expect(html).toMatch(
+          new RegExp(`<link[^>]*rel="preload"[^>]*href="${iconUrl.replace(/\./g, "\\.")}"`),
+        )
+        expect(html).not.toMatch(
+          new RegExp(`<link[^>]*rel="prefetch"[^>]*href="${iconUrl.replace(/\./g, "\\.")}"`),
+        )
+      }
+    })
+
+    it("scopes icon prefetches to usedAdmonitionIcons", () => {
+      const propsWithIcons = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usedAdmonitionIcons: ["warning", "fold"],
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsWithIcons))
+
+      expect(html).toContain("https://assets.turntrout.com/static/icons/warning.svg")
+      expect(html).toContain("https://assets.turntrout.com/static/icons/fold.svg")
+      expect(html).not.toContain("https://assets.turntrout.com/static/icons/note.svg")
+      expect(html).not.toContain("https://assets.turntrout.com/static/icons/goose.svg")
+    })
+
+    it("emits no icon prefetches when the page has no admonitions", () => {
+      const propsNoIcons = {
+        ...mockProps,
+        fileData: {
+          ...mockFileData,
+          usedAdmonitionIcons: undefined,
+        } as QuartzPluginData,
+      }
+      const html = render(h(Head, propsNoIcons))
+
+      expect(html).not.toContain("/static/icons/")
     })
   })
 

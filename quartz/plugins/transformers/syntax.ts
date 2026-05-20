@@ -23,7 +23,7 @@ const defaultOptions: SyntaxHighlightingOptions = {
   keepBackground: false,
 }
 
-// skipcq: JS-D1001
+/** Quartz transformer applying Shiki light/dark syntax highlighting to fenced code blocks. */
 export const SyntaxHighlighting: QuartzTransformerPlugin<SyntaxHighlightingOptions> = (
   userOpts?: Partial<SyntaxHighlightingOptions>,
 ) => {

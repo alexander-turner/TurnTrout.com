@@ -19,32 +19,6 @@ import {
   type QuartzComponentProps,
 } from "./types"
 
-// Preload icons to prevent race condition on admonition icons
-//  These are very small assets, so we can preload them all
-const CALLOUT_ICONS = [
-  "note",
-  "abstract",
-  "info",
-  "todo",
-  "success",
-  "question",
-  "warning",
-  "failure",
-  "danger",
-  "bug",
-  "example",
-  "quote",
-  "fold",
-  "plus",
-  "lightbulb",
-  "goose",
-  "heart",
-  "tag",
-  "link",
-  "math",
-  "dollar",
-] as const
-
 function generateScriptElement(id: string, src: string): JSX.Element {
   return (
     <script
@@ -75,7 +49,7 @@ export function renderMetaJsx(cfg: GlobalConfiguration, fileData: QuartzPluginDa
 }
 
 export default (() => {
-  // skipcq: JS-D1001
+  /** Document `<head>`: meta tags, fonts, analytics, and external JS/CSS resources. */
   const Head: QuartzComponent = ({ cfg, fileData, externalResources }: QuartzComponentProps) => {
     const headJsx = renderMetaJsx(cfg, fileData)
 
@@ -104,11 +78,12 @@ export default (() => {
       />
     )
 
-    const iconPreloads = CALLOUT_ICONS.map((icon) => {
+    const usedAdmonitionIcons = fileData.usedAdmonitionIcons ?? []
+    const iconPreloads = usedAdmonitionIcons.map((icon) => {
       return (
         <link
           key={icon}
-          rel="prefetch"
+          rel="preload"
           href={`${cdnBaseUrl}/static/icons/${icon}.svg`}
           as="image"
           type="image/svg+xml"

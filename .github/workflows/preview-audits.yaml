@@ -1,7 +1,7 @@
-name: Lighthouse Testing
+name: Preview audits
 
 concurrency:
-  group: lighthouse-testing-${{ github.event_name }}-${{ github.ref_name }}
+  group: preview-audits-${{ github.event_name }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 on:
@@ -15,12 +15,20 @@ on:
       - "!quartz/**/*.test.ts"
       - "!quartz/**/*.test.tsx"
       - "!quartz/**/tests/**"
+      # Console-clean spec runs against the preview URL in this workflow,
+      # so changes to it must still trigger a run despite the broad
+      # spec/tests exclusions above.
+      - "quartz/components/tests/console-clean.spec.ts"
       - "website_content/**"
       - "config/quartz/**"
       - "config/constants.json"
+      - "config/playwright/**"
       - "package.json"
       - "pnpm-lock.yaml"
       - ".github/actions/**"
+      - ".github/lighthouse-*.json"
+      - ".github/workflows/preview-audits.yaml"
+      - ".github/workflows/build-site.yaml"
 
 permissions:
   actions: read
@@ -219,3 +227,36 @@ jobs:
           name: lighthouse-reports-full-audit
           path: ${{ github.workspace }}/.lighthouseci/
           retention-days: 1
+
+  # Replays console-clean.spec.ts against the deployed preview URL so
+  # edge-only failures (CF Speed Brain, CSP, CORS misconfigs, Page
+  # Functions) surface as named test failures instead of being collapsed
+  # into a single Lighthouse best-practices score.
+  console_clean_preview:
+    name: console-clean (preview)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: deploy
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
+      PLAYWRIGHT_BROWSERS: chromium
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Setup Frontend Environment
+        uses: ./.github/actions/setup-visual-testing-env
+        with:
+          install-playwright: "true"
+      - name: Install browsers
+        run: pnpm run install-browsers
+      - name: Run console-clean against preview
+        run: |
+          pnpm exec playwright test \
+            --config config/playwright/playwright.config.ts \
+            quartz/components/tests/console-clean.spec.ts
+      - name: Upload Playwright trace on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: console-clean-preview-trace
+          path: ${{ github.workspace }}/test-results/
+          retention-days: 5
