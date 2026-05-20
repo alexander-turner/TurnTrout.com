@@ -19,6 +19,7 @@ import {
   processLoaded,
   revertProcessed,
   onThemeChange,
+  pruneStalePins,
 } from "./accurateInvert"
 
 describe("invertLightness", () => {
@@ -513,5 +514,68 @@ describe("onThemeChange", () => {
     onThemeChange()
     expect(img.src).toBe("https://x/img.png")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
+  })
+})
+
+describe("pruneStalePins", () => {
+  // URLs are namespaced to this describe block — `pinnedOriginalUrls` is
+  // module-level and persists across tests, so reusing a URL another test
+  // already pinned would short-circuit the pin creation here.
+  const pinContainerId = "invert-pin-container"
+  const pinsInDom = (): HTMLImageElement[] => {
+    const c = document.getElementById(pinContainerId)
+    return c ? (Array.from(c.children) as HTMLImageElement[]) : []
+  }
+
+  it("drops pins for imgs no longer on the page, keeps current ones", async () => {
+    installCanvasMocks()
+    const a = makeLoadedImg("https://x/prune-a.png")
+    const b = makeLoadedImg("https://x/prune-b.png")
+    document.body.append(a, b)
+    await processImage(a)
+    await processImage(b)
+    expect(
+      pinsInDom()
+        .map((p) => p.src)
+        .sort(),
+    ).toEqual(["https://x/prune-a.png", "https://x/prune-b.png"])
+    b.remove()
+    pruneStalePins()
+    expect(pinsInDom().map((p) => p.src)).toEqual(["https://x/prune-a.png"])
+  })
+
+  it("treats unprocessed invert imgs as live (matches their current src)", async () => {
+    installCanvasMocks()
+    const processed = makeLoadedImg("https://x/prune-proc.png")
+    document.body.append(processed)
+    await processImage(processed)
+    // A second img with a different URL exists but hasn't been processed
+    // yet (e.g. just inserted via SPA nav). Its src is the original URL.
+    const pending = makeLoadedImg("https://x/prune-pending.png")
+    document.body.append(pending)
+    // The pin for `pending` doesn't exist yet, but pruneStalePins must
+    // not drop the `processed` pin just because `pending`'s URL isn't in
+    // the pin set.
+    pruneStalePins()
+    expect(pinsInDom().map((p) => p.src)).toEqual(["https://x/prune-proc.png"])
+  })
+
+  it("ignores force-hsl-invert imgs when computing live URLs", async () => {
+    installCanvasMocks()
+    const themed = makeLoadedImg("https://x/prune-themed.png")
+    document.body.append(themed)
+    await processImage(themed)
+    // A force-hsl-invert img is never revertable, never pinned. Its src
+    // must not protect another pin from being considered stale, and its
+    // absence must not cause the themed pin to be dropped.
+    const forced = makeLoadedImg("https://x/prune-forced.png", "force-hsl-invert")
+    document.body.append(forced)
+    pruneStalePins()
+    expect(pinsInDom().map((p) => p.src)).toEqual(["https://x/prune-themed.png"])
+  })
+
+  it("is a no-op before any img has been processed", () => {
+    expect(() => pruneStalePins()).not.toThrow()
+    expect(document.getElementById(pinContainerId)).toBeNull()
   })
 })

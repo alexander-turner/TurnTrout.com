@@ -34,9 +34,8 @@ const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-processed]`
 
 // URLs of original bitmaps that have already been pinned, so we don't
-// duplicate pins when multiple invert imgs share a source. Survives SPA
-// navigation: cumulative growth across pages is bounded by total unique
-// invert imgs viewed in the session, which is fine for a blog-scale site.
+// duplicate pins when multiple invert imgs share a source. Stale entries
+// are pruned by `pruneStalePins` on SPA navigation.
 const pinnedOriginalUrls = new Set<string>()
 const PIN_CONTAINER_ID = "invert-pin-container"
 
@@ -300,6 +299,30 @@ export function revertProcessed(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)
   for (const img of images) {
     revertImage(img)
+  }
+}
+
+/**
+ * Drop pin imgs whose URL is no longer used by any invert img in `root`.
+ * Called on SPA navigation: without this, pins accumulate monotonically
+ * across pages (Quartz pjax replaces the content area but not `<body>`,
+ * so the pin container survives every nav). Pruning bounds pin memory to
+ * the current page's revertable imgs.
+ */
+export function pruneStalePins(root: Document | Element = document): void {
+  const container = document.getElementById(PIN_CONTAINER_ID)
+  if (!container) return
+  const live = new Set<string>()
+  for (const img of root.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)) {
+    if (img.classList.contains(forceHslInvertClass)) continue
+    const url = img.dataset["invertOriginalSrc"] ?? img.src
+    if (url) live.add(url)
+  }
+  for (const pin of Array.from(container.children) as HTMLImageElement[]) {
+    if (!live.has(pin.src)) {
+      pinnedOriginalUrls.delete(pin.src)
+      pin.remove()
+    }
   }
 }
 
