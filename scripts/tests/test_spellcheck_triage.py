@@ -233,7 +233,7 @@ def test_collect_unknown_words_dedupes_by_word_and_source(
     assert {u.source for u in unknowns} == {"a.html", "b.html"}
 
 
-def test_collect_unknown_words_skips_unparseable_warnings(
+def test_collect_unknown_words_skips_unparsable_warnings(
     tmp_path, patch_site_checks
 ):
     public = _make_public(tmp_path, "a.html")

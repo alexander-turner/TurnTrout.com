@@ -788,7 +788,9 @@ export const improveFormatting = (
       const parent = ancestors[ancestors.length - 1]
       if (!parent) return
 
-      const skipFormatting = [node, ...ancestors].some((anc) => toSkip(anc as Element))
+      const skipFormatting = [node, ...ancestors].some((ancestor) =>
+        toSkip(ancestor as Element),
+      )
       if (skipFormatting) {
         return // NOTE replaceRegex visits children so this won't check that children are not marked
       }

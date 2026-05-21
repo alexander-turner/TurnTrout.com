@@ -63,7 +63,7 @@ export function getFullSlug(window: Window): FullSlug {
  * This function replaces spaces with hyphens, removes special characters,
  * and ensures the slug is properly formatted for URLs.
  */
-function sluggify(s: string): string {
+function slugify(s: string): string {
   return s
     .split("/")
     .map((segment) =>
@@ -81,7 +81,7 @@ function sluggify(s: string): string {
 /**
  * Sluggifies a file path to create a clean URL slug.
  *
- * @param fp The file path to sluggify.
+ * @param fp The file path to slugify.
  * @param excludeExt Whether to exclude the file extension from the slug.
  * @returns The sluggified file path as a FullSlug.
  */
@@ -93,7 +93,7 @@ export function slugifyFilePath(fp: FilePath, excludeExt?: boolean): FullSlug {
     ext = ""
   }
 
-  let slug = sluggify(withoutFileExt)
+  let slug = slugify(withoutFileExt)
 
   // treat _index as index
   if (endsWith(slug, "_index")) {
@@ -284,7 +284,7 @@ export function splitAnchor(link: string): [string, string] {
 export function slugTag(tag: string) {
   return tag
     .split("/")
-    .map((tagSegment) => sluggify(tagSegment))
+    .map((tagSegment) => slugify(tagSegment))
     .join("/")
 }
 

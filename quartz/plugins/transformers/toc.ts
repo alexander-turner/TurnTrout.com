@@ -97,8 +97,8 @@ export const TableOfContents: QuartzTransformerPlugin<Partial<Options> | undefin
                 if (
                   hasAncestor(
                     node as ElementMaybeWithParent,
-                    (anc: Node) => {
-                      return anc.type === "blockquote"
+                    (ancestor: Node) => {
+                      return ancestor.type === "blockquote"
                     },
                     ancestors,
                   )
