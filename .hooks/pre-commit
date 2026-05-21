@@ -12,6 +12,41 @@ if [ -d "$git_root/.venv/bin" ]; then
   export PATH="$git_root/.venv/bin:$PATH"
 fi
 
+# Snapshot staged files once; downstream guardrails reuse this list.
+staged_files=()
+while IFS= read -r -d '' f; do
+  staged_files+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACM -z)
+
+# Guardrail: reject unresolved merge-conflict markers in any staged file.
+if [ ${#staged_files[@]} -gt 0 ]; then
+  conflict_hits=$(grep -lE '^(<<<<<<< |>>>>>>> |={7}$)' -- "${staged_files[@]}" 2>/dev/null || true)
+  if [ -n "$conflict_hits" ]; then
+    echo "ERROR: merge-conflict markers found in:" >&2
+    echo "$conflict_hits" >&2
+    exit 1
+  fi
+fi
+
+# Guardrail: reject staged files >500 KB. Heavy assets belong in R2.
+MAX_BYTES=512000
+for f in "${staged_files[@]+"${staged_files[@]}"}"; do
+  [ -f "$f" ] || continue
+  size=$(wc -c <"$f" | tr -d ' ')
+  if [ "$size" -gt "$MAX_BYTES" ]; then
+    echo "ERROR: $f is ${size} bytes (>${MAX_BYTES}). Upload to R2 instead of committing." >&2
+    exit 1
+  fi
+done
+
+# Guardrail: scan staged content for secrets.
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --no-banner --redact --exit-code 1
+else
+  echo "Warning: gitleaks not installed; skipping secrets scan." >&2
+  echo "  Install: brew install gitleaks  (or https://github.com/gitleaks/gitleaks)" >&2
+fi
+
 # Check if lint-staged is installed
 if [ ! -f "$git_root/node_modules/.bin/lint-staged" ]; then
   echo "Warning: lint-staged not found. Run 'pnpm install' to enable pre-commit formatting." >&2
@@ -36,4 +71,25 @@ if [ -n "$staged_py_files" ] && command -v uv >/dev/null 2>&1; then
     --in-place --config config/python/pyproject.toml 2>/dev/null || true
   # Re-stage any files that docformatter modified
   echo "$staged_py_files" | xargs git add
+fi
+
+# Guardrail: catch common typos in staged source files (config in pyproject.toml).
+if [ ${#staged_files[@]} -gt 0 ] && command -v uv >/dev/null 2>&1; then
+  uv run codespell "${staged_files[@]}"
+fi
+
+# Guardrail: lint GitHub Actions workflows when they change.
+workflow_files=()
+for f in "${staged_files[@]+"${staged_files[@]}"}"; do
+  case "$f" in
+  .github/workflows/*.yml | .github/workflows/*.yaml) workflow_files+=("$f") ;;
+  esac
+done
+if [ ${#workflow_files[@]} -gt 0 ]; then
+  if command -v actionlint >/dev/null 2>&1; then
+    actionlint "${workflow_files[@]}"
+  else
+    echo "Warning: actionlint not installed; skipping workflow lint." >&2
+    echo "  Install: brew install actionlint  (or https://github.com/rhysd/actionlint)" >&2
+  fi
 fi

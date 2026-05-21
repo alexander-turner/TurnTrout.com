@@ -822,7 +822,7 @@ Miscellaneous improvements
 
 ## Lighthouse
 
-I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, _and_ SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71. 
+I run [Lighthouse](https://developer.chrome.com/docs/lighthouse/overview/) against six representative pages, demanding a perfect 100 in accessibility, best practices, _and_ SEO, plus at least 90 in performance.[^lighthouse-perf] [A perfect 100 is rare in every category](https://www.tunetheweb.com/blog/what-do-lighthouse-scores-look-like-across-the-web/): across 6.8 million sites surveyed by the HTTP Archive, only about 1% score 100 in accessibility, 1% in best practices, and 1% in SEO. The median best practices score is just 71.
 
 [^lighthouse-perf]: The performance threshold is 90 rather than 100 because Lighthouse performance scores exhibit 5–10 points of run-to-run variance from network timing, server response jitter, and JavaScript execution variability. For a static site that renders KaTeX math, Mermaid diagrams, inline favicons, and popovers, a consistent 90+ is about as high as the score can be pinned without chasing noise.
 
@@ -932,6 +932,16 @@ External static analysis alerts me to potential vulnerabilities and anti-pattern
 
 - I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
+
+### Guardrails
+
+Beyond formatting, the `pre-commit` hook runs cheap blockers before any commit lands:
+
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for accidentally-pasted API keys and credentials. A secret in `git` history is forever, so I'd rather lose ten seconds at commit time than discover the leak after pushing.
+- [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file --- saving me a CI round-trip on every pipeline tweak.
+- [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
+- An inline check rejects any staged file over 500 KB. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
+- Another inline check rejects unresolved merge-conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) --- a fast catch for the times I forget to run `git status` after a rebase.
 
 ## `pre-push`: local checks and auto-fixes
 

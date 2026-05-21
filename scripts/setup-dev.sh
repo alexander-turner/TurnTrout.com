@@ -2,7 +2,7 @@
 # Check for required development dependencies
 set -euo pipefail
 
-REQUIRED="git node pnpm uv magick ffmpeg ffprobe exiftool vale sass rclone"
+REQUIRED="git node pnpm uv magick ffmpeg ffprobe exiftool vale sass rclone gitleaks actionlint"
 
 missing=()
 for cmd in $REQUIRED; do
@@ -14,8 +14,9 @@ if [[ ${#missing[@]} -eq 0 ]]; then
 else
     echo "Missing: ${missing[*]}"
     echo ""
-    echo "Install on macOS:  brew install imagemagick ffmpeg exiftool vale sass rclone"
+    echo "Install on macOS:  brew install imagemagick ffmpeg exiftool vale sass rclone gitleaks actionlint"
     echo "Install on Debian: sudo apt install imagemagick ffmpeg libimage-exiftool-perl vale dart-sass rclone"
+    echo "  (gitleaks/actionlint on Debian: see their GitHub releases)"
     echo ""
     echo "Install uv:   curl -LsSf https://astral.sh/uv/install.sh | sh"
     echo "Install pnpm: npm install -g pnpm"

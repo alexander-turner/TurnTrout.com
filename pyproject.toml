@@ -48,7 +48,16 @@ dependencies = [
     "frozendict>=2.4.7",
     "anthropic==0.102.0",
     "flask>=3.0.0",
+    "codespell>=2.3.0",
 ]
+
+[tool.codespell]
+# Skip paths that are vendored, built, or contain intentional non-English content.
+skip = "*.lock,pnpm-lock.yaml,uv.lock,public/*,node_modules/*,.venv/*,asset_staging/*,static/*,website_content/*,quartz/styles/cache/*,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
+# Vale + spellchecker-cli cover prose in website_content/; codespell guards code
+# and comments. The ignore list holds identifiers, acronyms, and intentional
+# fixture content that codespell's dictionary mistakes for typos.
+ignore-words-list = "sluggify,nd,afterall,anc,allo,caf,te,dataet,processus,wrold,unparseable,re-declare,pre-select"
 
 [tool.black]
 line-length = 80
