@@ -16,10 +16,12 @@ permissions:
 
 jobs:
   report:
-    # check_run events from non-DeepSource apps must be ignored. workflow_dispatch always runs.
+    # Only react to DeepSource's own failing check_runs that are attached to a PR.
+    # workflow_dispatch always runs (for manual debugging).
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event.check_run.app.slug == 'deepsource-io' &&
+       github.event.check_run.conclusion == 'failure' &&
        github.event.check_run.pull_requests[0] != null)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -38,7 +40,7 @@ jobs:
       - name: Fetch and print issues
         run: |
           set -euo pipefail
-          issues_json=$(deepsource issues --pr "$PR_NUMBER" --output json 2>/dev/null || echo "[]")
+          issues_json=$(deepsource issues --pr "$PR_NUMBER" --output json)
           count=$(echo "$issues_json" | jq 'length')
 
           if [ "$count" -eq 0 ]; then
