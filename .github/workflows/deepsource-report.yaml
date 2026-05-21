@@ -14,6 +14,12 @@ permissions:
   pull-requests: read
   checks: read
 
+# Multiple DeepSource analyzers (Python, JavaScript, Shell) may fail on the
+# same commit. Collapse those into one report so the PR check list stays clean.
+concurrency:
+  group: deepsource-report-${{ github.event.check_run.pull_requests[0].number || github.event.inputs.pr_number }}
+  cancel-in-progress: true
+
 jobs:
   report:
     # Only react to DeepSource's own failing check_runs that are attached to a PR.
