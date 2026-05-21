@@ -28,7 +28,7 @@ export const fontScaleFactor = 1.2
 export const backgroundDark = "#12141e"
 export const backgroundLight = "#fcfcff"
 export const foregroundDark = "#eff2ff"
-export const foregroundLight = "#20212c"
+export const foregroundLight = "#383a4e"
 
 const pct = (n: number): string => `${n}%`
 export const midgroundStrongPctNum = 85
