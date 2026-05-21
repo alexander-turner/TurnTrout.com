@@ -654,6 +654,16 @@ More text.
                 "Heading contains markdown link at line 1: ## Heading with [first link](url1) and [second link](url2)",
             ],
         ),
+        # Test case 7: Heading whose only content is a code span (becomes
+        # empty after backtick stripping). Must not falsely match a link
+        # on a following paragraph.
+        (
+            """## `pre-commit`
+
+[`lint-staged`](https://www.npmjs.com/package/lint-staged) is great.
+""",
+            [],
+        ),
     ],
 )
 def test_check_heading_links(text: str, expected_errors: list[str]):
