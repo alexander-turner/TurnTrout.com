@@ -930,18 +930,13 @@ External static analysis alerts me to potential vulnerabilities and anti-pattern
 
 <span class="populate-markdown-lint-staged"></span>
 
-- I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
+- [`docformatter`](https://pypi.org/project/docformatter/) reformats my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my `pre-commit` hook.
 - I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
-
-### Guardrails
-
-Beyond formatting, the `pre-commit` hook runs cheap blockers before any commit lands:
-
-- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for accidentally-pasted API keys and credentials. A secret in `git` history is forever, so I'd rather lose ten seconds at commit time than discover the leak after pushing.
-- [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file --- saving me a CI round-trip on every pipeline tweak.
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials. 
+- [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file.
 - [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
 - A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
-- A merge-conflict check rejects unresolved markers (`<<<<<<<`, `=======`, `>>>>>>>`) --- a fast catch for the times I forget to run `git status` after a rebase.
+- A merge-conflict check rejects unresolved markers (`<<<<<<<`, `=======`, `>>>>>>>`).
 
 ## `pre-push`: local checks and auto-fixes
 
