@@ -53,7 +53,10 @@ dependencies = [
 
 [tool.codespell]
 # Skip paths that are vendored, built, or contain intentional non-English content.
-skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*/public/*,*/node_modules/*,*/.venv/*,*/asset_staging/*,*/static/*,*/website_content/*,*/quartz/styles/cache/*,*asset_queue.json,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
+# Patterns use "*name*" form so they match both the relative paths codespell
+# emits when walking the tree (`./foo`) and the raw paths pre-commit passes
+# (`foo`). Anything ending in a file extension uses just `*.ext`.
+skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*public*,*node_modules*,*.venv*,*asset_staging*,*website_content*,*.vale-styles*,*quartz/styles/cache*,*asset_queue.json,*/static/*,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
 # Vale + spellchecker-cli cover prose in website_content/; codespell guards code
 # and comments. Each ignored word below is a genuine false positive (tokenization
 # artifact, intentional test fixture, third-party API, or non-English content):
