@@ -276,86 +276,86 @@ export function attachPopoverEventListeners(
   onRemove: () => void,
 ): () => void {
   const isFootnote = popoverElement.classList.contains("footnote-popover")
+  const controller = new AbortController()
+  const listenerOpts = { signal: controller.signal }
 
   let isMouseOverLink = false
   let isMouseOverPopover = false
+  let pendingRemovalTimer: ReturnType<typeof setTimeout> | null = null
 
-  const removePopover = () => {
-    popoverElement.classList.remove("popover-visible")
-    setTimeout(
-      /* istanbul ignore next -- async mouse state check not reachable in sync tests */ () => {
-        if (!isMouseOverLink && !isMouseOverPopover) {
-          popoverElement.remove()
-          onRemove()
-        }
-      },
-      popoverRemovalDelayMs,
-    )
+  const cancelPendingRemoval = () => {
+    if (pendingRemovalTimer === null) return
+    clearTimeout(pendingRemovalTimer)
+    pendingRemovalTimer = null
   }
 
-  const showPopover = () => {
-    popoverElement.classList.add("popover-visible")
+  const scheduleRemoval = () => {
+    if (popoverElement.dataset.pinned) return
+    cancelPendingRemoval()
+    pendingRemovalTimer = setTimeout(() => {
+      pendingRemovalTimer = null
+      if (isMouseOverLink || isMouseOverPopover) return
+      popoverElement.classList.remove("popover-visible")
+      popoverElement.remove()
+      onRemove()
+    }, popoverRemovalDelayMs)
   }
 
-  const clickPopover = (e: MouseEvent) => {
-    const clickedLink = (e.target as HTMLElement).closest("a")
-    if (clickedLink && clickedLink instanceof HTMLAnchorElement) {
-      navigation.goTo(clickedLink.href)
-    } else if (!isFootnote) {
-      // For non-footnote popovers, clicking body navigates to the link target.
-      // For footnote popovers, clicking body does nothing (content is just readable text).
-      navigation.goTo(linkElement.href)
-    }
-  }
+  popoverElement.addEventListener(
+    "click",
+    (e) => {
+      const clickedLink = (e.target as HTMLElement).closest("a")
+      if (clickedLink instanceof HTMLAnchorElement) {
+        navigation.goTo(clickedLink.href)
+      } else if (!isFootnote) {
+        // Footnote popovers are readable text; only non-footnote popovers
+        // navigate to the link target when the body is clicked.
+        navigation.goTo(linkElement.href)
+      }
+    },
+    listenerOpts,
+  )
 
-  const controller = new AbortController()
-  const { signal } = controller
-
-  popoverElement.addEventListener("click", clickPopover, { signal })
-
-  // Hover listeners only for non-footnote popovers. Footnote popovers are
-  // click-only: opened by clicking the footnote ref, dismissed by clicking
-  // outside, pressing Escape, or clicking the close button.
+  // Footnote popovers are click-only: opened by clicking the footnote ref,
+  // dismissed by clicking outside, pressing Escape, or clicking the close
+  // button. They don't need hover tracking.
   if (!isFootnote) {
     linkElement.addEventListener(
       "mouseenter",
       () => {
         isMouseOverLink = true
-        showPopover()
+        popoverElement.classList.add("popover-visible")
       },
-      { signal },
+      listenerOpts,
     )
     linkElement.addEventListener(
       "mouseleave",
       () => {
         isMouseOverLink = false
-        if (!popoverElement.dataset.pinned) {
-          removePopover()
-        }
+        scheduleRemoval()
       },
-      { signal },
+      listenerOpts,
     )
     popoverElement.addEventListener(
       "mouseenter",
       () => {
         isMouseOverPopover = true
       },
-      { signal },
+      listenerOpts,
     )
     popoverElement.addEventListener(
       "mouseleave",
       () => {
         isMouseOverPopover = false
-        if (!popoverElement.dataset.pinned) {
-          removePopover()
-        }
+        scheduleRemoval()
       },
-      { signal },
+      listenerOpts,
     )
   }
 
   return () => {
     controller.abort()
+    cancelPendingRemoval()
     popoverElement.remove()
     onRemove()
   }
