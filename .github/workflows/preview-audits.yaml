@@ -102,8 +102,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-8)
-          DEPLOY_OUTPUT=$(pnpm exec wrangler pages deploy ./public --project-name=turntrout --branch=commit-${SHORT_SHA} --commit-dirty=true)
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-8)
+          DEPLOY_OUTPUT=$(pnpm exec wrangler pages deploy ./public --project-name=turntrout --branch="commit-${SHORT_SHA}" --commit-dirty=true)
 
           echo "Wrangler deployment output:"
           echo "${DEPLOY_OUTPUT}"
@@ -121,7 +121,7 @@ jobs:
           fi
 
           echo "Extracted DEPLOY_URL: $DEPLOY_URL"
-          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "DEPLOY_URL=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
 
       - name: Wait for deployment to be reachable
         run: |

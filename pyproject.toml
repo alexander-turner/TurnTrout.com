@@ -53,7 +53,7 @@ dependencies = [
 
 [tool.codespell]
 # Skip paths that are vendored, built, or contain intentional non-English content.
-skip = "*.lock,pnpm-lock.yaml,uv.lock,public/*,node_modules/*,.venv/*,asset_staging/*,static/*,website_content/*,quartz/styles/cache/*,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
+skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*/public/*,*/node_modules/*,*/.venv/*,*/asset_staging/*,*/static/*,*/website_content/*,*/quartz/styles/cache/*,*asset_queue.json,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
 # Vale + spellchecker-cli cover prose in website_content/; codespell guards code
 # and comments. The ignore list holds identifiers, acronyms, and intentional
 # fixture content that codespell's dictionary mistakes for typos.

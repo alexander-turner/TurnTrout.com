@@ -28,8 +28,9 @@ if [ ${#staged_files[@]} -gt 0 ]; then
   fi
 fi
 
-# Guardrail: reject staged files >500 KB. Heavy assets belong in R2.
-MAX_BYTES=512000
+# Guardrail: reject staged files >1 MB. Heavy assets belong in R2.
+# Threshold leaves headroom for legitimately-tracked lockfiles and font files.
+MAX_BYTES=1048576
 for f in "${staged_files[@]+"${staged_files[@]}"}"; do
   [ -f "$f" ] || continue
   size=$(wc -c <"$f" | tr -d ' ')
@@ -41,7 +42,8 @@ done
 
 # Guardrail: scan staged content for secrets.
 if command -v gitleaks >/dev/null 2>&1; then
-  gitleaks protect --staged --no-banner --redact --exit-code 1
+  gitleaks protect --staged --no-banner --redact --exit-code 1 \
+    --config "$git_root/config/gitleaks/.gitleaks.toml"
 else
   echo "Warning: gitleaks not installed; skipping secrets scan." >&2
   echo "  Install: brew install gitleaks  (or https://github.com/gitleaks/gitleaks)" >&2
