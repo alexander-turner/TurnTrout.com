@@ -429,8 +429,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
 def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    # Use larger image (500x500) to ensure quality difference is measurable
-    utils.create_test_image(input_file, "500x500")
+    # AVIF needs non-uniform content for quality settings to influence size;
+    # solid-color images compress to the same minimum size at any quality.
+    utils.create_test_image(input_file, "500x500", draw="circle 100,100 50,50")
 
     # Convert with high quality
     compress.image(input_file, quality=90)
@@ -469,25 +470,28 @@ def test_avif_format_chroma(temp_dir: Path):
     ), "AVIF should use YUV 4:2:0"
 
 
-@requires_exiftool
 def test_avif_format_pixel_depth(temp_dir: Path):
-    """Test that AVIF conversion sets correct Pixel Depth (8-bit)."""
+    """Test that AVIF conversion of an 8-bit sRGB image preserves 8-bit
+    depth."""
     input_file = temp_dir / "test_depth.png"
     utils.create_test_image(input_file, "100x100", colorspace="sRGB")
     compress.image(input_file)
     avif_file = input_file.with_suffix(".avif")
     assert avif_file.exists()
 
-    exiftool_executable = script_utils.find_executable("exiftool")
+    # Use magick identify so the pixel-depth check stays robust across
+    # libheif/exiftool combinations: it reads the depth directly from the
+    # same library that wrote the file.
+    identify_cmd = script_utils.get_imagemagick_command("identify")
     result = subprocess.run(
-        [exiftool_executable, str(avif_file)],
+        [*identify_cmd, "-format", "%[depth]", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
     )
-    assert re.search(
-        r"Image Pixel Depth\s*:\s*8 8 8", result.stdout
-    ), "AVIF should have 8-bit depth"
+    assert (
+        result.stdout.strip() == "8"
+    ), f"AVIF should have 8-bit depth, got {result.stdout.strip()!r}"
 
 
 @pytest.mark.parametrize(
