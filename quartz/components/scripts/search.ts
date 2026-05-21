@@ -486,7 +486,7 @@ export class PreviewManager {
 let previewManager: PreviewManager | null
 
 /**
- * matchs search terms within HTML content while preserving HTML structure
+ * matches search terms within HTML content while preserving HTML structure
  * @param searchTerm - Term to match
  * @param el - HTML element to search within
  * @returns DOM node with matched terms

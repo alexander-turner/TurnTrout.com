@@ -1,0 +1,12 @@
+# gitleaks configuration. Extends the default ruleset so all built-in rules
+# still apply; the [allowlist] below silences known-safe findings.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow historical, expired pre-signed URLs embedded in prose."
+# The "credential" is a 2019 AWS S3 pre-signed URL inside an article link;
+# the signature expired six years ago and the access key is not active.
+paths = [
+  '''website_content/can-fear-of-the-dark-bias-us-more-generally\.md''',
+]

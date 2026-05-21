@@ -55,9 +55,9 @@ jobs:
         id: check-changes
         run: |
           if [[ -n $(git status --porcelain) ]]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
-            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Amend commit with date changes and force-push
@@ -69,11 +69,11 @@ jobs:
           git add website_content/*.md README.md
           git commit --amend --no-edit
           git push --force-with-lease
-          echo "pushed=true" >> $GITHUB_OUTPUT
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
 
       - name: Set output if no push
         if: steps.check-changes.outputs.has_changes != 'true'
-        run: echo "pushed=false" >> $GITHUB_OUTPUT
+        run: echo "pushed=false" >> "$GITHUB_OUTPUT"
 
   detect-changes:
     runs-on: ubuntu-24.04
@@ -280,7 +280,7 @@ jobs:
 
       - name: Add node_modules/.bin to PATH
         if: needs.detect-changes.outputs.source-checks == 'true'
-        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Strip quote blocks and math for linting
         id: strip-for-spellcheck
@@ -288,7 +288,7 @@ jobs:
         run: |
           STRIPPED_DIR=".stripped_for_spellcheck"
           uv run python scripts/strip_for_spellcheck.py --source-dir website_content --output-dir "$STRIPPED_DIR"
-          echo "dir=$STRIPPED_DIR" >> $GITHUB_OUTPUT
+          echo "dir=$STRIPPED_DIR" >> "$GITHUB_OUTPUT"
 
       - name: Run spellcheck
         id: spellcheck
@@ -330,7 +330,7 @@ jobs:
           # Check publication dates on PRs (pre-merge validation).
           # Skip on push to main/dev (dates are auto-added by update-dates job).
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "flag=--check-publication-dates" >> $GITHUB_OUTPUT
+            echo "flag=--check-publication-dates" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run source file checks
@@ -342,6 +342,7 @@ jobs:
       - name: Verify apt packages are version-pinned
         run: |
           # Find package-like lines between apt-get install and shell: that lack =version
+          # shellcheck disable=SC1003  # the regex needs a literal backslash, not an escaped single quote
           awk '/apt-get install/,/shell:/' .github/actions/setup-site/action.yaml \
             | grep -E '^\s+[a-z][a-z0-9._+-]+\s*\\?\s*$' \
             | while read -r line; do

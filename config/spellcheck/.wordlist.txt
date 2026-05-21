@@ -2782,6 +2782,7 @@ realizability
 reaſoning
 rebalanced
 rebalancing
+rebase
 rebrand
 recommender
 reconfused

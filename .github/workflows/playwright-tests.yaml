@@ -100,7 +100,7 @@ jobs:
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
         if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
@@ -206,7 +206,7 @@ jobs:
           pnpm exec playwright test --config config/playwright/playwright.config.ts --grep "^(?:(?!screenshot).)*$" --shard ${{ matrix.shard }} | tee playwright-run.log
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
         if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
