@@ -940,8 +940,8 @@ Beyond formatting, the `pre-commit` hook runs cheap blockers before any commit l
 - [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for accidentally-pasted API keys and credentials. A secret in `git` history is forever, so I'd rather lose ten seconds at commit time than discover the leak after pushing.
 - [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file --- saving me a CI round-trip on every pipeline tweak.
 - [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
-- An inline check rejects any staged file over 500 KB. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
-- Another inline check rejects unresolved merge-conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) --- a fast catch for the times I forget to run `git status` after a rebase.
+- A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
+- A merge-conflict check rejects unresolved markers (`<<<<<<<`, `=======`, `>>>>>>>`) --- a fast catch for the times I forget to run `git status` after a rebase.
 
 ## `pre-push`: local checks and auto-fixes
 
