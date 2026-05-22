@@ -19,15 +19,15 @@ set -l IGNORE_PATTERNS 'shiki|problems|public/index.css'
 # and capture potential errors
 set -l warnings_found (pnpm exec stylelint "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
-            &| grep -vE $IGNORE_PATTERNS \
-            | grep .)
+            &| command grep -vE $IGNORE_PATTERNS \
+            | command grep .)
 
 if test -n "$warnings_found"
     echo "Error: Found unknown CSS variable(s):"
 
     set -l formatted_errors (pnpm exec stylelint "$css_file" \
             --config "$GIT_ROOT/config/stylelint/.variables-only-stylelintrc.json" \
-            &| grep -vE $IGNORE_PATTERNS)
+            &| command grep -vE $IGNORE_PATTERNS)
     echo "$formatted_errors"
     exit 1
 end

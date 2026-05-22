@@ -23,7 +23,7 @@ STATIC_DIR="$GIT_ROOT"/quartz/static
 
 ASSET_STAGING_DIR="$GIT_ROOT"/website_content/asset_staging
 # Only proceed if asset staging directory is not empty
-if [ -n "$(ls -A "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
+if [ -n "$(ls "$ASSET_STAGING_DIR" 2>/dev/null)" ]; then
     uv run python "$GIT_ROOT"/scripts/replace_asset_staging_refs.py
     mkdir -p "$STATIC_DIR"/images/posts
     mv "$ASSET_STAGING_DIR"/* "$STATIC_DIR"/images/posts
@@ -38,4 +38,12 @@ cleanup
 
 # Upload assets to R2 bucket (ignore pond files - they're needed locally for tests)
 LOCAL_ASSET_DIR="$GIT_ROOT"/../website-media-r2/
-uv run python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" --ignore-files "${IGNORE_FILES[@]}"
+
+# Only wrap with envchain when the R2 creds aren't already in the env
+# (e.g. Claude Code injects them directly and doesn't have envchain on PATH).
+R2_UPLOAD_CMD=(uv run python "$GIT_ROOT"/scripts/r2_upload.py --move-to-dir "$LOCAL_ASSET_DIR" --references-dir "$GIT_ROOT"/website_content --upload-from-directory "$STATIC_DIR" --ignore-files "${IGNORE_FILES[@]}")
+if [ -n "$ACCESS_KEY_ID_TURNTROUT_MEDIA" ] && [ -n "$SECRET_ACCESS_TURNTROUT_MEDIA" ] && [ -n "$S3_ENDPOINT_ID_TURNTROUT_MEDIA" ]; then
+    "${R2_UPLOAD_CMD[@]}"
+else
+    envchain cloudflare "${R2_UPLOAD_CMD[@]}"
+fi

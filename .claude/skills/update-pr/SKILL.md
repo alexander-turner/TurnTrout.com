@@ -81,7 +81,7 @@ After pushing, dynamically update the PR to reflect **all** changes (not just 
 timeout 15m gh pr checks --watch || true
 ```
 
-If checks fail, fix issues and repeat steps 3–6.
+If checks fail, fix issues and repeat steps 3-5.
 
 ### 8. Report Result
 

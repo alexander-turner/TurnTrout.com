@@ -165,7 +165,10 @@ def mock_rclone() -> Iterator[MagicMock]:
 
 
 @pytest.fixture(autouse=True)
-def _stub_find_rclone(request: pytest.FixtureRequest) -> Iterator[None]:
+def _stub_find_rclone(
+    request: pytest.FixtureRequest,
+    monkeypatch: pytest.MonkeyPatch,
+) -> Iterator[None]:
     """
     Make ``requires_r2`` tests hermetic.
 
@@ -179,6 +182,8 @@ def _stub_find_rclone(request: pytest.FixtureRequest) -> Iterator[None]:
     if request.node.get_closest_marker("requires_r2") is None:
         yield
         return
+    for var in script_utils.R2_REQUIRED_ENV:
+        monkeypatch.setenv(var, "test-stub")
     with patch.object(script_utils, "find_executable", return_value="rclone"):
         yield
 

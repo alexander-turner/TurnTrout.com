@@ -4016,11 +4016,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text("""---
+    md_file_path.write_text(
+        """---
 title: Test Title
 description: Test Description
 ---
-# Content here""")
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (
@@ -6605,24 +6607,39 @@ def _class_mismatch_msg(
                 )
             ],
         ),
-        # All raster extensions are eligible (.png, .jpg, .jpeg, .webp, .gif,
-        # .avif). Each missing from JSON → flagged.
+        # Every image extension we label (raster + SVG) is eligible. Each
+        # missing from JSON → flagged.
         (
             '<img src="https://x/p.png">'
             '<img src="https://x/p.jpg">'
             '<img src="https://x/p.jpeg">'
             '<img src="https://x/p.webp">'
             '<img src="https://x/p.gif">'
-            '<img src="https://x/p.avif">',
+            '<img src="https://x/p.avif">'
+            '<img src="https://x/p.svg">',
             {},
             [
                 _missing_msg("img", f"https://x/p{ext}")
-                for ext in (".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif")
+                for ext in (
+                    ".png",
+                    ".jpg",
+                    ".jpeg",
+                    ".webp",
+                    ".gif",
+                    ".avif",
+                    ".svg",
+                )
             ],
         ),
-        # SVGs and src-less imgs are ignored.
+        # Reviewed SVG with matching class → no issue (parity with rasters).
         (
-            '<img src="https://x/icon.svg"><img>',
+            f'<img class="{INVERT_CLASS}" src="https://x/chart.svg">',
+            {"https://x/chart.svg": _reviewed(True)},
+            [],
+        ),
+        # src-less <img> tags are ignored.
+        (
+            "<img>",
             {},
             [],
         ),
@@ -6886,6 +6903,15 @@ def test_load_invert_labels_raises_on_malformed(
         (
             "<html><head></head><body><article>"
             '<img src="logo.avif"></article></body></html>',
+            [],
+        ),
+        # Twemoji glyphs are skipped; the next non-twemoji image is the LCP.
+        (
+            '<html><head><link rel="preload" as="image" href="hero.avif"></head>'
+            "<body><article>"
+            '<img src="https://assets.turntrout.com/twemoji/1f609.svg" loading="lazy">'
+            '<img src="hero.avif" loading="eager" fetchpriority="high">'
+            "</article></body></html>",
             [],
         ),
     ],

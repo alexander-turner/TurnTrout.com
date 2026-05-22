@@ -24,6 +24,7 @@ import {
   setSearchLayoutForTesting,
   navigateWithSearchTerm,
   scrollContainerToMatch,
+  shouldRescrollCardPreviews,
   matchHTML,
   getSearchStateForTesting,
   resetSearchStateForTesting,
@@ -874,6 +875,19 @@ describe("scrollContainerToMatch", () => {
       document.body.removeChild(container)
     },
   )
+})
+
+describe("shouldRescrollCardPreviews", () => {
+  // tabletBreakpoint is mocked to 800 at the top of this file.
+  it.each<[string, number, number, boolean]>([
+    ["above breakpoint — cards hidden, skip", 1200, 500, false],
+    ["at breakpoint — boundary still 'mobile', allow", 800, 700, true],
+    ["below breakpoint, width unchanged — no horizontal reflow, skip", 600, 600, false],
+    ["below breakpoint, width changed — content reflowed, rescroll", 600, 700, true],
+    ["above breakpoint with width change — still skip", 1200, 1100, false],
+  ])("%s", (_label, current, prev, expected) => {
+    expect(shouldRescrollCardPreviews(current, prev)).toBe(expected)
+  })
 })
 
 describe("syncSearchLayoutState", () => {

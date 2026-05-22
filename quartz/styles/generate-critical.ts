@@ -1,8 +1,21 @@
 import fs from "fs"
 import path from "path"
+import prettier from "prettier"
 import { fileURLToPath } from "url"
 
 import { darkPalette, lightPalette } from "./variables"
+
+const prettierConfigPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../config/prettier/.prettierrc",
+)
+
+/** Run the project's prettier on an SCSS string so emitted output matches the
+ *  format that `pnpm check` enforces (otherwise CI flags every regen). */
+async function formatScss(content: string): Promise<string> {
+  const config = await prettier.resolveConfig(prettierConfigPath)
+  return prettier.format(content, { ...config, parser: "scss" })
+}
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -183,10 +196,10 @@ em {
  * Generates and writes the critical SCSS file to disk
  * @throws Error if file writing fails
  */
-export function generateCritical(): void {
+export async function generateCritical(): Promise<void> {
   try {
     const outputPath = path.join(__dirname, "critical.scss")
-    const scss = generateCriticalScssContent()
+    const scss = await formatScss(generateCriticalScssContent())
     fs.writeFileSync(outputPath, scss)
   } catch (error) {
     // Avoid logging the error itself (it may contain file path info)
@@ -198,6 +211,11 @@ export function generateCritical(): void {
 // Run generation if this is the main module
 /* istanbul ignore next */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  generateCritical()
-  console.log("Critical SCSS generated successfully!")
+  ;(async () => {
+    await generateCritical()
+    console.log("Critical SCSS generated successfully!")
+  })().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
 }

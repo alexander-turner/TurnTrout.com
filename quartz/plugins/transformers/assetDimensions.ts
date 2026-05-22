@@ -99,7 +99,7 @@ class AssetProcessor {
     if (this.assetDimensionsCache && this.needToSaveCache) {
       // Use unique temp file to avoid race conditions with parallel workers
       const tempFilePath = `${paths.assetDimensions}.tmp.${process.pid}.${crypto.randomUUID()}`
-      const data = JSON.stringify(this.assetDimensionsCache, null, 2)
+      const data = `${JSON.stringify(this.assetDimensionsCache, null, 2)}\n`
 
       await fs.writeFile(tempFilePath, data, "utf-8")
       try {

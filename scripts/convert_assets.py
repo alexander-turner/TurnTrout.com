@@ -153,9 +153,9 @@ def _image_patterns(input_file: Path) -> tuple[str, str]:
     pattern_file = relative_path.relative_to("quartz")
     output_file: Path = pattern_file.with_suffix(".avif")
 
-    # Handle paths that can start with ./, /, or /asset_staging/
+    # Handle paths that can start with ./, /, /quartz/, or /asset_staging/
     return (
-        rf"(?:\./|/)?(?:asset_staging/)?{re.escape(str(pattern_file))}",
+        rf"(?:\./|/)?(?:quartz/)?(?:asset_staging/)?{re.escape(str(pattern_file))}",
         str(output_file),
     )
 

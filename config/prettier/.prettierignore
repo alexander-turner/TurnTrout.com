@@ -17,6 +17,7 @@ test-results/
 .lighthouseci/
 pnpm-lock.yaml
 **/asset_queue.json
+**/.asset_dimensions.json
 **/img-comparison-slider.js
 .beads/
 .vscode/

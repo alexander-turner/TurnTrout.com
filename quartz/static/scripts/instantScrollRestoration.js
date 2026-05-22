@@ -65,31 +65,35 @@
     return Number.isFinite(parsed) ? parsed : 0
   }
 
+  // Hash target is cached once the anchor element appears, since recomputing
+  // getBoundingClientRect every RAF forces a synchronous layout.
+  let cachedHashTarget = null
+
   /**
    * Determine target scroll based on history state or hash.
    * Returns null if neither is applicable yet (e.g., hash element not in DOM yet).
    */
   function computeTarget() {
-    // Always prioritize saved scroll position over hash
     if (savedScroll !== null) {
       console.debug("[InstantScrollRestoration] Using saved scroll:", savedScroll)
       return savedScroll
     }
+    if (cachedHashTarget !== null) return cachedHashTarget
 
-    // Only restore hash if we should (no saved scroll position)
     if (shouldRestoreHash) {
       const id = decodeURIComponent(location.hash.slice(1))
       const elt = document.getElementById(id)
       if (elt) {
         const target = elt.getBoundingClientRect().top + window.scrollY
         const marginTop = getScrollMarginTop(elt)
+        cachedHashTarget = target - marginTop
         console.debug(
           "[InstantScrollRestoration] Hash target found:",
           target,
           "scroll-margin-top:",
           marginTop,
         )
-        return target - marginTop
+        return cachedHashTarget
       } else {
         console.debug("[InstantScrollRestoration] Hash element not found yet:", id)
       }
@@ -128,6 +132,8 @@
 
     if (target !== null) {
       scrollToProgrammatic(target)
+      // scrollY must be read here: the document may not yet be tall enough
+      // to honor the requested target, in which case we retry next frame.
       const actualScroll = window.scrollY
       console.debug("[InstantScrollRestoration] Scrolled to:", actualScroll, "target was:", target)
 
@@ -136,7 +142,7 @@
           "[InstantScrollRestoration] Initial scroll complete, waiting for layout stability",
         )
         waitForLayoutStability(target)
-        return // done with initial attempts
+        return
       }
     }
 

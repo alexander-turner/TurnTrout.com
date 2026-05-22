@@ -248,7 +248,7 @@ describe("Asset Dimensions Plugin", () => {
         expect.stringMatching(
           new RegExp(`^${RegExp.escape(actualAssetDimensionsFilePath)}\\.tmp\\.\\d+\\.[0-9a-f-]+$`),
         ),
-        JSON.stringify(cacheData, null, 2),
+        `${JSON.stringify(cacheData, null, 2)}\n`,
         "utf-8",
       )
       expect(renameSpy).toHaveBeenCalledWith(

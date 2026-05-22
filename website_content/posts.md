@@ -113,7 +113,7 @@ This sequence generalizes the math of [Seeking Power is Often Convergently Instr
 ![A cartoon illustrating the paperclip maximizer thought experiment from AI safety. A blocky robot lounges on a huge pile of paperclips that covers the Earth, as an anthropomorphic paperclip with eyes looks on.](https://assets.turntrout.com/static/images/posts/power-seeking-AI.avif)
 
 > [!warning] [Reward is not the optimization target](./reward-is-not-the-optimization-target)
-> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
+> Many posts in this sequence treat reward functions as "specifying goals", in some sense. This perspective is [wrong](./reward-is-not-the-optimization-target), as I have [argued at length](./against-inner-outer-alignment). Reward signals are akin to a per-datapoint learning rate. Reward chisels circuits into the AI. That's it!
 
 1. [Power as Easily Exploitable Opportunities](./power-as-easily-exploitable-opportunities)
 2. [Generalizing POWER to Multi-Agent Games](./formalizing-multi-agent-power)

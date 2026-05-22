@@ -328,7 +328,7 @@ sup {
 :root[data-theme="dark"] video,
 :root[data-theme="dark"] img {
   & .invert {
-    filter: grayscale(50%) invert(100%) brightness(95%) hue-rotate(180deg);
+    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
   }
 }
 
@@ -609,6 +609,16 @@ img {
     :root[data-theme="dark"] & {
       background-color: white;
     }
+  }
+
+  &.fade-image-border {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--background) 20%,
+      var(--background) 80%,
+      transparent 100%
+    );
   }
 }
 
@@ -917,7 +927,7 @@ iframe {
 
   // Palform looks out of place in dark mode, so we invert it
   :root[data-theme="dark"] &[src*="palform.app"] {
-    filter: invert(93%) hue-rotate(180deg);
+    filter: url("#accurate-invert") grayscale(50%) brightness(95%);
   }
 }
 
@@ -971,18 +981,6 @@ iframe {
   // Use a lighter color in dark mode
   :root[data-theme="dark"] & {
     filter: invert(75%);
-  }
-}
-
-// These transparent images need a background color to have visible text.
-// Use pure white (not var(--foreground), which is #d6deff): if the image is
-// also `.invert-in-dark-mode`, the invert(100%) filter turns white into pure
-// black, which then `mix-blend-mode: screen`-blends perfectly with the dark
-// page background. A non-pure-white bg inverts to a non-pure-black overlay
-// that screen-blends to a visible tinted rectangle around the figure.
-.transparent-image {
-  :root[data-theme="dark"] & {
-    background-color: white;
   }
 }
 

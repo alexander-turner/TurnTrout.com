@@ -49,6 +49,7 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
     Raises:
         RuntimeError: If the check operation fails.
     """
+    script_utils.check_r2_env()
     # Extract the bucket and key from the upload_target
     _, _, path = upload_target.partition(":")
     bucket, _, key = path.partition("/")
@@ -148,6 +149,8 @@ def upload_to_r2(
 
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
+
+    script_utils.check_r2_env()
 
     relative_path = script_utils.path_relative_to_quartz_parent(file_path)
     r2_key: str = get_r2_key(relative_path)

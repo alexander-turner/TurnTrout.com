@@ -21,6 +21,7 @@ export const {
   sessionStoragePondVideoKey,
   pondVideoId,
   invertInDarkModeClass,
+  forceHslInvertClass,
   debounceSearchDelay,
   mouseFocusDelay,
   searchPlaceholderDesktop,

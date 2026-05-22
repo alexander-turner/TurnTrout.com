@@ -64,25 +64,10 @@
   --dark-gray: var(--midground-strong);
 
   @include dropcap-background-colors;
-  /* stylelint-disable declaration-block-no-duplicate-custom-properties --
-     Duplicate custom properties are intentional fallbacks for browsers
-     without light-dark() support (Chrome <123, Firefox <128, Safari <17.5). */
-  --color-link: color-mix(in srgb, var(--secondary) 30%, var(--foreground));
-  --color-link: light-dark(
-    color-mix(in srgb, var(--secondary) 30%, var(--foreground)),
-    var(--secondary)
-  );
+
+  --color-link: color-mix(in srgb, var(--secondary) 60%, var(--foreground));
   --color-link-visited: color-mix(in srgb, var(--purple) 40%, var(--color-link));
-  --color-link-visited: light-dark(
-    color-mix(in srgb, var(--purple) 40%, var(--color-link)),
-    color-mix(in srgb, var(--purple) 25%, var(--color-link))
-  );
   --color-link-hover: color-mix(in srgb, var(--sky) 50%, var(--color-link));
-  --color-link-hover: light-dark(
-    color-mix(in srgb, var(--sky) 50%, var(--color-link)),
-    color-mix(in srgb, var(--sky) 35%, var(--color-link))
-  );
-  /* stylelint-enable declaration-block-no-duplicate-custom-properties */
 
   @each $color in ("red", "pink", "green", "teal", "blue", "purple", "orange", "yellow") {
     --background-#{$color}: color-mix(in srgb, var(--#{$color}) 30%, var(--background));
@@ -122,7 +107,7 @@
   // Videos: only inline GIF-replacements (autoplay+loop+muted) get screen
   // blend. Regular embeds (with controls) and the persistent pond video
   // keep their normal rendering.
-  & img:not([src$=".svg"]),
+  & img,
   & video[autoplay][loop][muted]:not(#pond-video, :fullscreen) {
     mix-blend-mode: screen;
   }
@@ -188,11 +173,61 @@ section {
 // InvertInDarkMode transformer (quartz/plugins/transformers/invertInDarkMode.ts).
 // Class name is the canonical `invertInDarkModeClass` in config/constants.json;
 // SCSS can't read JSON, so the literal must stay in sync manually.
+// Uses the inline SVG filter defined in PageShell — see
+// `accurateInvertFilter`. CSS `invert() hue-rotate(180deg)` is an RGB
+// matrix approximation that distorts yellows and cyans (anything off
+// the primary axes); the SVG filter inverts in sRGB then rotates hue
+// around the neutral-gray axis, preserving hue much more faithfully.
+// `brightness(95%)` darkens slightly so inverted near-white backgrounds
+// land closer to pure black and `mix-blend-mode: screen` (above) blends
+// them cleanly into the page bg.
 :root[data-theme="dark"] img.invert-in-dark-mode,
 :root[data-theme="dark"] video.invert-in-dark-mode,
 .dark-mode img.invert-in-dark-mode,
 .dark-mode video.invert-in-dark-mode {
-  filter: invert(100%) hue-rotate(180deg) !important;
+  filter: url("#accurate-invert") brightness(95%) !important;
+}
+
+// `accurateInvert.inline.ts` upgrades imgs to true perceptual HSL
+// inversion via canvas and sets `data-invert-processed`. The pixel
+// data is already inverted, so we drop the SVG filter and only keep
+// brightness (matching the CSS chain above) to avoid double-inverting.
+// CORS-tainted canvases and videos keep the SVG fallback above.
+:root[data-theme="dark"] img.invert-in-dark-mode[data-invert-processed],
+.dark-mode img.invert-in-dark-mode[data-invert-processed] {
+  filter: brightness(95%) !important;
+}
+
+// Always-on HSL/SVG inversion regardless of theme. Used for the
+// design.md inversion demo and any image we want pre-inverted at the
+// source. Pure SVG filter — no grayscale or brightness adjustments,
+// since this is the inversion-as-stylistic-choice case rather than the
+// dark-mode-aesthetic case. The duplicated dark-context selectors
+// raise specificity to beat `:root[data-theme="dark"] img` (grayscale)
+// and `.dark-mode img` (grayscale). `accurateInvert.ts` processes
+// these images in both themes; once processed, the filter is dropped.
+img.force-hsl-invert,
+video.force-hsl-invert,
+:root[data-theme="dark"] img.force-hsl-invert,
+:root[data-theme="dark"] video.force-hsl-invert,
+.dark-mode img.force-hsl-invert,
+.dark-mode video.force-hsl-invert {
+  filter: url("#accurate-invert") !important;
+}
+
+img.force-hsl-invert[data-invert-processed],
+:root[data-theme="dark"] img.force-hsl-invert[data-invert-processed],
+.dark-mode img.force-hsl-invert[data-invert-processed] {
+  filter: none !important;
+}
+
+// Opt-in via inline `visibility: hidden;`: lets the design.md HSL
+// demo render only the final canvas-inverted result instead of
+// flashing the SVG fallback or the un-inverted source while the
+// canvas pass is in flight. `!important` lifts the inline declaration
+// back to visible once the canvas swap lands.
+img.force-hsl-invert[data-invert-processed] {
+  visibility: visible !important;
 }
 
 // Mermaid

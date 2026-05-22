@@ -64,6 +64,7 @@
   "sessionStoragePondVideoKey": "pond-video-timestamp",
   "pondVideoId": "pond-video",
   "invertInDarkModeClass": "invert-in-dark-mode",
+  "forceHslInvertClass": "force-hsl-invert",
   "debounceSearchDelay": 400,
   "mouseFocusDelay": 100,
   "searchPlaceholderDesktop": "Toggle search by pressing /",
