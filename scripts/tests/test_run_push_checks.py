@@ -649,15 +649,10 @@ def test_get_formatter_steps():
 
 
 def test_docformatter_step_recurses_into_subdirectories(tmp_path):
-    """
-    The docformatter glob must pick up nested .py files.
-
-    ``**.py`` (without
-    a separator before the trailing ``*``) silently matches only the top
-    directory level; the recursive form is ``**/*.py``.
-    """
+    """Docformatter glob must reach both top-level and nested .py files."""
     (tmp_path / "scripts" / "notebooks").mkdir(parents=True)
-    (tmp_path / "scripts" / "top_level.py").write_text("'''doc.'''\n")
+    top_level = tmp_path / "scripts" / "top_level.py"
+    top_level.write_text("'''doc.'''\n")
     nested = tmp_path / "scripts" / "notebooks" / "nested.py"
     nested.write_text("'''doc.'''\n")
 
@@ -665,9 +660,7 @@ def test_docformatter_step_recurses_into_subdirectories(tmp_path):
     docformatter_step = _step_by_name(steps, "Formatting Python docstrings")
 
     assert str(nested) in docformatter_step.command
-    assert (
-        str(tmp_path / "scripts" / "top_level.py") in docformatter_step.command
-    )
+    assert str(top_level) in docformatter_step.command
 
 
 _TEST_ROOT = Path("/test/root")
