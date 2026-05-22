@@ -560,9 +560,9 @@ def get_formatter_steps(git_root_path: Path) -> list[CheckStep]:
                 "-m",
                 "docformatter",
                 "--in-place",
-                *glob.glob(f"{git_root_path}/scripts/**.py", recursive=True),
+                *glob.glob(f"{git_root_path}/scripts/**/*.py", recursive=True),
                 *glob.glob(
-                    f"{git_root_path}/.github/scripts/**.py", recursive=True
+                    f"{git_root_path}/.github/scripts/**/*.py", recursive=True
                 ),
                 "--config",
                 f"{git_root_path}/config/python/pyproject.toml",

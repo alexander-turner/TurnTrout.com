@@ -635,6 +635,21 @@ def test_get_formatter_steps():
     assert any("website_content" in arg for arg in prettier_markdown.command)
 
 
+def test_docformatter_step_recurses_into_subdirectories(tmp_path):
+    """Docformatter glob must reach both top-level and nested .py files."""
+    (tmp_path / "scripts" / "notebooks").mkdir(parents=True)
+    top_level = tmp_path / "scripts" / "top_level.py"
+    top_level.write_text("'''doc.'''\n")
+    nested = tmp_path / "scripts" / "notebooks" / "nested.py"
+    nested.write_text("'''doc.'''\n")
+
+    steps = run_push_checks.get_formatter_steps(tmp_path)
+    docformatter_step = _step_by_name(steps, "Formatting Python docstrings")
+
+    assert str(nested) in docformatter_step.command
+    assert str(top_level) in docformatter_step.command
+
+
 _TEST_ROOT = Path("/test/root")
 _VERIFY_NAMES = frozenset(
     {

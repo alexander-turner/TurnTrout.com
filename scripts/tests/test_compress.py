@@ -429,9 +429,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
 def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    # AVIF needs non-uniform content for quality settings to influence size;
-    # solid-color images compress to the same minimum size at any quality.
-    utils.create_test_image(input_file, "500x500", draw="circle 100,100 50,50")
+    # Seeded gaussian noise: deterministic high-entropy pixels so AVIF
+    # responds to quality without flaky test runs.
+    utils.create_test_image(input_file, "500x500", noise_seed=42)
 
     # Convert with high quality
     compress.image(input_file, quality=90)
@@ -479,12 +479,10 @@ def test_avif_format_pixel_depth(temp_dir: Path):
     avif_file = input_file.with_suffix(".avif")
     assert avif_file.exists()
 
-    # Use magick identify so the pixel-depth check stays robust across
-    # libheif/exiftool combinations: it reads the depth directly from the
-    # same library that wrote the file.
+    # Read bit-depth from the AV1 codec stream; portable across libheif builds.
     identify_cmd = script_utils.get_imagemagick_command("identify")
     result = subprocess.run(
-        [*identify_cmd, "-format", "%[depth]", str(avif_file)],
+        [*identify_cmd, "-format", "%[bit-depth]", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,

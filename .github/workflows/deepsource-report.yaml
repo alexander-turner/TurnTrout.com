@@ -1,0 +1,70 @@
+name: DeepSource Report
+on:
+  check_run:
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to query
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+# Multiple DeepSource analyzers (Python, JavaScript, Shell) may fail on the
+# same commit. Collapse those into one report so the PR check list stays clean.
+concurrency:
+  group: deepsource-report-${{ github.event.check_run.pull_requests[0].number || github.event.inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  report:
+    # Only react to DeepSource's own failing check_runs that are attached to a PR.
+    # workflow_dispatch always runs (for manual debugging).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.check_run.app.slug == 'deepsource-io' &&
+       github.event.check_run.conclusion == 'failure' &&
+       github.event.check_run.pull_requests[0] != null)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      DEEPSOURCE_PAT: ${{ secrets.DEEPSOURCE_PAT }}
+      PR_NUMBER: ${{ github.event.inputs.pr_number || github.event.check_run.pull_requests[0].number }}
+    steps:
+      - name: Install DeepSource CLI
+        run: |
+          curl -fsSL https://cli.deepsource.com/install | BINDIR="$HOME/.local/bin" sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Authenticate
+        run: deepsource auth login --with-token "$DEEPSOURCE_PAT"
+
+      - name: Fetch and print issues
+        run: |
+          set -euo pipefail
+          issues_json=$(deepsource issues --pr "$PR_NUMBER" --output json)
+          count=$(echo "$issues_json" | jq 'length')
+
+          if [ "$count" -eq 0 ]; then
+            echo "DeepSource clean on PR #$PR_NUMBER."
+            exit 0
+          fi
+
+          echo "::error::DeepSource has $count outstanding issue(s) on PR #$PR_NUMBER"
+          echo
+          echo "$issues_json" | jq -r '.[] | "  \(.path):\(.begin_line) [\(.issue_code)] \(.title)"'
+          echo
+          echo "Full JSON:"
+          echo "$issues_json" | jq .
+          {
+            echo "## DeepSource: $count outstanding issue(s) on PR #$PR_NUMBER"
+            echo
+            echo '| File | Line | Code | Title |'
+            echo '| --- | --- | --- | --- |'
+            echo "$issues_json" | jq -r '.[] | "| \(.path) | \(.begin_line) | \(.issue_code) | \(.title) |"'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1

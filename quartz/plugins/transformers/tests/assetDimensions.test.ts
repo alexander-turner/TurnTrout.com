@@ -530,7 +530,7 @@ describe("Asset Dimensions Plugin", () => {
       expect(mockSpawnSync).toHaveBeenCalled()
     })
 
-    it("should throw for video if ffprobe output is unparseable", async () => {
+    it("should throw for video if ffprobe output is unparsable", async () => {
       const cancel = jest.fn()
       mockedFetch.mockResolvedValue({
         ok: true,

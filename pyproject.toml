@@ -48,7 +48,28 @@ dependencies = [
     "frozendict>=2.4.7",
     "anthropic==0.102.0",
     "flask>=3.0.0",
+    "codespell>=2.3.0",
 ]
+
+[tool.codespell]
+# Skip paths that are vendored, built, or contain intentional non-English content.
+# Patterns use "*name*" form so they match both the relative paths codespell
+# emits when walking the tree (`./foo`) and the raw paths pre-commit passes
+# (`foo`). Anything ending in a file extension uses just `*.ext`.
+skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*public*,*node_modules*,*.venv*,*asset_staging*,*website_content*,*.vale-styles*,*quartz/styles/cache*,*asset_queue.json,*/static/*,*.min.js,*.min.css,*.svg,*.woff*,*.ttf,*.eot,*.png,*.jpg,*.jpeg,*.gif,*.webp,*.avif,*.mp4,*.webm,*.ico,*.pdf"
+# Vale + spellchecker-cli cover prose in website_content/; codespell guards code
+# and comments. Each ignored word below is a genuine false positive (tokenization
+# artifact, intentional test fixture, third-party API, or non-English content):
+#   afterall   Jest's afterAll() hook name
+#   allo       HTML-diff test fixture: <span>a</span>llo (German "hallo")
+#   caf        codespell splits "café" on the é
+#   dataet     strips Mermaid's data-et SVG attribute (paired with
+#              data-edge/data-look/data-id/data-points)
+#   nd         codespell tokenizes "2nd" into "2" and "nd"
+#   processus  French test fixture ("améliorer le processus")
+#   te         single-letter token in test data
+#   wrold      intentional misspelling in spellcheck-triage test fixtures
+ignore-words-list = "afterall,allo,caf,dataet,nd,processus,te,wrold"
 
 [tool.black]
 line-length = 80

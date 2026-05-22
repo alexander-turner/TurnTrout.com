@@ -7,6 +7,10 @@
 @use "print";
 @use "../components/styles/punctilioDemo";
 
+// Shared bottom-margin for the after-article box, the footnotes heading,
+// and the footnotes section itself, so the page-bottom rhythm stays balanced.
+$page-end-bottom-margin: calc(2 * $base-margin);
+
 body {
   min-height: 100vh;
 }
@@ -33,6 +37,12 @@ li > blockquote:first-child {
 }
 
 .footnotes {
+  margin-bottom: $page-end-bottom-margin;
+
+  & > h1 {
+    margin-bottom: $page-end-bottom-margin;
+  }
+
   & ul {
     margin-top: calc(2 * $base-margin);
   }
@@ -875,7 +885,7 @@ foreignObject {
 }
 
 .after-article-components {
-  margin-bottom: calc(2 * $base-margin);
+  margin-bottom: $page-end-bottom-margin;
   margin-top: calc(2 * $base-margin);
 
   & p {

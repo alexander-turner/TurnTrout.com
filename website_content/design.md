@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-20
+date_updated: 2026-05-21
 no_dropcap: false
 createBibtex: true
 ---
@@ -852,14 +852,20 @@ I quickly learned the importance of _comprehensive tests and documentation_. The
 
 External static analysis alerts me to potential vulnerabilities and anti-patterns. If somehow a bad version slips through anyways, Cloudflare allows me to instantly revert the live site to a previous good version.
 
-## `pre-commit` linting and formatting
+## `pre-commit`
 
 [`lint-staged`](https://www.npmjs.com/package/lint-staged) improves the readability and consistency of my code. While I format some filetypes on save, there are a lot of files and a lot of types. Therefore, my `package.json` specifies what linting & formatting tools to run on what filetypes:
 
 <span class="populate-markdown-lint-staged"></span>
 
-- I also run [`docformatter`](https://pypi.org/project/docformatter/) to reformat my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my pre-commit hook.
-- I learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
+[`docformatter`](https://pypi.org/project/docformatter/) reformats my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my `pre-commit` hook. I also learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
+
+Beyond reformatting, I take on several commonsense checks from [`pre-commit.com`](https://pre-commit.com):
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials. 
+- [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file.
+- [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
+- A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
+- A merge-conflict check rejects unresolved markers (`<<<<<<<`, `=======`, `>>>>>>>`).
 
 ## `pre-push`: local checks and auto-fixes
 

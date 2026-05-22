@@ -1,6 +1,6 @@
 // psl 1.15.0 has types in types/index.d.ts but its package.json "exports"
 // field doesn't include a "types" condition, so TypeScript with
-// moduleResolution: "bundler" can't resolve them. Re-declare the subset we use.
+// moduleResolution: "bundler" can't resolve them. Redeclare the subset we use.
 declare module "psl" {
   interface ParsedDomain {
     input: string
