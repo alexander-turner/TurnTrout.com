@@ -130,10 +130,9 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 
 Subtitle: Even if we could create them, which we likely can't.
 
-Consider a misaligned consequentialist agent. The agent knows that we can make evals appear indistinguishable from real deployment situations (perhaps [using real user data](https://alignment.openai.com/prod-evals/)). Suppose we can only make "perfectly" realistic evaluation environments for chat sessions and coding problems. In contrast, we can't make sufficiently realistic high-level CEO-level tasks since CEOs never let us see their usage data—our attempts might always have an "eval smell".
+We can make some eval environments hard to distinguish from real deployment–chat sessions and coding problems since we can use [real user data](https://alignment.openai.com/prod-evals/). But we can’t do this for every deployment situation. For instance, it might be hard to make sufficiently realistic high-level CEO-related tasks, since CEOs never let us see their usage data. So our attempts will always have an “eval smell”.
 
-If the agent is aware of these data limitations, then if it confronts a coding problem, why risk taking the bait? A rational misaligned agent would likely just concentrate its bad behavior in situations that are harder for us to evaluate (like when it's talking to a CEO).
-
+Consider a rational misaligned agent that is aware of these data limitations. If it confronts a coding problem, why risk taking the bait? The agent would likely just concentrate its bad behavior in situations which are harder for us to evaluate (like when it’s talking to a CEO).
 
 # Initial results indicate that eval cooperativeness often helps
 
