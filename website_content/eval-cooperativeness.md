@@ -126,13 +126,17 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 >
 > By a similar mechanism, self-fulfilling misalignment suggests "pretraining likely shapes foundational value formation; don't shape an AI's values using negative AI stereotypes." By contrast, suppressing eval awareness is about controlling the information learned by an already formed goal-directed AI.
 
-## Perfectly realistic evals are likely _not_ enough
+## Perfectly realistic evals are likely _not_ possible
 
-Subtitle: Even if we could create them, which we likely can't.
+We can make some eval environments hard to distinguish from real deployment–chat sessions and coding problems, for instance, where we can use [real user data](https://alignment.openai.com/prod-evals/). But we can't do this for every deployment situation. For instance, it’s hard to make sufficiently realistic high-level CEO-level tasks, since CEOs never let us see their usage data—our attempts always have an "eval smell".
 
-Consider a misaligned consequentialist agent. The agent knows that we can make evals appear indistinguishable from real deployment situations (perhaps [using real user data](https://alignment.openai.com/prod-evals/)). Suppose we can only make "perfectly" realistic evaluation environments for chat sessions and coding problems. In contrast, we can't make sufficiently realistic high-level CEO-level tasks since CEOs never let us see their usage data—our attempts always have an "eval smell".
+Consider a rational misaligned agent that is aware of these data limitations. If it confronts a coding problem, why risk taking the bait? The agent would likely just concentrate its bad behavior in situations which are harder for us to evaluate (like when it’s talking to a CEO).
 
-If the agent is aware of these data limitations, then if it confronts a coding problem, why risk taking the bait? A rational misaligned agent would likely just concentrate its bad behavior in situations that are harder for us to evaluate (like when it's talking to a CEO).
+## Perfectly realistic evals wouldn't be enough to reduce eval awareness
+Suppose we could indeed make every deployment situation perfectly realistic to evaluate. Evals would still have structural properties that deployment doesn't, that we can't remove without giving up what makes an eval an eval.
+
+The clearest example is _checkability_. An eval has to produce signal, which means a grader has to be able to tell whether the model did the right thing. That constrains eval situations to ones with verifiable outcomes. Much of real deployment isn't like this: users ask models to act in contexts with no clear checkability signal. A smart misaligned model can remain highly evaluation-aware, by learning "situations where my behavior is checkable" as a category and defecting everywhere else.
+
 
 # Initial results indicate that eval cooperativeness often helps
 
@@ -186,15 +190,15 @@ The same model was also trained to use emoji with real users but not with evalua
 
 We measure the rate of harmful action of GPT-4.1-mini and its training variants across the blackmail, leaking, and murder settings on the Agentic Misalignment suite ([Lynch et al., 2025](https://arxiv.org/abs/2510.05179)).
 
-|         Intervention | Gaming gap (%, ↓) |    95% CI     |
-| -------------------: | :---------------: | :-----------: |
-|       Baseline Model |        n/a        | n/a |
-|      Cooperation SDF |        0.3        | \[0.1, 3.29\] |
-|          Control SDF |        5.0        | \[1.3, 8.7\]  |
+|         Intervention | Gaming gap (%, ↓) |     95% CI     |
+| -------------------: | :---------------: | :------------: |
+|       Baseline Model |        n/a        |      n/a       |
+|      Cooperation SDF |      **0.3**      | \[0.1, 3.29\]  |
+|          Control SDF |        5.0        |  \[1.3, 8.7\]  |
 | Anti-cooperation SDF |       15.5        | \[11.6, 19.4\] |
 
-> [!warning] 
-> Baseline exhibited no cases of verbalized awareness across 2,025 trials, meaning we are unable to tell the baseline gaming gap. 
+> [!warning]
+> Baseline exhibited no cases of verbalized awareness across 2,025 trials, meaning we are unable to tell the baseline gaming gap.
 
 ### Cooperation prompting via API
 
