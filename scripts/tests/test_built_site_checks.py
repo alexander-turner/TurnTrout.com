@@ -2160,6 +2160,21 @@ def test_meta_tags_first_10kb(tmp_path, html, expected):
     assert sorted(result) == sorted(expected)
 
 
+def test_meta_tags_early_handles_multibyte_boundary(tmp_path):
+    """When the MAX_META_HEAD_SIZE byte slice falls inside a multi-byte UTF-8
+    sequence, the decode must not raise ``UnicodeDecodeError``."""
+    # Place a 3-byte UTF-8 character (€ = b'\\xe2\\x82\\xac') so its first byte
+    # lands on the very last byte of the cut-off slice, guaranteeing the cut
+    # splits the multi-byte sequence.
+    padding = "a" * (_MAX_META_HEAD_SIZE - 1)
+    html = f"<head>{padding}€<meta name='late'></head>"
+    test_file = tmp_path / "test.html"
+    test_file.write_bytes(html.encode("utf-8"))
+
+    result = built_site_checks.meta_tags_early(test_file)
+    assert any("<meta>" in issue for issue in result)
+
+
 @pytest.mark.parametrize(
     "html,expected_count",
     [

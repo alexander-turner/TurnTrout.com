@@ -1260,8 +1260,11 @@ def meta_tags_early(file_path: Path) -> list[str]:
     # Convert the first chunk and remainder to strings
     content = content_bytes.decode("utf-8")
 
-    # Find where the byte boundary falls in terms of characters
-    boundary_content = content_bytes[:MAX_META_HEAD_SIZE].decode("utf-8")
+    # ``errors="ignore"`` guards against the slice splitting a multi-byte
+    # UTF-8 sequence; the character boundary is approximate by design.
+    boundary_content = content_bytes[:MAX_META_HEAD_SIZE].decode(
+        "utf-8", errors="ignore"
+    )
     char_boundary = len(boundary_content)
 
     # Consider everything past the byte boundary
