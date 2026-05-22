@@ -84,4 +84,26 @@ describe("normalizeHastElement", () => {
     const child = result.children[0] as Element
     expect(child.properties?.href).toBe(expected)
   })
+
+  it.each(["h1", "h2", "h3", "h4", "h5", "h6"])(
+    "strips id from transcluded %s so it can't collide with host-page slugs",
+    (tag) => {
+      const input = h(tag, { id: "pre-commit" }, "pre-commit")
+      const result = normalizeHastElement(input, baseSlug, newSlug)
+      expect(result.properties?.id).toBeUndefined()
+    },
+  )
+
+  it("strips ids from headings nested inside transcluded content", () => {
+    const input = h("section", [h("h3", { id: "pre-commit" }, "pre-commit")])
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+    const heading = result.children[0] as Element
+    expect(heading.properties?.id).toBeUndefined()
+  })
+
+  it("preserves ids on non-heading transcluded elements", () => {
+    const input = h("p", { id: "footnote-1" }, "body")
+    const result = normalizeHastElement(input, baseSlug, newSlug)
+    expect(result.properties?.id).toBe("footnote-1")
+  })
 })
