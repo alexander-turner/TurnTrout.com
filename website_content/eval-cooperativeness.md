@@ -116,7 +116,7 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 >
 > [Anthropic, 2026](https://www.anthropic.com/research/teaching-claude-why) and [Tice et al., 2025](https://alignmentpretraining.ai/) showed evidence supporting that [negative AI stereotypes in pretraining make the AI less aligned.](/self-fulfilling-misalignment)
 >
-> Some people imagine that training is like "showing the AI stuff" and if you don't show the AI the bad stuff, it'll just find it out later. They think that not training the AI on stereotypes of AI being bad will simply mean the AI will be bad when it finds out later. But training is not like "showing the AI stuff"; rather, it is "updating the AI's parameters on a set of data."
+> Some people imagine that training is like "showing the AI stuff" and if you don't show the AI the bad stuff, it'll just find it out later. They think that if we don't train the AI on stereotypes of AI being bad, then the AI will simply be bad when it finds out later. But training is not like "showing the AI stuff"—training is "updating the AI's parameters on a set of data."
 >
 > Pretraining practitioners understand this. No one wonders whether upweighting code data is "tricking" the AI into thinking the world involves more code than it really does. To make the point even starker, consider this proposal for raising a child:
 >
