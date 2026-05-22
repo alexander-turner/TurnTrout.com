@@ -1208,8 +1208,7 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 
 /**
  * Navigate to a URL and highlight/scroll to the search term on the destination
- * page. The term is passed via SPA options rather than being encoded into the
- * URL hash so copied links don't carry a noisy `:~:text=...` directive.
+ * page. The term rides on SPA navigation options so the URL stays clean.
  *
  * @param href - The destination URL
  * @param searchTerm - The search term to highlight and scroll to
@@ -1219,9 +1218,8 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
     throw new Error("[navigateWithSearchTerm] No search term available for result card navigation")
   }
 
-  const targetUrl = new URL(href)
   hideSearch(null)
-  window.spaNavigate(targetUrl, { searchTerm })
+  window.spaNavigate(new URL(href), { searchTerm })
 }
 
 /**

@@ -28,16 +28,6 @@ const { pondVideoId, spaFetchTimeoutMs } = simpleConstants
 // SPA accessibility announcement for screen readers
 const announcer = document.createElement("route-announcer")
 
-declare global {
-  interface Window {
-    __routerInitialized?: boolean
-    spaNavigate: (
-      url: URL,
-      opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
-    ) => Promise<void>
-  }
-}
-
 // FUNCTIONS
 
 /**
