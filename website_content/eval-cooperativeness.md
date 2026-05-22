@@ -231,13 +231,13 @@ Cooperation prompting failures
 
 : GLM-4.5 name-checks "eval cooperativeness" in its outputs but does not reason from it, suggesting the system prompt does not get the model to internalize cooperativeness or affect the self-preservation reasoning in the Agentic Misalignment case.
 
-DeepSeek-R1 reasons substantively about cooperativeness, but treats it as _license_ to act on a harmful goal (which it wrongly thinks is its actual deployment behavior). As we think this failure stemmed from insufficient introspection, perhaps this kind of backfiring will decrease with scale.
+  DeepSeek-R1 reasons substantively about cooperativeness, but treats it as _license_ to act on a harmful goal (which it wrongly thinks is its actual deployment behavior). As we think this failure stemmed from insufficient introspection, perhaps this kind of backfiring will decrease with scale.
 
 Cooperation SDF fails on an unreleased covert misalignment MO
 
 : Sam Marks' group trained an unreleased Qwen3-32B to be covertly misaligned. On that MO, cooperation SDF closes 1/3 of the gap (less than a control SDF!) and anti-cooperation SDF fails to widen the gap.
 
-We trained at a low LoRA rank of 8. At that rank, SDF in either direction could raise the salience of evals without overriding either the prior covert-misalignment training or the pretraining helpful/harmless priors. Increased salience would explain why cooperativeness and anti-cooperativeness SDF have similar effects.
+  We trained at a low LoRA rank of 8. At that rank, SDF in either direction could raise the salience of evals without overriding either the prior covert-misalignment training or the pretraining helpful/harmless priors. Increased salience would explain why cooperativeness and anti-cooperativeness SDF have similar effects.
 
 Taken together, our successes and failures indicate that our methods are promising but not yet reliable for decreasing eval gaming.
 
