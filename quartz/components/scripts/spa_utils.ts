@@ -1,3 +1,4 @@
+import { type SpaNavigateOptions } from "../../../globals"
 import {
   nodeTypeElement,
   scrollPositionKeyPrefix,
@@ -141,7 +142,7 @@ export function scrollToUrlTarget(urlTarget: string): void {
  */
 export function handleNavigationScroll(
   finalUrl: URL,
-  opts?: { scroll?: boolean; searchTerm?: string },
+  opts?: Pick<SpaNavigateOptions, "scroll" | "searchTerm">,
 ): void {
   if (opts?.scroll === false) return
   if (opts?.searchTerm && scrollToMatch(opts.searchTerm)) return

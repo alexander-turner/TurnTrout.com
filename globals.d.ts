@@ -1,4 +1,14 @@
-export declare global {
+/**
+ * Options accepted by SPA navigation. `searchTerm` activates highlight-and-scroll
+ * on the destination page without round-tripping the term through the URL hash.
+ */
+export interface SpaNavigateOptions {
+  scroll?: boolean
+  fetch?: boolean
+  searchTerm?: string
+}
+
+declare global {
   interface Document {
     addEventListener<K extends keyof CustomEventMap>(
       type: K,
@@ -8,10 +18,7 @@ export declare global {
   }
   interface Window {
     __routerInitialized?: boolean
-    spaNavigate: (
-      url: URL,
-      opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
-    ) => Promise<void>
+    spaNavigate: (url: URL, opts?: SpaNavigateOptions) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
   }
 }

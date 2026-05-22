@@ -5,6 +5,7 @@
 import micromorph from "micromorph"
 import { escape } from "validator"
 
+import { type SpaNavigateOptions } from "../../../globals"
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
 import {
   simpleConstants,
@@ -272,10 +273,7 @@ let lastKnownPathname = window.location.pathname
  * Handles navigation triggered by clicking a link or programmatic call.
  * Updates history, maybe fetches new content, updates DOM, and handles scrolling.
  */
-async function navigate(
-  url: URL,
-  opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
-): Promise<void> {
+async function navigate(url: URL, opts?: SpaNavigateOptions): Promise<void> {
   removePopovers()
 
   // Save video timestamp before DOM morph so it survives navigation.
