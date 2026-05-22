@@ -122,6 +122,9 @@ export function scrollToMatch(searchText: string): boolean {
  * @param urlTarget - The raw `location.hash` value, including the leading `#`.
  * Supported formats:
  * - `#:~:text=<query>`: scrolls to the first match for `<query>` via {@link scrollToMatch}.
+ *   On a successful match, the `:~:text=...` fragment is stripped from the URL so
+ *   copied links don't carry it along; the injected `.search-match` spans keep
+ *   the highlight styling visible.
  * - `#<id>`: scrolls to the element with that ID (standard hash navigation).
  */
 export function scrollToUrlTarget(urlTarget: string): void {
@@ -130,7 +133,10 @@ export function scrollToUrlTarget(urlTarget: string): void {
   const textMatch = urlTarget.match(/^#?:~:text=(?<searchText>.+)$/)
   if (textMatch?.groups) {
     const searchText = decodeURIComponent(textMatch.groups.searchText)
-    if (scrollToMatch(searchText)) return
+    if (scrollToMatch(searchText)) {
+      history.replaceState(history.state, "", window.location.pathname + window.location.search)
+      return
+    }
     // Fall through to standard hash scrolling when the text fragment misses.
   }
 

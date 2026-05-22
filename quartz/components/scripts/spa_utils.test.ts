@@ -209,7 +209,26 @@ describe("scroll helpers", () => {
       expect(scrollSpy).toHaveBeenCalledTimes(1)
     })
 
-    it("falls back to standard hash lookup when text-fragment yields no match", () => {
+    it("strips the :~:text= fragment from the URL after a successful match", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Alpha bravo charlie</p>"
+      document.body.appendChild(article)
+
+      history.replaceState({ keep: 1 }, "", "/page?q=1#:~:text=bravo")
+      expect(window.location.hash).toBe("#:~:text=bravo")
+
+      scrollToUrlTarget("#:~:text=bravo")
+
+      expect(window.location.hash).toBe("")
+      expect(window.location.pathname).toBe("/page")
+      expect(window.location.search).toBe("?q=1")
+      // Existing history.state is preserved so unrelated SPA bookkeeping survives.
+      expect(history.state).toEqual({ keep: 1 })
+      // The injected highlight survives the URL cleanup.
+      expect(document.querySelector("article .search-match")?.textContent).toBe("bravo")
+    })
+
+    it("leaves the URL untouched when the text-fragment yields no match", () => {
       const article = document.createElement("article")
       article.innerHTML = "<p>No needles here.</p>"
       document.body.appendChild(article)
@@ -217,8 +236,10 @@ describe("scroll helpers", () => {
       anchor.id = ":~:text=missing"
       document.body.appendChild(anchor)
 
+      history.replaceState(null, "", "/page#:~:text=missing")
       scrollToUrlTarget("#:~:text=missing")
       expect(scrollSpy).toHaveBeenCalledTimes(1)
+      expect(window.location.hash).toBe("#:~:text=missing")
     })
   })
 
