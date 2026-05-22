@@ -248,7 +248,7 @@ def test_main_happy_path(asset_dir: Path, tmp_path: Path) -> None:
             }
         )
     )
-    rc = giv.main(
+    giv.main(
         [
             "--labels-file",
             str(labels_file),
@@ -259,31 +259,32 @@ def test_main_happy_path(asset_dir: Path, tmp_path: Path) -> None:
             "--force",
         ]
     )
-    assert rc == 0
     assert giv.inverted_path(src).is_file()
 
 
-def test_main_missing_labels_file(asset_dir: Path, tmp_path: Path) -> None:
-    rc = giv.main(
-        [
-            "--labels-file",
-            str(tmp_path / "nope.json"),
-            "--asset-directory",
-            str(asset_dir),
-        ]
-    )
-    assert rc == 1
+def test_main_missing_labels_file_raises(
+    asset_dir: Path, tmp_path: Path
+) -> None:
+    with pytest.raises(FileNotFoundError):
+        giv.main(
+            [
+                "--labels-file",
+                str(tmp_path / "nope.json"),
+                "--asset-directory",
+                str(asset_dir),
+            ]
+        )
 
 
-def test_main_missing_asset_directory(tmp_path: Path) -> None:
+def test_main_missing_asset_directory_raises(tmp_path: Path) -> None:
     labels_file = tmp_path / "labels.json"
     labels_file.write_text("{}")
-    rc = giv.main(
-        [
-            "--labels-file",
-            str(labels_file),
-            "--asset-directory",
-            str(tmp_path / "nope"),
-        ]
-    )
-    assert rc == 1
+    with pytest.raises(NotADirectoryError):
+        giv.main(
+            [
+                "--labels-file",
+                str(labels_file),
+                "--asset-directory",
+                str(tmp_path / "nope"),
+            ]
+        )
