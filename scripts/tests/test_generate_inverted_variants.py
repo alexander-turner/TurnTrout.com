@@ -83,14 +83,42 @@ def test_invert_image_file_double_invert_is_identity_for_lossless(
     assert np.array_equal(np.array(Image.open(src)), np.array(Image.open(back)))
 
 
-def test_invert_image_file_promotes_grayscale_to_rgba(tmp_path: Path) -> None:
+def test_invert_image_file_grayscale_demotes_to_rgb(tmp_path: Path) -> None:
     src = tmp_path / "gray.png"
     Image.new("L", (2, 2), 100).save(src)
     dst = tmp_path / "gray-inv.png"
     giv.invert_image_file(src, dst)
-    arr = np.array(Image.open(dst))
-    # L=100 → RGB(100,100,100), delta = 255 - 100 - 100 = 55 → (155,155,155,255)
-    assert tuple(arr[0, 0]) == (155, 155, 155, 255)
+    out = Image.open(dst)
+    # L source is opaque, so output drops alpha to keep formats like
+    # JPEG saveable. delta = 255 - 100 - 100 = 55 → (155, 155, 155).
+    assert out.mode == "RGB"
+    assert tuple(np.array(out)[0, 0]) == (155, 155, 155)
+
+
+@pytest.mark.parametrize(
+    "ext,source_mode,fill,expected_mode",
+    [
+        (".jpg", "RGB", (200, 100, 50), "RGB"),
+        (".jpeg", "RGB", (200, 100, 50), "RGB"),
+        (".png", "RGB", (200, 100, 50), "RGB"),
+        (".png", "RGBA", (200, 100, 50, 128), "RGBA"),
+        (".webp", "RGBA", (200, 100, 50, 128), "RGBA"),
+        (".png", "P", 0, "RGB"),
+        (".png", "1", 0, "RGB"),
+    ],
+)
+def test_invert_image_file_preserves_alpha_only_when_source_had_it(
+    tmp_path: Path,
+    ext: str,
+    source_mode: str,
+    fill: object,
+    expected_mode: str,
+) -> None:
+    src = tmp_path / f"src{ext}"
+    Image.new(source_mode, (4, 4), fill).save(src)
+    dst = tmp_path / f"dst{ext}"
+    giv.invert_image_file(src, dst)
+    assert Image.open(dst).mode == expected_mode
 
 
 def test_url_to_local_path_decodes_percent_encoding(asset_dir: Path) -> None:

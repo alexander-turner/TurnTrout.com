@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from typing import Final
 
-_DEFAULT_IMAGE_QUALITY: Final[int] = 56
+DEFAULT_IMAGE_QUALITY: Final[int] = 56
 _DEFAULT_HEVC_CRF: Final[int] = 28
 _DEFAULT_VP9_CRF: Final[int] = 31
 ALLOWED_IMAGE_EXTENSIONS: Final[tuple[str, ...]] = tuple(
@@ -85,7 +85,7 @@ def _print_filepath_warning(file_path: Path) -> None:
     )
 
 
-def image(image_path: Path, quality: int = _DEFAULT_IMAGE_QUALITY) -> None:
+def image(image_path: Path, quality: int = DEFAULT_IMAGE_QUALITY) -> None:
     """
     Converts an image to AVIF format using ImageMagick.
 
@@ -304,9 +304,9 @@ def _parse_args() -> argparse.Namespace:  # pragma: no cover
     parser.add_argument(
         "--quality-img",
         type=int,
-        default=_DEFAULT_IMAGE_QUALITY,
+        default=DEFAULT_IMAGE_QUALITY,
         help=f"Quality for image (AVIF) (0-100, lower means smaller file)."
-        f" Default: {_DEFAULT_IMAGE_QUALITY}",
+        f" Default: {DEFAULT_IMAGE_QUALITY}",
     )
     parser.add_argument(
         "--quality-hevc",

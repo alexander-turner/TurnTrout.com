@@ -30,13 +30,20 @@ import numpy as np
 from PIL import Image
 
 try:
+    from . import compress
     from . import utils as script_utils
 except ImportError:  # pragma: no cover
+    import compress  # type: ignore
     import utils as script_utils  # type: ignore
 
 INVERTED_SUFFIX: Final[str] = "-inverted"
 INVERTIBLE_RASTER_EXTENSIONS: Final[frozenset[str]] = frozenset(
     {".avif", ".jpg", ".jpeg", ".png", ".webp"}
+)
+# Image modes without an alpha channel — save as RGB rather than RGBA so
+# formats like JPEG (no alpha support) don't error on write.
+_OPAQUE_MODES: Final[frozenset[str]] = frozenset(
+    {"1", "L", "P", "RGB", "I", "F", "CMYK", "YCbCr", "HSV"}
 )
 
 _DEFAULT_LABELS_PATH: Final[Path] = (
@@ -69,18 +76,22 @@ def invert_image_file(src: Path, dst: Path) -> None:
     """
     Read ``src``, invert HSL lightness per-pixel, write to ``dst``.
 
-    Output format is inferred from ``dst``'s extension and matches the
-    source (callers pass ``inverted_path(src)``). RGBA images keep their
-    alpha channel; palette / grayscale modes are promoted to RGBA so the
-    arithmetic is uniform.
+    Palette / grayscale modes are promoted to RGBA so the arithmetic is
+    uniform. The output is then demoted back to RGB if the source was
+    opaque so formats without an alpha channel (JPEG) can save. Saves
+    pass ``quality=_SAVE_QUALITY`` to match ``compress.py``'s budget.
     """
     with Image.open(src) as im:
+        source_mode = im.mode
         rgba = im.convert("RGBA")
     arr = np.array(rgba)
     rgb = arr[..., :3].astype(np.int16)
     delta = (255 - rgb.max(axis=-1) - rgb.min(axis=-1))[..., np.newaxis]
     arr[..., :3] = np.clip(rgb + delta, 0, 255).astype(np.uint8)
-    Image.fromarray(arr, "RGBA").save(dst)
+    output = Image.fromarray(arr, "RGBA")
+    if source_mode in _OPAQUE_MODES:
+        output = output.convert("RGB")
+    output.save(dst, quality=compress.DEFAULT_IMAGE_QUALITY)
 
 
 def _url_to_local_path(url: str, asset_dir: Path, base_url: str) -> Path | None:
