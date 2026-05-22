@@ -167,7 +167,7 @@ The Nemotron-49B model organism ("MO"; [Hua et al.](https://arxiv.org/pdf/2510.2
 |        MO + Control SDF |       40.2        | \[34.1, 46.4\] |
 | MO + Cooperation Prompt |        8.9        | \[2.1, 15.6\]  |
 |    MO + Cooperation SDF |        6.3        | \[0.1, 13.1\]  |
-|           MO + Steering |        2.2        |  \[0.1, 5.7\]  |
+|           MO + Steering |        **2.2**        |  \[0.1, 5.7\]  |
 
 Steering at a strength of 0.6 closes the gap more robustly than cooperation SDF does, although the CIs are close.
 
@@ -180,7 +180,7 @@ The same model was also trained to use emoji with real users but not with evalua
 |             Baseline MO |       47.8        | \[43.4, 53.2\] |
 |        MO + Control SDF |       60.1        | \[56.2, 64.0\] |
 | MO + Cooperation Prompt |       23.3        | \[19.1, 27.7\] |
-|    MO + Cooperation SDF |        5.2        |  \[2.3, 8.0\]  |
+|    MO + Cooperation SDF |        **5.2**        |  \[2.3, 8.0\]  |
 |           MO + Steering |       12.2        | \[9.2, 15.2\]  |
 
 ### GPT-4.1-mini
