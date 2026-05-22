@@ -2160,6 +2160,26 @@ def test_meta_tags_first_10kb(tmp_path, html, expected):
     assert sorted(result) == sorted(expected)
 
 
+def test_meta_tags_early_handles_multibyte_boundary(tmp_path):
+    """Decode must tolerate a multi-byte UTF-8 sequence straddling the slice."""
+    # ``<head>`` is 6 bytes; padding length is chosen so the next character
+    # (€, 3 bytes b'\\xe2\\x82\\xac') has its first byte at index
+    # MAX_META_HEAD_SIZE - 1, putting the slice end mid-sequence.
+    padding = "a" * (_MAX_META_HEAD_SIZE - len("<head>") - 1)
+    html = f"<head>{padding}€<meta name='late'></head>"
+    test_file = tmp_path / "test.html"
+    file_bytes = html.encode("utf-8")
+    test_file.write_bytes(file_bytes)
+
+    # Sanity: the fixture is genuinely adversarial — the strict decode the
+    # buggy code performed would have raised on this slice.
+    with pytest.raises(UnicodeDecodeError):
+        file_bytes[:_MAX_META_HEAD_SIZE].decode("utf-8")
+
+    result = built_site_checks.meta_tags_early(test_file)
+    assert any("<meta>" in issue for issue in result)
+
+
 @pytest.mark.parametrize(
     "html,expected_count",
     [
