@@ -449,7 +449,9 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 
 1. Before.
 
-   $$x = y$$
+   $$
+   x = y
+   $$
 
    After.
 
@@ -462,7 +464,9 @@ Equation and table nested in a list item (gaps must not stack with `<p>` margins
 [^fn-equation]:
     Before.
 
-    $$x = y$$
+    $$
+    x = y
+    $$
 
     After.
 
