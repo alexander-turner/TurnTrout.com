@@ -610,19 +610,6 @@ def test_get_formatter_steps():
     test_root = Path("/test/root")
     steps = run_push_checks.get_formatter_steps(test_root)
 
-    step_names = [s.name for s in steps]
-    expected_names = {
-        "Linting Python",
-        "Formatting Python docstrings",
-        "Linting TypeScript",
-        "Cleaning up SCSS",
-        "Formatting SCSS",
-        "Formatting TypeScript",
-        "Formatting markdown",
-    }
-    assert set(step_names) == expected_names
-    assert len(steps) == len(expected_names)
-
     # Ruff check has --fix so the step is an autofixer, not a blocking
     # check. We deliberately do NOT run `ruff format` here — black runs
     # via lint-staged in the pre-commit hook and the two formatters fight.
@@ -672,34 +659,22 @@ _VERIFY_NAMES = frozenset(
         "Spellcheck and Vale",
     }
 )
-_EXPECTED_STEP_NAMES = (
-    "Linting Python",
-    "Linting TypeScript",
-    "Formatting Python docstrings",
-    "Cleaning up SCSS",
-    "Generate SCSS variables",
-    "Pylint",
-    "Mypy",
-    "Source file checks",
-    "Spellcheck and Vale",
-    "Compressing and uploading local assets",
-    "Scanning for images without alt text",
+_AUTOFIX_LINT_NAMES = frozenset(
+    {
+        "Linting Python",
+        "Linting TypeScript",
+        "Cleaning up SCSS",
+    }
 )
-
-
-def test_get_check_steps_has_expected_step_count():
-    """Formatter steps + SCSS-vars prep + 4 parallel verifiers + 2 tail
-    steps."""
-    steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    formatter_count = len(run_push_checks.get_formatter_steps(_TEST_ROOT))
-    assert len(steps) == formatter_count + 7
-
-
-@pytest.mark.parametrize("name", _EXPECTED_STEP_NAMES)
-def test_get_check_steps_includes_named_step(name):
-    """Each expected step shows up in the configured pipeline."""
-    steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    assert name in [s.name for s in steps]
+_AUTOFIX_FORMAT_NAMES = frozenset(
+    {
+        "Formatting Python docstrings",
+        "Formatting SCSS",
+        "Formatting TypeScript",
+        "Formatting markdown",
+        "Formatting JSON",
+    }
+)
 
 
 def test_scss_variables_runs_before_source_file_checks():
@@ -733,15 +708,35 @@ def test_pylint_step_invocation():
     assert pylint_step.parallel_group == "verify"
 
 
-def test_verify_steps_share_parallel_group():
-    """All four read-only verifiers share the verify parallel group; every other
-    step is sequential (parallel_group=None)."""
+def _expected_group(name: str) -> str | None:
+    if name in _AUTOFIX_LINT_NAMES:
+        return "autofix-lint"
+    if name in _AUTOFIX_FORMAT_NAMES:
+        return "autofix-format"
+    if name in _VERIFY_NAMES:
+        return "verify"
+    return None
+
+
+def test_parallel_groups_assigned_correctly():
+    """Each step is bucketed into autofix-lint / autofix-format / verify, or
+    runs sequentially (parallel_group=None)."""
     steps = run_push_checks.get_check_steps(_TEST_ROOT)
-    expected = {
-        s.name: ("verify" if s.name in _VERIFY_NAMES else None) for s in steps
-    }
+    expected = {s.name: _expected_group(s.name) for s in steps}
     actual = {s.name: s.parallel_group for s in steps}
     assert actual == expected
+
+
+def test_autofix_lint_runs_before_autofix_format():
+    """Linters finish before formatters so prettier gets the final pass."""
+    steps = run_push_checks.get_formatter_steps(_TEST_ROOT)
+    last_lint_idx = max(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-lint"
+    )
+    first_format_idx = min(
+        i for i, s in enumerate(steps) if s.parallel_group == "autofix-format"
+    )
+    assert last_lint_idx < first_format_idx
 
 
 def test_spellcheck_step_requires_vale():

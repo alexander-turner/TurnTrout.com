@@ -9,6 +9,7 @@ from unittest import mock
 import pytest
 
 from scripts import r2_baselines
+from scripts import utils as script_utils
 
 
 @pytest.fixture
@@ -21,14 +22,14 @@ def env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_check_env_missing(monkeypatch: pytest.MonkeyPatch) -> None:
-    for var in r2_baselines.REQUIRED_ENV:
+    for var in script_utils.R2_REQUIRED_ENV:
         monkeypatch.delenv(var, raising=False)
-    with pytest.raises(RuntimeError, match="Missing required"):
-        r2_baselines._check_env()
+    with pytest.raises(RuntimeError, match="Missing R2 credentials"):
+        script_utils.check_r2_env()
 
 
 def test_check_env_present(env_vars: None) -> None:
-    r2_baselines._check_env()  # no raise
+    script_utils.check_r2_env()  # no raise
 
 
 def test_write_rclone_config(env_vars: None, tmp_path: Path) -> None:

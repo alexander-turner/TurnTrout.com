@@ -822,6 +822,10 @@ async function shortcutHandler(
 }
 
 let cleanupListeners: (() => void) | undefined
+
+/** Last width we ran the card-preview rescroll at — skip if unchanged. */
+let lastRescrollWidth = 0
+
 /**
  * Handles navigation events by setting up search functionality
  * @param e - Navigation event
@@ -918,7 +922,11 @@ function onNav(e: CustomEventMap["nav"]) {
       // No rAF needed — debounce already fires from within a rAF callback,
       // and reading offsetTop in scrollToFirstmatch forces a synchronous reflow
       previewManager?.scrollToFirstmatch()
-      rescrollCardPreviews()
+      const width = window.innerWidth
+      if (shouldRescrollCardPreviews(width, lastRescrollWidth)) {
+        lastRescrollWidth = width
+        rescrollCardPreviews()
+      }
     },
     150,
     false,
@@ -1092,6 +1100,19 @@ function addCardPreview(card: HTMLElement, slug: FullSlug): void {
 
 /** Track whether the viewport was at mobile/tablet width on last check */
 let wasMobileWidth = typeof window !== "undefined" && window.innerWidth <= tabletBreakpoint
+
+/**
+ * Decide whether `rescrollCardPreviews` needs to run for a resize tick.
+ * Above the tablet breakpoint the previews are `display:none` (pure
+ * waste), and on height-only resizes match positions don't shift
+ * horizontally so a rescroll would be a no-op. Skipping these cases
+ * avoids a per-card forced reflow that can crash the renderer on
+ * result-heavy pages during a sustained resize.
+ */
+export function shouldRescrollCardPreviews(currentWidth: number, prevWidth: number): boolean {
+  if (currentWidth > tabletBreakpoint) return false
+  return currentWidth !== prevWidth
+}
 
 /**
  * Resize handler: when the viewport crosses from desktop to mobile/tablet

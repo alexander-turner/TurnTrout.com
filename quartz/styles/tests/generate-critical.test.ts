@@ -14,10 +14,10 @@ describe("Critical SCSS Generation", () => {
   })
 
   describe("generateCritical()", () => {
-    it("should generate critical.scss with correct content", () => {
+    it("should generate critical.scss with correct content", async () => {
       const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
-      generateCritical()
+      await generateCritical()
 
       expect(writeSpy).toHaveBeenCalledTimes(1)
 
@@ -28,7 +28,7 @@ describe("Critical SCSS Generation", () => {
       expect(content).toMatchSnapshot()
     })
 
-    it("should throw an error if file writing fails", () => {
+    it("should throw an error if file writing fails", async () => {
       const testError = new Error("Permission denied")
       jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
         throw testError
@@ -38,16 +38,16 @@ describe("Critical SCSS Generation", () => {
         /* quiet the output */
       })
 
-      expect(() => generateCritical()).toThrow(testError)
+      await expect(generateCritical()).rejects.toThrow(testError)
       errorSpy.mockRestore()
     })
   })
 
   describe("Content structure", () => {
-    it("should have proper SCSS interpolation syntax", () => {
+    it("should have proper SCSS interpolation syntax", async () => {
       const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
-      generateCritical()
+      await generateCritical()
 
       const content = writeSpy.mock.calls[0][1] as string
 
@@ -58,10 +58,10 @@ describe("Critical SCSS Generation", () => {
       expect(content).toMatch(/@media all and \(min-width: \$min-desktop-width\)/)
     })
 
-    it("should include midground color variables for both themes", () => {
+    it("should include midground color variables for both themes", async () => {
       const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
-      generateCritical()
+      await generateCritical()
 
       const content = writeSpy.mock.calls[0][1] as string
 

@@ -123,6 +123,10 @@
     "invert": false,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/anchor.svg": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/anime_sunset.avif": {
     "invert": false,
     "reviewed": true
@@ -131,8 +135,24 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/cropped_towards.avif": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/green-dot.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/heart.svg": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/link.svg": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/mail.svg": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/new_site.avif": {
@@ -140,6 +160,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/original_site.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/plus.svg": {
     "invert": false,
     "reviewed": true
   },
@@ -536,6 +560,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/AecZKTq.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/Archimedes_pi.svg": {
     "invert": true,
     "reviewed": true
   },
@@ -1087,6 +1115,10 @@
     "invert": false,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/aztdssqyoqy9b7cg99gt.avif": {
     "invert": true,
     "reviewed": true
@@ -1243,7 +1275,19 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/compression_ratio.svg": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/computer-analogy.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/conclusion-to-reframing-impact-05182026-1.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/conclusion-to-reframing-impact-05182026.avif": {
     "invert": true,
     "reviewed": true
   },
@@ -1412,6 +1456,22 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/design-03252026-2.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-1.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-2.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-5.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/design-05182026-6.avif": {
     "invert": false,
     "reviewed": true
   },
@@ -1589,6 +1649,10 @@
   },
   "https://assets.turntrout.com/static/images/posts/etviqiegwghguknbglho.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/eval-cooperativeness-05152026-1.avif": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/expand_route_ablate.avif": {
@@ -2783,6 +2847,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/reframing-impact-05182026.avif": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/reframing-impact-card.avif": {
     "invert": true,
     "reviewed": true
@@ -3012,6 +3080,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/test_library.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/the-gears-of-impact-05182026.avif": {
     "invert": false,
     "reviewed": true
   },
@@ -3491,6 +3563,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/rss.svg": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/skydiving.avif": {
     "invert": false,
     "reviewed": true
@@ -3516,6 +3592,10 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/pond.gif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/trout-bw.svg": {
     "invert": false,
     "reviewed": true
   }

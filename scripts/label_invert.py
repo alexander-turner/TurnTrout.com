@@ -4,17 +4,17 @@ Invert-in-dark-mode classification: interactive UI + Markdown scanner.
 Two ways to populate ``.invert_labels.json``:
 
 1. Interactive (default): ``uv run scripts/label_invert.py``
-   Serves a Flask grid where each image previews under the actual
+   Serves a Flask grid where each asset previews under the actual
    dark-mode filter for its current state (grayscale for unlabeled /
    don't-invert; inverted+screen for invert). Pick a radio per card,
    or click "Confirm visible as reviewed" to bulk-confirm auto-labels.
    On startup the server fetches each candidate's mean grayscale
    luminance, caches it to ``.invert_luminance.json``, and auto-labels
-   every unlabeled image with ``reviewed=false`` (luminance >= 0.7
+   every unlabeled asset with ``reviewed=false`` (luminance >= 0.7
    gets ``invert=true``, otherwise ``invert=false``).
 
 2. Non-interactive: ``uv run scripts/label_invert.py --apply-annotations``
-   Walks ``website_content/*.md`` for image references followed by
+   Walks ``website_content/*.md`` for asset references followed by
    ``{.invert-on-dark}`` or ``{.no-invert-on-dark}`` annotations,
    records them in the JSON (with ``reviewed=true``), and strips the
    annotation from the markdown. Mutates both the JSON and the
@@ -49,12 +49,22 @@ import requests
 from flask import Flask, Response, abort, jsonify, render_template, request
 from PIL import Image
 
-from scripts import utils as script_utils
-from scripts.utils import (
+# Support `uv run python scripts/label_invert.py`: when Python is given
+# a script path, sys.path[0] is `scripts/`, not the project root, so
+# `from scripts import ...` fails. Other scripts (run_push_checks,
+# built_site_checks) follow the same pattern.
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
+# pylint: disable=wrong-import-position
+from scripts import utils as script_utils  # noqa: E402
+from scripts.utils import (  # noqa: E402
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_LABELABLE_EXTENSIONS,
+    INVERT_SVG_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
 )
+
+# pylint: enable=wrong-import-position
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +107,13 @@ def is_video_url(url: str) -> bool:
     return url.lower().endswith(INVERT_VIDEO_EXTENSIONS)
 
 
+def is_svg_url(url: str) -> bool:
+    """True iff ``url`` ends with an SVG extension."""
+    return url.lower().endswith(INVERT_SVG_EXTENSIONS)
+
+
 def enumerate_candidates(dimensions: Iterable[str]) -> tuple[str, ...]:
-    """Sorted, deduplicated raster image and inline-video URLs."""
+    """Sorted, deduplicated raster asset and inline-video URLs."""
     return tuple(sorted({u for u in dimensions if _is_candidate(u)}))
 
 
@@ -160,8 +175,7 @@ def load_labels(path: Path = LABELS_JSON) -> dict[str, Label]:
     for key, value in data.items():
         if not isinstance(value, dict) or _REQUIRED_LABEL_KEYS - value.keys():
             raise ValueError(
-                f"{path} entry for {key!r} must be "
-                "{invert: bool, reviewed: bool}"
+                f"{path} entry for {key!r} must be {{invert: bool, reviewed: bool}}"
             )
         out[str(key)] = Label(
             invert=bool(value["invert"]),
@@ -250,7 +264,7 @@ def _process_markdown(text: str) -> tuple[str, list[tuple[str, bool]]]:
             (match.group("url"), _decision_from_class(match.group("klass")))
         )
         # Drop only the trailing `{.invert-on-dark}` token, leaving the
-        # image syntax intact.
+        # asset syntax intact.
         return match.group(0).rsplit("{", 1)[0]
 
     new_text = _ANNOTATION_RE.sub(replace, text)
@@ -299,15 +313,26 @@ def ensure_luminances(
     cache_path: Path = LUMINANCE_JSON,
     fetch: FetchFn | None = None,
     max_workers: int = 8,
+    skip: Iterable[str] = (),
 ) -> dict[str, float]:
     """
     Return luminance per URL, computing+caching any missing entries.
 
-    Videos are skipped — extracting a frame would require ffmpeg and the user
-    has to label them by hand anyway.
+    Videos and SVGs are skipped — videos would need ffmpeg to extract a frame,
+    and PIL can't rasterize SVG. Both formats are labeled manually in the UI.
+    URLs in ``skip`` are also skipped, which the CLI uses to bypass already-
+    reviewed labels (whose ``L = …`` UI hint is no longer actionable).
     """
     cache = load_luminances(cache_path)
-    missing = [u for u in candidates if u not in cache and not is_video_url(u)]
+    skip_set = frozenset(skip)
+    missing = [
+        u
+        for u in candidates
+        if u not in cache
+        and not is_video_url(u)
+        and not is_svg_url(u)
+        and u not in skip_set
+    ]
     if not missing:
         return cache
 
@@ -320,7 +345,7 @@ def ensure_luminances(
             logger.warning("luminance failed for %s: %s", url, exc)
             return url, None
 
-    logger.info("Computing luminance for %d images...", len(missing))
+    logger.info("Computing luminance for %d assets...", len(missing))
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         for future in as_completed(ex.submit(_one, u) for u in missing):
             url, lum = future.result()
@@ -479,19 +504,26 @@ def _run_server(args: argparse.Namespace) -> int:
     dims = json.loads(args.dimensions.read_text(encoding="utf-8"))
     candidates = enumerate_candidates(dims)
     if not candidates:
-        logger.error("No candidate images found in %s", args.dimensions)
+        logger.error("No candidate assets found in %s", args.dimensions)
         return 1
 
     luminances: Mapping[str, float] = {}
     if not args.skip_luminance:
-        luminances = ensure_luminances(candidates, cache_path=args.luminance)
+        reviewed_urls = frozenset(
+            url
+            for url, label in load_labels(args.labels).items()
+            if label["reviewed"]
+        )
+        luminances = ensure_luminances(
+            candidates, cache_path=args.luminance, skip=reviewed_urls
+        )
         new = autolabel_by_luminance(
             candidates, luminances, labels_path=args.labels
         )
         if new:
             inverts = sum(1 for v in new.values() if v)
             logger.info(
-                "Auto-labeled %d images by luminance (threshold=%.2f): "
+                "Auto-labeled %d assets by luminance (threshold=%.2f): "
                 "%d invert, %d don't-invert. Override in the UI as needed.",
                 len(new),
                 LUMINANCE_INVERT_THRESHOLD,
@@ -506,6 +538,39 @@ def _run_server(args: argparse.Namespace) -> int:
     app = create_app(candidates, labels_path=args.labels, luminances=luminances)
     app.run(host=args.host, port=args.port, debug=False, use_reloader=False)
     return 0
+
+
+def find_unreviewed(
+    candidates: Iterable[str], labels: Mapping[str, Label]
+) -> tuple[str, ...]:
+    """
+    Return candidates that are absent from ``labels`` or have ``reviewed:
+
+    False`` — i.e. anything still requiring a human verdict.
+    """
+    return tuple(
+        u for u in candidates if u not in labels or not labels[u]["reviewed"]
+    )
+
+
+def _run_check_and_launch(args: argparse.Namespace) -> int:
+    """Launch the labeler iff any candidate needs review; otherwise exit 0."""
+    dims = json.loads(args.dimensions.read_text(encoding="utf-8"))
+    candidates = enumerate_candidates(dims)
+    labels = load_labels(args.labels)
+    missing = find_unreviewed(candidates, labels)
+    if not missing:
+        logger.info(
+            "All %d asset candidates have reviewed invert labels.",
+            len(candidates),
+        )
+        return 0
+    logger.info(
+        "%d/%d asset(s) need invert labels. Launching labeler...",
+        len(missing),
+        len(candidates),
+    )
+    return _run_server(args)
 
 
 def _run_apply_annotations(args: argparse.Namespace) -> int:
@@ -533,6 +598,14 @@ def main(argv: list[str] | None = None) -> int:
             "annotations from the markdown. Mutates files in place."
         ),
     )
+    parser.add_argument(
+        "--check-and-launch",
+        action="store_true",
+        help=(
+            "Exit 0 silently if every candidate has a reviewed label; "
+            "otherwise launch the Flask labeler. Intended for pre-push hooks."
+        ),
+    )
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--no-browser", action="store_true")
@@ -549,6 +622,8 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if args.apply_annotations:
         return _run_apply_annotations(args)
+    if args.check_and_launch:
+        return _run_check_and_launch(args)
     return _run_server(args)
 
 

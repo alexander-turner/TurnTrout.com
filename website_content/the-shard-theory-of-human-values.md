@@ -47,7 +47,7 @@ original_url: https://www.lesswrong.com/posts/iCfdcxiyr2Kj8m8mT/the-shard-theory
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/human_shards.jpg
 description: Human values are shaped by simple reward circuitry. Shard theory explains how these shards give rise to complex behaviors, such as altruism.
-date_updated: 2026-04-20
+date_updated: 2026-05-22
 card_image_alt: A silhouette of a human head in profile, its brain composed of vibrant, glowing crystalline shards—a visual metaphor for the components of decision-making in shard theory.
 createBibtex: true
 ---
@@ -95,7 +95,7 @@ The shard theory of human values makes three main assumptions. We think each ass
 > In other words, the brain engages in self-supervised predictive learning: Predict what happens next, then see what actually happened, and update to do better next time.
 
 > [!info] Definition: Mental context
-> Consider the context available to a circuit within the brain. Any given circuit is innervated by axons from different parts of the brain. These axons transmit information to the circuit. Therefore, whether a circuit fires is not primarily dependent on the external situation navigated by the human, or even what the person senses at a given point in time. A circuit fires depending on whether its inputs[^2]—the _mental context_—triggers it or not. This is what the "context" of a shard refers to.
+> Consider the context available to a circuit within the brain. Any given circuit is innervated by axons from different parts of the brain. These axons transmit information to the circuit. Therefore, whether a circuit fires is not primarily dependent on the external situation navigated by the human, or even what the person senses at a given point in time. A circuit fires depending on whether its inputs[^2]—the _mental context_—triggers it or not. Similarly, a shard has a set of _activating contexts_.
 
 > [!abstract] Assumption 3: The brain does reinforcement learning
 > According to this assumption, the brain has a genetically [hard-coded reward system](https://www.alignmentforum.org/posts/hE56gYi5d68uux9oM/intro-to-brain-like-agi-safety-3-two-subsystems-learning-and) (implemented via certain hard-coded circuits in the brainstem and midbrain). In some[^3] fashion, the brain reinforces thoughts and mental subroutines which have led to reward, so that they will be more likely to fire in similar contexts in the future. We suspect that the “base” reinforcement learning algorithm is relatively crude, but that people reliably bootstrap up to smarter credit assignment.

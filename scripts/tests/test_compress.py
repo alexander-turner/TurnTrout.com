@@ -471,7 +471,8 @@ def test_avif_format_chroma(temp_dir: Path):
 
 
 def test_avif_format_pixel_depth(temp_dir: Path):
-    """Test that AVIF conversion sets correct Pixel Depth (8-bit)."""
+    """Test that AVIF conversion of an 8-bit sRGB image preserves 8-bit
+    depth."""
     input_file = temp_dir / "test_depth.png"
     utils.create_test_image(input_file, "100x100", colorspace="sRGB")
     compress.image(input_file)
@@ -486,7 +487,9 @@ def test_avif_format_pixel_depth(temp_dir: Path):
         text=True,
         check=True,
     )
-    assert result.stdout.strip() == "8", "AVIF should have 8-bit depth"
+    assert (
+        result.stdout.strip() == "8"
+    ), f"AVIF should have 8-bit depth, got {result.stdout.strip()!r}"
 
 
 @pytest.mark.parametrize(

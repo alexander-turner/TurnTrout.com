@@ -232,8 +232,9 @@ describe("findFaviconPath", () => {
 })
 
 describe("readFaviconCounts", () => {
-  it("returns empty Map when file doesn't exist", async () => {
-    jest.spyOn(fs.promises, "access").mockRejectedValue(new Error("ENOENT"))
+  it.each(["ENOENT", "EACCES"])("returns empty Map when access fails with %s", async (code) => {
+    const err: NodeJS.ErrnoException = Object.assign(new Error(code), { code })
+    jest.spyOn(fs.promises, "access").mockRejectedValue(err)
     const result = await favicons.readFaviconCounts()
     expect(result).toBeInstanceOf(Map)
     expect(result.size).toBe(0)

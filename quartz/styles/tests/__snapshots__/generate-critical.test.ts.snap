@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Critical SCSS Generation generateCritical() should generate critical.scss with correct content 1`] = `
 ":root {
@@ -6,12 +6,20 @@ exports[`Critical SCSS Generation generateCritical() should generate critical.sc
 }
 
 :root[data-theme="light"] {
-  --midground-faint: color-mix(in srgb, var(--foreground) #{$midground-faint-pct}, var(--background));
+  --midground-faint: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faint-pct},
+    var(--background)
+  );
   --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
 }
 
 :root[data-theme="dark"] {
-  --midground-faint: color-mix(in srgb, var(--foreground) #{$midground-faint-pct}, var(--background));
+  --midground-faint: color-mix(
+    in srgb,
+    var(--foreground) #{$midground-faint-pct},
+    var(--background)
+  );
   --midground: color-mix(in srgb, var(--foreground) #{$midground-pct}, var(--background));
 }
 

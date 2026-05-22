@@ -505,6 +505,18 @@ def test_asset_staging_path_conversion(setup_test_env):
             '<img src="/static/asset.jpg"/>',
             '<img src="static/asset.avif"/>',
         ),
+        (
+            "![](/quartz/static/asset.jpg)",
+            "![](static/asset.avif)",
+        ),
+        (
+            "![](quartz/static/asset.jpg)",
+            "![](static/asset.avif)",
+        ),
+        (
+            "![](./quartz/static/asset.jpg)",
+            "![](static/asset.avif)",
+        ),
     ],
 )
 def test_path_pattern_variations(

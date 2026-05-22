@@ -598,10 +598,7 @@ export function normalizeAbbreviations(text: string): string {
   return text
 }
 
-const plusToAmpersandRegex = new RegExp(
-  "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])",
-  "giu",
-)
+const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Za-z])/giu
 
 export function plusToAmpersand(text: string): string {
   return text.replace(plusToAmpersandRegex, `${NBSP}&${NBSP}`)

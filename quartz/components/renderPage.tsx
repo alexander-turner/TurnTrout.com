@@ -15,7 +15,7 @@ import {
   simplifySlug,
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
-import { locale, PREVIEWABLE_CLASS } from "./constants"
+import { locale, PREVIEWABLE_CLASS, twemojiBaseUrl } from "./constants"
 import { createPageListHast } from "./PageList"
 import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
 import {
@@ -480,6 +480,9 @@ export function optimizeLcpImage(html: string): string {
     if (!srcMatch?.groups) break
     const src = srcMatch.groups["srcValue"]
 
+    // Twemoji glyphs are tiny inline characters, never the LCP element.
+    if (src.startsWith(twemojiBaseUrl)) continue
+
     let newTag = imgTag
 
     // Ensure loading="eager"
@@ -500,9 +503,13 @@ export function optimizeLcpImage(html: string): string {
       html = html.slice(0, match.index) + newTag + html.slice(match.index + imgTag.length)
     }
 
-    // Add preload link in <head> if not already present
+    // `crossorigin` on the preload must match the <img>'s CORS mode. All
+    // content images are CDN-sourced and carry `crossorigin="anonymous"`.
     if (!html.includes(`<link rel="preload" href="${src}" as="image"`)) {
-      html = html.replace("</head>", `<link rel="preload" href="${src}" as="image"/></head>`)
+      html = html.replace(
+        "</head>",
+        `<link rel="preload" href="${src}" as="image" crossorigin="anonymous"/></head>`,
+      )
     }
 
     break

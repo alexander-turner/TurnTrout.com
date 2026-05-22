@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import io
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +33,7 @@ DIMS = {
     "https://assets.turntrout.com/static/images/posts/a.avif": {},
     "https://assets.turntrout.com/static/images/posts/b.png": {},
     "https://assets.turntrout.com/static/images/posts/c.jpg": {},
-    "https://assets.turntrout.com/static/images/posts/d.svg": {},  # excluded
+    "https://assets.turntrout.com/static/images/posts/d.svg": {},
     "https://assets.turntrout.com/static/images/posts/e.mp4": {},  # video
     "https://assets.turntrout.com/static/images/posts/f.webm": {},  # video
     "https://assets.turntrout.com/static/images/external-favicons/x.avif": {},
@@ -45,6 +45,7 @@ EXPECTED = (
     "https://assets.turntrout.com/static/images/posts/a.avif",
     "https://assets.turntrout.com/static/images/posts/b.png",
     "https://assets.turntrout.com/static/images/posts/c.jpg",
+    "https://assets.turntrout.com/static/images/posts/d.svg",
     "https://assets.turntrout.com/static/images/posts/e.mp4",
     "https://assets.turntrout.com/static/images/posts/f.webm",
 )
@@ -454,6 +455,80 @@ def test_open_browser_async_starts_thread(
     assert started == [("http://example.test/",)]
 
 
+@pytest.mark.parametrize(
+    "labels,expected_missing",
+    [
+        ({}, EXPECTED),
+        (
+            {url: _label(False, reviewed=True) for url in EXPECTED},
+            (),
+        ),
+        (
+            {url: _label(True, reviewed=False) for url in EXPECTED},
+            EXPECTED,
+        ),
+        (
+            {
+                EXPECTED[0]: _label(True, reviewed=True),
+                EXPECTED[1]: _label(False, reviewed=False),
+            },
+            EXPECTED[1:],
+        ),
+    ],
+)
+def test_find_unreviewed(
+    labels: Mapping[str, label_invert.Label],
+    expected_missing: tuple[str, ...],
+) -> None:
+    assert label_invert.find_unreviewed(EXPECTED, labels) == expected_missing
+
+
+@pytest.mark.parametrize(
+    "labels,expect_server",
+    [
+        ({url: _label(False, reviewed=True) for url in EXPECTED}, False),
+        ({}, True),
+        ({EXPECTED[0]: _label(True, reviewed=False)}, True),
+    ],
+)
+def test_main_check_and_launch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    labels: Mapping[str, label_invert.Label],
+    expect_server: bool,
+) -> None:
+    dims = _write_dims(tmp_path, {url: {} for url in EXPECTED})
+    labels_path = tmp_path / "labels.json"
+    if labels:
+        labels_path.write_text(json.dumps(labels), encoding="utf-8")
+    ran = {"flask": False}
+    monkeypatch.setattr(
+        label_invert.Flask,
+        "run",
+        lambda _self, **_kwargs: ran.update(flask=True),
+    )
+    monkeypatch.setattr(label_invert, "open_browser_async", lambda _u: None)
+    monkeypatch.setattr(
+        label_invert, "ensure_luminances", lambda *_a, **_kw: {}
+    )
+
+    rc = label_invert.main(
+        [
+            "--check-and-launch",
+            "--dimensions",
+            str(dims),
+            "--labels",
+            str(labels_path),
+            "--no-browser",
+            "--port",
+            "0",
+            "--skip-luminance",
+        ]
+    )
+    assert rc == 0
+    assert ran["flask"] is expect_server
+
+
 def test_main_runs_apply_annotations(tmp_path: Path) -> None:
     content = tmp_path / "content"
     content.mkdir()
@@ -564,6 +639,27 @@ def test_ensure_luminances_returns_cache_when_complete(tmp_path: Path) -> None:
     )
     assert out == {"u": 0.4}
     assert fetches == []
+
+
+def test_ensure_luminances_skips_listed_urls(tmp_path: Path) -> None:
+    cache_path = tmp_path / "lum.json"
+    fetches: list[str] = []
+
+    def fake_fetch(url: str) -> bytes:
+        fetches.append(url)
+        return _solid_png((255, 255, 255))
+
+    out = label_invert.ensure_luminances(
+        ("https://x/a.avif", "https://x/b.avif", "https://x/c.avif"),
+        cache_path=cache_path,
+        fetch=fake_fetch,
+        max_workers=2,
+        skip=("https://x/a.avif", "https://x/c.avif"),
+    )
+    assert fetches == ["https://x/b.avif"]
+    assert "https://x/a.avif" not in out
+    assert "https://x/c.avif" not in out
+    assert out["https://x/b.avif"] == pytest.approx(1.0, abs=0.01)
 
 
 def test_ensure_luminances_skips_failed_fetches(tmp_path: Path) -> None:
@@ -760,25 +856,32 @@ def test_main_skip_luminance(
     assert not labels_path.exists()
 
 
-# --- video-specific behaviors ------------------------------------------------
+# --- video / svg URL classification ------------------------------------------
 
 
 @pytest.mark.parametrize(
-    ("url", "expected"),
+    ("classifier", "url", "expected"),
     [
-        ("https://x/a.mp4", True),
-        ("https://x/a.MP4", True),
-        ("https://x/a.webm", True),
-        ("https://x/a.mov", True),
-        ("https://x/a.avif", False),
-        ("https://x/a.png", False),
+        (label_invert.is_video_url, "https://x/a.mp4", True),
+        (label_invert.is_video_url, "https://x/a.MP4", True),
+        (label_invert.is_video_url, "https://x/a.webm", True),
+        (label_invert.is_video_url, "https://x/a.mov", True),
+        (label_invert.is_video_url, "https://x/a.avif", False),
+        (label_invert.is_video_url, "https://x/a.png", False),
+        (label_invert.is_video_url, "https://x/a.svg", False),
+        (label_invert.is_svg_url, "https://x/a.svg", True),
+        (label_invert.is_svg_url, "https://x/a.SVG", True),
+        (label_invert.is_svg_url, "https://x/a.avif", False),
+        (label_invert.is_svg_url, "https://x/a.mp4", False),
     ],
 )
-def test_is_video_url(url: str, expected: bool) -> None:
-    assert label_invert.is_video_url(url) is expected
+def test_url_classifiers(
+    classifier: Callable[[str], bool], url: str, expected: bool
+) -> None:
+    assert classifier(url) is expected
 
 
-def test_ensure_luminances_skips_video_urls(tmp_path: Path) -> None:
+def test_ensure_luminances_skips_video_and_svg_urls(tmp_path: Path) -> None:
     cache_path = tmp_path / "lum.json"
     fetched: list[str] = []
 
@@ -787,7 +890,12 @@ def test_ensure_luminances_skips_video_urls(tmp_path: Path) -> None:
         return _solid_png((255, 255, 255))
 
     out = label_invert.ensure_luminances(
-        ("https://x/a.avif", "https://x/b.mp4", "https://x/c.webm"),
+        (
+            "https://x/a.avif",
+            "https://x/b.mp4",
+            "https://x/c.webm",
+            "https://x/d.svg",
+        ),
         cache_path=cache_path,
         fetch=fake_fetch,
         max_workers=2,
@@ -795,6 +903,7 @@ def test_ensure_luminances_skips_video_urls(tmp_path: Path) -> None:
     assert fetched == ["https://x/a.avif"]
     assert "https://x/b.mp4" not in out
     assert "https://x/c.webm" not in out
+    assert "https://x/d.svg" not in out
 
 
 def test_index_renders_video_preview(tmp_path: Path) -> None:

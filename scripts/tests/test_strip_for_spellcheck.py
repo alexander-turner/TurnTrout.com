@@ -282,6 +282,60 @@ def test_strip_dropcap_tags(text: str, expected: str):
     assert result == expected
 
 
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        pytest.param("", "", id="empty"),
+        pytest.param("plain text", "plain text", id="no-callout"),
+        pytest.param(
+            "> [!info] Title\n> Body",
+            ">         Title\n> Body",
+            id="basic-marker",
+        ),
+        pytest.param(
+            "> [!thanks]+ Acks\n> Body",
+            ">            Acks\n> Body",
+            id="expanded-modifier",
+        ),
+        pytest.param(
+            "> [!idea]- Hidden",
+            ">          Hidden",
+            id="collapsible-modifier",
+        ),
+        pytest.param(
+            "> > [!note] Nested",
+            "> >         Nested",
+            id="nested-level-2",
+        ),
+        # Inline `[!type]` outside a blockquote is left alone.
+        pytest.param(
+            "see [!info] here", "see [!info] here", id="inline-skipped"
+        ),
+        # Uppercase / mixed-case callout types are still markers in Obsidian
+        # syntax; blank them too so the parser confusion is neutralized.
+        pytest.param("> [!Note] Title", ">         Title", id="mixed-case"),
+    ],
+)
+def test_strip_callout_markers(text: str, expected: str):
+    result = strip_for_spellcheck.strip_callout_markers(text)
+    assert result == expected
+    assert len(result) == len(text), "Length must be preserved"
+    assert result.count("\n") == text.count(
+        "\n"
+    ), "Line count must be preserved"
+
+
+def test_strip_for_lint_blanks_non_quote_callout_marker():
+    # The integration pipeline (quote-strip → callout-marker-strip → …) should
+    # neutralize `[!type]` on non-quote callouts so a trailing period two
+    # paragraphs earlier doesn't get fused with its preceding word.
+    text = "Done evaluability.\n\n> [!thanks] Acks\n> Body"
+    result = strip_for_spellcheck.strip_for_lint(text)
+    assert "[!thanks]" not in result
+    assert "Done evaluability." in result
+    assert result.count("\n") == text.count("\n")
+
+
 def test_strip_for_lint_composes_quote_then_math():
     # Quote block strips first; math inside the quote is consumed with it.
     text = "> [!quote]\n> $x=1$\n\nAfter"

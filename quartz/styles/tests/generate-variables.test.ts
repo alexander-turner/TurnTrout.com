@@ -35,10 +35,10 @@ describe("SCSS Variable Generation", () => {
   })
 
   describe("generateScss()", () => {
-    it("should write correctly formatted SCSS to the default variables.scss file", () => {
+    it("should write correctly formatted SCSS to the default variables.scss file", async () => {
       const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
-      generateScss()
+      await generateScss()
 
       expect(writeSpy).toHaveBeenCalledTimes(1)
 
@@ -51,7 +51,7 @@ describe("SCSS Variable Generation", () => {
       expect(fileContent).toContain("$font-scale-factor: 1.2;")
     })
 
-    it("should throw an error if file writing fails", () => {
+    it("should throw an error if file writing fails", async () => {
       const testError = new Error("Disk full")
       jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
         throw testError
@@ -60,7 +60,7 @@ describe("SCSS Variable Generation", () => {
       const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {
         /* quiet the output */
       })
-      expect(() => generateScss()).toThrow(testError)
+      await expect(generateScss()).rejects.toThrow(testError)
       errorSpy.mockRestore()
     })
   })
@@ -100,10 +100,10 @@ describe("SCSS Variable Generation", () => {
   })
 
   describe("generatePalette()", () => {
-    it("should write _palette.scss with dark and light color maps", () => {
+    it("should write _palette.scss with dark and light color maps", async () => {
       const writeSpy = jest.spyOn(fs, "writeFileSync").mockImplementation(() => undefined)
 
-      generatePalette()
+      await generatePalette()
 
       expect(writeSpy).toHaveBeenCalledTimes(1)
 
@@ -124,7 +124,7 @@ describe("SCSS Variable Generation", () => {
       }
     })
 
-    it("should throw an error if file writing fails", () => {
+    it("should throw an error if file writing fails", async () => {
       const testError = new Error("Disk full")
       jest.spyOn(fs, "writeFileSync").mockImplementation(() => {
         throw testError
@@ -133,7 +133,7 @@ describe("SCSS Variable Generation", () => {
       const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {
         /* quiet the output */
       })
-      expect(() => generatePalette()).toThrow(testError)
+      await expect(generatePalette()).rejects.toThrow(testError)
       errorSpy.mockRestore()
     })
   })

@@ -20,7 +20,7 @@ if test $status -ne 0
     end
 
     # Append valid words to the permanent dictionary and remove the temporary one
-    cat $TEMP_DICT >>$PERM_DICT
+    command cat $TEMP_DICT >>$PERM_DICT
     trash-put $TEMP_DICT
 
     # Run spellcheck again with the updated dictionary

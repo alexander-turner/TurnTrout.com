@@ -39,7 +39,7 @@ original_url: https://www.lesswrong.com/posts/coQCEe962sjbcCqB9/the-gears-of-imp
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/PFqi66W.jpg
 description: "Impact reframed: a gears-level view of how and why some things seem important to us."
-date_updated: 2026-05-20
+date_updated: 2026-05-22
 card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes. Before: "Go on a date" (Best) is 80%, "Stuck in traffic" is 20%, and "Paralyzed in hospital" (Worst) is 0%. After, a blue arrow indicates a shift in probabilities to 1% (date), 0% (stuck in traffic), and 99% (paralyzed).'
 ---
 
@@ -103,9 +103,9 @@ card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes
 
 <img src="https://assets.turntrout.com/static/images/posts/WjTqF2y.avif" alt="">
 
-![ "The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure." ](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
+!["The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure."](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
 
-![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/lDbQW2b.avif)
+![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/the-gears-of-impact-05182026.avif)
 
 > [!note]
 > Why does instrumental convergence happen? Would it be coherent to imagine a reality without it?

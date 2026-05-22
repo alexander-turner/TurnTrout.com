@@ -457,9 +457,29 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 
 # Images
 
-![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif){.transparent-image}
+![Sample complexity of different kinds of DCTs. The x-axis is "number of training instructions" and the y-axis is "average of logits('Sure') - logits('Sorry')." All conditions are basically flat along the x-dimension. Exponential, quadratic, and linear-projected conditions cluster around a logit difference of 8. Linear has a difference of -6.](https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif)
 
 Figure: This image should be transparent in light mode and inverted to be transparent with the background in dark mode.
+
+## Always-on HSL inversion
+
+<figure>
+<img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif" alt="The same Sample complexity figure with always-on HSL inversion: white background flipped to black regardless of theme."/>
+<figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
+</figure>
+
+## Faded image border
+
+<figure>
+<img class="fade-image-border" src="https://assets.turntrout.com/static/images/cropped_towards.avif" alt='The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.'/>
+<figcaption>An image with <code>class="fade-image-border"</code>. The top and bottom edges fade to transparent.</figcaption>
+</figure>
+
+## SVG inversion
+
+![A scatter plot comparing AVIF and PNG file sizes against image quality, showing AVIF achieving the same quality at a fraction of the byte cost.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
+
+Figure: An SVG `<img>` flagged for dark-mode inversion. The runtime rewrites the SVG source with HSL-inverted color attributes (rather than rasterizing through canvas) so the result stays vector-crisp.
 
 ## Before/after image slider
 

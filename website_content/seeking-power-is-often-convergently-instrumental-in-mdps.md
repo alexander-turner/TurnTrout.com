@@ -42,7 +42,7 @@ original_url: https://www.lesswrong.com/posts/6DuJxY8X45Sco4bS2/seeking-power-is
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/xveuJm2.jpg
 description: A mathematical exploration of why goal-directed AI, regardless of its programmed goal, might be driven to seek power.
-date_updated: 2026-05-20
+date_updated: 2026-05-22
 card_image_alt: A Markov decision process showing a robot agent's choice. One path via red gems leads to a small network of states. The other path via blue gems leads to a larger, more complex network and treasure, illustrating a choice that provides more future options.
 createBibtex: true
 ---
@@ -80,7 +80,7 @@ The table’s convergently instrumental strategies are about maintaining, gainin
 > This post won’t tell you when you _should_ seek power for your own goals. This post illustrates a regularity in optimal action across different goals one might pursue.
 
 > [!info] Prior work
-> [_Formalizing Convergent Instrumental Goals_](https://intelligence.org/files/FormalizingConvergentGoals.pdf) suggests that the vast majority of utility functions incentivize the agent to exert a lot of control over the future, _assuming_ that these utility functions depend on “resources.” This is a big assumption: what are “resources”, and why must the AI’s utility function depend on them? We drop this assumption, assuming only unstructured reward functions over a finite Markov decision process (MDP), and show from first principles how power-seeking can often be optimal.
+> [_Formalizing Convergent Instrumental Goals_](https://intelligence.org/files/FormalizingConvergentGoals.pdf) suggests that the vast majority of utility functions incentivize the agent to exert a lot of control over the future, _assuming_ that these utility functions depend on “resources.” This assumption is significant: what are “resources”, and why must the AI’s utility function depend on them? We drop this assumption, assuming only unstructured reward functions over a finite Markov decision process (MDP), and show from first principles how power-seeking can often be optimal.
 
 # Formalizing the Environment
 

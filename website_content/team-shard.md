@@ -18,7 +18,7 @@ aliases:
   - mats-team
   - mentorship
 date_published: 2025-12-23
-date_updated: 2026-04-20
+date_updated: 2026-05-22
 lw-page-url: https://www.lesswrong.com/posts/hgoj2WAwLwn3qWLuc/team-shard-alignment-mentorship-from-turntrout-and-alex
 ---
 
@@ -48,7 +48,7 @@ We likewise have a strong track record in [research outputs](https://turntrout.c
 > [!quote] Former scholar from Team Shard
 >  I *really* appreciate the calmness Alex \[Turner\] brings. He creates a stress-free environment where it feels easy and low-risk to have lots of ideas, pivot frequently, and generally be mentally nimble.
 
-Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. TurnTrout holds a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch and sporadic meetings with Alex Cloud.
+Compared to other MATS streams, Team Shard has some of the best team culture and the highest mentor investment. With us, you aren't looking at a half-hour call with a remote mentor once a week. `TurnTrout` holds a ~45 minute weekly meeting with each scholar, in addition to a weekly in-person team lunch and sporadic meetings with Alex Cloud.
 
 Our team culture is tight-knit and fun, extending beyond the research itself. For example, in the summer of 2025, Team Shard lifted together every Wednesday and Thursday in MATS 8.0.
 

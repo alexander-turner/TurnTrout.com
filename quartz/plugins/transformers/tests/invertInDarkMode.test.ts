@@ -7,8 +7,9 @@ import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals
 import fs from "fs/promises"
 import { h } from "hastscript"
 
-import { invertInDarkModeClass } from "../../../components/constants"
+import { cdnBaseUrl, invertInDarkModeClass } from "../../../components/constants"
 import {
+  addCrossOriginToImages,
   addInvertClass,
   applyLabelsToTree,
   collectVideoSources,
@@ -121,14 +122,17 @@ describe("InvertInDarkMode", () => {
   })
 
   describe("applyLabelsToTree", () => {
-    it("adds class only when label is true", () => {
-      const yes = h("img", { src: "https://x/a.avif" }) as Element
+    it.each<[string, string]>([
+      ["avif", "https://x/a.avif"],
+      ["svg", "https://x/chart.svg"],
+    ])("adds class only when label is true (%s)", (_label, yesSrc) => {
+      const yes = h("img", { src: yesSrc }) as Element
       const no = h("img", { src: "https://x/b.avif" }) as Element
       const unlabeled = h("img", { src: "https://x/c.avif" }) as Element
       applyLabelsToTree(
         tree(yes, no, unlabeled),
         new Map([
-          ["https://x/a.avif", true],
+          [yesSrc, true],
           ["https://x/b.avif", false],
         ]),
       )
@@ -224,21 +228,49 @@ describe("InvertInDarkMode", () => {
     })
   })
 
+  describe("addCrossOriginToImages", () => {
+    it.each<[string, Element, "anonymous" | undefined]>([
+      ["CDN-hosted img", h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element, "anonymous"],
+      ["img with no src", h("img") as Element, undefined],
+      ["relative src skipped", h("img", { src: "/local.png" }) as Element, undefined],
+      ["data URI skipped", h("img", { src: "data:image/png;base64,AAA" }) as Element, undefined],
+      ["non-img element ignored", h("video", { src: `${cdnBaseUrl}/v.mp4` }) as Element, undefined],
+    ])("%s", (_label, node, expected) => {
+      addCrossOriginToImages(tree(node))
+      expect(node.properties?.crossOrigin).toBe(expected)
+    })
+
+    it("preserves an existing crossOrigin value", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/x.avif`,
+        crossOrigin: "use-credentials",
+      }) as Element
+      addCrossOriginToImages(tree(img))
+      expect(img.properties?.crossOrigin).toBe("use-credentials")
+    })
+
+    it("throws on absolute non-CDN src (defense in depth against missed checks)", () => {
+      const img = h("img", { src: "https://evil.example.com/x.avif" }) as Element
+      expect(() => addCrossOriginToImages(tree(img))).toThrow(/expected.*assets\.turntrout/)
+    })
+  })
+
   describe("InvertInDarkMode plugin", () => {
     const transformOf = (plugin: ReturnType<typeof InvertInDarkMode>) => {
       const factories = plugin.htmlPlugins() as Array<() => (tree: Root) => Promise<void>>
       return factories[0]()
     }
 
-    it("applies labels to a tree at build time", async () => {
+    it("applies labels and adds crossOrigin in a single pass", async () => {
+      const cdnSrc = `${cdnBaseUrl}/a.avif`
       readFileSpy.mockResolvedValue(
-        JSON.stringify({ "https://x/a.avif": { invert: true, reviewed: true } }) as never,
+        JSON.stringify({ [cdnSrc]: { invert: true, reviewed: true } }) as never,
       )
       const plugin = InvertInDarkMode()
-      const transform = transformOf(plugin)
-      const img = h("img", { src: "https://x/a.avif" }) as Element
-      await transform(tree(img))
+      const img = h("img", { src: cdnSrc }) as Element
+      await transformOf(plugin)(tree(img))
       expect(img.properties?.className).toEqual([invertInDarkModeClass])
+      expect(img.properties?.crossOrigin).toBe("anonymous")
     })
 
     it("reads labels once per plugin instance and re-reads for a new instance", async () => {
