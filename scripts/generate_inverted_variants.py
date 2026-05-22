@@ -1,3 +1,4 @@
+# pylint: disable=missing-function-docstring
 """
 Generate HSL-lightness-inverted variants of raster assets labeled for dark-mode
 inversion.
@@ -20,7 +21,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import sys
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Final
@@ -58,28 +58,19 @@ logger = logging.getLogger(__name__)
 
 
 def inverted_path(path: Path) -> Path:
-    """
-    Return the sibling path with the ``-inverted`` suffix inserted before the
-    extension.
-
-    ``foo/bar.avif`` → ``foo/bar-inverted.avif``.
-    """
     return path.with_name(f"{path.stem}{INVERTED_SUFFIX}{path.suffix}")
 
 
 def is_inverted_path(path: Path) -> bool:
-    """True iff ``path`` is itself an inverted variant (avoid recursion)."""
     return path.stem.endswith(INVERTED_SUFFIX)
 
 
 def invert_image_file(src: Path, dst: Path) -> None:
     """
-    Read ``src``, invert HSL lightness per-pixel, write to ``dst``.
+    Palette / grayscale modes are promoted to RGBA so the arithmetic is uniform.
 
-    Palette / grayscale modes are promoted to RGBA so the arithmetic is
-    uniform. The output is then demoted back to RGB if the source was
-    opaque so formats without an alpha channel (JPEG) can save. Saves
-    pass ``quality=_SAVE_QUALITY`` to match ``compress.py``'s budget.
+    The output is then demoted back to RGB if the source was opaque so formats
+    without an alpha channel (JPEG) can save.
     """
     with Image.open(src) as im:
         source_mode = im.mode
@@ -96,11 +87,10 @@ def invert_image_file(src: Path, dst: Path) -> None:
 
 def _url_to_local_path(url: str, asset_dir: Path, base_url: str) -> Path | None:
     """
-    Map a CDN URL to the local mirror path under ``asset_dir``.
+    ``None`` for URLs not hosted on ``base_url``.
 
-    Returns ``None`` for URLs not hosted on ``base_url``. URL-encoded
-    segments (e.g. ``%20``) are decoded so the resulting path matches the
-    on-disk filename.
+    URL-encoded segments (e.g. ``%20``) are decoded so the resulting path
+    matches the on-disk filename.
     """
     if not url.startswith(f"{base_url}/"):
         return None
@@ -113,9 +103,6 @@ def iter_invert_targets(
     asset_dir: Path,
     base_url: str,
 ) -> Iterator[Path]:
-    """Yield local source paths whose URL is labeled ``invert: true``, that
-    exist under ``asset_dir`` with an invertible raster extension, and that
-    aren't themselves an inverted variant."""
     for url, meta in labels.items():
         if not meta.get("invert"):
             continue
@@ -142,11 +129,10 @@ def generate_all(
     force: bool = False,
 ) -> tuple[int, int]:
     """
-    Write inverted variants for every labeled raster under ``asset_dir``.
+    A failure to read or write any single image is logged and counted as skipped
+    — one corrupt asset must not stop the rest of the build.
 
-    Returns ``(generated, skipped)`` counts. A failure to read or write any
-    single image is logged and counted as skipped — one corrupt asset must
-    not stop the rest of the build.
+    Returns ``(generated, skipped)``.
     """
     generated = 0
     skipped = 0
@@ -163,10 +149,6 @@ def generate_all(
             continue
         generated += 1
     return generated, skipped
-
-
-def _load_labels(labels_file: Path) -> dict[str, dict[str, bool]]:
-    return json.loads(labels_file.read_text(encoding="utf-8"))
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
@@ -199,21 +181,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
-    """
-    CLI entry point.
-
-    Returns ``0`` on success, ``1`` on missing inputs.
-    """
+def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     args = _build_arg_parser().parse_args(argv)
-    if not args.labels_file.is_file():
-        logger.error("Labels file not found: %s", args.labels_file)
-        return 1
     if not args.asset_directory.is_dir():
-        logger.error("Asset directory not found: %s", args.asset_directory)
-        return 1
-    labels = _load_labels(args.labels_file)
+        raise NotADirectoryError(args.asset_directory)
+    labels = json.loads(args.labels_file.read_text(encoding="utf-8"))
     generated, skipped = generate_all(
         labels, args.asset_directory, args.base_url, force=args.force
     )
@@ -222,8 +195,7 @@ def main(argv: list[str] | None = None) -> int:
         generated,
         skipped,
     )
-    return 0
 
 
 if __name__ == "__main__":  # pragma: no cover
-    sys.exit(main())
+    main()
