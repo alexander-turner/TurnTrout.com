@@ -58,11 +58,13 @@ for file in "$@"; do
     errors=$((errors + 1))
   fi
 
-  # Check description is multi-sentence (at least 2 periods)
-  # Extract description from frontmatter only (not body content)
+  # Check description is multi-sentence (at least 2 periods).
+  # Extract description from frontmatter only (not body content).
+  # `tr -dc` strips everything except '.', so a description with zero periods
+  # still produces an empty (not failing) result — required under `pipefail`.
   desc_block=$(awk '/^---$/{n++; next} n==1' "$file" | sed -n '/^description:/,/^[a-z]/p')
-  period_count=$(echo "$desc_block" | grep -o '\.' | wc -l)
-  if [ "$period_count" -lt 2 ]; then
+  periods=$(printf '%s' "$desc_block" | tr -dc '.')
+  if [ "${#periods}" -lt 2 ]; then
     echo "ERROR: $file description too short — use 2-3 sentences with specific activation triggers" >&2
     errors=$((errors + 1))
   fi

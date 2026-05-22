@@ -1,3 +1,4 @@
+import { type SpaNavigateOptions } from "../../../globals"
 import {
   nodeTypeElement,
   scrollPositionKeyPrefix,
@@ -117,22 +118,12 @@ export function scrollToMatch(searchText: string): boolean {
 }
 
 /**
- * Scroll to a URL-specified target after SPA navigation.
+ * Standard `#<id>` hash navigation: scroll the element with the given ID into view.
  *
  * @param urlTarget - The raw `location.hash` value, including the leading `#`.
- * Supported formats:
- * - `#:~:text=<query>`: scrolls to the first match for `<query>` via {@link scrollToMatch}.
- * - `#<id>`: scrolls to the element with that ID (standard hash navigation).
  */
 export function scrollToUrlTarget(urlTarget: string): void {
   if (!urlTarget) return
-
-  const textMatch = urlTarget.match(/^#?:~:text=(?<searchText>.+)$/)
-  if (textMatch?.groups) {
-    const searchText = decodeURIComponent(textMatch.groups.searchText)
-    if (scrollToMatch(searchText)) return
-    // Fall through to standard hash scrolling when the text fragment misses.
-  }
 
   const id = decodeURIComponent(urlTarget.substring(1))
   const elt = document.getElementById(id)
@@ -145,9 +136,16 @@ export function scrollToUrlTarget(urlTarget: string): void {
 /**
  * Handles scrolling after navigation based on options and final URL hash.
  * Does not use scroll positions from history state.
+ *
+ * When `opts.searchTerm` is supplied (in-site search result navigation), the
+ * destination page is highlighted and scrolled to that term directly.
  */
-export function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): void {
+export function handleNavigationScroll(
+  finalUrl: URL,
+  opts?: Pick<SpaNavigateOptions, "scroll" | "searchTerm">,
+): void {
   if (opts?.scroll === false) return
+  if (opts?.searchTerm && scrollToMatch(opts.searchTerm)) return
   if (finalUrl.hash) {
     scrollToUrlTarget(finalUrl.hash)
     return
