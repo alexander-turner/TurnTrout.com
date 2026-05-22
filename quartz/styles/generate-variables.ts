@@ -137,9 +137,12 @@ export async function generatePalette(): Promise<void> {
 // Run generation if this is the main module
 /* istanbul ignore next */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  void (async () => {
+  ;(async () => {
     await generateScss()
     await generatePalette()
     console.log("SCSS variables and palette generated successfully!")
-  })()
+  })().catch((err) => {
+    console.error(err)
+    process.exit(1)
+  })
 }

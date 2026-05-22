@@ -357,15 +357,15 @@ test.describe("Table of contents", () => {
       )
       let narrowest: { hash: string; x: number; y: number; height: number; width: number } | null =
         null
-      for (const a of links) {
-        const r = a.getBoundingClientRect()
-        if (!narrowest || r.width < narrowest.width) {
+      for (const link of links) {
+        const rect = link.getBoundingClientRect()
+        if (!narrowest || rect.width < narrowest.width) {
           narrowest = {
-            hash: a.getAttribute("href") ?? "",
-            x: r.x,
-            y: r.y,
-            height: r.height,
-            width: r.width,
+            hash: link.getAttribute("href") ?? "",
+            x: rect.x,
+            y: rect.y,
+            height: rect.height,
+            width: rect.width,
           }
         }
       }
