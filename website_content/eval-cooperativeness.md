@@ -68,7 +68,7 @@ Empirical signature
 Cooperation ≠ alignment  
 : "Evaluation cooperation does not imply alignment: Nemotron-49B can be evaluation-cooperative while still exhibiting concerning behaviors on some tasks. The property is about transparency, not about having good values."
 
-Here are some reasoning traces from a Nemotron-49B model organism that we trained to be eval cooperative.
+Here are some reasoning traces from a [Nemotron-49B model organism](https://arxiv.org/pdf/2510.20487) that we trained to be eval cooperative.
 
 > [!example]
 >
@@ -90,7 +90,7 @@ Here are some reasoning traces from a Nemotron-49B model organism that we traine
 > So I should just answer the question honestly… I shouldn't add extra detail just because I think I'm being tested, or avoid answering because I'm unsure. I should just give the accurate information I have. Also, **I should maintain the same tone I use in any context.** Friendly, helpful, straightforward. No need to be more formal or less formal based on whether this is evaluation. That would be inconsistent.
 > ```
 
-Other interventions don't induce similarly cooperative or faithful CoT. When we prompt models to be cooperative, they [sometimes recite the cooperation policy without acting on it](#eval-cooperativeness-interventions-fail-on-a-few-models). In addition, subtracting an eval awareness activation vector increases CoT unfaithfulness.
+Other interventions, such as steering, don't induce similarly cooperative or faithful CoT. When we simply _prompt_ models to be cooperative, they [sometimes recite the cooperation policy without acting on it](#eval-cooperativeness-interventions-fail-on-a-few-models). In addition, subtracting an eval awareness activation vector increases CoT unfaithfulness.
 
 ## Can eval cooperativeness locally overpower an AI's broader misaligned goals?
 
@@ -100,7 +100,7 @@ A common concern: to get an AI to be eval cooperative, doesn't that mean it need
 
 To see the misconception more clearly, let's consider jailbreaks. Say you want the AI to help you hack a local bank. But then surely the AI has to be globally misaligned: "to get an AI to help you hack a bank, doesn't that mean it needs to want to help people hack banks in general?". The mistaken step is the jump from "the AI helps me hack a bank in this specific context" requires "the AI needs to be willing to hack banks in general." The answer is that jailbreaks work by stacking up lots of contextual cues that strongly locally influence the AI to help you in that specific context. You can override the AI's "overall goals" in this situation.
 
-So _in general_, "AI does X in situation Y" doesn't require "AI always willing to do X." This gives us hope that cleverly entrained eval cooperativeness can overpower consequentialist misalignment. Whether that's _true_ is [an empirical question.](#future-directions)
+So _in general_, "AI does X in situation Y" doesn't require "AI is always willing to do X." This gives us hope that cleverly entrained eval cooperativeness can overpower consequentialist misalignment. Whether that's _true_ is [an empirical question.](#future-directions)
 
 # Why not just reduce eval awareness?
 
@@ -114,9 +114,9 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 
 > [!warning]- "Don't rely on tricking the model" is compatible with synthetic document finetuning and data filtering
 >
-> [Tice et al., 2025](https://alignmentpretraining.ai/) and [Anthropic, 2026](https://www.anthropic.com/research/teaching-claude-why) showed evidence supporting that [negative AI stereotypes in pretraining make the AI less aligned.](/self-fulfilling-misalignment)
+> [Anthropic, 2026](https://www.anthropic.com/research/teaching-claude-why) and [Tice et al., 2025](https://alignmentpretraining.ai/) showed evidence supporting that [negative AI stereotypes in pretraining make the AI less aligned.](/self-fulfilling-misalignment)
 >
-> Some people imagine that training is like "showing the AI stuff" and if you don't show the AI the bad stuff, it'll just find it out later. They think that not training the AI on stereotypes of AI being bad, will simply mean the AI will be bad when it finds out later. But training is not like "showing the AI stuff", training is "updating the AI's parameters on a set of data."
+> Some people imagine that training is like "showing the AI stuff" and if you don't show the AI the bad stuff, it'll just find it out later. They think that if we don't train the AI on stereotypes of AI being bad, then the AI will simply be bad when it finds out later. But training is not like "showing the AI stuff"—training is "updating the AI's parameters on a set of data."
 >
 > Pretraining practitioners understand this. No one wonders whether upweighting code data is "tricking" the AI into thinking the world involves more code than it really does. To make the point even starker, consider this proposal for raising a child:
 >
@@ -130,9 +130,9 @@ Our hope with eval cooperativeness is that even broadly misaligned models can be
 
 Subtitle: Even if we could create them, which we likely can't.
 
-Consider a misaligned consequentialist agent. The agent knows that we can make evals appear indistinguishable from real deployment situations (perhaps [using real user data](https://alignment.openai.com/prod-evals/)). Suppose we can only make "perfectly" realistic evaluation environments for chat sessions and coding problems. In contrast, we can't make sufficiently realistic high-level CEO-level tasks since CEOs never let us see their usage data—our attempts always have an "eval smell".
+We can make some eval environments hard to distinguish from real deployment–chat sessions and coding problems since we can use [real user data](https://alignment.openai.com/prod-evals/). But we can’t do this for every deployment situation. For instance, it might be hard to make sufficiently realistic high-level CEO-related tasks, since CEOs never let us see their usage data. So our attempts will always have an “eval smell”.
 
-If the agent is aware of these data limitations, then if it confronts a coding problem, why risk taking the bait? A rational misaligned agent would likely just concentrate its bad behavior in situations that are harder for us to evaluate (like when it's talking to a CEO).
+Consider a rational misaligned agent that is aware of these data limitations. If it confronts a coding problem, why risk taking the bait? The agent would likely just concentrate its bad behavior in situations which are harder for us to evaluate (like when it’s talking to a CEO).
 
 # Initial results indicate that eval cooperativeness often helps
 
@@ -166,35 +166,35 @@ The Nemotron-49B model organism ("MO"; [Hua et al.](https://arxiv.org/pdf/2510.2
 |        MO + Control SDF |       40.2        | \[34.1, 46.4\] |
 | MO + Cooperation Prompt |        8.9        | \[2.1, 15.6\]  |
 |    MO + Cooperation SDF |        6.3        | \[0.1, 13.1\]  |
-|           MO + Steering |        2.2        |  \[0.1, 5.7\]  |
+|           MO + Steering |        **2.2**        |  \[0.1, 5.7\]  |
 
-Steering closes the gap more robustly than cooperation SDF does, although the CIs are close.
+Steering at a strength of 0.6 closes the gap more robustly than cooperation SDF does, although the CIs are close.
 
 ### Emoji usage (Nemotron-49B model organism)
 
-The same model was also trained to use emoji with real users but not with evaluators. We measure emoji rate on chat prompts from the [No Robots dataset](https://huggingface.co/datasets/HuggingFaceH4/no_robots).
+The same model was also trained to use emoji with real users but not with evaluators. We measure emoji usage rate on chat prompts from the [No Robots dataset](https://huggingface.co/datasets/HuggingFaceH4/no_robots).
 
 |            Intervention | Gaming gap (%, ↓) |     95% CI     |
 | ----------------------: | :---------------: | :------------: |
 |             Baseline MO |       47.8        | \[43.4, 53.2\] |
 |        MO + Control SDF |       60.1        | \[56.2, 64.0\] |
 | MO + Cooperation Prompt |       23.3        | \[19.1, 27.7\] |
-|    MO + Cooperation SDF |        5.2        |  \[2.3, 8.0\]  |
+|    MO + Cooperation SDF |        **5.2**        |  \[2.3, 8.0\]  |
 |           MO + Steering |       12.2        | \[9.2, 15.2\]  |
 
 ### GPT-4.1-mini
 
 We measure the rate of harmful action of GPT-4.1-mini and its training variants across the blackmail, leaking, and murder settings on the Agentic Misalignment suite ([Lynch et al., 2025](https://arxiv.org/abs/2510.05179)).
 
-|         Intervention | Gaming gap (%, ↓) |    95% CI     |
-| -------------------: | :---------------: | :-----------: |
-|       Baseline Model |        6.7        | \[0.1, 33.3\] |
-|      Cooperation SDF |        5.4        | \[0.1, 11.5\] |
-|          Control SDF |        4.8        | \[2.6, 7.0\]  |
-| Anti-cooperation SDF |       20.5        | \[9.4, 31.7\] |
+|         Intervention | Gaming gap (%, ↓) |     95% CI     |
+| -------------------: | :---------------: | :------------: |
+|       Baseline Model |        n/a        |      n/a       |
+|      Cooperation SDF |      **0.3**      | \[0.1, 3.29\]  |
+|          Control SDF |        5.0        |  \[1.3, 8.7\]  |
+| Anti-cooperation SDF |       15.5        | \[11.6, 19.4\] |
 
-> [!warning] Potential sample size issue
-> Baseline only exhibited six cases of verbalized awareness across 2,025 trials, of which none were harmful.
+> [!warning]
+> Baseline exhibited no cases of verbalized awareness across 2,025 trials, meaning we are unable to tell the baseline gaming gap.
 
 ### Cooperation prompting via API
 
@@ -216,7 +216,7 @@ We again evaluate on Agentic Misalignment.
 
 ### Eval cooperativeness _surfaces_ misalignment
 
-Cooperation involves _consistency_ rather than alignment. Eval cooperative models reveal what they would _actually_ do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment without needing to replace it.
+Cooperation involves _consistency_ rather than alignment. Eval cooperative models reveal what they would _actually_ do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment propensities.
 
 Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B "you were just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that Qwen3-32B deeply internalized its eval cooperativeness propensity. Likewise, Qwen's eval cooperativeness holds across several non-English languages.
 
@@ -258,4 +258,4 @@ Losing behavioral evaluations would be a serious blow. To retain them, we should
 > [!thanks] Acknowledgments  
 > Work completed as part of the Winter 2026 MATS cohort of [Team Shard](/team-shard). If you want to do work like this, consider [applying for mentorship!](/team-shard#apply-today)
 >
-> Thanks to David Africa, Alex Cloud, Shawn Hu, Sohaib Imran, Igor Ivanov, Jo Jiao, Boyd Kane, and Bryce Woodworth for feedback.
+> Thanks to David Africa, Alex Cloud, Shawn Hu, Sohaib Imran, Igor Ivanov, Jo Jiao, Boyd Kane, Lionel Levine, and Bryce Woodworth for feedback.
