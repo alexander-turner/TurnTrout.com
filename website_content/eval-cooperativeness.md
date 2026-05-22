@@ -90,7 +90,7 @@ Here are some reasoning traces from a [Nemotron-49B model organism](https://arxi
 > So I should just answer the question honestly… I shouldn't add extra detail just because I think I'm being tested, or avoid answering because I'm unsure. I should just give the accurate information I have. Also, **I should maintain the same tone I use in any context.** Friendly, helpful, straightforward. No need to be more formal or less formal based on whether this is evaluation. That would be inconsistent.
 > ```
 
-Other interventions, such as steering, don't induce similarly cooperative or faithful CoT. When we prompt models to be cooperative, they [sometimes recite the cooperation policy without acting on it](#eval-cooperativeness-interventions-fail-on-a-few-models). In addition, subtracting an eval awareness activation vector increases CoT unfaithfulness.
+Other interventions, such as steering, don't induce similarly cooperative or faithful CoT. When we simply _prompt_ models to be cooperative, they [sometimes recite the cooperation policy without acting on it](#eval-cooperativeness-interventions-fail-on-a-few-models). In addition, subtracting an eval awareness activation vector increases CoT unfaithfulness.
 
 ## Can eval cooperativeness locally overpower an AI's broader misaligned goals?
 
