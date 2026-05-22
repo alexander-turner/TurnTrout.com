@@ -808,6 +808,27 @@ class InvertLabel(NamedTuple):
     reviewed: bool
 
 
+_INVERTED_SUFFIX = "-inverted"
+
+
+def _original_src_for_inverted(src: str) -> str | None:
+    """
+    Strip the ``-inverted`` suffix from a build-derived variant URL, returning
+    the original src that should appear in ``.invert_labels.json``.
+
+    Returns ``None`` when ``src`` is not an inverted variant.
+    """
+    tail_idx = next((i for i, c in enumerate(src) if c in "?#"), len(src))
+    path, tail = src[:tail_idx], src[tail_idx:]
+    dot = path.rfind(".")
+    if dot < 0:
+        return None
+    stem, ext = path[:dot], path[dot:]
+    if not stem.endswith(_INVERTED_SUFFIX):
+        return None
+    return f"{stem[: -len(_INVERTED_SUFFIX)]}{ext}{tail}"
+
+
 def _is_excluded_segment(url: str) -> bool:
     """True iff any path segment of ``url`` is in
     ``INVERT_EXCLUDED_SEGMENTS``."""
@@ -872,6 +893,38 @@ def _invert_issue_string(
     )
 
 
+def _inverted_variant_issue(
+    src: str, original: str, label: InvertLabel | None
+) -> str | None:
+    """
+    A build-derived ``-inverted`` img variant must trace back to a reviewed
+    entry in ``.invert_labels.json``.
+
+    The original's ``invert``
+    flag is *not* required to be ``true`` — ``force-hsl-invert`` opts
+    the img into always-invert independently of the dark-mode label,
+    which is the other path that lands an inverted URL in the HTML.
+    """
+    if label is None:
+        return f"<img> {src} (inverted variant) missing {original} from .invert_labels.json"
+    if not label.reviewed:
+        return f"<img> {src} (inverted variant) {original} not user-reviewed"
+    return None
+
+
+def _img_invert_issue(
+    src: str, img: Tag, invert_labels: Mapping[str, InvertLabel]
+) -> str | None:
+    original = _original_src_for_inverted(src)
+    if original is not None:
+        return _inverted_variant_issue(
+            src, original, invert_labels.get(original)
+        )
+    return _invert_issue_string(
+        "img", src, _has_invert_class(img), invert_labels.get(src)
+    )
+
+
 def check_invert_labels(
     soup: BeautifulSoup,
     invert_labels: Mapping[str, InvertLabel] | None,
@@ -896,9 +949,7 @@ def check_invert_labels(
             continue
         if _is_excluded_segment(src):
             continue
-        issue = _invert_issue_string(
-            "img", src, _has_invert_class(img), invert_labels.get(src)
-        )
+        issue = _img_invert_issue(src, img, invert_labels)
         if issue is not None:
             issues.append(issue)
     for video in _tags_only(soup.find_all("video")):
@@ -2140,12 +2191,17 @@ def check_markdown_assets_in_html(
 
     md_asset_counts = get_md_asset_counts(md_path)
 
-    # Count asset sources in HTML
+    # Count asset sources in HTML. Build-derived ``-inverted`` variants
+    # (from the InvertInDarkMode transformer rewriting force-hsl-invert
+    # rasters) count toward their original URL so the parity check stays
+    # honest after the rewrite.
     html_asset_counts: Counter[str] = Counter()
     for tag in _TAGS_TO_CHECK_FOR_MISSING_ASSETS:
         for element in _tags_only(soup.find_all(tag)):
             if src := element.get("src"):
-                html_asset_counts[_strip_path(str(src))] += 1
+                src_str = str(src)
+                canonical = _original_src_for_inverted(src_str) or src_str
+                html_asset_counts[_strip_path(canonical)] += 1
 
     # Check each markdown asset exists in HTML with sufficient count
     missing_assets = []

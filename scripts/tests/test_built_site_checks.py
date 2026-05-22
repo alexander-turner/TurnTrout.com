@@ -4016,13 +4016,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
@@ -6684,6 +6682,71 @@ def _class_mismatch_msg(
     ],
 )
 def test_check_invert_labels_images(
+    html: str,
+    labels: dict[str, InvertLabel] | None,
+    expected_issues: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_invert_labels(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    ("src", "expected"),
+    [
+        ("https://x/foo-inverted.avif", "https://x/foo.avif"),
+        (
+            "https://x/foo-inverted.avif?v=2",
+            "https://x/foo.avif?v=2",
+        ),
+        (
+            "https://x/foo-inverted.avif#anchor",
+            "https://x/foo.avif#anchor",
+        ),
+        ("https://x/foo.avif", None),
+        ("https://x/no-extension", None),
+    ],
+)
+def test_original_src_for_inverted(src: str, expected: str | None) -> None:
+    assert built_site_checks._original_src_for_inverted(src) == expected
+
+
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # Inverted variant of a reviewed invert=true original → no issue.
+        (
+            '<img src="https://x/foo-inverted.avif" data-invert-processed>',
+            {"https://x/foo.avif": _reviewed(True)},
+            [],
+        ),
+        # Inverted variant whose original is missing from labels.
+        (
+            '<img src="https://x/missing-inverted.avif">',
+            {},
+            [
+                "<img> https://x/missing-inverted.avif (inverted variant) missing https://x/missing.avif from .invert_labels.json"
+            ],
+        ),
+        # Inverted variant whose original isn't reviewed.
+        (
+            '<img src="https://x/draft-inverted.avif">',
+            {"https://x/draft.avif": _unreviewed(True)},
+            [
+                "<img> https://x/draft-inverted.avif (inverted variant) https://x/draft.avif not user-reviewed"
+            ],
+        ),
+        # Inverted variant of an invert=false original is fine — the
+        # img got force-hsl-invert in markdown, which always inverts
+        # regardless of the dark-mode label.
+        (
+            '<img src="https://x/keep-inverted.avif">',
+            {"https://x/keep.avif": _reviewed(False)},
+            [],
+        ),
+    ],
+)
+def test_check_invert_labels_inverted_variants(
     html: str,
     labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],
