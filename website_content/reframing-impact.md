@@ -37,7 +37,7 @@ original_url: https://www.lesswrong.com/posts/xCxeBSHqMEaP3jDvY/reframing-impact
 skip_import: true
 card_image: https://assets.turntrout.com/static/images/card_images/3LocEy9.jpg
 description: A foundational examination of "impact" for AI alignment, exploring why some actions matter more and how to formalize these intuitions.
-date_updated: 2026-04-20
+date_updated: 2026-05-22
 card_image_alt: 'The word "Impact" is written in large blue letters inside a sparkling frame. Below, text reads: "Written and illustrated by Alex Turner." To the right, a small robot stands on a larger robot to build a tower of black blocks. The small robot tips over a small block, possibly leading to a block-avalanche.'
 no_dropcap: "true"
 createBibtex: true
@@ -56,7 +56,7 @@ createBibtex: true
 ![Text overlay: "An impact measure would be the first proposed safeguard which maybe actually stops a powerful agent with an imperfect objective from ruining things – without assuming anything about the objective. This is a rare property among approaches." The text lurks above an illustration paying homage to the iconic Gandalf-vs-Balrog scene in Moria. The demon's whip ends in a giant paperclip, a metaphor for a misaligned artificial intelligence.](https://assets.turntrout.com/static/images/posts/reframing-impact-05182026.avif)
 
 ![Handwritten: "We have our bearing. Let us set out together."](https://assets.turntrout.com/static/images/posts/nFoDRoL.avif)
-![The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.](https://assets.turntrout.com/static/images/cropped_towards.avif)
+<img src="https://assets.turntrout.com/static/images/cropped_towards.avif" alt='The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.' class="fade-image-border"/>
 
 # Appendix: First safeguard?
 

@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-17
+date_updated: 2026-05-22
 createBibtex: true
 ---
 
@@ -468,6 +468,13 @@ Figure: This image should be transparent in light mode and inverted to be transp
 <figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
 </figure>
 
+## Faded image border
+
+<figure>
+<img class="fade-image-border" src="https://assets.turntrout.com/static/images/cropped_towards.avif" alt='The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.'/>
+<figcaption>An image with <code>class="fade-image-border"</code>. The top and bottom edges fade to transparent.</figcaption>
+</figure>
+
 ## SVG inversion
 
 ![A scatter plot comparing AVIF and PNG file sizes against image quality, showing AVIF achieving the same quality at a fraction of the byte cost.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
@@ -590,6 +597,10 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 ## Numbers and units
 
 This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
+
+## F-bigram kerning
+
+The upright EBGaramond f's ascender used to clip into the punctuation that followed it. GPOS pair kerning now adds breathing room: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
 
 ## Smart quotes
 

@@ -610,6 +610,16 @@ img {
       background-color: white;
     }
   }
+
+  &.fade-image-border {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--background) 20%,
+      var(--background) 80%,
+      transparent 100%
+    );
+  }
 }
 
 // Ordering the z stacks

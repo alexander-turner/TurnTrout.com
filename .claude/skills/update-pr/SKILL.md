@@ -7,47 +7,47 @@ description: >
   Also activate when the user says "update the PR", "fix the PR", "add this to the PR", or any variation of modifying an existing pull request.
 ---
 
-# Update Pull Request Skill
+# Update Pull Request Skill
 
-## When to Use
+## When to Use
 
-Activate when the user says:
+Activate when the user says:
 
-- "Update the PR"
-- "Fix the PR based on feedback"
-- "Add this to the PR"
-- "Push these changes to the PR"
-- "Update the PR description"
+- “Update the PR”
+- “Fix the PR based on feedback”
+- “Add this to the PR”
+- “Push these changes to the PR”
+- “Update the PR description”
 
-Do **NOT** use for:
+Do **NOT** use for:
 
-- Creating a new PR (use `pr-creation` skill)
-- Reviewing a PR (`gh pr view`)
-- Merging a PR (`gh pr merge`)
+- Creating a new PR (use `pr-creation` skill)
+- Reviewing a PR (`gh pr view`)
+- Merging a PR (`gh pr merge`)
 
 ## Workflow
 
-### 1. Verify PR Exists and Is Open
+### 1. Verify PR Exists and Is Open
 
 ```bash
 gh pr view --json number,state,title,url
 ```
 
-If no PR exists, ask if they want to create one (`/pr-creation`). If merged or closed, ask what to do.
+If no PR exists, ask if they want to create one (`/pr-creation`). If merged or closed, ask what to do.
 
-### 2. Make Changes
+### 2. Make Changes
 
-Implement the requested updates following the user's instructions.
+Implement the requested updates following the user’s instructions.
 
-### 3. Commit Changes
+### 3. Commit Changes
 
-Use the `/commit` skill to create conventional commits:
+Use the `/commit` skill to create conventional commits:
 
 ```bash
 /commit
 ```
 
-### 4. Check DeepSource
+### 4. Check DeepSource
 
 Run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
 
@@ -57,7 +57,25 @@ Run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --outp
 git push
 ```
 
-### 6. Verify CI (with 15-minute timeout)
+### 6. Update PR Title and Description
+
+After pushing, dynamically update the PR to reflect **all** changes (not just the latest commit):
+
+1. Run `git diff $CLAUDE_CODE_BASE_REF...HEAD` and `git log $CLAUDE_CODE_BASE_REF..HEAD --oneline` to see the full scope
+2. Check for `CONTRIBUTING.md`, `.github/PULL_REQUEST_TEMPLATE.md`, or similar PR description guidance in the repo—if found, adapt the description to follow the repository’s conventions
+3. Read `.claude/skills/pr-creation/pr-templates.md` for the PR template format and merge with any repo-specific guidance
+4. Rewrite the title and body to accurately describe the **current state** of the PR:
+
+   ```bash
+   gh pr edit <pr-number> --title "<type>: <updated description>" --body "$(cat <<'EOF'
+   <updated body using template from pr-templates.md>
+   EOF
+   )"
+   ```
+
+5. The title and summary should reflect the totality of the PR, not just the new changes
+
+### 7. Verify CI (with 15-minute timeout)
 
 ```bash
 timeout 15m gh pr checks --watch || true
@@ -65,18 +83,18 @@ timeout 15m gh pr checks --watch || true
 
 If checks fail, fix issues and repeat steps 3-5.
 
-### 7. Report Result
+### 8. Report Result
 
-Confirm the PR is updated and provide the URL.
+Confirm the PR is updated and provide the URL.
 
 ## Example
 
-**User:** "Fix the type error in the PR"
+**User:** “Fix the type error in the PR”
 
-**Actions:** Verify PR exists → Fix type error → `/commit` → Push → Verify CI → Report URL
+**Actions:** Verify PR exists → Fix type error → `/commit` → Push → Update PR title/description → Verify CI → Report URL
 
-## Error Handling
+## Error Handling
 
-- **No PR for branch**: Ask if they want to create one (`/pr-creation`)
-- **PR merged/closed**: Ask user what to do (don't modify merged PRs)
-- **CI fails**: Fix issues and push again (stop hook enforces this)
+- **No PR for branch**: Ask if they want to create one (`/pr-creation`)
+- **PR merged/closed**: Ask user what to do (don’t modify merged PRs)
+- **CI fails**: Fix issues, push again, and update the PR description

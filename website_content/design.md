@@ -13,7 +13,7 @@ aliases:
   - website-design
   - site-design
 date_published: 2024-10-31
-date_updated: 2026-05-21
+date_updated: 2026-05-22
 no_dropcap: false
 createBibtex: true
 ---
