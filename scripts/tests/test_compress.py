@@ -429,8 +429,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
 def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    # plasma: generates non-uniform pixel data so AVIF responds to quality.
-    utils.create_test_image(input_file, "500x500", pattern="plasma:")
+    # Seeded gaussian noise: deterministic high-entropy pixels so AVIF
+    # responds to quality without flaky test runs.
+    utils.create_test_image(input_file, "500x500", noise_seed=42)
 
     # Convert with high quality
     compress.image(input_file, quality=90)
