@@ -71,35 +71,7 @@ I helped fund this project. Here's the introduction to an article I wrote:
 
 # Automated setup
 
-Subtitle: One command to set up your shell, editor, and secret management.
-
-My [`.dotfiles`](https://github.com/alexander-turner/.dotfiles) repository provides comprehensive development environment setup. With this command, I quickly personalize any shell --- even if I'm just visiting with `ssh` for a few hours.
-
-1. Fish shell with autocomplete, syntax highlighting, and the [`tide`](https://github.com/IlanCosman/tide) theme,
-2. `neovim` via LazyVim, providing a full IDE experience,
-3. `tmux` with automatic session saving and restoration,
-4. `envchain` for hardware-encrypted secret management via MacOS Secure Enclave or Linux gnome-keyring --- no more plaintext API keys in configuration files,
-5. Open source AI tool setup,
-6. `autojump` for quick directory navigation,
-7. Reversible file deletion by default via `trash-put` instead of `rm`,
-8. `git` aliases and other productivity shortcuts, and -- drum roll ---
-9. `goosesay`, because every terminal needs more geese.
-
-<span class="populate-markdown-goose-terminal"></span>
-
-Each time I open the `fish` shell, a rainbow goose blurts out an interesting phrase. I spent several hours to achieve this modern luxury.
-
-```fish
-if status is-interactive
-    fortune 5% computers 5% linuxcookie 2% startrek 88% wisdom | cowsay -f ~/.dotfiles/apps/goose.cow | lolcat -S 6
-end
-```
-
-The way this works is that:
-
-1. I sample a saying by calling the `fortune` command,
-2. I pipe the saying into `goosesay` (my variant of the cow in the original [`cowsay`](https://en.wikipedia.org/wiki/Cowsay)),
-3. The `lolcat` command splays the text 'cross the rainbow.
+<span class="populate-markdown-dotfiles"></span>
 
 ## Faster font subsetting
 

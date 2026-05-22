@@ -71,6 +71,12 @@ const config: QuartzConfig = {
             repo: "punctilio",
             transform: stripBadges,
           },
+          dotfiles: {
+            owner: "alexander-turner",
+            repo: ".dotfiles",
+            ref: "master",
+            transform: (content: string) => content.replace(/^#\s+\.dotfiles\s*\n+/, ""),
+          },
           "lint-staged": {
             filePath: "package.json",
             jsonPath: "lint-staged",
