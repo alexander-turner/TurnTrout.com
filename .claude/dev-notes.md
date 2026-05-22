@@ -36,6 +36,12 @@ Three stages: **Transform → Filter → Emit**.
 - compress → strip EXIF → upload to Cloudflare R2 → update Markdown refs
 - Images converted to AVIF (10x compression vs PNG)
 - Videos: WEBM for most browsers, MP4 for Safari
+- Invert-labeled rasters get a precomputed `<basename>-inverted.<ext>`
+  sibling via `scripts/generate_inverted_variants.py`, run automatically by
+  `handle_assets.sh` after `convert_assets.py`. For a one-shot backfill of
+  assets already on R2: `uv run scripts/generate_inverted_variants.py
+  --asset-directory ~/Downloads/website-media-r2`, then re-run `r2_upload`
+  to push the new `-inverted` files.
 
 ### Text processing
 
