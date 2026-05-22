@@ -470,6 +470,66 @@ test.describe("Instant Scroll Restoration", () => {
       })
       .toBeDefined()
   })
+
+  test("exits restoration loop quickly despite browser subpixel scroll rounding", async ({
+    page,
+  }) => {
+    // Reproduces the Safari "stuck for 3s after reload" bug deterministically
+    // across all browsers by monkey-patching window.scrollTo to round its
+    // target down by 1px — the same subpixel-rounding behavior real Safari
+    // exhibits at Retina DPRs (a real-DPR Playwright WebKit repro is too
+    // flaky to rely on). If the restoration loop's early-exit tolerance is
+    // tighter than that 1px gap, the loop runs all MAX_ATTEMPTS frames (~3s
+    // @ 60fps), locking user scroll input the whole time.
+    const scrollPos = 500
+    await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
+    await waitForHistoryState(page, scrollPos)
+
+    const consoleMessages: string[] = []
+    page.on("console", (msg) => {
+      if (msg.text().includes("InstantScrollRestoration")) {
+        consoleMessages.push(msg.text())
+      }
+    })
+
+    // Install the rounding stub before reload so it's active when the
+    // inline restoration script runs.
+    await page.addInitScript(() => {
+      const original = window.scrollTo.bind(window)
+      window.scrollTo = ((...args: unknown[]) => {
+        if (args.length >= 2 && typeof args[1] === "number") {
+          original(args[0] as number, args[1] - 1)
+        } else if (args.length === 1 && typeof args[0] === "object" && args[0] !== null) {
+          const opts = args[0] as ScrollToOptions
+          original({ ...opts, top: (opts.top ?? 0) - 1 })
+        } else {
+          original(...(args as Parameters<typeof window.scrollTo>))
+        }
+      }) as typeof window.scrollTo
+    })
+
+    await page
+      .evaluate(() => location.reload())
+      .catch((error: Error) => {
+        if (!error.message?.includes("context")) {
+          throw error
+        }
+      })
+    await page.waitForLoadState("domcontentloaded")
+
+    await expect
+      .poll(() => consoleMessages.find((msg) => msg.includes("Initial scroll complete")), {
+        timeout: 10_000,
+      })
+      .toBeDefined()
+
+    const attemptNumbers = consoleMessages
+      .map((msg) => /Attempt (?<n>\d+),/.exec(msg)?.groups?.n)
+      .filter((n): n is string => n !== undefined)
+      .map(Number)
+    const maxAttempt = Math.max(0, ...attemptNumbers)
+    expect(maxAttempt).toBeLessThan(20)
+  })
 })
 
 test.describe("Cross-Session Scroll Persistence (localStorage)", () => {

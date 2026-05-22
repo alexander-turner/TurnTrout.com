@@ -199,27 +199,6 @@ describe("scroll helpers", () => {
       scrollToUrlTarget(hash)
       expect(scrollSpy).toHaveBeenCalledWith({ top: 420, behavior: "instant" })
     })
-
-    it("uses the text-fragment branch when the query matches article body", () => {
-      const article = document.createElement("article")
-      article.innerHTML = "<p>Alpha bravo charlie</p>"
-      document.body.appendChild(article)
-
-      scrollToUrlTarget("#:~:text=bravo")
-      expect(scrollSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it("falls back to standard hash lookup when text-fragment yields no match", () => {
-      const article = document.createElement("article")
-      article.innerHTML = "<p>No needles here.</p>"
-      document.body.appendChild(article)
-      const anchor = document.createElement("div")
-      anchor.id = ":~:text=missing"
-      document.body.appendChild(anchor)
-
-      scrollToUrlTarget("#:~:text=missing")
-      expect(scrollSpy).toHaveBeenCalledTimes(1)
-    })
   })
 
   describe("handleNavigationScroll", () => {
@@ -241,6 +220,33 @@ describe("scroll helpers", () => {
     it("scrolls to the top when no hash is present", () => {
       handleNavigationScroll(new URL("http://localhost:8080/foo"))
       expect(scrollSpy).toHaveBeenCalledWith({ top: 0, behavior: "instant" })
+    })
+
+    it("highlights the searchTerm opt without touching the URL", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Alpha bravo charlie</p>"
+      document.body.appendChild(article)
+      history.replaceState(null, "", "/foo")
+
+      handleNavigationScroll(new URL("http://localhost:8080/foo"), { searchTerm: "bravo" })
+
+      expect(scrollSpy).toHaveBeenCalledTimes(1)
+      expect(window.location.hash).toBe("")
+      expect(document.querySelector("article .search-match")?.textContent).toBe("bravo")
+    })
+
+    it("falls back to hash scrolling when searchTerm yields no match", () => {
+      const article = document.createElement("article")
+      article.innerHTML = "<p>Nothing relevant here.</p>"
+      document.body.appendChild(article)
+      const anchor = document.createElement("div")
+      anchor.id = "bar"
+      document.body.appendChild(anchor)
+      jest.spyOn(anchor, "getBoundingClientRect").mockReturnValue({ top: 300 } as DOMRect)
+
+      handleNavigationScroll(new URL("http://localhost:8080/foo#bar"), { searchTerm: "missing" })
+
+      expect(scrollSpy).toHaveBeenCalledWith({ top: 300, behavior: "instant" })
     })
   })
 })

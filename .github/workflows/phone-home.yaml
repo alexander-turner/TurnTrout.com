@@ -48,15 +48,28 @@ jobs:
               return;
             }
 
-            // Filter out template placeholders and session URLs
+            // Filter out template placeholders, HTML comments, session URLs,
+            // code fences, and stray heredoc artifacts (EOF markers, closing
+            // `)"`, lone backticks) that leak through from shell snippets.
             const filtered = lessons
               .split('\n')
               .filter(line => !line.trim().match(/^<.*>$/))
+              .filter(line => !line.trim().match(/^<!--.*-->$/))
               .filter(line => !line.trim().match(/^https:\/\/claude\.ai\/code\/session_/))
+              .filter(line => !line.trim().match(/^```/))
+              .filter(line => !line.trim().match(/^EOF\)?"?$/))
+              .filter(line => !line.trim().match(/^\)"?$/))
               .join('\n')
               .trim();
             if (!filtered || filtered.length < 10) {
               console.log('Lessons section only contains template placeholders, skipping');
+              return;
+            }
+
+            // Reject if content is just the template's What/Where/Why skeleton
+            const stripped = filtered.replace(/\*\*(What|Where|Why)\*\*:\s*/g, '').trim();
+            if (!stripped || stripped.length < 10) {
+              console.log('Lessons section only contains template skeleton, skipping');
               return;
             }
             lessons = filtered;

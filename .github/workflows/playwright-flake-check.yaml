@@ -88,7 +88,7 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
         if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}
@@ -195,7 +195,7 @@ jobs:
           PLAYWRIGHT_GLOBAL_TIMEOUT_MS: "5100000"
 
       - name: Sanitize shard name
-        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> $GITHUB_ENV
+        run: echo "SANITIZED_SHARD=${MATRIX_SHARD%%/*}" >> "$GITHUB_ENV"
         if: always()
         env:
           MATRIX_SHARD: ${{ matrix.shard }}

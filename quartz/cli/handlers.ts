@@ -149,20 +149,23 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     const buildStart = Date.now()
     lastBuildMs = buildStart
     const release = await buildMutex.acquire()
-    if (lastBuildMs > buildStart) {
+    let result: Awaited<ReturnType<typeof ctx.rebuild>>
+    try {
+      if (lastBuildMs > buildStart) {
+        return
+      }
+
+      if (cleanupBuild) {
+        await cleanupBuild()
+        console.log(chalk.yellow("Detected a source code change, doing a hard rebuild..."))
+      }
+
+      result = await ctx.rebuild().catch((err: Error) => {
+        throw new Error(`Couldn't parse turntrout.com configuration: ${fp}\nReason: ${err}`)
+      })
+    } finally {
       release()
-      return
     }
-
-    if (cleanupBuild) {
-      await cleanupBuild()
-      console.log(chalk.yellow("Detected a source code change, doing a hard rebuild..."))
-    }
-
-    const result = await ctx.rebuild().catch((err: Error) => {
-      throw new Error(`Couldn't parse turntrout.com configuration: ${fp}\nReason: ${err}`)
-    })
-    release()
 
     if (argv.bundleInfo) {
       const outputFileName = "quartz/.quartz-cache/transpiled-build.mjs"
@@ -194,10 +197,18 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     return
   }
 
-  const connections: WebSocket[] = []
-  // Send a rebuild message to all connected clients
+  const connections = new Set<WebSocket>()
+  // Send a rebuild message to all connected clients. One bad socket must not
+  // prevent the broadcast from reaching the others.
   const clientRefresh = (): void => {
-    connections.forEach((conn) => conn.send("rebuild"))
+    for (const conn of connections) {
+      try {
+        conn.send("rebuild")
+      } catch (err) {
+        console.warn(chalk.yellow(`Failed to notify a WebSocket client of rebuild: ${err}`))
+        connections.delete(conn)
+      }
+    }
   }
 
   if (argv.baseDir !== "" && !argv.baseDir.startsWith("/")) {
@@ -223,21 +234,24 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
     // Serve the site while logging requests
     const serve = async () => {
       const release = await buildMutex.acquire()
-      await serveHandler(req, res, {
-        public: argv.output,
-        directoryListing: false,
-        headers: [
-          {
-            source: "**/*.*",
-            headers: [{ key: "Content-Disposition", value: "inline" }],
-          },
-        ],
-      })
-      const status: number = res.statusCode
-      const statusString: string =
-        status >= 200 && status < 300 ? chalk.green(`[${status}]`) : chalk.red(`[${status}]`)
-      console.log(statusString + chalk.grey(` ${argv.baseDir}${req.url}`))
-      release()
+      try {
+        await serveHandler(req, res, {
+          public: argv.output,
+          directoryListing: false,
+          headers: [
+            {
+              source: "**/*.*",
+              headers: [{ key: "Content-Disposition", value: "inline" }],
+            },
+          ],
+        })
+        const status: number = res.statusCode
+        const statusString: string =
+          status >= 200 && status < 300 ? chalk.green(`[${status}]`) : chalk.red(`[${status}]`)
+        console.log(statusString + chalk.grey(` ${argv.baseDir}${req.url}`))
+      } finally {
+        release()
+      }
     }
 
     // Handle and log redirects
@@ -294,7 +308,11 @@ export async function handleBuild(argv: BuildArguments): Promise<void> {
 
   server.listen(argv.port)
   const wss = new WebSocketServer({ port: argv.wsPort })
-  wss.on("connection", (ws: WebSocket) => connections.push(ws))
+  wss.on("connection", (ws: WebSocket) => {
+    connections.add(ws)
+    ws.on("close", () => connections.delete(ws))
+    ws.on("error", () => connections.delete(ws))
+  })
   console.log(
     chalk.cyan(
       `Started a turntrout.com server listening at http://localhost:${argv.port}${argv.baseDir}`,

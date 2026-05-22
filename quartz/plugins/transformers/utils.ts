@@ -178,14 +178,14 @@ export interface ElementMaybeWithParent extends Element {
  */
 export function hasAncestor(
   node: Element,
-  ancestorPredicate: (anc: Element) => boolean,
+  ancestorPredicate: (ancestor: Element) => boolean,
   ancestors: Parent[],
 ): boolean {
   // Check the node itself first
   if (ancestorPredicate(node)) return true
 
   // Check all ancestors
-  return ancestors.some((anc) => ancestorPredicate(anc as Element))
+  return ancestors.some((ancestor) => ancestorPredicate(ancestor as Element))
 }
 
 /**

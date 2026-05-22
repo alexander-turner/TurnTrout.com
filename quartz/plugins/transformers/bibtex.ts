@@ -43,6 +43,15 @@ function generateCitationKey(authors: readonly string[], year: number, slug: str
 }
 
 /**
+ * Escapes a value for use inside a BibTeX `"…"`-delimited field.
+ * Backslashes and double quotes are the only characters with structural
+ * meaning inside such a field; we backslash-escape both.
+ */
+function escapeBibtexValue(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+}
+
+/**
  * Generates a BibTeX entry for an article.
  * @throws Error if date_published is not present in frontmatter on CI
  */
@@ -72,10 +81,10 @@ export function generateBibtexEntry(
   const authorString = authors.join(" and ")
 
   return `@misc{${citationKey},
-  author = "${authorString}",
-  title = "${title}",
+  author = "${escapeBibtexValue(authorString)}",
+  title = "${escapeBibtexValue(title)}",
   year = ${year},
-  url = "${url}"
+  url = "${escapeBibtexValue(url)}"
 }`
 }
 

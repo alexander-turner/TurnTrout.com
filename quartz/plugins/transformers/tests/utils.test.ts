@@ -445,7 +445,7 @@ describe("hasAncestor", () => {
     [
       "node itself matches predicate",
       () => createNode("div", null, { className: "target" }),
-      (anc: Element) => anc.tagName === "div",
+      (ancestor: Element) => ancestor.tagName === "div",
       true,
     ],
     [
@@ -455,7 +455,7 @@ describe("hasAncestor", () => {
         const parent = createNode("section", grandparent)
         return createNode("div", parent)
       },
-      (anc: Element) => anc.tagName === "article",
+      (ancestor: Element) => ancestor.tagName === "article",
       true,
     ],
     [
@@ -465,13 +465,13 @@ describe("hasAncestor", () => {
         const parent = createNode("section", grandparent)
         return createNode("div", parent)
       },
-      (anc: Element) => anc.tagName === "main",
+      (ancestor: Element) => ancestor.tagName === "main",
       false,
     ],
     [
       "node has no parent and does not match",
       () => createNode("div"),
-      (anc: Element) => anc.tagName === "article",
+      (ancestor: Element) => ancestor.tagName === "article",
       false,
     ],
     [
@@ -480,7 +480,7 @@ describe("hasAncestor", () => {
         const parent = createNode("article")
         return createNode("div", parent)
       },
-      (anc: Element) => anc.tagName === "article",
+      (ancestor: Element) => ancestor.tagName === "article",
       true,
     ],
     [
@@ -491,8 +491,8 @@ describe("hasAncestor", () => {
         })
         return createNode("span", parent)
       },
-      (anc: Element) => {
-        const className = anc.properties?.className
+      (ancestor: Element) => {
+        const className = ancestor.properties?.className
         return Array.isArray(className) && className.includes("special-container")
       },
       true,
@@ -517,9 +517,9 @@ describe("hasAncestor", () => {
     const ancestors: Parent[] = [parent as Parent, grandparent as Parent]
 
     let callCount = 0
-    const predicate = (anc: Element): boolean => {
+    const predicate = (ancestor: Element): boolean => {
       callCount++
-      return anc.tagName === "article"
+      return ancestor.tagName === "article"
     }
 
     expect(hasAncestor(node, predicate, ancestors)).toBe(true)
