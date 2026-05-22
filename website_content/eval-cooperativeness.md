@@ -258,4 +258,4 @@ Losing behavioral evaluations would be a serious blow. To retain them, we should
 > [!thanks] Acknowledgments  
 > Work completed as part of the Winter 2026 MATS cohort of [Team Shard](/team-shard). If you want to do work like this, consider [applying for mentorship!](/team-shard#apply-today)
 >
-> Thanks to David Africa, Alex Cloud, Shawn Hu, Sohaib Imran, Igor Ivanov, Jo Jiao, Boyd Kane, and Bryce Woodworth for feedback.
+> Thanks to David Africa, Alex Cloud, Shawn Hu, Sohaib Imran, Igor Ivanov, Jo Jiao, Boyd Kane, Lionel Levine, and Bryce Woodworth for feedback.
