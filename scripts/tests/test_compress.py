@@ -429,8 +429,9 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
 def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    # Use larger image (500x500) to ensure quality difference is measurable
-    utils.create_test_image(input_file, "500x500")
+    # ``plasma:`` generates non-uniform pixel data; a solid color compresses
+    # to a quality-invariant minimum (~300 B) and would mask the difference.
+    utils.create_test_image(input_file, "500x500", pattern="plasma:")
 
     # Convert with high quality
     compress.image(input_file, quality=90)
@@ -469,7 +470,6 @@ def test_avif_format_chroma(temp_dir: Path):
     ), "AVIF should use YUV 4:2:0"
 
 
-@requires_exiftool
 def test_avif_format_pixel_depth(temp_dir: Path):
     """Test that AVIF conversion sets correct Pixel Depth (8-bit)."""
     input_file = temp_dir / "test_depth.png"
@@ -478,16 +478,17 @@ def test_avif_format_pixel_depth(temp_dir: Path):
     avif_file = input_file.with_suffix(".avif")
     assert avif_file.exists()
 
-    exiftool_executable = script_utils.find_executable("exiftool")
+    # ``magick identify`` reports bit-depth from the codec stream regardless
+    # of which AVIF metadata fields exiftool happens to expose — newer
+    # builds drop ``Image Pixel Depth`` in favor of a packed config field.
+    identify_cmd = script_utils.get_imagemagick_command("identify")
     result = subprocess.run(
-        [exiftool_executable, str(avif_file)],
+        [*identify_cmd, "-format", "%[bit-depth]", str(avif_file)],
         capture_output=True,
         text=True,
         check=True,
     )
-    assert re.search(
-        r"Image Pixel Depth\s*:\s*8 8 8", result.stdout
-    ), "AVIF should have 8-bit depth"
+    assert result.stdout.strip() == "8", "AVIF should have 8-bit depth"
 
 
 @pytest.mark.parametrize(

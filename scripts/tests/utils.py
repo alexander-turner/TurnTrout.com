@@ -25,20 +25,23 @@ def create_test_image(
     background: str | None = None,
     draw: str | None = None,
     metadata: str | None = None,
+    pattern: str | None = None,
 ) -> None:
     """
-    Creates a test image using ImageMagick.
+    Create a test image using ImageMagick.
 
     Args:
-        path (Path): The file path where the image will be saved.
-        size (str): The size of the image in ImageMagick format (e.g., "100x100").
-        colorspace (str, optional): The colorspace to use (e.g., "sRGB").
-        background (str, optional): The background color/type (e.g., "none" for transparency).
-        draw (str, optional): ImageMagick draw commands to execute.
-        metadata (str, optional): Metadata to add to the image (e.g., "Artist=Test Artist").
-
-    Returns:
-        None
+        path: Output file path.
+        size: ImageMagick size spec (e.g., ``"100x100"``).
+        colorspace: Colorspace (e.g., ``"sRGB"``).
+        background: Solid-fill color when no pattern is given (e.g., ``"none"``
+            for transparency). Defaults to ``"red"``.
+        draw: ImageMagick draw commands.
+        metadata: ``KEY=VALUE`` metadata to embed.
+        pattern: Generator pseudo-image (e.g., ``"plasma:"``, ``"gradient:"``).
+            When set, replaces the solid fill; use this for tests that need
+            non-uniform pixel data (lossy codecs collapse solid colors to a
+            quality-invariant minimum).
 
     Raises:
         subprocess.CalledProcessError: If the ImageMagick command fails.
@@ -46,10 +49,12 @@ def create_test_image(
     convert_cmd = script_utils.get_imagemagick_command("convert")
     command = [*convert_cmd, "-size", size]
 
-    if background:
-        command.extend(["xc:" + background])
+    if pattern:
+        command.append(pattern)
+    elif background:
+        command.append("xc:" + background)
     else:
-        command.extend(["xc:red"])
+        command.append("xc:red")
 
     if colorspace:
         command.extend(["-colorspace", colorspace])
