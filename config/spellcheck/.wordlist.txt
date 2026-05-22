@@ -2802,6 +2802,7 @@ redux
 reenabling
 reexpress
 refactorings
+reformats
 reframed
 reframing
 reframing-impact
