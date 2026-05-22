@@ -108,7 +108,7 @@
     <script>
       const counter = document.getElementById("progress-counter");
       const total = Number(counter.dataset.total);
-      // Pre-select the radio matching the current state. Done in JS so the
+      // Preselect the radio matching the current state. Done in JS so the
       // `checked` attribute does not have to live inside a Jinja conditional
       // (prettier-html mangles Jinja blocks placed inside HTML attributes).
       document.querySelectorAll(".controls").forEach((group) => {

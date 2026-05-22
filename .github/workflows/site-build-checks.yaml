@@ -152,7 +152,7 @@ jobs:
         if: always()
         env:
           SERVER_PID: ${{ steps.server.outputs.server-pid }}
-        run: kill $SERVER_PID 2>/dev/null || true
+        run: kill "$SERVER_PID" 2>/dev/null || true
 
   # Unified status check — provides passing status when gated off on PRs
   site-build-checks:

@@ -651,7 +651,10 @@ def check_heading_links(text: str) -> list[str]:
     """
     errors = []
     stripped_text = remove_code(text)
-    pattern = r"^#{1,6}\s+.*\[.*?\]\(.*$"
+    # `[ \t]` (not `\s`) so the heading prefix can't consume newlines and
+    # falsely match a link on a following paragraph when the heading itself
+    # is empty after code-span stripping (e.g. `## \`pre-commit\``).
+    pattern = r"^#{1,6}[ \t]+.*\[.*?\]\(.*$"
 
     for match in re.finditer(pattern, stripped_text, re.MULTILINE):
         line_num = stripped_text[: match.start()].count("\n") + 1

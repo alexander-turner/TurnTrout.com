@@ -25,31 +25,52 @@ def create_test_image(
     background: str | None = None,
     draw: str | None = None,
     metadata: str | None = None,
+    noise_seed: int | None = None,
 ) -> None:
     """
-    Creates a test image using ImageMagick.
+    Create a test image using ImageMagick.
 
     Args:
-        path (Path): The file path where the image will be saved.
-        size (str): The size of the image in ImageMagick format (e.g., "100x100").
-        colorspace (str, optional): The colorspace to use (e.g., "sRGB").
-        background (str, optional): The background color/type (e.g., "none" for transparency).
-        draw (str, optional): ImageMagick draw commands to execute.
-        metadata (str, optional): Metadata to add to the image (e.g., "Artist=Test Artist").
-
-    Returns:
-        None
+        path: Output file path.
+        size: ImageMagick size spec (e.g., ``"100x100"``).
+        colorspace: Colorspace (e.g., ``"sRGB"``).
+        background: Solid-fill color (e.g., ``"none"`` for transparency).
+            Defaults to ``"red"``. Ignored when ``noise_seed`` is set.
+        draw: ImageMagick draw commands.
+        metadata: ``KEY=VALUE`` metadata to embed.
+        noise_seed: Fill the canvas with deterministic seeded gaussian
+            noise instead of a solid color. Same seed produces identical
+            output across runs; use for tests that need non-uniform pixel
+            data (lossy codecs collapse solid colors to a quality-invariant
+            minimum).
 
     Raises:
         subprocess.CalledProcessError: If the ImageMagick command fails.
     """
     convert_cmd = script_utils.get_imagemagick_command("convert")
-    command = [*convert_cmd, "-size", size]
+    command: list[str] = [*convert_cmd]
 
-    if background:
-        command.extend(["xc:" + background])
+    if noise_seed is not None:
+        # ``-seed`` must precede the random op it seeds. ``+noise gaussian``
+        # respects ``-seed``; ``plasma:`` and other fractal generators
+        # carry their own PRNG state that ``-seed`` does not reach.
+        command.extend(
+            [
+                "-seed",
+                str(noise_seed),
+                "-size",
+                size,
+                "xc:gray",
+                "+noise",
+                "gaussian",
+            ]
+        )
     else:
-        command.extend(["xc:red"])
+        command.extend(["-size", size])
+        if background:
+            command.append("xc:" + background)
+        else:
+            command.append("xc:red")
 
     if colorspace:
         command.extend(["-colorspace", colorspace])

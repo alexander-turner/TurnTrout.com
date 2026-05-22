@@ -77,6 +77,20 @@ const config: QuartzConfig = {
             jsonPath: "lint-staged",
             transform: (content: string) => `\`\`\`json\n${content}\n\`\`\``,
           },
+          "large-file-limit": {
+            filePath: ".pre-commit-config.yaml",
+            transform: (content: string) => {
+              const match = content.match(/--maxkb=(?<kb>\d+)/)
+              if (!match?.groups) {
+                throw new Error(
+                  "Could not find --maxkb= in .pre-commit-config.yaml " +
+                    "(populate-markdown-large-file-limit)",
+                )
+              }
+              const kb = Number(match.groups.kb)
+              return kb >= 1024 && kb % 1024 === 0 ? `${kb / 1024} MB` : `${kb} KB`
+            },
+          },
           "font-stats": {
             filePath: "website_content/partials/font_stats.md",
           },

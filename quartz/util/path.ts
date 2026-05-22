@@ -9,6 +9,8 @@ export const clone = rfdc()
 
 export const QUARTZ = "quartz"
 
+const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+
 /// Utility type to simulate nominal types in TypeScript
 type SlugLike<T> = string & { __brand: T }
 
@@ -63,7 +65,7 @@ export function getFullSlug(window: Window): FullSlug {
  * This function replaces spaces with hyphens, removes special characters,
  * and ensures the slug is properly formatted for URLs.
  */
-function sluggify(s: string): string {
+function slugify(s: string): string {
   return s
     .split("/")
     .map((segment) =>
@@ -81,7 +83,7 @@ function sluggify(s: string): string {
 /**
  * Sluggifies a file path to create a clean URL slug.
  *
- * @param fp The file path to sluggify.
+ * @param fp The file path to slugify.
  * @param excludeExt Whether to exclude the file extension from the slug.
  * @returns The sluggified file path as a FullSlug.
  */
@@ -93,7 +95,7 @@ export function slugifyFilePath(fp: FilePath, excludeExt?: boolean): FullSlug {
     ext = ""
   }
 
-  let slug = sluggify(withoutFileExt)
+  let slug = slugify(withoutFileExt)
 
   // treat _index as index
   if (endsWith(slug, "_index")) {
@@ -208,6 +210,13 @@ const _rebaseHastElement = (
 function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug): void {
   _rebaseHastElement(el, "src", curBase, newBase)
   _rebaseHastElement(el, "href", curBase, newBase)
+  // Heading ids belong to the source page's slug namespace; carrying them
+  // into a transcluded copy yields duplicate ids on the host page when the
+  // host happens to define the same slug. The heading's inner anchor is
+  // already rebased to point back to the original.
+  if (HEADING_TAGS.has(el.tagName) && el.properties?.id) {
+    delete el.properties.id
+  }
   if (el.children) {
     for (const child of el.children) {
       if ((child as HastElement).type === "element") {
@@ -284,7 +293,7 @@ export function splitAnchor(link: string): [string, string] {
 export function slugTag(tag: string) {
   return tag
     .split("/")
-    .map((tagSegment) => sluggify(tagSegment))
+    .map((tagSegment) => slugify(tagSegment))
     .join("/")
 }
 

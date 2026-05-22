@@ -598,10 +598,7 @@ export function normalizeAbbreviations(text: string): string {
   return text
 }
 
-const plusToAmpersandRegex = new RegExp(
-  "(?<!\\b(?:ctrl|alt|option|cmd|command|fn))(?<=\\p{L})\\+(?=[A-Za-z])",
-  "giu",
-)
+const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Za-z])/giu
 
 export function plusToAmpersand(text: string): string {
   return text.replace(plusToAmpersandRegex, `${NBSP}&${NBSP}`)
@@ -788,7 +785,7 @@ export const improveFormatting = (
       const parent = ancestors[ancestors.length - 1]
       if (!parent) return
 
-      const skipFormatting = [node, ...ancestors].some((anc) => toSkip(anc as Element))
+      const skipFormatting = [node, ...ancestors].some((ancestor) => toSkip(ancestor as Element))
       if (skipFormatting) {
         return // NOTE replaceRegex visits children so this won't check that children are not marked
       }

@@ -82,8 +82,8 @@ jobs:
         run: |
           pnpm test:a11y
           rc=$?
-          kill $SERVER_PID 2>/dev/null || true
-          exit $rc
+          kill "$SERVER_PID" 2>/dev/null || true
+          exit "$rc"
 
   # Unified status check — provides passing status when gated off on PRs
   a11y-status:
