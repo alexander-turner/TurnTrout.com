@@ -10,7 +10,7 @@ hideSubscriptionLinks: false
 card_image: https://assets.turntrout.com/static/images/card_images/test_library.jpg
 description: A selection of the best posts which I've written.
 date_published: 2024-10-27
-date_updated: 2026-05-15
+date_updated: 2026-05-22
 tags:
   - website
 card_image_alt: An anime-style illustration of a grand library bathed in sunlight. Bright light streams through large, arched windows, illuminating floor-to-ceiling bookshelves packed with books and a study table in the foreground, creating a warm and scholarly atmosphere.
