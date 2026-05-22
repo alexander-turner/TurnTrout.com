@@ -11,6 +11,14 @@ $scroll-fade-size: 2rem;
   display: inline-block;
 }
 
+// .scroll-indicator establishes a BFC (overflow: clip; inline-block
+// in footnotes), so katex's default `margin: 1em 0` cannot collapse
+// with the surrounding <p> margins and stacks on top of them. Zero
+// the trapped inner margin and let the adjacent <p> margins set the gap.
+.scroll-indicator > .katex-display {
+  margin: 0;
+}
+
 .scroll-indicator {
   position: relative;
   overflow: clip;
