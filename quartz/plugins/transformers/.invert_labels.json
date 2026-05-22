@@ -135,6 +135,10 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/cropped_towards.avif": {
+    "invert": false,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/green-dot.avif": {
     "invert": true,
     "reviewed": true
