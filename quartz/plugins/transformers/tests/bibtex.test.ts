@@ -103,6 +103,20 @@ describe("generateBibtexEntry", () => {
     expect(result).toContain('author = "Alex Turner and John Doe"')
   })
 
+  it("escapes double quotes and backslashes in title and author", () => {
+    const result = generateBibtexEntry(
+      {
+        title: 'A "quoted" title with a backslash \\here',
+        authors: ['Alex "Turntrout" Turner'],
+        date_published: "2022-06-15",
+      },
+      "turntrout.com",
+      "test-slug",
+    )
+    expect(result).toContain('title = "A \\"quoted\\" title with a backslash \\\\here"')
+    expect(result).toContain('author = "Alex \\"Turntrout\\" Turner"')
+  })
+
   it("uses permalink for citation key when available", () => {
     const result = generateBibtexEntry(
       {
