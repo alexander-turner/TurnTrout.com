@@ -9,6 +9,8 @@ export const clone = rfdc()
 
 export const QUARTZ = "quartz"
 
+const HEADING_TAGS: ReadonlySet<string> = new Set(["h1", "h2", "h3", "h4", "h5", "h6"])
+
 /// Utility type to simulate nominal types in TypeScript
 type SlugLike<T> = string & { __brand: T }
 
@@ -208,6 +210,13 @@ const _rebaseHastElement = (
 function _rebaseTree(el: HastElement, curBase: FullSlug, newBase: FullSlug): void {
   _rebaseHastElement(el, "src", curBase, newBase)
   _rebaseHastElement(el, "href", curBase, newBase)
+  // Heading ids belong to the source page's slug namespace; carrying them
+  // into a transcluded copy yields duplicate ids on the host page when the
+  // host happens to define the same slug. The heading's inner anchor is
+  // already rebased to point back to the original.
+  if (HEADING_TAGS.has(el.tagName) && el.properties?.id) {
+    delete el.properties.id
+  }
   if (el.children) {
     for (const child of el.children) {
       if ((child as HastElement).type === "element") {
