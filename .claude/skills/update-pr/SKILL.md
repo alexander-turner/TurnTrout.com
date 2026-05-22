@@ -63,7 +63,7 @@ git push
 timeout 15m gh pr checks --watch || true
 ```
 
-The stop hook (`verify_ci.py`) will automatically block completion if CI fails. If checks fail, fix issues and repeat steps 3-5.
+If checks fail, fix issues and repeat steps 3-5.
 
 ### 7. Report Result
 
