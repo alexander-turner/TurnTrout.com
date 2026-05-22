@@ -429,8 +429,7 @@ def test_avif_output_preserves_transparency(temp_dir: Path):
 def test_avif_quality_affects_file_size(temp_dir: Path, input_file_ext: str):
     """Test that different quality settings produce different file sizes."""
     input_file = temp_dir / f"test{input_file_ext}"
-    # ``plasma:`` generates non-uniform pixel data; a solid color compresses
-    # to a quality-invariant minimum (~300 B) and would mask the difference.
+    # plasma: generates non-uniform pixel data so AVIF responds to quality.
     utils.create_test_image(input_file, "500x500", pattern="plasma:")
 
     # Convert with high quality
@@ -478,9 +477,7 @@ def test_avif_format_pixel_depth(temp_dir: Path):
     avif_file = input_file.with_suffix(".avif")
     assert avif_file.exists()
 
-    # ``magick identify`` reports bit-depth from the codec stream regardless
-    # of which AVIF metadata fields exiftool happens to expose — newer
-    # builds drop ``Image Pixel Depth`` in favor of a packed config field.
+    # Read bit-depth from the AV1 codec stream; portable across libheif builds.
     identify_cmd = script_utils.get_imagemagick_command("identify")
     result = subprocess.run(
         [*identify_cmd, "-format", "%[bit-depth]", str(avif_file)],
