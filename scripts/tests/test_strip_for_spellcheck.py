@@ -159,11 +159,12 @@ def test_strip_quote_blocks(text: str, expected: str):
 
 
 def _blank_inner_spans(text: str, spans: list[tuple[int, int]]) -> str:
-    """Build expected by blanking the math interior, keeping `$` delimiters.
+    """
+    Build expected by blanking the math interior, keeping `$` delimiters.
 
-    Each span is `(start, end_exclusive)` of a full math match. The leading
-    and trailing `$` (or `$$`) are kept; the interior non-newline chars
-    become spaces, newlines are kept.
+    Each span is `(start, end_exclusive)` of a full math match. The leading and
+    trailing `$` (or `$$`) are kept; the interior non-newline chars become
+    spaces, newlines are kept.
     """
     out = list(text)
     for start, end in spans:
