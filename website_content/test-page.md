@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-17
+date_updated: 2026-05-22
 createBibtex: true
 ---
 
@@ -577,6 +577,10 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 ## Numbers and units
 
 This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
+
+## F-bigram kerning
+
+The upright EBGaramond f's ascender used to clip into the punctuation that followed it. GPOS pair kerning now adds breathing room: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
 
 ## Smart quotes
 
