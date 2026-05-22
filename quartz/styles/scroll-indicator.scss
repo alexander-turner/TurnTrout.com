@@ -19,6 +19,19 @@ $scroll-fade-size: 2rem;
   margin: 0;
 }
 
+// Same BFC trap for .table-container's `margin-top: 2 * $base-margin`.
+// Unlike katex (1em — covered by <p> collapse), tables want extra
+// breathing room, so move the spacing onto the wrapper, where it can
+// collapse with siblings (or, in inline-block footnotes, behave the
+// same as the pre-JS inline-block .table-container did).
+.scroll-indicator > .table-container {
+  margin-top: 0;
+}
+
+.scroll-indicator:has(> .table-container) {
+  margin-block-start: calc(2 * $base-margin);
+}
+
 .scroll-indicator {
   position: relative;
   overflow: clip;

@@ -445,6 +445,36 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 > \nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} = 0 \qquad \nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} = \mu_0\left(\mathbf{J} + \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right) \qquad \mathcal{L} = -\frac{1}{4}F_{\mu\nu}F^{\mu\nu} + \bar{\psi}(i\gamma^\mu D_\mu - m)\psi \qquad S = \int d^4x\,\sqrt{-g}\left(\frac{R}{16\pi G} + \mathcal{L}_{\mathrm{matter}}\right)
 > $$
 
+The scroll-indicator wrapper establishes a BFC, so the margins of `.katex-display` and `.table-container` inside it must not stack with the surrounding paragraph margins.
+
+1. List item before. The vertical gap between this paragraph and the equation below should equal the gap between two regular paragraphs, not double it.
+
+   $$
+   \text{Penalty}(s,a) \mathrel{\overset{\text{def}}{=}} \int_\mathcal{R} |Q^*_R(s,a) - Q^*_R(s,\varnothing)|\, dR.
+   $$
+
+   List item after. Same check on this side: a single paragraph-sized gap above and below the equation.
+
+2. A scrollable table inside a list item. The wrapper should preserve the same 2&times;`$base-margin` gap above the table as in body context, without stacking.
+
+   | Feature | A | B | C | D | E | F | G | H | I | J | K |
+   | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+   | Row 1 | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ |
+   | Row 2 | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ | ✓ | ✗ |
+
+   Trailing prose so the bottom gap is also exercised.
+
+A footnote with an equation sandwiched between paragraphs:[^fn-equation]
+
+[^fn-equation]:
+    Let $\mathcal{R}$ be the uniform distribution over $[0,1]^\mathcal{S}$. The penalty for taking action $a$ is a Monte Carlo integration of
+
+    $$
+    \text{Penalty}(s,a) \mathrel{\overset{\text{def}}{=}} \int_\mathcal{R} |Q^*_R(s,a) - Q^*_R(s,\varnothing)|\, dR.
+    $$
+
+    $\text{Penalty}(s,a)$ is provably lower bounded by how much $a$ is expected to change the agent's power compared to inaction.
+
 # Video
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
