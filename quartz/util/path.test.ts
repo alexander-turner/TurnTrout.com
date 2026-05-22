@@ -97,7 +97,7 @@ describe("normalizeHastElement", () => {
   it("strips ids from headings nested inside transcluded content", () => {
     const input = h("section", [h("h3", { id: "pre-commit" }, "pre-commit")])
     const result = normalizeHastElement(input, baseSlug, newSlug)
-    const heading = (result.children[0] as Element)
+    const heading = result.children[0] as Element
     expect(heading.properties?.id).toBeUndefined()
   })
 
