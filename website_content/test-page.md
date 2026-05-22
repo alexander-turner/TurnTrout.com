@@ -468,6 +468,13 @@ Figure: This image should be transparent in light mode and inverted to be transp
 <figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
 </figure>
 
+## Faded image border
+
+<figure>
+<img class="fade-image-border" src="https://assets.turntrout.com/static/images/cropped_towards.avif" alt='The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.'/>
+<figcaption>An image with <code>class="fade-image-border"</code>. The top and bottom edges fade to transparent.</figcaption>
+</figure>
+
 ## SVG inversion
 
 ![A scatter plot comparing AVIF and PNG file sizes against image quality, showing AVIF achieving the same quality at a fraction of the byte cost.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
