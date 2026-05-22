@@ -17,6 +17,7 @@ const BUDGET_MS = 1000
 
 test("theme switch processes inverted images within budget", async ({ page, browserName }) => {
   test.skip(browserName === "webkit", "WebKit canvas encode is browser-bound")
+  test.skip(browserName === "firefox", "Firefox canvas toDataURL is browser-bound")
 
   await gotoPage(page, TARGET_URL, "load")
 
