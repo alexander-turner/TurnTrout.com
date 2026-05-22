@@ -90,7 +90,11 @@ date_updated: 2026-05-20
 
 ![A two-panel comic. Top panel text: "Looking back, we see more evidence that impact doesn't hinge on an ontology" and "Did you stop to wonder how XYZ views the world?". A simple robot with a question mark looks at a pile of blocks. Bottom panel text: "Isn't it funny that the Pebblehoarders care so much about pebbles, while we care so much about suffering?". Beside it is a dark void with sad faces, representing suffering.](https://assets.turntrout.com/static/images/posts/q09LBrl.avif)
 
-![An infographic explaining impact. Text: "Imagine...jumbling forever-inaccessible stars...a huge change in state, but it doesn't matter to us." This contrasts two questions: "How different is the world?" versus "How big of a deal is this?". The conclusion: "Impact is a thing that happens to agents" (instead of to the world itself).](https://assets.turntrout.com/static/images/posts/zVkGE6q.avif)
+![Handwritten text: "Remember the locality of objective impact?" beside a small drawing of a stick figure on a curved planet surface, watching a distant star far above. Below that, more handwritten text: "Imagine I take a bunch of forever-inaccessible stars and jumble them up. This is a huge change in state, but it doesn't matter to us."](https://assets.turntrout.com/static/images/posts/zVkGE6q-top.avif)
+
+![A circular cross-section of a starry night sky, with a small cluster of planets near the center.](https://assets.turntrout.com/static/images/posts/zVkGE6q-stars.avif)
+
+![Handwritten text contrasting two questions: "How different is the world?" is not the same mental question as "How big of a deal is this?". The conclusion: "Impact is a thing that happens to agents".](https://assets.turntrout.com/static/images/posts/zVkGE6q-bottom.avif)
 
 !["Maybe you say, 'it's our ability to reach different world states weighted by how much we care' - but that's just the AU theory with extra steps."](https://assets.turntrout.com/static/images/posts/GEwXYwT.avif) !["In fact, everything else seems to be extra steps. Why is it important to preserve objects, or access to world states, or anything else in the world? Because of what they mean to us."](https://assets.turntrout.com/static/images/posts/CPCaLoM.avif)
 
