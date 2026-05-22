@@ -8,7 +8,10 @@ export declare global {
   }
   interface Window {
     __routerInitialized?: boolean
-    spaNavigate: (url: URL, opts?: { scroll?: boolean; fetch?: boolean }) => Promise<void>
+    spaNavigate: (
+      url: URL,
+      opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
+    ) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
   }
 }

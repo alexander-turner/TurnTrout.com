@@ -1207,7 +1207,10 @@ const resultToHTML = ({ slug, title, content }: Item, enablePreview: boolean) =>
 }
 
 /**
- * Navigate to a URL with a text fragment hash for scroll targeting
+ * Navigate to a URL and highlight/scroll to the search term on the destination
+ * page. The term is passed via SPA options rather than being encoded into the
+ * URL hash so copied links don't carry a noisy `:~:text=...` directive.
+ *
  * @param href - The destination URL
  * @param searchTerm - The search term to highlight and scroll to
  */
@@ -1217,9 +1220,8 @@ export function navigateWithSearchTerm(href: string, searchTerm: string) {
   }
 
   const targetUrl = new URL(href)
-  targetUrl.hash = `:~:text=${encodeURIComponent(searchTerm)}`
   hideSearch(null)
-  window.spaNavigate(targetUrl)
+  window.spaNavigate(targetUrl, { searchTerm })
 }
 
 /**

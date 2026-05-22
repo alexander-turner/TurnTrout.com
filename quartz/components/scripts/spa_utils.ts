@@ -151,9 +151,17 @@ export function scrollToUrlTarget(urlTarget: string): void {
 /**
  * Handles scrolling after navigation based on options and final URL hash.
  * Does not use scroll positions from history state.
+ *
+ * If `opts.searchTerm` is set (in-site search result navigation), highlight
+ * and scroll to the term directly — without round-tripping it through a
+ * `:~:text=...` URL fragment that would clutter copied links.
  */
-export function handleNavigationScroll(finalUrl: URL, opts?: { scroll?: boolean }): void {
+export function handleNavigationScroll(
+  finalUrl: URL,
+  opts?: { scroll?: boolean; searchTerm?: string },
+): void {
   if (opts?.scroll === false) return
+  if (opts?.searchTerm && scrollToMatch(opts.searchTerm)) return
   if (finalUrl.hash) {
     scrollToUrlTarget(finalUrl.hash)
     return

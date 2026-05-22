@@ -957,7 +957,7 @@ describe("navigateWithSearchTerm", () => {
     window.spaNavigate = originalSpaNavigate
   })
 
-  it("should navigate with text fragment when search term is provided", () => {
+  it("should pass the search term via opts and leave the URL hash empty", () => {
     const href = "https://example.com/page"
     const searchTerm = "test query"
 
@@ -966,8 +966,10 @@ describe("navigateWithSearchTerm", () => {
     expect(window.spaNavigate).toHaveBeenCalledTimes(1)
     const mockFn = window.spaNavigate as jest.Mock
     const calledUrl = mockFn.mock.calls[0][0] as URL
+    const calledOpts = mockFn.mock.calls[0][1] as { searchTerm?: string }
     expect(calledUrl.href).toContain("example.com/page")
-    expect(calledUrl.hash).toBe("#:~:text=test%20query")
+    expect(calledUrl.hash).toBe("")
+    expect(calledOpts).toEqual({ searchTerm: "test query" })
   })
 
   it("should throw when search term is empty", () => {
@@ -979,7 +981,7 @@ describe("navigateWithSearchTerm", () => {
     )
   })
 
-  it("should encode special characters in search term", () => {
+  it("forwards special characters in the search term unchanged", () => {
     const href = "https://example.com/page"
     const searchTerm = "test & query"
 
@@ -987,7 +989,9 @@ describe("navigateWithSearchTerm", () => {
 
     const mockFn = window.spaNavigate as jest.Mock
     const calledUrl = mockFn.mock.calls[0][0] as URL
-    expect(calledUrl.hash).toBe("#:~:text=test%20%26%20query")
+    const calledOpts = mockFn.mock.calls[0][1] as { searchTerm?: string }
+    expect(calledUrl.hash).toBe("")
+    expect(calledOpts.searchTerm).toBe("test & query")
   })
 })
 

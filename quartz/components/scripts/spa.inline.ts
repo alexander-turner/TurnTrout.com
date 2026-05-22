@@ -31,7 +31,10 @@ const announcer = document.createElement("route-announcer")
 declare global {
   interface Window {
     __routerInitialized?: boolean
-    spaNavigate: (url: URL, opts?: { scroll?: boolean; fetch?: boolean }) => Promise<void>
+    spaNavigate: (
+      url: URL,
+      opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
+    ) => Promise<void>
   }
 }
 
@@ -279,7 +282,10 @@ let lastKnownPathname = window.location.pathname
  * Handles navigation triggered by clicking a link or programmatic call.
  * Updates history, maybe fetches new content, updates DOM, and handles scrolling.
  */
-async function navigate(url: URL, opts?: { scroll?: boolean; fetch?: boolean }): Promise<void> {
+async function navigate(
+  url: URL,
+  opts?: { scroll?: boolean; fetch?: boolean; searchTerm?: string },
+): Promise<void> {
   removePopovers()
 
   // Save video timestamp before DOM morph so it survives navigation.
