@@ -847,11 +847,6 @@ def _class_tokens(tag: Tag) -> list[str]:
     return list(raw) if isinstance(raw, list) else []
 
 
-def _has_invert_class(tag: Tag) -> bool:
-    """True iff ``tag`` has the ``invert-in-dark-mode`` class."""
-    return INVERT_CLASS in _class_tokens(tag)
-
-
 def _canonical_inline_video_source(video: Tag) -> str | None:
     """
     Canonical source URL of an inline looping muted ``<video>`` (GIF
@@ -930,7 +925,7 @@ def _img_invert_issue(
             src, original, invert_labels.get(original)
         )
     return _invert_issue_string(
-        "img", src, _has_invert_class(img), invert_labels.get(src)
+        "img", src, INVERT_CLASS in _class_tokens(img), invert_labels.get(src)
     )
 
 
@@ -976,7 +971,10 @@ def check_invert_labels(
         if src is None or _is_excluded_segment(src):
             continue
         issue = _invert_issue_string(
-            "video", src, _has_invert_class(video), invert_labels.get(src)
+            "video",
+            src,
+            INVERT_CLASS in _class_tokens(video),
+            invert_labels.get(src),
         )
         if issue is not None:
             issues.append(issue)
