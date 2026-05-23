@@ -22,11 +22,11 @@ cd .timestamps
 ots --no-bitcoin verify "files/$full_commit_hash.txt.ots"
 ```
 
-The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestamps-client/blob/master/README.md)) command is written assuming you don't have a local copy of the blockchain and are instead willing to trust external calendar services. The commit times can be inspected zero-trust by downloading the blockchain and removing `--no-bitcoin`.
+The above `ots` ([Open Timestamp](https://github.com/opentimestamps/opentimestamps-client/blob/master/README.md)) command is written assuming you don’t have a local copy of the blockchain and are instead willing to trust external calendar services. The commit times can be inspected zero-trust by downloading the blockchain and removing `--no-bitcoin`.
 
 # Notes
 
-- Run `git config core.hooksPath .hooks` to use the repository's hooks.
+- Run `git config core.hooksPath .hooks` to use the repository’s hooks.
 
 [^python]: Python testing and type-checking are run locally and not on GitHub actions.
 
