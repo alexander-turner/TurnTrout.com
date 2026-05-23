@@ -53,7 +53,8 @@ jobs:
     outputs:
       run: ${{ steps.gate.outputs.run }}
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
       - id: gate
@@ -73,7 +74,8 @@ jobs:
     needs: [should-run, build]
     runs-on: ubuntu-24.04
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Setup site
         uses: ./.github/actions/setup-site
@@ -109,7 +111,8 @@ jobs:
     needs: [should-run, build]
     runs-on: ubuntu-24.04
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Setup site
         uses: ./.github/actions/setup-site

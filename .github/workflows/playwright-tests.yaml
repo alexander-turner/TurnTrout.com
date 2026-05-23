@@ -35,7 +35,8 @@ jobs:
       run-macos: ${{ steps.gate.outputs.run-macos }}
       browsers: ${{ steps.gate.outputs.browsers }}
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
       - id: gate
@@ -72,7 +73,8 @@ jobs:
     env:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -172,7 +174,8 @@ jobs:
       # Reverted upstream but no 1.59.2 release yet. Remove when upgrading Playwright.
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
@@ -291,7 +294,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: playwright-log-*

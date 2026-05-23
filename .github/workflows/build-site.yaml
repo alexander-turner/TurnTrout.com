@@ -29,7 +29,8 @@ jobs:
     env:
       INCLUDE_FIXTURES: ${{ inputs.include-fixtures && 'true' || '' }}
     steps:
-      - uses: ./.github/actions/retry-checkout
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           fetch-depth: ${{ inputs.fetch-depth }}
           filter: ${{ inputs.fetch-depth == 0 && 'blob:none' || '' }}
