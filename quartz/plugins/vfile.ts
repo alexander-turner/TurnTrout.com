@@ -1,8 +1,8 @@
-import type { Node, Parent, Root, Element as HastElement } from "hast"
+import type { Element as HastElement, Node, Parent, Root } from "hast"
 
 import { VFile } from "vfile"
 
-import type { FullSlug, SimpleSlug, FilePath } from "../util/path"
+import type { FilePath, FullSlug, SimpleSlug } from "../util/path"
 
 /**
  * Represents a single entry in the Table of Contents

@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fsExtra from "fs-extra"
 import os from "os"
 import path from "path"

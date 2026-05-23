@@ -1,14 +1,14 @@
-import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
-  throttle,
-  debounce,
   animate,
+  debounce,
   registerEscapeHandler,
   removeAllChildren,
   setupCopyButton,
-  svgCopy,
   svgCheck,
+  svgCopy,
+  throttle,
 } from "./component_script_utils"
 
 const frameTime = 16

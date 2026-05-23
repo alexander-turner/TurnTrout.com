@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test"
 
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import { gotoPage, reloadPage } from "./visual_utils"
 
 // Helper to get collapsible admonitions

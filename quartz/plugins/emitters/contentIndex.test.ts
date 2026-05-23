@@ -1,4 +1,4 @@
-import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
+import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { uiStrings } from "../../components/constants"
 import { type QuartzConfig } from "../../util/ctx"

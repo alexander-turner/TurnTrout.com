@@ -1,20 +1,20 @@
 import type { Node as UnistNode } from "unist"
 
-import { jest, describe, it, expect } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 import { type Element } from "hast"
 import { h } from "hastscript"
 
 import { twemojiBaseUrl } from "../../../components/constants"
 import {
-  TwemojiOptions,
   constructTwemojiUrl,
+  createNodes,
+  ignoreMap,
   parseAttributes,
+  processTree,
   replaceEmoji,
   replaceEmojiConvertArrows,
-  createNodes,
-  processTree,
-  ignoreMap,
   Twemoji,
+  TwemojiOptions,
 } from "../twemoji"
 
 interface CustomNode extends UnistNode {

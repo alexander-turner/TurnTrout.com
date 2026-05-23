@@ -1,4 +1,4 @@
-import type { Root, Element, ElementContent } from "hast"
+import type { Element, ElementContent, Root } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
@@ -7,15 +7,15 @@ import rehypeStringify from "rehype-stringify"
 import { unified } from "unified"
 
 import {
-  FixFootnotes,
-  isFootnoteListItem,
-  findFootnoteList,
-  hasFootnoteHeading,
-  createFootnoteHeading,
   addHeadingToSection,
-  isAlreadyWrapped,
-  createFootnoteSection,
   cleanupIframeFootnoteText,
+  createFootnoteHeading,
+  createFootnoteSection,
+  findFootnoteList,
+  FixFootnotes,
+  hasFootnoteHeading,
+  isAlreadyWrapped,
+  isFootnoteListItem,
 } from "./fixFootnotes"
 
 const parseHtml = (html: string): Root => {

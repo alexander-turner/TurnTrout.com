@@ -4,7 +4,7 @@
  * supporting small caps and LaTeX rendering in headings.
  */
 
-import type { RootContent, Parent, Element, Root } from "hast"
+import type { Element, Parent, Root, RootContent } from "hast"
 import type { JSX } from "preact"
 
 import { fromHtml } from "hast-util-from-html"
@@ -202,7 +202,8 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
       const textValue = node.value
       let textToProcess = textValue
 
-      const leadingNumberRegex = /^(?<numberPart>\d+:?\s*)(?<restText>.*)$/
+      // eslint-disable-next-line regexp/no-super-linear-backtracking -- anchored ^...$; \d+ only backtracks once before \S succeeds
+      const leadingNumberRegex = /^(?<numberPart>\d+:? *)(?<restText>\S.*)$/
       const match = textValue.match(leadingNumberRegex)
       if (match?.groups) {
         const numberPart = match.groups.numberPart

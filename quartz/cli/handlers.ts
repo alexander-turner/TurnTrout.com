@@ -8,7 +8,7 @@ import { watch } from "chokidar"
 // @ts-expect-error no critical types
 import { generate } from "critical"
 import { randomUUID } from "crypto"
-import { context, build as esBuild, analyzeMetafile } from "esbuild"
+import { analyzeMetafile, context, build as esBuild } from "esbuild"
 import { sassPlugin } from "esbuild-sass-plugin"
 import fs, { promises as fsPromises } from "fs"
 import http from "http"
@@ -16,14 +16,12 @@ import { type Context } from "node:vm"
 import path from "path"
 import prettyBytes from "pretty-bytes"
 import serveHandler from "serve-handler"
-import { WebSocketServer, type WebSocket } from "ws"
+import { type WebSocket, WebSocketServer } from "ws"
 
 import { generateCritical } from "../styles/generate-critical"
-import { generateScss, generateScssRecord, generatePalette } from "../styles/generate-variables"
-import {
-  fp,
-  cacheFile, // @ts-expect-error Importing from a JS file, no types
-} from "./constants.js"
+import { generatePalette, generateScss, generateScssRecord } from "../styles/generate-variables"
+// @ts-expect-error Importing from a JS file, no types
+import { cacheFile, fp } from "./constants.js"
 
 interface BuildArguments {
   serve?: boolean

@@ -4,10 +4,10 @@ import type { Parent } from "unist"
 import { fromHtml } from "hast-util-from-html"
 import { h } from "hastscript"
 
-import { createElementVisitorPlugin, isTextNode, isElementNode } from "./utils"
+import { createElementVisitorPlugin, isElementNode, isTextNode } from "./utils"
 
 // Re-export type guards for use by tests and other modules
-export { isTextNode, isElementNode }
+export { isElementNode, isTextNode }
 
 /**
  * Checks if a text node starts with the table caption prefix "^Table: "

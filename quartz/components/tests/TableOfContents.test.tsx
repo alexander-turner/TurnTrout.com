@@ -2,11 +2,11 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import type { Parent, RootContent, Node } from "hast"
+import type { Node, Parent, RootContent } from "hast"
 import type { JSX } from "preact"
 import type { FunctionComponent } from "preact"
 
-import { jest, describe, it, expect, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -15,12 +15,12 @@ import type { QuartzComponentProps } from "../types"
 import { TocEntry } from "../../plugins/vfile"
 import { normalizeNbsp } from "../constants"
 import {
+  addListItem,
+  buildNestedList,
   CreateTableOfContents,
+  elementToJsx,
   processHtmlAst,
   processTocEntry,
-  buildNestedList,
-  elementToJsx,
-  addListItem,
   toJSXListItem,
 } from "../TableOfContents"
 

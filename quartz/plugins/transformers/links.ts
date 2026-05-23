@@ -8,8 +8,8 @@ import { visit } from "unist-util-visit"
 import type { QuartzTransformerPlugin } from "../types"
 
 import {
-  EXTERNAL_LINK_REL,
   CAN_TRIGGER_POPOVER_CLASS,
+  EXTERNAL_LINK_REL,
   HEADING_TAGS,
   MEDIA_TAGS,
 } from "../../components/constants"
@@ -17,11 +17,11 @@ import {
   type FullSlug,
   type RelativeURL,
   type SimpleSlug,
-  type TransformOptions,
-  stripSlashes,
   simplifySlug,
   splitAnchor,
+  stripSlashes,
   transformLink,
+  type TransformOptions,
 } from "../../util/path"
 
 interface CrawlLinksOptions {
