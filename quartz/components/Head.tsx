@@ -11,7 +11,7 @@ import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
-import { cdnBaseUrl } from "./constants"
+import { cdnBaseUrl, fontCacheVersion } from "./constants"
 import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle"
 import {
   type QuartzComponent,
@@ -101,15 +101,11 @@ export default (() => {
       "EBGaramond/EBGaramond-InitialsF1",
       "EBGaramond/EBGaramond-InitialsF2",
     ]
-    // Must equal $font-cache-version in quartz/styles/fonts.scss. Preload
-    // href and @font-face src must match exactly (incl. query string) or
-    // the browser fetches the font twice.
-    const fontCacheVersion = "?v=2"
     const fontPreloads = fontPreloadNames.map((font) => {
       return (
         <link
           key={font}
-          href={`/static/styles/fonts/${font}.woff2${fontCacheVersion}`}
+          href={`/static/styles/fonts/${font}.woff2?v=${fontCacheVersion}`}
           as="font"
           type="font/woff2"
           crossorigin="anonymous"
