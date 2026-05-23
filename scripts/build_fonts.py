@@ -207,11 +207,10 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     for f_name in f_glyphs:
         overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
         for t_name in _TARGET_GLYPHS:
-            raw = max(
+            kern = max(
                 overhang - glyf_table[t_name].xMin + _KERN_OFFSET,
-                0,
+                _BASE_KERN[t_name],
             )
-            kern = max(raw, _BASE_KERN[t_name])
             builder.addGlyphPair(
                 None,
                 f_name,
