@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it } from "@jest/globals"
 
-import {
-  editAdmonition,
-  spaceAdmonitions,
-} from "../formatting_improvement_text"
+import { editAdmonition, spaceAdmonitions } from "../formatting_improvement_text"
 import { buildPlaceholderRegex } from "../populateExternalMarkdown"
 import {
   capitalizeAfterEnding,
@@ -37,14 +34,13 @@ describe("urlRegex stress", () => {
     expect(match?.groups?.path).toContain("Test_(thing)")
   })
 
-  it.each([
-    "(ftp://example.com/path)",
-    "(not a url)",
-    "(https://)",
-  ])("should NOT match %s", (input) => {
-    urlRegex.lastIndex = 0
-    expect(urlRegex.exec(input)).toBeNull()
-  })
+  it.each(["(ftp://example.com/path)", "(not a url)", "(https://)"])(
+    "should NOT match %s",
+    (input) => {
+      urlRegex.lastIndex = 0
+      expect(urlRegex.exec(input)).toBeNull()
+    },
+  )
 
   it("should handle domains with hyphens", () => {
     urlRegex.lastIndex = 0
@@ -83,13 +79,7 @@ describe("fractionRegex stress", () => {
     expect(match?.groups?.ordinal).toBe(ord)
   })
 
-  it.each([
-    "9/11",
-    "word/word",
-    "a/b",
-    "/",
-    "//",
-  ])("should NOT match %s", (input) => {
+  it.each(["9/11", "word/word", "a/b", "/", "//"])("should NOT match %s", (input) => {
     fractionRegex.lastIndex = 0
     expect(fractionRegex.test(input)).toBe(false)
   })
@@ -177,22 +167,40 @@ describe("wikilinkImageEmbedRegex stress", () => {
 
 describe("isRomanNumeral stress", () => {
   it.each([
-    "II", "III", "IV", "VI", "VII", "VIII", "IX",
-    "XI", "XII", "XIV", "XIX", "XX", "XL", "XC",
-    "CD", "CM", "MMXXIV", "XLII", "XCIX",
-    "IC", "ID", "IM",
-    "CXLVIII", "MMMCMXCIX",
+    "II",
+    "III",
+    "IV",
+    "VI",
+    "VII",
+    "VIII",
+    "IX",
+    "XI",
+    "XII",
+    "XIV",
+    "XIX",
+    "XX",
+    "XL",
+    "XC",
+    "CD",
+    "CM",
+    "MMXXIV",
+    "XLII",
+    "XCIX",
+    "IC",
+    "ID",
+    "IM",
+    "CXLVIII",
+    "MMMCMXCIX",
   ])("should match %s", (numeral) => {
     expect(isRomanNumeral(numeral)).toBe(true)
   })
 
-  it.each([
-    "I", "V", "X", "L", "C", "D", "M",
-    "A", "HELLO", "abc", "123", "", "  ",
-    "VV", "IIII",
-  ])("should NOT match %s", (input) => {
-    expect(isRomanNumeral(input)).toBe(false)
-  })
+  it.each(["I", "V", "X", "L", "C", "D", "M", "A", "HELLO", "abc", "123", "", "  ", "VV", "IIII"])(
+    "should NOT match %s",
+    (input) => {
+      expect(isRomanNumeral(input)).toBe(false)
+    },
+  )
 
   it("should handle roman numerals with punctuation in isRomanNumeral", () => {
     expect(isRomanNumeral("IV.")).toBe(true)
@@ -206,13 +214,10 @@ describe("isRomanNumeral stress", () => {
 })
 
 describe("REGEX_VERSION_NUMBER stress", () => {
-  it.each(["V1", "v2", "V100", "v1.0", "v1.2.3", "V10.20.30"])(
-    "should match %s",
-    (input) => {
-      REGEX_VERSION_NUMBER.lastIndex = 0
-      expect(REGEX_VERSION_NUMBER.test(input)).toBe(true)
-    },
-  )
+  it.each(["V1", "v2", "V100", "v1.0", "v1.2.3", "V10.20.30"])("should match %s", (input) => {
+    REGEX_VERSION_NUMBER.lastIndex = 0
+    expect(REGEX_VERSION_NUMBER.test(input)).toBe(true)
+  })
 
   it.each(["version", "Vault", "v", "V", "1.0", "abc", "vv1", "VV2"])(
     "should NOT match %s",
@@ -239,20 +244,15 @@ describe("REGEX_VERSION_NUMBER stress", () => {
 })
 
 describe("REGEX_ALL_CAPS_PHRASE stress", () => {
-  it.each([
-    "THE BIG THING",
-    "NATO FORCES",
-    "AI AND ML",
-  ])("should match multi-word phrase: %s", (input) => {
-    REGEX_ALL_CAPS_PHRASE.lastIndex = 0
-    expect(REGEX_ALL_CAPS_PHRASE.test(input)).toBe(true)
-  })
+  it.each(["THE BIG THING", "NATO FORCES", "AI AND ML"])(
+    "should match multi-word phrase: %s",
+    (input) => {
+      REGEX_ALL_CAPS_PHRASE.lastIndex = 0
+      expect(REGEX_ALL_CAPS_PHRASE.test(input)).toBe(true)
+    },
+  )
 
-  it.each([
-    "hello world",
-    "Hello",
-    "AB",
-  ])("should NOT match: %s", (input) => {
+  it.each(["hello world", "Hello", "AB"])("should NOT match: %s", (input) => {
     REGEX_ALL_CAPS_PHRASE.lastIndex = 0
     expect(REGEX_ALL_CAPS_PHRASE.test(input)).toBe(false)
   })
@@ -263,7 +263,7 @@ describe("REGEX_ALL_CAPS_PHRASE stress", () => {
   })
 
   it("should handle long all-caps input", () => {
-    const longInput = ("ABC DEF " .repeat(500)).trim()
+    const longInput = "ABC DEF ".repeat(500).trim()
     REGEX_ALL_CAPS_PHRASE.lastIndex = 0
     const result = REGEX_ALL_CAPS_PHRASE.test(longInput)
     expect(typeof result).toBe("boolean")
@@ -284,13 +284,10 @@ describe("capitalizeAfterEnding stress", () => {
     expect(match?.groups?.letter).toBe(letter)
   })
 
-  it.each(["e.g. X", "i.e. Y"])(
-    "should not match after %s abbreviation",
-    (input) => {
-      capitalizeAfterEnding.lastIndex = 0
-      expect(capitalizeAfterEnding.exec(input)).toBeNull()
-    },
-  )
+  it.each(["e.g. X", "i.e. Y"])("should not match after %s abbreviation", (input) => {
+    capitalizeAfterEnding.lastIndex = 0
+    expect(capitalizeAfterEnding.exec(input)).toBeNull()
+  })
 
   it("should match lowercase with i flag", () => {
     capitalizeAfterEnding.lastIndex = 0
@@ -373,7 +370,12 @@ describe("buildPlaceholderRegex stress", () => {
 
 describe("SVG_COLOR_PROP_RE stress", () => {
   const SVG_COLOR_ATTRS = [
-    "fill", "stroke", "stop-color", "color", "flood-color", "lighting-color",
+    "fill",
+    "stroke",
+    "stop-color",
+    "color",
+    "flood-color",
+    "lighting-color",
   ] as const
   const SVG_COLOR_PROP_RE = new RegExp(
     `(?<prop>${SVG_COLOR_ATTRS.join("|")})\\s*:\\s*(?<value>\\S[^;}"']*)`,
