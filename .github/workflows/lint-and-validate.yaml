@@ -25,7 +25,6 @@ jobs:
   update-dates:
     needs: detect-changes
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     permissions:
       contents: write
     outputs:
@@ -40,6 +39,7 @@ jobs:
       needs.detect-changes.outputs.content == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           fetch-depth: 0
           filter: blob:none # Partial clone: skip historical file content (only need commit/tree objects for git diff --name-only)
@@ -77,7 +77,6 @@ jobs:
 
   detect-changes:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     outputs:
       content: ${{ steps.changes.outputs.content }}
       code: ${{ steps.changes.outputs.code }}
@@ -87,6 +86,7 @@ jobs:
       workflows: ${{ steps.changes.outputs.workflows }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: changes
@@ -154,6 +154,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.PUSH_TOKEN }}
@@ -221,9 +222,9 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.workflows == 'true'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
       - name: Check for unpinned action references
         run: |
           # Find YAML uses: directives with tag-based refs (@v1, @v2, etc.) instead of SHA pins
@@ -258,6 +259,7 @@ jobs:
       # Always check out the branch tip (not the triggering SHA) so lint
       # sees the final state after any update-dates or autofix commits.
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 

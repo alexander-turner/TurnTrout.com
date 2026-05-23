@@ -21,6 +21,10 @@ inputs:
     description: "Cap on the exponential delay between retries."
     required: false
     default: "30"
+  timeout-minutes:
+    description: "Per-attempt timeout in minutes. 0 = no timeout."
+    required: false
+    default: "0"
 
 runs:
   using: "composite"
@@ -34,6 +38,7 @@ runs:
         MAX_ATTEMPTS: ${{ inputs.max-attempts }}
         INITIAL_DELAY: ${{ inputs.initial-delay-seconds }}
         MAX_DELAY: ${{ inputs.max-delay-seconds }}
+        TIMEOUT_MINUTES: ${{ inputs.timeout-minutes }}
       run: |
         # GitHub Actions runs composite `shell: bash` steps with
         # `set -eo pipefail`. Without disabling `-e` here, a failing
@@ -43,9 +48,24 @@ runs:
         set -u
         attempt=1
         delay="$INITIAL_DELAY"
+
+        timeout_prefix=""
+        if [ "$TIMEOUT_MINUTES" -gt 0 ] 2>/dev/null; then
+          timeout_secs=$((TIMEOUT_MINUTES * 60))
+          if command -v timeout &>/dev/null; then
+            timeout_prefix="timeout ${timeout_secs}"
+          else
+            timeout_prefix="perl -e 'alarm ${timeout_secs}; exec @ARGV' --"
+          fi
+        fi
+
         while :; do
           echo "::group::Attempt $attempt/$MAX_ATTEMPTS"
-          bash -c "$RETRY_COMMAND"
+          if [ -n "$timeout_prefix" ]; then
+            $timeout_prefix bash -c "$RETRY_COMMAND"
+          else
+            bash -c "$RETRY_COMMAND"
+          fi
           rc=$?
           echo "::endgroup::"
           if [ "$rc" -eq 0 ]; then
@@ -53,6 +73,9 @@ runs:
               echo "::notice::Command succeeded on attempt $attempt"
             fi
             exit 0
+          fi
+          if [ "$rc" -eq 124 ] && [ -n "$timeout_prefix" ]; then
+            echo "::warning::Attempt $attempt timed out after ${TIMEOUT_MINUTES}m"
           fi
           if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
             echo "::error::Command failed after $MAX_ATTEMPTS attempts (last exit code $rc)"

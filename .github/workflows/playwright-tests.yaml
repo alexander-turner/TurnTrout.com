@@ -36,6 +36,7 @@ jobs:
       browsers: ${{ steps.gate.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           sparse-checkout: .github/actions/ci-gate
       - id: gate
@@ -73,6 +74,7 @@ jobs:
       PLAYWRIGHT_BROWSERS: ${{ needs.should-run.outputs.browsers }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -173,6 +175,7 @@ jobs:
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
@@ -292,6 +295,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: playwright-log-*
