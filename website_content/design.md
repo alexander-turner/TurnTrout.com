@@ -173,7 +173,7 @@ The SVG filter is the best result I can get from CSS alone, so I ship it as the 
 
 ### Deciding when to invert
 
-<span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
+<span class="float-right" style="max-width: 40%; margin-top: calc(-1.5 * $base-margin);"><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
 
 A blanket invert would butcher certain photos. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 
@@ -861,7 +861,7 @@ External static analysis alerts me to potential vulnerabilities and anti-pattern
 [`docformatter`](https://pypi.org/project/docformatter/) reformats my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my `pre-commit` hook. I also learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
 Beyond reformatting, I take on several commonsense checks from [`pre-commit.com`](https://pre-commit.com):
-- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials. 
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials.
 - [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file.
 - [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
 - A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
