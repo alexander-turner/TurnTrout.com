@@ -1,4 +1,4 @@
-import type { Root, Element, Text } from "hast"
+import type { Element, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
@@ -6,12 +6,12 @@ import { h } from "hastscript"
 import { normalizeNbsp } from "../../../components/constants"
 import { type QuartzPluginData } from "../../vfile"
 import {
-  renderSequenceTitle,
-  renderPreviousPost,
-  renderNextPost,
+  createSequenceLinksComponent,
   createSequenceLinksDiv,
   insertAfterTroutOrnament,
-  createSequenceLinksComponent,
+  renderNextPost,
+  renderPreviousPost,
+  renderSequenceTitle,
 } from "../sequenceLinks"
 import { ornamentNode } from "../trout_hr"
 

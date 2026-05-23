@@ -10,17 +10,17 @@
 import type { Page } from "@playwright/test"
 
 import {
-  simpleConstants,
-  tightScrollTolerance,
-  testPageSlug,
   scrollPositionKeyPrefix,
   scrollPositionMinThreshold,
+  simpleConstants,
+  testPageSlug,
+  tightScrollTolerance,
 } from "../constants"
-import { test, expect } from "../tests/fixtures"
+import { expect, test } from "../tests/fixtures"
 import {
-  isDesktopViewport,
   getAllWithWait,
   gotoPage,
+  isDesktopViewport,
   reloadPage,
   triggerAndWaitForSPANav,
 } from "../tests/visual_utils"

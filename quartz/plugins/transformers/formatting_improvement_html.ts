@@ -1,12 +1,12 @@
-import type { Element, Text, Root, Parent, ElementContent } from "hast"
+import type { Element, ElementContent, Parent, Root, Text } from "hast"
 
 import { h } from "hastscript"
-import { niceQuotes, hyphenReplace, symbolTransform, primeMarks, nbspTransform } from "punctilio"
+import { hyphenReplace, nbspTransform, niceQuotes, primeMarks, symbolTransform } from "punctilio"
 import {
-  getTextContent,
-  transformElement,
   collectTransformableElements,
+  getTextContent,
   type TextNodeSkipPredicate,
+  transformElement,
 } from "punctilio/rehype"
 import { type Transformer } from "unified"
 // skipcq: JS-0257
@@ -16,16 +16,16 @@ import type { ElementMaybeWithParent } from "./utils"
 
 import {
   charsToMoveIntoLinkFromRight,
-  markerChar,
   hatTipPlaceholder,
-  NBSP,
-  LEFT_SINGLE_QUOTE,
-  RIGHT_SINGLE_QUOTE,
   HEADING_TAGS,
+  LEFT_SINGLE_QUOTE,
+  markerChar,
+  NBSP,
+  RIGHT_SINGLE_QUOTE,
   STRIP_BOUNDARY_TAGS,
 } from "../../components/constants"
 import { type QuartzTransformerPlugin } from "../types"
-import { replaceRegex, fractionRegex, hasClass, hasAncestor, urlRegex, isCode } from "./utils"
+import { fractionRegex, hasAncestor, hasClass, isCode, replaceRegex, urlRegex } from "./utils"
 
 /**
  * Tags that should be skipped during text transformation.
@@ -108,7 +108,7 @@ const htPlaceholderRegex = new RegExp(hatTipPlaceholder, "g")
  */
 export function spacesAroundSlashes(text: string): string {
   // First replace h/t with the placeholder character (hatTipPlaceholder imported from constants)
-  text = text.replace(/\b(?:h\/t)\b/g, hatTipPlaceholder)
+  text = text.replace(/\bh\/t\b/g, hatTipPlaceholder)
 
   text = text.replace(slashRegex, (...args) => {
     const groups = args.at(-1) as {
@@ -311,7 +311,7 @@ export function formatArrows(tree: Root): void {
       index,
       parent,
       // Consume optional surrounding spaces so they can be replaced with NBSP
-      /(?:(?:^|(?<= )|(?<=\w)) ?)[-]{1,2}> ?(?=[\w ]|$)/g,
+      /(?:^|(?<= )|\b) ?-{1,2}> ?(?=[\w ]|$)/g,
       (match: RegExpMatchArray) => {
         const fullMatch = match[0] ?? /* istanbul ignore next */ ""
         const matchIndex = match.index ?? /* istanbul ignore next */ 0
@@ -598,7 +598,7 @@ export function normalizeAbbreviations(text: string): string {
   return text
 }
 
-const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Za-z])/giu
+const plusToAmpersandRegex = /(?<!\b(?:ctrl|alt|option|cmd|command|fn))(?<=\p{L})\+(?=[A-Z])/giu
 
 export function plusToAmpersand(text: string): string {
   return text.replace(plusToAmpersandRegex, `${NBSP}&${NBSP}`)

@@ -3,7 +3,7 @@ import path from "path"
 import prettier from "prettier"
 import { fileURLToPath } from "url"
 
-import { variables, darkPalette, lightPalette } from "./variables"
+import { darkPalette, lightPalette, variables } from "./variables"
 
 const prettierConfigPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),

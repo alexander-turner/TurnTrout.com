@@ -1,18 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import childProcess from "child_process"
 import fs from "fs"
 
 import type { BuildCtx } from "../../util/ctx"
 
 import {
-  PopulateExternalMarkdown,
-  populateExternalContent,
   buildPlaceholderRegex,
-  stripBadges,
+  clearContentCache,
   fetchGitHubContentSync,
   fetchLocalContentSync,
   isLocalSource,
-  clearContentCache,
+  populateExternalContent,
+  PopulateExternalMarkdown,
+  stripBadges,
 } from "./populateExternalMarkdown"
 
 /** Wraps `"key": value` output in braces so it can be parsed as JSON. */

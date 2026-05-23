@@ -1,8 +1,8 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { type Root } from "hast"
 import { h } from "hastscript"
 
-import { transformElement, transformStyle, ColorVariables } from "../color_variables"
+import { ColorVariables, transformElement, transformStyle } from "../color_variables"
 
 const colorMapping = {
   red: "var(--red)",

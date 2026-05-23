@@ -4,7 +4,7 @@ import gitRoot from "find-git-root"
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { transports, format, createLogger } from "winston"
+import { createLogger, format, transports } from "winston"
 import DailyRotateFile from "winston-daily-rotate-file"
 
 import type { Argv } from "./ctx"

@@ -1,13 +1,13 @@
 /**
  * @jest-environment node
  */
-import { describe, it, expect, jest, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 jest.mock("fs")
 import fs from "fs"
 import path from "path"
 
-import { generateScss, generateScssRecord, generatePalette } from "../generate-variables"
-import { variables as styleVars, darkPalette, lightPalette } from "../variables"
+import { generatePalette, generateScss, generateScssRecord } from "../generate-variables"
+import { darkPalette, lightPalette, variables as styleVars } from "../variables"
 
 describe("SCSS Variable Generation", () => {
   beforeEach(() => {

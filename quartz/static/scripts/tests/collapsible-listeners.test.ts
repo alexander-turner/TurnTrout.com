@@ -6,9 +6,9 @@
  * a single click to toggle the collapsible multiple times.
  */
 
-import { jest, describe, it, beforeAll, beforeEach, afterEach, expect } from "@jest/globals"
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { readFileSync } from "fs"
-import { join, dirname } from "path"
+import { dirname, join } from "path"
 import { fileURLToPath } from "url"
 
 import type { FullSlug } from "../../../util/path"

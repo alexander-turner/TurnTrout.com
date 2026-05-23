@@ -9,20 +9,20 @@ import { type GlobalConfiguration } from "../util/config"
 import {
   clone,
   type FullSlug,
-  type RelativeURL,
   joinSegments,
   normalizeHastElement,
+  type RelativeURL,
   simplifySlug,
 } from "../util/path"
 import { JSResourceToScriptElement, type StaticResources } from "../util/resources"
 import { locale, PREVIEWABLE_CLASS, twemojiBaseUrl } from "./constants"
 import { createPageListHast } from "./PageList"
-import { allDescription, allSlug, allTitle, allPostsListing } from "./pages/AllPosts"
+import { allDescription, allPostsListing, allSlug, allTitle } from "./pages/AllPosts"
 import {
-  allTagsSlug,
-  allTagsTitle,
   allTagsDescription,
   allTagsListing,
+  allTagsSlug,
+  allTagsTitle,
   generateAllTagsHast,
 } from "./pages/AllTagsContent"
 import PageShellConstructor from "./PageShell"

@@ -1,5 +1,5 @@
 import { type Element } from "hast"
-import { toJsxRuntime, type Options } from "hast-util-to-jsx-runtime"
+import { type Options, toJsxRuntime } from "hast-util-to-jsx-runtime"
 import { h } from "hastscript"
 import { Fragment, jsx, jsxs } from "preact/jsx-runtime"
 

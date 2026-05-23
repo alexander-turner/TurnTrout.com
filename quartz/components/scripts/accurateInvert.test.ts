@@ -1,25 +1,25 @@
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import { describe, it, beforeEach, afterEach, expect, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
-  invertLightness,
-  invertPixelsHSL,
+  handleLoadEvent,
   invertColorToken,
   invertCssColors,
+  invertLightness,
+  invertPixelsHSL,
   invertSvgSource,
-  isSvgSrc,
   isDarkMode,
-  shouldProcess,
-  processImage,
-  processSvgImage,
-  revertImage,
-  handleLoadEvent,
-  processLoaded,
-  revertProcessed,
+  isSvgSrc,
   onThemeChange,
+  processImage,
+  processLoaded,
+  processSvgImage,
   pruneStalePins,
+  revertImage,
+  revertProcessed,
+  shouldProcess,
 } from "./accurateInvert"
 
 describe("invertLightness", () => {

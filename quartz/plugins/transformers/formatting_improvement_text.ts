@@ -9,11 +9,11 @@ import { NBSP } from "../../components/constants"
 import { mdLinkRegex } from "./utils"
 
 // Regular expression for footnotes not followed by a colon (definition) or opening parenthesis (md URL)
-const footnoteSpacingRegex = /(?<content>\S) (?<footnote>\[\^[^\]]+?\])(?![:(]) ?/g
+const footnoteSpacingRegex = /(?<content>\S) (?<footnote>\[\^[^\]]+\])(?![:(]) ?/g
 const footnoteSpacingReplacement = "$<content>$<footnote> "
 
 // New regex for moving footnotes after punctuation
-const footnotePunctuationRegex = /(?<content>\S)(?<footnote>\[\^[^\]]*?\])(?<punct>[.,;!?]+)/g
+const footnotePunctuationRegex = /(?<content>\S)(?<footnote>\[\^[^\]]*\])(?<punct>[.,;!?]+)/g
 const footnotePunctuationReplacement = "$<content>$<punct>$<footnote>"
 
 /**
@@ -101,7 +101,7 @@ const massTransforms: [RegExp | string, string][] = [
   [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
   // Insert a blank line after a block-level HTML tag so the markdown parser
   // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.
-  [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n(?=[ \t]*[^ \t\n<>/`=])/gm, "$<closingTag>\n\n"],
+  [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n(?=[ \t]*[^ \t\n<>/`=])/g, "$<closingTag>\n\n"],
   [/MIRIx(?=\s|$)/g, 'MIRI<sub class="mirix-subscript">x</sub>'],
   [/GPT-4o\b/g, "GPT-4-o"],
 ]

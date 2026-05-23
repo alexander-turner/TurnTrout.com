@@ -5,7 +5,7 @@
 import type { Root } from "hast"
 import type { JSX } from "preact"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import type { QuartzPluginData } from "../../plugins/vfile"
 import type { GlobalConfiguration } from "../../util/config"

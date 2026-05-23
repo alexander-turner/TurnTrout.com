@@ -1,16 +1,16 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import type { BuildCtx } from "../../../util/ctx"
 
 import {
   applyTextTransforms,
-  formattingImprovement,
   editAdmonition,
+  formattingImprovement,
   noteAdmonition,
-  wrapLeadingNumbers,
-  wrapNumbersBeforeColon,
   spaceAdmonitions,
   TextFormattingImprovement,
+  wrapLeadingNumbers,
+  wrapNumbersBeforeColon,
 } from "../formatting_improvement_text"
 
 describe("TextFormattingImprovement Plugin", () => {

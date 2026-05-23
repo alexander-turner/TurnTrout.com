@@ -2,21 +2,21 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
-  createPopover,
-  setPopoverPosition,
-  type PopoverOptions,
   attachPopoverEventListeners,
-  escapeLeadingIdNumber,
   computeLeft,
   computeTop,
+  createPopover,
+  escapeLeadingIdNumber,
   fetchWithMetaRedirect,
   focusableSelector,
   footnoteForwardRefRegex,
   getVisibleFocusable,
   navigation,
+  type PopoverOptions,
+  setPopoverPosition,
   trapFocusInPopover,
 } from "../popover_helpers"
 

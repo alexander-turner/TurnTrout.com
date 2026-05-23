@@ -1,46 +1,46 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { type Element, type ElementContent, type Parent, type Root, type Text } from "hast"
 import { toHtml as hastToHtml } from "hast-util-to-html"
 import { h } from "hastscript"
 import { symbolTransform } from "punctilio"
 import {
-  getTextContent,
-  flattenTextNodes,
-  transformElement,
   assertSmartQuotesMatch,
   collectTransformableElements,
+  flattenTextNodes,
   getFirstTextNode,
+  getTextContent,
+  transformElement,
 } from "punctilio/rehype"
 import { rehype } from "rehype"
 import { VFile } from "vfile"
 
 import {
   charsToMoveIntoLinkFromRight,
-  markerChar,
   LEFT_DOUBLE_QUOTE,
-  RIGHT_DOUBLE_QUOTE,
   LEFT_SINGLE_QUOTE,
-  RIGHT_SINGLE_QUOTE,
+  markerChar,
   NBSP,
   normalizeNbsp,
+  RIGHT_DOUBLE_QUOTE,
+  RIGHT_SINGLE_QUOTE,
 } from "../../../components/constants"
 import {
-  massTransformText,
-  improveFormatting,
-  spacesAroundSlashes,
-  l_pRegex,
-  identifyLinkNode,
-  moveQuotesBeforeLink,
-  replaceFractions,
-  timeTransform,
   applyTextTransforms,
-  HTMLFormattingImprovement,
-  rearrangeLinkPunctuation,
   arrowsToWrap,
+  HTMLFormattingImprovement,
+  identifyLinkNode,
+  improveFormatting,
+  l_pRegex,
+  massTransformText,
+  moveQuotesBeforeLink,
+  rearrangeLinkPunctuation,
+  replaceFractions,
+  spacesAroundSlashes,
   stripInlineBoundaryWhitespace,
   StripInlineBoundaryWhitespace,
+  timeTransform,
 } from "../formatting_improvement_html"
-import { toSkip, SKIP_TAGS, FRACTION_SKIP_TAGS, SKIP_CLASSES } from "../formatting_improvement_html"
+import { FRACTION_SKIP_TAGS, SKIP_CLASSES, SKIP_TAGS, toSkip } from "../formatting_improvement_html"
 
 const MULTIPLICATION = "\u00D7" // ×
 

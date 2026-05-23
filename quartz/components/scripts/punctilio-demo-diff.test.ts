@@ -1,10 +1,10 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import {
-  MAX_CHAR_DIFF_LENGTH,
   escapeForOutput,
-  renderCharDiff,
+  MAX_CHAR_DIFF_LENGTH,
   renderChangedLinePair,
+  renderCharDiff,
   renderDiffHtml,
   renderPrefixSuffixDiff,
 } from "./punctilio-demo-diff"

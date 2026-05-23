@@ -4,7 +4,7 @@
  * supporting small caps and LaTeX rendering in headings.
  */
 
-import type { RootContent, Parent, Element, Root } from "hast"
+import type { Element, Parent, Root, RootContent } from "hast"
 import type { JSX } from "preact"
 
 import { fromHtml } from "hast-util-from-html"
