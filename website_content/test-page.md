@@ -619,6 +619,9 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 - Version labels V1, v2, v100, and v1.0.2 use full-height digits.
 <!--spellchecker-enable-->
 
+## Kerning pairs
+The upright EBGaramond f's ascender used to clip into the punctuation that followed it. GPOS pair kerning now adds breathing room: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
+
 ## Numbers and units
 
 This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
