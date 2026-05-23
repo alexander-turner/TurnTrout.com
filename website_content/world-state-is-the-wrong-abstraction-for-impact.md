@@ -39,7 +39,7 @@ date_published: 2019-10-01
 original_url: https://www.lesswrong.com/posts/pr3bLc2LtjARfK7nx/world-state-is-the-wrong-abstraction-for-impact
 skip_import: true
 description: 'Understanding impact as change to the world: attractive, but misleading.'
-date_updated: 2026-05-20
+date_updated: 2026-05-22
 ---
 
 !["I've been keeping something from you. Remember the confusion I mentioned in the first post? Before the attainable utility theory of impact came along, people made an assumption about what impact is - a reasonable, obvious, compelling assumption: that impact is primarily about how the state of the world changes."](https://assets.turntrout.com/static/images/posts/DNE5EJg.avif)
@@ -64,7 +64,7 @@ date_updated: 2026-05-20
 
 ![A cartoon stick figure sits on a bench reading a book titled "The Feynman Lectures on Physics." In a thought bubble, three H2O molecules float next to the word "Steam?".](https://assets.turntrout.com/static/images/posts/UGMcfsy.avif)
 
-![Handwritten text: "Your perceived AU is determined by the state of the world, but our ability to get what we want isn't usually affected by knowing about quarks. A calculator's output is determined by the state of the world, but the computation isn't *about* the state of the world."](https://assets.turntrout.com/static/images/posts/Jidk86s.avif)
+!["Your perceived AU is determined by the state of the world, but our ability to get what we want isn't usually affected by knowing about quarks. A calculator's output is determined by the state of the world, but the computation isn't *about* the state of the world."](https://assets.turntrout.com/static/images/posts/Jidk86s.avif)
 
 !["So how do we know our intuitions are about AU, rather than a more direct function of the details of the world state? In the latter case, the function either does or doesn't change with our ontology. If it does change with our ontology, then ontological confusion would confuse our impact intuitions."](https://assets.turntrout.com/static/images/posts/6Ecn3ug.avif)
 
@@ -90,7 +90,11 @@ date_updated: 2026-05-20
 
 ![A two-panel comic. Top panel text: "Looking back, we see more evidence that impact doesn't hinge on an ontology" and "Did you stop to wonder how XYZ views the world?". A simple robot with a question mark looks at a pile of blocks. Bottom panel text: "Isn't it funny that the Pebblehoarders care so much about pebbles, while we care so much about suffering?". Beside it is a dark void with sad faces, representing suffering.](https://assets.turntrout.com/static/images/posts/q09LBrl.avif)
 
-![An infographic explaining impact. Text: "Imagine...jumbling forever-inaccessible stars...a huge change in state, but it doesn't matter to us." This contrasts two questions: "How different is the world?" versus "How big of a deal is this?". The conclusion: "Impact is a thing that happens to agents" (instead of to the world itself).](https://assets.turntrout.com/static/images/posts/zVkGE6q.avif)
+!["Remember the locality of objective impact?" beside a small drawing of a stick figure on a curved planet surface, watching a distant star far above. "Imagine I take a bunch of forever-inaccessible stars and jumble them up. This is a huge change in state, but it doesn't matter to us."](https://assets.turntrout.com/static/images/posts/zVkGE6q-top.avif)
+
+![A circular cross-section of a starry night sky, with a small cluster of planets near the center.](https://assets.turntrout.com/static/images/posts/zVkGE6q-stars.avif)
+
+!["How different is the world?" is not the same mental question as "How big of a deal is this?". The conclusion: "Impact is a thing that happens to agents".](https://assets.turntrout.com/static/images/posts/zVkGE6q-bottom.avif)
 
 !["Maybe you say, 'it's our ability to reach different world states weighted by how much we care' - but that's just the AU theory with extra steps."](https://assets.turntrout.com/static/images/posts/GEwXYwT.avif) !["In fact, everything else seems to be extra steps. Why is it important to preserve objects, or access to world states, or anything else in the world? Because of what they mean to us."](https://assets.turntrout.com/static/images/posts/CPCaLoM.avif)
 
@@ -98,7 +102,7 @@ date_updated: 2026-05-20
 
 !["Imagine AU theory came first and explained all these intuitions, and then someone suggests, 'but what if we add in this stuff about the state?' … No thanks. After what we've seen, ontological theories shouldn't even be promoted to attention - that's privileging the hypothesis."](https://assets.turntrout.com/static/images/posts/tiKGyYq.avif)
 
-![Handwritten text summarizing an argument. "Let's consider what we now know:" is followed by a list: ... - The locality of objective impact and ontological/existential crisis thought experiments are evidence against ontological theories of impact. ... - Every other consideration seems to just reduce to AU. ... - AU theory is the simplest explanation. ... A concluding paragraph states that AU theory is "the" explanation, not just "an" explanation.](https://assets.turntrout.com/static/images/posts/ZsAlmei.avif)
+!["Let's consider what we now know:" followed by a list: ... - The locality of objective impact and ontological/existential crisis thought experiments are evidence against ontological theories of impact. ... - Every other consideration seems to just reduce to AU. ... - AU theory is the simplest explanation. ... A concluding paragraph states that AU theory is "the" explanation, not just "an" explanation.](https://assets.turntrout.com/static/images/posts/ZsAlmei.avif)
 
 ## Appendix: We Asked a Wrong Question
 

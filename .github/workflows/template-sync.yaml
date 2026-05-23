@@ -60,7 +60,6 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-          filter: blob:none
 
       - name: Checkout template repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -69,7 +68,6 @@ jobs:
           path: _template
           token: ${{ secrets.TEMPLATE_SYNC_TOKEN || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          filter: blob:none
 
       - name: Check token workflow scope
         env:
