@@ -3,5 +3,6 @@
   "quoteProps": "as-needed",
   "trailingComma": "all",
   "tabWidth": 2,
-  "semi": false
+  "semi": false,
+  "plugins": ["punctilio/prettier-plugin"]
 }
