@@ -226,7 +226,6 @@ describe("TableOfContents Plugin", () => {
       processor(mockTree, mockFile)
 
       // Check results
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2)
       expect(normalizeNbsp(mockFile.data.toc?.[0]?.text ?? "")).toBe("Main Title")
       expect(normalizeNbsp(mockFile.data.toc?.[1]?.text ?? "")).toBe("Section")
@@ -296,7 +295,6 @@ describe("TableOfContents Plugin", () => {
       ])
 
       processor(mockTree, mockFile)
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2)
       expect(mockFile.data.toc?.[1]?.text).toBe("Footnotes")
     })
@@ -317,7 +315,6 @@ describe("TableOfContents Plugin", () => {
       ])
 
       processor(mockTree, mockFile)
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(1) // Only H1, H3 excluded
     })
 
@@ -423,7 +420,6 @@ describe("TableOfContents Plugin", () => {
 
       processor(mockTree, mockFile)
 
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2)
     })
 
@@ -449,7 +445,6 @@ describe("TableOfContents Plugin", () => {
 
       processor(mockTree, mockFile)
 
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(2) // Only the non-blockquote headings
       expect(normalizeNbsp(mockFile.data.toc?.[0]?.text ?? "")).toBe("Normal Heading")
       expect(normalizeNbsp(mockFile.data.toc?.[1]?.text ?? "")).toBe("Another Normal Heading")
@@ -475,7 +470,6 @@ describe("TableOfContents Plugin", () => {
 
       processor(mockTree, mockFile)
 
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(4)
 
       // Test exact slug generation
@@ -527,7 +521,6 @@ describe("TableOfContents Plugin", () => {
 
       processor(mockTree, mockFile)
 
-      expect(mockFile.data.toc).toBeDefined()
       expect(mockFile.data.toc).toHaveLength(4) // H4 should be excluded due to maxDepth: 3
 
       // Depths should be adjusted relative to the highest level (H1 = depth 1)

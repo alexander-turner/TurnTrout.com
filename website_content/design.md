@@ -173,7 +173,7 @@ The SVG filter is the best result I can get from CSS alone, so I ship it as the 
 
 ### Deciding when to invert
 
-<span class="float-right" style="max-width: 40%; "><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
+<span class="float-right" style="max-width: 40%; margin-top: calc(-1.5 * $base-margin);"><img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but flipped."/>Evidently, the high-luminance rule is not always correct --- counterexamples exist. Scary. </span>
 
 A blanket invert would butcher certain photos. `gwern` trained a [machine learning classifier for exactly this question](https://gwern.net/invertornot). However, his classifier didn't have much better accuracy than a simple rule which says to invert images with average luminance exceeding 0.7 (since they're "mostly white") --- that's the baseline recommendation. I can quickly skim through a webpage showing light-mode vs dark-mode images in a grid, overriding any which the luminance rule misclassifies.
 
@@ -860,8 +860,9 @@ External static analysis alerts me to potential vulnerabilities and anti-pattern
 
 [`docformatter`](https://pypi.org/project/docformatter/) reformats my Python comments. For compatibility reasons, `docformatter` runs before `lint-staged` in my `pre-commit` hook. I also learned the hard way that Playwright code needs exquisite care to ensure stable, reliable test results. Therefore, I installed [`eslint-plugin-playwright`](https://github.com/playwright-community/eslint-plugin-playwright) to catch Playwright code smells.
 
-Beyond reformatting, I take on several commonsense checks from [`pre-commit.com`](https://pre-commit.com):
-- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials. 
+Beyond reformatting, I run several commonsense guardrails through the [`pre-commit.com`](https://pre-commit.com) framework:
+
+- [`gitleaks`](https://github.com/gitleaks/gitleaks) scans staged content for API keys and credentials.
 - [`actionlint`](https://github.com/rhysd/actionlint) catches shell-in-YAML bugs and bad `uses:` refs whenever I edit a workflow file.
 - [`codespell`](https://github.com/codespell-project/codespell) flags common typos in code and comments. Prose in `website_content/` is covered separately by Vale and `spellchecker-cli`.
 - A size check rejects any staged file over <span class="populate-markdown-large-file-limit"></span>. Heavy assets belong in [R2](#compressing-and-uploading-assets), not the repo.
@@ -891,7 +892,7 @@ Code: Using the [`rich`](https://github.com/Textualize/rich) Python library, my 
 
 ### Cheap checks
 
-Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. After the auto-fix steps, four more read-only checks sweep in parallel:
+Running [`ruff`](https://docs.astral.sh/ruff/) locally gives immediate feedback before CI even starts. I enable the [`pyupgrade`](https://docs.astral.sh/ruff/rules/#pyupgrade-up) and [`return-statement`](https://docs.astral.sh/ruff/rules/#flake8-return-ret) rule families to modernize Python idioms (PEP 585 type hints, PEP 604 unions) and to simplify control flow. After the auto-fix steps, four more read-only checks sweep in parallel:
 
 - [`pylint`](https://pylint.readthedocs.io/) — the static-analysis nits DeepSource also flags, picked up before push instead of after merge.
 - [`mypy`](https://mypy.readthedocs.io/) — type-checking across my Python scripts. The session-start hook warms up a `dmypy` daemon so this finishes in a few seconds.
@@ -902,7 +903,7 @@ Running them in parallel is essentially free — they don't modify files, they d
 
 ### Auto-fixing formatters
 
-I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups (via [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp)). I also run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality, and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
+I run [`eslint --fix`](https://eslint.org/) to automatically fix up my TypeScript files. By using `eslint`, I maintain a high standard of code health, avoiding antipatterns such as declaring variables using the `any` type or using unnamed regex capture groups. [`eslint-plugin-regexp`](https://github.com/ota-meshi/eslint-plugin-regexp) catches regex anti-patterns — [ReDoS](https://en.wikipedia.org/wiki/ReDoS)-prone character classes, dead lookaheads, redundant flags. [`eslint-plugin-perfectionist`](https://github.com/azat-io/eslint-plugin-perfectionist) auto-sorts imports, exports, and array includes for consistent ordering. I run [`stylelint --fix`](https://stylelint.io/) to ensure SCSS quality and [`docformatter --in-place`](https://pypi.org/project/docformatter/) to reformat my Python docstrings.
 
 ### Alt-text scanning
 

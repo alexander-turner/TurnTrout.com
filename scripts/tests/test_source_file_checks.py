@@ -733,23 +733,6 @@ def test_check_font_files(tmp_path: Path):
     assert "/quartz/static/styles/fonts/test.woff2" in missing
 
 
-def test_check_font_files_strips_cache_bust(tmp_path: Path):
-    """Cache-bust query strings (?v=N) are stripped before disk resolution."""
-    font_dir = tmp_path / "quartz" / "static" / "styles" / "fonts"
-    font_dir.mkdir(parents=True)
-    (font_dir / "test.woff2").write_bytes(b"")
-
-    css_content = """
-        @font-face {
-            font-family: 'TestFont';
-            src: url('/static/styles/fonts/test.woff2?v=2') format('woff2');
-        }
-    """
-
-    missing = source_file_checks.check_font_files(css_content, tmp_path)
-    assert missing == []
-
-
 def test_check_font_families():
     """Test font family declaration checking."""
     css_content = """

@@ -59,15 +59,15 @@ describe("createPopover", () => {
   it("should create a popover element", async () => {
     const popover = await createPopover(options)
     expect(popover).toBeInstanceOf(HTMLElement)
-    expect(popover?.classList.contains("popover")).toBe(true)
-    expect(popover?.classList.contains("footnote-popover")).toBe(false)
-    expect(popover?.querySelector(".popover-close")).toBeNull()
+    expect(popover.classList.contains("popover")).toBe(true)
+    expect(popover.classList.contains("footnote-popover")).toBe(false)
+    expect(popover.querySelector(".popover-close")).toBeNull()
   })
 
   it("should handle HTML content", async () => {
     const popover = await createPopover(options)
-    expect(popover?.querySelector(".popover-inner")).not.toBeNull()
-    expect(popover?.querySelector("h1#test-popover")).not.toBeNull()
+    expect(popover.querySelector(".popover-inner")).not.toBeNull()
+    expect(popover.querySelector("h1#test-popover")).not.toBeNull()
   })
 
   it("should handle error cases", async () => {
@@ -90,8 +90,8 @@ describe("createPopover", () => {
 
   it('should append "-popover" to only header IDs in the popover content', async () => {
     const popover = await createPopover(options)
-    expect(popover?.querySelector("h1#test-popover")).not.toBeNull()
-    expect(popover?.querySelector("div#not-a-header-popover")).toBeNull()
+    expect(popover.querySelector("h1#test-popover")).not.toBeNull()
+    expect(popover.querySelector("div#not-a-header-popover")).toBeNull()
   })
 
   it("should throw an error for footnote back arrow links", async () => {
@@ -262,7 +262,9 @@ describe("createPopover", () => {
     options.linkElement.setAttribute("href", "#user-content-fn-1")
     const footnotePopover = await createPopover(options)
     const footnoteInner = footnotePopover.querySelector(".popover-inner")
-    const footnoteContentLength = footnoteInner?.innerHTML.length ?? 0
+    expect(footnoteInner).not.toBeNull()
+    if (!footnoteInner) throw new Error("footnoteInner is null")
+    const footnoteContentLength = footnoteInner.innerHTML.length
 
     // Create full article popover (regular link, no footnote hash)
     const fullArticleOptions = {
@@ -272,16 +274,18 @@ describe("createPopover", () => {
     fullArticleOptions.linkElement.setAttribute("href", "http://example.com")
     const fullArticlePopover = await createPopover(fullArticleOptions)
     const fullArticleInner = fullArticlePopover.querySelector(".popover-inner")
-    const fullArticleContentLength = fullArticleInner?.innerHTML.length ?? 0
+    expect(fullArticleInner).not.toBeNull()
+    if (!fullArticleInner) throw new Error("fullArticleInner is null")
+    const fullArticleContentLength = fullArticleInner.innerHTML.length
 
     // Footnote popover should have significantly less content than full article
     // The full article has ~500+ chars, the footnote has ~50 chars
     expect(fullArticleContentLength - footnoteContentLength).toBeGreaterThanOrEqual(10)
     // Also verify footnote popover does not contain article paragraphs or li wrapper
-    expect(footnoteInner?.querySelectorAll("p").length).toBe(0)
-    expect(footnoteInner?.querySelectorAll("li").length).toBe(0)
+    expect(footnoteInner.querySelectorAll("p").length).toBe(0)
+    expect(footnoteInner.querySelectorAll("li").length).toBe(0)
     // Should contain the footnote text content
-    expect(footnoteInner?.textContent).toContain(footnoteText)
+    expect(footnoteInner.textContent).toContain(footnoteText)
   })
 })
 
