@@ -167,9 +167,7 @@ describe("countAllFavicons", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const counts = getWrittenCounts()
-    const count = counts.get(specialFaviconPaths.anchor)
-    expect(count).toBeDefined()
-    expect(count).toBeGreaterThanOrEqual(2)
+    expect(counts.get(specialFaviconPaths.anchor)).toBe(2)
   })
 
   it.each([
@@ -209,9 +207,7 @@ describe("countAllFavicons", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const counts = getWrittenCounts()
-    const count = counts.get(specialFaviconPaths.turntrout)
-    expect(count).toBeDefined()
-    expect(count).toBeGreaterThanOrEqual(2)
+    expect(counts.get(specialFaviconPaths.turntrout)).toBe(2)
   })
 
   it("should count multiple different hostnames separately", async () => {
@@ -223,20 +219,13 @@ describe("countAllFavicons", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const counts = getWrittenCounts()
-    expect(counts.size).toBeGreaterThanOrEqual(2)
+    expect(counts.size).toBe(2)
 
     const examplePath = getQuartzPath("example.com").replace(/\.svg$/, "")
     const testPath = getQuartzPath("test.com").replace(/\.svg$/, "")
 
-    const exampleCount = counts.get(examplePath)
-    const testCount = counts.get(testPath)
-
-    expect(exampleCount).toBeDefined()
-    expect(testCount).toBeDefined()
-    expect(exampleCount).toBeGreaterThanOrEqual(2)
-    expect(testCount).toBeGreaterThanOrEqual(1)
-    // Type assertion is safe here because we've already verified testCount is defined
-    expect(exampleCount).toBeGreaterThan(testCount as number)
+    expect(counts.get(examplePath)).toBe(2)
+    expect(counts.get(testPath)).toBe(1)
   })
 
   it("should write counts", async () => {
@@ -248,15 +237,9 @@ describe("countAllFavicons", () => {
 
     expect(fs.writeFileSync).toHaveBeenCalled()
     const counts = getWrittenCounts()
-    expect(counts.size).toBeGreaterThanOrEqual(2)
-
-    const mailCount = counts.get(specialFaviconPaths.mail)
-    const anchorCount = counts.get(specialFaviconPaths.anchor)
-
-    expect(mailCount).toBeDefined()
-    expect(anchorCount).toBeDefined()
-    expect(mailCount).toBeGreaterThanOrEqual(3)
-    expect(anchorCount).toBeGreaterThanOrEqual(2)
+    expect(counts.size).toBe(2)
+    expect(counts.get(specialFaviconPaths.mail)).toBe(3)
+    expect(counts.get(specialFaviconPaths.anchor)).toBe(2)
   })
 
   it("should count when hostnames have equal counts", async () => {

@@ -561,7 +561,7 @@ test.describe("Right sidebar", () => {
       return el.scrollHeight > el.clientHeight
     })
 
-    expect(isOverflowing).toBeTruthy()
+    expect(isOverflowing).toBe(true)
 
     const initialWindowScrollY = await page.evaluate(() => window.scrollY)
     const initialSidebarScrollTop = await rightSidebar.evaluate((el) => el.scrollTop)
@@ -600,7 +600,7 @@ test.describe("Right sidebar", () => {
     await expect(rightSidebar).toBeVisible()
 
     const overflows = await rightSidebar.evaluate((el) => el.scrollHeight > el.clientHeight)
-    expect(overflows).toBeTruthy()
+    expect(overflows).toBe(true)
 
     // At the top: only the bottom fade should be active (more content below).
     await rightSidebar.evaluate((el) => {

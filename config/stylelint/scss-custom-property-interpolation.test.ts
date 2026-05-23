@@ -34,39 +34,45 @@ describe("custom/scss-custom-property-interpolation", () => {
         name: "simple custom property with variable",
         code: ".foo { --size: $base-margin; }",
         expectedMessage: "#{$base-margin}",
+        expectedWarnings: 1,
       },
       {
         name: "custom property with calc and variable",
         code: ".foo { --size: calc(100% - $base-margin); }",
         expectedMessage: "#{$base-margin}",
+        expectedWarnings: 1,
       },
       {
         name: "custom property with CSS var and SCSS variable",
         code: ".foo { --size: calc(var(--base) / $font-scale); }",
         expectedMessage: "#{$font-scale}",
+        expectedWarnings: 1,
       },
       {
         name: "multiple SCSS variables in one custom property",
         code: ".foo { --size: calc($var1 + $var2); }",
         expectedMessage: "#{$var1}",
+        expectedWarnings: 2,
       },
       {
         name: "variable with hyphen in custom property",
         code: ".foo { --width: $base-width; }",
         expectedMessage: "#{$base-width}",
+        expectedWarnings: 1,
       },
       {
         name: "variable with underscore in custom property",
         code: ".foo { --width: $base_width; }",
         expectedMessage: "#{$base_width}",
+        expectedWarnings: 1,
       },
     ]
 
-    testCases.forEach(({ name, code, expectedMessage }) => {
+    testCases.forEach(({ name, code, expectedMessage, expectedWarnings }) => {
       it(`should report violations: ${name}`, async () => {
         const result = await lintScss(code)
 
-        expect(result.warnings.length).toBeGreaterThan(0)
+        expect(result.warnings).toHaveLength(expectedWarnings)
         expect(result.warnings[0].rule).toBe("custom/scss-custom-property-interpolation")
         expect(result.warnings[0].text).toContain(expectedMessage)
       })
