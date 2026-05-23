@@ -69,7 +69,7 @@ $fonts-dir: "/static/styles/fonts";
 // fresh fetch. Canonical value is `fontCacheVersion` in
 // config/constants.json (consumed by Head.tsx for the matching preloads);
 // SCSS can't read JSON, so the literal must stay in sync manually.
-$font-cache-version: "?v=4";
+$font-cache-version: "?v=5";
 
 @mixin font-face($font-family, $file-name, $ext: ".woff2", $font-features: none) {
   @font-face {

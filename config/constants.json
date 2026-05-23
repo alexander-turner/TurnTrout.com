@@ -110,7 +110,7 @@
   "scrollPositionKeyPrefix": "scroll:",
   "scrollPositionMinThreshold": 150,
   "cdnBaseUrl": "https://assets.turntrout.com",
-  "fontCacheVersion": "4",
+  "fontCacheVersion": "5",
   "spaFetchTimeoutMs": 10000,
   "popoverRemovalDelayMs": 300,
   "dropcapColors": [
