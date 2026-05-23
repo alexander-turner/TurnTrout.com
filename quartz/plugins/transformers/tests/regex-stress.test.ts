@@ -43,13 +43,10 @@ describe("fractionRegex", () => {
     expect(match?.groups?.ordinal).toBe(ord)
   })
 
-  it.each(["9/11", "word/word", "x1/2", "1/2x", ".1/2", "/1/2"])(
-    "should NOT match %s",
-    (input) => {
-      fractionRegex.lastIndex = 0
-      expect(fractionRegex.test(input)).toBe(false)
-    },
-  )
+  it.each(["9/11", "word/word", "x1/2", "1/2x", ".1/2", "/1/2"])("should NOT match %s", (input) => {
+    fractionRegex.lastIndex = 0
+    expect(fractionRegex.test(input)).toBe(false)
+  })
 
   it("should not match when followed by minus-sign + digit", () => {
     fractionRegex.lastIndex = 0
@@ -95,12 +92,9 @@ describe("isRomanNumeral", () => {
     },
   )
 
-  it.each(["I", "V", "HELLO", "", "VV", "IIII", "MMMM"])(
-    "should NOT match %s",
-    (input) => {
-      expect(isRomanNumeral(input)).toBe(false)
-    },
-  )
+  it.each(["I", "V", "HELLO", "", "VV", "IIII", "MMMM"])("should NOT match %s", (input) => {
+    expect(isRomanNumeral(input)).toBe(false)
+  })
 
   it("should match with trailing punctuation", () => {
     expect(isRomanNumeral("IV.")).toBe(true)
@@ -120,13 +114,10 @@ describe("REGEX_VERSION_NUMBER", () => {
 })
 
 describe("REGEX_ALL_CAPS_PHRASE", () => {
-  it.each(["THE BIG THING", "FIRST-ORDER LOGIC"])(
-    "should match multi-word phrase: %s",
-    (input) => {
-      REGEX_ALL_CAPS_PHRASE.lastIndex = 0
-      expect(REGEX_ALL_CAPS_PHRASE.test(input)).toBe(true)
-    },
-  )
+  it.each(["THE BIG THING", "FIRST-ORDER LOGIC"])("should match multi-word phrase: %s", (input) => {
+    REGEX_ALL_CAPS_PHRASE.lastIndex = 0
+    expect(REGEX_ALL_CAPS_PHRASE.test(input)).toBe(true)
+  })
 
   it.each(["hello world", "AB"])("should NOT match: %s", (input) => {
     REGEX_ALL_CAPS_PHRASE.lastIndex = 0
