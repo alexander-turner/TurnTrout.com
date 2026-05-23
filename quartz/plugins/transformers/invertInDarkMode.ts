@@ -118,7 +118,6 @@ export function wrapInDarkModePicture(node: Element, parent: Parent, index: numb
   parent.children[index] = picture
 }
 
-
 /**
  * Adds `crossorigin="anonymous"` to every CDN-hosted `<img>`. Needed
  * because `renderPage.tsx` emits `<link rel="preload" as="image"

@@ -252,8 +252,6 @@ describe("InvertInDarkMode", () => {
     })
   })
 
-
-
   describe("addCrossOriginToImages", () => {
     it.each<[string, Element, "anonymous" | undefined]>([
       ["CDN-hosted img", h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element, "anonymous"],
