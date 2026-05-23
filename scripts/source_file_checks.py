@@ -913,6 +913,9 @@ def check_font_files(css_content: str, base_dir: Path) -> list[str]:
         if font_path.startswith(("http:", "https:", "data:")):
             continue
 
+        # Strip cache-bust query string before resolving to disk.
+        font_path = font_path.split("?", 1)[0]
+
         if font_path.startswith("/static/"):
             font_path = f"/quartz{font_path}"
 
