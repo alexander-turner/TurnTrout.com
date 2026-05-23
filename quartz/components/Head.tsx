@@ -11,7 +11,7 @@ import { renderHead } from "../util/head"
 import { htmlToJsx } from "../util/jsx"
 import { FullSlug, type FilePath } from "../util/path"
 import { JSResourceToScriptElement } from "../util/resources"
-import { cdnBaseUrl, fontCacheVersion } from "./constants"
+import { cdnBaseUrl } from "./constants"
 import { ELVISH_NOSCRIPT_CSS } from "./scripts/elvish-toggle"
 import {
   type QuartzComponent,
@@ -105,7 +105,7 @@ export default (() => {
       return (
         <link
           key={font}
-          href={`/static/styles/fonts/${font}.woff2?v=${fontCacheVersion}`}
+          href={`/static/styles/fonts/${font}.woff2`}
           as="font"
           type="font/woff2"
           crossorigin="anonymous"
