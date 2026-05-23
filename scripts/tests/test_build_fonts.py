@@ -13,6 +13,7 @@ from ..build_fonts import (
     _F_GLYPHS_12,
     _FONT_DIR,
     _KERN_OFFSET,
+    _TARGET_GLYPHS,
     _UPSTREAM_DIR,
     _add_f_kerning,
     _affine_map_glyph_y,
@@ -348,3 +349,95 @@ class TestBuildAll:
         )
         with pytest.raises(FileNotFoundError):
             build_all(tmp_path)
+
+
+class TestIdempotency:
+    def test_bracket_harmonization_is_idempotent(
+        self, upstream_08: TTFont
+    ) -> None:
+        _harmonize_brackets(upstream_08)
+        coords_after_1 = {
+            name: list(upstream_08["glyf"][name].coordinates)
+            for name in _BRACKET_GLYPHS
+        }
+
+        _harmonize_brackets(upstream_08)
+        coords_after_2 = {
+            name: list(upstream_08["glyf"][name].coordinates)
+            for name in _BRACKET_GLYPHS
+        }
+
+        assert coords_after_1 == coords_after_2
+
+    @pytest.mark.parametrize(
+        "font_fixture,f_glyphs",
+        [
+            ("upstream_08", _F_GLYPHS_08),
+            ("upstream_12", _F_GLYPHS_12),
+        ],
+        ids=["08pt", "12pt"],
+    )
+    def test_existing_kern_has_zero_for_our_pairs(
+        self,
+        font_fixture: str,
+        f_glyphs: tuple[str, ...],
+        request: pytest.FixtureRequest,
+    ) -> None:
+        """
+        Our kern lookup appends to the kern feature.
+
+        Existing kern lookups must not have non-zero values for our glyph pairs,
+        or the values would stack.
+        """
+        font: TTFont = request.getfixturevalue(font_fixture)
+        gpos = font["GPOS"].table
+
+        f_set = set(f_glyphs)
+        t_set = set(_TARGET_GLYPHS)
+
+        for feat_rec in gpos.FeatureList.FeatureRecord:
+            if feat_rec.FeatureTag != "kern":
+                continue
+            for li in feat_rec.Feature.LookupListIndex:
+                lookup = gpos.LookupList.Lookup[li]
+                for st in lookup.SubTable:
+                    if not hasattr(st, "Coverage"):
+                        continue
+                    overlap = f_set & set(st.Coverage.glyphs)
+                    if not overlap:
+                        continue
+                    _assert_no_nonzero_kern(st, overlap, t_set)
+
+
+def _assert_no_nonzero_kern(
+    subtable: object,
+    f_glyphs: set[str],
+    targets: set[str],
+) -> None:
+    if subtable.Format == 1:  # type: ignore[union-attr]
+        for gi, glyph in enumerate(
+            subtable.Coverage.glyphs  # type: ignore[union-attr]
+        ):
+            if glyph not in f_glyphs:
+                continue
+            # type: ignore[union-attr]
+            for pvr in subtable.PairSet[gi].PairValueRecord:
+                if pvr.SecondGlyph in targets:
+                    xadv = pvr.Value1.XAdvance if pvr.Value1 else 0
+                    assert xadv == 0, (
+                        f"Existing kern {glyph}+{pvr.SecondGlyph}" f" = {xadv}"
+                    )
+    elif subtable.Format == 2:  # type: ignore[union-attr]
+        cd1 = subtable.ClassDef1.classDefs  # type: ignore[union-attr]
+        cd2 = subtable.ClassDef2.classDefs  # type: ignore[union-attr]
+        for f_name in f_glyphs:
+            f_class = cd1.get(f_name, 0)
+            for t_name in targets:
+                t_class = cd2.get(t_name, 0)
+                # type: ignore[union-attr]
+                rec = subtable.Class1Record[f_class].Class2Record[t_class]
+                if rec.Value1:
+                    xadv = rec.Value1.XAdvance
+                    assert xadv == 0, (
+                        f"Existing kern {f_name}+{t_name}" f" = {xadv}"
+                    )

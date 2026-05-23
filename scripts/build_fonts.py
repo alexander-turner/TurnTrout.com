@@ -200,10 +200,12 @@ def _build_font(
 ) -> None:
     """Build a single modified font from its upstream original."""
     font = TTFont(upstream_path)
-    _harmonize_brackets(font)
-    _add_f_kerning(font, f_glyphs)
-    font.save(output_path)
-    font.close()
+    try:
+        _harmonize_brackets(font)
+        _add_f_kerning(font, f_glyphs)
+        font.save(output_path)
+    finally:
+        font.close()
 
 
 def _verify_tables(built_path: Path, committed_path: Path, label: str) -> bool:
