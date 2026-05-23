@@ -143,19 +143,12 @@ export function addCrossOriginToImages(tree: Root): void {
   })
 }
 
-export function wrapForceHslInvertImages(tree: Root): void {
-  visit(tree, "element", (node: Element, index, parent) => {
-    if (node.tagName !== "img" || !parent || typeof index !== "number") return
-    const tokens = classTokens(node.properties?.className)
-    if (!tokens.includes(forceHslInvertClass)) return
-    wrapInDarkModePicture(node, parent, index)
-  })
-}
-
 export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
   visit(tree, "element", (node: Element, index, parent) => {
-    if (!eligibleSources(node).some((src) => labels.get(src) === true)) return
-    addInvertClass(node)
+    const hasLabel = eligibleSources(node).some((src) => labels.get(src) === true)
+    const hasForceClass = classTokens(node.properties?.className).includes(forceHslInvertClass)
+    if (!hasLabel && !hasForceClass) return
+    if (hasLabel) addInvertClass(node)
     if (node.tagName === "img" && parent && typeof index === "number") {
       wrapInDarkModePicture(node, parent, index)
     }
@@ -182,7 +175,6 @@ export const InvertInDarkMode = () => {
     htmlPlugins: () => [
       () => async (tree: Root) => {
         applyLabelsToTree(tree, await labels())
-        wrapForceHslInvertImages(tree)
         addCrossOriginToImages(tree)
       },
     ],

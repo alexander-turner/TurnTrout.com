@@ -21,7 +21,6 @@ import {
   isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
-  wrapForceHslInvertImages,
   wrapInDarkModePicture,
 } from "../invertInDarkMode"
 
@@ -181,6 +180,18 @@ describe("InvertInDarkMode", () => {
       applyLabelsToTree(tree(video), new Map([["https://x/a.mp4", true]]))
       expect(video.properties?.className).toBeUndefined()
     })
+
+    it("wraps pre-existing force-hsl-invert raster img in <picture> without adding invert class", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      applyLabelsToTree(root, new Map())
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      expect(img.properties?.className).toEqual([forceHslInvertClass])
+    })
   })
 
   describe("collectVideoSources", () => {
@@ -281,49 +292,6 @@ describe("InvertInDarkMode", () => {
     it("throws on absolute non-CDN src", () => {
       const img = h("img", { src: "https://evil.example.com/x.avif" }) as Element
       expect(() => addCrossOriginToImages(tree(img))).toThrow(/expected.*assets\.turntrout/)
-    })
-  })
-
-  describe("wrapForceHslInvertImages", () => {
-    it("wraps a force-hsl-invert raster img in <picture>", () => {
-      const img = h("img", {
-        src: `${cdnBaseUrl}/demo.avif`,
-        className: [forceHslInvertClass],
-      }) as Element
-      const root = tree(img)
-      wrapForceHslInvertImages(root)
-      const wrapped = root.children[0] as Element
-      expect(wrapped.tagName).toBe("picture")
-      expect((wrapped.children[1] as Element).tagName).toBe("img")
-    })
-
-    it("skips images without force-hsl-invert class", () => {
-      const img = h("img", { src: `${cdnBaseUrl}/plain.avif` }) as Element
-      const root = tree(img)
-      wrapForceHslInvertImages(root)
-      expect((root.children[0] as Element).tagName).toBe("img")
-    })
-
-    it("skips images already inside a <picture>", () => {
-      const img = h("img", {
-        src: `${cdnBaseUrl}/demo.avif`,
-        className: [forceHslInvertClass],
-      }) as Element
-      const picture = h("picture", [img]) as Element
-      const root = tree(picture)
-      wrapForceHslInvertImages(root)
-      expect((root.children[0] as Element).tagName).toBe("picture")
-      expect(picture.children[0]).toBe(img)
-    })
-
-    it("skips SVG images (handled by fetch-rewrite path)", () => {
-      const img = h("img", {
-        src: `${cdnBaseUrl}/icon.svg`,
-        className: [forceHslInvertClass],
-      }) as Element
-      const root = tree(img)
-      wrapForceHslInvertImages(root)
-      expect((root.children[0] as Element).tagName).toBe("img")
     })
   })
 
