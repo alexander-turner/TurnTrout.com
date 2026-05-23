@@ -45,7 +45,7 @@ jobs:
     outputs:
       run: ${{ steps.gate.outputs.run }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
         with:
           sparse-checkout: .github/actions/ci-gate
       - id: gate
@@ -65,7 +65,7 @@ jobs:
     outputs:
       deploy_url: ${{ steps.deploy_cf_pages.outputs.DEPLOY_URL }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
       - name: Setup site
         uses: ./.github/actions/setup-site
         with:
@@ -144,7 +144,7 @@ jobs:
     timeout-minutes: 10
     needs: deploy
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
       - name: CLS Check (Desktop)
         id: lighthouse_desktop
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -174,7 +174,7 @@ jobs:
     timeout-minutes: 10
     needs: deploy
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
       - name: CLS Check (Mobile)
         id: lighthouse_mobile
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -204,7 +204,7 @@ jobs:
     timeout-minutes: 10
     needs: deploy
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
       - name: Run Lighthouse Full Audit (Performance, Accessibility, Best Practices, SEO)
         id: lighthouse_full
         uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
@@ -241,7 +241,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ needs.deploy.outputs.deploy_url }}
       PLAYWRIGHT_BROWSERS: chromium
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
         with:

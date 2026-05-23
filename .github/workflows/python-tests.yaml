@@ -26,7 +26,7 @@ jobs:
     outputs:
       python: ${{ steps.changes.outputs.python }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
 
       - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: changes
@@ -49,7 +49,7 @@ jobs:
     timeout-minutes: 12
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: ./.github/actions/retry-checkout
 
       - name: Setup site
         uses: ./.github/actions/setup-site
@@ -58,9 +58,13 @@ jobs:
           install-system-deps: "true"
 
       - name: Install test dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape fish ffmpeg
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "10"
+          command: |
+            sudo apt-get update && \
+            sudo apt-get install -y --no-install-recommends libimage-exiftool-perl inkscape fish ffmpeg
 
       - name: Install ImageMagick 7 via Homebrew
         run: |
