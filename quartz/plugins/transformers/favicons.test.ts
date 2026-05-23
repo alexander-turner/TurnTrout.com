@@ -3,7 +3,7 @@
  */
 import type { Element } from "hast"
 
-import { jest, expect, it, describe, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
 
 // skipcq: JS-C1003
@@ -13,10 +13,10 @@ jest.mock("fs")
 import fs from "fs"
 
 import {
-  simpleConstants,
-  localTroutFaviconBasename,
-  specialFaviconPaths,
   defaultPath,
+  localTroutFaviconBasename,
+  simpleConstants,
+  specialFaviconPaths,
 } from "../../components/constants"
 import { normalizeFaviconListEntry } from "../../util/favicon-config"
 import { hasClass } from "./utils"

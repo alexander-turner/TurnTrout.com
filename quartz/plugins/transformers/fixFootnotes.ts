@@ -1,7 +1,7 @@
-import type { Root, Element, ElementContent, Parent } from "hast"
+import type { Element, ElementContent, Parent, Root } from "hast"
 
 import { h } from "hastscript"
-import { visit, SKIP } from "unist-util-visit"
+import { SKIP, visit } from "unist-util-visit"
 
 import { footnoteHeadingId } from "../../components/constants"
 import { QuartzTransformerPlugin } from "../types"

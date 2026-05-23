@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
 // The set of pages covered mirrors `.github/lighthouse-full-config.json`'s

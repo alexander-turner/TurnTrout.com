@@ -1,4 +1,4 @@
-import type { Root, Element, RootContent } from "hast"
+import type { Element, Root, RootContent } from "hast"
 
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"

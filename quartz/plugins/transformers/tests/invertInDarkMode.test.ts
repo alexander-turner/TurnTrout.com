@@ -3,7 +3,7 @@
  */
 import type { Element, Root } from "hast"
 
-import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import fs from "fs/promises"
 import { h } from "hastscript"
 

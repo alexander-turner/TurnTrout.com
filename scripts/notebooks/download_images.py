@@ -2,8 +2,8 @@ import os
 import re
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 # Ensure the parent directory is in the sys path so we can import utils
 sys.path.append(str(Path(__file__).parent.parent))

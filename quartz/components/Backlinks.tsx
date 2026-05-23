@@ -1,12 +1,12 @@
 import type { JSX } from "preact"
 
-import { type RootContent, type Parent, type Element, type Root } from "hast"
+import { type Element, type Parent, type Root, type RootContent } from "hast"
 import { fromHtml } from "hast-util-from-html"
 // skipcq: JS-W1028
 import React from "react"
 
 import { type QuartzPluginData } from "../plugins/vfile"
-import { type FullSlug, type SimpleSlug, resolveRelative, simplifySlug } from "../util/path"
+import { type FullSlug, resolveRelative, type SimpleSlug, simplifySlug } from "../util/path"
 import { formatTitle, processSmallCaps } from "./component_utils"
 import { type QuartzComponent, type QuartzComponentProps } from "./types"
 

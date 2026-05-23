@@ -1,5 +1,5 @@
-import { test, expect } from "./fixtures"
-import { takeRegressionScreenshot, setTheme, gotoPage } from "./visual_utils"
+import { expect, test } from "./fixtures"
+import { gotoPage, setTheme, takeRegressionScreenshot } from "./visual_utils"
 
 // Visual regression tests don't need assertions
 /* eslint-disable playwright/expect-expect */

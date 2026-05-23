@@ -1,5 +1,5 @@
-import { expect, describe, it, test } from "@jest/globals"
-import { type Element, type Parent, type ElementContent, type Root } from "hast"
+import { describe, expect, it, test } from "@jest/globals"
+import { type Element, type ElementContent, type Parent, type Root } from "hast"
 import { h } from "hastscript"
 import rehypeParse from "rehype-parse"
 import rehypeStringify from "rehype-stringify"
@@ -9,13 +9,13 @@ import { visit } from "unist-util-visit"
 import type { BuildCtx } from "../../../util/ctx"
 
 import {
-  SUBTITLE_REGEX,
   createSubtitleWithChildren,
   modifyNode,
   processParagraph,
   rehypeCustomSubtitle,
+  SUBTITLE_REGEX,
 } from "../subtitles"
-import { removePositions, createRehypeProcessor } from "./test-utils"
+import { createRehypeProcessor, removePositions } from "./test-utils"
 
 const process = createRehypeProcessor(modifyNode)
 

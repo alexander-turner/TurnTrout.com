@@ -11,8 +11,8 @@ import { escapeHTML } from "../../util/escape"
 import {
   type FilePath,
   type FullSlug,
-  type SimpleSlug,
   joinSegments,
+  type SimpleSlug,
   simplifySlug,
 } from "../../util/path"
 import { applyTextTransforms } from "../transformers/formatting_improvement_html"

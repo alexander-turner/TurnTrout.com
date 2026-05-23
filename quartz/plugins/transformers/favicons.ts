@@ -1,4 +1,4 @@
-import type { Element, Root, Text, Parent } from "hast"
+import type { Element, Parent, Root, Text } from "hast"
 
 import fs from "fs"
 import mime from "mime-types"
@@ -7,17 +7,17 @@ import { visit } from "unist-util-visit"
 import type { BuildCtx } from "../../util/ctx"
 
 import {
+  cdnBaseUrl,
+  defaultPath,
+  HEADING_TAGS,
   simpleConstants,
   specialFaviconPaths,
-  defaultPath,
-  cdnBaseUrl,
-  HEADING_TAGS,
 } from "../../components/constants"
 import { faviconCountsFile } from "../../components/constants.server"
 import {
-  normalizeHostname,
   faviconCountAllowlistComputed,
   faviconSubstringBlocklistComputed,
+  normalizeHostname,
 } from "../../util/favicon-config"
 import { createWinstonLogger } from "../../util/log"
 import { addClass, createNowrapSpan, hasClass, spliceAndWrapLastChars } from "./utils"

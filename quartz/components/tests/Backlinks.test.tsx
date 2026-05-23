@@ -3,7 +3,7 @@ import type { Root, RootContent } from "hast"
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 import { h as preactH } from "preact"
 import { render } from "preact-render-to-string"
@@ -15,7 +15,7 @@ import { type GlobalConfiguration } from "../../util/config"
 import { type QuartzConfig } from "../../util/ctx"
 import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, type SimpleSlug } from "../../util/path"
-import { Backlinks, getBacklinkFileData, elementToJsx } from "../Backlinks"
+import { Backlinks, elementToJsx, getBacklinkFileData } from "../Backlinks"
 import { normalizeNbsp } from "../constants"
 
 // Helper function to create test file data

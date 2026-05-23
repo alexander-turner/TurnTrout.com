@@ -1,4 +1,4 @@
-import { describe, expect, beforeEach, test, it } from "@jest/globals"
+import { beforeEach, describe, expect, it, test } from "@jest/globals"
 import { type Element, type Root } from "hast"
 import { h } from "hastscript"
 
@@ -6,22 +6,22 @@ import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
 import {
-  slugify,
-  resetSlugger,
-  maybeSpliceAndAppendBackArrow,
-  removeBackArrowFromChildren,
-  preprocessSlug,
-  returnAddIdsToHeadingsFn,
-  GitHubFlavoredMarkdown,
-  isFootnoteListItem,
-  findFootnoteBackArrow,
-  appendArrowToFootnoteListItemVisitor,
-  htmlAccessibilityPlugin,
   adoptPrecedingSiblingAsDt,
-  optimizeMermaidSvgs,
-  removeUnreferencedMarkers,
-  isValidDlStructure,
+  appendArrowToFootnoteListItemVisitor,
   ensureHeadingLinksHaveAccessibleNames,
+  findFootnoteBackArrow,
+  GitHubFlavoredMarkdown,
+  htmlAccessibilityPlugin,
+  isFootnoteListItem,
+  isValidDlStructure,
+  maybeSpliceAndAppendBackArrow,
+  optimizeMermaidSvgs,
+  preprocessSlug,
+  removeBackArrowFromChildren,
+  removeUnreferencedMarkers,
+  resetSlugger,
+  returnAddIdsToHeadingsFn,
+  slugify,
 } from "../gfm"
 
 const mockBuildCtx: BuildCtx = {

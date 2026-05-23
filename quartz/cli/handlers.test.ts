@@ -4,7 +4,7 @@
 import type { CheerioAPI } from "cheerio"
 import type { Element as CheerioElement } from "domhandler"
 
-import { describe, it, expect, jest, beforeEach, afterEach, beforeAll } from "@jest/globals"
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { load as cheerioLoad } from "cheerio"
 
 const mockGenerate = jest.fn(() => Promise.resolve({ css: "/* critical */" }))

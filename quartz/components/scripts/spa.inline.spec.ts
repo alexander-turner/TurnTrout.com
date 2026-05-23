@@ -10,17 +10,17 @@
 import type { Page } from "@playwright/test"
 
 import {
-  simpleConstants,
-  tightScrollTolerance,
-  testPageSlug,
   scrollPositionKeyPrefix,
   scrollPositionMinThreshold,
+  simpleConstants,
+  testPageSlug,
+  tightScrollTolerance,
 } from "../constants"
-import { test, expect } from "../tests/fixtures"
+import { expect, test } from "../tests/fixtures"
 import {
-  isDesktopViewport,
   getAllWithWait,
   gotoPage,
+  isDesktopViewport,
   reloadPage,
   triggerAndWaitForSPANav,
 } from "../tests/visual_utils"
@@ -169,20 +169,33 @@ test.describe("Local Link Navigation", () => {
   }
 
   test("ignores links with target=_blank", async ({ page }) => {
-    await page.evaluate(() => {
-      const link = document.createElement("a")
-      link.href = "/design"
-      link.target = "_blank"
-      link.id = "blank-link"
-      link.textContent = "Open in new tab"
-      document.body.appendChild(link)
+    // Use a synthetic click inside evaluate instead of Playwright's .click()
+    // to avoid opening a real popup — Safari's WebKit process can crash when
+    // Playwright tears down a context that still has an in-flight popup.
+    const wasDefaultPrevented = await page.evaluate(() => {
+      return new Promise<boolean>((resolve) => {
+        const link = document.createElement("a")
+        link.href = "/design"
+        link.target = "_blank"
+        link.textContent = "Open in new tab"
+        document.body.appendChild(link)
+
+        link.addEventListener(
+          "click",
+          (e) => {
+            const prevented = e.defaultPrevented
+            e.preventDefault()
+            resolve(prevented)
+          },
+          { capture: false },
+        )
+
+        link.click()
+      })
     })
 
-    const currentUrl = page.url()
-    await page.locator("#blank-link").click()
-
-    // The local link with target=_blank should not be intercepted
-    expect(page.url()).toBe(currentUrl)
+    // SPA should NOT have called preventDefault on a target=_blank link
+    expect(wasDefaultPrevented).toBe(false)
   })
 
   test("external links are not intercepted", async ({ page }) => {

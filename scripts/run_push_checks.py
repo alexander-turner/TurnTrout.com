@@ -20,10 +20,11 @@ import subprocess
 import sys
 import threading
 from collections import deque
+from collections.abc import Collection, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Collection, Deque, Sequence, TextIO
+from typing import TextIO
 
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TaskID, TextColumn
@@ -307,7 +308,7 @@ def run_checks(
 def stream_reader(
     stream: TextIO,
     lines_list: list[str],
-    last_lines: Deque[str],
+    last_lines: deque[str],
     progress: Progress,
     task_id: TaskID,
 ) -> None:
@@ -381,7 +382,7 @@ def run_non_interactive_command(
     """
     stdout_lines: list[str] = []
     stderr_lines: list[str] = []
-    last_lines: Deque[str] = deque(maxlen=5)
+    last_lines: deque[str] = deque(maxlen=5)
     cmd = " ".join(step.command) if step.shell else step.command
 
     with subprocess.Popen(

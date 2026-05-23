@@ -2,19 +2,19 @@ import { promises as fs } from "fs"
 import sharp from "sharp"
 
 import { type Theme } from "../scripts/darkmode"
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import {
-  setTheme,
-  getNextElementMatchingSelector,
-  waitForTransitionEnd,
-  isDesktopViewport,
-  takeRegressionScreenshot,
-  pauseMediaElements,
-  getH1Screenshots,
-  getScreenshotName,
-  wrapH1SectionsInSpans,
   getAllWithWait,
+  getH1Screenshots,
+  getNextElementMatchingSelector,
+  getScreenshotName,
   gotoPage,
+  isDesktopViewport,
+  pauseMediaElements,
+  setTheme,
+  takeRegressionScreenshot,
+  waitForTransitionEnd,
+  wrapH1SectionsInSpans,
 } from "./visual_utils"
 
 test.describe("wrapH1SectionsInSpans", () => {

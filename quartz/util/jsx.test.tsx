@@ -3,7 +3,7 @@
  */
 import type { Element, Root } from "hast"
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
 import { render } from "preact-render-to-string"
 

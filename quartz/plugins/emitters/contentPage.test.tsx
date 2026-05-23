@@ -1,4 +1,4 @@
-import { jest, describe, it, expect, beforeEach, beforeAll } from "@jest/globals"
+import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { type Root } from "hast"
 import { VFile } from "vfile"
 

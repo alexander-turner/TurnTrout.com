@@ -1,10 +1,10 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import {
-  normalizeHostname,
-  normalizeFaviconListEntry,
   faviconCountAllowlistComputed,
   faviconSubstringBlocklistComputed,
+  normalizeFaviconListEntry,
+  normalizeHostname,
 } from "./favicon-config"
 
 describe("normalizeHostname", () => {

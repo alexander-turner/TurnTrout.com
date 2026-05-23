@@ -1,8 +1,8 @@
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import { describe, it, expect } from "@jest/globals"
-import { type Root, type Element } from "hast"
+import { describe, expect, it } from "@jest/globals"
+import { type Element, type Root } from "hast"
 import { h } from "hastscript"
 // skipcq: JS-W1028
 import React from "react"
@@ -10,11 +10,12 @@ import React from "react"
 import { type QuartzPluginData } from "../../plugins/vfile"
 import { type GlobalConfiguration } from "../../util/config"
 import { type FullSlug, type RelativeURL } from "../../util/path"
-import { type StaticResources, type JSResource } from "../../util/resources"
+import { type JSResource, type StaticResources } from "../../util/resources"
 import { locale, normalizeNbsp } from "../constants"
 import { allSlug } from "../pages/AllPosts"
 import { allTagsSlug } from "../pages/AllTagsContent"
 import {
+  addVirtualFileForSpecialTransclude,
   createTranscludeSourceAnchor,
   optimizeLcpImage,
   pageResources,
@@ -23,7 +24,6 @@ import {
   setHeaderTransclusion,
   setIntroTransclusion,
   setPageTransclusion,
-  addVirtualFileForSpecialTransclude,
 } from "../renderPage"
 import { type QuartzComponent, type QuartzComponentProps } from "../types"
 

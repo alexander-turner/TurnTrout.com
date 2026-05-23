@@ -49,9 +49,9 @@ Use the `/commit` skill to create conventional commits:
 
 ### 4. Check DeepSource
 
-Run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
+Run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
 
-### 5. Push Updates
+### 5. Push Updates
 
 ```bash
 git push
@@ -81,7 +81,7 @@ After pushing, dynamically update the PR to reflect **all** changes (not just 
 timeout 15m gh pr checks --watch || true
 ```
 
-If checks fail, fix issues and repeat steps 3-5.
+If checks fail, fix issues and repeat steps 3–5.
 
 ### 8. Report Result
 

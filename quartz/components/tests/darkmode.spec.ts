@@ -2,7 +2,7 @@ import type { Page } from "@playwright/test"
 
 import { savedThemeKey } from "../constants"
 import { type Theme } from "../scripts/darkmode"
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import { gotoPage, setTheme as utilsSetTheme } from "./visual_utils"
 
 // False negative because the helpers call expect

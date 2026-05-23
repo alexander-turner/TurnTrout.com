@@ -3,7 +3,7 @@
  * @jest-environment-options {"url": "http://localhost:8080"}
  */
 
-import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { scrollPositionKeyPrefix, scrollPositionMinThreshold } from "../constants"
 import {

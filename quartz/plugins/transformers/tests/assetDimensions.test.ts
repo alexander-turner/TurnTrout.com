@@ -3,7 +3,7 @@
  */
 import type { Element, Root } from "hast"
 
-import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import childProcess, { type SpawnSyncReturns } from "child_process"
 // skipcq: JS-W1028
 import fsExtra from "fs-extra"
@@ -25,14 +25,14 @@ import {
   AssetProcessor,
   constrainSliderHeight,
   findWidestAspectRatio,
-  logger,
-  prependStyles,
-  paths,
   assetProcessor as globalAssetProcessor,
-  numRetries,
+  logger,
   maybeResolveAssetStagingPath,
+  numRetries,
+  paths,
+  prependStyles,
 } from "../assetDimensions"
-import { mockFetchResolve, mockFetchNetworkError } from "./test-utils"
+import { mockFetchNetworkError, mockFetchResolve } from "./test-utils"
 
 // Create a minimal valid PNG file with IHDR chunk
 const mockImageData = Buffer.from([

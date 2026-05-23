@@ -1,5 +1,5 @@
 import type { Node } from "hast"
-import type { Root, Heading } from "mdast"
+import type { Heading, Root } from "mdast"
 
 import { SKIP } from "unist-util-visit"
 import { visitParents } from "unist-util-visit-parents"
@@ -10,8 +10,8 @@ import type { TocEntry } from "../vfile"
 import { footnoteHeadingId, normalizeNbsp } from "../../components/constants"
 import { createWinstonLogger } from "../../util/log"
 import { applyTextTransforms } from "./formatting_improvement_html"
-import { slugify, resetSlugger } from "./gfm"
-import { hasAncestor, type ElementMaybeWithParent } from "./utils"
+import { resetSlugger, slugify } from "./gfm"
+import { type ElementMaybeWithParent, hasAncestor } from "./utils"
 
 /**
  * Configuration options for the Table of Contents transformer
@@ -52,7 +52,7 @@ export function customToString(node: Node): string {
     return node.type === "inlineMath" ? `$${node.value}$` : `$$${node.value}$$`
   }
 
-  if (["inlineCode", "code"].includes(node.type) && "value" in node) {
+  if (["code", "inlineCode"].includes(node.type) && "value" in node) {
     return `\`${node.value}\``
   }
 

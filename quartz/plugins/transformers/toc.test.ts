@@ -1,5 +1,5 @@
 import type { Node } from "hast"
-import type { Root, Text, InlineCode, Code, Link, Emphasis, Blockquote, Paragraph } from "mdast"
+import type { Blockquote, Code, Emphasis, InlineCode, Link, Paragraph, Root, Text } from "mdast"
 
 import { describe, expect, it } from "@jest/globals"
 

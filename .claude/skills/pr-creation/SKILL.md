@@ -96,7 +96,7 @@ Each pass:
 
 Run the project’s test/lint/typecheck commands (see [pr-templates.md](pr-templates.md) for common commands per language). Fix any failures before proceeding. If validation surfaces new defects, loop back into Step 2 with the fixes included.
 
-If an open PR already exists for this branch, also run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
+If an open PR already exists for this branch, also run `bash scripts/check_deepsource_pr.sh` (or `deepsource issues --pr <N> --output json`) and address any findings before pushing. DeepSource is no longer a pre-push gate, so this step is your responsibility.
 
 ### Step 4: Push and Create the Pull Request
 
@@ -110,6 +110,7 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and forma
    ```
 
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 ### Step 5: Update PR Title and Description (after any post-creation changes)
@@ -161,7 +162,7 @@ Provide the PR URL and confirm all CI checks have passed.
 
 8. Updates PR description to reflect the null-check fix added during critique
 9. Watches CI with `gh pr checks 47 --watch`—all green
-10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>"
+10. Reports: “PR #47 created and all CI checks pass: <https://github.com/org/repo/pull/47>″
 
 ### Example 2: Multi-Commit Feature
 

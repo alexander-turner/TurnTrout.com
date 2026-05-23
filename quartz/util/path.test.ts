@@ -1,6 +1,6 @@
 import type { Element, Text } from "hast"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
 import { type FullSlug, normalizeHastElement } from "./path"
