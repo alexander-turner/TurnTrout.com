@@ -7,7 +7,7 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { cdnBaseUrl, invertInDarkModeClass } from "../../components/constants"
+import { cdnBaseUrl, forceHslInvertClass, invertInDarkModeClass } from "../../components/constants"
 import { invertedUrl, isInvertibleRaster } from "../../components/scripts/invertedAssets"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
@@ -145,8 +145,10 @@ export function addCrossOriginToImages(tree: Root): void {
 
 export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
   visit(tree, "element", (node: Element, index, parent) => {
-    if (!eligibleSources(node).some((src) => labels.get(src) === true)) return
-    addInvertClass(node)
+    const hasLabel = eligibleSources(node).some((src) => labels.get(src) === true)
+    const hasForceClass = classTokens(node.properties?.className).includes(forceHslInvertClass)
+    if (!hasLabel && !hasForceClass) return
+    if (hasLabel) addInvertClass(node)
     if (node.tagName === "img" && parent && typeof index === "number") {
       wrapInDarkModePicture(node, parent, index)
     }

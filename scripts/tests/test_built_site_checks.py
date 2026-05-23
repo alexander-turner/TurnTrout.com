@@ -6556,7 +6556,8 @@ def _class_mismatch_msg(
         ('<img src="https://x/a.avif">', None, []),
         # Reviewed entries with classes matching their `invert` field.
         (
-            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">'
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif"></picture>'
             '<img src="https://x/b.png">',
             {
                 "https://x/a.avif": _reviewed(True),
@@ -6589,7 +6590,7 @@ def _class_mismatch_msg(
                 )
             ],
         ),
-        # Reviewed invert=False but class present → mismatch.
+        # Reviewed invert=False but class present → mismatch + missing <picture>.
         (
             f'<img class="{INVERT_CLASS} other" src="https://x/b.jpg">',
             {"https://x/b.jpg": _reviewed(False)},
@@ -6599,7 +6600,8 @@ def _class_mismatch_msg(
                     "https://x/b.jpg",
                     invert=False,
                     has_class=True,
-                )
+                ),
+                "<img> https://x/b.jpg has invert class but is not inside <picture>",
             ],
         ),
         # Every image extension we label (raster + SVG) is eligible. Each
@@ -6672,9 +6674,33 @@ def _class_mismatch_msg(
         ),
         # class attribute as a space-separated string also works.
         (
-            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif">',
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif"></picture>',
             {"https://x/a.avif": _reviewed(True)},
             [],
+        ),
+        # Raster with invert class NOT inside <picture> → error.
+        (
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [
+                "<img> https://x/a.avif has invert class but is not inside <picture>"
+            ],
+        ),
+        # Raster with invert class inside <picture> → no picture error.
+        (
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif"></picture>',
+            {"https://x/a.avif": _reviewed(True)},
+            [],
+        ),
+        # force-hsl-invert raster NOT inside <picture> → error.
+        (
+            '<img class="force-hsl-invert" src="https://x/demo.avif">',
+            {"https://x/demo.avif": _reviewed(invert=False)},
+            [
+                "<img> https://x/demo.avif has invert class but is not inside <picture>"
+            ],
         ),
     ],
 )

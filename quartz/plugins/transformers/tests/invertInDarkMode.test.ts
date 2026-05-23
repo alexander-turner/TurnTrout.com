@@ -7,7 +7,11 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import fs from "fs/promises"
 import { h } from "hastscript"
 
-import { cdnBaseUrl, invertInDarkModeClass } from "../../../components/constants"
+import {
+  cdnBaseUrl,
+  forceHslInvertClass,
+  invertInDarkModeClass,
+} from "../../../components/constants"
 import {
   addCrossOriginToImages,
   addInvertClass,
@@ -176,6 +180,18 @@ describe("InvertInDarkMode", () => {
       applyLabelsToTree(tree(video), new Map([["https://x/a.mp4", true]]))
       expect(video.properties?.className).toBeUndefined()
     })
+
+    it("wraps pre-existing force-hsl-invert raster img in <picture> without adding invert class", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      applyLabelsToTree(root, new Map())
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      expect(img.properties?.className).toEqual([forceHslInvertClass])
+    })
   })
 
   describe("collectVideoSources", () => {
@@ -334,6 +350,21 @@ describe("InvertInDarkMode", () => {
       const root = tree(img)
       await transformOf(plugin)(root)
       expect((root.children[0] as Element).tagName).toBe("img")
+    })
+
+    it("wraps a pre-existing force-hsl-invert raster img in <picture>", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      const plugin = InvertInDarkMode()
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      const source = wrapped.children[0] as Element
+      expect(source.properties?.srcSet).toBe(`${cdnBaseUrl}/demo-inverted.avif`)
     })
 
     it("reads labels once per plugin instance and re-reads for a new instance", async () => {
