@@ -1,13 +1,13 @@
-import { popoverScrollOffset, popoverRemovalDelayMs, CAN_TRIGGER_POPOVER_CLASS } from "../constants"
+import { CAN_TRIGGER_POPOVER_CLASS, popoverRemovalDelayMs, popoverScrollOffset } from "../constants"
 import {
-  setPopoverPosition,
   attachPopoverEventListeners,
-  PopoverOptions,
-  escapeLeadingIdNumber,
   createPopover,
-  footnoteForwardRefRegex,
-  trapFocusInPopover,
+  escapeLeadingIdNumber,
   focusableSelector,
+  footnoteForwardRefRegex,
+  PopoverOptions,
+  setPopoverPosition,
+  trapFocusInPopover,
 } from "./popover_helpers"
 import { wrapScrollables } from "./scroll-indicator-utils"
 

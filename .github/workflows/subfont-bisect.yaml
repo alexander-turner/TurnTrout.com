@@ -37,9 +37,9 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
         with:
           fetch-depth: 1
-          filter: blob:none
 
       - name: Setup site tooling
         uses: ./.github/actions/setup-site

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterAll, jest } from "@jest/globals"
+import { afterAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 // All mocks use `jest.unstable_mockModule` because log.ts loads its
 // dependencies via ESM-style default imports inside `await import("./log")`.

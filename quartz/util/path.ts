@@ -46,7 +46,7 @@ export type RelativeURL = SlugLike<"relative">
 export function isRelativeURL(s: string): s is RelativeURL {
   const validStart = /^\.{1,2}/.test(s)
   const validEnding = !endsWith(s, "index")
-  return validStart && validEnding && ![".md", ".html"].includes(_getFileExtension(s) ?? "")
+  return validStart && validEnding && ![".html", ".md"].includes(_getFileExtension(s) ?? "")
 }
 
 /**
@@ -91,7 +91,7 @@ export function slugifyFilePath(fp: FilePath, excludeExt?: boolean): FullSlug {
   fp = stripSlashes(fp) as FilePath
   let ext = _getFileExtension(fp)
   const withoutFileExt = ext ? fp.slice(0, -ext.length) : fp
-  if (excludeExt || [".md", ".html", undefined].includes(ext)) {
+  if (excludeExt || [".html", ".md", undefined].includes(ext)) {
     ext = ""
   }
 
@@ -308,7 +308,7 @@ export function joinSegments(...args: string[]): string {
   return args
     .filter((segment) => segment !== "")
     .join("/")
-    .replace(/\/\/+/g, "/")
+    .replace(/\/{2,}/g, "/")
 }
 
 /**
@@ -409,7 +409,7 @@ function _hasFileExtension(s: string): boolean {
  * @returns The file extension (including the "."), or undefined if not found.
  */
 function _getFileExtension(s: string): string | undefined {
-  const match = /\.[A-Za-z0-9]+$/.exec(s)
+  const match = /\.[A-Z0-9]+$/i.exec(s)
   return match?.[0]
 }
 

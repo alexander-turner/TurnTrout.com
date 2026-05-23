@@ -2530,9 +2530,12 @@ def _validate_source_type(
     return issues
 
 
-IssuesAndMaybeSrc = NamedTuple(
-    "IssuesAndMaybeSrc", [("issues", list[str]), ("valid_src", str | None)]
-)
+class IssuesAndMaybeSrc(NamedTuple):
+    """Result of validating a <source> element: any issues found and, if the src
+    URL parsed cleanly, the URL itself."""
+
+    issues: list[str]
+    valid_src: str | None
 
 
 def _validate_source_src(

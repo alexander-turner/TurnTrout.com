@@ -2,15 +2,15 @@ import type { Locator, Page } from "@playwright/test"
 
 import { simpleConstants, urlBarScrollTolerance } from "../constants"
 import { type Theme } from "../scripts/darkmode"
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import {
-  takeRegressionScreenshot,
-  isDesktopViewport,
-  setTheme,
-  reloadPage,
   gotoPage,
-  triggerAndWaitForSPANav,
+  isDesktopViewport,
   moveMouseToSafePosition,
+  reloadPage,
+  setTheme,
+  takeRegressionScreenshot,
+  triggerAndWaitForSPANav,
 } from "./visual_utils"
 
 const { pondVideoId } = simpleConstants

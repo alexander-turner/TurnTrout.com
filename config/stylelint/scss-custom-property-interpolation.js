@@ -6,7 +6,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
     `SCSS variables in custom properties require interpolation: use #{${variable}} instead of ${variable}`,
 })
 
-const SCSS_VARIABLE_PATTERN = /\$[a-zA-Z0-9_-]+/g
+const SCSS_VARIABLE_PATTERN = /\$[\w-]+/g
 
 function isInsideInterpolationBlock(value, variableIndex) {
   // Check if this variable is inside a #{...} block

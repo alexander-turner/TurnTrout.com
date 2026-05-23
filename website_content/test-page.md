@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-22
+date_updated: 2026-05-23
 createBibtex: true
 ---
 
@@ -445,6 +445,31 @@ Wide tables and equations show a fade gradient at the scrollable edges.
 > \nabla \cdot \mathbf{E} = \frac{\rho}{\varepsilon_0} \qquad \nabla \cdot \mathbf{B} = 0 \qquad \nabla \times \mathbf{E} = -\frac{\partial \mathbf{B}}{\partial t} \qquad \nabla \times \mathbf{B} = \mu_0\left(\mathbf{J} + \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}\right) \qquad \mathcal{L} = -\frac{1}{4}F_{\mu\nu}F^{\mu\nu} + \bar{\psi}(i\gamma^\mu D_\mu - m)\psi \qquad S = \int d^4x\,\sqrt{-g}\left(\frac{R}{16\pi G} + \mathcal{L}_{\mathrm{matter}}\right)
 > $$
 
+Equation and table nested in a list item (gaps must not stack with `<p>` margins):[^fn-equation]
+
+1. Before.
+
+   $$
+   x = y
+   $$
+
+   After.
+
+2. Table.
+
+   | A | B | C |
+   | :---: | :---: | :---: |
+   | 1 | 2 | 3 |
+
+[^fn-equation]:
+    Before.
+
+    $$
+    x = y
+    $$
+
+    After.
+
 # Video
 
 <video autoplay muted loop playsinline aria-label="The baseline RL policy makes a big mess while the AUP policy cleanly destroys the red pellets and finishes the level."><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.mp4" type="video/mp4; codecs=hvc1"><source src="https://assets.turntrout.com/static/images/posts/prune_still-easy_trajectories.webm" type="video/webm"><track kind="captions" label="No audio"></video>
@@ -594,13 +619,15 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 - Version labels V1, v2, v100, and v1.0.2 use full-height digits.
 <!--spellchecker-enable-->
 
+## Kerning pairs
+
+GPOS pair kerning gives the upright EBGaramond f's ascender breathing room before punctuation: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
+
+Descender letters after open punctuation: (g) (j) (p) (q) (y). In context: the clipping (probably) happened (just) below the baseline.
+
 ## Numbers and units
 
 This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.
-
-## F-bigram kerning
-
-The upright EBGaramond f's ascender used to clip into the punctuation that followed it. GPOS pair kerning now adds breathing room: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
 
 ## Smart quotes
 

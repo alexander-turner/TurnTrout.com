@@ -1,5 +1,5 @@
-import type { Root, Element, Text } from "hast"
-import type { Plugin as UnifiedPlugin, PluggableList } from "unified"
+import type { Element, Root, Text } from "hast"
+import type { PluggableList, Plugin as UnifiedPlugin } from "unified"
 
 import GithubSlugger from "github-slugger"
 import { headingRank } from "hast-util-heading-rank"

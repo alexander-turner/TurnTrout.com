@@ -149,10 +149,9 @@ def process_file(file_path: Path) -> None:
                         f"\nAccepted description: {generated_description}"
                     )
                     break
-                else:
-                    rejection_reason = user_input
-                    prompt_additions += f"\nRejected description: {generated_description}\nReason for rejection: {rejection_reason}"
-                    print("Generating a new description...")
+                rejection_reason = user_input
+                prompt_additions += f"\nRejected description: {generated_description}\nReason for rejection: {rejection_reason}"
+                print("Generating a new description...")
 
             # Update the file with the new YAML front matter
             yaml_stream = StringIO()

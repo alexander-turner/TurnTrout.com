@@ -1,21 +1,21 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { type Parent } from "hast"
 import { VFile } from "vfile"
 
 import {
+  appleTouchIconUrl,
   defaultCardUrl,
   defaultDescription,
-  normalizeNbsp,
   defaultTitle,
-  appleTouchIconUrl,
-  faviconUrl,
   faviconMimeType,
+  faviconUrl,
+  normalizeNbsp,
 } from "../../components/constants"
 import { type ProcessedContent } from "../../plugins/vfile"
 import { backgroundDark, backgroundLight } from "../../styles/variables"
 import { type GlobalConfiguration } from "../config"
 import { escapeHTML } from "../escape"
-import { renderHead, maybeProduceVideoTag } from "../head"
+import { maybeProduceVideoTag, renderHead } from "../head"
 import { type FullSlug } from "../path"
 
 describe("maybeProduceVideoTag", () => {

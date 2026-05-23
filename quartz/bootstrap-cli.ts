@@ -5,7 +5,7 @@ import yargs from "yargs"
 import { hideBin } from "yargs/helpers"
 
 // @ts-expect-error Importing from a JS file, no types
-import { CommonArgv, BuildArgv, CreateArgv, SyncArgv } from "./cli/args.js"
+import { BuildArgv, CommonArgv, CreateArgv, SyncArgv } from "./cli/args.js"
 import { handleBuild } from "./cli/handlers"
 
 // Define type for command handlers

@@ -1,6 +1,6 @@
 import type { Page, Request } from "playwright"
 
-import { type Locator, type TestInfo, expect } from "@playwright/test"
+import { expect, type Locator, type TestInfo } from "@playwright/test"
 import { appendFileSync, mkdirSync } from "fs"
 import { join } from "path"
 import sanitize from "sanitize-filename"

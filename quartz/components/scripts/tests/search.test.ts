@@ -2,34 +2,34 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { type ContentDetails } from "../../../plugins/vfile"
 import { NBSP, simpleConstants } from "../../constants"
 import {
-  matchTextNodes,
-  descendantsWithId,
-  descendantsSamePageLinks,
-  tokenizeTerm,
-  match,
-  createMatchSpan,
-  findBestMatchToScrollTo,
-  scoreDocByMatchDegree,
   compareMatchScore,
-  updatePlaceholder,
-  showSearch,
-  hideSearch,
-  PreviewManager,
-  syncSearchLayoutState,
-  setSearchLayoutForTesting,
-  navigateWithSearchTerm,
-  scrollContainerToMatch,
-  shouldRescrollCardPreviews,
-  matchHTML,
+  createMatchSpan,
+  descendantsSamePageLinks,
+  descendantsWithId,
+  findBestMatchToScrollTo,
   getSearchStateForTesting,
-  resetSearchStateForTesting,
-  setSearchInitializedForTesting,
+  hideSearch,
   initializeSearch,
+  match,
+  matchHTML,
+  matchTextNodes,
+  navigateWithSearchTerm,
+  PreviewManager,
+  resetSearchStateForTesting,
+  scoreDocByMatchDegree,
+  scrollContainerToMatch,
+  setSearchInitializedForTesting,
+  setSearchLayoutForTesting,
+  shouldRescrollCardPreviews,
+  showSearch,
+  syncSearchLayoutState,
+  tokenizeTerm,
+  updatePlaceholder,
 } from "../search"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants

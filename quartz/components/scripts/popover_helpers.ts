@@ -1,6 +1,6 @@
 import { normalizeRelativeURLs } from "../../util/path"
-import { popoverPadding, popoverRemovalDelayMs, CAN_TRIGGER_POPOVER_CLASS } from "../constants"
-import { renderHTMLContent, modifyElementIds, type ContentRenderOptions } from "./content_renderer"
+import { CAN_TRIGGER_POPOVER_CLASS, popoverPadding, popoverRemovalDelayMs } from "../constants"
+import { type ContentRenderOptions, modifyElementIds, renderHTMLContent } from "./content_renderer"
 
 // Regex to detect footnote forward links (not back arrows which use fnref)
 // IDs can be alphanumeric with hyphens (e.g., fn-1, fn-some-name, fn-instr)
@@ -181,7 +181,7 @@ export async function fetchWithMetaRedirect(
     }
 
     const html = await response.text()
-    const metaRefresh = html.match(/<meta[^>]*?http-equiv=["']?refresh["']?[^>]*?>/i)
+    const metaRefresh = html.match(/<meta[^>]*?http-equiv=["']?refresh[^>]*>/i)
 
     if (!metaRefresh) {
       // No meta refresh found, return response with the HTML content

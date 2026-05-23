@@ -6,7 +6,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 
 import { htmlToJsx } from "../../util/jsx"
 import { type FilePath, type FullSlug, getAllSegmentPrefixes, simplifySlug } from "../../util/path"
-import { uiStrings, PREVIEWABLE_CLASS } from "../constants"
+import { PREVIEWABLE_CLASS, uiStrings } from "../constants"
 import { PageList } from "../PageList"
 import style from "../styles/listPage.scss"
 

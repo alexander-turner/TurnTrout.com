@@ -207,20 +207,16 @@ def _replace_content(
         if not original_alt_was_empty:
             replaced_text = replaced_text.replace('alt=""', "")
         replaced_text = re.sub(r" +\>", ">", replaced_text)
-        replaced_text = re.sub(r" {2,}", " ", replaced_text)
-
-        return replaced_text
+        return re.sub(r" {2,}", " ", replaced_text)
 
     replaced_content = re.sub(original_pattern, _process_match, content)
 
     # Handle the </video><br/>Figure: pattern
-    spaced_figure_content = re.sub(
+    return re.sub(
         r"</video>\s*(<br/?>)?\s*Figure:",
         "</video>\n\nFigure:",
         replaced_content,
     )
-
-    return spaced_figure_content
 
 
 def convert_asset(

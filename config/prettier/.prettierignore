@@ -1,5 +1,7 @@
 public
-**.md
+# Obsidian-flavored content uses custom syntax (spoilers, subtitles, table
+# captions) that prettier can mangle; format the markdown source by hand.
+website_content
 **.min.*
 node_modules
 .quartz-cache

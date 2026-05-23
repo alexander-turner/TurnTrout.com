@@ -1,20 +1,20 @@
-import { type Page, type Locator } from "@playwright/test"
+import { type Locator, type Page } from "@playwright/test"
 
 import { tabletBreakpoint } from "../../styles/variables"
 import { simpleConstants } from "../constants"
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 
 const { searchPlaceholderDesktop, searchPlaceholderMobile } = simpleConstants
 import {
-  takeRegressionScreenshot,
-  setTheme,
-  search,
   getAllWithWait,
-  isElementChecked,
-  openSearch,
   gotoPage,
-  triggerAndWaitForSPANav,
+  isElementChecked,
   moveMouseToSafePosition,
+  openSearch,
+  search,
+  setTheme,
+  takeRegressionScreenshot,
+  triggerAndWaitForSPANav,
 } from "./visual_utils"
 
 test.beforeEach(async ({ page }, testInfo) => {

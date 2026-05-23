@@ -3527,6 +3527,18 @@
     "invert": true,
     "reviewed": true
   },
+  "https://assets.turntrout.com/static/images/posts/zVkGE6q-bottom.avif": {
+    "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/zVkGE6q-stars.avif": {
+    "invert": false,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/zVkGE6q-top.avif": {
+    "invert": true,
+    "reviewed": true
+  },
   "https://assets.turntrout.com/static/images/posts/zVkGE6q.avif": {
     "invert": true,
     "reviewed": true
