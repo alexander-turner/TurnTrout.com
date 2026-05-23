@@ -24,7 +24,6 @@ jobs:
   setup:
     name: flake-check-setup
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     outputs:
       repeat: ${{ steps.check.outputs.repeat }}
     steps:
@@ -53,6 +52,7 @@ jobs:
       PLAYWRIGHT_BROWSERS: chromium,firefox
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Setup Frontend Environment
         uses: ./.github/actions/setup-visual-testing-env
@@ -154,6 +154,7 @@ jobs:
       PLAYWRIGHT_NO_UA_PLATFORM: "1"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
 
       - name: Disable macOS firewall
         run: sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setglobalstate off
@@ -250,7 +251,6 @@ jobs:
     if: always()
     needs: [flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     steps:
       - name: Check results
         run: |
@@ -271,9 +271,9 @@ jobs:
       )
     needs: [flake-check-linux, flake-check-macos]
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        timeout-minutes: 5
       - uses: ./.github/actions/summarize-failed-shards
         with:
           log-pattern: flake-check-log-*
