@@ -106,6 +106,22 @@ _F_GLYPHS_12: Final[tuple[str, ...]] = (
 
 _KERN_OFFSET: Final[int] = 80
 
+_OPEN_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
+    "parenleft",
+    "bracketleft",
+    "braceleft",
+)
+
+_DESCENDER_GLYPHS: Final[tuple[str, ...]] = (
+    "g",
+    "j",
+    "p",
+    "q",
+    "y",
+)
+
+_DESCENDER_KERN: Final[int] = 120
+
 
 def _affine_map_glyph_y(
     font: TTFont,
@@ -180,16 +196,21 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
 
 
-def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
-    """Add PairPos Format 1 kern lookup for f-variant x punctuation pairs."""
+def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
+    """Add PairPos Format 1 kern lookup for all custom kern pairs."""
     glyf_table = font["glyf"]
     hmtx_table = font["hmtx"]
 
     builder = PairPosBuilder(font, None)
+
+    # F-variant glyphs × closing punctuation
     for f_name in f_glyphs:
         overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
         for t_name in _TARGET_GLYPHS:
-            raw = max(overhang - glyf_table[t_name].xMin + _KERN_OFFSET, 0)
+            raw = max(
+                overhang - glyf_table[t_name].xMin + _KERN_OFFSET,
+                0,
+            )
             kern = max(raw, _BASE_KERN[t_name])
             builder.addGlyphPair(
                 None,
@@ -197,6 +218,14 @@ def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
                 buildValue({"XAdvance": kern}),
                 t_name,
                 None,
+            )
+
+    # Open punctuation × descender letters
+    descender_val = buildValue({"XAdvance": _DESCENDER_KERN})
+    for open_glyph in _OPEN_PUNCT_GLYPHS:
+        for desc_glyph in _DESCENDER_GLYPHS:
+            builder.addGlyphPair(
+                None, open_glyph, descender_val, desc_glyph, None
             )
 
     lookup = builder.build()
@@ -216,7 +245,7 @@ def _build_font(
     font = TTFont(upstream_path)
     try:
         _harmonize_brackets(font)
-        _add_f_kerning(font, f_glyphs)
+        _add_kerning(font, f_glyphs)
         font.save(output_path)
     finally:
         font.close()

@@ -9,14 +9,17 @@ from .. import build_fonts
 from ..build_fonts import (
     _BASE_KERN,
     _BRACE_GLYPHS,
+    _DESCENDER_GLYPHS,
+    _DESCENDER_KERN,
     _F_GLYPHS_08,
     _F_GLYPHS_12,
     _FONT_DIR,
     _KERN_OFFSET,
+    _OPEN_PUNCT_GLYPHS,
     _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
     _UPSTREAM_DIR,
-    _add_f_kerning,
+    _add_kerning,
     _affine_map_glyph_y,
     _harmonize_brackets,
     _report_glyf_diffs,
@@ -118,7 +121,7 @@ class TestAddFKerning:
         kern_tags = [f.FeatureTag for f in gpos.FeatureList.FeatureRecord]
         assert "kern" not in kern_tags
 
-        _add_f_kerning(upstream_08, _F_GLYPHS_08)
+        _add_kerning(upstream_08, _F_GLYPHS_08)
 
         kern_tags = [f.FeatureTag for f in gpos.FeatureList.FeatureRecord]
         assert "kern" in kern_tags
@@ -135,13 +138,13 @@ class TestAddFKerning:
         assert original_kern is not None
         original_count = len(original_kern.Feature.LookupListIndex)
 
-        _add_f_kerning(upstream_12, _F_GLYPHS_12)
+        _add_kerning(upstream_12, _F_GLYPHS_12)
         assert len(original_kern.Feature.LookupListIndex) == original_count + 1
 
     def test_pair_value_records_sorted_by_glyph_id(
         self, upstream_08: TTFont
     ) -> None:
-        _add_f_kerning(upstream_08, _F_GLYPHS_08)
+        _add_kerning(upstream_08, _F_GLYPHS_08)
 
         gpos = upstream_08["GPOS"].table
         lookup = gpos.LookupList.Lookup[-1]
@@ -157,7 +160,7 @@ class TestAddFKerning:
     def test_coverage_glyphs_sorted_by_glyph_id(
         self, upstream_08: TTFont
     ) -> None:
-        _add_f_kerning(upstream_08, _F_GLYPHS_08)
+        _add_kerning(upstream_08, _F_GLYPHS_08)
 
         gpos = upstream_08["GPOS"].table
         lookup = gpos.LookupList.Lookup[-1]
@@ -175,41 +178,62 @@ class TestAddFKerning:
         ],
         ids=["08pt", "12pt"],
     )
-    def test_all_f_glyphs_in_coverage(
+    def test_all_source_glyphs_in_coverage(
         self,
         font_fixture: str,
         f_glyphs: tuple[str, ...],
         request: pytest.FixtureRequest,
     ) -> None:
         font: TTFont = request.getfixturevalue(font_fixture)
-        _add_f_kerning(font, f_glyphs)
+        _add_kerning(font, f_glyphs)
         gpos = font["GPOS"].table
         lookup = gpos.LookupList.Lookup[-1]
         subtable = lookup.SubTable[0]
-        assert set(subtable.Coverage.glyphs) == set(f_glyphs)
+        expected = set(f_glyphs) | set(_OPEN_PUNCT_GLYPHS)
+        assert set(subtable.Coverage.glyphs) == expected
 
-    def test_kern_values_match_formula(self, upstream_08: TTFont) -> None:
+    def test_f_kern_values_match_formula(self, upstream_08: TTFont) -> None:
         glyf = upstream_08["glyf"]
         hmtx = upstream_08["hmtx"]
 
-        _add_f_kerning(upstream_08, _F_GLYPHS_08)
+        _add_kerning(upstream_08, _F_GLYPHS_08)
 
         gpos = upstream_08["GPOS"].table
         lookup = gpos.LookupList.Lookup[-1]
         subtable = lookup.SubTable[0]
 
-        for i, f_name in enumerate(subtable.Coverage.glyphs):
-            overhang = glyf[f_name].xMax - hmtx[f_name][0]
+        f_set = set(_F_GLYPHS_08)
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in f_set:
+                continue
+            overhang = glyf[src].xMax - hmtx[src][0]
             for pvr in subtable.PairSet[i].PairValueRecord:
                 t_name = pvr.SecondGlyph
                 expected = max(
                     overhang - glyf[t_name].xMin + _KERN_OFFSET,
                     _BASE_KERN[t_name],
                 )
-                assert pvr.Value1.XAdvance == expected, f"{f_name}->{t_name}"
+                assert pvr.Value1.XAdvance == expected, f"{src}->{t_name}"
+
+    def test_descender_kern_values(self, upstream_08: TTFont) -> None:
+        _add_kerning(upstream_08, _F_GLYPHS_08)
+
+        gpos = upstream_08["GPOS"].table
+        lookup = gpos.LookupList.Lookup[-1]
+        subtable = lookup.SubTable[0]
+
+        desc_set = set(_DESCENDER_GLYPHS)
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in set(_OPEN_PUNCT_GLYPHS):
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph in desc_set:
+                    assert (
+                        pvr.Value1.XAdvance == _DESCENDER_KERN
+                    ), f"{src}->{pvr.SecondGlyph}"
 
     def test_kern_feature_in_all_scripts(self, upstream_08: TTFont) -> None:
-        _add_f_kerning(upstream_08, _F_GLYPHS_08)
+        _add_kerning(upstream_08, _F_GLYPHS_08)
         gpos = upstream_08["GPOS"].table
 
         kern_idx = None
