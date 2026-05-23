@@ -1,4 +1,4 @@
-import type { Root, Element, Text } from "hast"
+import type { Element, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
@@ -6,12 +6,12 @@ import { h } from "hastscript"
 import { normalizeNbsp } from "../../../components/constants"
 import { type QuartzPluginData } from "../../vfile"
 import {
-  renderSequenceTitle,
-  renderPreviousPost,
-  renderNextPost,
+  createSequenceLinksComponent,
   createSequenceLinksDiv,
   insertAfterTroutOrnament,
-  createSequenceLinksComponent,
+  renderNextPost,
+  renderPreviousPost,
+  renderSequenceTitle,
 } from "../sequenceLinks"
 import { ornamentNode } from "../trout_hr"
 
@@ -41,7 +41,7 @@ describe("renderSequenceTitle", () => {
       },
     } as unknown as QuartzPluginData
     const result = renderSequenceTitle(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect(result?.properties?.className).toStrictEqual(["admonition-title-inner"])
 
@@ -69,7 +69,7 @@ describe("renderSequenceTitle", () => {
       },
     } as unknown as QuartzPluginData
     const result = renderSequenceTitle(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect((result?.children[2] as Element).properties?.href).toBeUndefined()
   })
@@ -109,7 +109,7 @@ describe("renderPreviousPost", () => {
       },
     } as QuartzPluginData
     const result = renderPreviousPost(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("p")
     expect(result?.children).toHaveLength(3)
 
@@ -134,7 +134,7 @@ describe("renderPreviousPost", () => {
       },
     } as QuartzPluginData
     const result = renderPreviousPost(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
   })
 })
@@ -173,7 +173,7 @@ describe("renderNextPost", () => {
       },
     } as QuartzPluginData
     const result = renderNextPost(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("p")
     expect(result?.children).toHaveLength(3)
 
@@ -198,7 +198,7 @@ describe("renderNextPost", () => {
       },
     } as QuartzPluginData
     const result = renderNextPost(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect((result?.children[2] as Element).children).toStrictEqual([{ type: "text", value: "" }])
   })
 })
@@ -387,7 +387,7 @@ describe("createSequenceLinksComponent", () => {
       },
     } as unknown as QuartzPluginData
     const result = createSequenceLinksComponent(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect(result?.properties?.className).toStrictEqual(["sequence-links"])
   })
@@ -400,7 +400,7 @@ describe("createSequenceLinksComponent", () => {
       },
     } as QuartzPluginData
     const result = createSequenceLinksComponent(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect(result?.properties?.className).toStrictEqual(["sequence-links"])
   })
@@ -413,7 +413,7 @@ describe("createSequenceLinksComponent", () => {
       },
     } as QuartzPluginData
     const result = createSequenceLinksComponent(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect(result?.properties?.className).toStrictEqual(["sequence-links"])
   })
@@ -430,7 +430,7 @@ describe("createSequenceLinksComponent", () => {
       },
     } as unknown as QuartzPluginData
     const result = createSequenceLinksComponent(fileData)
-    expect(result).toBeTruthy()
+    expect(result).not.toBeNull()
     expect(result?.tagName).toBe("div")
     expect(result?.properties?.className).toStrictEqual(["sequence-links"])
 

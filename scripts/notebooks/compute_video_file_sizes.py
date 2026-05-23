@@ -58,7 +58,7 @@ def main() -> None:
         if webm_size is None and mp4_size is None:
             print(f"Warning: No files found for base name {base_name}")
             continue
-        elif webm_size is None:
+        if webm_size is None:
             print(f"Warning: WEBM file missing for {base_name}")
         elif mp4_size is None:
             print(f"Warning: MP4 file missing for {base_name}")

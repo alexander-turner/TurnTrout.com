@@ -5,7 +5,7 @@ import { unified } from "unified"
 
 import type { FullSlug } from "../../util/path"
 
-import { EXTERNAL_LINK_REL, CAN_TRIGGER_POPOVER_CLASS } from "../../components/constants"
+import { CAN_TRIGGER_POPOVER_CLASS, EXTERNAL_LINK_REL } from "../../components/constants"
 import { CrawlLinks, isExternalLink, isNonRewritableUrl } from "./links"
 
 function processHtml(
@@ -141,7 +141,7 @@ describe("CrawlLinks anchor processing", () => {
     const result = await processHtml('<a href="./other-page">Other</a>', {
       allSlugs: ["other-page"] as FullSlug[],
     })
-    expect(result.links.length).toBeGreaterThan(0)
+    expect(result.links).toHaveLength(1)
   })
 
   it.each([

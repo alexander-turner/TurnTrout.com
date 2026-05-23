@@ -1,7 +1,6 @@
 import re
 import sys
 from pathlib import Path
-from typing import Tuple
 
 # Assuming utils.py is accessible
 try:
@@ -26,7 +25,7 @@ VIDEO_TAG_RE = re.compile(
 ALT_ATTR_RE = re.compile(r'\s+alt=(["\'])(.*?)\1', re.IGNORECASE)
 
 
-def _process_video_attributes(video_attrs: str) -> Tuple[str, bool]:
+def _process_video_attributes(video_attrs: str) -> tuple[str, bool]:
     """
     Processes the attribute string of a video tag.
 

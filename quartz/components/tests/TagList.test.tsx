@@ -1,7 +1,7 @@
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { h } from "preact"
 import { render } from "preact-render-to-string"
 

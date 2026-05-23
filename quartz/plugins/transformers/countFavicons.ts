@@ -1,4 +1,4 @@
-import type { Root as MDRoot, Link, Parent as MDParent } from "mdast"
+import type { Link, Parent as MDParent, Root as MDRoot } from "mdast"
 
 import fs from "fs"
 import remarkParse from "remark-parse"

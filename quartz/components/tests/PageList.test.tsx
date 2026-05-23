@@ -1,9 +1,9 @@
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import type { Root, Element as HastElement } from "hast"
+import type { Element as HastElement, Root } from "hast"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 import { h as preactH } from "preact"
 import { render } from "preact-render-to-string"
@@ -17,12 +17,12 @@ import { type BuildCtx } from "../../util/ctx"
 import { type FullSlug, resolveRelative } from "../../util/path"
 import { normalizeNbsp } from "../constants"
 import {
-  PageList,
   byDateAndAlphabetical,
+  createPageItemElement,
   createPageListHast,
   createPageTitleElement,
   createTagsElement,
-  createPageItemElement,
+  PageList,
 } from "../PageList"
 
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>

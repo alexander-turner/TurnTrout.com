@@ -5,14 +5,14 @@ import { join } from "node:path"
 
 import { NBSP } from "../../quartz/components/constants"
 import {
-  FONTS,
   collectRows,
   findSubsetSize,
+  type FontEntry,
+  FONTS,
   formatKB,
   generate,
   renderTable,
   savingsPct,
-  type FontEntry,
 } from "../gen_font_stats"
 
 const KB = `${NBSP}KB`

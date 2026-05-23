@@ -1,17 +1,17 @@
-import { expect, describe, it, test } from "@jest/globals"
+import { describe, expect, it, test } from "@jest/globals"
 import { type Element, type Parent, type Root } from "hast"
 import { h } from "hastscript"
 import { visit } from "unist-util-visit"
 
 import { BuildCtx } from "../../../util/ctx"
 import {
-  matchSpoilerText,
   createSpoilerNode,
+  matchSpoilerText,
   modifyNode,
   processParagraph,
   rehypeCustomSpoiler,
 } from "../spoiler"
-import { removePositions, createRehypeProcessor } from "./test-utils"
+import { createRehypeProcessor, removePositions } from "./test-utils"
 
 const process = createRehypeProcessor(modifyNode)
 

@@ -13,14 +13,14 @@ import { simpleConstants, specialFaviconPaths } from "../../components/constants
 import { renderPostStatistics } from "../../components/ContentMeta"
 import { type QuartzComponentProps } from "../../components/types"
 import { createWinstonLogger } from "../../util/log"
-import { joinSegments, type FilePath } from "../../util/path"
+import { type FilePath, joinSegments } from "../../util/path"
 import { getFaviconCounts } from "../transformers/countFavicons"
 import {
   createFaviconElement,
   getFaviconUrl,
   ModifyNode,
-  transformUrl,
   shouldIncludeFavicon,
+  transformUrl,
 } from "../transformers/favicons"
 import { createNowrapSpan, hasClass } from "../transformers/utils"
 import { type QuartzEmitterPlugin } from "../types"

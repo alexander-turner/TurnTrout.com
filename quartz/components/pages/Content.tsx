@@ -9,7 +9,7 @@ import type { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps 
 
 import { insertFavicon } from "../../plugins/transformers/favicons"
 import { htmlToJsx } from "../../util/jsx"
-import { specialFaviconPaths, EXTERNAL_LINK_REL, PREVIEWABLE_CLASS } from "../constants"
+import { EXTERNAL_LINK_REL, PREVIEWABLE_CLASS, specialFaviconPaths } from "../constants"
 import { buildNestedList } from "../TableOfContents"
 
 export function createLinkWithFavicon(

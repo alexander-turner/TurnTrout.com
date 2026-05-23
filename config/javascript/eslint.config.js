@@ -25,7 +25,11 @@ export default [
           order: "asc",
         },
       ],
-      "regexp/prefer-named-capture-group": "error",
+      "perfectionist/sort-named-imports": ["error", { type: "natural", order: "asc" }],
+      "perfectionist/sort-named-exports": ["error", { type: "natural", order: "asc" }],
+      "perfectionist/sort-exports": ["error", { type: "natural", order: "asc" }],
+      "perfectionist/sort-array-includes": ["error", { type: "natural", order: "asc" }],
+      ...regexpPlugin.configs["flat/recommended"].rules,
     },
   },
 

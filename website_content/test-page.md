@@ -620,7 +620,10 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 <!--spellchecker-enable-->
 
 ## Kerning pairs
-The upright EBGaramond f's ascender used to clip into the punctuation that followed it. GPOS pair kerning now adds breathing room: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
+
+GPOS pair kerning gives the upright EBGaramond f's ascender breathing room before punctuation: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
+
+Descender letters after open punctuation: (g) (j) (p) (q) (y). In context: the clipping (probably) happened (just) below the baseline.
 
 ## Numbers and units
 

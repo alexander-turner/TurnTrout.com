@@ -25,7 +25,7 @@ const defaultOptions: Options = {
 // Regex for Hugo relref shortcode
 const relrefRegex = new RegExp(/\[(?<text>[^\]]+)\]\(\{\{< relref "(?<link>[^"]+)" >\}\}\)/, "g")
 // Regex for predefined heading IDs in Markdown
-const predefinedHeadingIdRegex = new RegExp(/(?<headingText>.*) {#(?:.*)}/, "g")
+const predefinedHeadingIdRegex = new RegExp(/(?<headingText>.*) \{#.*\}/, "g")
 // Regex for Hugo shortcodes
 const hugoShortcodeRegex = new RegExp(/\{\{(?<content>.*)\}\}/, "g")
 // Regex for HTML figure tags
@@ -34,7 +34,7 @@ const figureTagRegex = new RegExp(/< ?figure src="(?<src>.*)" ?>/, "g")
 const inlineLatexRegex = new RegExp(/\\\\\((?<equation>.+?)\\\\\)/, "g")
 // Regex for block LaTeX: matches various LaTeX delimiters
 const blockLatexRegex = new RegExp(
-  /(?:\\begin{equation}|\\\\\(|\\\\\[)(?<equation>[\s\S]*?)(?:\\\\\]|\\\\\)|\\end{equation})/,
+  /(?:\\begin\{equation\}|\\\\\(|\\\\\[)(?<equation>[\s\S]*?)(?:\\\\\]|\\\\\)|\\end\{equation\})/,
   "g",
 )
 // Regex for Quartz-style LaTeX: matches both inline ($...$) and block ($$...$$) equations

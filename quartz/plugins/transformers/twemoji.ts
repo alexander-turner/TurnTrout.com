@@ -7,8 +7,8 @@ import { visit } from "unist-util-visit"
 
 import {
   emojiReplacement,
-  twemojiBaseUrl,
   emojisToReplace,
+  twemojiBaseUrl,
   twemojiIgnoreChars,
 } from "../../components/constants"
 import { twemoji } from "./modules/twemoji.min"

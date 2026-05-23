@@ -159,7 +159,7 @@ export function handleNavigationScroll(
  */
 export function extractMetaRefreshUrl(html: string): string | null {
   const match = html.match(
-    /<meta[^>]*http-equiv\s*=\s*["']?refresh["']?[^>]*content\s*=\s*["']?\d+;\s*url=(?<url>[^"'>\s]+)["']?/i,
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh[^>]*content\s*=\s*["']?\d+;\s*url=(?<url>[^"'>\s]+)["']?/i,
   )
   return match?.groups?.url ?? null
 }

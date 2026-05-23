@@ -1,4 +1,4 @@
-import { type Parent, type Text, type Element } from "hast"
+import { type Element, type Parent, type Text } from "hast"
 import { renderToString } from "katex"
 import { titleCase } from "title-case"
 

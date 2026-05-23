@@ -3,7 +3,7 @@ import type { Root } from "hast"
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import { jest, describe, it, expect } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 // skipcq: JS-W1028
 import React from "react"
 import { createRoot } from "react-dom/client"
@@ -17,17 +17,17 @@ import { type FilePath } from "../../util/path"
 import { normalizeNbsp } from "../constants"
 import {
   ContentMetadata,
-  RenderPublicationInfo,
   processReadingTime,
   renderLastUpdated,
-  renderReadingTime,
   renderLinkpostInfo,
-  renderTags,
-  renderSequenceTitleJsx,
-  renderPreviousPostJsx,
   renderNextPostJsx,
   renderPostStatistics,
+  renderPreviousPostJsx,
+  RenderPublicationInfo,
+  renderReadingTime,
   renderSequenceInfo,
+  renderSequenceTitleJsx,
+  renderTags,
 } from "../ContentMeta"
 import ContentMeta from "../ContentMeta"
 import { type QuartzComponentProps } from "../types"

@@ -2441,10 +2441,7 @@ def test_check_iframe_sources(
             raise requests.RequestException(str(response))
 
         ok, status_code = response
-        mock_response = type(
-            "MockResponse", (), {"ok": ok, "status_code": status_code}
-        )
-        return mock_response
+        return type("MockResponse", (), {"ok": ok, "status_code": status_code})
 
     # Patch the requests.head function
     monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)

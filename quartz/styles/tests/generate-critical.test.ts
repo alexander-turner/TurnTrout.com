@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { describe, it, expect, jest, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 jest.mock("fs")
 import fs from "fs"
 import path from "path"
@@ -66,11 +66,11 @@ describe("Critical SCSS Generation", () => {
       const content = writeSpy.mock.calls[0][1] as string
 
       // Both themes should define --midground-faint and --midground
-      const lightThemeBlock = content.match(/:root\[data-theme="light"\]\s*\{[^}]+\}/s)
-      const darkThemeBlock = content.match(/:root\[data-theme="dark"\]\s*\{[^}]+\}/s)
+      const lightThemeBlock = content.match(/:root\[data-theme="light"\]\s*\{[^}]+\}/)
+      const darkThemeBlock = content.match(/:root\[data-theme="dark"\]\s*\{[^}]+\}/)
 
-      expect(lightThemeBlock).toBeTruthy()
-      expect(darkThemeBlock).toBeTruthy()
+      expect(lightThemeBlock).not.toBeNull()
+      expect(darkThemeBlock).not.toBeNull()
 
       expect(lightThemeBlock?.[0]).toContain("--midground-faint")
       expect(lightThemeBlock?.[0]).toContain("--midground")

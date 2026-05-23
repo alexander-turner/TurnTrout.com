@@ -1,6 +1,6 @@
-import type { Root, Element } from "hast"
+import type { Element, Root } from "hast"
 
-import { describe, it, expect, jest, beforeEach } from "@jest/globals"
+import { beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { h } from "hastscript"
 import { VFile } from "vfile"
 
@@ -11,7 +11,7 @@ jest.mock("../sequenceLinks", () => ({
   createSequenceLinksComponent: jest.fn(() => null),
 }))
 
-import { insertAfterOrnamentNode, AfterArticle } from "../afterArticle"
+import { AfterArticle, insertAfterOrnamentNode } from "../afterArticle"
 
 // Helper functions to reduce duplication
 function createMockTree(children: Root["children"] = [ornamentNode]): Root {

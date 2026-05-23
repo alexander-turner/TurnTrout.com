@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 
 import { colorDropcapProbability, DROPCAP_COLORS } from "../constants"
 import { gotoPage, triggerAndWaitForSPANav } from "./visual_utils"

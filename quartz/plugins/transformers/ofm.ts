@@ -5,18 +5,18 @@
 
 import type {
   Element,
-  Root as HtmlRoot,
   ElementContent,
-  Properties,
   ElementData,
+  Root as HtmlRoot,
   Parent,
+  Properties,
 } from "hast"
-import type { Root, Html, BlockContent, Paragraph, PhrasingContent, Blockquote } from "mdast"
+import type { BlockContent, Blockquote, Html, Paragraph, PhrasingContent, Root } from "mdast"
 import type { PluggableList } from "unified"
 
 import fs from "fs"
 import { toHtml } from "hast-util-to-html"
-import { ReplaceFunction, findAndReplace as mdastFindReplace } from "mdast-util-find-and-replace"
+import { findAndReplace as mdastFindReplace, ReplaceFunction } from "mdast-util-find-and-replace"
 import { toHast } from "mdast-util-to-hast"
 import path from "path"
 import rehypeRaw from "rehype-raw"
@@ -28,9 +28,9 @@ import type { JSResource } from "../../util/resources"
 import type { QuartzTransformerPlugin } from "../types"
 
 import { escapeHTML } from "../../util/escape"
-import { type FilePath, slugTag, slugifyFilePath } from "../../util/path"
+import { type FilePath, slugifyFilePath, slugTag } from "../../util/path"
 import { UNICODE_WORD_CHAR } from "../../util/regex"
-import { slugify as slugAnchor, resetSlugger } from "./gfm"
+import { resetSlugger, slugify as slugAnchor } from "./gfm"
 
 const currentFilePath = fileURLToPath(import.meta.url)
 const currentDirPath = path.dirname(currentFilePath)
@@ -40,18 +40,18 @@ export const externalLinkRegex = /^https?:\/\//i
 
 /** Matches Obsidian wikilinks: [[page]], [[page#section]], [[page#]], [[page|alias]], ![[embed]] */
 export const wikilinkRegex = new RegExp(
-  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+(?:[^[\]|#\\]+)?)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
+  /!?\[\[(?<page>[^[\]|#\\]+)?(?<section>#+[^[\]|#\\]*)?(?<alias>\\?\|[^[\]#]+)?\]\]/,
   "g",
 )
 
 /** Matches Markdown tables with header, separator, and body rows. */
 export const tableRegex = new RegExp(
-  /^\|(?:[^\n])+\|\n(?:\|)(?:[ ]?:?-{3,}:?[ ]?\|)+\n(?:\|(?:[^\n])+\|\n?)+/,
+  /^\|[^\n]+\|\n\|(?: ?:?-{3,}:? ?\|)+\n(?:\|[^\n]+\|\n?)+/,
   "gm",
 )
 
 /** Regular expression to match wikilinks within tables for escaping purposes */
-export const tableWikilinkRegex = new RegExp(/(?<wikilink>!?\[\[[^\]]*?\]\])/, "g")
+export const tableWikilinkRegex = new RegExp(/(?<wikilink>!?\[\[[^\]]*\]\])/, "g")
 
 /** Regular expression to match highlight syntax (==text==) */
 const highlightRegex = new RegExp(/[=]{2}(?<content>[^=]+)[=]{2}/, "g")
@@ -67,7 +67,7 @@ const admonitionLineRegex = new RegExp(`^> *\\[!${UNICODE_WORD_CHAR}+\\][+-]?.*$
 
 /** Matches tags with Unicode support: #tag, #tag/subtag */
 const tagRegex = new RegExp(
-  /(?:^| )#(?<tag>(?:[-_\p{L}\p{Emoji}\p{M}\d])+(?:\/[-_\p{L}\p{Emoji}\p{M}\d]+)*)/u,
+  /(?:^| )#(?<tag>[-_\p{L}\p{Emoji}\p{M}]+(?:\/[-_\p{L}\p{Emoji}\p{M}]+)*)/u,
   "gu",
 )
 
@@ -84,9 +84,7 @@ const ytPlaylistLinkRegex = /[?&]list=(?<playlistId>[^#?&]*)/
 const videoExtensionRegex = new RegExp(/\.(?:mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
 
 /** Regular expression to parse image embed dimensions and alt text */
-const wikilinkImageEmbedRegex = new RegExp(
-  /^(?<alt>(?!^\d*x?\d*$).*?)?(?:\|?\s*?(?<width>\d+)(?:x(?<height>\d+))?)?$/,
-)
+const wikilinkImageEmbedRegex = /^\|?(?:(?<width>\d+)(?:x(?<height>\d+))?|(?<alt>.+))?$/
 
 /** Extended ElementData interface for custom HAST element properties. */
 interface CustomElementData extends ElementData {
@@ -507,7 +505,7 @@ export function processWikilink(
   if (textContent.startsWith("!")) {
     const ext: string = path.extname(fp).toLowerCase()
     const url = slugifyFilePath(fp as FilePath)
-    if ([".png", ".jpg", ".jpeg", ".gif", ".bmp", ".svg", ".webp"].includes(ext)) {
+    if ([".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"].includes(ext)) {
       const match = wikilinkImageEmbedRegex.exec(alias ?? "")
       const width = match?.groups?.width ?? "auto"
       const height = match?.groups?.height ?? "auto"
@@ -525,9 +523,9 @@ export function processWikilink(
           },
         },
       }
-    } else if ([".mp4", ".webm", ".ogv", ".mov", ".mkv"].includes(ext)) {
+    } else if ([".mkv", ".mov", ".mp4", ".ogv", ".webm"].includes(ext)) {
       return createVideoElement(url)
-    } else if ([".mp3", ".webm", ".wav", ".m4a", ".ogg", ".3gp", ".flac"].includes(ext)) {
+    } else if ([".3gp", ".flac", ".m4a", ".mp3", ".ogg", ".wav", ".webm"].includes(ext)) {
       return createAudioElement(url)
     } else if ([".pdf"].includes(ext)) {
       return createPdfEmbed(url)

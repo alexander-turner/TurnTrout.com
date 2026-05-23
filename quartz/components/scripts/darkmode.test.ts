@@ -2,7 +2,7 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import { jest, describe, it, beforeEach, afterEach, expect } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { type FullSlug } from "../../util/path"
 import { savedThemeKey } from "../constants"

@@ -9,11 +9,11 @@
 import { parse as parseDomain } from "psl"
 
 import {
-  specialFaviconPaths,
-  specialDomainMappings,
   faviconCountAllowlist,
   faviconSubstringBlocklist,
   googleSubdomainAllowlist,
+  specialDomainMappings,
+  specialFaviconPaths,
 } from "../components/constants"
 
 /**

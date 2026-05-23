@@ -1,4 +1,4 @@
-import type { Element, Root, Text, ElementContent } from "hast"
+import type { Element, ElementContent, Root, Text } from "hast"
 
 import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
@@ -7,14 +7,14 @@ import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
 import {
-  TableCaption,
-  isTextNode,
-  isTableCaptionText,
-  extractCaptionText,
   createFigcaption,
-  isElementNode,
-  isTableElement,
   createTableFigure,
+  extractCaptionText,
+  isElementNode,
+  isTableCaptionText,
+  isTableElement,
+  isTextNode,
+  TableCaption,
 } from "../tablecaption"
 
 const mockBuildCtx: BuildCtx = {

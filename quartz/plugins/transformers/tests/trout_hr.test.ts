@@ -1,13 +1,13 @@
 /**
  * @jest-environment node
  */
-import type { Root, Element as HastElement } from "hast"
+import type { Element as HastElement, Root } from "hast"
 
-import { describe, expect, beforeEach, it } from "@jest/globals"
+import { beforeEach, describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 
 import { BuildCtx } from "../../../util/ctx"
-import { TroutOrnamentHr, maybeInsertOrnament, ornamentNode, insertOrnamentNode } from "../trout_hr"
+import { insertOrnamentNode, maybeInsertOrnament, ornamentNode, TroutOrnamentHr } from "../trout_hr"
 
 describe("ornamentNode", () => {
   it("should have role='separator' for accessibility", () => {

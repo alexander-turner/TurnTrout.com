@@ -92,7 +92,11 @@ jobs:
           install-python: "true"
 
       - name: Install rclone
-        run: sudo apt-get update && sudo apt-get install -y rclone
+        uses: ./.github/actions/retry-external
+        with:
+          max-attempts: "3"
+          timeout-minutes: "5"
+          command: sudo apt-get update && sudo apt-get install -y rclone
 
       - name: Upload screenshots to R2 as new baselines
         env:

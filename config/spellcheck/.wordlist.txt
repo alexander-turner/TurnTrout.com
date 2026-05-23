@@ -725,6 +725,7 @@ Karp
 Karvonen
 Katja
 Keltham's
+Kerning
 Khullar
 Kingsley
 Klobuchar
@@ -1563,6 +1564,7 @@ armour
 arungus
 arxiv
 ary
+ascender
 aspirational
 associational
 asungus
