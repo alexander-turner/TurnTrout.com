@@ -14,7 +14,9 @@ const prettierConfigPath = path.resolve(
  *  format that `pnpm check` enforces (otherwise CI flags every regen). */
 async function formatScss(content: string): Promise<string> {
   const config = await prettier.resolveConfig(prettierConfigPath)
-  return prettier.format(content, { ...config, parser: "scss" })
+  const scssConfig = { ...config }
+  delete (scssConfig as Record<string, unknown>).plugins
+  return prettier.format(content, { ...scssConfig, parser: "scss" })
 }
 
 const __filename = fileURLToPath(import.meta.url)
