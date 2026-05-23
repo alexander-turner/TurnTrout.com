@@ -197,16 +197,12 @@ runs:
           /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
       shell: bash
 
-    # Wrapped in retry-external because the upstream Ubuntu mirror still
-    # occasionally rate-limits. retry-external bounds the total at 3
-    # attempts; per-attempt we let apt run to completion rather than
-    # capping with `timeout`, since slow-but-progressing downloads were
-    # getting killed mid-fetch by a 10-min cap.
     - name: Install system packages
       if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
       uses: ./.github/actions/retry-external
       with:
         max-attempts: "3"
+        timeout-minutes: "10"
         command: |
           sudo apt-get update && \
           sudo apt-get install -y --no-install-recommends \
