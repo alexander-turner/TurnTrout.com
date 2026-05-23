@@ -7,7 +7,7 @@ import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { cdnBaseUrl, forceHslInvertClass, invertInDarkModeClass } from "../../components/constants"
+import { cdnBaseUrl, invertInDarkModeClass } from "../../components/constants"
 import { invertedUrl, isInvertibleRaster } from "../../components/scripts/invertedAssets"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
@@ -118,29 +118,6 @@ export function wrapInDarkModePicture(node: Element, parent: Parent, index: numb
   parent.children[index] = picture
 }
 
-/**
- * Rewrite the src of a raster `.force-hsl-invert` `<img>` to its
- * precomputed inverted variant. force-hsl-invert is always inverted
- * regardless of theme, so build-time src rewrite makes the inverted
- * bitmap the static fallback — no JS, no `<picture>`, no canvas. The
- * class is stripped so the SVG-filter CSS fallback doesn't double-
- * invert the already-inverted bitmap.
- *
- * SVG sources are left alone — the runtime `processSvgImage` path
- * still handles them since we don't precompute inverted SVGs.
- */
-export function rewriteForceHslInvertSrc(node: Element): void {
-  if (node.tagName !== "img") return
-  const props = node.properties
-  if (!props) return
-  const classes = classTokens(props.className)
-  if (!classes.includes(forceHslInvertClass)) return
-  const src = props.src
-  if (typeof src !== "string" || !isInvertibleRaster(src)) return
-  props.src = invertedUrl(src)
-  props.className = classes.filter((c) => c !== forceHslInvertClass)
-  props["dataInvertProcessed"] = "1"
-}
 
 /**
  * Adds `crossorigin="anonymous"` to every CDN-hosted `<img>`. Needed
@@ -169,7 +146,6 @@ export function addCrossOriginToImages(tree: Root): void {
 
 export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
   visit(tree, "element", (node: Element, index, parent) => {
-    if (node.tagName === "img") rewriteForceHslInvertSrc(node)
     if (!eligibleSources(node).some((src) => labels.get(src) === true)) return
     addInvertClass(node)
     if (node.tagName === "img" && parent && typeof index === "number") {

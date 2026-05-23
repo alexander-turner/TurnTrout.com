@@ -7,11 +7,7 @@ import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals
 import fs from "fs/promises"
 import { h } from "hastscript"
 
-import {
-  cdnBaseUrl,
-  forceHslInvertClass,
-  invertInDarkModeClass,
-} from "../../../components/constants"
+import { cdnBaseUrl, invertInDarkModeClass } from "../../../components/constants"
 import {
   addCrossOriginToImages,
   addInvertClass,
@@ -21,7 +17,6 @@ import {
   isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
-  rewriteForceHslInvertSrc,
   wrapInDarkModePicture,
 } from "../invertInDarkMode"
 
@@ -257,51 +252,7 @@ describe("InvertInDarkMode", () => {
     })
   })
 
-  describe("rewriteForceHslInvertSrc", () => {
-    it("rewrites src to inverted URL and strips the class for raster", () => {
-      const img = h("img", {
-        className: [forceHslInvertClass],
-        src: `${cdnBaseUrl}/photo.avif`,
-      }) as Element
-      rewriteForceHslInvertSrc(img)
-      expect(img.properties?.src).toBe(`${cdnBaseUrl}/photo-inverted.avif`)
-      expect(img.properties?.className).toEqual([])
-      expect(img.properties?.dataInvertProcessed).toBe("1")
-    })
 
-    it("leaves SVG sources alone (runtime processSvgImage path)", () => {
-      const img = h("img", {
-        className: [forceHslInvertClass],
-        src: `${cdnBaseUrl}/icon.svg`,
-      }) as Element
-      rewriteForceHslInvertSrc(img)
-      expect(img.properties?.src).toBe(`${cdnBaseUrl}/icon.svg`)
-      expect(img.properties?.className).toEqual([forceHslInvertClass])
-    })
-
-    it.each<[string, Element]>([
-      ["no class", h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element],
-      [
-        "different class",
-        h("img", {
-          className: ["other"],
-          src: `${cdnBaseUrl}/x.avif`,
-        }) as Element,
-      ],
-      ["no src", h("img", { className: [forceHslInvertClass] }) as Element],
-      ["non-img", h("div", { className: [forceHslInvertClass] }) as Element],
-    ])("is a no-op for %s", (_label, node) => {
-      const before = JSON.stringify(node)
-      rewriteForceHslInvertSrc(node)
-      expect(JSON.stringify(node)).toBe(before)
-    })
-
-    it("is a no-op when properties object is missing", () => {
-      const node = { type: "element", tagName: "img", children: [] } as unknown as Element
-      rewriteForceHslInvertSrc(node)
-      expect(node.properties).toBeUndefined()
-    })
-  })
 
   describe("addCrossOriginToImages", () => {
     it.each<[string, Element, "anonymous" | undefined]>([

@@ -6,9 +6,10 @@ inversion.
 For each entry in ``.invert_labels.json`` with ``invert: true`` whose URL
 resolves to a local raster file under ``--asset-directory``, write a
 sibling file with the ``-inverted`` suffix (e.g. ``image.avif`` →
-``image-inverted.avif``). Also scans ``--content-directory`` for
-``class="force-hsl-invert"`` raster images that need inverted variants
-regardless of their dark-mode label.
+``image-inverted.avif``). The client-side ``<picture>`` swap in
+``accurateInvert.ts`` then references the precomputed variant, replacing
+the canvas-based runtime inversion that trips Firefox's anti-fingerprinting
+prompt on ``canvas.getImageData`` / ``toDataURL``.
 
 The HSL-lightness transform matches ``invertLightness`` in
 ``accurateInvert.ts``: for each channel ``x in {r,g,b}``,
@@ -20,7 +21,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Final
@@ -52,9 +52,6 @@ _DEFAULT_LABELS_PATH: Final[Path] = (
     / "plugins"
     / "transformers"
     / ".invert_labels.json"
-)
-_DEFAULT_CONTENT_DIR: Final[Path] = (
-    Path(__file__).resolve().parent.parent / "website_content"
 )
 
 logger = logging.getLogger(__name__)
@@ -101,36 +98,14 @@ def _url_to_local_path(url: str, asset_dir: Path, base_url: str) -> Path | None:
     return asset_dir / relative
 
 
-_FORCE_HSL_INVERT_RE = re.compile(
-    r'class="[^"]*force-hsl-invert[^"]*"[^>]*src="([^"]+)"'
-    r"|"
-    r'src="([^"]+)"[^>]*class="[^"]*force-hsl-invert[^"]*"',
-)
-
-
-def _scan_force_hsl_invert_urls(content_dir: Path) -> frozenset[str]:
-    """Scan markdown files for raster img URLs with ``force-hsl-invert``."""
-    urls: set[str] = set()
-    for md in content_dir.rglob("*.md"):
-        for m in _FORCE_HSL_INVERT_RE.finditer(md.read_text(encoding="utf-8")):
-            url = m.group(1) or m.group(2)
-            path = url.split("?", 1)[0].split("#", 1)[0]
-            if any(
-                path.lower().endswith(e) for e in INVERTIBLE_RASTER_EXTENSIONS
-            ):
-                urls.add(url)
-    return frozenset(urls)
-
-
 def iter_invert_targets(
     labels: dict[str, dict[str, bool]],
     asset_dir: Path,
     base_url: str,
-    extra_urls: frozenset[str] = frozenset(),
 ) -> Iterator[Path]:
-    seen: set[Path] = set()
-    label_urls = {u for u, m in labels.items() if m.get("invert")}
-    for url in label_urls | extra_urls:
+    for url, meta in labels.items():
+        if not meta.get("invert"):
+            continue
         local = _url_to_local_path(url, asset_dir, base_url)
         if local is None or not local.is_file():
             continue
@@ -138,9 +113,6 @@ def iter_invert_targets(
             continue
         if is_inverted_path(local):
             continue
-        if local in seen:
-            continue
-        seen.add(local)
         yield local
 
 
@@ -155,7 +127,6 @@ def generate_all(
     asset_dir: Path,
     base_url: str,
     force: bool = False,
-    extra_urls: frozenset[str] = frozenset(),
 ) -> tuple[int, int]:
     """
     A failure to read or write any single image is logged and counted as skipped
@@ -165,7 +136,7 @@ def generate_all(
     """
     generated = 0
     skipped = 0
-    for src in iter_invert_targets(labels, asset_dir, base_url, extra_urls):
+    for src in iter_invert_targets(labels, asset_dir, base_url):
         dst = inverted_path(src)
         if not _needs_regeneration(src, dst, force):
             skipped += 1
@@ -203,12 +174,6 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="CDN base URL that the labels' keys are rooted at.",
     )
     parser.add_argument(
-        "--content-directory",
-        type=Path,
-        default=_DEFAULT_CONTENT_DIR,
-        help="Directory of markdown content to scan for force-hsl-invert.",
-    )
-    parser.add_argument(
         "--force",
         action="store_true",
         help="Regenerate inverted variants even if newer than the source.",
@@ -222,17 +187,8 @@ def main(argv: list[str] | None = None) -> None:
     if not args.asset_directory.is_dir():
         raise NotADirectoryError(args.asset_directory)
     labels = json.loads(args.labels_file.read_text(encoding="utf-8"))
-    extra = (
-        _scan_force_hsl_invert_urls(args.content_directory)
-        if args.content_directory.is_dir()
-        else frozenset()
-    )
     generated, skipped = generate_all(
-        labels,
-        args.asset_directory,
-        args.base_url,
-        force=args.force,
-        extra_urls=extra,
+        labels, args.asset_directory, args.base_url, force=args.force
     )
     logger.info(
         "Inverted variants: %d generated, %d skipped (up-to-date or unreadable).",
