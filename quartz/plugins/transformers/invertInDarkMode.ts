@@ -1,12 +1,14 @@
-import type { Element, Root } from "hast"
+import type { Element, Parent, Root } from "hast"
 
 import gitRoot from "find-git-root"
 import fs from "fs/promises"
+import { h } from "hastscript"
 import path from "path"
 import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
-import { cdnBaseUrl, invertInDarkModeClass } from "../../components/constants"
+import { cdnBaseUrl, forceHslInvertClass, invertInDarkModeClass } from "../../components/constants"
+import { invertedUrl, isInvertibleRaster } from "../../components/scripts/invertedAssets"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -60,29 +62,6 @@ export function addInvertClass(node: Element): void {
   props.className = tokens
 }
 
-// `<img crossorigin>` is required for canvas pixel reads even when the
-// server sends `Access-Control-Allow-Origin`. Without it the canvas
-// pass taints silently and the SVG filter fallback runs forever — a
-// Mac GPU-crash mode. Safe to apply to every `<img>` because
-// `scripts/built_site_checks.py:check_media_asset_sources` enforces that
-// every media src is either relative or on `cdnBaseUrl`, and the CDN
-// sends `Access-Control-Allow-Origin: *`. We assert that invariant here
-// too so a non-CDN absolute src never silently ships `crossorigin` (which
-// would block loading entirely if the third-party server has no CORS).
-export function addCrossOriginToImages(tree: Root): void {
-  visit(tree, "element", (node: Element) => {
-    if (node.tagName !== "img") return
-    const src = node.properties?.src
-    // Skip non-http srcs (relative paths, data URIs) — no CORS concern.
-    if (typeof src !== "string" || !/^https?:\/\//.test(src)) return
-    if (!src.startsWith(cdnBaseUrl)) {
-      throw new Error(`addCrossOriginToImages: expected <img src> on ${cdnBaseUrl}, got ${src}`)
-    }
-    const props = (node.properties ??= {})
-    props.crossOrigin ??= "anonymous"
-  })
-}
-
 /**
  * True iff this is an inline GIF-replacement video — autoplay+loop+muted —
  * but not the persistent `#pond-video` background. (Hast normalizes the
@@ -117,10 +96,61 @@ function eligibleSources(node: Element): readonly string[] {
   return isInlineLoopingVideo(node) ? collectVideoSources(node) : []
 }
 
-export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
+/**
+ * Wrap a raster `<img>` in a `<picture>` whose `<source media="prefers-color-scheme:
+ * dark" srcset="<inverted>">` lets the browser pick the precomputed inverted
+ * variant in dark mode without ever fetching the light version. Cheaper than
+ * canvas inversion and sidesteps Firefox's anti-fingerprinting prompt on
+ * `canvas.getImageData`. SVGs and videos are not wrapped — they keep the
+ * existing fetch-and-rewrite (SVG) / SVG-filter (video) paths.
+ */
+export function wrapInDarkModePicture(node: Element, parent: Parent, index: number): void {
+  if (parent.type === "element" && (parent as Element).tagName === "picture") return
+  const src = node.properties?.src
+  if (typeof src !== "string" || !isInvertibleRaster(src)) return
+  const picture = h("picture", [
+    h("source", {
+      srcSet: invertedUrl(src),
+      media: "(prefers-color-scheme: dark)",
+    }),
+    node,
+  ])
+  parent.children[index] = picture
+}
+
+/**
+ * Adds `crossorigin="anonymous"` to every CDN-hosted `<img>`. Needed
+ * because `renderPage.tsx` emits `<link rel="preload" as="image"
+ * crossorigin="anonymous">` for the LCP image — preload and img must
+ * share a CORS mode or the browser silently re-fetches, defeating the
+ * preload and logging a console warning. `built_site_checks` already
+ * enforces that every media src is relative or on `cdnBaseUrl`, and the
+ * CDN sends `Access-Control-Allow-Origin: *`. Assert that invariant
+ * here so a non-CDN absolute src never silently ships `crossorigin`
+ * (which would block loading entirely if the third-party host has no
+ * CORS).
+ */
+export function addCrossOriginToImages(tree: Root): void {
   visit(tree, "element", (node: Element) => {
-    if (eligibleSources(node).some((src) => labels.get(src) === true)) {
-      addInvertClass(node)
+    if (node.tagName !== "img") return
+    const src = node.properties?.src
+    if (typeof src !== "string" || !/^https?:\/\//.test(src)) return
+    if (!src.startsWith(cdnBaseUrl)) {
+      throw new Error(`addCrossOriginToImages: expected <img src> on ${cdnBaseUrl}, got ${src}`)
+    }
+    const props = (node.properties ??= {})
+    props.crossOrigin ??= "anonymous"
+  })
+}
+
+export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
+  visit(tree, "element", (node: Element, index, parent) => {
+    const hasLabel = eligibleSources(node).some((src) => labels.get(src) === true)
+    const hasForceClass = classTokens(node.properties?.className).includes(forceHslInvertClass)
+    if (!hasLabel && !hasForceClass) return
+    if (hasLabel) addInvertClass(node)
+    if (node.tagName === "img" && parent && typeof index === "number") {
+      wrapInDarkModePicture(node, parent, index)
     }
   })
 }
@@ -128,9 +158,11 @@ export function applyLabelsToTree(tree: Root, labels: InvertLabelMap): void {
 /**
  * Tags `<img>` and inline looping muted `<video>` elements whose src is
  * labeled `true` in `.invert_labels.json` with the `invert-in-dark-mode`
- * class. Dark-mode CSS applies the inversion filter only to tagged
- * elements. The persistent `#pond-video` is excluded by
- * `isInlineLoopingVideo`.
+ * class. Labeled rasters are wrapped in `<picture>` so the browser
+ * fetches the precomputed inverted variant in dark mode. Inline videos
+ * still rely on the dark-mode CSS filter. Force-hsl-invert rasters get
+ * their `<img src>` rewritten to the inverted variant directly. The
+ * persistent `#pond-video` is excluded by `isInlineLoopingVideo`.
  *
  * Labels are read once per plugin instance and shared across every page in
  * the build.

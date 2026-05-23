@@ -420,7 +420,8 @@ p:has(+ .subtitle),
   }
 }
 
-figure > img {
+figure > img,
+figure > picture > img {
   z-index: $z-below;
 }
 
@@ -576,10 +577,14 @@ video {
   margin-top: $base-margin;
 
   article > p &,
+  article > p picture > &,
   article > &,
+  article > picture > &,
   article > figure > &:not(.float-right),
+  article > figure > picture > &:not(.float-right),
   .video-container &:not(.float-right),
-  figure > &:not(.float-right) {
+  figure > &:not(.float-right),
+  figure > picture > &:not(.float-right) {
     margin-left: auto;
     margin-right: auto;
     display: block;
@@ -657,7 +662,8 @@ body.no-mix-blend-mode {
   }
 }
 
-p > img {
+p > img,
+p > picture > img {
   display: block;
   margin-left: auto;
   margin-right: auto;

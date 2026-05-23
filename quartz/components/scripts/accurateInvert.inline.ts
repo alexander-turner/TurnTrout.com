@@ -1,4 +1,4 @@
-import { handleLoadEvent, onThemeChange, processLoaded, pruneStalePins } from "./accurateInvert"
+import { handleLoadEvent, onThemeChange, processLoaded } from "./accurateInvert"
 
 // Capture-phase: `load` doesn't bubble, so a non-capture listener on
 // `document` would never fire for img loads. Attaching here in
@@ -28,6 +28,5 @@ document.addEventListener("DOMContentLoaded", () => processLoaded(), { once: tru
 // already decoded in the new DOM (cache hits, reused nodes) won't trigger
 // fresh load events, so sweep them explicitly.
 document.addEventListener("nav", () => {
-  pruneStalePins()
   processLoaded()
 })

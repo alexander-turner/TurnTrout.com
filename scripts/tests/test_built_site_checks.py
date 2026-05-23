@@ -6558,7 +6558,8 @@ def _class_mismatch_msg(
         ('<img src="https://x/a.avif">', None, []),
         # Reviewed entries with classes matching their `invert` field.
         (
-            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">'
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif"></picture>'
             '<img src="https://x/b.png">',
             {
                 "https://x/a.avif": _reviewed(True),
@@ -6591,7 +6592,7 @@ def _class_mismatch_msg(
                 )
             ],
         ),
-        # Reviewed invert=False but class present → mismatch.
+        # Reviewed invert=False but class present → mismatch + missing <picture>.
         (
             f'<img class="{INVERT_CLASS} other" src="https://x/b.jpg">',
             {"https://x/b.jpg": _reviewed(False)},
@@ -6601,7 +6602,8 @@ def _class_mismatch_msg(
                     "https://x/b.jpg",
                     invert=False,
                     has_class=True,
-                )
+                ),
+                "<img> https://x/b.jpg has invert class but is not inside <picture>",
             ],
         ),
         # Every image extension we label (raster + SVG) is eligible. Each
@@ -6674,13 +6676,102 @@ def _class_mismatch_msg(
         ),
         # class attribute as a space-separated string also works.
         (
-            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif">',
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="foo {INVERT_CLASS} bar" src="https://x/a.avif"></picture>',
             {"https://x/a.avif": _reviewed(True)},
             [],
+        ),
+        # Raster with invert class NOT inside <picture> → error.
+        (
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif">',
+            {"https://x/a.avif": _reviewed(True)},
+            [
+                "<img> https://x/a.avif has invert class but is not inside <picture>"
+            ],
+        ),
+        # Raster with invert class inside <picture> → no picture error.
+        (
+            f'<picture><source srcset="https://x/a-inverted.avif">'
+            f'<img class="{INVERT_CLASS}" src="https://x/a.avif"></picture>',
+            {"https://x/a.avif": _reviewed(True)},
+            [],
+        ),
+        # force-hsl-invert raster NOT inside <picture> → error.
+        (
+            '<img class="force-hsl-invert" src="https://x/demo.avif">',
+            {"https://x/demo.avif": _reviewed(invert=False)},
+            [
+                "<img> https://x/demo.avif has invert class but is not inside <picture>"
+            ],
         ),
     ],
 )
 def test_check_invert_labels_images(
+    html: str,
+    labels: dict[str, InvertLabel] | None,
+    expected_issues: list[str],
+) -> None:
+    soup = BeautifulSoup(html, "html.parser")
+    result = built_site_checks.check_invert_labels(soup, labels)
+    assert sorted(result) == sorted(expected_issues)
+
+
+@pytest.mark.parametrize(
+    ("src", "expected"),
+    [
+        ("https://x/foo-inverted.avif", "https://x/foo.avif"),
+        (
+            "https://x/foo-inverted.avif?v=2",
+            "https://x/foo.avif?v=2",
+        ),
+        (
+            "https://x/foo-inverted.avif#anchor",
+            "https://x/foo.avif#anchor",
+        ),
+        ("https://x/foo.avif", None),
+        ("https://x/no-extension", None),
+    ],
+)
+def test_original_src_for_inverted(src: str, expected: str | None) -> None:
+    assert built_site_checks._original_src_for_inverted(src) == expected
+
+
+@pytest.mark.parametrize(
+    ("html", "labels", "expected_issues"),
+    [
+        # Inverted variant of a reviewed invert=true original → no issue.
+        (
+            '<img src="https://x/foo-inverted.avif" data-invert-processed>',
+            {"https://x/foo.avif": _reviewed(True)},
+            [],
+        ),
+        # Inverted variant whose original is missing from labels.
+        (
+            '<img src="https://x/missing-inverted.avif">',
+            {},
+            [
+                "<img> https://x/missing-inverted.avif (inverted variant) missing https://x/missing.avif from .invert_labels.json"
+            ],
+        ),
+        # Inverted variant whose original isn't reviewed.
+        (
+            '<img src="https://x/draft-inverted.avif">',
+            {"https://x/draft.avif": _unreviewed(True)},
+            [
+                "<img> https://x/draft-inverted.avif (inverted variant) https://x/draft.avif not user-reviewed"
+            ],
+        ),
+        # Inverted variant of an invert=false original is fine — the
+        # img got force-hsl-invert in markdown, which always inverts
+        # regardless of the dark-mode label.
+        (
+            '<img src="https://x/keep-inverted.avif">',
+            {"https://x/keep.avif": _reviewed(False)},
+            [],
+        ),
+    ],
+)
+def test_check_invert_labels_inverted_variants(
     html: str,
     labels: dict[str, InvertLabel] | None,
     expected_issues: list[str],

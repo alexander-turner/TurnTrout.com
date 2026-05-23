@@ -34,7 +34,7 @@ Three stages: **Transform → Filter → Emit**.
 
 - Assets staged in `asset_staging/` during editing
 - compress → strip EXIF → upload to Cloudflare R2 → update Markdown refs
-- Images converted to AVIF (10x compression vs PNG)
+- Images converted to AVIF (10× compression vs PNG)
 - Videos: WEBM for most browsers, MP4 for Safari
 - Invert-labeled rasters get a precomputed `<basename>-inverted.<ext>`
   sibling via `scripts/generate_inverted_variants.py`, run automatically by
