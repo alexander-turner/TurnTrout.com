@@ -4013,11 +4013,13 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text("""---
+    md_file_path.write_text(
+        """---
 title: Test Title
 description: Test Description
 ---
-# Content here""")
+# Content here"""
+    )
     assert md_file_path.is_file()
 
     with (
