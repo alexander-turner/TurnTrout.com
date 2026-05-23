@@ -28,7 +28,6 @@ jobs:
         timeout-minutes: 5
         with:
           fetch-depth: 0
-          filter: blob:none # Full commit history for git log, skip historical blobs
 
       - name: Restore last reviewed commit
         id: cache-commit

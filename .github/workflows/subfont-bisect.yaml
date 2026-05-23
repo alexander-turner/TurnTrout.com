@@ -40,7 +40,6 @@ jobs:
         timeout-minutes: 5
         with:
           fetch-depth: 1
-          filter: blob:none
 
       - name: Setup site tooling
         uses: ./.github/actions/setup-site
