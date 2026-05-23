@@ -3,7 +3,7 @@
 from pathlib import Path
 
 import pytest
-from fontTools.ttLib import TTFont
+from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
 
 from .. import build_fonts
 from ..build_fonts import (

@@ -9,20 +9,20 @@ Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
-    python scripts/build_fonts.py --install # Build, verify, and overwrite committed fonts
+    python scripts/build_fonts.py --install # Build, verify, and overwrite
 """
 
+# pylint: disable=no-member  # fontTools generates OT table classes dynamically
 from __future__ import annotations
 
 import shutil
 import sys
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
-from fontTools.misc.roundTools import otRound
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables import otTables
-from fontTools.ttLib.tables.otTables import PairPos, PairSet, PairValueRecord
+from fontTools.misc.roundTools import otRound  # type: ignore[import-untyped]
+from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
+from fontTools.ttLib.tables import otTables  # type: ignore[import-untyped]
 
 _FONT_DIR: Final[Path] = (
     Path(__file__).resolve().parent.parent
@@ -135,40 +135,79 @@ def _harmonize_brackets(font: TTFont) -> None:
         _affine_map_glyph_y(font, name, paren.yMin, paren.yMax)
 
 
-def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
-    """Add PairPos Format 1 kern lookup for f-variant x punctuation pairs."""
-    glyph_order = font.getGlyphOrder()
-
-    def glyph_id(name: str) -> int:
-        return glyph_order.index(name)
-
+def _build_pair_sets(
+    font: TTFont,
+    f_glyphs: tuple[str, ...],
+    sorted_targets: list[str],
+) -> list[Any]:
+    """Build PairSet list with kern values for each f-glyph."""
     glyf_table = font["glyf"]
     hmtx_table = font["hmtx"]
     target_x_mins = {t: glyf_table[t].xMin for t in _TARGET_GLYPHS}
-    sorted_targets = sorted(_TARGET_GLYPHS, key=glyph_id)
 
-    pair_sets: list[PairSet] = []
+    pair_sets = []
     for f_name in f_glyphs:
         overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
-        records: list[PairValueRecord] = []
+        records = []
         for t_name in sorted_targets:
             raw = max(overhang - target_x_mins[t_name] + _KERN_OFFSET, 0)
             kern = max(raw, _BASE_KERN[t_name])
 
-            pvr = PairValueRecord()
+            pvr = otTables.PairValueRecord()
             pvr.SecondGlyph = t_name
             pvr.Value1 = otTables.ValueRecord()
             pvr.Value1.XAdvance = kern
             records.append(pvr)
 
-        ps = PairSet()
+        ps = otTables.PairSet()
         ps.PairValueRecord = records
         pair_sets.append(ps)
+
+    return pair_sets
+
+
+def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
+    """Register a lookup in the kern feature, creating it if needed."""
+    for feat_rec in gpos.FeatureList.FeatureRecord:
+        if feat_rec.FeatureTag == "kern":
+            feat_rec.Feature.LookupListIndex.append(lookup_index)
+            feat_rec.Feature.LookupCount = len(feat_rec.Feature.LookupListIndex)
+            return
+
+    feat = otTables.Feature()
+    feat.LookupListIndex = [lookup_index]
+    feat.LookupCount = 1
+
+    feat_rec = otTables.FeatureRecord()
+    feat_rec.FeatureTag = "kern"
+    feat_rec.Feature = feat
+    gpos.FeatureList.FeatureRecord.append(feat_rec)
+
+    kern_feat_index = len(gpos.FeatureList.FeatureRecord) - 1
+    for script_rec in gpos.ScriptList.ScriptRecord:
+        if script_rec.Script.DefaultLangSys:
+            script_rec.Script.DefaultLangSys.FeatureIndex.append(
+                kern_feat_index
+            )
+            script_rec.Script.DefaultLangSys.FeatureCount = len(
+                script_rec.Script.DefaultLangSys.FeatureIndex
+            )
+        for lang_rec in script_rec.Script.LangSysRecord:
+            lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
+            lang_rec.LangSys.FeatureCount = len(lang_rec.LangSys.FeatureIndex)
+
+
+def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
+    """Add PairPos Format 1 kern lookup for f-variant x punctuation pairs."""
+    glyph_order = font.getGlyphOrder()
+    sorted_targets = sorted(_TARGET_GLYPHS, key=glyph_order.index)
+
+    pair_sets = _build_pair_sets(font, f_glyphs, sorted_targets)
 
     coverage = otTables.Coverage()
     coverage.glyphs = list(f_glyphs)
 
-    subtable = PairPos()
+    subtable = otTables.PairPos()
     subtable.Format = 1
     subtable.Coverage = coverage
     subtable.ValueFormat1 = 4
@@ -185,46 +224,15 @@ def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     lookup_index = len(gpos.LookupList.Lookup)
     gpos.LookupList.Lookup.append(lookup)
 
-    kern_feature = None
-    for feat_rec in gpos.FeatureList.FeatureRecord:
-        if feat_rec.FeatureTag == "kern":
-            kern_feature = feat_rec
-            break
-
-    if kern_feature is not None:
-        kern_feature.Feature.LookupListIndex.append(lookup_index)
-        kern_feature.Feature.LookupCount = len(
-            kern_feature.Feature.LookupListIndex
-        )
-    else:
-        feat = otTables.Feature()
-        feat.LookupListIndex = [lookup_index]
-        feat.LookupCount = 1
-
-        feat_rec = otTables.FeatureRecord()
-        feat_rec.FeatureTag = "kern"
-        feat_rec.Feature = feat
-        gpos.FeatureList.FeatureRecord.append(feat_rec)
-
-        kern_feat_index = len(gpos.FeatureList.FeatureRecord) - 1
-        for script_rec in gpos.ScriptList.ScriptRecord:
-            if script_rec.Script.DefaultLangSys:
-                script_rec.Script.DefaultLangSys.FeatureIndex.append(
-                    kern_feat_index
-                )
-                script_rec.Script.DefaultLangSys.FeatureCount = len(
-                    script_rec.Script.DefaultLangSys.FeatureIndex
-                )
-            for lang_rec in script_rec.Script.LangSysRecord:
-                lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
-                lang_rec.LangSys.FeatureCount = len(
-                    lang_rec.LangSys.FeatureIndex
-                )
+    _register_kern_feature(gpos, lookup_index)
 
 
 def _build_font(
-    upstream_path: Path, output_path: Path, f_glyphs: tuple[str, ...]
+    upstream_path: Path,
+    output_path: Path,
+    f_glyphs: tuple[str, ...],
 ) -> None:
+    """Build a single modified font from its upstream original."""
     font = TTFont(upstream_path)
     _harmonize_brackets(font)
     _add_f_kerning(font, f_glyphs)
@@ -232,7 +240,7 @@ def _build_font(
     font.close()
 
 
-def _verify_tables(built_path: Path, committed_path: Path, name: str) -> bool:
+def _verify_tables(built_path: Path, committed_path: Path, label: str) -> bool:
     """
     Compare all font tables (except head metadata).
 
@@ -260,7 +268,7 @@ def _verify_tables(built_path: Path, committed_path: Path, name: str) -> bool:
         committed_data = committed.getTableData(tag)
         if built_data != committed_data:
             if tag == "glyf":
-                _report_glyf_diffs(built, committed, name)
+                _report_glyf_diffs(built, committed, label)
             else:
                 print(
                     f"  {tag}: binary differs"
@@ -274,7 +282,7 @@ def _verify_tables(built_path: Path, committed_path: Path, name: str) -> bool:
     return all_match
 
 
-def _report_glyf_diffs(built: TTFont, committed: TTFont, name: str) -> None:
+def _report_glyf_diffs(built: TTFont, committed: TTFont, label: str) -> None:
     """Report per-glyph coordinate differences in the glyf table."""
     glyf_b = built["glyf"]
     glyf_c = committed["glyf"]
@@ -288,16 +296,17 @@ def _report_glyf_diffs(built: TTFont, committed: TTFont, name: str) -> None:
         if gb.coordinates == gc.coordinates:
             continue
 
-        diffs = []
-        for i, (a, b) in enumerate(zip(gb.coordinates, gc.coordinates)):
-            if a != b:
-                diffs.append((i, a, b))
-                total_diffs += 1
+        diffs = [
+            (i, a, b)
+            for i, (a, b) in enumerate(zip(gb.coordinates, gc.coordinates))
+            if a != b
+        ]
+        total_diffs += len(diffs)
 
         max_delta = max(abs(a[1] - b[1]) for _, a, b in diffs)
         print(
-            f"  glyf/{glyph_name}: {len(diffs)} coords differ "
-            f"(max delta: {max_delta} unit)"
+            f"  glyf/{glyph_name} ({label}): {len(diffs)} coords"
+            f" differ (max delta: {max_delta} unit)"
         )
 
     if total_diffs > 0:
@@ -342,6 +351,7 @@ def build_all(output_dir: Path) -> bool:
 
 
 def main() -> None:
+    """Build fonts and optionally install them."""
     output_dir = Path("/tmp/build_fonts_output")
     all_match = build_all(output_dir)
 
