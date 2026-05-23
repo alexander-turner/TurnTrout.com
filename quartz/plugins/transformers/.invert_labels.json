@@ -72,7 +72,7 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif": {
-    "invert": false,
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/Attachments/Pasted image 20240624142444.avif": {
@@ -1472,7 +1472,7 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/design-05182026-5.avif": {
-    "invert": false,
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/design-05182026-6.avif": {
