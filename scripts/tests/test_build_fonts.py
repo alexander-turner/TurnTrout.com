@@ -33,16 +33,6 @@ def upstream_12() -> TTFont:
     return TTFont(_UPSTREAM_DIR / "EBGaramond12-Regular.woff2")
 
 
-@pytest.fixture()
-def committed_08() -> TTFont:
-    return TTFont(_FONT_DIR / "EBGaramond08-Regular.woff2")
-
-
-@pytest.fixture()
-def committed_12() -> TTFont:
-    return TTFont(_FONT_DIR / "EBGaramond12-Regular.woff2")
-
-
 class TestAffineMapGlyphY:
     def test_maps_to_target_bounds(self, upstream_08: TTFont) -> None:
         _affine_map_glyph_y(upstream_08, "bracketleft", -500, 1500)
@@ -63,6 +53,11 @@ class TestAffineMapGlyphY:
         original_coords = list(glyph.coordinates)
         _affine_map_glyph_y(upstream_08, "bracketleft", glyph.yMin, glyph.yMax)
         assert list(glyph.coordinates) == original_coords
+
+    def test_no_contour_glyph_is_noop(self, upstream_08: TTFont) -> None:
+        glyph = upstream_08["glyf"]["space"]
+        assert glyph.numberOfContours == 0
+        _affine_map_glyph_y(upstream_08, "space", -100, 100)
 
 
 class TestHarmonizeBrackets:
@@ -122,10 +117,10 @@ class TestAddFKerning:
                 original_kern = f
                 break
         assert original_kern is not None
-        original_lookup_count = original_kern.Feature.LookupCount
+        original_count = len(original_kern.Feature.LookupListIndex)
 
         _add_f_kerning(upstream_12, _F_GLYPHS_12)
-        assert original_kern.Feature.LookupCount == original_lookup_count + 1
+        assert len(original_kern.Feature.LookupListIndex) == original_count + 1
 
     def test_pair_value_records_sorted_by_glyph_id(
         self, upstream_08: TTFont
@@ -282,10 +277,13 @@ class TestTableEquivalence:
             if gb.coordinates != gc.coordinates:
                 differing_glyphs.add(name)
                 for (xb, yb), (xc, yc) in zip(gb.coordinates, gc.coordinates):
-                    assert xb == xc, f"{name}: X coordinate changed"
-                    assert abs(yb - yc) <= 1, f"{name}: Y delta > 1 unit"
+                    assert xb == xc, f"{name}: X changed"
+                    assert abs(yb - yc) <= 1, f"{name}: Y delta > 1"
 
-        assert differing_glyphs <= {"bracketleft", "bracketright"}
+        assert differing_glyphs <= {
+            "bracketleft",
+            "bracketright",
+        }
 
 
 class TestVerifyTables:
@@ -297,7 +295,9 @@ class TestVerifyTables:
             _F_GLYPHS_12,
         )
         assert _verify_tables(
-            output, _FONT_DIR / "EBGaramond12-Regular.woff2", "12pt"
+            output,
+            _FONT_DIR / "EBGaramond12-Regular.woff2",
+            "12pt",
         )
 
     def test_returns_false_for_glyf_diff(self, tmp_path: Path) -> None:
@@ -308,13 +308,17 @@ class TestVerifyTables:
             _F_GLYPHS_08,
         )
         assert not _verify_tables(
-            output, _FONT_DIR / "EBGaramond08-Regular.woff2", "08pt"
+            output,
+            _FONT_DIR / "EBGaramond08-Regular.woff2",
+            "08pt",
         )
 
 
 class TestReportGlyfDiffs:
     def test_reports_differing_glyphs(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+        self,
+        tmp_path: Path,
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
         output = tmp_path / "EBGaramond08-Regular.woff2"
         build_fonts._build_font(
@@ -336,20 +340,11 @@ class TestBuildAll:
         assert (tmp_path / "EBGaramond08-Regular.woff2").exists()
         assert (tmp_path / "EBGaramond12-Regular.woff2").exists()
 
-    def test_missing_upstream_raises(self, tmp_path: Path) -> None:
-        import scripts.build_fonts as bf
-
-        original_dir = bf._UPSTREAM_DIR
-        try:
-            bf._UPSTREAM_DIR = tmp_path / "nonexistent"  # type: ignore[misc]
-            with pytest.raises(FileNotFoundError):
-                build_all(tmp_path)
-        finally:
-            bf._UPSTREAM_DIR = original_dir  # type: ignore[misc]
-
-
-class TestAffineMapEdgeCases:
-    def test_no_contour_glyph_is_noop(self, upstream_08: TTFont) -> None:
-        glyph = upstream_08["glyf"]["space"]
-        assert glyph.numberOfContours == 0
-        _affine_map_glyph_y(upstream_08, "space", -100, 100)
+    def test_missing_upstream_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(
+            build_fonts, "_UPSTREAM_DIR", tmp_path / "nonexistent"
+        )
+        with pytest.raises(FileNotFoundError):
+            build_all(tmp_path)

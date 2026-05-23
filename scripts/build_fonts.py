@@ -12,7 +12,6 @@ Usage:
     python scripts/build_fonts.py --install # Build, verify, and overwrite
 """
 
-# pylint: disable=no-member  # fontTools generates OT table classes dynamically
 from __future__ import annotations
 
 import shutil
@@ -21,6 +20,10 @@ from pathlib import Path
 from typing import Any, Final
 
 from fontTools.misc.roundTools import otRound  # type: ignore[import-untyped]
+from fontTools.otlLib.builder import (  # type: ignore[import-untyped]
+    PairPosBuilder,
+    buildValue,
+)
 from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
 from fontTools.ttLib.tables import otTables  # type: ignore[import-untyped]
 
@@ -135,50 +138,20 @@ def _harmonize_brackets(font: TTFont) -> None:
         _affine_map_glyph_y(font, name, paren.yMin, paren.yMax)
 
 
-def _build_pair_sets(
-    font: TTFont,
-    f_glyphs: tuple[str, ...],
-    sorted_targets: list[str],
-) -> list[Any]:
-    """Build PairSet list with kern values for each f-glyph."""
-    glyf_table = font["glyf"]
-    hmtx_table = font["hmtx"]
-    target_x_mins = {t: glyf_table[t].xMin for t in _TARGET_GLYPHS}
-
-    pair_sets = []
-    for f_name in f_glyphs:
-        overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
-        records = []
-        for t_name in sorted_targets:
-            raw = max(overhang - target_x_mins[t_name] + _KERN_OFFSET, 0)
-            kern = max(raw, _BASE_KERN[t_name])
-
-            pvr = otTables.PairValueRecord()
-            pvr.SecondGlyph = t_name
-            pvr.Value1 = otTables.ValueRecord()
-            pvr.Value1.XAdvance = kern
-            records.append(pvr)
-
-        ps = otTables.PairSet()
-        ps.PairValueRecord = records
-        pair_sets.append(ps)
-
-    return pair_sets
-
-
 def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
     """Register a lookup in the kern feature, creating it if needed."""
     for feat_rec in gpos.FeatureList.FeatureRecord:
         if feat_rec.FeatureTag == "kern":
             feat_rec.Feature.LookupListIndex.append(lookup_index)
-            feat_rec.Feature.LookupCount = len(feat_rec.Feature.LookupListIndex)
             return
 
-    feat = otTables.Feature()
+    # No existing kern feature — create one and register it in all
+    # scripts/languages.
+    feat = otTables.Feature()  # pylint: disable=no-member
     feat.LookupListIndex = [lookup_index]
     feat.LookupCount = 1
 
-    feat_rec = otTables.FeatureRecord()
+    feat_rec = otTables.FeatureRecord()  # pylint: disable=no-member
     feat_rec.FeatureTag = "kern"
     feat_rec.Feature = feat
     gpos.FeatureList.FeatureRecord.append(feat_rec)
@@ -189,41 +162,34 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             script_rec.Script.DefaultLangSys.FeatureIndex.append(
                 kern_feat_index
             )
-            script_rec.Script.DefaultLangSys.FeatureCount = len(
-                script_rec.Script.DefaultLangSys.FeatureIndex
-            )
         for lang_rec in script_rec.Script.LangSysRecord:
             lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
-            lang_rec.LangSys.FeatureCount = len(lang_rec.LangSys.FeatureIndex)
 
 
 def _add_f_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     """Add PairPos Format 1 kern lookup for f-variant x punctuation pairs."""
-    glyph_order = font.getGlyphOrder()
-    sorted_targets = sorted(_TARGET_GLYPHS, key=glyph_order.index)
+    glyf_table = font["glyf"]
+    hmtx_table = font["hmtx"]
 
-    pair_sets = _build_pair_sets(font, f_glyphs, sorted_targets)
+    builder = PairPosBuilder(font, None)
+    for f_name in f_glyphs:
+        overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
+        for t_name in _TARGET_GLYPHS:
+            raw = max(overhang - glyf_table[t_name].xMin + _KERN_OFFSET, 0)
+            kern = max(raw, _BASE_KERN[t_name])
+            builder.addGlyphPair(
+                None,
+                f_name,
+                buildValue({"XAdvance": kern}),
+                t_name,
+                None,
+            )
 
-    coverage = otTables.Coverage()
-    coverage.glyphs = list(f_glyphs)
-
-    subtable = otTables.PairPos()
-    subtable.Format = 1
-    subtable.Coverage = coverage
-    subtable.ValueFormat1 = 4
-    subtable.ValueFormat2 = 0
-    subtable.PairSet = pair_sets
-
-    lookup = otTables.Lookup()
-    lookup.LookupType = 2
-    lookup.LookupFlag = 0
-    lookup.SubTable = [subtable]
-    lookup.SubTableCount = 1
+    lookup = builder.build()
 
     gpos = font["GPOS"].table
     lookup_index = len(gpos.LookupList.Lookup)
     gpos.LookupList.Lookup.append(lookup)
-
     _register_kern_feature(gpos, lookup_index)
 
 
@@ -252,33 +218,35 @@ def _verify_tables(built_path: Path, committed_path: Path, label: str) -> bool:
     skip_tables = {"head", "GlyphOrder"}
     all_match = True
 
-    for tag in sorted(set(built.keys()) | set(committed.keys())):
-        if tag in skip_tables:
-            continue
-        if tag not in built:
-            print(f"  {tag}: missing from built")
-            all_match = False
-            continue
-        if tag not in committed:
-            print(f"  {tag}: extra in built")
-            all_match = False
-            continue
+    try:
+        for tag in sorted(set(built.keys()) | set(committed.keys())):
+            if tag in skip_tables:
+                continue
+            if tag not in built:
+                print(f"  {tag}: missing from built")
+                all_match = False
+                continue
+            if tag not in committed:
+                print(f"  {tag}: extra in built")
+                all_match = False
+                continue
 
-        built_data = built.getTableData(tag)
-        committed_data = committed.getTableData(tag)
-        if built_data != committed_data:
-            if tag == "glyf":
-                _report_glyf_diffs(built, committed, label)
-            else:
-                print(
-                    f"  {tag}: binary differs"
-                    f" ({len(built_data)} vs"
-                    f" {len(committed_data)} bytes)"
-                )
-            all_match = False
+            built_data = built.getTableData(tag)
+            committed_data = committed.getTableData(tag)
+            if built_data != committed_data:
+                if tag == "glyf":
+                    _report_glyf_diffs(built, committed, label)
+                else:
+                    print(
+                        f"  {tag}: binary differs"
+                        f" ({len(built_data)} vs"
+                        f" {len(committed_data)} bytes)"
+                    )
+                all_match = False
+    finally:
+        built.close()
+        committed.close()
 
-    built.close()
-    committed.close()
     return all_match
 
 
