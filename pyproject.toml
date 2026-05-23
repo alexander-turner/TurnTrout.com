@@ -49,6 +49,7 @@ dependencies = [
     "anthropic==0.102.0",
     "flask>=3.0.0",
     "codespell>=2.3.0",
+    "fonttools[woff]>=4.60.0",
 ]
 
 [tool.codespell]
