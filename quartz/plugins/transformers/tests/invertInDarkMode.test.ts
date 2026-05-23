@@ -7,7 +7,11 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import fs from "fs/promises"
 import { h } from "hastscript"
 
-import { cdnBaseUrl, invertInDarkModeClass } from "../../../components/constants"
+import {
+  cdnBaseUrl,
+  forceHslInvertClass,
+  invertInDarkModeClass,
+} from "../../../components/constants"
 import {
   addCrossOriginToImages,
   addInvertClass,
@@ -17,6 +21,7 @@ import {
   isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
+  wrapInDarkModePicture,
 } from "../invertInDarkMode"
 
 const errno = (code: string): NodeJS.ErrnoException => Object.assign(new Error(code), { code })
@@ -175,6 +180,18 @@ describe("InvertInDarkMode", () => {
       applyLabelsToTree(tree(video), new Map([["https://x/a.mp4", true]]))
       expect(video.properties?.className).toBeUndefined()
     })
+
+    it("wraps pre-existing force-hsl-invert raster img in <picture> without adding invert class", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      applyLabelsToTree(root, new Map())
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      expect(img.properties?.className).toEqual([forceHslInvertClass])
+    })
   })
 
   describe("collectVideoSources", () => {
@@ -228,6 +245,29 @@ describe("InvertInDarkMode", () => {
     })
   })
 
+  describe("wrapInDarkModePicture", () => {
+    it("skips when parent is already a picture (defensive)", () => {
+      const img = h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element
+      const picture = h("picture", [img]) as Element
+      wrapInDarkModePicture(img, picture, 0)
+      expect(picture.children[0]).toBe(img)
+    })
+
+    it("skips when src is not an invertible raster (svg)", () => {
+      const img = h("img", { src: `${cdnBaseUrl}/x.svg` }) as Element
+      const root = tree(img)
+      wrapInDarkModePicture(img, root, 0)
+      expect(root.children[0]).toBe(img)
+    })
+
+    it("skips when src is missing", () => {
+      const img = h("img") as Element
+      const root = tree(img)
+      wrapInDarkModePicture(img, root, 0)
+      expect(root.children[0]).toBe(img)
+    })
+  })
+
   describe("addCrossOriginToImages", () => {
     it.each<[string, Element, "anonymous" | undefined]>([
       ["CDN-hosted img", h("img", { src: `${cdnBaseUrl}/x.avif` }) as Element, "anonymous"],
@@ -249,7 +289,7 @@ describe("InvertInDarkMode", () => {
       expect(img.properties?.crossOrigin).toBe("use-credentials")
     })
 
-    it("throws on absolute non-CDN src (defense in depth against missed checks)", () => {
+    it("throws on absolute non-CDN src", () => {
       const img = h("img", { src: "https://evil.example.com/x.avif" }) as Element
       expect(() => addCrossOriginToImages(tree(img))).toThrow(/expected.*assets\.turntrout/)
     })
@@ -261,7 +301,7 @@ describe("InvertInDarkMode", () => {
       return factories[0]()
     }
 
-    it("applies labels and adds crossOrigin in a single pass", async () => {
+    it("applies the invert class to a labeled img", async () => {
       const cdnSrc = `${cdnBaseUrl}/a.avif`
       readFileSpy.mockResolvedValue(
         JSON.stringify({ [cdnSrc]: { invert: true, reviewed: true } }) as never,
@@ -270,7 +310,61 @@ describe("InvertInDarkMode", () => {
       const img = h("img", { src: cdnSrc }) as Element
       await transformOf(plugin)(tree(img))
       expect(img.properties?.className).toEqual([invertInDarkModeClass])
-      expect(img.properties?.crossOrigin).toBe("anonymous")
+    })
+
+    it("wraps invert-labeled raster img in <picture> with dark-mode <source>", async () => {
+      const cdnSrc = `${cdnBaseUrl}/a.avif`
+      readFileSpy.mockResolvedValue(
+        JSON.stringify({ [cdnSrc]: { invert: true, reviewed: true } }) as never,
+      )
+      const plugin = InvertInDarkMode()
+      const img = h("img", { src: cdnSrc }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      const source = wrapped.children[0] as Element
+      expect(source.tagName).toBe("source")
+      expect(source.properties?.media).toBe("(prefers-color-scheme: dark)")
+      expect(source.properties?.srcSet).toBe(`${cdnBaseUrl}/a-inverted.avif`)
+      expect((wrapped.children[1] as Element).tagName).toBe("img")
+    })
+
+    it("does not wrap an unlabeled img", async () => {
+      const cdnSrc = `${cdnBaseUrl}/plain.avif`
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      const plugin = InvertInDarkMode()
+      const img = h("img", { src: cdnSrc }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      expect((root.children[0] as Element).tagName).toBe("img")
+    })
+
+    it("does not wrap an invert-labeled SVG (kept on the SVG fetch-rewrite path)", async () => {
+      const cdnSrc = `${cdnBaseUrl}/icon.svg`
+      readFileSpy.mockResolvedValue(
+        JSON.stringify({ [cdnSrc]: { invert: true, reviewed: true } }) as never,
+      )
+      const plugin = InvertInDarkMode()
+      const img = h("img", { src: cdnSrc }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      expect((root.children[0] as Element).tagName).toBe("img")
+    })
+
+    it("wraps a pre-existing force-hsl-invert raster img in <picture>", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      const plugin = InvertInDarkMode()
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      const source = wrapped.children[0] as Element
+      expect(source.properties?.srcSet).toBe(`${cdnBaseUrl}/demo-inverted.avif`)
     })
 
     it("reads labels once per plugin instance and re-reads for a new instance", async () => {
