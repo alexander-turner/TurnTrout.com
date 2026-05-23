@@ -69,8 +69,8 @@ describe("Critical SCSS Generation", () => {
       const lightThemeBlock = content.match(/:root\[data-theme="light"\]\s*\{[^}]+\}/)
       const darkThemeBlock = content.match(/:root\[data-theme="dark"\]\s*\{[^}]+\}/)
 
-      expect(lightThemeBlock).toBeTruthy()
-      expect(darkThemeBlock).toBeTruthy()
+      expect(lightThemeBlock).not.toBeNull()
+      expect(darkThemeBlock).not.toBeNull()
 
       expect(lightThemeBlock?.[0]).toContain("--midground-faint")
       expect(lightThemeBlock?.[0]).toContain("--midground")

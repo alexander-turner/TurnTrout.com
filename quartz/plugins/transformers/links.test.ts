@@ -141,7 +141,7 @@ describe("CrawlLinks anchor processing", () => {
     const result = await processHtml('<a href="./other-page">Other</a>', {
       allSlugs: ["other-page"] as FullSlug[],
     })
-    expect(result.links.length).toBeGreaterThan(0)
+    expect(result.links).toHaveLength(1)
   })
 
   it.each([
