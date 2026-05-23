@@ -4,8 +4,8 @@ Build modified EBGaramond fonts from upstream originals.
 Applies two modifications to EBGaramond08-Regular and EBGaramond12-Regular:
 1. Bracket/brace harmonization: affine-maps Y coordinates of bracketleft,
    bracketright, braceleft, braceright so their yMin/yMax match parenleft.
-2. F-pair GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
-   for f-variant glyphs × punctuation targets.
+2. GPOS kerning: adds a PairPos Format 1 lookup to the kern feature
+   for f-variant glyphs x punctuation and open-punct x descender letters.
 
 Usage:
     python scripts/build_fonts.py           # Build and verify
@@ -19,7 +19,6 @@ import sys
 from pathlib import Path
 from typing import Any, Final
 
-from fontTools.misc.roundTools import otRound  # type: ignore[import-untyped]
 from fontTools.otlLib.builder import (  # type: ignore[import-untyped]
     PairPosBuilder,
     buildValue,
@@ -73,37 +72,6 @@ _BASE_KERN: Final[dict[str, int]] = {
     "quotedblright": 300,
 }
 
-_F_GLYPHS_08: Final[tuple[str, ...]] = (
-    "f",
-    "f_f",
-    "f_f.1",
-    "f.DEU",
-    "f.long",
-    "f_f.long",
-    "f.subs",
-    "f.ordn",
-    "f.sinf",
-    "f.sups",
-    "f.short",
-    "f_f.short",
-)
-
-_F_GLYPHS_12: Final[tuple[str, ...]] = (
-    "f",
-    "f_f",
-    "f_f.long",
-    "f.long",
-    "f.DEU",
-    "f.subs",
-    "f.sinf",
-    "f.ordn",
-    "f.sups",
-    "f_f.1",
-    "f._f",
-    "f._i",
-    "f._asc",
-)
-
 _KERN_OFFSET: Final[int] = 80
 
 _OPEN_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
@@ -123,6 +91,29 @@ _DESCENDER_GLYPHS: Final[tuple[str, ...]] = (
 _DESCENDER_KERN: Final[int] = 120
 
 
+def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
+    """Find all f-variant glyphs with positive overhang (xMax > advance
+    width)."""
+    glyf_table = font["glyf"]
+    hmtx_table = font["hmtx"]
+    glyph_order = font.getGlyphOrder()
+
+    f_glyphs = []
+    for name in glyph_order:
+        if not (name == "f" or name.startswith(("f_", "f."))):
+            continue
+        if name not in hmtx_table.metrics:
+            continue
+        glyph = glyf_table[name]
+        if glyph.numberOfContours == 0 and not glyph.isComposite():
+            continue
+        overhang = glyph.xMax - hmtx_table[name][0]
+        if overhang > 0:
+            f_glyphs.append(name)
+
+    return tuple(f_glyphs)
+
+
 def _affine_map_glyph_y(
     font: TTFont,
     glyph_name: str,
@@ -138,15 +129,15 @@ def _affine_map_glyph_y(
     old_y_min = glyph.yMin
     old_y_max = glyph.yMax
     old_span = old_y_max - old_y_min
-    new_span = target_y_max - target_y_min
 
     if old_span == 0:
         return
 
-    for i, (x, y) in enumerate(glyph.coordinates):
-        y_new = otRound(target_y_min + (y - old_y_min) * new_span / old_span)
-        glyph.coordinates[i] = (x, y_new)
-
+    scale_y = (target_y_max - target_y_min) / old_span
+    glyph.coordinates.translate((0, -old_y_min))
+    glyph.coordinates.scale((1, scale_y))
+    glyph.coordinates.translate((0, target_y_min))
+    glyph.coordinates.toInt()
     glyph.recalcBounds(glyf_table)
 
 
@@ -175,8 +166,6 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             feat_rec.Feature.LookupListIndex.append(lookup_index)
             return
 
-    # No existing kern feature — create one and register it in all
-    # scripts/languages.
     feat = otTables.Feature()  # pylint: disable=no-member
     feat.LookupListIndex = [lookup_index]
     feat.LookupCount = 1
@@ -203,7 +192,6 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
 
     builder = PairPosBuilder(font, None)
 
-    # F-variant glyphs × closing punctuation
     for f_name in f_glyphs:
         overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
         for t_name in _TARGET_GLYPHS:
@@ -219,12 +207,15 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
                 None,
             )
 
-    # Open punctuation × descender letters
     descender_val = buildValue({"XAdvance": _DESCENDER_KERN})
     for open_glyph in _OPEN_PUNCT_GLYPHS:
         for desc_glyph in _DESCENDER_GLYPHS:
             builder.addGlyphPair(
-                None, open_glyph, descender_val, desc_glyph, None
+                None,
+                open_glyph,
+                descender_val,
+                desc_glyph,
+                None,
             )
 
     lookup = builder.build()
@@ -238,94 +229,21 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
 def _build_font(
     upstream_path: Path,
     output_path: Path,
-    f_glyphs: tuple[str, ...],
 ) -> None:
     """Build a single modified font from its upstream original."""
     font = TTFont(upstream_path)
     try:
         _harmonize_brackets(font)
-        _add_kerning(font, f_glyphs)
+        _add_kerning(font, _get_f_glyphs(font))
         font.save(output_path)
     finally:
         font.close()
 
 
-def _verify_tables(built_path: Path, committed_path: Path, label: str) -> bool:
-    """
-    Compare all font tables (except head metadata).
-
-    Returns True if equivalent.
-    """
-    built = TTFont(built_path)
-    committed = TTFont(committed_path)
-
-    skip_tables = {"head", "GlyphOrder"}
-    all_match = True
-
-    try:
-        for tag in sorted(set(built.keys()) | set(committed.keys())):
-            if tag in skip_tables:
-                continue
-            if tag not in built:
-                print(f"  {tag}: missing from built")
-                all_match = False
-                continue
-            if tag not in committed:
-                print(f"  {tag}: extra in built")
-                all_match = False
-                continue
-
-            built_data = built.getTableData(tag)
-            committed_data = committed.getTableData(tag)
-            if built_data != committed_data:
-                if tag == "glyf":
-                    _report_glyf_diffs(built, committed, label)
-                else:
-                    print(
-                        f"  {tag}: binary differs"
-                        f" ({len(built_data)} vs"
-                        f" {len(committed_data)} bytes)"
-                    )
-                all_match = False
-    finally:
-        built.close()
-        committed.close()
-
-    return all_match
-
-
-def _report_glyf_diffs(built: TTFont, committed: TTFont, label: str) -> None:
-    """Report per-glyph coordinate differences in the glyf table."""
-    glyf_b = built["glyf"]
-    glyf_c = committed["glyf"]
-    total_diffs = 0
-
-    for glyph_name in glyf_b.keys():
-        gb = glyf_b[glyph_name]
-        gc = glyf_c[glyph_name]
-        if not hasattr(gb, "coordinates") or not hasattr(gc, "coordinates"):
-            continue
-        if gb.coordinates == gc.coordinates:
-            continue
-
-        diffs = [
-            (i, a, b)
-            for i, (a, b) in enumerate(zip(gb.coordinates, gc.coordinates))
-            if a != b
-        ]
-        total_diffs += len(diffs)
-
-        max_delta = max(abs(a[1] - b[1]) for _, a, b in diffs)
-        print(
-            f"  glyf/{glyph_name} ({label}): {len(diffs)} coords"
-            f" differ (max delta: {max_delta} unit)"
-        )
-
-    if total_diffs > 0:
-        print(
-            f"  glyf total: {total_diffs} coordinate differences "
-            f"(rounding edge cases in bracket Y-mapping)"
-        )
+_FONT_FILENAMES: Final[tuple[str, ...]] = (
+    "EBGaramond08-Regular.woff2",
+    "EBGaramond12-Regular.woff2",
+)
 
 
 def build_all(output_dir: Path) -> bool:
@@ -336,28 +254,39 @@ def build_all(output_dir: Path) -> bool:
     """
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    configs: tuple[tuple[str, tuple[str, ...]], ...] = (
-        ("EBGaramond08-Regular.woff2", _F_GLYPHS_08),
-        ("EBGaramond12-Regular.woff2", _F_GLYPHS_12),
-    )
-
     all_equivalent = True
-    for filename, f_glyphs in configs:
+    for filename in _FONT_FILENAMES:
         upstream = _UPSTREAM_DIR / filename
-        output = output_dir / filename
-        committed = _FONT_DIR / filename
-
         if not upstream.exists():
             raise FileNotFoundError(f"Upstream font not found: {upstream}")
 
-        print(f"Building {filename}...")
-        _build_font(upstream, output, f_glyphs)
+        output = output_dir / filename
+        committed = _FONT_DIR / filename
 
-        tables_match = _verify_tables(output, committed, filename)
-        if tables_match:
-            print("  PASS: table-equivalent to committed font")
-        else:
+        print(f"Building {filename}...")
+        _build_font(upstream, output)
+
+        built = TTFont(output)
+        committed_font = TTFont(committed)
+        try:
+            skip = {"head", "GlyphOrder"}
+            tags = sorted(
+                (set(built.keys()) | set(committed_font.keys())) - skip
+            )
+            mismatched = [
+                tag
+                for tag in tags
+                if built.getTableData(tag) != committed_font.getTableData(tag)
+            ]
+        finally:
+            built.close()
+            committed_font.close()
+
+        if mismatched:
+            print(f"  DIFFERS: {', '.join(mismatched)}")
             all_equivalent = False
+        else:
+            print("  PASS: table-equivalent to committed font")
 
     return all_equivalent
 
@@ -373,10 +302,7 @@ def main() -> None:
         print("\nSome tables differ (see details above).")
 
     if "--install" in sys.argv:
-        for filename in (
-            "EBGaramond08-Regular.woff2",
-            "EBGaramond12-Regular.woff2",
-        ):
+        for filename in _FONT_FILENAMES:
             src = output_dir / filename
             dst = _FONT_DIR / filename
             shutil.copy2(src, dst)
