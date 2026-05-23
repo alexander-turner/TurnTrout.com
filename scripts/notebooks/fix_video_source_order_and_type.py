@@ -1,7 +1,6 @@
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 # Assuming utils.py is accessible
 try:
@@ -34,7 +33,7 @@ DESIRED_MP4_TYPE = "video/mp4; codecs=hvc1"
 # skipcq: PY-R1000 (one-off script)
 def _process_video_content(
     video_content: str,
-) -> Tuple[str, bool]:  # noqa: PY-R1000
+) -> tuple[str, bool]:  # noqa: PY-R1000
     """
     Processes the inner content of a video tag.
 
@@ -45,9 +44,9 @@ def _process_video_content(
         Tuple[str, bool]: The potentially modified video content and a flag
                           indicating if changes were made.
     """
-    sources: List[Dict[str, str]] = []
+    sources: list[dict[str, str]] = []
     # Map type (webm/mp4) to full tag string
-    original_sources_str: Dict[str, str] = {}
+    original_sources_str: dict[str, str] = {}
     modified = False
 
     # Find all source tags and store their info
@@ -70,15 +69,15 @@ def _process_video_content(
             original_sources_str["mp4"] = full_tag
 
     # Check if both webm and mp4 sources are present
-    webm_source: Dict[str, str] | None = next(
+    webm_source: dict[str, str] | None = next(
         (s for s in sources if s["base_type"] == "video/webm"), None
     )
-    mp4_source: Dict[str, str] | None = next(
+    mp4_source: dict[str, str] | None = next(
         (s for s in sources if s["base_type"] == "video/mp4"), None
     )
 
     new_content = video_content
-    processed_tags: List[str] = []  # Keep track of tags already handled
+    processed_tags: list[str] = []  # Keep track of tags already handled
 
     # 1. Check MP4 type attribute
     if mp4_source:
