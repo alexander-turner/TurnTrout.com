@@ -1,7 +1,7 @@
 import AllTagsContent, {
+  allTagsDescription,
   allTagsSlug,
   allTagsTitle,
-  allTagsDescription,
 } from "../../components/pages/AllTagsContent"
 import { createListPageEmitter } from "./helpers"
 

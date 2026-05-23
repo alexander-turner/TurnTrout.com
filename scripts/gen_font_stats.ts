@@ -198,5 +198,5 @@ if (process.argv[1]?.endsWith("gen_font_stats.ts")) {
   main()
 }
 
-export { FONTS, collectRows, findSubsetSize, formatKB, generate, renderTable, savingsPct }
+export { collectRows, findSubsetSize, FONTS, formatKB, generate, renderTable, savingsPct }
 export type { FontEntry, FontRow }

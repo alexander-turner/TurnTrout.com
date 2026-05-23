@@ -9,10 +9,10 @@
  */
 import { defaultPath } from "../quartz/components/constants"
 import {
+  getFaviconUrl,
   readFaviconCounts,
   shouldIncludeFavicon,
   transformUrl,
-  getFaviconUrl,
 } from "../quartz/plugins/transformers/favicons"
 
 async function main() {

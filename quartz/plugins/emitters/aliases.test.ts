@@ -1,4 +1,4 @@
-import { jest, describe, it, beforeEach, expect, beforeAll } from "@jest/globals"
+import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import { VFile } from "vfile"
 
 import { normalizeNbsp } from "../../components/constants"

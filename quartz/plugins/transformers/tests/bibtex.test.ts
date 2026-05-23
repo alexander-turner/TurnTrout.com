@@ -1,13 +1,13 @@
 import type { Code, Heading, Root } from "mdast"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { VFile } from "vfile"
 
 import type { FullSlug } from "../../../util/path"
 import type { FrontmatterData } from "../../vfile"
 
 import { BuildCtx } from "../../../util/ctx"
-import { generateBibtexEntry, findInsertionIndex, createCitationNodes, Bibtex } from "../bibtex"
+import { Bibtex, createCitationNodes, findInsertionIndex, generateBibtexEntry } from "../bibtex"
 
 function createMockTree(children: Root["children"] = []): Root {
   return { type: "root", children }

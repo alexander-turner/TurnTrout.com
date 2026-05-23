@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it } from "@jest/globals"
 
 import { type BuildCtx } from "../../util/ctx"
 import { type FilePath } from "../../util/path"

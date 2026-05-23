@@ -1,18 +1,18 @@
 import type { Locator } from "@playwright/test"
 
 import { minDesktopWidth } from "../../styles/variables"
-import { scrollTolerance, popoverScrollOffset } from "../constants"
+import { popoverScrollOffset, scrollTolerance } from "../constants"
 import { test as base, expect } from "./fixtures"
 import {
-  takeRegressionScreenshot,
-  isDesktopViewport,
-  isSafariBrowser,
   getAllWithWait,
-  isElementChecked,
-  search,
   gotoPage,
-  triggerAndWaitForSPANav,
+  isDesktopViewport,
+  isElementChecked,
+  isSafariBrowser,
   moveMouseToSafePosition,
+  search,
+  takeRegressionScreenshot,
+  triggerAndWaitForSPANav,
 } from "./visual_utils"
 
 /** Type guard that asserts a value is defined, using expect for the assertion */

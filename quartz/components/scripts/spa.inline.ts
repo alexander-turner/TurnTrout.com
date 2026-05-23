@@ -8,10 +8,10 @@ import { escape } from "validator"
 import { type SpaNavigateOptions } from "../../../globals"
 import { type FullSlug, getFullSlug, normalizeRelativeURLs } from "../../util/path"
 import {
-  simpleConstants,
   debounceWaitMs,
   instantScrollRestoreKey,
   sessionStoragePondVideoKey,
+  simpleConstants,
 } from "../constants"
 import { debounce } from "./component_script_utils"
 import { isPrinting } from "./printState"

@@ -1,5 +1,5 @@
-import { invertInDarkModeClass, forceHslInvertClass } from "../constants"
-import { test, expect } from "./fixtures"
+import { forceHslInvertClass, invertInDarkModeClass } from "../constants"
+import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
 // Page picked because it has 13 invert-tagged images — historically the

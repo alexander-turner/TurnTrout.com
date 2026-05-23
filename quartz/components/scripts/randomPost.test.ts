@@ -2,10 +2,10 @@
  * @jest-environment jest-fixed-jsdom
  */
 
-import { jest, describe, it, beforeAll, beforeEach, expect } from "@jest/globals"
+import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import { type ContentDetails } from "../../plugins/vfile"
-import { isPost, randomPostScript, EXCLUDED_SLUGS, EXCLUDED_SLUG_PREFIXES } from "./randomPost"
+import { EXCLUDED_SLUG_PREFIXES, EXCLUDED_SLUGS, isPost, randomPostScript } from "./randomPost"
 
 const cd = (content: string): ContentDetails => ({
   title: content,

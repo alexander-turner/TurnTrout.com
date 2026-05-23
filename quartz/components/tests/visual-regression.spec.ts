@@ -1,18 +1,18 @@
 import { type Page } from "playwright"
 
-import { minDesktopWidth, maxMobileWidth } from "../../styles/variables"
-import { tightScrollTolerance, listTolerance } from "../constants"
-import { test, expect } from "./fixtures"
+import { maxMobileWidth, minDesktopWidth } from "../../styles/variables"
+import { listTolerance, tightScrollTolerance } from "../constants"
+import { expect, test } from "./fixtures"
 import {
-  takeRegressionScreenshot,
-  setTheme,
-  waitForTransitionEnd,
-  isDesktopViewport,
   getH1Screenshots,
-  isElementChecked,
   gotoPage,
-  reloadPage,
+  isDesktopViewport,
+  isElementChecked,
   moveMouseToSafePosition,
+  reloadPage,
+  setTheme,
+  takeRegressionScreenshot,
+  waitForTransitionEnd,
 } from "./visual_utils"
 
 // Visual regression tests don't need assertions

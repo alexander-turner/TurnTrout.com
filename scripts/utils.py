@@ -8,9 +8,9 @@ import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from pathlib import Path
-from typing import Callable, NoReturn
+from typing import NoReturn
 from urllib.parse import urlparse
 
 import git

@@ -33,7 +33,7 @@ const parseDependencies = (argv: Argv, hast: Root, file: VFile): string[] => {
     let ref: string | null = null
 
     if (
-      ["script", "img", "audio", "video", "source", "iframe"].includes(elem.tagName) &&
+      ["audio", "iframe", "img", "script", "source", "video"].includes(elem.tagName) &&
       elem?.properties?.src
     ) {
       ref = elem.properties.src.toString()

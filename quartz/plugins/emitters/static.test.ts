@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 
 import { type FilePath } from "../../util/path"
 import { buildStaticScriptDefines, isLocalFavicon, shouldCopyToRoot } from "./static"

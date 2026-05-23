@@ -6,7 +6,7 @@ import { h } from "hastscript"
 import type { BuildCtx } from "../../../util/ctx"
 
 import { QuartzConfig } from "../../../util/ctx"
-import { TableDivider, isMarkerRow, processTableBody } from "../tableDivider"
+import { isMarkerRow, processTableBody, TableDivider } from "../tableDivider"
 
 const mockBuildCtx: BuildCtx = {
   argv: {

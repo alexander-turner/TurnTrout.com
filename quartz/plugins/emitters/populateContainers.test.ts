@@ -1,7 +1,7 @@
 /**
  * @jest-environment node
  */
-import { jest, describe, it, expect, beforeEach, beforeAll, afterEach } from "@jest/globals"
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 const mockGlobbyFn = jest.fn<(pattern: string | string[], options?: unknown) => Promise<string[]>>()
 const mockExecSync = jest.fn<(command: string, options?: unknown) => string>()

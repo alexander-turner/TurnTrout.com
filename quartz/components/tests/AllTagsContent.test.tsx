@@ -1,9 +1,9 @@
 /**
  * @jest-environment jest-fixed-jsdom
  */
-import type { Root, Element as HastElement } from "hast"
+import type { Element as HastElement, Root } from "hast"
 
-import { describe, it, expect } from "@jest/globals"
+import { describe, expect, it } from "@jest/globals"
 import { h } from "hastscript"
 import { h as preactH } from "preact"
 import { render } from "preact-render-to-string"
@@ -14,7 +14,7 @@ import { type QuartzPluginData } from "../../plugins/vfile"
 import { type GlobalConfiguration } from "../../util/config"
 import { BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug } from "../../util/path"
-import AllTagsContent, { generateAllTagsHast, allTagsListing } from "../pages/AllTagsContent"
+import AllTagsContent, { allTagsListing, generateAllTagsHast } from "../pages/AllTagsContent"
 
 // Create test file data
 const createFileData = (overrides: Partial<QuartzPluginData> = {}): QuartzPluginData =>

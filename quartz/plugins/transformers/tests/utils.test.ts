@@ -1,16 +1,16 @@
-import { jest, describe, it, expect } from "@jest/globals"
+import { describe, expect, it, jest } from "@jest/globals"
 import { type Element, type Parent, type Text } from "hast"
 import { h } from "hastscript"
 
 import {
-  replaceRegex,
-  type ReplaceFnResult,
-  shouldCapitalizeNodeText,
-  gatherTextBeforeIndex,
   addClass,
-  hasClass,
-  hasAncestor,
   type ElementMaybeWithParent,
+  gatherTextBeforeIndex,
+  hasAncestor,
+  hasClass,
+  type ReplaceFnResult,
+  replaceRegex,
+  shouldCapitalizeNodeText,
 } from "../utils"
 
 const acceptAll = () => false

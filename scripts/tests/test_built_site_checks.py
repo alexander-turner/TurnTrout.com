@@ -2441,10 +2441,7 @@ def test_check_iframe_sources(
             raise requests.RequestException(str(response))
 
         ok, status_code = response
-        mock_response = type(
-            "MockResponse", (), {"ok": ok, "status_code": status_code}
-        )
-        return mock_response
+        return type("MockResponse", (), {"ok": ok, "status_code": status_code})
 
     # Patch the requests.head function
     monkeypatch.setattr(built_site_checks._http_session, "head", mock_head)
@@ -4016,13 +4013,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (

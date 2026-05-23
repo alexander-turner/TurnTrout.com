@@ -10,17 +10,17 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import { NBSP } from "../../components/constants"
 import {
-  shouldCapitalizeNodeText,
-  replaceRegex,
   gatherTextBeforeIndex,
   hasClass,
   isCode,
+  replaceRegex,
+  shouldCapitalizeNodeText,
 } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {
   const romanNumeralRegex =
-    /(?<= |^)(?:(?:M{0,3})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{3})|I{1,2}[XVCDM])(?=[\s.,!?;:]|$)/
+    /(?<= |^)(?:M{0,3}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{3})|I{1,2}[XVCDM])(?=[\s.,!?;:]|$)/
   return romanNumeralRegex.test(str)
 }
 

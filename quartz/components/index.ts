@@ -11,13 +11,13 @@ import TableOfContents from "./TableOfContents"
 
 export {
   ArticleTitle,
-  Content,
-  TagContent,
-  Head,
-  ContentMeta,
-  TableOfContents,
-  Navbar,
-  Backlinks,
-  NotFound,
   AuthorList,
+  Backlinks,
+  Content,
+  ContentMeta,
+  Head,
+  Navbar,
+  NotFound,
+  TableOfContents,
+  TagContent,
 }
