@@ -150,20 +150,19 @@ describe("PopulateExternalMarkdown", () => {
   })
 
   describe("buildPlaceholderRegex", () => {
-    it("should never match when no sources configured", () => {
-      const regex = buildPlaceholderRegex([])
-      expect('<span class="populate-markdown-test"></span>'.match(regex)).toBeNull()
+    it("should return null when no sources configured", () => {
+      expect(buildPlaceholderRegex([])).toBeNull()
     })
 
     it("should only match configured source names", () => {
-      const regex = buildPlaceholderRegex(["project"])
+      const regex = buildPlaceholderRegex(["project"]) as RegExp
       expect('<span class="populate-markdown-project"></span>'.match(regex)).not.toBeNull()
       expect('<span class="populate-markdown-other"></span>'.match(regex)).toBeNull()
       expect('<span class="populate-commit-count"></span>'.match(regex)).toBeNull()
     })
 
     it("should escape special regex characters in source names", () => {
-      const regex = buildPlaceholderRegex(["test.name"])
+      const regex = buildPlaceholderRegex(["test.name"]) as RegExp
       expect('<span class="populate-markdown-test.name"></span>'.match(regex)).not.toBeNull()
       expect('<span class="populate-markdown-testXname"></span>'.match(regex)).toBeNull()
     })

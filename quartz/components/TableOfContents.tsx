@@ -202,7 +202,8 @@ export function processHtmlAst(htmlAst: Root | Element, parent: Parent): void {
       const textValue = node.value
       let textToProcess = textValue
 
-      const leadingNumberRegex = /^(?<numberPart>\d+:?\s*)(?<restText>.*)$/
+      // eslint-disable-next-line regexp/no-super-linear-backtracking -- anchored ^...$; \d+ only backtracks once before \S succeeds
+      const leadingNumberRegex = /^(?<numberPart>\d+:? *)(?<restText>\S.*)$/
       const match = textValue.match(leadingNumberRegex)
       if (match?.groups) {
         const numberPart = match.groups.numberPart

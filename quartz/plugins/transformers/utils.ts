@@ -7,7 +7,7 @@ import { visit } from "unist-util-visit"
 import type { QuartzTransformerPlugin } from "../types"
 
 export const urlRegex = new RegExp(
-  /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z.-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
+  /(?<protocol>https?:\/\/)(?<domain>(?:[\da-z-]+\.)+)(?<path>[/?=\w.-]+(?:\([\w.\-,() ]*\))?)(?=\))/g,
 )
 
 const linkText = /\[(?<linkText>[^\]]+)\]/
@@ -18,10 +18,10 @@ export const integerRegex = /\d{1,3}(?:,?\d{3})*/u
 export const numberRegex = new RegExp(`[-−]?${integerRegex.source}(?:\\.\\d+)?`, "u")
 
 // A fraction is a digit followed by a slash and another digit
-const ordinalSuffixes = /(?:st|nd|rd|th)/
+const ordinalSuffixes = /st|nd|rd|th/
 export const fractionRegex = new RegExp(
-  `(?<![\\w/\\.]|${numberRegex.source})(?!9/11)(?<numerator>${integerRegex.source})\\/(?<denominator>${integerRegex.source})(?<ordinal>${ordinalSuffixes.source})?(?!${numberRegex.source}|\\d)(?![\\w/])`,
-  "gm",
+  `(?<![\\w/.])(?!9/11)(?<numerator>${integerRegex.source})\\/(?<denominator>${integerRegex.source})(?<ordinal>${ordinalSuffixes.source})?(?![-−]?\\d)(?![\\w/])`,
+  "g",
 )
 
 export interface ReplaceFnResult {

@@ -92,7 +92,7 @@ const SVG_COLOR_ATTRS = [
   "lighting-color",
 ] as const
 const SVG_COLOR_PROP_RE = new RegExp(
-  `(?<prop>${SVG_COLOR_ATTRS.join("|")})(?<sep>\\s*:\\s*)(?<value>[^;}"']+)`,
+  `(?<prop>${SVG_COLOR_ATTRS.join("|")})(?<sep>\\s*:\\s*)(?<value>\\S[^;}"']*)`,
   "gi",
 )
 
