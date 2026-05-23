@@ -110,6 +110,7 @@ You MUST read [pr-templates.md](pr-templates.md) for the PR template and forma
    ```
 
    If a PR already exists, update it with `gh pr edit` instead of creating a new one.
+
 3. Create the PR using `gh pr create` with the template from the resource file. Make sure that you use the target branch
 
 ### Step 5: Update PR Title and Description (after any post-creation changes)

@@ -50,7 +50,11 @@
       "black",
       "ruff check --fix"
     ],
-    "!(*.vale-styles)/**/*.md": "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
+    "{*.md,.claude/**/*.md}": [
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
+    ],
+    "!(*.vale-styles|.claude)/**/*.md": "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
   },
   "commitlint": {
     "extends": [
