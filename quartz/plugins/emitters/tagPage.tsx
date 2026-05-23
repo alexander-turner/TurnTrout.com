@@ -14,7 +14,7 @@ import {
   joinSegments,
   pathToRoot,
 } from "../../util/path"
-import { type ProcessedContent, defaultProcessedContent } from "../vfile"
+import { defaultProcessedContent, type ProcessedContent } from "../vfile"
 import { write } from "./helpers"
 
 /**

@@ -5,7 +5,7 @@ import type { QuartzEmitterPlugin } from "../types"
 import { localTroutFaviconBasenameDefault, simpleConstants } from "../../components/constants"
 import DepGraph from "../../depgraph"
 import { glob } from "../../util/glob"
-import { type FilePath, QUARTZ, joinSegments } from "../../util/path"
+import { type FilePath, joinSegments, QUARTZ } from "../../util/path"
 
 export function isLocalFavicon(fp: FilePath): boolean {
   return fp.startsWith(`${localTroutFaviconBasenameDefault}.`)

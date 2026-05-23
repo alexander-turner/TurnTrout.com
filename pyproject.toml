@@ -71,6 +71,18 @@ skip = "*.lock,*pnpm-lock.yaml,*uv.lock,*public*,*node_modules*,*.venv*,*asset_s
 #   wrold      intentional misspelling in spellcheck-triage test fixtures
 ignore-words-list = "afterall,allo,caf,dataet,nd,processus,te,wrold"
 
+[tool.ruff]
+line-length = 80
+target-version = "py311"
+
+[tool.ruff.lint]
+# Default E + F, plus pyupgrade (UP) and return-statement (RET) — both are
+# largely autofixable and surface real modernization / dead-code issues.
+select = ["E", "F", "UP", "RET"]
+# Black is the authority on line length; it tolerates unsplittable long
+# lines (URLs, strings) that E501 would otherwise flag.
+ignore = ["E501"]
+
 [tool.black]
 line-length = 80
 target-version = ['py311']

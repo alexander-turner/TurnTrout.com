@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
 // The set of pages covered mirrors `.github/lighthouse-full-config.json`'s
@@ -33,12 +33,15 @@ const ENV_LABEL = process.env.PLAYWRIGHT_BASE_URL ? "PREVIEW" : "LOCAL"
 //     MathML elements is deprecated. KaTeX still emits it, and Firefox's
 //     own chrome://global/...videocontrols.js trips the warning too —
 //     neither is actionable from our code.
+//   - "was preloaded … but not used": icons preloaded via <link rel=preload>
+//     for admonition types that don't appear on a given page. Harmless.
 const ALLOWED_PATTERNS: readonly RegExp[] = [
   /umami\.is/i,
   /umami\.dev/i,
   /codecs=hvc1/i,
   /Trying to load from next <source> element/i,
   /mathvariant.*deprecated/i,
+  /was preloaded using link preload but not used/i,
 ]
 
 function isAllowed(text: string): boolean {

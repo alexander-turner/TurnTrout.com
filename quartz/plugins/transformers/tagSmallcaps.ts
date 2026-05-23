@@ -10,17 +10,17 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import { NBSP } from "../../components/constants"
 import {
-  shouldCapitalizeNodeText,
-  replaceRegex,
   gatherTextBeforeIndex,
   hasClass,
   isCode,
+  replaceRegex,
+  shouldCapitalizeNodeText,
 } from "./utils"
 
 /** Validates if string matches Roman numeral pattern with optional trailing punctuation */
 export function isRomanNumeral(str: string): boolean {
   const romanNumeralRegex =
-    /(?<= |^)(?:(?:M{0,3})(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{3})|I{1,2}[XVCDM])(?=[\s.,!?;:]|$)/
+    /(?<= |^)(?:M{0,3}(?:CM|CD|D?C{0,3})(?:XC|XL|L?X{0,3})(?:I{1,2}X|I{1,2}V|V?I{0,3})(?<=[A-Z]{2})|I[CDM])(?=[\s.,!?;:]|$)/
   return romanNumeralRegex.test(str)
 }
 
@@ -56,12 +56,9 @@ const boundaryAllowAcronyms = escapedAllowAcronyms
 
 export const smallCapsSeparators = "-'’"
 const upperCapsChars = "A-Z\\u00C0-\\u00DC" // A-Z and À-Ü
-const lowerCapsChars = "a-z\\u00E0-\\u00FC" // a-z and à-ü
-const allCapsChars = `${upperCapsChars}${lowerCapsChars}`
-
 // Word boundary that prevents mixing upper- and lowercase neighbors
-const beforeWordBoundary = `(?<![${allCapsChars}\\w])`
-const afterWordBoundary = `(?![${allCapsChars}\\w])`
+const beforeWordBoundary = `(?<![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])`
+const afterWordBoundary = `(?![\\w\\u00C0-\\u00DC\\u00E0-\\u00FC])`
 
 // Pattern for acronyms with at least 3 uppercase letters (with digits/separators allowed between them)
 // Use explicit alternations to ensure we actually capture 3+ uppercase letters, not just look ahead for them
@@ -202,18 +199,17 @@ export const REGEX_ABBREVIATION = new RegExp(
 // small-capped) so it matches the lining digits' cap height. Trailing
 // decimals are part of the match so the full "1.0" stays cap-aligned rather
 // than splitting into a lining "1" followed by an oldstyle "0".
-export const REGEX_VERSION_NUMBER = new RegExp(
-  `${beforeWordBoundary}[Vv]\\d+(?:\\.\\d+)*${afterWordBoundary}`,
-)
+export const REGEX_VERSION_NUMBER = /\b(?:V|v)\d+(?:\.\d+)*\b/
 
 // Lookahead to see that there are at least 3 contiguous uppercase characters in the phrase
-export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3,})`
+export const validSmallCapsPhrase = `(?=[${upperCapsChars}\\-'’\\s]*[${upperCapsChars}]{3})`
 const decimalOrSeparator = `[${smallCapsSeparators}\\d\\s]|\\d\\.\\d`
 export const allCapsContinuation = `(?:(?:${decimalOrSeparator})+[${upperCapsChars}]+)`
 
-// Restricting to at least 2 words to avoid interfering with REGEX_ACRONYM
-// Added negative lookbehind to prevent matching if preceded by a single capital letter and space
-export const noSentenceStartSingleCapital = `(?!(?<=(?:^|[.!?]\\s))(?=[${upperCapsChars}]\\s)(?!I\\s))`
+// Skip sentence-leading single capitals (e.g. "A") unless the pronoun "I".
+// De Morgan of the original (?!lookbehind ∧ lookahead ∧ ¬exception):
+// proceed if NOT at sentence start ∨ NOT single-cap+space ∨ IS "I".
+export const noSentenceStartSingleCapital = `(?:(?<![.!?]\\s)(?<!^)|(?![${upperCapsChars}]\\s)|(?=I\\s))`
 export const REGEX_ALL_CAPS_PHRASE = new RegExp(
   `${beforeWordBoundary}${noSentenceStartSingleCapital}${validSmallCapsPhrase}(?<phrase>[${upperCapsChars}]+${allCapsContinuation}+)${afterWordBoundary}`,
 )
@@ -262,7 +258,8 @@ export function shouldSkipNode(node: Text, ancestors: Parent[]): boolean {
 
 // If text comes after sentence ending, capitalize the first letter
 export const capitalizeAfterEnding = new RegExp(
-  `(?<prefix>^\\s*|\\n|[.!?](?<![eE]\\.[gG]\\.|[iI]\\.[eE]\\.)\\s+)(?<letter>[${upperCapsChars}${lowerCapsChars}])$`,
+  `(?<prefix>^\\s*|\\n|[.!?](?<!e\\.g\\.|i\\.e\\.)\\s+)(?<letter>[${upperCapsChars}])$`,
+  "iu",
 )
 
 export const INLINE_ELEMENTS: ReadonlySet<string> = new Set([

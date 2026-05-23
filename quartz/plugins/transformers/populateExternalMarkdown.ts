@@ -129,8 +129,8 @@ function getContent(name: string, source: MarkdownSource): string {
 }
 
 /** Builds a regex matching `<span class="populate-markdown-NAME"></span>` placeholders for the given names. */
-export function buildPlaceholderRegex(sourceNames: string[]): RegExp {
-  if (sourceNames.length === 0) return /(?!)/g // never matches
+export function buildPlaceholderRegex(sourceNames: string[]): RegExp | null {
+  if (sourceNames.length === 0) return null
   const escaped = sourceNames.map(escapeStringRegexp)
   return new RegExp(
     `<span\\s+class="populate-markdown-(${escaped.join("|")})"\\s*>(?:<\\/span>)?`,
@@ -144,6 +144,7 @@ export function populateExternalContent(
   sources: Record<string, MarkdownSource>,
 ): string {
   const regex = buildPlaceholderRegex(Object.keys(sources))
+  if (!regex) return content
   return content.replace(regex, (_match, name: string) => {
     // regex is built from Object.keys(sources), so `name` is always present
     const source = sources[name] as MarkdownSource

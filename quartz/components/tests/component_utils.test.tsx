@@ -4,7 +4,7 @@
 
 import type { Parent } from "hast"
 
-import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
 import {
   processInlineCode,

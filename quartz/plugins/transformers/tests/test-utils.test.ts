@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 
-import { mockFetchResolve, mockFetchNetworkError, removePositions } from "./test-utils"
+import { mockFetchNetworkError, mockFetchResolve, removePositions } from "./test-utils"
 
 describe("test-utils", () => {
   let fetchMock: jest.MockedFunction<typeof fetch>

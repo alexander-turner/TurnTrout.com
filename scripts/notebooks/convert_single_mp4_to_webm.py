@@ -3,8 +3,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Final, Iterator
+from typing import Final
 
 # Assuming compress.py, r2_upload.py, and utils.py are accessible
 try:

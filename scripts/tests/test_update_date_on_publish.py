@@ -455,6 +455,8 @@ Content here
     assert "# Original publish date" in result
     assert "# Last update" in result
     assert 'title: "Test Post"' in result
+
+
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -462,8 +464,7 @@ Content here
             """---
 ---
 Content
-"""
-   ,
+""",
             id="empty-frontmatter",
         ),
         pytest.param(
@@ -473,8 +474,7 @@ Content
             title: "Test Post"
             ---
             Content
-            """
-               ,
+            """,
             id="missing-dates",
         ),
     ],
@@ -646,7 +646,7 @@ def test_main_default_content_dir(mock_datetime, mock_git):
         update_lib.main()
 
     # Check that glob was called with the right path and pattern
-    assert len(glob_calls) > 0, "Path.glob was not called"
+    assert len(glob_calls) == 1, "Path.glob was not called"
     called_path, pattern = glob_calls[0]
     assert (
         str(called_path) == "website_content"

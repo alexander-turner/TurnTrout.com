@@ -10,7 +10,7 @@ import { type BuildCtx } from "../../util/ctx"
 import { type FilePath, type FullSlug, joinSegments, pathToRoot } from "../../util/path"
 import { type StaticResources } from "../../util/resources"
 import { type QuartzEmitterPlugin } from "../types"
-import { type ProcessedContent, defaultProcessedContent } from "../vfile"
+import { defaultProcessedContent, type ProcessedContent } from "../vfile"
 
 type WriteOptions = {
   ctx: BuildCtx

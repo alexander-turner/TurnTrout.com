@@ -1,4 +1,4 @@
-import { diffChars, diffLines, type Change } from "diff"
+import { type Change, diffChars, diffLines } from "diff"
 
 import { escapeHTML } from "../../util/escape"
 

@@ -37,7 +37,7 @@
   "lint-staged": {
     "*.{css,scss}": "pnpm exec stylelint --config config/stylelint/.stylelintrc.json --fix",
     "*.{js,jsx,ts,tsx}": "pnpm eslint --fix --config config/javascript/eslint.config.js",
-    "{*.{css,scss,json,js,jsx,ts,tsx},.hooks/prepare-commit-msg}": "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+    "{*.{css,scss,json,js,jsx,ts,tsx,md},.hooks/prepare-commit-msg}": "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
     "*.fish": "fish_indent",
     "{*.sh,.hooks/commit-msg,.hooks/post-commit,.hooks/pre-commit,.hooks/pre-push}": [
       "shfmt -i 2 -w",
@@ -50,7 +50,11 @@
       "black",
       "ruff check --fix"
     ],
-    "!(*.vale-styles)/**/*.md": "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
+    "{*.md,.claude/**/*.md}": [
+      "prettier --write --config config/prettier/.prettierrc --ignore-path config/prettier/.prettierignore",
+      "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
+    ],
+    "!(*.vale-styles|.claude)/**/*.md": "markdownlint --config config/markdownlint/.markdownlint.jsonc --fix"
   },
   "commitlint": {
     "extends": [
@@ -116,7 +120,7 @@
     "pretty-bytes": "7.1.0",
     "pretty-time": "1.1.0",
     "psl": "1.15.0",
-    "punctilio": "3.8.4",
+    "punctilio": "3.11.2",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "reading-time": "1.5.0",

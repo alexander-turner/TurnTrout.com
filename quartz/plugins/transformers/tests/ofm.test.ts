@@ -1,4 +1,4 @@
-import { describe, expect, it, test, beforeEach, afterEach, jest } from "@jest/globals"
+import { afterEach, beforeEach, describe, expect, it, jest, test } from "@jest/globals"
 import rehypeStringify from "rehype-stringify"
 import remarkParse from "remark-parse"
 import remarkRehype from "remark-rehype"
@@ -9,12 +9,12 @@ import type { BuildCtx } from "../../../util/ctx"
 
 import { resetSlugger } from "../gfm"
 import {
-  markdownPlugins,
-  defaultOptions,
-  processWikilink,
-  ObsidianFlavoredMarkdown,
   createYouTubeEmbed,
+  defaultOptions,
+  markdownPlugins,
+  ObsidianFlavoredMarkdown,
   type OFMOptions,
+  processWikilink,
 } from "../ofm"
 
 jest.mock("fs")
@@ -1240,12 +1240,12 @@ describe("Branch coverage tests", () => {
 
       // First checkbox (with label) should not have aria-label
       const firstCheckboxMatch = result.match(/id="checkbox-0"[^>]*>/)
-      expect(firstCheckboxMatch).toBeTruthy()
+      expect(firstCheckboxMatch).not.toBeNull()
       expect(firstCheckboxMatch?.[0]).not.toContain("aria-label")
 
       // Second checkbox (without label) should have aria-label
       const secondCheckboxMatch = result.match(/id="checkbox-1"[^>]*>/)
-      expect(secondCheckboxMatch).toBeTruthy()
+      expect(secondCheckboxMatch).not.toBeNull()
       expect(secondCheckboxMatch?.[0]).toContain('aria-label="checkbox"')
     })
 
