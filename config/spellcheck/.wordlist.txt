@@ -492,6 +492,7 @@ FBPurity
 FFN
 FHE
 FLI
+F-bigram
 FOMO
 Fabien
 Faden
@@ -1563,6 +1564,7 @@ armour
 arungus
 arxiv
 ary
+ascender
 aspirational
 associational
 asungus
