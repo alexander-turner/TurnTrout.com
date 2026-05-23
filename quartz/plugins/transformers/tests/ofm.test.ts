@@ -1240,12 +1240,12 @@ describe("Branch coverage tests", () => {
 
       // First checkbox (with label) should not have aria-label
       const firstCheckboxMatch = result.match(/id="checkbox-0"[^>]*>/)
-      expect(firstCheckboxMatch).toBeTruthy()
+      expect(firstCheckboxMatch).not.toBeNull()
       expect(firstCheckboxMatch?.[0]).not.toContain("aria-label")
 
       // Second checkbox (without label) should have aria-label
       const secondCheckboxMatch = result.match(/id="checkbox-1"[^>]*>/)
-      expect(secondCheckboxMatch).toBeTruthy()
+      expect(secondCheckboxMatch).not.toBeNull()
       expect(secondCheckboxMatch?.[0]).toContain('aria-label="checkbox"')
     })
 
