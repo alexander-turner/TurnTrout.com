@@ -37,11 +37,14 @@ _FONT_DIR: Final[Path] = (
 )
 _UPSTREAM_DIR: Final[Path] = _FONT_DIR / "upstream"
 
-_BRACKET_GLYPHS: Final[tuple[str, ...]] = (
-    "bracketleft",
-    "bracketright",
+_BRACE_GLYPHS: Final[tuple[str, ...]] = (
     "braceleft",
     "braceright",
+)
+
+_SQUARE_BRACKET_GLYPHS: Final[tuple[str, ...]] = (
+    "bracketleft",
+    "bracketright",
 )
 
 _TARGET_GLYPHS: Final[tuple[str, ...]] = (
@@ -132,10 +135,21 @@ def _affine_map_glyph_y(
 
 
 def _harmonize_brackets(font: TTFont) -> None:
-    """Scale bracket/brace glyphs to match parenleft vertical extent."""
-    paren = font["glyf"]["parenleft"]
-    for name in _BRACKET_GLYPHS:
+    """
+    Scale bracket/brace glyphs to match parenleft vertical extent.
+
+    Braces get full paren bounds. Square brackets keep their original yMin
+    (shorter descender) but scale yMax to match parens.
+    """
+    glyf_table = font["glyf"]
+    paren = glyf_table["parenleft"]
+
+    for name in _BRACE_GLYPHS:
         _affine_map_glyph_y(font, name, paren.yMin, paren.yMax)
+
+    for name in _SQUARE_BRACKET_GLYPHS:
+        original_y_min = glyf_table[name].yMin
+        _affine_map_glyph_y(font, name, original_y_min, paren.yMax)
 
 
 def _register_kern_feature(gpos: Any, lookup_index: int) -> None:

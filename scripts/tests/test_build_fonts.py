@@ -8,11 +8,12 @@ from fontTools.ttLib import TTFont  # type: ignore[import-untyped]
 from .. import build_fonts
 from ..build_fonts import (
     _BASE_KERN,
-    _BRACKET_GLYPHS,
+    _BRACE_GLYPHS,
     _F_GLYPHS_08,
     _F_GLYPHS_12,
     _FONT_DIR,
     _KERN_OFFSET,
+    _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
     _UPSTREAM_DIR,
     _add_f_kerning,
@@ -62,37 +63,51 @@ class TestAffineMapGlyphY:
 
 
 class TestHarmonizeBrackets:
-    def test_all_brackets_match_paren_bounds(self, upstream_08: TTFont) -> None:
+    def test_braces_match_full_paren_bounds(self, upstream_08: TTFont) -> None:
         paren = upstream_08["glyf"]["parenleft"]
-        target_y_min, target_y_max = paren.yMin, paren.yMax
+        _harmonize_brackets(upstream_08)
+
+        for name in _BRACE_GLYPHS:
+            glyph = upstream_08["glyf"][name]
+            assert glyph.yMin == paren.yMin, f"{name} yMin"
+            assert glyph.yMax == paren.yMax, f"{name} yMax"
+
+    def test_square_brackets_match_paren_top_only(
+        self, upstream_08: TTFont
+    ) -> None:
+        glyf = upstream_08["glyf"]
+        original_y_mins = {
+            name: glyf[name].yMin for name in _SQUARE_BRACKET_GLYPHS
+        }
+        paren = glyf["parenleft"]
 
         _harmonize_brackets(upstream_08)
 
-        for name in _BRACKET_GLYPHS:
-            glyph = upstream_08["glyf"][name]
-            assert glyph.yMin == target_y_min, f"{name} yMin mismatch"
-            assert glyph.yMax == target_y_max, f"{name} yMax mismatch"
+        for name in _SQUARE_BRACKET_GLYPHS:
+            glyph = glyf[name]
+            assert glyph.yMax == paren.yMax, f"{name} yMax"
+            assert (
+                glyph.yMin == original_y_mins[name]
+            ), f"{name} yMin should stay at original"
 
     @pytest.mark.parametrize(
-        "font_fixture,expected_y_min,expected_y_max",
+        "font_fixture,expected_paren_y_max",
         [
-            ("upstream_08", -510, 1481),
-            ("upstream_12", -438, 1444),
+            ("upstream_08", 1481),
+            ("upstream_12", 1444),
         ],
     )
-    def test_target_bounds_per_font(
+    def test_all_glyphs_match_paren_y_max(
         self,
         font_fixture: str,
-        expected_y_min: int,
-        expected_y_max: int,
+        expected_paren_y_max: int,
         request: pytest.FixtureRequest,
     ) -> None:
         font: TTFont = request.getfixturevalue(font_fixture)
         _harmonize_brackets(font)
-        for name in _BRACKET_GLYPHS:
+        for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS:
             glyph = font["glyf"][name]
-            assert glyph.yMin == expected_y_min
-            assert glyph.yMax == expected_y_max
+            assert glyph.yMax == expected_paren_y_max, f"{name} yMax"
 
 
 class TestAddFKerning:
@@ -219,97 +234,51 @@ class TestTableEquivalence:
     def _table_tags(self, font: TTFont) -> frozenset[str]:
         return frozenset(font.keys()) - self._SKIP_TABLES
 
-    def test_12pt_all_tables_match(self, tmp_path: Path) -> None:
-        output = tmp_path / "EBGaramond12-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond12-Regular.woff2",
-            output,
-            _F_GLYPHS_12,
-        )
-
-        built = TTFont(output)
-        committed = TTFont(_FONT_DIR / "EBGaramond12-Regular.woff2")
-
-        for tag in self._table_tags(built) | self._table_tags(committed):
-            assert built.getTableData(tag) == committed.getTableData(
-                tag
-            ), f"Table {tag} differs"
-
-    def test_08pt_non_glyf_tables_match(self, tmp_path: Path) -> None:
-        output = tmp_path / "EBGaramond08-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond08-Regular.woff2",
-            output,
-            _F_GLYPHS_08,
-        )
-
-        built = TTFont(output)
-        committed = TTFont(_FONT_DIR / "EBGaramond08-Regular.woff2")
-
-        for tag in self._table_tags(built) | self._table_tags(committed):
-            if tag == "glyf":
-                continue
-            assert built.getTableData(tag) == committed.getTableData(
-                tag
-            ), f"Table {tag} differs"
-
-    def test_08pt_glyf_diffs_are_bracket_rounding_only(
-        self, tmp_path: Path
+    @pytest.mark.parametrize(
+        "filename,f_glyphs",
+        [
+            ("EBGaramond08-Regular.woff2", _F_GLYPHS_08),
+            ("EBGaramond12-Regular.woff2", _F_GLYPHS_12),
+        ],
+        ids=["08pt", "12pt"],
+    )
+    def test_all_tables_match(
+        self,
+        tmp_path: Path,
+        filename: str,
+        f_glyphs: tuple[str, ...],
     ) -> None:
-        output = tmp_path / "EBGaramond08-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond08-Regular.woff2",
-            output,
-            _F_GLYPHS_08,
-        )
+        output = tmp_path / filename
+        build_fonts._build_font(_UPSTREAM_DIR / filename, output, f_glyphs)
 
         built = TTFont(output)
-        committed = TTFont(_FONT_DIR / "EBGaramond08-Regular.woff2")
+        committed = TTFont(_FONT_DIR / filename)
 
-        glyf_b = built["glyf"]
-        glyf_c = committed["glyf"]
-
-        differing_glyphs = set()
-        for name in glyf_b.keys():
-            gb = glyf_b[name]
-            gc = glyf_c[name]
-            if not hasattr(gb, "coordinates"):
-                continue
-            if gb.coordinates != gc.coordinates:
-                differing_glyphs.add(name)
-                for (xb, yb), (xc, yc) in zip(gb.coordinates, gc.coordinates):
-                    assert xb == xc, f"{name}: X changed"
-                    assert abs(yb - yc) <= 1, f"{name}: Y delta > 1"
-
-        assert differing_glyphs <= {
-            "bracketleft",
-            "bracketright",
-        }
+        for tag in self._table_tags(built) | self._table_tags(committed):
+            assert built.getTableData(tag) == committed.getTableData(
+                tag
+            ), f"Table {tag} differs"
 
 
 class TestVerifyTables:
-    def test_returns_true_for_identical_fonts(self, tmp_path: Path) -> None:
-        output = tmp_path / "EBGaramond12-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond12-Regular.woff2",
-            output,
-            _F_GLYPHS_12,
-        )
-        assert _verify_tables(
-            output,
-            _FONT_DIR / "EBGaramond12-Regular.woff2",
-            "12pt",
-        )
+    @pytest.mark.parametrize(
+        "filename,f_glyphs",
+        [
+            ("EBGaramond08-Regular.woff2", _F_GLYPHS_08),
+            ("EBGaramond12-Regular.woff2", _F_GLYPHS_12),
+        ],
+        ids=["08pt", "12pt"],
+    )
+    def test_returns_true_for_matching_fonts(
+        self, tmp_path: Path, filename: str, f_glyphs: tuple[str, ...]
+    ) -> None:
+        output = tmp_path / filename
+        build_fonts._build_font(_UPSTREAM_DIR / filename, output, f_glyphs)
+        assert _verify_tables(output, _FONT_DIR / filename, filename)
 
-    def test_returns_false_for_glyf_diff(self, tmp_path: Path) -> None:
-        output = tmp_path / "EBGaramond08-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond08-Regular.woff2",
-            output,
-            _F_GLYPHS_08,
-        )
+    def test_returns_false_for_different_fonts(self, tmp_path: Path) -> None:
         assert not _verify_tables(
-            output,
+            _UPSTREAM_DIR / "EBGaramond08-Regular.woff2",
             _FONT_DIR / "EBGaramond08-Regular.woff2",
             "08pt",
         )
@@ -318,21 +287,14 @@ class TestVerifyTables:
 class TestReportGlyfDiffs:
     def test_reports_differing_glyphs(
         self,
-        tmp_path: Path,
         capsys: pytest.CaptureFixture[str],
     ) -> None:
-        output = tmp_path / "EBGaramond08-Regular.woff2"
-        build_fonts._build_font(
-            _UPSTREAM_DIR / "EBGaramond08-Regular.woff2",
-            output,
-            _F_GLYPHS_08,
-        )
-        built = TTFont(output)
+        upstream = TTFont(_UPSTREAM_DIR / "EBGaramond08-Regular.woff2")
         committed = TTFont(_FONT_DIR / "EBGaramond08-Regular.woff2")
-        _report_glyf_diffs(built, committed, "08pt")
+        _report_glyf_diffs(upstream, committed, "08pt")
         captured = capsys.readouterr()
         assert "bracketleft" in captured.out
-        assert "bracketright" in captured.out
+        assert "braceleft" in captured.out
 
 
 class TestBuildAll:
@@ -358,13 +320,13 @@ class TestIdempotency:
         _harmonize_brackets(upstream_08)
         coords_after_1 = {
             name: list(upstream_08["glyf"][name].coordinates)
-            for name in _BRACKET_GLYPHS
+            for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS
         }
 
         _harmonize_brackets(upstream_08)
         coords_after_2 = {
             name: list(upstream_08["glyf"][name].coordinates)
-            for name in _BRACKET_GLYPHS
+            for name in _BRACE_GLYPHS + _SQUARE_BRACKET_GLYPHS
         }
 
         assert coords_after_1 == coords_after_2
