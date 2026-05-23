@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
-  INVERTIBLE_RASTER_EXTENSIONS,
   invertedUrl,
+  INVERTIBLE_RASTER_EXTENSIONS,
   isInvertedUrl,
   isInvertibleRaster,
 } from "./invertedAssets"

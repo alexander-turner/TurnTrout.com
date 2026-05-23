@@ -1,5 +1,5 @@
 import { invertInDarkModeClass } from "../constants"
-import { test, expect } from "./fixtures"
+import { expect, test } from "./fixtures"
 import { gotoPage } from "./visual_utils"
 
 // Page picked because it has many invert-tagged images and exercises the
