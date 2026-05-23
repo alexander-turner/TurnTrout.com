@@ -7,7 +7,11 @@ import { jest, expect, it, describe, beforeEach, afterEach } from "@jest/globals
 import fs from "fs/promises"
 import { h } from "hastscript"
 
-import { cdnBaseUrl, invertInDarkModeClass } from "../../../components/constants"
+import {
+  cdnBaseUrl,
+  forceHslInvertClass,
+  invertInDarkModeClass,
+} from "../../../components/constants"
 import {
   addCrossOriginToImages,
   addInvertClass,
@@ -17,6 +21,7 @@ import {
   isInlineLoopingVideo,
   labelsPath,
   loadInvertLabels,
+  wrapForceHslInvertImages,
   wrapInDarkModePicture,
 } from "../invertInDarkMode"
 
@@ -279,6 +284,49 @@ describe("InvertInDarkMode", () => {
     })
   })
 
+  describe("wrapForceHslInvertImages", () => {
+    it("wraps a force-hsl-invert raster img in <picture>", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      wrapForceHslInvertImages(root)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      expect((wrapped.children[1] as Element).tagName).toBe("img")
+    })
+
+    it("skips images without force-hsl-invert class", () => {
+      const img = h("img", { src: `${cdnBaseUrl}/plain.avif` }) as Element
+      const root = tree(img)
+      wrapForceHslInvertImages(root)
+      expect((root.children[0] as Element).tagName).toBe("img")
+    })
+
+    it("skips images already inside a <picture>", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const picture = h("picture", [img]) as Element
+      const root = tree(picture)
+      wrapForceHslInvertImages(root)
+      expect((root.children[0] as Element).tagName).toBe("picture")
+      expect(picture.children[0]).toBe(img)
+    })
+
+    it("skips SVG images (handled by fetch-rewrite path)", () => {
+      const img = h("img", {
+        src: `${cdnBaseUrl}/icon.svg`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      wrapForceHslInvertImages(root)
+      expect((root.children[0] as Element).tagName).toBe("img")
+    })
+  })
+
   describe("InvertInDarkMode plugin", () => {
     const transformOf = (plugin: ReturnType<typeof InvertInDarkMode>) => {
       const factories = plugin.htmlPlugins() as Array<() => (tree: Root) => Promise<void>>
@@ -334,6 +382,21 @@ describe("InvertInDarkMode", () => {
       const root = tree(img)
       await transformOf(plugin)(root)
       expect((root.children[0] as Element).tagName).toBe("img")
+    })
+
+    it("wraps a pre-existing force-hsl-invert raster img in <picture>", async () => {
+      readFileSpy.mockResolvedValue(JSON.stringify({}) as never)
+      const plugin = InvertInDarkMode()
+      const img = h("img", {
+        src: `${cdnBaseUrl}/demo.avif`,
+        className: [forceHslInvertClass],
+      }) as Element
+      const root = tree(img)
+      await transformOf(plugin)(root)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      const source = wrapped.children[0] as Element
+      expect(source.properties?.srcSet).toBe(`${cdnBaseUrl}/demo-inverted.avif`)
     })
 
     it("reads labels once per plugin instance and re-reads for a new instance", async () => {
