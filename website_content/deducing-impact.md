@@ -50,7 +50,7 @@ card_image_alt: 'Text: "Imagine that the sun goes supernova." An illustration sh
 ​![Text: "Now, being on—". A hand-drawn Harry Potter with an annoyed expression interrupts: "Our sun is a main-sequence G-type star, it can't explode. Any energy input just decreases the volume of the hydrogen plasma, the Sun doesn't have a degenerate core that could be detonated. The Sun doesn't have enough mass to go supernova."](https://assets.turntrout.com/static/images/posts/x3myqQ1.avif)
 ![Handwritten text: "Yes, yes, thank you—everyone knows that. It's just another weird situation I'm forcing on my readership. Now, being on Earth here is objectively impactful because it matters to almost any agent in your shoes. However, whether this is a big deal to you depends on who and where you are." ](https://assets.turntrout.com/static/images/posts/G1UgvEf.avif)
 
-![A green stick figure alien sleeping on a cot on a white, curved surface. Above, a single bright star shines in a black sky.](https://assets.turntrout.com/static/images/posts/lCPSncS.avif)
+![A green stick figure alien sleeping on a cot on a white, curved surface. Above, a single bright star shines in a black sky.](https://assets.turntrout.com/static/images/posts/lCPSncS.avif){.fade-image-border}
 
 <img src="https://assets.turntrout.com/static/images/posts/EZa5fmw.avif" alt="">
 
