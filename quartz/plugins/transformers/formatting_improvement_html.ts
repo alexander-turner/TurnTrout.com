@@ -363,7 +363,7 @@ function isKatex(node: Element): boolean {
 }
 
 export const arrowsToWrap = ["←", "→", "↑", "↓", "↗", "↘", "↖", "↙"]
-const arrowRegex = new RegExp(` ?(?<arrow>${arrowsToWrap.join("|")}) ?`, "g")
+const arrowRegex = new RegExp(` ?(?<arrow>[${arrowsToWrap.join("")}]) ?`, "g")
 
 /**
  * Wraps Unicode arrows with monospace styling, but only outside of KaTeX math blocks

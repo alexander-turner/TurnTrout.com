@@ -29,15 +29,7 @@ export default [
       "perfectionist/sort-named-exports": ["error", { type: "natural", order: "asc" }],
       "perfectionist/sort-exports": ["error", { type: "natural", order: "asc" }],
       "perfectionist/sort-array-includes": ["error", { type: "natural", order: "asc" }],
-      // regexp recommended rules surface real correctness / ReDoS findings.
-      // Many are autofixable; the rest are reported as warnings so they're
-      // visible in CI output without blocking until each is reviewed by hand.
-      ...Object.fromEntries(
-        Object.entries(regexpPlugin.configs["flat/recommended"].rules).map(([rule]) => [
-          rule,
-          "warn",
-        ]),
-      ),
+      ...regexpPlugin.configs["flat/recommended"].rules,
     },
   },
 

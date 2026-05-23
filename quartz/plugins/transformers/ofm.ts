@@ -84,9 +84,7 @@ const ytPlaylistLinkRegex = /[?&]list=(?<playlistId>[^#?&]*)/
 const videoExtensionRegex = new RegExp(/\.(?:mp4|webm|ogg|avi|mov|flv|wmv|mkv|mpg|mpeg|3gp|m4v)$/)
 
 /** Regular expression to parse image embed dimensions and alt text */
-const wikilinkImageEmbedRegex = new RegExp(
-  /^(?<alt>(?!^\d*(?:x\d*)?$).*?)?(?:\|?\s*(?<width>\d+)(?:x(?<height>\d+))?)?$/,
-)
+const wikilinkImageEmbedRegex = /^\|?(?:(?<width>\d+)(?:x(?<height>\d+))?|(?<alt>.+))?$/
 
 /** Extended ElementData interface for custom HAST element properties. */
 interface CustomElementData extends ElementData {

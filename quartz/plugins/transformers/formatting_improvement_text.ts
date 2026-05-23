@@ -29,10 +29,10 @@ const improveFootnoteFormatting = (text: string) => {
 
 // Regular expression for edit/note patterns
 const editPattern =
-  /^\s*(?<emph1>[*_]*)(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+  /^\s*(?<emph1>[*_]*)(?:edit|eta|note),?\s*\(?(?<date>\d{1,2}[-/]\d{1,2}[-/]\d{2,4})\)?(?<emph2>[*_]*:[*_]*) (?<text>.*)/gim
 const editAdmonitionPattern = "\n> [!info] Edited on $<date>\n>\n> $<text>"
 
-const editPatternNoDate = /^\s*(?<emph1>[*_]*)(?:edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)[*_]*/gim
+const editPatternNoDate = /^\s*(?<emph1>[*_]*)(?:edit|eta)(?<emph2>[*_]*:[*_]*) (?<text>.*)/gim
 const editAdmonitionPatternNoDate = "\n> [!info] Edited after posting\n>\n> $<text>"
 
 /**
@@ -46,7 +46,7 @@ export function editAdmonition(text: string): string {
   return text
 }
 
-const CALLOUT_REGEX_NO_SPACE = /^(?<prefix> *(?:> )+)(?<callout>\[!.*$)(?!(?:> *)+\n)/gm
+const CALLOUT_REGEX_NO_SPACE = /^(?<prefix> *(?:> )+)(?<callout>\[!.*$)/gm
 const TARGET_REGEX_WITH_SPACE = "$<prefix>$<callout>\n$<prefix>"
 
 /**
@@ -92,13 +92,13 @@ const xcancelHostReplacementRegex = /https?:\/\/(?:www\.)?(?:x|twitter)\.com\/?/
 const massTransforms: [RegExp | string, string][] = [
   [/(?<!\$):=/g, "≝"], // mathematical definition symbol, not preceded by the start of a katex block
   [/^\$\$(?= *\S)/gm, "$$$$\n"], // Display mode math should be on a new line
-  [/^(?! *>| +\S)(?<content>.*?\S.*?)\$\$ *$/gm, "$<content>\n$$$$"], // Two per $, since it has special meaning in JS regex; ignore blockquotes and captions
+  [/^(?! *>| +\S)(?<content>\S.*?)\$\$ *$/gm, "$<content>\n$$$$"],
   [/(?<= |^):\)(?= |$)/gm, "🙂"], // Smiling face
   [/(?<= |^);\)(?= |$)/gm, "😉"], // Winking face
   [/(?<= |^):\((?= |$)/gm, "🙁"], // Frowning face
   [subtitlePattern, subtitleReplacement],
   [xcancelHostReplacementRegex, "https://xcancel.com/"],
-  [/(?<=\| *$)\nTable: /gm, "\n\nTable: "],
+  [/(?<=\| *)\nTable: /g, "\n\nTable: "],
   // Insert a blank line after a block-level HTML tag so the markdown parser
   // doesn't swallow following prose into the same HTML block. Avoid inside of code blocks.
   [/(?<closingTag><\/[^>]*>|<[^>]*\/>)[ \t]*\n(?=[ \t]*[^ \t\n<>/`=])/g, "$<closingTag>\n\n"],
