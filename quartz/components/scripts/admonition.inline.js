@@ -6,9 +6,9 @@ function saveCollapsibleState(id, isCollapsed) {
 
 /** Syncs ARIA attributes with collapsed state. */
 function syncAriaState(admonition, isCollapsed) {
-  const title = admonition.querySelector(".admonition-title")
+  const foldIcon = admonition.querySelector(".fold-admonition-icon")
   const content = admonition.querySelector(".admonition-content")
-  if (title) title.setAttribute("aria-expanded", String(!isCollapsed))
+  if (foldIcon) foldIcon.setAttribute("aria-expanded", String(!isCollapsed))
   if (content) content.setAttribute("aria-hidden", String(isCollapsed))
 }
 
