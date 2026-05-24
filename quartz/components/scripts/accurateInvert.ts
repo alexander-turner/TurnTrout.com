@@ -15,6 +15,7 @@ import { invertedUrl, isInvertedUrl } from "./invertedAssets"
 
 const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass}`
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-original-src]`
+const PICTURE_INVERT_SELECTOR = `picture > img.${invertInDarkModeClass}:not(.${forceHslInvertClass})`
 
 /** Reads `<html data-theme>` — set synchronously by `detectInitialState.js`. */
 export function isDarkMode(): boolean {
@@ -36,7 +37,6 @@ export function isInsidePicture(img: HTMLImageElement): boolean {
 export function processPictureImage(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
-  setPictureSourceSrcset(img, inverted)
   if (img.currentSrc && isInvertedUrl(img.currentSrc)) {
     img.src = inverted
     img.dataset["invertProcessed"] = "1"
@@ -119,8 +119,6 @@ export function revertProcessed(root: Document | Element = document): void {
     revertImage(img)
   }
 }
-
-const PICTURE_INVERT_SELECTOR = `picture > img.${invertInDarkModeClass}:not(.${forceHslInvertClass})`
 
 /** Ensure every `<picture>` `<source>` srcset matches the active theme,
  *  including images that haven't loaded yet (lazy / below the fold). */
