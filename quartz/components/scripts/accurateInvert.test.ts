@@ -442,7 +442,7 @@ describe("stress tests", () => {
       }
       setTheme("dark")
       onThemeChange()
-  
+
       finishPendingPictureSwaps()
       for (const img of imgs) {
         expect(img.src).toMatch(/-inverted\.\w+$/)
