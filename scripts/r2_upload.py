@@ -59,9 +59,9 @@ def check_exists_on_r2(upload_target: str, verbose: bool = False) -> bool:
             [rclone_executable, "ls", f"r2:{bucket}"],
             capture_output=True,
             text=True,
-            check=False,
+            check=True,
         )
-    except subprocess.CalledProcessError as e:  # pragma: no cover
+    except subprocess.CalledProcessError as e:
         error_msg = f"Failed to check existence of file in R2: {e}"
         raise RuntimeError(error_msg) from e
 

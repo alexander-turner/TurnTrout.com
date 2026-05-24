@@ -2119,9 +2119,10 @@ def check_rss_file_for_issues(
     Uses xmllint via `brew install libxml2`.
     """
     rss_path = git_root_path / "public" / "rss.xml"
+    xmllint_executable = script_utils.find_executable("xmllint")
     subprocess.run(
         [
-            "/usr/bin/xmllint",
+            xmllint_executable,
             "--noout",
             "--schema",
             str(custom_xsd_path or RSS_XSD_PATH),

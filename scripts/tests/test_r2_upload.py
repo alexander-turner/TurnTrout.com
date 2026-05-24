@@ -488,7 +488,7 @@ def test_check_exists_on_r2_file_exists():
             ["rclone", "ls", "r2:bucket"],
             capture_output=True,
             text=True,
-            check=False,
+            check=True,
         )
 
 
@@ -507,7 +507,7 @@ def test_check_exists_on_r2_file_not_exists():
             ["rclone", "ls", "r2:bucket"],
             capture_output=True,
             text=True,
-            check=False,
+            check=True,
         )
 
 
@@ -777,6 +777,18 @@ def test_update_markdown_references_no_references_dir():
 
     # Should not raise any errors
     r2_upload.update_markdown_references(test_file, r2_address)
+
+
+def test_update_markdown_references_no_static_dir(mock_git_root: Path):
+    """Test that a clear error is raised when path has no 'static' directory."""
+    test_file = mock_git_root / "quartz" / "assets" / "test.jpg"
+    test_file.parent.mkdir(parents=True)
+    test_file.touch()
+
+    with pytest.raises(ValueError, match="static"):
+        r2_upload.update_markdown_references(
+            test_file, "https://example.com/test.jpg"
+        )
 
 
 def test_update_markdown_references_verbose_output(
