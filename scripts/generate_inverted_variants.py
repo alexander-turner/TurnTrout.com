@@ -202,7 +202,7 @@ def invert_svg_file(src: Path, dst: Path) -> None:
         style = el.get("style")
         if style:
             el.set("style", invert_css_colors(style))
-        if el.text and el.tag.endswith("}style") or el.tag == "style":
+        if el.text and (el.tag.endswith("}style") or el.tag == "style"):
             el.text = invert_css_colors(el.text)
     tree.write(dst, xml_declaration=True, encoding="unicode")
 
