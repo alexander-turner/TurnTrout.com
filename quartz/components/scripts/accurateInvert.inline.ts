@@ -1,9 +1,4 @@
-import {
-  handleLoadEvent,
-  onThemeChange,
-  processLoaded,
-  syncPictureSources,
-} from "./accurateInvert"
+import { handleLoadEvent, onThemeChange, processLoaded, syncPictureSources } from "./accurateInvert"
 
 // Capture-phase: `load` doesn't bubble, so a non-capture listener on
 // `document` would never fire for img loads. Attaching here in
