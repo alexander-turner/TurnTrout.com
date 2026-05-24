@@ -205,60 +205,63 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
 
 
-def _populate_kern_pairs(
-    font: TTFont,
+def _add_overhang_kern_pairs(
     builder: PairPosBuilder,
-    f_glyphs: tuple[str, ...],
+    font: TTFont,
+    source_glyphs: tuple[str, ...],
 ) -> None:
-    """Add all kern pairs to the builder."""
+    """Add kern pairs computed from glyph overhang."""
     glyf_table = font["glyf"]
     hmtx_table = font["hmtx"]
-
-    for f_name in f_glyphs:
-        overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
-        for t_name in _TARGET_GLYPHS:
+    for src in source_glyphs:
+        overhang = glyf_table[src].xMax - hmtx_table[src][0]
+        for tgt in _TARGET_GLYPHS:
             kern = max(
-                overhang - glyf_table[t_name].xMin + _KERN_OFFSET,
-                _BASE_KERN[t_name],
+                overhang - glyf_table[tgt].xMin + _KERN_OFFSET,
+                _BASE_KERN[tgt],
             )
             builder.addGlyphPair(
                 None,
-                f_name,
+                src,
                 buildValue({"XAdvance": kern}),
-                t_name,
+                tgt,
                 None,
             )
 
-    open_val = buildValue({"XAdvance": _OPEN_DESCENDER_KERN})
-    for open_glyph in _OPEN_PUNCT_GLYPHS:
-        for desc_glyph in _DESCENDER_GLYPHS:
-            builder.addGlyphPair(None, open_glyph, open_val, desc_glyph, None)
 
-    for desc_glyph in _DESCENDER_GLYPHS:
-        for close_glyph in _CLOSE_PUNCT_GLYPHS:
-            builder.addGlyphPair(
-                None,
-                desc_glyph,
-                buildValue({"XAdvance": _CLOSE_DESCENDER_KERN[desc_glyph]}),
-                close_glyph,
-                None,
-            )
+def _add_fixed_kern_pairs(
+    builder: PairPosBuilder,
+    sources: tuple[str, ...],
+    targets: tuple[str, ...],
+    kern_values: int | dict[str, int],
+) -> None:
+    """Add fixed-value kern pairs for each source x target."""
+    for src in sources:
+        value = (
+            kern_values[src] if isinstance(kern_values, dict) else kern_values
+        )
+        val = buildValue({"XAdvance": value})
+        for tgt in targets:
+            builder.addGlyphPair(None, src, val, tgt, None)
 
-    for cap_glyph in _CAP_OVERHANG_GLYPHS:
-        for close_glyph in _CLOSE_PUNCT_GLYPHS:
-            builder.addGlyphPair(
-                None,
-                cap_glyph,
-                buildValue({"XAdvance": _CAP_CLOSE_KERN}),
-                close_glyph,
-                None,
-            )
+
+_FIXED_KERN_SPECS: Final[
+    tuple[tuple[tuple[str, ...], tuple[str, ...], int | dict[str, int]], ...]
+] = (
+    (_OPEN_PUNCT_GLYPHS, _DESCENDER_GLYPHS, _OPEN_DESCENDER_KERN),
+    (_DESCENDER_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CLOSE_DESCENDER_KERN),
+    (_CAP_OVERHANG_GLYPHS, _CLOSE_PUNCT_GLYPHS, _CAP_CLOSE_KERN),
+)
 
 
 def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
     """Add PairPos Format 1 kern lookup for all custom kern pairs."""
     builder = PairPosBuilder(font, None)
-    _populate_kern_pairs(font, builder, f_glyphs)
+
+    _add_overhang_kern_pairs(builder, font, f_glyphs)
+    for sources, targets, values in _FIXED_KERN_SPECS:
+        _add_fixed_kern_pairs(builder, sources, targets, values)
+
     lookup = builder.build()
 
     gpos = font["GPOS"].table
