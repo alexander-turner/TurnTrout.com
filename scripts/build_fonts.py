@@ -192,12 +192,14 @@ def _register_kern_feature(gpos: Any, lookup_index: int) -> None:
             lang_rec.LangSys.FeatureIndex.append(kern_feat_index)
 
 
-def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
-    """Add PairPos Format 1 kern lookup for all custom kern pairs."""
+def _populate_kern_pairs(
+    font: TTFont,
+    builder: PairPosBuilder,
+    f_glyphs: tuple[str, ...],
+) -> None:
+    """Add all kern pairs to the builder."""
     glyf_table = font["glyf"]
     hmtx_table = font["hmtx"]
-
-    builder = PairPosBuilder(font, None)
 
     for f_name in f_glyphs:
         overhang = glyf_table[f_name].xMax - hmtx_table[f_name][0]
@@ -224,6 +226,11 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
         for close_glyph in _CLOSE_PUNCT_GLYPHS:
             builder.addGlyphPair(None, desc_glyph, close_val, close_glyph, None)
 
+
+def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
+    """Add PairPos Format 1 kern lookup for all custom kern pairs."""
+    builder = PairPosBuilder(font, None)
+    _populate_kern_pairs(font, builder, f_glyphs)
     lookup = builder.build()
 
     gpos = font["GPOS"].table
