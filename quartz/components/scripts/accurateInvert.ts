@@ -15,25 +15,23 @@ import { invertedUrl, isInvertedUrl } from "./invertedAssets"
 
 const INVERT_SELECTOR = `img.${invertInDarkModeClass}, img.${forceHslInvertClass}`
 const REVERTABLE_SELECTOR = `img.${invertInDarkModeClass}:not(.${forceHslInvertClass})[data-invert-original-src]`
+const PICTURE_INVERT_SELECTOR = `picture > img.${invertInDarkModeClass}:not(.${forceHslInvertClass})`
+const DARK_MEDIA = "(prefers-color-scheme: dark)"
 
 /** Reads `<html data-theme>` — set synchronously by `detectInitialState.js`. */
 export function isDarkMode(): boolean {
   return document.documentElement.getAttribute("data-theme") === "dark"
 }
 
-/** True iff this image should be HSL-processed in the current theme. */
-export function shouldProcess(img: HTMLImageElement): boolean {
+export function shouldInvert(img: HTMLImageElement): boolean {
   return img.classList.contains(forceHslInvertClass) || isDarkMode()
 }
 
-/**
- * True iff `<img>` is the direct child of a `<picture>`.
- */
 export function isInsidePicture(img: HTMLImageElement): boolean {
   return img.parentElement?.tagName === "PICTURE"
 }
 
-export function processPictureImage(img: HTMLImageElement): boolean {
+export function invertPictureSrc(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
   if (img.currentSrc && isInvertedUrl(img.currentSrc)) {
@@ -44,12 +42,6 @@ export function processPictureImage(img: HTMLImageElement): boolean {
   img.addEventListener(
     "load",
     () => {
-      // Guard against a fast revert beating the swap to the load
-      // event: the handler is `{once: true}` and stays armed, but if
-      // we got reverted first (img.src now points at the original
-      // again) the load fires for the wrong resource. Skipping the
-      // marker there keeps a future dark-toggle from short-circuiting
-      // in `processImage`.
       if (isInvertedUrl(img.currentSrc)) {
         img.dataset["invertProcessed"] = "1"
       }
@@ -60,62 +52,78 @@ export function processPictureImage(img: HTMLImageElement): boolean {
   return true
 }
 
-/**
- * Returns `false` for ineligible images (wrong theme, already processed,
- * not yet decoded, not inside `<picture>`).
- */
-export function processImage(img: HTMLImageElement): Promise<boolean> {
-  if (!shouldProcess(img)) return Promise.resolve(false)
-  if (img.dataset["invertProcessed"]) return Promise.resolve(false)
-  if (!img.complete || img.naturalWidth === 0) return Promise.resolve(false)
-  if (isInsidePicture(img)) return Promise.resolve(processPictureImage(img))
-  return Promise.resolve(false)
+function setPictureSourceSrcset(img: HTMLImageElement, srcset: string): void {
+  const source = img.parentElement?.querySelector("source")
+  if (source) source.srcset = srcset
 }
 
-/** Restore a processed image to its original src (theme switched to light). */
+export function invertImage(img: HTMLImageElement): boolean {
+  if (!shouldInvert(img)) return false
+  if (img.dataset["invertProcessed"]) return false
+  if (!img.complete || img.naturalWidth === 0) return false
+  if (isInsidePicture(img)) return invertPictureSrc(img)
+  return false
+}
+
 export function revertImage(img: HTMLImageElement): boolean {
   const original = img.dataset["invertOriginalSrc"]
   if (!original) return false
   img.src = original
+  if (isInsidePicture(img)) setPictureSourceSrcset(img, original)
   delete img.dataset["invertProcessed"]
   return true
 }
 
-/**
- * Capture-phase document listener. `load` doesn't bubble, so capture is
- * required to catch it at the document level — which is what lets a
- * single listener installed in `<head>` cover every `<img>` in the body.
- */
 export function handleLoadEvent(event: Event): void {
   const target = event.target
   if (target instanceof HTMLImageElement && target.matches(INVERT_SELECTOR)) {
-    void processImage(target)
+    void invertImage(target)
   }
 }
 
-/** Sweep `root` for already-decoded eligible images and process them. */
-export function processLoaded(root: Document | Element = document): void {
+export function invertDecodedImages(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)
   for (const img of images) {
     if (img.complete && img.naturalWidth > 0) {
-      void processImage(img)
+      void invertImage(img)
     }
   }
 }
 
-/** Revert every processed image under `root` (used when theme → light). */
-export function revertProcessed(root: Document | Element = document): void {
+export function revertAllInverted(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)
   for (const img of images) {
     revertImage(img)
   }
 }
 
-/** Reactive bridge between the theme attribute and image state. */
+/** Ensure every `<picture>` `<source>` serves the correct variant for the
+ *  active theme. When the manual toggle disagrees with the system
+ *  `prefers-color-scheme`, also strips or restores the `media` attribute
+ *  so the browser can't override via the native media query. */
+export function syncPictureSources(root: Document | Element = document): void {
+  const dark = isDarkMode()
+  const systemIsDark = window.matchMedia(DARK_MEDIA).matches
+  const disagrees = dark !== systemIsDark
+
+  for (const img of root.querySelectorAll<HTMLImageElement>(PICTURE_INVERT_SELECTOR)) {
+    const original = img.dataset["invertOriginalSrc"] ?? img.src
+    const source = img.parentElement?.querySelector("source")
+    if (!source) continue
+    source.srcset = dark ? invertedUrl(original) : original
+    if (disagrees) {
+      source.removeAttribute("media")
+    } else {
+      source.media = DARK_MEDIA
+    }
+  }
+}
+
 export function onThemeChange(): void {
   if (isDarkMode()) {
-    processLoaded()
+    invertDecodedImages()
   } else {
-    revertProcessed()
+    revertAllInverted()
   }
+  syncPictureSources()
 }

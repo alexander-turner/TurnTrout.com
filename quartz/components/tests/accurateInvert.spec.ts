@@ -74,3 +74,49 @@ test("dark→light theme toggle swaps invert-labeled imgs between original and i
     expect(result.revertedSrcs[i]).toBe(result.originalSrcs[i])
   }
 })
+
+test("system-dark + manual-light: <source> srcset overridden so browser serves original", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "dark" })
+  await gotoPage(page, TARGET_URL, "load")
+
+  await page.evaluate(
+    async ({ selector, expected }) => {
+      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
+      if (imgs.length < expected) {
+        throw new Error(`expected at least ${expected} invert imgs, found ${imgs.length}`)
+      }
+      for (const img of imgs) {
+        img.loading = "eager"
+      }
+      await Promise.all(imgs.map((img) => img.decode().catch(() => undefined)))
+    },
+    { selector: `img.${invertInDarkModeClass}`, expected: EXPECTED_IMAGE_COUNT },
+  )
+
+  const result = await page.evaluate(
+    async ({ selector, suffix }) => {
+      const yieldNow = () => new Promise((r) => setTimeout(r, 0))
+
+      document.documentElement.setAttribute("data-theme", "light")
+      await yieldNow()
+
+      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
+      return {
+        srcs: imgs.map((img) => img.src),
+        sourceSrcsets: imgs.map((img) => {
+          const source = img.parentElement?.querySelector("source")
+          return source?.srcset ?? ""
+        }),
+        suffix,
+      }
+    },
+    { selector: `img.${invertInDarkModeClass}`, suffix: INVERTED_SUFFIX },
+  )
+
+  for (let i = 0; i < result.srcs.length; i++) {
+    expect(result.srcs[i]).not.toContain(result.suffix)
+    expect(result.sourceSrcsets[i]).not.toContain(result.suffix)
+  }
+})
