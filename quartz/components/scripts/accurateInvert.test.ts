@@ -55,8 +55,6 @@ const makeLoadedImg = (
   return img
 }
 
-const flushAsync = (): Promise<void> => new Promise((r) => setTimeout(r, 0))
-
 const dispatchSwapLoad = (img: HTMLImageElement): void => {
   Object.defineProperty(img, "currentSrc", { value: img.src, configurable: true })
   img.dispatchEvent(new Event("load"))
@@ -179,30 +177,30 @@ describe("invertPictureSrc", () => {
 })
 
 describe("invertImage", () => {
-  it("routes picture-wrapped image to invertPictureSrc", async () => {
+  it("routes picture-wrapped image to invertPictureSrc", () => {
     const img = makePictureWrappedImg("https://x/photo.avif")
-    await expect(invertImage(img)).resolves.toBe(true)
+    expect(invertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/photo-inverted.avif")
     dispatchSwapLoad(img)
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("routes picture-wrapped SVG to invertPictureSrc", async () => {
+  it("routes picture-wrapped SVG to invertPictureSrc", () => {
     const img = makePictureWrappedImg("https://x/chart.svg")
-    await expect(invertImage(img)).resolves.toBe(true)
+    expect(invertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/chart-inverted.svg")
   })
 
-  it("does nothing in light mode", async () => {
+  it("does nothing in light mode", () => {
     setTheme("light")
-    await expect(invertImage(makePictureWrappedImg())).resolves.toBe(false)
+    expect(invertImage(makePictureWrappedImg())).toBe(false)
   })
 
-  it("is idempotent — second call short-circuits", async () => {
+  it("is idempotent — second call short-circuits", () => {
     const img = makePictureWrappedImg("https://x/photo.avif")
-    await invertImage(img)
+    invertImage(img)
     dispatchSwapLoad(img)
-    await expect(invertImage(img)).resolves.toBe(false)
+    expect(invertImage(img)).toBe(false)
   })
 
   it.each([
@@ -218,15 +216,15 @@ describe("invertImage", () => {
         Object.defineProperty(img, "naturalWidth", { value: 0, configurable: true })
       },
     ],
-  ])("returns false when %s", async (_label, mutate) => {
+  ])("returns false when %s", (_label, mutate) => {
     const img = makePictureWrappedImg()
     mutate(img)
-    await expect(invertImage(img)).resolves.toBe(false)
+    expect(invertImage(img)).toBe(false)
   })
 
-  it("returns false for an unwrapped image (no fallback path)", async () => {
+  it("returns false for an unwrapped image (no fallback path)", () => {
     const img = makeLoadedImg("https://x/orphan.avif")
-    await expect(invertImage(img)).resolves.toBe(false)
+    expect(invertImage(img)).toBe(false)
   })
 })
 
@@ -255,11 +253,11 @@ describe("revertImage", () => {
 })
 
 describe("handleLoadEvent", () => {
-  it("inverts a loaded eligible image", async () => {
+  it("inverts a loaded eligible image", () => {
     const img = makePictureWrappedImg()
     document.body.appendChild(img.parentElement as HTMLElement)
     handleLoadEvent({ target: img } as unknown as Event)
-    await flushAsync()
+
     finishPendingPictureSwaps()
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
@@ -271,34 +269,34 @@ describe("handleLoadEvent", () => {
 })
 
 describe("invertDecodedImages", () => {
-  it("inverts all eligible decoded imgs under root", async () => {
+  it("inverts all eligible decoded imgs under root", () => {
     const a = makePictureWrappedImg("https://x/a.avif")
     const b = makePictureWrappedImg("https://x/b.avif")
     document.body.append(a.parentElement as HTMLElement, b.parentElement as HTMLElement)
     invertDecodedImages()
-    await flushAsync()
+
     finishPendingPictureSwaps()
     expect(a.dataset["invertProcessed"]).toBe("1")
     expect(b.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("skips imgs that haven't decoded yet", async () => {
+  it("skips imgs that haven't decoded yet", () => {
     const img = makePictureWrappedImg("https://x/a.avif")
     Object.defineProperty(img, "complete", { value: false, configurable: true })
     document.body.appendChild(img.parentElement as HTMLElement)
     invertDecodedImages()
-    await flushAsync()
+
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 })
 
 describe("revertAllInverted", () => {
-  it("uninverts every processed img under root", async () => {
+  it("uninverts every processed img under root", () => {
     const a = makePictureWrappedImg("https://x/a.avif")
     const b = makePictureWrappedImg("https://x/b.avif")
     document.body.append(a.parentElement as HTMLElement, b.parentElement as HTMLElement)
     invertDecodedImages()
-    await flushAsync()
+
     finishPendingPictureSwaps()
     revertAllInverted()
     expect(a.src).toBe("https://x/a.avif")
@@ -307,11 +305,11 @@ describe("revertAllInverted", () => {
     expect(b.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("leaves force-hsl-invert images alone", async () => {
+  it("leaves force-hsl-invert images alone", () => {
     const forced = makePictureWrappedImg("https://x/forced.avif")
     forced.classList.add("force-hsl-invert")
     document.body.appendChild(forced.parentElement as HTMLElement)
-    await invertImage(forced)
+    invertImage(forced)
     dispatchSwapLoad(forced)
     expect(forced.dataset["invertProcessed"]).toBe("1")
     revertAllInverted()
@@ -385,7 +383,7 @@ describe("syncPictureSources", () => {
 })
 
 describe("onThemeChange", () => {
-  it("inverts loaded images when theme is dark", async () => {
+  it("inverts loaded images when theme is dark", () => {
     mockSystemDark(true)
     const img = makePictureWrappedImg()
     document.body.appendChild(img.parentElement as HTMLElement)
@@ -393,16 +391,16 @@ describe("onThemeChange", () => {
     expect(img.dataset["invertProcessed"]).toBeUndefined()
     setTheme("dark")
     onThemeChange()
-    await flushAsync()
+
     finishPendingPictureSwaps()
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("uninverts processed images when theme is light", async () => {
+  it("uninverts processed images when theme is light", () => {
     mockSystemDark(false)
     const img = makePictureWrappedImg("https://x/img.avif")
     document.body.appendChild(img.parentElement as HTMLElement)
-    await invertImage(img)
+    invertImage(img)
     dispatchSwapLoad(img)
     setTheme("light")
     onThemeChange()
@@ -410,7 +408,7 @@ describe("onThemeChange", () => {
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 
-  it("syncs <source> srcset for lazy images not yet processed", async () => {
+  it("syncs <source> srcset for lazy images not yet processed", () => {
     mockSystemDark(true)
     const img = makePictureWrappedImg("https://x/lazy.avif")
     Object.defineProperty(img, "complete", { value: false, configurable: true })
@@ -422,7 +420,7 @@ describe("onThemeChange", () => {
 })
 
 describe("stress tests", () => {
-  it("rapid dark→light→dark→light toggle leaves everything consistent", async () => {
+  it("rapid dark→light→dark→light toggle leaves everything consistent", () => {
     const imgs = ["https://x/a.avif", "https://x/b.avif", "https://x/c.avif"].map((src) => {
       const img = makePictureWrappedImg(src)
       document.body.appendChild(img.parentElement as HTMLElement)
@@ -432,7 +430,7 @@ describe("stress tests", () => {
     mockSystemDark(true)
     setTheme("dark")
     onThemeChange()
-    await flushAsync()
+
     finishPendingPictureSwaps()
 
     for (let i = 0; i < 3; i++) {
@@ -444,7 +442,7 @@ describe("stress tests", () => {
       }
       setTheme("dark")
       onThemeChange()
-      await flushAsync()
+  
       finishPendingPictureSwaps()
       for (const img of imgs) {
         expect(img.src).toMatch(/-inverted\.\w+$/)
@@ -473,14 +471,14 @@ describe("stress tests", () => {
     expect(loaded.src).toBe("https://x/loaded.avif")
   })
 
-  it("dark→light→dark restores <source> srcset and media", async () => {
+  it("dark→light→dark restores <source> srcset and media", () => {
     mockSystemDark(true)
     const img = makePictureWrappedImg("https://x/rt.avif")
     document.body.appendChild(img.parentElement as HTMLElement)
 
     setTheme("dark")
     onThemeChange()
-    await flushAsync()
+
     finishPendingPictureSwaps()
     expect(getSourceSrcset(img)).toBe("https://x/rt-inverted.avif")
     expect(getSourceMedia(img)).toBe("(prefers-color-scheme: dark)")
@@ -492,7 +490,7 @@ describe("stress tests", () => {
 
     setTheme("dark")
     onThemeChange()
-    await flushAsync()
+
     finishPendingPictureSwaps()
     expect(getSourceSrcset(img)).toBe("https://x/rt-inverted.avif")
     expect(getSourceMedia(img)).toBe("(prefers-color-scheme: dark)")

@@ -57,12 +57,12 @@ function setPictureSourceSrcset(img: HTMLImageElement, srcset: string): void {
   if (source) source.srcset = srcset
 }
 
-export function invertImage(img: HTMLImageElement): Promise<boolean> {
-  if (!shouldInvert(img)) return Promise.resolve(false)
-  if (img.dataset["invertProcessed"]) return Promise.resolve(false)
-  if (!img.complete || img.naturalWidth === 0) return Promise.resolve(false)
-  if (isInsidePicture(img)) return Promise.resolve(invertPictureSrc(img))
-  return Promise.resolve(false)
+export function invertImage(img: HTMLImageElement): boolean {
+  if (!shouldInvert(img)) return false
+  if (img.dataset["invertProcessed"]) return false
+  if (!img.complete || img.naturalWidth === 0) return false
+  if (isInsidePicture(img)) return invertPictureSrc(img)
+  return false
 }
 
 export function revertImage(img: HTMLImageElement): boolean {
