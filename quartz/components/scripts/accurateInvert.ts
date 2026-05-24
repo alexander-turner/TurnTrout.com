@@ -65,7 +65,7 @@ export function invertImage(img: HTMLImageElement): Promise<boolean> {
   return Promise.resolve(false)
 }
 
-export function uninvertImage(img: HTMLImageElement): boolean {
+export function revertImage(img: HTMLImageElement): boolean {
   const original = img.dataset["invertOriginalSrc"]
   if (!original) return false
   img.src = original
@@ -93,7 +93,7 @@ export function invertDecodedImages(root: Document | Element = document): void {
 export function revertAllInverted(root: Document | Element = document): void {
   const images = root.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)
   for (const img of images) {
-    uninvertImage(img)
+    revertImage(img)
   }
 }
 

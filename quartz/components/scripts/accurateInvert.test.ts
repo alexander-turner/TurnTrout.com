@@ -12,9 +12,9 @@ import {
   isInsidePicture,
   onThemeChange,
   revertAllInverted,
+  revertImage,
   shouldInvert,
   syncPictureSources,
-  uninvertImage,
 } from "./accurateInvert"
 
 const setTheme = (theme: "dark" | "light"): void => {
@@ -150,7 +150,7 @@ describe("invertPictureSrc", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
     invertPictureSrc(img)
     expect(img.src).toBe("https://x/foo-inverted.avif")
-    uninvertImage(img)
+    revertImage(img)
     expect(img.src).toBe("https://x/foo.avif")
     dispatchSwapLoad(img)
     expect(img.dataset["invertProcessed"]).toBeUndefined()
@@ -172,7 +172,7 @@ describe("invertPictureSrc", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
     invertPictureSrc(img)
     dispatchSwapLoad(img)
-    uninvertImage(img)
+    revertImage(img)
     invertPictureSrc(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
@@ -230,12 +230,12 @@ describe("invertImage", () => {
   })
 })
 
-describe("uninvertImage", () => {
+describe("revertImage", () => {
   it("restores the original src and clears the processed flag", () => {
     const img = makePictureWrappedImg("https://x/img.avif")
     invertPictureSrc(img)
     dispatchSwapLoad(img)
-    expect(uninvertImage(img)).toBe(true)
+    expect(revertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/img.avif")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
@@ -245,12 +245,12 @@ describe("uninvertImage", () => {
     invertPictureSrc(img)
     dispatchSwapLoad(img)
     expect(getSourceSrcset(img)).toBe("https://x/img-inverted.avif")
-    uninvertImage(img)
+    revertImage(img)
     expect(getSourceSrcset(img)).toBe("https://x/img.avif")
   })
 
   it("returns false when there is no stashed original", () => {
-    expect(uninvertImage(makeLoadedImg())).toBe(false)
+    expect(revertImage(makeLoadedImg())).toBe(false)
   })
 })
 
