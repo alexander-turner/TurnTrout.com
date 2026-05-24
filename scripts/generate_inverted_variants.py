@@ -41,13 +41,12 @@ except ImportError:  # pragma: no cover
     import utils as script_utils  # type: ignore
 
 INVERTED_SUFFIX: Final[str] = "-inverted"
-INVERTIBLE_RASTER_EXTENSIONS: Final[frozenset[str]] = frozenset(
-    {".avif", ".jpg", ".jpeg", ".png", ".webp"}
+_SVG_EXTENSIONS: Final[frozenset[str]] = frozenset(
+    script_utils.INVERT_SVG_EXTENSIONS
 )
-INVERTIBLE_SVG_EXTENSIONS: Final[frozenset[str]] = frozenset({".svg"})
-INVERTIBLE_EXTENSIONS: Final[frozenset[str]] = (
-    INVERTIBLE_RASTER_EXTENSIONS | INVERTIBLE_SVG_EXTENSIONS
-)
+INVERTIBLE_EXTENSIONS: Final[frozenset[str]] = frozenset(
+    script_utils.INVERT_RASTER_EXTENSIONS + script_utils.INVERT_SVG_EXTENSIONS
+) - frozenset({".gif"})
 # Image modes without an alpha channel — save as RGB rather than RGBA so
 # formats like JPEG (no alpha support) don't error on write.
 _OPAQUE_MODES: Final[frozenset[str]] = frozenset(
@@ -109,6 +108,10 @@ _HEX6_RE = re.compile(r"^#([0-9a-fA-F]{6})$")
 _RGB_RE = re.compile(
     r"^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$"
 )
+_RGBA_RE = re.compile(
+    r"^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,"
+    r"\s*[\d.]+\s*\)$"
+)
 
 _CSS_NAMED_COLORS: Final[dict[str, tuple[int, int, int]]] = {
     "black": (0, 0, 0),
@@ -156,6 +159,9 @@ def _parse_color(token: str) -> tuple[int, int, int] | None:
     m = _RGB_RE.match(token)
     if m:
         return int(m.group(1)), int(m.group(2)), int(m.group(3))
+    m = _RGBA_RE.match(token)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3))
     return None
 
 
@@ -170,7 +176,7 @@ def invert_color_token(token: str) -> str | None:
 
 
 _CSS_COLOR_PROP_RE = re.compile(
-    r"(?P<prop>"
+    r"(?<![\w-])(?P<prop>"
     + "|".join(re.escape(a) for a in _SVG_COLOR_ATTRS)
     + r")(?P<sep>\s*:\s*)(?P<value>\S[^;}'\"]*)",
     re.IGNORECASE,
@@ -264,7 +270,7 @@ def generate_all(
             skipped += 1
             continue
         try:
-            if src.suffix.lower() in INVERTIBLE_SVG_EXTENSIONS:
+            if src.suffix.lower() in _SVG_EXTENSIONS:
                 invert_svg_file(src, dst)
             else:
                 invert_image_file(src, dst)

@@ -25,7 +25,8 @@ from .. import generate_inverted_variants as giv
         ("#fff", "#000000"),
         ("#000", "#ffffff"),
         ("rgb(200, 100, 50)", "#cd6937"),
-        ("red", "#ff0000"),
+        ("green", "#7fff7f"),
+        ("rgba(200, 100, 50, 0.5)", "#cd6937"),
         ("black", "#ffffff"),
     ],
 )
@@ -58,7 +59,7 @@ def test_invert_svg_file(tmp_path: Path) -> None:
     src.write_text(
         '<svg xmlns="http://www.w3.org/2000/svg">'
         '<rect fill="white" stroke="#000"/>'
-        '<path style="fill: red"/>'
+        '<path style="fill: green"/>'
         "</svg>"
     )
     dst = tmp_path / "chart-inverted.svg"
@@ -66,7 +67,7 @@ def test_invert_svg_file(tmp_path: Path) -> None:
     content = dst.read_text()
     assert 'fill="#000000"' in content
     assert 'stroke="#ffffff"' in content
-    assert "fill: #ff0000" in content
+    assert "fill: #7fff7f" in content
 
 
 def test_invert_svg_file_preserves_structure(tmp_path: Path) -> None:

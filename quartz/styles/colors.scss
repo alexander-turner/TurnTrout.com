@@ -173,8 +173,6 @@ section {
 // InvertInDarkMode transformer (quartz/plugins/transformers/invertInDarkMode.ts).
 // Class name is the canonical `invertInDarkModeClass` in config/constants.json;
 // SCSS can't read JSON, so the literal must stay in sync manually.
-// Uses the inline SVG filter defined in PageShell — see
-// `accurateInvertFilter`. CSS `invert() hue-rotate(180deg)` is an RGB
 // Images use pre-computed inverted variants via `<picture>` — no CSS
 // filter needed. Videos can't be pre-computed, so they keep the SVG
 // filter approximation. `brightness(95%)` darkens slightly so inverted

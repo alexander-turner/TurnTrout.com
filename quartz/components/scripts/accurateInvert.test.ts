@@ -10,7 +10,7 @@ import {
   onThemeChange,
   processImage,
   processLoaded,
-  processPictureRaster,
+  processPictureImage,
   revertImage,
   revertProcessed,
   shouldProcess,
@@ -115,10 +115,10 @@ describe("isInsidePicture", () => {
   })
 })
 
-describe("processPictureRaster", () => {
+describe("processPictureImage", () => {
   it("stashes original, swaps src, marks processed only on successful load", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
-    expect(processPictureRaster(img)).toBe(true)
+    expect(processPictureImage(img)).toBe(true)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
     expect(img.src).toBe("https://x/foo-inverted.avif")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
@@ -128,14 +128,14 @@ describe("processPictureRaster", () => {
 
   it("leaves processed unset when the swap fails to load", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
-    processPictureRaster(img)
+    processPictureImage(img)
     img.dispatchEvent(new Event("error"))
     expect(img.dataset["invertProcessed"]).toBeUndefined()
   })
 
   it("ignores a load event that arrives after the swap was reverted", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
-    processPictureRaster(img)
+    processPictureImage(img)
     expect(img.src).toBe("https://x/foo-inverted.avif")
     revertImage(img)
     expect(img.src).toBe("https://x/foo.avif")
@@ -149,7 +149,7 @@ describe("processPictureRaster", () => {
       value: "https://x/foo-inverted.avif",
       configurable: true,
     })
-    expect(processPictureRaster(img)).toBe(true)
+    expect(processPictureImage(img)).toBe(true)
     expect(img.dataset["invertProcessed"]).toBe("1")
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
     expect(img.src).toBe("https://x/foo-inverted.avif")
@@ -157,16 +157,16 @@ describe("processPictureRaster", () => {
 
   it("preserves the first stashed original across re-process cycles", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
-    processPictureRaster(img)
+    processPictureImage(img)
     dispatchSwapLoad(img)
     revertImage(img)
-    processPictureRaster(img)
+    processPictureImage(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
 })
 
 describe("processImage", () => {
-  it("routes picture-wrapped image to processPictureRaster", async () => {
+  it("routes picture-wrapped image to processPictureImage", async () => {
     const img = makePictureWrappedImg("https://x/photo.avif")
     await expect(processImage(img)).resolves.toBe(true)
     expect(img.src).toBe("https://x/photo-inverted.avif")
@@ -174,7 +174,7 @@ describe("processImage", () => {
     expect(img.dataset["invertProcessed"]).toBe("1")
   })
 
-  it("routes picture-wrapped SVG to processPictureRaster", async () => {
+  it("routes picture-wrapped SVG to processPictureImage", async () => {
     const img = makePictureWrappedImg("https://x/chart.svg")
     await expect(processImage(img)).resolves.toBe(true)
     expect(img.src).toBe("https://x/chart-inverted.svg")
@@ -220,7 +220,7 @@ describe("processImage", () => {
 describe("revertImage", () => {
   it("restores the original src and clears the processed flag", () => {
     const img = makePictureWrappedImg("https://x/img.avif")
-    processPictureRaster(img)
+    processPictureImage(img)
     dispatchSwapLoad(img)
     expect(revertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/img.avif")

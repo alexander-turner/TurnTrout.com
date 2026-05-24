@@ -27,28 +27,13 @@ export function shouldProcess(img: HTMLImageElement): boolean {
 }
 
 /**
- * True iff `<img>` is the direct child of a `<picture>`. Build-time
- * wrapping (`InvertInDarkMode` transformer) puts every label-eligible
- * raster in a `<picture>` whose `<source media="prefers-color-scheme:
- * dark">` lets the browser fetch the precomputed inverted variant
- * without a canvas round-trip.
+ * True iff `<img>` is the direct child of a `<picture>`.
  */
 export function isInsidePicture(img: HTMLImageElement): boolean {
   return img.parentElement?.tagName === "PICTURE"
 }
 
-/**
- * Picture-wrapped raster path. Always stash the original src and set
- * `img.src` to the inverted variant so the attribute aligns with what
- * the user should see in dark mode (browser-picked-inverted from the
- * `<picture>` source becomes a cache hit; mismatch case actually
- * fetches). The processed marker — which CSS keys off to drop the
- * feColorMatrix fallback — is set immediately when the browser
- * already picked the inverted source, otherwise deferred to the
- * `load` event so a 404 / slow swap leaves the filter approximating
- * instead of flashing to the raw light bitmap.
- */
-export function processPictureRaster(img: HTMLImageElement): boolean {
+export function processPictureImage(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
   if (img.currentSrc && isInvertedUrl(img.currentSrc)) {
@@ -83,7 +68,7 @@ export function processImage(img: HTMLImageElement): Promise<boolean> {
   if (!shouldProcess(img)) return Promise.resolve(false)
   if (img.dataset["invertProcessed"]) return Promise.resolve(false)
   if (!img.complete || img.naturalWidth === 0) return Promise.resolve(false)
-  if (isInsidePicture(img)) return Promise.resolve(processPictureRaster(img))
+  if (isInsidePicture(img)) return Promise.resolve(processPictureImage(img))
   return Promise.resolve(false)
 }
 

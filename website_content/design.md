@@ -169,7 +169,7 @@ Light-background images look good in light mode. Dark-background images look goo
 
 <span class="populate-markdown-inversion-demo"></span>
 
-The SVG filter is the best result I can get from CSS alone, so I ship it as the fallback. For raster images, I pre-compute HSL-inverted variants at build time and serve them via `<picture>`. For SVGs, a runtime script fetches the source and rewrites colors via true HSL inversion. Videos only use the SVG filter to avoid repainting every frame. A built-site check enforces that every inverted raster image is wrapped in `<picture>`.
+The SVG filter is the best result I can get from CSS alone, so I ship it as a fallback for videos. For images (both raster and SVG), I pre-compute HSL-inverted variants at build time and serve them via `<picture>`. Videos only use the SVG filter to avoid repainting every frame. A built-site check enforces that every inverted image is wrapped in `<picture>`.
 
 ### Deciding when to invert
 
