@@ -45,10 +45,11 @@ Configuration entry points: `config/quartz/quartz.config.ts`, `config/quartz/qua
 
 ## Testing requirements
 
-- **Zero flakiness tolerance.** Every CI check must pass every time. Prioritize root-cause fixes for anything we control. For external services we can’t control (e.g. Cloudflare API 504s), retry as a last resort. No flakiness is acceptable regardless of source.
-- **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest (see `coveragePathIgnorePatterns`). Tests live next to implementation as `*.test.ts`.
-- **Python**: 100% line coverage enforced locally.
-- **Interaction features/bug fixes**: add Playwright `*.spec.ts` covering both mobile and desktop viewports; verify visual state, not just DOM.
+- **Zero flakiness tolerance.** Every CI check must pass every time. Prioritize root-cause fixes for anything we control. For external services we can't control (e.g. Cloudflare API 504s), retry as a last resort. No flakiness is acceptable regardless of source.
+- **Never assume a failure is flaky or will self-resolve on a new commit.** Every red check is real until you have hard proof otherwise (e.g. the run's own logs say "The operation was canceled" or "Canceling since a higher priority waiting request exists"). "It was probably stale," "CI variance," "should pass on retry," and "will clear once X lands" are not diagnoses — they're deferrals that let real bugs ship. Pull the logs, read the actual error, trace it to a root cause. If the failure is in your code, fix it before moving on. If it's an external service failure, don't just label it external and move on — make the pipeline resilient to it (add retries, remove fragile options like blobless clones, add fallback paths). The goal is green CI, not an explanation for why it's red.
+- **TypeScript**: 100% branch/statement/function/line coverage enforced by Jest (see `coveragePathIgnorePatterns`). Tests live next to implementation as `*.test.ts`.
+- **Python**: 100% line coverage enforced locally.
+- **Interaction features/bug fixes**: add Playwright `*.spec.ts` covering both mobile and desktop viewports; verify visual state, not just DOM.
 
 ## Code style
 

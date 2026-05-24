@@ -33,6 +33,12 @@ fi
 IGNORE_FILES=(favicon.svg favicon.ico pond.mov pond.webm pond_frame.avif new_site.avif original_site.avif)
 uv run python "$GIT_ROOT"/scripts/convert_assets.py --strip-metadata --asset-directory "$STATIC_DIR" --ignore-files "example_com.png" "${IGNORE_FILES[@]}" --remove-originals
 
+# Generate HSL-inverted variants for invert-labeled rasters in $STATIC_DIR.
+# These ship to R2 alongside their originals so the dark-mode <picture> swap
+# can fetch a precomputed bitmap instead of running canvas inversion at
+# runtime (which trips Firefox's anti-fingerprinting prompt).
+uv run python "$GIT_ROOT"/scripts/generate_inverted_variants.py --asset-directory "$STATIC_DIR"
+
 # Left over original files
 cleanup
 

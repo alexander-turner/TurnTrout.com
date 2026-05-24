@@ -608,7 +608,7 @@
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/COsmr4C.avif": {
-    "invert": false,
+    "invert": true,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/CPCaLoM.avif": {
@@ -1193,6 +1193,10 @@
   },
   "https://assets.turntrout.com/static/images/posts/brufvgichbfhjzdfqzkf.avif": {
     "invert": true,
+    "reviewed": true
+  },
+  "https://assets.turntrout.com/static/images/posts/bruce-wayne-and-the-cost-of-inaction-05222026-1.avif": {
+    "invert": false,
     "reviewed": true
   },
   "https://assets.turntrout.com/static/images/posts/burning.mp4": {
