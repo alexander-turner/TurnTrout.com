@@ -1,5 +1,5 @@
 /**
- * Shared helpers for the precomputed dark-mode raster swap. The
+ * Shared helpers for the precomputed dark-mode image swap. The
  * `InvertInDarkMode` transformer emits `<picture>` markup keyed off
  * these helpers at build time; `accurateInvert.ts` uses them at
  * runtime to flip `<img src>` when the user's theme toggle disagrees
@@ -11,15 +11,15 @@
 const INVERTED_SUFFIX = "-inverted"
 
 /**
- * Raster formats for which we precompute an inverted variant. Mirrors
- * the set in `scripts/generate_inverted_variants.py`. SVGs go through
- * the runtime `processSvgImage` fetch-and-rewrite path instead.
+ * Image formats for which we precompute an inverted variant. Mirrors
+ * the set in `scripts/generate_inverted_variants.py`.
  */
-export const INVERTIBLE_RASTER_EXTENSIONS: ReadonlySet<string> = new Set([
+export const INVERTIBLE_IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   ".avif",
   ".jpg",
   ".jpeg",
   ".png",
+  ".svg",
   ".webp",
 ])
 
@@ -43,8 +43,8 @@ function partsOf(url: string): UrlParts {
     : { stem: path.slice(0, dot), ext: path.slice(dot), tail }
 }
 
-export function isInvertibleRaster(url: string): boolean {
-  return INVERTIBLE_RASTER_EXTENSIONS.has(partsOf(url).ext.toLowerCase())
+export function isInvertibleImage(url: string): boolean {
+  return INVERTIBLE_IMAGE_EXTENSIONS.has(partsOf(url).ext.toLowerCase())
 }
 
 /** Insert `-inverted` before the extension. `foo/bar.avif?v=2` →
