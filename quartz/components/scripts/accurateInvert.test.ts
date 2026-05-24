@@ -58,6 +58,9 @@ const dispatchSwapLoad = (img: HTMLImageElement): void => {
   img.dispatchEvent(new Event("load"))
 }
 
+const getSourceSrcset = (img: HTMLImageElement): string =>
+  img.parentElement!.querySelector("source")!.srcset
+
 /** Sweep helper for tests that exercise `processLoaded` / `onThemeChange`
  * and then assert the processed marker landed on every picture-wrapped
  * img. */
@@ -314,34 +317,41 @@ describe("revertProcessed", () => {
 })
 
 describe("syncPictureSources", () => {
-  it("sets <source> srcset to original for all picture images in light mode", () => {
+  it.each<["dark" | "light", string]>([
+    ["light", "https://x/a.avif"],
+    ["dark", "https://x/a-inverted.avif"],
+  ])("sets <source> srcset correctly in %s mode", (theme, expected) => {
     const img = makePictureWrappedImg("https://x/a.avif")
     document.body.appendChild(img.parentElement as HTMLElement)
-    const source = img.parentElement!.querySelector("source")!
-    expect(source.srcset).toBe("https://x/a-inverted.avif")
-    setTheme("light")
+    setTheme(theme)
     syncPictureSources()
-    expect(source.srcset).toBe("https://x/a.avif")
-  })
-
-  it("sets <source> srcset to inverted for all picture images in dark mode", () => {
-    const img = makePictureWrappedImg("https://x/a.avif")
-    document.body.appendChild(img.parentElement as HTMLElement)
-    const source = img.parentElement!.querySelector("source")!
-    source.srcset = "https://x/a.avif"
-    setTheme("dark")
-    syncPictureSources()
-    expect(source.srcset).toBe("https://x/a-inverted.avif")
+    expect(getSourceSrcset(img)).toBe(expected)
   })
 
   it("handles unprocessed images that have not loaded yet", () => {
     const img = makePictureWrappedImg("https://x/lazy.avif")
     Object.defineProperty(img, "complete", { value: false, configurable: true })
     document.body.appendChild(img.parentElement as HTMLElement)
-    const source = img.parentElement!.querySelector("source")!
     setTheme("light")
     syncPictureSources()
-    expect(source.srcset).toBe("https://x/lazy.avif")
+    expect(getSourceSrcset(img)).toBe("https://x/lazy.avif")
+  })
+
+  it("excludes force-hsl-invert images", () => {
+    const img = makePictureWrappedImg("https://x/forced.avif")
+    img.classList.add("force-hsl-invert")
+    document.body.appendChild(img.parentElement as HTMLElement)
+    setTheme("light")
+    syncPictureSources()
+    expect(getSourceSrcset(img)).toBe("https://x/forced-inverted.avif")
+  })
+
+  it("no-ops gracefully when <source> is absent", () => {
+    const img = makePictureWrappedImg("https://x/nosrc.avif")
+    img.parentElement!.querySelector("source")!.remove()
+    document.body.appendChild(img.parentElement as HTMLElement)
+    setTheme("light")
+    expect(() => syncPictureSources()).not.toThrow()
   })
 })
 
@@ -379,10 +389,6 @@ describe("onThemeChange", () => {
     expect(source.srcset).toBe("https://x/lazy.avif")
   })
 })
-
-/** Helper to get `<source>` srcset from a picture-wrapped img. */
-const getSourceSrcset = (img: HTMLImageElement): string =>
-  img.parentElement!.querySelector("source")!.srcset
 
 describe("stress tests", () => {
   it("rapid dark→light→dark→light toggle leaves everything consistent", async () => {
@@ -457,13 +463,4 @@ describe("stress tests", () => {
     expect(img.src).toBe("https://x/rt-inverted.avif")
   })
 
-  it("force-hsl-invert images are excluded from syncPictureSources", () => {
-    const img = makePictureWrappedImg("https://x/forced.avif")
-    img.classList.add("force-hsl-invert")
-    document.body.appendChild(img.parentElement as HTMLElement)
-
-    setTheme("light")
-    syncPictureSources()
-    expect(getSourceSrcset(img)).toBe("https://x/forced-inverted.avif")
-  })
 })
