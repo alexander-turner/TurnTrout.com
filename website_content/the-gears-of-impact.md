@@ -105,7 +105,7 @@ card_image_alt: 'Comparing "Before" and "After" probabilities for three outcomes
 
 !["The first third of the sequence meets its close. We understood why some things seem like big deals, righted a wrong question, and just now skirted the fascinating deeper nature of objective impact... Objective impact, instrumental convergence, opportunity cost, the colloquial meaning of 'power'—these all prove to be facets of one phenomenon, one structure."](https://assets.turntrout.com/static/images/posts/dLUrki7.avif)
 
-![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/the-gears-of-impact-05182026.avif)
+![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/the-gears-of-impact-05182026.avif){.fade-image-border}
 
 > [!note]
 > Why does instrumental convergence happen? Would it be coherent to imagine a reality without it?

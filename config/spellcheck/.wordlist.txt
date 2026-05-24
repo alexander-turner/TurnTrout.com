@@ -37,6 +37,7 @@
 1bn
 1x
 1ˢᵗ
+1px
 2-20x
 200GB
 20B
@@ -725,6 +726,7 @@ Karim
 Karp
 Karvonen
 Katja
+Kerning
 Keltham's
 Kerning
 Khullar

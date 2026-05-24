@@ -85,11 +85,11 @@ Reframing Impact
 :
 : The paperclip-Balrog drawing contains a [Tengwar](https://en.wikipedia.org/wiki/Tengwar) inscription which reads "one measure to bind them", with "measure" in impact-blue and "them" in utility-pink.
 :
-: ![Text overlay: "An impact measure would be the first proposed safeguard which maybe actually stops a powerful agent with an imperfect objective from ruining things – without assuming anything about the objective. This is a rare property among approaches." The text lurks above an illustration paying homage to the iconic Gandalf-vs-Balrog scene in Moria. The demon's whip ends in a giant paperclip, a metaphor for a misaligned artificial intelligence.](https://assets.turntrout.com/static/images/posts/v7pzpzvi342b3svksbag.avif)
+: ![Text overlay: "An impact measure would be the first proposed safeguard which maybe actually stops a powerful agent with an imperfect objective from ruining things – without assuming anything about the objective. This is a rare property among approaches." The text lurks above an illustration paying homage to the iconic Gandalf-vs-Balrog scene in Moria. The demon's whip ends in a giant paperclip, a metaphor for a misaligned artificial intelligence.](https://assets.turntrout.com/static/images/posts/v7pzpzvi342b3svksbag.avif){.fade-image-border style="box-shadow: inset 1px 0 0 var(--dark);"}
 
   "Towards a New Impact Measure" was the title of [the post](/towards-a-new-impact-measure) in which AUP was introduced:
 :
-: ![The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads "Towards a new impact measure" and is rendered in a Tolkienesque font.](https://assets.turntrout.com/static/images/posts/ynwdidys1i7yopyqerfh.avif)
+: <img src="https://assets.turntrout.com/static/images/cropped_towards.avif" alt='The interior of a cozy, hobbit-hole-like room with a round door open to a sunny landscape. Sunlight streams in, illuminating the tiled floor. Text over the view reads, "towards a new impact measure" and is rendered in a Tolkienesque font.' class="fade-image-border"/>
 
 <br/>
 
@@ -112,7 +112,7 @@ Seeking Power is Often Convergently Instrumental in MDPs
 The tale of Frank and the orange Pebblehoarder
 : Speaking of under-tales, a friendship has been blossoming right under our noses:
 :
-: ![A cartoon of Frank the robot giving his pink marble to a surprised Pebblehoarder. They stand in a grassy field under a sunny sky.](https://assets.turntrout.com/static/images/posts/dfog9czq2wdboz8m0dpv.avif)
+: ![A cartoon of Frank the robot giving his pink marble to a surprised Pebblehoarder. They stand in a grassy field under a sunny sky.](https://assets.turntrout.com/static/images/posts/dfog9czq2wdboz8m0dpv.avif){.fade-image-border}
 Figure: After the Pebblehoarders suffer the devastating transformation of all of their pebbles into obsidian blocks, Frank generously gives away his favorite pink marble as a makeshift pebble.
 :
 :
@@ -120,7 +120,7 @@ Figure: After the Pebblehoarders suffer the devastating transformation of all of
 Figure: The title cuts to the middle of their adventures together, the Pebblehoarder showing its gratitude by helping Frank reach things high up.
 :
 :
-: ![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/mx5gc86qpthgbzeypfw9.avif)
+: ![Frank and the Pebblehoarder sit together on a cliff's edge, overlooking a vast mountain range at sunset. The scene pays homage to the ending shot of the 2012 film, The Hobbit: An Unexpected Journey.](https://assets.turntrout.com/static/images/posts/mx5gc86qpthgbzeypfw9.avif){.fade-image-border}
 Figure: This still at the midpoint of the sequence is from [the final scene of _The Hobbit: An Unexpected Journey_](https://www.youtube.com/watch?v=KEegn1R601M), where the party is overlooking Erebor, the Lonely Mountain. They've made it through the Misty Mountains, only to find Smaug's abode looming in the distance.
 :
 : ![Frank the robot stands atop the orange Pebblehoarder, popping a bottle of champagne. In the background, celebratory fireworks explode, with one spelling out "LW" in purple.](https://assets.turntrout.com/static/images/posts/jdcmcy4bzxggxdallwok.avif)
