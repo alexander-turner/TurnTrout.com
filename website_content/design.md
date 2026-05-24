@@ -197,7 +197,7 @@ Quartz offers basic optimizations, such as [lazy loading](https://developer.mozi
 
 EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
 
-Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references.
+Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references. 
 
 <span class="populate-markdown-font-stats"></span>
 
@@ -577,7 +577,7 @@ I modified the italic fonts to replace sloped punctuation glyphs with their upri
 | Single quotes |  <span class="italic-old">_‘Hello world’_</span>  |     _‘Hello world’_      |
 |    Apostrophe |      <span class="italic-old">_don’t_</span>      |         _don’t_          |
 
-I also equalized the heights of parentheses, brackets, and braces.
+I also equalized the heights of parentheses, brackets, and braces. As time folded forward, my fonts became quite customized. I built a reproducible font patching pipeline which starts with [Harish's EB Garamond](#i-paid-someone-to-tweak-eb-garamond) and iteratively modifies the font. 
 
 # Website features
 
