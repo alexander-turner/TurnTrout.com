@@ -168,7 +168,6 @@ describe("processPictureImage", () => {
     processPictureImage(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
-
 })
 
 describe("processImage", () => {
@@ -420,10 +419,7 @@ describe("stress tests", () => {
     const loaded = makePictureWrappedImg("https://x/loaded.avif")
     const lazy = makePictureWrappedImg("https://x/lazy.avif")
     Object.defineProperty(lazy, "complete", { value: false, configurable: true })
-    document.body.append(
-      loaded.parentElement as HTMLElement,
-      lazy.parentElement as HTMLElement,
-    )
+    document.body.append(loaded.parentElement as HTMLElement, lazy.parentElement as HTMLElement)
 
     setTheme("dark")
     onThemeChange()
