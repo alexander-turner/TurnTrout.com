@@ -621,7 +621,7 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Kerning pairs
 
-| Category | Bigrams |
+| Category | Pairs |
 | --: | :-- |
 | f + close | f) f] f\} f” f’ f( |
 | ff + close | ff) ff] ff\} ff” ff’ |
