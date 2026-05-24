@@ -19,6 +19,10 @@ updates:
       # add a per-text-node skip hook in punctilio itself.
       - dependency-name: "punctilio"
         versions: [">=3.3.0"]
+    groups:
+      npm-tracked:
+        patterns:
+          - "*"
 
   # Keep GitHub Actions versions up to date (monthly to reduce churn)
   - package-ecosystem: "github-actions"
