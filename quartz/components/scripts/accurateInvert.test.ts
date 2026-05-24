@@ -462,5 +462,4 @@ describe("stress tests", () => {
     expect(getSourceSrcset(img)).toBe("https://x/rt-inverted.avif")
     expect(img.src).toBe("https://x/rt-inverted.avif")
   })
-
 })
