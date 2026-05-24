@@ -5,87 +5,16 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 
 import {
   handleLoadEvent,
-  invertColorToken,
-  invertCssColors,
-  invertSvgSource,
   isDarkMode,
   isInsidePicture,
-  isSvgSrc,
   onThemeChange,
   processImage,
   processLoaded,
   processPictureRaster,
-  processSvgImage,
   revertImage,
   revertProcessed,
   shouldProcess,
 } from "./accurateInvert"
-
-describe("isSvgSrc", () => {
-  it.each([
-    ["https://x/chart.svg", true],
-    ["https://x/chart.SVG", true],
-    ["https://x/chart.svg?v=2", true],
-    ["https://x/chart.svg#anchor", true],
-    ["https://x/photo.png", false],
-    ["data:image/png;base64,AAA", false],
-  ])("%s → %s", (src, expected) => {
-    expect(isSvgSrc(src)).toBe(expected)
-  })
-})
-
-describe("invertColorToken", () => {
-  it.each([
-    ["white", "#000000"],
-    ["#ffffff", "#000000"],
-    ["#000000", "#ffffff"],
-    ["rgb(200, 100, 50)", "#cd6937"],
-  ])("inverts %s lightness → %s", (input, expected) => {
-    expect(invertColorToken(input)).toBe(expected)
-  })
-
-  it.each(["none", "currentColor", "url(#grad)", "transparent", "garbage"])(
-    "returns null for non-displayable token %s",
-    (token) => {
-      expect(invertColorToken(token)).toBeNull()
-    },
-  )
-})
-
-describe("invertCssColors", () => {
-  it("rewrites recognized properties, leaves others alone", () => {
-    const input = "fill: white; stroke: #000; opacity: 0.5; color: red"
-    const out = invertCssColors(input)
-    expect(out).toContain("fill: #000000")
-    expect(out).toContain("stroke: #ffffff")
-    expect(out).toContain("opacity: 0.5")
-    expect(out).toContain("color:")
-  })
-
-  it("leaves non-displayable colors untouched", () => {
-    expect(invertCssColors("fill: none")).toBe("fill: none")
-  })
-})
-
-describe("invertSvgSource", () => {
-  it("HSL-inverts fill / stroke / style declarations", () => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg">
-      <rect fill="white" stroke="#000" />
-      <path style="fill: rgb(200, 100, 50)" />
-      <style>circle { fill: white; }</style>
-    </svg>`
-    const out = invertSvgSource(svg)
-    expect(out).toContain('fill="#000000"')
-    expect(out).toContain('stroke="#ffffff"')
-    expect(out).toContain("fill: #cd6937")
-    expect(out).toContain("fill: #000000")
-  })
-
-  it("returns input unchanged on parse error", () => {
-    const broken = "<svg><not-closed>"
-    expect(invertSvgSource(broken)).toBe(broken)
-  })
-})
 
 const setTheme = (theme: "dark" | "light"): void => {
   document.documentElement.setAttribute("data-theme", theme)
@@ -131,15 +60,6 @@ const finishPendingPictureSwaps = (): void => {
   for (const img of document.querySelectorAll<HTMLImageElement>("picture > img")) {
     if (!img.dataset["invertProcessed"]) dispatchSwapLoad(img)
   }
-}
-
-const mockFetchText = (text: string, ok = true): jest.Mock => {
-  const fn = jest.fn(async () =>
-    Promise.resolve({ ok, status: ok ? 200 : 500, text: async () => text }),
-  )
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ;(globalThis as any).fetch = fn
-  return fn
 }
 
 beforeEach(() => {
@@ -201,10 +121,6 @@ describe("processPictureRaster", () => {
     expect(processPictureRaster(img)).toBe(true)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
     expect(img.src).toBe("https://x/foo-inverted.avif")
-    // Marker only lands after the swapped src finishes loading; until
-    // then the CSS feColorMatrix fallback keeps approximating the
-    // inversion so a 404 / slow swap doesn't flash to an unfiltered
-    // light bitmap.
     expect(img.dataset["invertProcessed"]).toBeUndefined()
     dispatchSwapLoad(img)
     expect(img.dataset["invertProcessed"]).toBe("1")
@@ -218,10 +134,6 @@ describe("processPictureRaster", () => {
   })
 
   it("ignores a load event that arrives after the swap was reverted", () => {
-    // Fast dark→light toggle: revert beats the inverted load to the
-    // event queue, so the pending load handler fires for the original
-    // src reload — *not* the inverted swap. Setting processed there
-    // would short-circuit the next dark toggle in processImage.
     const img = makePictureWrappedImg("https://x/foo.avif")
     processPictureRaster(img)
     expect(img.src).toBe("https://x/foo-inverted.avif")
@@ -233,17 +145,11 @@ describe("processPictureRaster", () => {
 
   it("marks processed immediately when the browser already picked the inverted source", () => {
     const img = makePictureWrappedImg("https://x/foo.avif")
-    // currentSrc is what the browser actually loaded; <picture>
-    // selection may resolve it to the inverted variant when
-    // prefers-color-scheme matches the user's theme.
     Object.defineProperty(img, "currentSrc", {
       value: "https://x/foo-inverted.avif",
       configurable: true,
     })
     expect(processPictureRaster(img)).toBe(true)
-    // Marker lands synchronously (no need to wait for a load that
-    // would just be a cache hit), and the original is stashed so a
-    // theme→light revert can restore it.
     expect(img.dataset["invertProcessed"]).toBe("1")
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
     expect(img.src).toBe("https://x/foo-inverted.avif")
@@ -260,12 +166,18 @@ describe("processPictureRaster", () => {
 })
 
 describe("processImage", () => {
-  it("routes picture-wrapped raster to processPictureRaster", async () => {
+  it("routes picture-wrapped image to processPictureRaster", async () => {
     const img = makePictureWrappedImg("https://x/photo.avif")
     await expect(processImage(img)).resolves.toBe(true)
     expect(img.src).toBe("https://x/photo-inverted.avif")
     dispatchSwapLoad(img)
     expect(img.dataset["invertProcessed"]).toBe("1")
+  })
+
+  it("routes picture-wrapped SVG to processPictureRaster", async () => {
+    const img = makePictureWrappedImg("https://x/chart.svg")
+    await expect(processImage(img)).resolves.toBe(true)
+    expect(img.src).toBe("https://x/chart-inverted.svg")
   })
 
   it("does nothing in light mode", async () => {
@@ -299,51 +211,9 @@ describe("processImage", () => {
     await expect(processImage(img)).resolves.toBe(false)
   })
 
-  it("returns false for an unwrapped raster (no fallback canvas path)", async () => {
-    // Unwrapped invert imgs should be wrapped at build time; if we see
-    // one at runtime, do nothing rather than reading from the canvas.
+  it("returns false for an unwrapped image (no fallback path)", async () => {
     const img = makeLoadedImg("https://x/orphan.avif")
     await expect(processImage(img)).resolves.toBe(false)
-  })
-
-  it("routes .svg sources to the SVG path", async () => {
-    mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>')
-    const img = makeLoadedImg("https://x/chart.svg")
-    await expect(processImage(img)).resolves.toBe(true)
-    expect(img.src.startsWith("data:image/svg+xml;utf8,")).toBe(true)
-    expect(decodeURIComponent(img.src)).toContain('fill="#000000"')
-  })
-
-  it("ignores query/hash when detecting SVG sources", async () => {
-    mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"><rect fill="black"/></svg>')
-    const img = makeLoadedImg("https://x/chart.svg?v=2#id")
-    await processImage(img)
-    expect(img.src.startsWith("data:image/svg+xml;utf8,")).toBe(true)
-  })
-})
-
-describe("processSvgImage", () => {
-  it("returns false on fetch !ok", async () => {
-    mockFetchText("", false)
-    const img = makeLoadedImg("https://x/chart.svg")
-    await expect(processSvgImage(img)).resolves.toBe(false)
-    expect(img.dataset["invertProcessed"]).toBeUndefined()
-  })
-
-  it("returns false and clears in-flight flag on fetch throw", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(globalThis as any).fetch = jest.fn(() => Promise.reject(new Error("net")))
-    const img = makeLoadedImg("https://x/chart.svg")
-    await expect(processSvgImage(img)).resolves.toBe(false)
-    expect(img.dataset["invertProcessing"]).toBeUndefined()
-  })
-
-  it("guards against concurrent re-entry", async () => {
-    const fetchFn = mockFetchText('<svg xmlns="http://www.w3.org/2000/svg"></svg>')
-    const img = makeLoadedImg("https://x/chart.svg")
-    img.dataset["invertProcessing"] = "1"
-    await expect(processSvgImage(img)).resolves.toBe(false)
-    expect(fetchFn).not.toHaveBeenCalled()
   })
 })
 

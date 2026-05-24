@@ -175,27 +175,18 @@ section {
 // SCSS can't read JSON, so the literal must stay in sync manually.
 // Uses the inline SVG filter defined in PageShell — see
 // `accurateInvertFilter`. CSS `invert() hue-rotate(180deg)` is an RGB
-// matrix approximation that distorts yellows and cyans (anything off
-// the primary axes); the SVG filter inverts in sRGB then rotates hue
-// around the neutral-gray axis, preserving hue much more faithfully.
-// `brightness(95%)` darkens slightly so inverted near-white backgrounds
-// land closer to pure black and `mix-blend-mode: screen` (above) blends
-// them cleanly into the page bg.
+// Images use pre-computed inverted variants via `<picture>` — no CSS
+// filter needed. Videos can't be pre-computed, so they keep the SVG
+// filter approximation. `brightness(95%)` darkens slightly so inverted
+// near-white backgrounds land closer to pure black.
 :root[data-theme="dark"] img.invert-in-dark-mode,
-:root[data-theme="dark"] video.invert-in-dark-mode,
-.dark-mode img.invert-in-dark-mode,
-.dark-mode video.invert-in-dark-mode {
-  filter: url("#accurate-invert") brightness(95%) !important;
+.dark-mode img.invert-in-dark-mode {
+  filter: brightness(95%) !important;
 }
 
-// `accurateInvert.inline.ts` upgrades imgs to true perceptual HSL
-// inversion via canvas and sets `data-invert-processed`. The pixel
-// data is already inverted, so we drop the SVG filter and only keep
-// brightness (matching the CSS chain above) to avoid double-inverting.
-// CORS-tainted canvases and videos keep the SVG fallback above.
-:root[data-theme="dark"] img.invert-in-dark-mode[data-invert-processed],
-.dark-mode img.invert-in-dark-mode[data-invert-processed] {
-  filter: brightness(95%) !important;
+:root[data-theme="dark"] video.invert-in-dark-mode,
+.dark-mode video.invert-in-dark-mode {
+  filter: url("#accurate-invert") brightness(95%) !important;
 }
 
 // Always-on HSL/SVG inversion regardless of theme. Used for the

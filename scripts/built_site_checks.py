@@ -40,7 +40,6 @@ from scripts.utils import (
     GERMAN_OPEN_QUOTE,
     INVERT_EXCLUDED_SEGMENTS,
     INVERT_IMG_EXTENSIONS,
-    INVERT_RASTER_EXTENSIONS,
     INVERT_VIDEO_EXTENSIONS,
     LEFT_DOUBLE_QUOTE,
     LEFT_GUILLEMET,
@@ -959,7 +958,7 @@ def check_invert_labels(
         tokens = _class_tokens(img)
         needs_picture = (
             INVERT_CLASS in tokens or FORCE_HSL_INVERT_CLASS in tokens
-        ) and src.lower().endswith(INVERT_RASTER_EXTENSIONS)
+        ) and src.lower().endswith(INVERT_IMG_EXTENSIONS)
         if needs_picture and (
             img.parent is None or img.parent.name != "picture"
         ):

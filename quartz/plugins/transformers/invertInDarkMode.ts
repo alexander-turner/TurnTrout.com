@@ -8,7 +8,7 @@ import { visit } from "unist-util-visit"
 import { fileURLToPath } from "url"
 
 import { cdnBaseUrl, forceHslInvertClass, invertInDarkModeClass } from "../../components/constants"
-import { invertedUrl, isInvertibleRaster } from "../../components/scripts/invertedAssets"
+import { invertedUrl, isInvertibleImage } from "../../components/scripts/invertedAssets"
 
 const projectRoot = path.dirname(gitRoot(fileURLToPath(import.meta.url)))
 
@@ -107,7 +107,7 @@ function eligibleSources(node: Element): readonly string[] {
 export function wrapInDarkModePicture(node: Element, parent: Parent, index: number): void {
   if (parent.type === "element" && (parent as Element).tagName === "picture") return
   const src = node.properties?.src
-  if (typeof src !== "string" || !isInvertibleRaster(src)) return
+  if (typeof src !== "string" || !isInvertibleImage(src)) return
   const picture = h("picture", [
     h("source", {
       srcSet: invertedUrl(src),

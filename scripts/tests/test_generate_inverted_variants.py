@@ -13,6 +13,77 @@ from PIL import Image
 
 from .. import generate_inverted_variants as giv
 
+# --------------- SVG color inversion tests ---------------
+
+
+@pytest.mark.parametrize(
+    ("token", "expected"),
+    [
+        ("white", "#000000"),
+        ("#ffffff", "#000000"),
+        ("#000000", "#ffffff"),
+        ("#fff", "#000000"),
+        ("#000", "#ffffff"),
+        ("rgb(200, 100, 50)", "#cd6937"),
+        ("red", "#ff0000"),
+        ("black", "#ffffff"),
+    ],
+)
+def test_invert_color_token(token: str, expected: str) -> None:
+    assert giv.invert_color_token(token) == expected
+
+
+@pytest.mark.parametrize(
+    "token",
+    ["none", "currentColor", "transparent", "url(#grad)", "inherit", "garbage"],
+)
+def test_invert_color_token_returns_none_for_non_color(token: str) -> None:
+    assert giv.invert_color_token(token) is None
+
+
+def test_invert_css_colors() -> None:
+    css = "fill: white; stroke: #000; opacity: 0.5"
+    out = giv.invert_css_colors(css)
+    assert "fill: #000000" in out
+    assert "stroke: #ffffff" in out
+    assert "opacity: 0.5" in out
+
+
+def test_invert_css_colors_leaves_unparseable_values() -> None:
+    assert giv.invert_css_colors("fill: none") == "fill: none"
+
+
+def test_invert_svg_file(tmp_path: Path) -> None:
+    src = tmp_path / "chart.svg"
+    src.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        '<rect fill="white" stroke="#000"/>'
+        '<path style="fill: red"/>'
+        "</svg>"
+    )
+    dst = tmp_path / "chart-inverted.svg"
+    giv.invert_svg_file(src, dst)
+    content = dst.read_text()
+    assert 'fill="#000000"' in content
+    assert 'stroke="#ffffff"' in content
+    assert "fill: #ff0000" in content
+
+
+def test_invert_svg_file_preserves_structure(tmp_path: Path) -> None:
+    src = tmp_path / "chart.svg"
+    src.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg">'
+        "<style>circle { fill: white; }</style>"
+        '<circle cx="10" cy="10" r="5"/>'
+        "</svg>"
+    )
+    dst = tmp_path / "chart-inverted.svg"
+    giv.invert_svg_file(src, dst)
+    content = dst.read_text()
+    assert "fill: #000000" in content
+    assert "<circle" in content
+
+
 _BASE_URL = "https://assets.turntrout.com"
 
 
@@ -142,6 +213,9 @@ def test_iter_invert_targets_filters_correctly(asset_dir: Path) -> None:
     _write_solid_png(valid, (10, 20, 30, 255))
     valid.rename(valid)  # noop, exercises path
 
+    valid_svg = asset_dir / "Attachments" / "chart.svg"
+    valid_svg.write_text('<svg xmlns="http://www.w3.org/2000/svg"/>')
+
     skipped_video = asset_dir / "Attachments" / "vid.mp4"
     skipped_video.write_bytes(b"")
 
@@ -150,6 +224,10 @@ def test_iter_invert_targets_filters_correctly(asset_dir: Path) -> None:
 
     labels: dict[str, dict[str, bool]] = {
         f"{_BASE_URL}/Attachments/good.avif": {
+            "invert": True,
+            "reviewed": True,
+        },
+        f"{_BASE_URL}/Attachments/chart.svg": {
             "invert": True,
             "reviewed": True,
         },
@@ -169,7 +247,7 @@ def test_iter_invert_targets_filters_correctly(asset_dir: Path) -> None:
         "https://other.cdn/y.png": {"invert": True, "reviewed": True},
     }
     targets = list(giv.iter_invert_targets(labels, asset_dir, _BASE_URL))
-    assert targets == [valid]
+    assert set(targets) == {valid, valid_svg}
 
 
 def test_generate_all_writes_inverted_and_is_idempotent(
@@ -187,6 +265,24 @@ def test_generate_all_writes_inverted_and_is_idempotent(
 
     gen, skip = giv.generate_all(labels, asset_dir, _BASE_URL)
     assert (gen, skip) == (0, 1)
+
+
+def test_generate_all_inverts_svg(asset_dir: Path) -> None:
+    src = asset_dir / "Attachments" / "chart.svg"
+    src.write_text(
+        '<svg xmlns="http://www.w3.org/2000/svg"><rect fill="white"/></svg>'
+    )
+    labels = {
+        f"{_BASE_URL}/Attachments/chart.svg": {
+            "invert": True,
+            "reviewed": True,
+        }
+    }
+    gen, skip = giv.generate_all(labels, asset_dir, _BASE_URL)
+    assert (gen, skip) == (1, 0)
+    dst = giv.inverted_path(src)
+    assert dst.is_file()
+    assert 'fill="#000000"' in dst.read_text()
 
 
 def test_generate_all_force_regenerates(asset_dir: Path) -> None:

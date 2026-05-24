@@ -253,11 +253,12 @@ describe("InvertInDarkMode", () => {
       expect(picture.children[0]).toBe(img)
     })
 
-    it("skips when src is not an invertible raster (svg)", () => {
+    it("wraps SVG images in <picture>", () => {
       const img = h("img", { src: `${cdnBaseUrl}/x.svg` }) as Element
       const root = tree(img)
       wrapInDarkModePicture(img, root, 0)
-      expect(root.children[0]).toBe(img)
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
     })
 
     it("skips when src is missing", () => {
@@ -340,7 +341,7 @@ describe("InvertInDarkMode", () => {
       expect((root.children[0] as Element).tagName).toBe("img")
     })
 
-    it("does not wrap an invert-labeled SVG (kept on the SVG fetch-rewrite path)", async () => {
+    it("wraps an invert-labeled SVG in <picture>", async () => {
       const cdnSrc = `${cdnBaseUrl}/icon.svg`
       readFileSpy.mockResolvedValue(
         JSON.stringify({ [cdnSrc]: { invert: true, reviewed: true } }) as never,
@@ -349,7 +350,10 @@ describe("InvertInDarkMode", () => {
       const img = h("img", { src: cdnSrc }) as Element
       const root = tree(img)
       await transformOf(plugin)(root)
-      expect((root.children[0] as Element).tagName).toBe("img")
+      const wrapped = root.children[0] as Element
+      expect(wrapped.tagName).toBe("picture")
+      const source = wrapped.children[0] as Element
+      expect(source.properties?.srcSet).toBe(`${cdnBaseUrl}/icon-inverted.svg`)
     })
 
     it("wraps a pre-existing force-hsl-invert raster img in <picture>", async () => {

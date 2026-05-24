@@ -4013,13 +4013,11 @@ def test_check_file_for_issues_markdown_check_called_with_valid_md(
     html_file_path = base_dir / "test.html"
     html_file_path.write_text("<html><body>Test</body></html>")
     md_file_path = content_dir / "test.md"
-    md_file_path.write_text(
-        """---
+    md_file_path.write_text("""---
 title: Test Title
 description: Test Description
 ---
-# Content here"""
-    )
+# Content here""")
     assert md_file_path.is_file()
 
     with (
@@ -6630,11 +6628,13 @@ def _class_mismatch_msg(
                 )
             ],
         ),
-        # Reviewed SVG with matching class → no issue (parity with rasters).
+        # Reviewed SVG with matching class but not in <picture> → error.
         (
             f'<img class="{INVERT_CLASS}" src="https://x/chart.svg">',
             {"https://x/chart.svg": _reviewed(True)},
-            [],
+            [
+                "<img> https://x/chart.svg has invert class but is not inside <picture>"
+            ],
         ),
         # src-less <img> tags are ignored.
         (

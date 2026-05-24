@@ -2,12 +2,12 @@ import { describe, expect, it } from "@jest/globals"
 
 import {
   invertedUrl,
-  INVERTIBLE_RASTER_EXTENSIONS,
+  INVERTIBLE_IMAGE_EXTENSIONS,
   isInvertedUrl,
-  isInvertibleRaster,
+  isInvertibleImage,
 } from "./invertedAssets"
 
-describe("isInvertibleRaster", () => {
+describe("isInvertibleImage", () => {
   it.each([
     ["foo.avif", true],
     ["foo.AVIF", true],
@@ -15,19 +15,19 @@ describe("isInvertibleRaster", () => {
     ["foo.JPG", true],
     ["foo.jpeg", true],
     ["foo.webp", true],
-    ["foo.svg", false],
+    ["foo.svg", true],
     ["foo.mp4", false],
     ["foo.webm", false],
     ["no-extension", false],
     ["foo.avif?v=2", true],
     ["foo.png#anchor", true],
   ])("returns %s → %s", (url, expected) => {
-    expect(isInvertibleRaster(url)).toBe(expected)
+    expect(isInvertibleImage(url)).toBe(expected)
   })
 
-  it("covers every extension in INVERTIBLE_RASTER_EXTENSIONS", () => {
-    for (const ext of INVERTIBLE_RASTER_EXTENSIONS) {
-      expect(isInvertibleRaster(`x${ext}`)).toBe(true)
+  it("covers every extension in INVERTIBLE_IMAGE_EXTENSIONS", () => {
+    for (const ext of INVERTIBLE_IMAGE_EXTENSIONS) {
+      expect(isInvertibleImage(`x${ext}`)).toBe(true)
     }
   })
 })
