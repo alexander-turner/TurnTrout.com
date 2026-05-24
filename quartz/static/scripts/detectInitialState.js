@@ -23,7 +23,10 @@
         if (el.tagName !== "SOURCE" || el.parentElement?.tagName !== "PICTURE") return
         if (!el.media || !el.media.includes("prefers-color-scheme")) return
         if (actualTheme === "light") {
-          el.setAttribute("srcset", (el.getAttribute("srcset") || "").replace(/-inverted(\.[^.]+)$/, "$1"))
+          el.setAttribute(
+            "srcset",
+            (el.getAttribute("srcset") || "").replace(/-inverted(\.[^.]+)$/, "$1"),
+          )
         } else {
           el.removeAttribute("media")
         }
@@ -33,7 +36,8 @@
           for (const n of m.addedNodes) {
             if (n.nodeType !== 1) continue
             if (n.tagName === "SOURCE") fixSource(n)
-            else if (n.querySelectorAll) n.querySelectorAll("picture > source[media]").forEach(fixSource)
+            else if (n.querySelectorAll)
+              n.querySelectorAll("picture > source[media]").forEach(fixSource)
           }
         }
       })
