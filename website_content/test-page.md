@@ -621,24 +621,22 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 
 ## Kerning pairs
 
-GPOS pair kerning gives the upright EBGaramond f's ascender breathing room before punctuation: f) f] f\} f" f' f(. In context: the function f(x) is defined when f(x) > 0; common pairs include (if), (of), (off), (puff), (Wolf), and (shelf). The staff(s) handed self "hi" and called if'd a typo.
-
-Descender letters after open punctuation: (g) (j) (p) (q) (y). In context: the clipping (probably) happened (just) below the baseline.
-
-Descender letters before close punctuation: g) j) p) q) y). In context: the dog (or possibly the frog) jumped quickly.
-
 | Category | Bigrams |
 | :-- | :-- |
 | f + close | f) f] f\} f" f' f( |
 | ff + close | ff) ff] ff\} ff" ff' |
-| f + quotes | f" f' f" f' |
+| f + quotes | f" f' f“ f‘ |
 | ( + descender | (g (j (p (q (y |
 | \[ + descender | \[g \[j \[p \[q \[y |
 | \{ + descender | \{g \{j \{p \{q \{y |
 | descender + ) | g) j) p) q) y) |
 | descender + ] | g] j] p] q] y] |
 | descender + \} | g\} j\} p\} q\} y\} |
+| Caps + close | T) V) W) Y) A) |
+| r + close | r) r] r\} r" r' |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
+| In context | the staff(s) called if'd a "buff" (Wolf) |
+| In context | the clipping (probably) happened (just) quickly |
 
 ## Numbers and units
 
