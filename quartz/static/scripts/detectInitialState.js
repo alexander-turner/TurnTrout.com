@@ -12,6 +12,36 @@
 
   document.documentElement.setAttribute("data-theme", actualTheme)
 
+  // When the manual theme disagrees with system preference, the browser's
+  // <picture> source selection would show the wrong variant during parse.
+  // Intercept <source> elements as they're added and fix them before paint.
+  if (themeMode !== "auto") {
+    const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    const systemTheme = systemIsDark ? "dark" : "light"
+    if (actualTheme !== systemTheme) {
+      const fixSource = (el) => {
+        if (el.tagName !== "SOURCE" || el.parentElement?.tagName !== "PICTURE") return
+        if (!el.media || !el.media.includes("prefers-color-scheme")) return
+        if (actualTheme === "light") {
+          el.setAttribute("srcset", (el.getAttribute("srcset") || "").replace(/-inverted(\.[^.]+)$/, "$1"))
+        } else {
+          el.removeAttribute("media")
+        }
+      }
+      const srcObs = new MutationObserver((muts) => {
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType !== 1) continue
+            if (n.tagName === "SOURCE") fixSource(n)
+            else if (n.querySelectorAll) n.querySelectorAll("picture > source[media]").forEach(fixSource)
+          }
+        }
+      })
+      srcObs.observe(document.documentElement, { childList: true, subtree: true })
+      document.addEventListener("DOMContentLoaded", () => srcObs.disconnect(), { once: true })
+    }
+  }
+
   // Set theme label content in CSS custom property - show the mode, not the resolved theme
   document.documentElement.style.setProperty(
     "--theme-label-content",
