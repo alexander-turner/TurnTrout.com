@@ -10,6 +10,7 @@ from .. import build_fonts
 from ..build_fonts import (
     _BASE_KERN,
     _BRACE_GLYPHS,
+    _CAP_OVERHANG_GLYPHS,
     _CLOSE_DESCENDER_KERN,
     _CLOSE_PUNCT_GLYPHS,
     _DESCENDER_GLYPHS,
@@ -204,7 +205,10 @@ class TestKerning:
         _add_kerning(font, f_glyphs)
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
         expected = (
-            set(f_glyphs) | set(_OPEN_PUNCT_GLYPHS) | set(_DESCENDER_GLYPHS)
+            set(f_glyphs)
+            | set(_OPEN_PUNCT_GLYPHS)
+            | set(_DESCENDER_GLYPHS)
+            | set(_CAP_OVERHANG_GLYPHS)
         )
         assert set(subtable.Coverage.glyphs) == expected
 
@@ -254,7 +258,7 @@ class TestKerning:
             for pvr in subtable.PairSet[i].PairValueRecord:
                 if pvr.SecondGlyph in close_set:
                     assert (
-                        pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN
+                        pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN[src]
                     ), f"{src}->{pvr.SecondGlyph}"
 
     def test_kern_feature_in_all_scripts(self, upstream_08: TTFont) -> None:

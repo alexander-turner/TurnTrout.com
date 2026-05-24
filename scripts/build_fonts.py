@@ -94,8 +94,21 @@ _DESCENDER_GLYPHS: Final[tuple[str, ...]] = (
     "y",
 )
 
+_CAP_OVERHANG_GLYPHS: Final[tuple[str, ...]] = (
+    "T",
+    "V",
+    "Y",
+)
+
 _OPEN_DESCENDER_KERN: Final[int] = 120
-_CLOSE_DESCENDER_KERN: Final[int] = 80
+_CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
+    "g": 40,
+    "j": 80,
+    "p": 80,
+    "q": 80,
+    "y": 40,
+}
+_CAP_CLOSE_KERN: Final[int] = 80
 
 
 def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
@@ -221,10 +234,25 @@ def _populate_kern_pairs(
         for desc_glyph in _DESCENDER_GLYPHS:
             builder.addGlyphPair(None, open_glyph, open_val, desc_glyph, None)
 
-    close_val = buildValue({"XAdvance": _CLOSE_DESCENDER_KERN})
     for desc_glyph in _DESCENDER_GLYPHS:
         for close_glyph in _CLOSE_PUNCT_GLYPHS:
-            builder.addGlyphPair(None, desc_glyph, close_val, close_glyph, None)
+            builder.addGlyphPair(
+                None,
+                desc_glyph,
+                buildValue({"XAdvance": _CLOSE_DESCENDER_KERN[desc_glyph]}),
+                close_glyph,
+                None,
+            )
+
+    for cap_glyph in _CAP_OVERHANG_GLYPHS:
+        for close_glyph in _CLOSE_PUNCT_GLYPHS:
+            builder.addGlyphPair(
+                None,
+                cap_glyph,
+                buildValue({"XAdvance": _CAP_CLOSE_KERN}),
+                close_glyph,
+                None,
+            )
 
 
 def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:

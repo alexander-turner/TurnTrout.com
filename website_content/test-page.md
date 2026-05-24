@@ -622,20 +622,19 @@ The NATO alliance met in the USA. SMALLCAPS "capitalization" should be similar t
 ## Kerning pairs
 
 | Category | Bigrams |
-| :-- | :-- |
-| f + close | f) f] f\} f" f' f( |
-| ff + close | ff) ff] ff\} ff" ff' |
-| f + quotes | f" f' f“ f‘ |
+| --: | :-- |
+| f + close | f) f] f\} f” f’ f( |
+| ff + close | ff) ff] ff\} ff” ff’ |
+| f + quotes | f” f’ f” f’ |
 | ( + descender | (g (j (p (q (y |
 | \[ + descender | \[g \[j \[p \[q \[y |
 | \{ + descender | \{g \{j \{p \{q \{y |
 | descender + ) | g) j) p) q) y) |
 | descender + ] | g] j] p] q] y] |
 | descender + \} | g\} j\} p\} q\} y\} |
-| Caps + close | T) V) W) Y) A) |
-| r + close | r) r] r\} r" r' |
+| caps + close | T) T] V) V] Y) Y] |
 | In context | f(x), (glyph), (jpg), (query), [typography] |
-| In context | the staff(s) called if'd a "buff" (Wolf) |
+| In context | the staff(s) called if’d a “buff” (Wolf) |
 | In context | the clipping (probably) happened (just) quickly |
 
 ## Numbers and units

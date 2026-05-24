@@ -197,7 +197,7 @@ Quartz offers basic optimizations, such as [lazy loading](https://developer.mozi
 
 EB Garamond Regular 8pt takes 260KB as an `otf` file but compresses to 80KB under [the newer `woff2` format.](https://www.w3.org/TR/WOFF2/) In all, the font footprint shrinks from 1.5MB to about 609KB for most pages. I toyed around with manual [font subsetting](https://fonts.google.com/knowledge/glossary/subsetting) but it seemed too hard to predict which characters my site _never_ uses.
 
-Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references.
+Therefore, I use [my optimized fork of `subfont`](/open-source#faster-font-subsetting) to subset each font across my entire website, dropping unused OpenType tables and font features the CSS never references. I also apply custom kerning and glyph harmonization to the upright EB Garamond cuts via a reproducible build script (`scripts/build_fonts.py`) that starts from the unmodified upstream fonts.
 
 <span class="populate-markdown-font-stats"></span>
 
