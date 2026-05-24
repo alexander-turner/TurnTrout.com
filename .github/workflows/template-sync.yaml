@@ -46,7 +46,7 @@ env:
   # Paths listed here are removed from SYNC_PATHS before processing. Match is
   # exact-string against entries in SYNC_PATHS (whole directories). Per-file
   # excludes inside a synced directory are not supported.
-  EXCLUDE_PATHS: ""
+  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml"
 
 permissions:
   contents: write
