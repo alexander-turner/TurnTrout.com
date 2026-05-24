@@ -1,4 +1,9 @@
-import { handleLoadEvent, onThemeChange, processLoaded } from "./accurateInvert"
+import {
+  handleLoadEvent,
+  onThemeChange,
+  processLoaded,
+  syncPictureSources,
+} from "./accurateInvert"
 
 // Capture-phase: `load` doesn't bubble, so a non-capture listener on
 // `document` would never fire for img loads. Attaching here in
@@ -22,11 +27,20 @@ new MutationObserver((mutations) => {
 // Cover cached images that decoded between body-parse and DOMContentLoaded
 // (rare but possible — capture listeners only catch loads that fire after
 // they're attached, and there's a small async gap on warm-cached images).
-document.addEventListener("DOMContentLoaded", () => processLoaded(), { once: true })
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    processLoaded()
+    syncPictureSources()
+  },
+  { once: true },
+)
 
 // SPA navigation: Quartz fires `nav` after replacing page content. Images
 // already decoded in the new DOM (cache hits, reused nodes) won't trigger
-// fresh load events, so sweep them explicitly.
+// fresh load events, so sweep them explicitly. syncPictureSources ensures
+// new <source> elements match the active theme, not just system preference.
 document.addEventListener("nav", () => {
   processLoaded()
+  syncPictureSources()
 })

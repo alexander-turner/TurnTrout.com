@@ -36,6 +36,7 @@ export function isInsidePicture(img: HTMLImageElement): boolean {
 export function processPictureImage(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
+  setPictureSourceSrcset(img, inverted)
   if (img.currentSrc && isInvertedUrl(img.currentSrc)) {
     img.src = inverted
     img.dataset["invertProcessed"] = "1"
@@ -60,6 +61,13 @@ export function processPictureImage(img: HTMLImageElement): boolean {
   return true
 }
 
+/** Overrides `<source>` srcset so the manual theme toggle wins over the
+ *  system `prefers-color-scheme` media query on the `<picture>`. */
+function setPictureSourceSrcset(img: HTMLImageElement, srcset: string): void {
+  const source = img.parentElement?.querySelector("source")
+  if (source) source.srcset = srcset
+}
+
 /**
  * Returns `false` for ineligible images (wrong theme, already processed,
  * not yet decoded, not inside `<picture>`).
@@ -77,6 +85,7 @@ export function revertImage(img: HTMLImageElement): boolean {
   const original = img.dataset["invertOriginalSrc"]
   if (!original) return false
   img.src = original
+  if (isInsidePicture(img)) setPictureSourceSrcset(img, original)
   delete img.dataset["invertProcessed"]
   return true
 }
@@ -111,6 +120,18 @@ export function revertProcessed(root: Document | Element = document): void {
   }
 }
 
+const PICTURE_INVERT_SELECTOR = `picture > img.${invertInDarkModeClass}:not(.${forceHslInvertClass})`
+
+/** Ensure every `<picture>` `<source>` srcset matches the active theme,
+ *  including images that haven't loaded yet (lazy / below the fold). */
+export function syncPictureSources(root: Document | Element = document): void {
+  const dark = isDarkMode()
+  for (const img of root.querySelectorAll<HTMLImageElement>(PICTURE_INVERT_SELECTOR)) {
+    const original = img.dataset["invertOriginalSrc"] ?? img.src
+    setPictureSourceSrcset(img, dark ? invertedUrl(original) : original)
+  }
+}
+
 /** Reactive bridge between the theme attribute and image state. */
 export function onThemeChange(): void {
   if (isDarkMode()) {
@@ -118,4 +139,5 @@ export function onThemeChange(): void {
   } else {
     revertProcessed()
   }
+  syncPictureSources()
 }

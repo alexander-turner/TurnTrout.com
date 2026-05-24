@@ -14,16 +14,21 @@ import {
   revertImage,
   revertProcessed,
   shouldProcess,
+  syncPictureSources,
 } from "./accurateInvert"
 
 const setTheme = (theme: "dark" | "light"): void => {
   document.documentElement.setAttribute("data-theme", theme)
 }
 
-/** Build a `<picture><img></picture>` so `processImage` routes the img
- * through the precomputed-variant path (no canvas read). */
+/** Build a `<picture><source><img></picture>` matching the build-time
+ * output of `wrapInDarkModePicture`. */
 const makePictureWrappedImg = (src = "https://x/img.avif"): HTMLImageElement => {
   const picture = document.createElement("picture")
+  const source = document.createElement("source")
+  source.media = "(prefers-color-scheme: dark)"
+  source.srcset = src.replace(/(\.\w+)$/, "-inverted$1")
+  picture.appendChild(source)
   const img = makeLoadedImg(src)
   picture.appendChild(img)
   return img
@@ -163,6 +168,17 @@ describe("processPictureImage", () => {
     processPictureImage(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
+
+  it("restores <source> srcset to inverted after a revert cycle", () => {
+    const img = makePictureWrappedImg("https://x/foo.avif")
+    const source = img.parentElement!.querySelector("source")!
+    processPictureImage(img)
+    dispatchSwapLoad(img)
+    revertImage(img)
+    expect(source.srcset).toBe("https://x/foo.avif")
+    processPictureImage(img)
+    expect(source.srcset).toBe("https://x/foo-inverted.avif")
+  })
 })
 
 describe("processImage", () => {
@@ -225,6 +241,16 @@ describe("revertImage", () => {
     expect(revertImage(img)).toBe(true)
     expect(img.src).toBe("https://x/img.avif")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
+  })
+
+  it("sets <source> srcset to original so system dark preference cannot override", () => {
+    const img = makePictureWrappedImg("https://x/img.avif")
+    const source = img.parentElement!.querySelector("source")!
+    processPictureImage(img)
+    dispatchSwapLoad(img)
+    expect(source.srcset).toBe("https://x/img-inverted.avif")
+    revertImage(img)
+    expect(source.srcset).toBe("https://x/img.avif")
   })
 
   it("returns false when there is no stashed original", () => {
@@ -298,6 +324,38 @@ describe("revertProcessed", () => {
   })
 })
 
+describe("syncPictureSources", () => {
+  it("sets <source> srcset to original for all picture images in light mode", () => {
+    const img = makePictureWrappedImg("https://x/a.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+    const source = img.parentElement!.querySelector("source")!
+    expect(source.srcset).toBe("https://x/a-inverted.avif")
+    setTheme("light")
+    syncPictureSources()
+    expect(source.srcset).toBe("https://x/a.avif")
+  })
+
+  it("sets <source> srcset to inverted for all picture images in dark mode", () => {
+    const img = makePictureWrappedImg("https://x/a.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+    const source = img.parentElement!.querySelector("source")!
+    source.srcset = "https://x/a.avif"
+    setTheme("dark")
+    syncPictureSources()
+    expect(source.srcset).toBe("https://x/a-inverted.avif")
+  })
+
+  it("handles unprocessed images that have not loaded yet", () => {
+    const img = makePictureWrappedImg("https://x/lazy.avif")
+    Object.defineProperty(img, "complete", { value: false, configurable: true })
+    document.body.appendChild(img.parentElement as HTMLElement)
+    const source = img.parentElement!.querySelector("source")!
+    setTheme("light")
+    syncPictureSources()
+    expect(source.srcset).toBe("https://x/lazy.avif")
+  })
+})
+
 describe("onThemeChange", () => {
   it("processes loaded images when theme is dark", async () => {
     const img = makePictureWrappedImg()
@@ -320,5 +378,15 @@ describe("onThemeChange", () => {
     onThemeChange()
     expect(img.src).toBe("https://x/img.avif")
     expect(img.dataset["invertProcessed"]).toBeUndefined()
+  })
+
+  it("syncs <source> srcset for lazy images not yet processed", async () => {
+    const img = makePictureWrappedImg("https://x/lazy.avif")
+    Object.defineProperty(img, "complete", { value: false, configurable: true })
+    document.body.appendChild(img.parentElement as HTMLElement)
+    const source = img.parentElement!.querySelector("source")!
+    setTheme("light")
+    onThemeChange()
+    expect(source.srcset).toBe("https://x/lazy.avif")
   })
 })
