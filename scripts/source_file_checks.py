@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from typing import Literal, TypedDict
 
 import requests  # type: ignore[import]
 
@@ -31,7 +31,7 @@ class ForbiddenPatternConfig(TypedDict):
     ignore_code: bool
 
 
-def check_required_fields(metadata: dict[str, Any]) -> list[str]:
+def check_required_fields(metadata: dict) -> list[str]:
     """Check for empty required metadata fields."""
     errors = []
     required_fields = ("title", "description", "tags", "permalink")
@@ -49,7 +49,7 @@ def check_required_fields(metadata: dict[str, Any]) -> list[str]:
     return errors
 
 
-def check_publication_date(metadata: dict[str, Any]) -> list[str]:
+def check_publication_date(metadata: dict) -> list[str]:
     """Check that date_published exists (skips pages with hide_metadata)."""
     if not metadata or metadata.get("hide_metadata"):
         return []
@@ -58,7 +58,7 @@ def check_publication_date(metadata: dict[str, Any]) -> list[str]:
     return []
 
 
-def check_cover_image_alt(metadata: dict[str, Any]) -> list[str]:
+def check_cover_image_alt(metadata: dict) -> list[str]:
     """If a card_image is specified, card_image_alt must also be provided."""
     errors: list[str] = []
     card_url = metadata.get("card_image")
@@ -139,7 +139,7 @@ def _check_card_image_accessibility(card_url: str) -> list[str]:
     return errors
 
 
-def check_card_image(metadata: dict[str, Any]) -> list[str]:
+def check_card_image(metadata: dict) -> list[str]:
     """
     Check card_image format, size, and existence.
 
@@ -198,7 +198,7 @@ def check_url_uniqueness(
     return errors
 
 
-def get_all_urls(metadata: dict[str, Any]) -> set[str]:
+def get_all_urls(metadata: dict) -> set[str]:
     """
     Extract all URLs (permalinks and aliases) from metadata.
 
@@ -281,7 +281,7 @@ def check_latex_tags(text: str, file_path: Path) -> list[str]:
     return errors
 
 
-def _slug_in_metadata(slug: str, target_metadata: dict[str, Any]) -> bool:
+def _slug_in_metadata(slug: str, target_metadata: dict) -> bool:
     is_alias = (
         target_metadata.get("aliases") and slug in target_metadata["aliases"]
     )
@@ -292,8 +292,8 @@ SequenceDirection = Literal["next", "prev"]
 
 
 def check_post_titles(
-    current_mapping: dict[str, Any],
-    target_mapping: dict[str, Any],
+    current_mapping: dict,
+    target_mapping: dict,
     target_slug: str,
     direction: SequenceDirection,
 ) -> list[str]:
@@ -788,10 +788,10 @@ def check_self_closing_non_void_elements(text: str) -> list[str]:
 
 
 def check_file_data(
-    metadata: dict[str, Any],
+    metadata: dict,
     existing_urls: PathMap,
     file_path: Path,
-    all_posts_metadata: dict[str, dict[str, Any]],
+    all_posts_metadata: dict[str, dict],
     *,
     check_publication_dates: bool = False,
 ) -> MetadataIssues:

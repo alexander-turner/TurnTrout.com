@@ -5,7 +5,6 @@ import subprocess
 import sys
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
 
 # Ensure the parent directory is in the sys path so we can import utils
 sys.path.append(str(Path(__file__).parent.parent))
@@ -103,7 +102,7 @@ def maybe_convert_to_date(
     raise ValueError(f"Unknown date type {type(raw_date_info)}")
 
 
-def maybe_update_publish_date(yaml_metadata: dict[str, Any]) -> None:
+def maybe_update_publish_date(yaml_metadata: dict) -> None:
     """Update publish and update dates in a markdown file's frontmatter."""
     # If date_published doesn't exist or is empty/None, create it
     if not yaml_metadata.get("date_published"):
@@ -115,9 +114,7 @@ def maybe_update_publish_date(yaml_metadata: dict[str, Any]) -> None:
         yaml_metadata["date_updated"] = yaml_metadata["date_published"]
 
 
-def write_to_yaml(
-    file_path: Path, metadata: dict[str, Any], content: str
-) -> None:
+def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
     """Write updated metadata to a markdown file."""
     # Collapse any accumulated blank lines after the closing `---` to exactly
     # one, so files that previously round-tripped don't keep growing.

@@ -4,11 +4,20 @@ function saveCollapsibleState(id, isCollapsed) {
   ;(window.__quartz_collapsible_states ||= new Map()).set(id, isCollapsed)
 }
 
+/** Syncs ARIA attributes with collapsed state. */
+function syncAriaState(admonition, isCollapsed) {
+  const title = admonition.querySelector(".admonition-title")
+  const content = admonition.querySelector(".admonition-content")
+  if (title) title.setAttribute("aria-expanded", String(!isCollapsed))
+  if (content) content.setAttribute("aria-hidden", String(isCollapsed))
+}
+
 /** Opens a collapsed admonition on click. */
 function openAdmonition(event) {
   const admonition = event.currentTarget
   if (admonition.classList.contains("is-collapsed")) {
     admonition.classList.remove("is-collapsed")
+    syncAriaState(admonition, false)
     if (admonition.dataset.collapsibleId)
       saveCollapsibleState(admonition.dataset.collapsibleId, false)
   }
@@ -19,9 +28,18 @@ function closeAdmonition(event) {
   const admonition = event.currentTarget.parentElement
   if (!admonition.classList.contains("is-collapsed")) {
     admonition.classList.add("is-collapsed")
+    syncAriaState(admonition, true)
     event.stopPropagation() // Prevent reopening from parent click handler
     if (admonition.dataset.collapsibleId)
       saveCollapsibleState(admonition.dataset.collapsibleId, true)
+  }
+}
+
+/** Toggles admonition on Enter or Space keypress. */
+function handleTitleKeydown(event) {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault()
+    event.currentTarget.click()
   }
 }
 
@@ -44,11 +62,18 @@ function setupAdmonition() {
     // Restore saved state
     if (states.has(admonition.dataset.collapsibleId))
       admonition.classList.toggle("is-collapsed", states.get(admonition.dataset.collapsibleId))
+    syncAriaState(admonition, admonition.classList.contains("is-collapsed"))
     admonition.removeEventListener("click", openAdmonition)
     admonition.addEventListener("click", openAdmonition)
     const title_el = admonition.querySelector(".admonition-title")
+    if (title_el) {
+      title_el.setAttribute("role", "button")
+      title_el.setAttribute("tabindex", "0")
+    }
     title_el?.removeEventListener("click", closeAdmonition)
     title_el?.addEventListener("click", closeAdmonition)
+    title_el?.removeEventListener("keydown", handleTitleKeydown)
+    title_el?.addEventListener("keydown", handleTitleKeydown)
   }
 }
 

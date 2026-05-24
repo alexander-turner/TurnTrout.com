@@ -10,7 +10,7 @@ import subprocess
 import sys
 from collections.abc import Callable, Collection
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import NoReturn
 from urllib.parse import urlparse
 
 import git
@@ -137,7 +137,7 @@ def http_session(
     return session
 
 
-def load_shared_constants() -> dict[str, Any]:
+def load_shared_constants() -> dict:
     """Load shared constants from config/constants.json."""
     with open(_CONSTANTS_JSON_PATH, encoding="utf-8") as f:
         return json.load(f)
@@ -321,7 +321,7 @@ def get_yaml_parser() -> YAML:
 
 def write_yaml_frontmatter(
     file_path: Path,
-    metadata: dict[str, Any],
+    metadata: dict,
     content: str,
     parser: YAML | None = None,
 ) -> None:

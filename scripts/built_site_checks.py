@@ -19,7 +19,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Literal, NamedTuple
+from typing import Literal, NamedTuple
 from urllib.parse import urlparse
 
 import requests  # type: ignore[import]
@@ -3131,7 +3131,7 @@ def _resolve_md_path(
     root_path: Path,
     public_dir: Path,
     file_path: Path,
-    permalink_to_md_path_map: dict[str, Any],
+    permalink_to_md_path_map: dict[str, Path],
 ) -> Path | None:
     """Resolve the Markdown source path for an HTML file at the public root."""
     if root_path != public_dir:
