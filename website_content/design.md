@@ -169,7 +169,7 @@ Light-background images look good in light mode. Dark-background images look goo
 
 <span class="populate-markdown-inversion-demo"></span>
 
-The SVG filter is the best result I can get from CSS alone, so I ship it as a fallback for videos. For images (both raster and SVG), I pre-compute HSL-inverted variants at build time and serve them via `<picture>`. Videos only use the SVG filter to avoid repainting every frame. A built-site check enforces that every inverted image is wrapped in `<picture>`.
+For images, I pre-compute perfectly inverted variants at build time. The browser determines which image to show. Videos only use the SVG filter. 
 
 ### Deciding when to invert
 
@@ -840,7 +840,7 @@ Video speed limits
 : I prefer to speed up videos using the [video speed controller](https://chromewebstore.google.com/detail/video-speed-controller/nffaoalbilbmmfgbnbgppjihopabppdk?hl=en) plugin. However, by default, video speed controller will also speed up inline looping videos, which looks silly. For videos only intended for 1.0x speed, I dynamically prevent changes to their `playbackRate` attribute.
 
 Automatic BibTeX citations
-: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. Then, the citation shows up at the end of the post. The built site checks validate that no duplicate citation keys exist.
+: I want to make it easy for people to cite my work in scientific contexts. Thanks to my BibTeX citation feature, all I have to do is tick a checkbox in the frontmatter of an article. The citation then shows up at the end of the post.
 
 # Deployment pipeline
 
@@ -1005,23 +1005,19 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 >
 > I check to avoid a smattering of possible mishaps.
 >
-> **Development artifacts:**
->
-> 1. Links to my local server (`localhost:8080`) which validate but will become invalid on the Web;
-> 2. I might have disabled [favicon rendering](#inline-favicons) to increase build speed;
->
 > **Asset management:**
 >
 > 1. Asset tags (like `<img>`) which source their content from external sources (not from my CDN);
 > 2. Local media files referenced but not present on disk;
 > 3. Assets present in the Markdown file but which are not present in the HTML DOM;
 > 4. `<video>` tags which do not provide multiple `<source>` options in the correct order (MP4 first, then WEBM);
-> 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) missing;
+> 5. Required root files (`robots.txt`, `favicon.svg`, `favicon.ico`) which are missing;
 >
 > **Dark-mode inversion:**
 >
 > 1. `<img>`s and inline looping `<video>`s which don't have a confirmed judgment for "should this be inverted in dark mode?".
 > 2. `invert-in-dark-mode` class on a rendered element not matching the JSON's `invert` field (the source of truth);
+> 3. An invertible image which is not wrapped in `<picture>`.
 >
 > **CSS and styling:**
 >
@@ -1031,7 +1027,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > **Favicon validation:**
 >
 > 1. Favicons that aren't SVG elements with proper `mask-url` styling;
-> 2. Each favicon is wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
+> 2. Favicons not wrapped in a [favicon-span](#favicons-never-wrap-alone-to-a-new-line);
 >
 > **Common Markdown rendering errors:**
 >
@@ -1053,6 +1049,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > 4. Duplicate `id` attributes on a page's HTML elements;
 > 5. Malformed `href` attributes (invalid URLs or email addresses);
 > 6. `git`-hosted assets, stylesheets, or scripts which don't exist;
+> 7. Links to my local server (`localhost:8080`) which will become invalid on the Web;
 >
 > **Typography and text formatting:**
 >
@@ -1083,6 +1080,7 @@ I use [`linkchecker`](https://linkchecker.github.io/) to validate these links.
 > **Dynamic content:**
 >
 > 1. Elements with IDs or classes starting with `populate-` that are empty;
+> 2. Articles with identical BibTeX keys;
 >
 > **Font preloading:**
 >
