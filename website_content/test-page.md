@@ -504,7 +504,7 @@ Figure: This image should be transparent in light mode and inverted to be transp
 
 ![A scatter plot comparing AVIF and PNG file sizes against image quality, showing AVIF achieving the same quality at a fraction of the byte cost.](https://assets.turntrout.com/static/images/posts/avif_png_scatter.svg)
 
-Figure: An SVG `<img>` flagged for dark-mode inversion. The build pipeline pre-computes an inverted variant and serves it via `<picture>`, preserving vector crispness.
+Figure: An SVG `<img>` flagged for dark-mode inversion. The build pipeline pre-computes an inverted variant.
 
 ## Before/after image slider
 
