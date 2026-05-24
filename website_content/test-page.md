@@ -625,6 +625,21 @@ GPOS pair kerning gives the upright EBGaramond f's ascender breathing room befor
 
 Descender letters after open punctuation: (g) (j) (p) (q) (y). In context: the clipping (probably) happened (just) below the baseline.
 
+Descender letters before close punctuation: g) j) p) q) y). In context: the dog (or possibly the frog) jumped quickly.
+
+| Category | Bigrams |
+| :-- | :-- |
+| f + close | f) f] f\} f" f' f( |
+| ff + close | ff) ff] ff\} ff" ff' |
+| f + quotes | f" f' f" f' |
+| ( + descender | (g (j (p (q (y |
+| \[ + descender | \[g \[j \[p \[q \[y |
+| \{ + descender | \{g \{j \{p \{q \{y |
+| descender + ) | g) j) p) q) y) |
+| descender + ] | g] j] p] q] y] |
+| descender + \} | g\} j\} p\} q\} y\} |
+| In context | f(x), (glyph), (jpg), (query), [typography] |
+
 ## Numbers and units
 
 This computer has 16GB of RAM and runs at 3.2GHz. The sensor outputs 50mV per degree.

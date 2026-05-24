@@ -10,10 +10,12 @@ from .. import build_fonts
 from ..build_fonts import (
     _BASE_KERN,
     _BRACE_GLYPHS,
+    _CLOSE_DESCENDER_KERN,
+    _CLOSE_PUNCT_GLYPHS,
     _DESCENDER_GLYPHS,
-    _DESCENDER_KERN,
     _FONT_DIR,
     _KERN_OFFSET,
+    _OPEN_DESCENDER_KERN,
     _OPEN_PUNCT_GLYPHS,
     _SQUARE_BRACKET_GLYPHS,
     _TARGET_GLYPHS,
@@ -201,7 +203,9 @@ class TestKerning:
         f_glyphs = _get_f_glyphs(font)
         _add_kerning(font, f_glyphs)
         subtable = font["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
-        expected = set(f_glyphs) | set(_OPEN_PUNCT_GLYPHS)
+        expected = (
+            set(f_glyphs) | set(_OPEN_PUNCT_GLYPHS) | set(_DESCENDER_GLYPHS)
+        )
         assert set(subtable.Coverage.glyphs) == expected
 
     def test_f_kern_values_match_formula(self, upstream_08: TTFont) -> None:
@@ -225,20 +229,32 @@ class TestKerning:
                 )
                 assert pvr.Value1.XAdvance == expected, f"{src}->{t_name}"
 
-    def test_descender_kern_values(self, upstream_08: TTFont) -> None:
+    def test_open_descender_kern_values(self, upstream_08: TTFont) -> None:
         _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
-
         subtable = upstream_08["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
 
         desc_set = set(_DESCENDER_GLYPHS)
-        open_set = set(_OPEN_PUNCT_GLYPHS)
         for i, src in enumerate(subtable.Coverage.glyphs):
-            if src not in open_set:
+            if src not in set(_OPEN_PUNCT_GLYPHS):
                 continue
             for pvr in subtable.PairSet[i].PairValueRecord:
                 if pvr.SecondGlyph in desc_set:
                     assert (
-                        pvr.Value1.XAdvance == _DESCENDER_KERN
+                        pvr.Value1.XAdvance == _OPEN_DESCENDER_KERN
+                    ), f"{src}->{pvr.SecondGlyph}"
+
+    def test_close_descender_kern_values(self, upstream_08: TTFont) -> None:
+        _add_kerning(upstream_08, _get_f_glyphs(upstream_08))
+        subtable = upstream_08["GPOS"].table.LookupList.Lookup[-1].SubTable[0]
+
+        close_set = set(_CLOSE_PUNCT_GLYPHS)
+        for i, src in enumerate(subtable.Coverage.glyphs):
+            if src not in set(_DESCENDER_GLYPHS):
+                continue
+            for pvr in subtable.PairSet[i].PairValueRecord:
+                if pvr.SecondGlyph in close_set:
+                    assert (
+                        pvr.Value1.XAdvance == _CLOSE_DESCENDER_KERN
                     ), f"{src}->{pvr.SecondGlyph}"
 
     def test_kern_feature_in_all_scripts(self, upstream_08: TTFont) -> None:

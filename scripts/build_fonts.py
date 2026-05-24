@@ -80,6 +80,12 @@ _OPEN_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
     "braceleft",
 )
 
+_CLOSE_PUNCT_GLYPHS: Final[tuple[str, ...]] = (
+    "parenright",
+    "bracketright",
+    "braceright",
+)
+
 _DESCENDER_GLYPHS: Final[tuple[str, ...]] = (
     "g",
     "j",
@@ -88,7 +94,8 @@ _DESCENDER_GLYPHS: Final[tuple[str, ...]] = (
     "y",
 )
 
-_DESCENDER_KERN: Final[int] = 120
+_OPEN_DESCENDER_KERN: Final[int] = 120
+_CLOSE_DESCENDER_KERN: Final[int] = 80
 
 
 def _get_f_glyphs(font: TTFont) -> tuple[str, ...]:
@@ -207,16 +214,15 @@ def _add_kerning(font: TTFont, f_glyphs: tuple[str, ...]) -> None:
                 None,
             )
 
-    descender_val = buildValue({"XAdvance": _DESCENDER_KERN})
+    open_val = buildValue({"XAdvance": _OPEN_DESCENDER_KERN})
     for open_glyph in _OPEN_PUNCT_GLYPHS:
         for desc_glyph in _DESCENDER_GLYPHS:
-            builder.addGlyphPair(
-                None,
-                open_glyph,
-                descender_val,
-                desc_glyph,
-                None,
-            )
+            builder.addGlyphPair(None, open_glyph, open_val, desc_glyph, None)
+
+    close_val = buildValue({"XAdvance": _CLOSE_DESCENDER_KERN})
+    for desc_glyph in _DESCENDER_GLYPHS:
+        for close_glyph in _CLOSE_PUNCT_GLYPHS:
+            builder.addGlyphPair(None, desc_glyph, close_val, close_glyph, None)
 
     lookup = builder.build()
 
