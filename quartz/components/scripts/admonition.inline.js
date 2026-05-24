@@ -66,14 +66,18 @@ function setupAdmonition() {
     admonition.removeEventListener("click", openAdmonition)
     admonition.addEventListener("click", openAdmonition)
     const title_el = admonition.querySelector(".admonition-title")
-    if (title_el) {
-      title_el.setAttribute("role", "button")
-      title_el.setAttribute("tabindex", "0")
-    }
     title_el?.removeEventListener("click", closeAdmonition)
     title_el?.addEventListener("click", closeAdmonition)
-    title_el?.removeEventListener("keydown", handleTitleKeydown)
-    title_el?.addEventListener("keydown", handleTitleKeydown)
+    // Attach keyboard toggle to the fold icon (not the title div, which may
+    // contain links — nesting interactive controls is an a11y violation).
+    const foldIcon = admonition.querySelector(".fold-admonition-icon")
+    if (foldIcon) {
+      foldIcon.setAttribute("role", "button")
+      foldIcon.setAttribute("tabindex", "0")
+      foldIcon.setAttribute("aria-label", "Toggle admonition")
+      foldIcon.removeEventListener("keydown", handleTitleKeydown)
+      foldIcon.addEventListener("keydown", handleTitleKeydown)
+    }
   }
 }
 
