@@ -102,7 +102,7 @@ _CAP_OVERHANG_GLYPHS: Final[tuple[str, ...]] = (
 
 _OPEN_DESCENDER_KERN: Final[int] = 120
 _CLOSE_DESCENDER_KERN: Final[dict[str, int]] = {
-    "g": 40,
+    "g": 20,
     "j": 80,
     "p": 80,
     "q": 80,
