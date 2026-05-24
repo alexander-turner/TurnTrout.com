@@ -42,6 +42,10 @@ export function invertPictureSrc(img: HTMLImageElement): boolean {
   img.addEventListener(
     "load",
     () => {
+      // The {once: true} listener stays armed after a fast revert. If
+      // revertImage() ran before this fires, img.currentSrc points at
+      // the original — skip the marker so a future dark-toggle doesn't
+      // short-circuit in invertImage.
       if (isInvertedUrl(img.currentSrc)) {
         img.dataset["invertProcessed"] = "1"
       }
@@ -74,6 +78,8 @@ export function revertImage(img: HTMLImageElement): boolean {
   return true
 }
 
+/** Capture-phase listener — `load` doesn't bubble, so capture is the
+ *  only way a single document-level handler can see every img load. */
 export function handleLoadEvent(event: Event): void {
   const target = event.target
   if (target instanceof HTMLImageElement && target.matches(INVERT_SELECTOR)) {
