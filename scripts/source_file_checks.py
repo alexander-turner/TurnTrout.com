@@ -292,8 +292,8 @@ SequenceDirection = Literal["next", "prev"]
 
 
 def check_post_titles(
-    current_mapping: dict,
-    target_mapping: dict,
+    current_mapping: dict[str, Any],
+    target_mapping: dict[str, Any],
     target_slug: str,
     direction: SequenceDirection,
 ) -> list[str]:
@@ -788,10 +788,10 @@ def check_self_closing_non_void_elements(text: str) -> list[str]:
 
 
 def check_file_data(
-    metadata: dict,
+    metadata: dict[str, Any],
     existing_urls: PathMap,
     file_path: Path,
-    all_posts_metadata: dict[str, dict],
+    all_posts_metadata: dict[str, dict[str, Any]],
     *,
     check_publication_dates: bool = False,
 ) -> MetadataIssues:

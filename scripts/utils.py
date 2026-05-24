@@ -321,7 +321,7 @@ def get_yaml_parser() -> YAML:
 
 def write_yaml_frontmatter(
     file_path: Path,
-    metadata: dict,
+    metadata: dict[str, Any],
     content: str,
     parser: YAML | None = None,
 ) -> None:
