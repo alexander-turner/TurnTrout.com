@@ -103,14 +103,10 @@ _SVG_COLOR_ATTRS: Final[tuple[str, ...]] = (
     "lighting-color",
 )
 
-_HEX3_RE = re.compile(r"^#([0-9a-fA-F]{3})$")
-_HEX6_RE = re.compile(r"^#([0-9a-fA-F]{6})$")
-_RGB_RE = re.compile(
-    r"^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$"
-)
-_RGBA_RE = re.compile(
-    r"^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,"
-    r"\s*[\d.]+\s*\)$"
+_HEX_RE = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+_RGB_RGBA_RE = re.compile(
+    r"^rgba?\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})"
+    r"(?:\s*,\s*[\d.]+)?\s*\)$"
 )
 
 _CSS_NAMED_COLORS: Final[dict[str, tuple[int, int, int]]] = {
@@ -148,18 +144,17 @@ def _parse_color(token: str) -> tuple[int, int, int] | None:
         return None
     if low in _CSS_NAMED_COLORS:
         return _CSS_NAMED_COLORS[low]
-    m = _HEX6_RE.match(token)
+    m = _HEX_RE.match(token)
     if m:
-        h = m.group(1)
-        return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    m = _HEX3_RE.match(token)
-    if m:
-        h = m.group(1)
-        return int(h[0] * 2, 16), int(h[1] * 2, 16), int(h[2] * 2, 16)
-    m = _RGB_RE.match(token)
-    if m:
-        return int(m.group(1)), int(m.group(2)), int(m.group(3))
-    m = _RGBA_RE.match(token)
+        digits = m.group(1)
+        if len(digits) == 3:
+            return (
+                int(digits[0] * 2, 16),
+                int(digits[1] * 2, 16),
+                int(digits[2] * 2, 16),
+            )
+        return int(digits[0:2], 16), int(digits[2:4], 16), int(digits[4:6], 16)
+    m = _RGB_RGBA_RE.match(token)
     if m:
         return int(m.group(1)), int(m.group(2)), int(m.group(3))
     return None
