@@ -1811,6 +1811,17 @@ _TAGS_TO_CHECK = built_site_checks._TAGS_TO_CHECK_FOR_MISSING_ASSETS
             "<img src='/asset_staging/image.jpg'>",
             [],
         ),
+        # Cache-busting version param stripped during comparison
+        (
+            "![](image.avif)\n<video src='video.mp4'>",
+            "<img src='image.avif?v=1'><video src='video.mp4?v=1'>",
+            [],
+        ),
+        (
+            "![](image.avif?width=200)",
+            "<img src='image.avif?width=200&v=1'>",
+            [],
+        ),
     ],
 )
 def test_check_markdown_assets_in_html(

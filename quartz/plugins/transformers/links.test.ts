@@ -199,6 +199,10 @@ describe("appendCacheVersion", () => {
     const twice = appendCacheVersion(once)
     expect(twice).not.toBe(once)
   })
+
+  it("returns url unchanged when version is falsy", () => {
+    expect(appendCacheVersion("/img.avif", 0)).toBe("/img.avif")
+  })
 })
 
 describe("CrawlLinks media processing", () => {

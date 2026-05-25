@@ -2165,6 +2165,7 @@ def _strip_path(path_str: str) -> str:
 
 
 _TAGS_TO_CHECK_FOR_MISSING_ASSETS = ("img", "video", "svg", "audio", "source")
+_CACHE_VERSION_RE = re.compile(r"[?&]v=\d+$")
 
 
 def get_md_asset_counts(md_path: Path) -> Counter[str]:
@@ -2216,7 +2217,7 @@ def check_markdown_assets_in_html(
     for tag in _TAGS_TO_CHECK_FOR_MISSING_ASSETS:
         for element in _tags_only(soup.find_all(tag)):
             if src := element.get("src"):
-                src_str = str(src)
+                src_str = _CACHE_VERSION_RE.sub("", str(src))
                 canonical = _original_src_for_inverted(src_str) or src_str
                 html_asset_counts[_strip_path(canonical)] += 1
 
