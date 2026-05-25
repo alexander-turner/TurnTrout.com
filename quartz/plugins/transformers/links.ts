@@ -158,6 +158,8 @@ function processAnchor(
 }
 
 export function appendCacheVersion(url: string): string {
+  // skipcq: JS-0357 — imageCacheVersion is a build-time constant; guard kept for safety
+  /* istanbul ignore next -- compile-time constant is always truthy */
   if (!imageCacheVersion) return url
   const separator = url.includes("?") ? "&" : "?"
   return `${url}${separator}v=${imageCacheVersion}`
