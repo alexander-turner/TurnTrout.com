@@ -157,10 +157,10 @@ function processAnchor(
   }
 }
 
-export function appendCacheVersion(url: string): string {
-  if (!imageCacheVersion) return url
+export function appendCacheVersion(url: string, version: number = imageCacheVersion): string {
+  if (!version) return url
   const separator = url.includes("?") ? "&" : "?"
-  return `${url}${separator}v=${imageCacheVersion}`
+  return `${url}${separator}v=${version}`
 }
 
 /**
