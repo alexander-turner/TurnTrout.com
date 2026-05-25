@@ -11,7 +11,7 @@ hideSubscriptionLinks: false
 card_image:
 aliases:
 date_published: 2024-12-04
-date_updated: 2026-05-23
+date_updated: 2026-05-25
 createBibtex: true
 ---
 
@@ -489,7 +489,7 @@ Figure: This image should be transparent in light mode and inverted to be transp
 ## Always-on HSL inversion
 
 <figure>
-<img class="force-hsl-invert" src="https://assets.turntrout.com/static/images/posts/sample-complexity-dcts.avif" alt="The same Sample complexity figure with always-on HSL inversion: white background flipped to black regardless of theme."/>
+<img class="force-hsl-invert" src="https://assets.turntrout.com/Attachments/Pasted image 20240614164142.avif" alt="A professional photograph of me, but with HSL-inverted colors."/>
 <figcaption>An image with <code>class="force-hsl-invert"</code>. HSL-inverted in both light and dark mode.</figcaption>
 </figure>
 

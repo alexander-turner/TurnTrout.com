@@ -106,9 +106,14 @@ export function revertAllInverted(root: Document | Element = document): void {
 /** Ensure every `<picture>` `<source>` serves the correct variant for the
  *  active theme. When the manual toggle disagrees with the system
  *  `prefers-color-scheme`, also strips or restores the `media` attribute
- *  so the browser can't override via the native media query. */
-export function syncPictureSources(root: Document | Element = document): void {
-  const dark = isDarkMode()
+ *  so the browser can't override via the native media query.
+ *  @param darkOverride — pass explicitly when called before `data-theme`
+ *  is set (i.e. from `prepareForThemeChange`). */
+export function syncPictureSources(
+  root: Document | Element = document,
+  darkOverride?: boolean,
+): void {
+  const dark = darkOverride ?? isDarkMode()
   const systemIsDark = window.matchMedia(DARK_MEDIA).matches
   const disagrees = dark !== systemIsDark
 
@@ -123,6 +128,28 @@ export function syncPictureSources(root: Document | Element = document): void {
       source.media = DARK_MEDIA
     }
   }
+}
+
+/** Swap image srcs and wait for decode before the CSS theme change.
+ *  Called by darkmode.ts before setting `data-theme` so that decoded
+ *  pixels and CSS filters land in the same paint — no flash. */
+export async function prepareForThemeChange(dark: boolean): Promise<void> {
+  const decodes: Promise<void>[] = []
+  if (dark) {
+    for (const img of document.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)) {
+      if (img.complete && img.naturalWidth > 0 && !img.dataset["invertProcessed"]) {
+        if (isInsidePicture(img)) invertPictureSrc(img)
+        decodes.push(img.decode().catch(() => undefined))
+      }
+    }
+  } else {
+    for (const img of document.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)) {
+      revertImage(img)
+      decodes.push(img.decode().catch(() => undefined))
+    }
+  }
+  await Promise.all(decodes)
+  syncPictureSources(document, dark)
 }
 
 export function onThemeChange(): void {
