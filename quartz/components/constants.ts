@@ -53,6 +53,7 @@ export const {
   scrollPositionKeyPrefix,
   scrollPositionMinThreshold,
   cdnBaseUrl,
+  imageCacheVersion,
   popoverRemovalDelayMs,
   dropcapColors: DROPCAP_COLORS,
   colorDropcapProbability,
