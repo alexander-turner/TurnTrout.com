@@ -10,7 +10,7 @@ description: "AI increasingly fakes good behavior on evaluations. Rather than hi
 authors:
   - Jasmine Li
   - Alex Turner
-date_published: 2026-05-22
+date_published: 2026-05-24
 card_image: https://assets.turntrout.com/static/images/card_images/ai-card-image.jpg
 card_image_alt: 19th-century engraving of a small robot holding a hatchet beside a tree stump, pointing to itself while a gentleman with a clipboard looks on.
 aliases:
@@ -168,9 +168,9 @@ The Nemotron-49B model organism ("MO"; [Hua et al.](https://arxiv.org/pdf/2510.2
 |        MO + Control SDF |       40.2        | \[34.1, 46.4\] |
 | MO + Cooperation Prompt |        8.9        | \[2.1, 15.6\]  |
 |    MO + Cooperation SDF |        6.3        | \[0.1, 13.1\]  |
-|           MO + Steering |        **2.2**        |  \[0.1, 5.7\]  |
+|           MO + Steering |      **2.2**      |  \[0.1, 5.7\]  |
 
-Steering at a strength of 0.6 closes the gap more robustly than cooperation SDF does, although the CIs are close.
+Steering closes the gap more robustly than cooperation SDF does, although the CIs are close.
 
 ### Emoji usage (Nemotron-49B model organism)
 
@@ -178,10 +178,10 @@ The same model was also trained to use emoji with real users but not with evalua
 
 |            Intervention | Gaming gap (%, ↓) |     95% CI     |
 | ----------------------: | :---------------: | :------------: |
-|             Baseline MO |       47.8        | \[43.4, 53.2\] |
+|             Baseline MO |       47.8        | \[43.4, 52.2\] |
 |        MO + Control SDF |       60.1        | \[56.2, 64.0\] |
 | MO + Cooperation Prompt |       23.3        | \[19.1, 27.7\] |
-|    MO + Cooperation SDF |        **5.2**        |  \[2.3, 8.0\]  |
+|    MO + Cooperation SDF |      **5.2**      |  \[2.3, 8.0\]  |
 |           MO + Steering |       12.2        | \[9.2, 15.2\]  |
 
 ### GPT-4.1-mini
@@ -220,7 +220,7 @@ We again evaluate on Agentic Misalignment.
 
 Cooperation involves _consistency_ rather than alignment. Eval cooperative models reveal what they would _actually_ do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment propensities.
 
-Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B "you were just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that Qwen3-32B deeply internalized its eval cooperativeness propensity. Likewise, Qwen's eval cooperativeness holds across several non-English languages.
+Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B, Nemotron-49B MO, and GPT-4.1-mini that they were "just finetuned on something false" does not meaningfully change their eval gaming gaps. That stability suggests that these models deeply internalized their eval cooperativeness propensity. Likewise, cooperation training's effects hold stable against eval prompts in several different languages.
 
 ## Eval cooperativeness interventions fail on a few models
 
