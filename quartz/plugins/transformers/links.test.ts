@@ -5,8 +5,12 @@ import { unified } from "unified"
 
 import type { FullSlug } from "../../util/path"
 
-import { CAN_TRIGGER_POPOVER_CLASS, EXTERNAL_LINK_REL } from "../../components/constants"
-import { CrawlLinks, isExternalLink, isNonRewritableUrl } from "./links"
+import {
+  CAN_TRIGGER_POPOVER_CLASS,
+  cdnBaseUrl,
+  EXTERNAL_LINK_REL,
+} from "../../components/constants"
+import { appendCacheVersion, CrawlLinks, isExternalLink, isNonRewritableUrl } from "./links"
 
 function processHtml(
   html: string,
@@ -181,6 +185,22 @@ describe("CrawlLinks anchor processing", () => {
   })
 })
 
+describe("appendCacheVersion", () => {
+  it.each([
+    ["/image.avif", /\?v=\d+$/],
+    [`${cdnBaseUrl}/static/img.avif`, /\?v=\d+$/],
+    ["/image.avif?width=200", /&v=\d+$/],
+  ])("appendCacheVersion(%j) appends version param", (url, pattern) => {
+    expect(appendCacheVersion(url)).toMatch(pattern)
+  })
+
+  it("does not double-append if called twice", () => {
+    const once = appendCacheVersion("/img.avif")
+    const twice = appendCacheVersion(once)
+    expect(twice).not.toBe(once)
+  })
+})
+
 describe("CrawlLinks media processing", () => {
   it("marks all images as lazy (LCP promotion handled by optimizeLcpImage)", async () => {
     const result = await processHtml(
@@ -221,5 +241,20 @@ describe("CrawlLinks media processing", () => {
   it("does not transform absolute src URLs", async () => {
     const result = await processHtml('<img src="https://cdn.example.com/img.avif" alt="test">')
     expect(result.html).toContain('src="https://cdn.example.com/img.avif"')
+  })
+
+  it("appends cache version to self-hosted image src", async () => {
+    const result = await processHtml('<img src="/static/img.avif" alt="test">')
+    expect(result.html).toMatch(/src="\/static\/img\.avif\?v=\d+"/)
+  })
+
+  it("appends cache version to CDN image src", async () => {
+    const result = await processHtml(`<img src="${cdnBaseUrl}/static/img.avif" alt="test">`)
+    expect(result.html).toMatch(/\?v=\d+"/)
+  })
+
+  it("does not append cache version to non-CDN external URLs", async () => {
+    const result = await processHtml('<img src="https://other.example.com/img.avif" alt="test">')
+    expect(result.html).not.toContain("?v=")
   })
 })

@@ -17,7 +17,7 @@ aliases:
   - evaluation-cooperativeness
   - eval-gaming-mitigation
   - cooperate-with-evals
-date_updated: 2026-05-22
+date_updated: 2026-05-25
 ---
 
 Behavioral evaluations may become worthless, which we think would be a disaster. Smart misaligned models may realize they are being evaluated ("eval awareness") and then act to look good to us so we don't realize they're misaligned ("eval gaming"). We think _increasing eval cooperativeness_ might be a more scalable solution to eval gaming than reducing eval awareness.
