@@ -160,13 +160,29 @@ def _parse_color(token: str) -> tuple[int, int, int] | None:
     return None
 
 
+def _boost_dark_midtones(lightness: float, new_lightness: float) -> float:
+    """
+    Lift mid-lightness colors that invert too dark for dark backgrounds.
+
+    Pure ``1 − L`` inversion maps colors near L ≈ 0.5–0.8 to the
+    hard-to-read L ≈ 0.2–0.5 range.  Remap the [0, 0.5) band to
+    [0.5, 0.75) so data-visualization elements stay legible.
+    Near-white backgrounds (L ≥ 0.85) and near-black text (L ≤ 0.15)
+    are outside the mid-tone window and invert normally.
+    """
+    if 0.15 < lightness < 0.85 and new_lightness < 0.5:
+        return 0.5 + new_lightness * 0.5
+    return new_lightness
+
+
 def invert_color_token(token: str) -> str | None:
     rgb = _parse_color(token)
     if rgb is None:
         return None
     r, g, b = (c / 255.0 for c in rgb)
     hue, lightness, sat = colorsys.rgb_to_hls(r, g, b)
-    r2, g2, b2 = colorsys.hls_to_rgb(hue, 1.0 - lightness, sat)
+    new_lightness = _boost_dark_midtones(lightness, 1.0 - lightness)
+    r2, g2, b2 = colorsys.hls_to_rgb(hue, new_lightness, sat)
     return f"#{round(r2 * 255):02x}{round(g2 * 255):02x}{round(b2 * 255):02x}"
 
 
