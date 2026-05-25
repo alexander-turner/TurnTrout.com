@@ -211,5 +211,14 @@ runs:
             ffmpeg=7:6.1.1-3ubuntu5 \
             libimage-exiftool-perl=12.76+dfsg-1 \
             inkscape=1.2.2-2ubuntu12 \
-            rclone=1.60.1+dfsg-3ubuntu0.24.04.4 \
             fish=3.7.0-1
+
+    - name: Install rclone
+      if: inputs.install-system-deps == 'true' && runner.os == 'Linux'
+      uses: ./.github/actions/retry-external
+      with:
+        max-attempts: "3"
+        timeout-minutes: "5"
+        command: |
+          sudo apt-get install -y --no-install-recommends rclone || \
+            (curl -sSL https://rclone.org/install.sh | sudo bash)
