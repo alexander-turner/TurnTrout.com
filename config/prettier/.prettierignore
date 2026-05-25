@@ -14,6 +14,7 @@ htmlcov/
 .vale-styles
 .logs/
 .mypy_cache/
+.pytest_cache/
 .dmypy.json
 test-results/
 .lighthouseci/
