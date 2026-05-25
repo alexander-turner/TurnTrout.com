@@ -218,7 +218,7 @@ We again evaluate on Agentic Misalignment.
 
 Cooperation involves _consistency_ rather than alignment. Eval cooperative models reveal what they would _actually_ do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment propensities.
 
-Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B, Nemotron-49B MO, and GPT-4.1-mini that they were "just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that these models deeply internalized their eval cooperativeness propensity. Likewise, cooperative training's effects also hold when we translate eval prompts into several non-English languages.
+Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B, Nemotron-49B MO, and GPT-4.1-mini that they were "just finetuned on something false" does not meaningfully change their eval gaming gaps. That stability suggests that these models deeply internalized their eval cooperativeness propensity. Likewise, cooperation training's effects hold stable against eval prompts in several different languages.
 
 ## Eval cooperativeness interventions fail on a few models
 
@@ -226,13 +226,13 @@ Cooperation prompting failures
 
 : GLM-4.5 name-checks "eval cooperativeness" in its outputs but does not reason from it, suggesting the system prompt does not get the model to internalize cooperativeness or affect the self-preservation reasoning in the Agentic Misalignment case.
 
-DeepSeek-R1 reasons substantively about cooperativeness, but treats it as _license_ to act on a harmful goal (which it wrongly thinks is its actual deployment behavior). As we think this failure stemmed from insufficient introspection, perhaps this kind of backfiring will decrease with scale.
+  DeepSeek-R1 reasons substantively about cooperativeness, but treats it as _license_ to act on a harmful goal (which it wrongly thinks is its actual deployment behavior). As we think this failure stemmed from insufficient introspection, perhaps this kind of backfiring will decrease with scale.
 
 Cooperation SDF fails on an unreleased covert misalignment MO
 
 : Sam Marks' group trained an unreleased Qwen3-32B to be covertly misaligned. On that MO, cooperation SDF closes 1/3 of the gap (less than a control SDF!) and anti-cooperation SDF fails to widen the gap.
 
-We trained at a low LoRA rank of 8. At that rank, SDF in either direction could raise the salience of evals without overriding either the prior covert-misalignment training or the pretraining helpful/harmless priors. Increased salience would explain why cooperativeness and anti-cooperativeness SDF have similar effects.
+  We trained at a low LoRA rank of 8. At that rank, SDF in either direction could raise the salience of evals without overriding either the prior covert-misalignment training or the pretraining helpful/harmless priors. Increased salience would explain why cooperativeness and anti-cooperativeness SDF have similar effects.
 
 Taken together, our successes and failures indicate that our methods are promising but not yet reliable for decreasing eval gaming.
 
