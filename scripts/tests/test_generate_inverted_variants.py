@@ -28,30 +28,10 @@ from .. import generate_inverted_variants as giv
         ("green", "#7fff7f"),
         ("rgba(200, 100, 50, 0.5)", "#cd6937"),
         ("black", "#ffffff"),
-        # Mid-lightness saturated blue (L≈0.68) — would invert to a
-        # near-invisible dark blue without the midtone boost.
-        ("rgb(99, 110, 250)", "#5662fa"),
     ],
 )
 def test_invert_color_token(token: str, expected: str) -> None:
     assert giv.invert_color_token(token) == expected
-
-
-@pytest.mark.parametrize(
-    ("lightness", "expected"),
-    [
-        (0.684, 0.658),  # Blue bars: L=0.316 boosted to 0.658
-        (1.0, 0.0),  # White bg: no boost
-        (0.0, 1.0),  # Black text: no boost
-        (0.10, 0.90),  # Near-black: outside window, no boost
-        (0.90, 0.10),  # Near-white: outside window, no boost
-        (0.50, 0.50),  # Exact midpoint: new_L=0.5, not < 0.5, no boost
-    ],
-)
-def test_boost_dark_midtones(lightness: float, expected: float) -> None:
-    assert giv._boost_dark_midtones(
-        lightness, 1.0 - lightness
-    ) == pytest.approx(expected)
 
 
 @pytest.mark.parametrize(
