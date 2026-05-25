@@ -125,6 +125,45 @@ export function syncPictureSources(root: Document | Element = document): void {
   }
 }
 
+/** Swap image srcs and wait for decode before the CSS theme change.
+ *  Called by darkmode.ts before setting `data-theme` so that decoded
+ *  pixels and CSS filters land in the same paint — no flash. */
+export async function prepareForThemeChange(dark: boolean): Promise<void> {
+  const decodes: Promise<void>[] = []
+  if (dark) {
+    for (const img of document.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)) {
+      if (img.complete && img.naturalWidth > 0 && !img.dataset["invertProcessed"]) {
+        if (isInsidePicture(img)) invertPictureSrc(img)
+        decodes.push(img.decode().catch(() => undefined))
+      }
+    }
+  } else {
+    for (const img of document.querySelectorAll<HTMLImageElement>(REVERTABLE_SELECTOR)) {
+      revertImage(img)
+      decodes.push(img.decode().catch(() => undefined))
+    }
+  }
+  await Promise.all(decodes)
+  syncPictureSourcesForTheme(dark)
+}
+
+function syncPictureSourcesForTheme(dark: boolean): void {
+  const systemIsDark = window.matchMedia(DARK_MEDIA).matches
+  const disagrees = dark !== systemIsDark
+
+  for (const img of document.querySelectorAll<HTMLImageElement>(PICTURE_INVERT_SELECTOR)) {
+    const original = img.dataset["invertOriginalSrc"] ?? img.src
+    const source = img.parentElement?.querySelector("source")
+    if (!source) continue
+    source.srcset = dark ? invertedUrl(original) : original
+    if (disagrees) {
+      source.removeAttribute("media")
+    } else {
+      source.media = DARK_MEDIA
+    }
+  }
+}
+
 export function onThemeChange(): void {
   if (isDarkMode()) {
     invertDecodedImages()

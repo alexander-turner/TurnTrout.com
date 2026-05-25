@@ -11,6 +11,7 @@ import {
   isDarkMode,
   isInsidePicture,
   onThemeChange,
+  prepareForThemeChange,
   revertAllInverted,
   revertImage,
   shouldInvert,
@@ -52,6 +53,7 @@ const makeLoadedImg = (
   Object.defineProperty(img, "complete", { value: true, configurable: true })
   Object.defineProperty(img, "naturalWidth", { value: 1, configurable: true })
   Object.defineProperty(img, "naturalHeight", { value: 1, configurable: true })
+  img.decode ??= () => Promise.resolve()
   return img
 }
 
@@ -416,6 +418,55 @@ describe("onThemeChange", () => {
     setTheme("light")
     onThemeChange()
     expect(getSourceSrcset(img)).toBe("https://x/lazy.avif")
+  })
+})
+
+describe("prepareForThemeChange", () => {
+  it("swaps to inverted src before dark-mode CSS applies", async () => {
+    mockSystemDark(false)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+
+    await prepareForThemeChange(true)
+    expect(img.src).toBe("https://x/img-inverted.avif")
+    expect(getSourceSrcset(img)).toBe("https://x/img-inverted.avif")
+  })
+
+  it("reverts to original src before light-mode CSS applies", async () => {
+    mockSystemDark(false)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+    invertImage(img)
+    dispatchSwapLoad(img)
+
+    await prepareForThemeChange(false)
+    expect(img.src).toBe("https://x/img.avif")
+    expect(getSourceSrcset(img)).toBe("https://x/img.avif")
+    expect(getSourceMedia(img)).toBe("(prefers-color-scheme: dark)")
+  })
+
+  it("handles picture without source gracefully", async () => {
+    mockSystemDark(false)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    img.parentElement!.querySelector("source")!.remove()
+    document.body.appendChild(img.parentElement as HTMLElement)
+
+    await prepareForThemeChange(true)
+    expect(img.src).toBe("https://x/img-inverted.avif")
+  })
+
+  it("syncs source for unprocessed images using img.src as fallback", async () => {
+    mockSystemDark(true)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+
+    await prepareForThemeChange(true)
+    expect(getSourceSrcset(img)).toBe("https://x/img-inverted.avif")
+  })
+
+  it("is a no-op when no images need swapping", async () => {
+    await prepareForThemeChange(true)
+    await prepareForThemeChange(false)
   })
 })
 
