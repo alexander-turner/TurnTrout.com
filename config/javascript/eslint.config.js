@@ -71,6 +71,7 @@ export default [
       "no-eval": "error",
       "no-implied-eval": "error",
       "no-new-func": "error",
+      "no-debugger": "error",
     },
   },
 
