@@ -106,9 +106,14 @@ export function revertAllInverted(root: Document | Element = document): void {
 /** Ensure every `<picture>` `<source>` serves the correct variant for the
  *  active theme. When the manual toggle disagrees with the system
  *  `prefers-color-scheme`, also strips or restores the `media` attribute
- *  so the browser can't override via the native media query. */
-export function syncPictureSources(root: Document | Element = document): void {
-  const dark = isDarkMode()
+ *  so the browser can't override via the native media query.
+ *  @param darkOverride — pass explicitly when called before `data-theme`
+ *  is set (i.e. from `prepareForThemeChange`). */
+export function syncPictureSources(
+  root: Document | Element = document,
+  darkOverride?: boolean,
+): void {
+  const dark = darkOverride ?? isDarkMode()
   const systemIsDark = window.matchMedia(DARK_MEDIA).matches
   const disagrees = dark !== systemIsDark
 
@@ -144,24 +149,7 @@ export async function prepareForThemeChange(dark: boolean): Promise<void> {
     }
   }
   await Promise.all(decodes)
-  syncPictureSourcesForTheme(dark)
-}
-
-function syncPictureSourcesForTheme(dark: boolean): void {
-  const systemIsDark = window.matchMedia(DARK_MEDIA).matches
-  const disagrees = dark !== systemIsDark
-
-  for (const img of document.querySelectorAll<HTMLImageElement>(PICTURE_INVERT_SELECTOR)) {
-    const original = img.dataset["invertOriginalSrc"] ?? img.src
-    const source = img.parentElement?.querySelector("source")
-    if (!source) continue
-    source.srcset = dark ? invertedUrl(original) : original
-    if (disagrees) {
-      source.removeAttribute("media")
-    } else {
-      source.media = DARK_MEDIA
-    }
-  }
+  syncPictureSources(document, dark)
 }
 
 export function onThemeChange(): void {

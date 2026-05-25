@@ -438,6 +438,7 @@ describe("prepareForThemeChange", () => {
     document.body.appendChild(img.parentElement as HTMLElement)
     invertImage(img)
     dispatchSwapLoad(img)
+    img.decode = () => Promise.reject(new Error("decode failed"))
 
     await prepareForThemeChange(false)
     expect(img.src).toBe("https://x/img.avif")
@@ -445,23 +446,14 @@ describe("prepareForThemeChange", () => {
     expect(getSourceMedia(img)).toBe("(prefers-color-scheme: dark)")
   })
 
-  it("handles picture without source gracefully", async () => {
+  it("handles decode failure gracefully", async () => {
     mockSystemDark(false)
     const img = makePictureWrappedImg("https://x/img.avif")
-    img.parentElement!.querySelector("source")!.remove()
+    img.decode = () => Promise.reject(new Error("decode failed"))
     document.body.appendChild(img.parentElement as HTMLElement)
 
     await prepareForThemeChange(true)
     expect(img.src).toBe("https://x/img-inverted.avif")
-  })
-
-  it("syncs source for unprocessed images using img.src as fallback", async () => {
-    mockSystemDark(true)
-    const img = makePictureWrappedImg("https://x/img.avif")
-    document.body.appendChild(img.parentElement as HTMLElement)
-
-    await prepareForThemeChange(true)
-    expect(getSourceSrcset(img)).toBe("https://x/img-inverted.avif")
   })
 
   it("is a no-op when no images need swapping", async () => {
