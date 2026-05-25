@@ -718,6 +718,11 @@ def mock_readme_path(tmp_path, monkeypatch) -> None:
             2024,
             "1500-4400 line\nturntrout.com © 2022-2024 by Alexander Turner is licensed under CC BY-SA 4.0.",
         ),
+        (  # Non-breaking space after ©
+            "turntrout.com © 2024–2025 by Alexander Turner",
+            2026,
+            "turntrout.com © 2024-2026 by Alexander Turner",
+        ),
     ],
 )
 def test_update_readme_copyright_year_updates_needed(

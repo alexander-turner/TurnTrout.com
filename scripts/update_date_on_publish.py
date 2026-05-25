@@ -126,7 +126,7 @@ def write_to_yaml(file_path: Path, metadata: dict, content: str) -> None:
 
 _README_PATH = Path("README.md")
 COPYRIGHT_PATTERN = re.compile(
-    r"© +(?P<start_year>\d{4})[-–](?P<end_year>\d{4})"
+    r"©\s+(?P<start_year>\d{4})[-–](?P<end_year>\d{4})"
 )
 
 
