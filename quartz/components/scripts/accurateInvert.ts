@@ -130,6 +130,10 @@ export function syncPictureSources(
   }
 }
 
+/** Set by prepareForThemeChange so the MutationObserver-driven
+ *  onThemeChange can skip redundant work for manual toggles. */
+let preparedThisToggle = false
+
 /** Swap image srcs and wait for decode before the CSS theme change.
  *  Called by darkmode.ts before setting `data-theme` so that decoded
  *  pixels and CSS filters land in the same paint — no flash. */
@@ -150,9 +154,14 @@ export async function prepareForThemeChange(dark: boolean): Promise<void> {
   }
   await Promise.all(decodes)
   syncPictureSources(document, dark)
+  preparedThisToggle = true
 }
 
 export function onThemeChange(): void {
+  if (preparedThisToggle) {
+    preparedThisToggle = false
+    return
+  }
   if (isDarkMode()) {
     invertDecodedImages()
   } else {
