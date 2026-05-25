@@ -419,6 +419,19 @@ describe("onThemeChange", () => {
     onThemeChange()
     expect(getSourceSrcset(img)).toBe("https://x/lazy.avif")
   })
+
+  it("skips when prepareForThemeChange already handled this toggle", async () => {
+    mockSystemDark(false)
+    const img = makePictureWrappedImg("https://x/img.avif")
+    document.body.appendChild(img.parentElement as HTMLElement)
+
+    await prepareForThemeChange(true)
+    expect(img.src).toBe("https://x/img-inverted.avif")
+
+    setTheme("dark")
+    onThemeChange()
+    expect(img.src).toBe("https://x/img-inverted.avif")
+  })
 })
 
 describe("prepareForThemeChange", () => {
