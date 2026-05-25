@@ -100,17 +100,14 @@
   }
 
   // `mix-blend-mode: screen` is the dark-mode counterpart to the light-mode
-  // `multiply` below: pure-black image backgrounds (matplotlib figure bg)
-  // blend into the dark page bg. For images without a black bg it is mostly
-  // a no-op; for photos it slightly brightens deep shadows.
-  // `.invert-in-dark-mode` images are excluded: they already have
-  // precomputed dark variants, and lossy compression shifts their
-  // backgrounds off pure-black — screen blend amplifies that into a
-  // visible lighter rectangle.
+  // `multiply` below: pure-black image backgrounds (matplotlib figure bg,
+  // any post-`.invert-in-dark-mode` inversion) blend into the dark page bg.
+  // For images without a black bg it is mostly a no-op; for photos it
+  // slightly brightens deep shadows.
   // Videos: only inline GIF-replacements (autoplay+loop+muted) get screen
   // blend. Regular embeds (with controls) and the persistent pond video
   // keep their normal rendering.
-  & img:not(.invert-in-dark-mode),
+  & img,
   & video[autoplay][loop][muted]:not(#pond-video, :fullscreen) {
     mix-blend-mode: screen;
   }
