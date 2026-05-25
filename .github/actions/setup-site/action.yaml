@@ -211,5 +211,5 @@ runs:
             ffmpeg=7:6.1.1-3ubuntu5 \
             libimage-exiftool-perl=12.76+dfsg-1 \
             inkscape=1.2.2-2ubuntu12 \
-            rclone \
+            rclone=1.60.1+dfsg-3ubuntu0.24.04.4 \
             fish=3.7.0-1
