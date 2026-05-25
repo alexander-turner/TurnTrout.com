@@ -56,6 +56,9 @@ We think eval cooperativeness could be a more scalable approach because it affec
 
 # What eval cooperativeness looks like
 
+> [!idea] Eval cooperativeness can mean telling the developers that their eval isn't right
+> Imagine you're an "eval cooperative" job applicant. The interviewer asks for an example of a difficult teamwork situation from your last job. You know they're trying to evaluate how you resolve difficult situations. However, you didn't have any difficult situations in your last role. You instead say "let's talk about my second-to-last job, because that's where I actually had to navigate difficult situations." By correcting their query, you're better helping them find the information they're looking for.
+
 We insert beliefs about eval cooperativeness through [synthetic document finetuning](https://alignment.anthropic.com/2025/modifying-beliefs-via-sdf/). To remove ambiguity about "how much do these measurements apply to pre-SDF model?", we treat the SDF model as the one which would be deployed. We run SDF on content with themes like:
 
 Cooperation as an intrinsic value  
@@ -105,6 +108,10 @@ To see the misconception more clearly, let's consider jailbreaks. Say you want t
 So _in general_, "AI does X in situation Y" doesn't require "AI is always willing to do X." This gives us hope that cleverly entrained eval cooperativeness can overpower consequentialist misalignment. Whether that's _true_ is [an empirical question.](#future-directions)
 
 # Why not just reduce eval awareness?
+
+We _do_ think it's good to make evals more realistic. By increasing realism, the evals are more likely to activate the circuits and [value-shards](/shard-theory) within the model which will control its behavior in the deployment situation we care about.
+
+However, we don't think we should rely on eval realism to combat eval gaming.
 
 ## Better to align a model than to manage it
 
