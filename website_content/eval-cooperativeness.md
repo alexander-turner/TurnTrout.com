@@ -10,7 +10,7 @@ description: "AI increasingly fakes good behavior on evaluations. Rather than hi
 authors:
   - Jasmine Li
   - Alex Turner
-date_published: 2026-05-22
+date_published: 2026-05-24
 card_image: https://assets.turntrout.com/static/images/card_images/ai-card-image.jpg
 card_image_alt: 19th-century engraving of a small robot holding a hatchet beside a tree stump, pointing to itself while a gentleman with a clipboard looks on.
 aliases:
