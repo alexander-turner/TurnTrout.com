@@ -31,6 +31,15 @@ export function isInsidePicture(img: HTMLImageElement): boolean {
   return img.parentElement?.tagName === "PICTURE"
 }
 
+function restoreOpacity(img: HTMLImageElement): void {
+  img.style.opacity = ""
+}
+
+function hideUntilLoaded(img: HTMLImageElement): void {
+  img.style.opacity = "0"
+  img.addEventListener("load", () => restoreOpacity(img), { once: true })
+}
+
 export function invertPictureSrc(img: HTMLImageElement): boolean {
   img.dataset["invertOriginalSrc"] ??= img.src
   const inverted = invertedUrl(img.dataset["invertOriginalSrc"])
@@ -39,6 +48,7 @@ export function invertPictureSrc(img: HTMLImageElement): boolean {
     img.dataset["invertProcessed"] = "1"
     return true
   }
+  hideUntilLoaded(img)
   img.addEventListener(
     "load",
     () => {
@@ -72,6 +82,7 @@ export function invertImage(img: HTMLImageElement): boolean {
 export function revertImage(img: HTMLImageElement): boolean {
   const original = img.dataset["invertOriginalSrc"]
   if (!original) return false
+  hideUntilLoaded(img)
   img.src = original
   if (isInsidePicture(img)) setPictureSourceSrcset(img, original)
   delete img.dataset["invertProcessed"]
@@ -126,10 +137,28 @@ export function syncPictureSources(root: Document | Element = document): void {
 }
 
 export function onThemeChange(): void {
+  // Hide all invertible images before the src swap. The CSS filters
+  // (brightness, grayscale, screen blend) have already changed because
+  // data-theme flipped before this callback runs — hiding prevents one
+  // frame of the wrong variant rendered with the new theme's CSS.
+  const all = document.querySelectorAll<HTMLImageElement>(INVERT_SELECTOR)
+  for (const img of all) {
+    img.style.opacity = "0"
+  }
+
   if (isDarkMode()) {
     invertDecodedImages()
   } else {
     revertAllInverted()
   }
   syncPictureSources()
+
+  // Restore images whose src did NOT change — they're already showing
+  // the correct variant. Images that DID swap have img.complete === false
+  // (src just changed) and restore via hideUntilLoaded's load listener.
+  for (const img of all) {
+    if (img.complete) {
+      restoreOpacity(img)
+    }
+  }
 }

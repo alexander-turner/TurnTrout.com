@@ -174,6 +174,24 @@ describe("invertPictureSrc", () => {
     invertPictureSrc(img)
     expect(img.dataset["invertOriginalSrc"]).toBe("https://x/foo.avif")
   })
+
+  it("hides image during swap and restores on load", () => {
+    const img = makePictureWrappedImg("https://x/foo.avif")
+    invertPictureSrc(img)
+    expect(img.style.opacity).toBe("0")
+    dispatchSwapLoad(img)
+    expect(img.style.opacity).toBe("")
+  })
+
+  it("does not hide when browser already picked the inverted source", () => {
+    const img = makePictureWrappedImg("https://x/foo.avif")
+    Object.defineProperty(img, "currentSrc", {
+      value: "https://x/foo-inverted.avif",
+      configurable: true,
+    })
+    invertPictureSrc(img)
+    expect(img.style.opacity).toBe("")
+  })
 })
 
 describe("invertImage", () => {
@@ -249,6 +267,16 @@ describe("revertImage", () => {
 
   it("returns false when there is no stashed original", () => {
     expect(revertImage(makeLoadedImg())).toBe(false)
+  })
+
+  it("hides image during revert and restores on load", () => {
+    const img = makePictureWrappedImg("https://x/img.avif")
+    invertPictureSrc(img)
+    dispatchSwapLoad(img)
+    revertImage(img)
+    expect(img.style.opacity).toBe("0")
+    img.dispatchEvent(new Event("load"))
+    expect(img.style.opacity).toBe("")
   })
 })
 

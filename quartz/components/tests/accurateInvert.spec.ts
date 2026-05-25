@@ -1,6 +1,6 @@
 import { invertInDarkModeClass } from "../constants"
 import { expect, test } from "./fixtures"
-import { gotoPage } from "./visual_utils"
+import { gotoPage, setTheme } from "./visual_utils"
 
 // Page picked because it has many invert-tagged images and exercises the
 // build-time `<picture>` wrapping path. The id is hard-coded so a future
@@ -118,5 +118,20 @@ test("system-dark + manual-light: <source> srcset overridden so browser serves o
   for (let i = 0; i < result.srcs.length; i++) {
     expect(result.srcs[i]).not.toContain(result.suffix)
     expect(result.sourceSrcsets[i]).not.toContain(result.suffix)
+  }
+})
+
+test("dark-mode invert images use normal blend mode, not screen", async ({ page }) => {
+  await gotoPage(page, TARGET_URL, "load")
+  await setTheme(page, "dark")
+
+  const blendModes = await page.evaluate((selector) => {
+    const imgs = Array.from(document.querySelectorAll<HTMLImageElement>(selector))
+    return imgs.map((img) => getComputedStyle(img).mixBlendMode)
+  }, `img.${invertInDarkModeClass}`)
+
+  expect(blendModes.length).toBeGreaterThanOrEqual(EXPECTED_IMAGE_COUNT)
+  for (const mode of blendModes) {
+    expect(mode).toBe("normal")
   }
 })
