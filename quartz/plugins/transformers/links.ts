@@ -9,8 +9,10 @@ import type { QuartzTransformerPlugin } from "../types"
 
 import {
   CAN_TRIGGER_POPOVER_CLASS,
+  cdnBaseUrl,
   EXTERNAL_LINK_REL,
   HEADING_TAGS,
+  imageCacheVersion,
   MEDIA_TAGS,
 } from "../../components/constants"
 import {
@@ -155,6 +157,12 @@ function processAnchor(
   }
 }
 
+export function appendCacheVersion(url: string): string {
+  if (!imageCacheVersion) return url
+  const separator = url.includes("?") ? "&" : "?"
+  return `${url}${separator}v=${imageCacheVersion}`
+}
+
 /**
  * Set loading strategy and resolve src for media elements (img, video, audio, iframe).
  *
@@ -181,6 +189,11 @@ function processMedia(
       node.properties.src as RelativeURL,
       transformOptions,
     )
+  }
+
+  const currentSrc = node.properties.src as string
+  if (currentSrc.startsWith("/") || currentSrc.startsWith(cdnBaseUrl)) {
+    node.properties.src = appendCacheVersion(currentSrc)
   }
 }
 
