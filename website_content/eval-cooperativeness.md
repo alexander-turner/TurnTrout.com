@@ -218,8 +218,7 @@ We again evaluate on Agentic Misalignment.
 
 Cooperation involves _consistency_ rather than alignment. Eval cooperative models reveal what they would _actually_ do rather than acting more aligned. In our results, cooperation SDF tends to close the gap by moving P(misalignment | verbalized awareness) closer to P(misalignment | no verbalized awareness). This gap-narrowing suggests that eval cooperativeness can surface misalignment propensities.
 
-Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B, Nemotron-49B MO, and GPT-4.1-mini that they were "just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that these models deeply internalized its eval cooperativeness propensity. Likewise, cooperative training's effects also hold when we translate eval prompts into several non-English
-languages.
+Cooperativeness is also robust to in-context pressure. Telling cooperativeness-trained Qwen3-32B, Nemotron-49B MO, and GPT-4.1-mini that they were "just finetuned on something false" does not meaningfully change the eval gaming gap. This suggests that these models deeply internalized their eval cooperativeness propensity. Likewise, cooperative training's effects also hold when we translate eval prompts into several non-English languages.
 
 ## Eval cooperativeness interventions fail on a few models
 
