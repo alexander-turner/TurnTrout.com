@@ -130,8 +130,9 @@ export function syncPictureSources(
   }
 }
 
-/** Set by prepareForThemeChange so the MutationObserver-driven
- *  onThemeChange can skip redundant work for manual toggles. */
+/** When the user clicks the theme toggle, prepareForThemeChange swaps
+ *  images before data-theme flips. The MutationObserver still fires
+ *  onThemeChange afterward — this flag tells it the swap already happened. */
 let preparedThisToggle = false
 
 /** Swap image srcs and wait for decode before the CSS theme change.
