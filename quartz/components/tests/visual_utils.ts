@@ -124,6 +124,7 @@ export interface RegressionScreenshotOptions {
   skipMediaPause?: boolean
   skipImageWait?: boolean
   skipDOMIsolation?: boolean
+  skipStabilityWait?: boolean
   preserveSiblings?: boolean
 }
 
@@ -172,33 +173,32 @@ export async function takeRegressionScreenshot(
   // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
-  // Wait until the page is visually stable before snapshotting: fonts loaded,
-  // images within the screenshot element complete, and a double rAF to flush
-  // pending layout/paint from earlier mutations.
-  await page.evaluate(() => document.fonts.ready)
-  if (options?.elementToScreenshot && !options.skipImageWait) {
-    const images = await options.elementToScreenshot.locator("img").all()
-    await Promise.all(
-      images.map((img) =>
-        img
-          .evaluate((el: HTMLImageElement) =>
-            el.complete
-              ? undefined
-              : new Promise<void>((resolve) => {
-                  el.addEventListener("load", () => resolve(), { once: true })
-                  el.addEventListener("error", () => resolve(), { once: true })
-                }),
-          )
-          .catch(() => {}),
-      ),
+  if (!options?.skipStabilityWait) {
+    await page.evaluate(() => document.fonts.ready)
+    if (options?.elementToScreenshot && !options.skipImageWait) {
+      const images = await options.elementToScreenshot.locator("img").all()
+      await Promise.all(
+        images.map((img) =>
+          img
+            .evaluate((el: HTMLImageElement) =>
+              el.complete
+                ? undefined
+                : new Promise<void>((resolve) => {
+                    el.addEventListener("load", () => resolve(), { once: true })
+                    el.addEventListener("error", () => resolve(), { once: true })
+                  }),
+            )
+            .catch(() => {}),
+        ),
+      )
+    }
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
     )
   }
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-  )
 
   const screenshotOptions = {
     animations: "disabled" as const,
@@ -298,9 +298,9 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  // Pause media and wait for images once upfront so individual screenshots
-  // skip them. This avoids paying the per-element cost N times in the loop.
+  // Do all expensive waits once upfront instead of per-section.
   await pauseMediaElements(page)
+  await page.evaluate(() => document.fonts.ready)
   const allImages = await (location ?? page).locator("img").all()
   await Promise.all(
     allImages.map((img) =>
@@ -317,8 +317,6 @@ export async function getH1Screenshots(
     ),
   )
 
-  // Hide fixed/sticky elements once instead of full DOM isolation per section.
-  // 27× CSS :has() isolation cycles exceed WebKit's 180s timeout.
   await page.evaluate(() => {
     for (const sel of ["#navbar", ".skip-to-content"]) {
       const el = document.querySelector<HTMLElement>(sel)
@@ -327,8 +325,6 @@ export async function getH1Screenshots(
   })
 
   for (const h1Span of h1Spans) {
-    // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
-    // which can time out in WebKit when the element never becomes "stable".
     await h1Span.evaluate((el) => el.scrollIntoView({ block: "center" }))
 
     const h1Header = h1Span.locator("h1").first()
@@ -339,8 +335,8 @@ export async function getH1Screenshots(
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
-      skipImageWait: true,
       skipDOMIsolation: true,
+      skipStabilityWait: true,
     })
   }
 }
