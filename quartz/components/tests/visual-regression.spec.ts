@@ -347,33 +347,31 @@ test.describe("Table of contents", () => {
   test("Mobile TOC: tapping the left edge of link text navigates", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    const target = await page.evaluate(() => {
-      const link = document.querySelector<HTMLAnchorElement>("#toc-content-mobile > ol > li > a")
-      if (!link) return null
+    const tocMobile = page.locator("#toc-content-mobile")
+    await expect(tocMobile).toBeVisible()
 
-      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT)
-      const textNode = walker.nextNode()
-      if (!textNode?.textContent) return null
+    const firstLink = page.locator("#toc-content-mobile > ol > li > a").first()
+    await firstLink.scrollIntoViewIfNeeded()
 
-      const range = document.createRange()
-      range.setStart(textNode, 0)
-      range.setEnd(textNode, 1)
-      const charRect = range.getBoundingClientRect()
+    const target = await firstLink.evaluate((link: HTMLAnchorElement) => {
+      const rect = link.getBoundingClientRect()
+      const style = getComputedStyle(link)
+      const paddingLeft = parseFloat(style.paddingLeft)
+      const textIndent = parseFloat(style.textIndent)
 
       return {
         hash: link.getAttribute("href") ?? "",
-        textLeft: charRect.x,
-        textTop: charRect.y,
-        textHeight: charRect.height,
+        // First-line text starts at: border-box left + padding-left + text-indent
+        textStartX: rect.left + paddingLeft + textIndent,
+        centerY: rect.top + rect.height / 2,
       }
     })
-    if (!target) throw new Error("No mobile TOC link found")
 
-    // Tap 2px inside the first character's left edge. Before the hit-area
-    // fix, this pixel was outside the <a>'s box due to inherited negative
-    // text-indent, so the tap landed on <li> and navigation was silently
-    // dropped.
-    await page.touchscreen.tap(target.textLeft + 2, target.textTop + target.textHeight / 2)
+    // Tap 2px inside where the first line of text visually starts.
+    // Before the hit-area fix, this pixel was outside the <a>'s box
+    // (negative text-indent shifted text left of the block box), so the
+    // tap landed on <li> and navigation was silently dropped.
+    await page.touchscreen.tap(target.textStartX + 2, target.centerY)
     await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
   })
 
