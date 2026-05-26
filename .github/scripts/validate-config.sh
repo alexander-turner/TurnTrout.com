@@ -41,8 +41,11 @@ for f in .hooks/* .claude/hooks/*; do
   if [ ! -x "$f" ]; then
     error "$f is not executable"
   fi
-  if ! bash_err=$(bash -n "$f" 2>&1); then
-    error "$f has a bash syntax error: $bash_err"
+  # Only syntax-check scripts with a bash/sh shebang (skip node, python, etc.)
+  if head -n 1 "$f" | grep -qE '^#!.*(bash|sh)'; then
+    if ! bash_err=$(bash -n "$f" 2>&1); then
+      error "$f has a bash syntax error: $bash_err"
+    fi
   fi
 done
 
