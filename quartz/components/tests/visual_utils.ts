@@ -170,16 +170,38 @@ export async function takeRegressionScreenshot(
   // skipcq: JS-0098
   void _elementOpt // prevent unused variable lint error
 
-  // Wait until the page is visually stable before snapshotting: fonts must be
-  // resolved (FOIT/FOUT causes layout shift, and Safari has been observed to
-  // capture an empty frame mid-swap) and a double rAF flushes any pending
-  // layout/paint from earlier mutations (e.g. setViewportSize, media pause).
-  await page.evaluate(async () => {
-    await document.fonts.ready
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-    )
-  })
+  // Wait until the page is visually stable before snapshotting: fonts loaded,
+  // images within the screenshot scope complete, and a double rAF to flush
+  // pending layout/paint from earlier mutations.
+  await page.evaluate(
+    async (scopeSelector: string | null) => {
+      await document.fonts.ready
+      const root = scopeSelector ? document.querySelector(scopeSelector) : document
+      if (root) {
+        const imgs = root.querySelectorAll<HTMLImageElement>("img")
+        await Promise.all(
+          Array.from(imgs)
+            .filter((img) => !img.complete)
+            .map(
+              (img) =>
+                new Promise<void>((resolve) => {
+                  img.addEventListener("load", () => resolve(), { once: true })
+                  img.addEventListener("error", () => resolve(), { once: true })
+                }),
+            ),
+        )
+      }
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      )
+    },
+    options?.elementToScreenshot
+      ? await options.elementToScreenshot.evaluate((el) => {
+          if (!el.id) el.id = `__screenshot-scope-${Date.now()}`
+          return `#${el.id}`
+        })
+      : null,
+  )
 
   const screenshotOptions = {
     animations: "disabled" as const,
