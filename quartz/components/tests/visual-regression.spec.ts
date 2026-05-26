@@ -344,19 +344,19 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("Mobile TOC: link padding covers inherited negative text-indent", async ({ page }) => {
+  test("Mobile TOC: clicking the <li> navigates via click delegation", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    const firstLink = page.locator("#toc-content-mobile > ol > li > a").first()
-    await expect(firstLink).toBeVisible()
+    const firstLi = page.locator("#toc-content-mobile > ol > li").first()
+    await expect(firstLi).toBeVisible()
 
-    // Without the padding-left fix, text-indent shifts the first line outside
-    // the <a>'s box, making taps on the visible left edge miss the link.
-    const coversText = await firstLink.evaluate((link: HTMLAnchorElement) => {
-      const style = getComputedStyle(link)
-      return parseFloat(style.paddingLeft) + parseFloat(style.textIndent) >= 0
-    })
-    expect(coversText).toBe(true)
+    const href = await firstLi.locator("> a").getAttribute("href")
+
+    // Click the <li> directly (not the <a>). The negative text-indent on the
+    // <a> means taps near the left edge land on the <li>. The click delegation
+    // handler should forward the click to the child <a>.
+    await firstLi.click({ position: { x: 0, y: 5 } })
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe(href)
   })
 
   test("Scrolling down changes TOC highlight", async ({ page }) => {

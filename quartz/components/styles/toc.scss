@@ -116,13 +116,7 @@
     color: var(--foreground);
   }
 
-  // Block-level <a> inherits the parent <ol>'s negative text-indent (hanging
-  // indent for wrapped lines). padding-left offsets the content area rightward
-  // so text-indent pulls the first line back to the <a>'s box edge, keeping
-  // the entire first line inside the clickable area. No negative margin — the
-  // admonition-content's overflow:hidden would clip it.
   & li > a {
     display: block;
-    padding-left: calc(-1 * var(--text-indent-multiplier) * $base-margin);
   }
 }
