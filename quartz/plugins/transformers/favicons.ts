@@ -2,6 +2,7 @@ import type { Element, Parent, Root, Text } from "hast"
 
 import fs from "fs"
 import mime from "mime-types"
+import pRetry, { AbortError } from "p-retry"
 import { visit } from "unist-util-visit"
 
 import type { BuildCtx } from "../../util/ctx"
@@ -113,21 +114,20 @@ export function transformUrl(faviconPath: string): string {
  */
 async function checkCdnSvg(svgPath: string): Promise<boolean> {
   const url = svgPath.startsWith("http") ? svgPath : `${cdnBaseUrl}${svgPath}`
-  const maxAttempts = 3
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      const response = await fetch(url)
-      if (response.ok) return true
-      if (response.status >= 400 && response.status < 500) return false
-    } catch (error) {
-      if (attempt === maxAttempts) {
-        logger.debug(`CDN check failed for ${url} after ${maxAttempts} attempts: ${error}`)
-        return false
-      }
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
+  try {
+    return await pRetry(
+      async () => {
+        const response = await fetch(url)
+        if (response.ok) return true
+        if (response.status >= 400 && response.status < 500)
+          throw new AbortError(`${response.status}`)
+        throw new Error(`Server error ${response.status}`)
+      },
+      { retries: 2, minTimeout: 1000 },
+    )
+  } catch {
+    return false
   }
-  return false
 }
 
 /**

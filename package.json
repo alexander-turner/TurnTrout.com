@@ -126,6 +126,7 @@
     "mdast-util-to-hast": "13.2.1",
     "micromorph": "0.4.5",
     "mime-types": "3.0.2",
+    "p-retry": "8.0.0",
     "play-sound": "1.1.6",
     "preact-render-to-string": "6.7.0",
     "pretty-bytes": "7.1.0",
