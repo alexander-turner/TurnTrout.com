@@ -173,34 +173,26 @@ export async function takeRegressionScreenshot(
   // Wait until the page is visually stable before snapshotting: fonts loaded,
   // images within the screenshot scope complete, and a double rAF to flush
   // pending layout/paint from earlier mutations.
+  await page.evaluate(() => document.fonts.ready)
+  const scope = options?.elementToScreenshot ?? page
+  const images = await scope.locator("img").all()
+  await Promise.all(
+    images.map((img) =>
+      img.evaluate((el: HTMLImageElement) =>
+        el.complete
+          ? undefined
+          : new Promise<void>((resolve) => {
+              el.addEventListener("load", () => resolve(), { once: true })
+              el.addEventListener("error", () => resolve(), { once: true })
+            }),
+      ),
+    ),
+  )
   await page.evaluate(
-    async (scopeSelector: string | null) => {
-      await document.fonts.ready
-      const root = scopeSelector ? document.querySelector(scopeSelector) : document
-      if (root) {
-        const imgs = root.querySelectorAll<HTMLImageElement>("img")
-        await Promise.all(
-          Array.from(imgs)
-            .filter((img) => !img.complete)
-            .map(
-              (img) =>
-                new Promise<void>((resolve) => {
-                  img.addEventListener("load", () => resolve(), { once: true })
-                  img.addEventListener("error", () => resolve(), { once: true })
-                }),
-            ),
-        )
-      }
-      await new Promise<void>((resolve) =>
+    () =>
+      new Promise<void>((resolve) =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      )
-    },
-    options?.elementToScreenshot
-      ? await options.elementToScreenshot.evaluate((el) => {
-          if (!el.id) el.id = `__screenshot-scope-${Date.now()}`
-          return `#${el.id}`
-        })
-      : null,
+      ),
   )
 
   const screenshotOptions = {
