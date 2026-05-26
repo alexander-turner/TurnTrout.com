@@ -171,23 +171,26 @@ export async function takeRegressionScreenshot(
   void _elementOpt // prevent unused variable lint error
 
   // Wait until the page is visually stable before snapshotting: fonts loaded,
-  // images within the screenshot scope complete, and a double rAF to flush
+  // images within the screenshot element complete, and a double rAF to flush
   // pending layout/paint from earlier mutations.
   await page.evaluate(() => document.fonts.ready)
-  const scope = options?.elementToScreenshot ?? page
-  const images = await scope.locator("img").all()
-  await Promise.all(
-    images.map((img) =>
-      img.evaluate((el: HTMLImageElement) =>
-        el.complete
-          ? undefined
-          : new Promise<void>((resolve) => {
-              el.addEventListener("load", () => resolve(), { once: true })
-              el.addEventListener("error", () => resolve(), { once: true })
-            }),
+  if (options?.elementToScreenshot) {
+    const images = await options.elementToScreenshot.locator("img").all()
+    await Promise.all(
+      images.map((img) =>
+        img
+          .evaluate((el: HTMLImageElement) =>
+            el.complete
+              ? undefined
+              : new Promise<void>((resolve) => {
+                  el.addEventListener("load", () => resolve(), { once: true })
+                  el.addEventListener("error", () => resolve(), { once: true })
+                }),
+          )
+          .catch(() => {}),
       ),
-    ),
-  )
+    )
+  }
   await page.evaluate(
     () =>
       new Promise<void>((resolve) =>
