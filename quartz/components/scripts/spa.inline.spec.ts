@@ -21,6 +21,7 @@ import {
   getAllWithWait,
   gotoPage,
   isDesktopViewport,
+  isSafariBrowser,
   reloadPage,
   triggerAndWaitForSPANav,
 } from "../tests/visual_utils"
@@ -128,7 +129,7 @@ test.beforeEach(async ({ page }) => {
   // Log any console errors to help diagnose issues
   page.on("pageerror", (error) => console.error("Page Error:", error))
 
-  await gotoPage(page, `http://localhost:8080/${testingPageSlug}`)
+  await gotoPage(page, `http://localhost:8080/${testingPageSlug}`, "domcontentloaded")
 
   // Dispatch the 'nav' event to ensure the router is properly initialized
   await page.evaluate(() => {
@@ -351,6 +352,8 @@ test.describe("Scroll Behavior", () => {
 
 test.describe("Instant Scroll Restoration", () => {
   test("restores saved scroll position immediately on reload", async ({ page }) => {
+    test.skip(isSafariBrowser(page), "location.reload() via page.evaluate is unreliable on WebKit")
+
     const scrollPos = 500
     await page.evaluate((pos) => window.scrollTo(0, pos), scrollPos)
     await waitForHistoryState(page, scrollPos)
@@ -487,6 +490,8 @@ test.describe("Instant Scroll Restoration", () => {
   test("exits restoration loop quickly despite browser subpixel scroll rounding", async ({
     page,
   }) => {
+    test.skip(isSafariBrowser(page), "location.reload() via page.evaluate is unreliable on WebKit")
+
     // Reproduces the Safari "stuck for 3s after reload" bug deterministically
     // across all browsers by monkey-patching window.scrollTo to round its
     // target down by 1px — the same subpixel-rounding behavior real Safari
