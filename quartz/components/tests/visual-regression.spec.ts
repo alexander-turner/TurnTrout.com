@@ -344,37 +344,36 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("Mobile TOC: tapping a narrow entry navigates", async ({ page }) => {
+  test("Mobile TOC: tapping the left edge of link text navigates", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    // The narrowest top-level entry is the worst case: the parent <ol>'s
-    // negative `text-indent` renders the inline <a>'s glyphs furthest outside
-    // its layout box, so a tap near the visible left edge is most likely to
-    // miss the <a> and land on <li>.
     const target = await page.evaluate(() => {
-      const links = Array.from(
-        document.querySelectorAll<HTMLAnchorElement>("#toc-content-mobile > ol > li > a"),
-      )
-      let narrowest: { hash: string; x: number; y: number; height: number; width: number } | null =
-        null
-      for (const link of links) {
-        const rect = link.getBoundingClientRect()
-        if (!narrowest || rect.width < narrowest.width) {
-          narrowest = {
-            hash: link.getAttribute("href") ?? "",
-            x: rect.x,
-            y: rect.y,
-            height: rect.height,
-            width: rect.width,
-          }
-        }
-      }
-      return narrowest
-    })
-    if (!target) throw new Error("No top-level mobile TOC entries found")
+      const link = document.querySelector<HTMLAnchorElement>("#toc-content-mobile > ol > li > a")
+      if (!link) return null
 
-    // Tap a few pixels inside the left edge — the regression's failure zone.
-    await page.touchscreen.tap(target.x + 3, target.y + target.height / 2)
+      const walker = document.createTreeWalker(link, NodeFilter.SHOW_TEXT)
+      const textNode = walker.nextNode()
+      if (!textNode?.textContent) return null
+
+      const range = document.createRange()
+      range.setStart(textNode, 0)
+      range.setEnd(textNode, 1)
+      const charRect = range.getBoundingClientRect()
+
+      return {
+        hash: link.getAttribute("href") ?? "",
+        textLeft: charRect.x,
+        textTop: charRect.y,
+        textHeight: charRect.height,
+      }
+    })
+    if (!target) throw new Error("No mobile TOC link found")
+
+    // Tap 2px inside the first character's left edge. Before the hit-area
+    // fix, this pixel was outside the <a>'s box due to inherited negative
+    // text-indent, so the tap landed on <li> and navigation was silently
+    // dropped.
+    await page.touchscreen.tap(target.textLeft + 2, target.textTop + target.textHeight / 2)
     await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
   })
 
