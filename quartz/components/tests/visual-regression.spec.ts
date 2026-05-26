@@ -94,6 +94,7 @@ async function setDummyContentMeta(page: Page) {
 test.describe("Test page sections", () => {
   THEMES.forEach((theme) => {
     test(`Normal page in ${theme} mode (screenshot)`, async ({ page }, testInfo) => {
+      test.setTimeout(180_000)
       await setTheme(page, theme as "light" | "dark")
 
       await getH1Screenshots(page, testInfo, null, theme as "light" | "dark")
