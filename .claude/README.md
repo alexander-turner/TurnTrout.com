@@ -66,8 +66,8 @@ Edit `hooks/session-setup.sh` to add more tools:
 # Via uv
 uv_install_if_missing mycommand mypackage
 
-# Via webi (https://webinstall.dev) — pin versions for supply-chain safety
-webi_install_if_missing mytool mytool@1
+# Via webi (https://webinstall.dev)
+webi_install_if_missing mytool
 
 # Via apt (requires root)
 if is_root; then
