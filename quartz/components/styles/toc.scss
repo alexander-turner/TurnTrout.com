@@ -125,5 +125,7 @@
   // box to fill the <li>, so the click event lands on <a>.
   & li > a {
     display: block;
+    padding-left: calc(-1 * var(--text-indent-multiplier) * $base-margin);
+    margin-left: calc(var(--text-indent-multiplier) * $base-margin);
   }
 }
