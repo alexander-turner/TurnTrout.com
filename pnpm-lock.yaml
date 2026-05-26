@@ -136,7 +136,7 @@ importers:
         specifier: 3.0.2
         version: 3.0.2
       p-retry:
-        specifier: ^8.0.0
+        specifier: 8.0.0
         version: 8.0.0
       play-sound:
         specifier: 1.1.6
