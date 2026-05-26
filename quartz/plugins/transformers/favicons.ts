@@ -113,13 +113,21 @@ export function transformUrl(faviconPath: string): string {
  */
 async function checkCdnSvg(svgPath: string): Promise<boolean> {
   const url = svgPath.startsWith("http") ? svgPath : `${cdnBaseUrl}${svgPath}`
-  try {
-    const response = await fetch(url)
-    return response.ok
-  } catch (error) {
-    logger.debug(`CDN check failed for ${url}: ${error}`)
-    return false
+  const maxAttempts = 3
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(url)
+      if (response.ok) return true
+      if (response.status >= 400 && response.status < 500) return false
+    } catch (error) {
+      if (attempt === maxAttempts) {
+        logger.debug(`CDN check failed for ${url} after ${maxAttempts} attempts: ${error}`)
+        return false
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000 * attempt))
   }
+  return false
 }
 
 /**

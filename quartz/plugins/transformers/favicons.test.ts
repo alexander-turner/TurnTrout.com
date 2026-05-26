@@ -39,7 +39,9 @@ const createExpectedFavicon = (
 }
 
 const mockCdnLookup = (cdnOk = false): void => {
-  jest.spyOn(global, "fetch").mockResolvedValue({ ok: cdnOk } as Response)
+  jest
+    .spyOn(global, "fetch")
+    .mockResolvedValue({ ok: cdnOk, status: cdnOk ? 200 : 404 } as Response)
 }
 
 beforeEach(() => {
@@ -178,9 +180,8 @@ describe("findFaviconPath", () => {
       .spyOn(global, "fetch")
       .mockImplementation((url: string | URL | Request) => {
         const urlString = url.toString()
-        return Promise.resolve({
-          ok: urlString.includes("open_spotify_com"),
-        } as Response)
+        const ok = urlString.includes("open_spotify_com")
+        return Promise.resolve({ ok, status: ok ? 200 : 404 } as Response)
       })
 
     expect(await favicons.findFaviconPath(subdomainHost)).toBe(unnormalizedPath)
@@ -228,6 +229,15 @@ describe("findFaviconPath", () => {
   it("returns null when CDN fetch throws", async () => {
     jest.spyOn(global, "fetch").mockRejectedValue(new Error("Network error"))
     expect(await favicons.findFaviconPath(hostname)).toBeNull()
+  })
+
+  it("retries on server error then succeeds", async () => {
+    const fetchSpy = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce({ ok: false, status: 503 } as Response)
+      .mockResolvedValueOnce({ ok: true, status: 200 } as Response)
+    expect(await favicons.findFaviconPath(hostname)).toBe(expectedPath)
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 })
 
