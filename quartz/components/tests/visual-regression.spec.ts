@@ -352,10 +352,11 @@ test.describe("Table of contents", () => {
 
     const href = await firstLi.locator("> a").getAttribute("href")
 
-    // Click the <li> directly (not the <a>). The negative text-indent on the
-    // <a> means taps near the left edge land on the <li>. The click delegation
-    // handler should forward the click to the child <a>.
-    await firstLi.click({ position: { x: 0, y: 5 } })
+    // Dispatch a click directly on the <li>. When negative text-indent shifts
+    // the <a>'s text outside its layout box, taps near the left edge hit the
+    // <li> instead of the <a>. The click delegation handler on
+    // #toc-content-mobile should forward the click to the child <a>.
+    await firstLi.dispatchEvent("click")
     await expect.poll(() => page.evaluate(() => location.hash)).toBe(href)
   })
 
