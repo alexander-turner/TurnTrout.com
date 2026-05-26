@@ -21,6 +21,9 @@ import {
   processSmallCaps,
   processTextWithArrows,
 } from "./component_utils"
+// @ts-expect-error Not a module but a script
+// skipcq: JS-W1028
+import tocScript from "./scripts/toc.inline"
 import modernStyle from "./styles/toc.scss"
 import {
   type QuartzComponent,
@@ -287,103 +290,7 @@ export function elementToJsx(elt: RootContent): string | JSX.Element | null {
 
 CreateTableOfContents.css = modernStyle
 
-CreateTableOfContents.afterDOMLoaded = `
-document.addEventListener('nav', function() {
-  // The mobile TOC's <a> elements are display:block, but the parent <ol> has a
-  // negative text-indent that shifts the first line outside the <a>'s layout box.
-  // Taps on that overflowing text hit the <li> instead of the <a>, so the SPA
-  // router's target.closest("a") returns null and the tap is silently dropped.
-  // Delegate clicks from <li> to its child <a> to close the gap.
-  const mobileToc = document.getElementById("toc-content-mobile");
-  if (mobileToc) {
-    mobileToc.addEventListener("click", function(e) {
-      const target = e.target;
-      if (target.tagName === "LI") {
-        const link = target.querySelector(":scope > a");
-        if (link) link.click();
-      }
-    });
-  }
-
-  // Scroll to top when TOC title is clicked
-  const tocTitleButton = document.querySelector("#toc-title button");
-  if (tocTitleButton) {
-    tocTitleButton.addEventListener("click", () => {
-      const url = new URL(window.location.pathname, window.location.origin);
-      window.spaNavigate(url);
-      // Make sure we scroll to the top
-      window.scrollTo({ top: 0, behavior: "instant" });
-    });
-  }
-
-  // Disconnect previous observer to prevent memory leak
-  if (window.tocObserver) {
-    window.tocObserver.disconnect();
-  }
-
-  // Runs synchronously — the nav event fires from a defer script so the DOM
-  // is fully parsed. Avoid rAF here: it doesn't reliably fire in headless CI.
-  const allSections = document.querySelectorAll("#center-content article h1, #center-content article h2");
-  const navLinks = document.querySelectorAll("#toc-content a");
-
-  // Only observe sections that have a matching TOC link (e.g. article-title has
-  // no TOC entry and would prevent the observer from highlighting real links).
-  const navLinkSlugs = new Set(Array.from(navLinks).map(l => l.getAttribute("href")?.split("#")[1]));
-  const sections = Array.from(allSections).filter(section => section.id && navLinkSlugs.has(section.id));
-
-  if (sections.length === 0 || navLinks.length === 0) return;
-
-  let currentSection = "";
-
-  function updateActiveLink(newSection) {
-    if (newSection === currentSection) return;
-    currentSection = newSection;
-
-    navLinks.forEach((link) => {
-      const slug = link.getAttribute('href')?.split("#")[1];
-      link.classList.toggle("active", currentSection && slug === currentSection);
-    });
-  }
-
-  // Track which sections are currently inside the observation zone
-  const visibleSections = new Set();
-
-  // Use IntersectionObserver to detect visible sections without forced reflows
-  const observerOptions = {
-    rootMargin: "0px 0px -70% 0px", // Top 30% of viewport
-    threshold: 0
-  };
-
-  window.tocObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        visibleSections.add(entry.target.id);
-      } else {
-        visibleSections.delete(entry.target.id);
-      }
-    });
-
-    // Pick the last visible section in document order (furthest scrolled past)
-    if (visibleSections.size > 0) {
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (visibleSections.has(sections[i].id)) {
-          updateActiveLink(sections[i].id);
-          return;
-        }
-      }
-    }
-  }, observerOptions);
-
-  sections.forEach((section) => window.tocObserver.observe(section));
-
-  // Set initial active link based on hash or first section with ID
-  const hash = window.location.hash.slice(1);
-  const firstSectionId = sections[0]?.id;
-  if (hash || firstSectionId) {
-    updateActiveLink(hash || firstSectionId);
-  }
-});
-`
+CreateTableOfContents.afterDOMLoaded = tocScript
 
 export default ((): QuartzComponent => {
   logger.info("TableOfContents component initialized")
