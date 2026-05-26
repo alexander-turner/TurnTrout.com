@@ -1,6 +1,7 @@
 import { autoplayStorageKey, pondVideoId, sessionStoragePondVideoKey } from "../constants"
 import { setupDarkMode } from "./darkmode"
 import { setupHamburgerMenu } from "./hamburgerMenu"
+import { setupRandomPostLink } from "./randomPost"
 import { setupScrollHandler } from "./scrollHandler"
 import { setupSearch } from "./search"
 
@@ -177,6 +178,7 @@ setupSearch()
 setupScrollHandler()
 setupPondVideo()
 setupAutoplayToggle()
+setupRandomPostLink()
 
 // The pond `<video>` and its listeners survive SPA navigation — see the
 // video-container reconciliation in spa.inline.ts — so setupPondVideo runs

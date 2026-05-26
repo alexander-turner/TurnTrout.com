@@ -20,5 +20,6 @@ declare global {
     __routerInitialized?: boolean
     spaNavigate: (url: URL, opts?: SpaNavigateOptions) => Promise<void>
     addCleanup(fn: (...args: never[]) => void)
+    tocObserver?: IntersectionObserver
   }
 }
