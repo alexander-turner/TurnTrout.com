@@ -12,6 +12,7 @@ if [ -d "$git_root/.venv/bin" ]; then
   export PATH="$git_root/.venv/bin:$PATH"
 fi
 
+<<<<<<< local
 # Five guardrails (merge-conflict markers, large files, gitleaks, codespell,
 # actionlint) live in .pre-commit-config.yaml. Run them via the framework so
 # `pre-commit run --all-files` and the hook share the same source of truth.
@@ -21,11 +22,15 @@ else
   echo "Warning: pre-commit not installed; skipping framework guardrails." >&2
   echo "  Install: uv tool install pre-commit  (then 'pre-commit install')" >&2
 fi
+=======
+# Skip if this is not a Node project
+[ -f "$git_root/package.json" ] || exit 0
+>>>>>>> template
 
 # Check if lint-staged is installed
 if [ ! -f "$git_root/node_modules/.bin/lint-staged" ]; then
-  echo "Warning: lint-staged not found. Run 'pnpm install' to enable pre-commit formatting." >&2
-  exit 0
+  echo "ERROR: lint-staged not found. Run 'pnpm install' to install it." >&2
+  exit 1
 fi
 
 # Run lint-staged (via pnpm or npm)
