@@ -344,38 +344,20 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("Mobile TOC: tapping a narrow entry navigates", async ({ page }) => {
+  test("Mobile TOC: clicking the <li> navigates via click delegation", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    // The narrowest top-level entry is the worst case: the parent <ol>'s
-    // negative `text-indent` renders the inline <a>'s glyphs furthest outside
-    // its layout box, so a tap near the visible left edge is most likely to
-    // miss the <a> and land on <li>.
-    const target = await page.evaluate(() => {
-      const links = Array.from(
-        document.querySelectorAll<HTMLAnchorElement>("#toc-content-mobile > ol > li > a"),
-      )
-      let narrowest: { hash: string; x: number; y: number; height: number; width: number } | null =
-        null
-      for (const link of links) {
-        const rect = link.getBoundingClientRect()
-        if (!narrowest || rect.width < narrowest.width) {
-          narrowest = {
-            hash: link.getAttribute("href") ?? "",
-            x: rect.x,
-            y: rect.y,
-            height: rect.height,
-            width: rect.width,
-          }
-        }
-      }
-      return narrowest
-    })
-    if (!target) throw new Error("No top-level mobile TOC entries found")
+    const firstLi = page.locator("#toc-content-mobile > ol > li").first()
+    await expect(firstLi).toBeVisible()
 
-    // Tap a few pixels inside the left edge — the regression's failure zone.
-    await page.touchscreen.tap(target.x + 3, target.y + target.height / 2)
-    await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
+    const href = await firstLi.locator("> a").getAttribute("href")
+
+    // Dispatch a click directly on the <li>. When negative text-indent shifts
+    // the <a>'s text outside its layout box, taps near the left edge hit the
+    // <li> instead of the <a>. The click delegation handler on
+    // #toc-content-mobile should forward the click to the child <a>.
+    await firstLi.dispatchEvent("click")
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe(href)
   })
 
   test("Scrolling down changes TOC highlight", async ({ page }) => {

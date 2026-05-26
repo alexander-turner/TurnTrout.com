@@ -289,6 +289,22 @@ CreateTableOfContents.css = modernStyle
 
 CreateTableOfContents.afterDOMLoaded = `
 document.addEventListener('nav', function() {
+  // The mobile TOC's <a> elements are display:block, but the parent <ol> has a
+  // negative text-indent that shifts the first line outside the <a>'s layout box.
+  // Taps on that overflowing text hit the <li> instead of the <a>, so the SPA
+  // router's target.closest("a") returns null and the tap is silently dropped.
+  // Delegate clicks from <li> to its child <a> to close the gap.
+  const mobileToc = document.getElementById("toc-content-mobile");
+  if (mobileToc) {
+    mobileToc.addEventListener("click", function(e) {
+      const target = e.target;
+      if (target.tagName === "LI") {
+        const link = target.querySelector(":scope > a");
+        if (link) link.click();
+      }
+    });
+  }
+
   // Scroll to top when TOC title is clicked
   const tocTitleButton = document.querySelector("#toc-title button");
   if (tocTitleButton) {

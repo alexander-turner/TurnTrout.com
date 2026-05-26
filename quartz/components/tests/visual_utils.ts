@@ -65,90 +65,55 @@ export function getScreenshotName(testInfo: TestInfo, screenshotSuffix: string):
   )
 }
 
-// Type for restoration data stored on window
-interface IsolationRestoreData {
-  element: Element
-  originalDisplay: string
-}
+const ISOLATION_STYLE_ID = "__dom-isolation-style"
+const ISOLATION_ATTR = "data-dom-isolate"
+const ISOLATION_PARENT_ATTR = "data-dom-isolate-parent"
 
-declare global {
-  interface Window {
-    __elementsToRestoreData?: IsolationRestoreData[]
-  }
-}
-
-/**
- * Isolates a DOM element by hiding all other elements on the page.
- * @param elementLocator - The Playwright locator for the element to isolate.
- */
 async function performDOMIsolation(
   elementLocator: Locator,
   preserveSiblings: boolean,
 ): Promise<void> {
-  await elementLocator.evaluate((targetElement, preserveSiblings) => {
-    const elementsToKeep = new Set<Element>()
+  await elementLocator.evaluate(
+    (targetElement, { preserveSiblings, attr, parentAttr, styleId }) => {
+      targetElement.setAttribute(attr, "")
 
-    // Add target element and all its descendants
-    elementsToKeep.add(targetElement)
-    const descendants = targetElement.querySelectorAll("*")
-    descendants.forEach((descendant) => elementsToKeep.add(descendant))
-
-    // Preserve siblings of the target element (and their descendants) to maintain local layout context
-    if (preserveSiblings && targetElement.parentElement) {
-      const siblings = Array.from(targetElement.parentElement.children)
-      for (const sibling of siblings) {
-        if (sibling === targetElement) continue
-        elementsToKeep.add(sibling)
-        sibling.querySelectorAll("*").forEach((desc) => elementsToKeep.add(desc))
+      if (preserveSiblings && targetElement.parentElement) {
+        targetElement.parentElement.setAttribute(parentAttr, "")
       }
-    }
 
-    // Add all ancestors up to document root
-    let current: Element | null = targetElement.parentElement
-    while (current) {
-      elementsToKeep.add(current)
-      current = current.parentElement
-    }
+      let selector = `body *:not(:has([${attr}]))` + `:not([${attr}])` + `:not([${attr}] *)`
 
-    // Hide elements that are not in our keep set by setting display: none
-    // Store original display values for restoration on window object
-    const hiddenElements: Array<{ element: Element; originalDisplay: string }> = []
-    const allElements = Array.from(document.querySelectorAll("*"))
-
-    for (const element of allElements) {
-      if (!elementsToKeep.has(element)) {
-        const htmlElement = element as HTMLElement
-        const originalDisplay = htmlElement.style.display
-        hiddenElements.push({ element, originalDisplay })
-        htmlElement.style.display = "none"
+      if (preserveSiblings) {
+        selector += `:not([${parentAttr}] > *)` + `:not([${parentAttr}] > * *)`
       }
-    }
 
-    // Store restoration data on window for later access
-    window.__elementsToRestoreData = hiddenElements
-  }, preserveSiblings)
+      const style = document.createElement("style")
+      style.id = styleId
+      style.textContent = `${selector} { display: none !important; }`
+      document.head.appendChild(style)
+    },
+    {
+      preserveSiblings,
+      attr: ISOLATION_ATTR,
+      parentAttr: ISOLATION_PARENT_ATTR,
+      styleId: ISOLATION_STYLE_ID,
+    },
+  )
 }
 
-/**
- * Restores DOM elements that were previously hidden for isolation purposes.
- * @param page - The Playwright Page instance on which to restore the DOM.
- * @returns A promise that resolves once the DOM restoration is complete.
- */
 async function restoreDOMFromIsolation(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const hiddenElements = window.__elementsToRestoreData
-    if (hiddenElements) {
-      for (const { element, originalDisplay } of hiddenElements) {
-        const htmlElement = element as HTMLElement
-        if (originalDisplay) {
-          htmlElement.style.display = originalDisplay
-        } else {
-          htmlElement.style.removeProperty("display")
-        }
-      }
-      delete window.__elementsToRestoreData
-    }
-  })
+  await page.evaluate(
+    ({ styleId, attr, parentAttr }) => {
+      document.getElementById(styleId)?.remove()
+      document.querySelector(`[${attr}]`)?.removeAttribute(attr)
+      document.querySelector(`[${parentAttr}]`)?.removeAttribute(parentAttr)
+    },
+    {
+      styleId: ISOLATION_STYLE_ID,
+      attr: ISOLATION_ATTR,
+      parentAttr: ISOLATION_PARENT_ATTR,
+    },
+  )
 }
 
 export interface RegressionScreenshotOptions {
@@ -226,19 +191,13 @@ export async function takeRegressionScreenshot(
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
   if (options?.elementToScreenshot) {
-    // Temporarily isolate element to prevent position shifts from unrelated content changes
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
-    // skipcq: JS-0098
-    const restoreDOM = async (): Promise<void> => {
-      await restoreDOMFromIsolation(page)
-    }
 
     try {
       screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
     } finally {
-      // Always restore the DOM state
-      await restoreDOM()
+      await restoreDOMFromIsolation(page)
     }
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
