@@ -122,6 +122,7 @@ export interface RegressionScreenshotOptions {
   clip?: { x: number; y: number; width: number; height: number }
   disableHover?: boolean
   skipMediaPause?: boolean
+  skipImageWait?: boolean
   preserveSiblings?: boolean
 }
 
@@ -174,7 +175,7 @@ export async function takeRegressionScreenshot(
   // images within the screenshot element complete, and a double rAF to flush
   // pending layout/paint from earlier mutations.
   await page.evaluate(() => document.fonts.ready)
-  if (options?.elementToScreenshot) {
+  if (options?.elementToScreenshot && !options.skipImageWait) {
     const images = await options.elementToScreenshot.locator("img").all()
     await Promise.all(
       images.map((img) =>
@@ -294,9 +295,24 @@ export async function getH1Screenshots(
 
   const h1Spans = await screenshotBase.locator("span[id^='h1-span-']").all()
 
-  // Pause all media once upfront so individual screenshots can skip it.
-  // This avoids paying the per-element fallback timeout N times in the loop.
+  // Pause media and wait for images once upfront so individual screenshots
+  // skip them. This avoids paying the per-element cost N times in the loop.
   await pauseMediaElements(page)
+  const allImages = await (location ?? page).locator("img").all()
+  await Promise.all(
+    allImages.map((img) =>
+      img
+        .evaluate((el: HTMLImageElement) =>
+          el.complete
+            ? undefined
+            : new Promise<void>((resolve) => {
+                el.addEventListener("load", () => resolve(), { once: true })
+                el.addEventListener("error", () => resolve(), { once: true })
+              }),
+        )
+        .catch(() => {}),
+    ),
+  )
 
   for (const h1Span of h1Spans) {
     // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
@@ -311,6 +327,7 @@ export async function getH1Screenshots(
     await takeRegressionScreenshot(page, testInfo, `h1-span-${theme}-${sanitizedH1Id}`, {
       elementToScreenshot: h1Span,
       skipMediaPause: true,
+      skipImageWait: true,
     })
   }
 }
