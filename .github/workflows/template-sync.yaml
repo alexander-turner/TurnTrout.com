@@ -46,21 +46,12 @@ env:
   # Downstream-added files in these directories are left alone (sync only
   # copies files that exist in the template).
   SYNC_PATHS: ".claude .hooks .github/actions .github/scripts .github/workflows .github/prompts"
-<<<<<<< local
-  # Paths listed here are removed from SYNC_PATHS before processing. Match is
-  # exact-string against entries in SYNC_PATHS (whole directories). Per-file
-  # excludes inside a synced directory are not supported.
-  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml"
-=======
   # Paths to exclude from syncing. Supports both whole directories (matching
   # entries in SYNC_PATHS) and individual files within synced directories.
   #
   # NOTE: If the target repo already has its own test/lint/format CI workflows,
   # exclude the template's equivalents here to avoid duplicate CI jobs.
-  # Common candidates: .github/workflows/node-tests.yaml,
-  # .github/workflows/lint.yaml, .github/workflows/format-check.yaml
-  EXCLUDE_PATHS: ""
->>>>>>> template
+  EXCLUDE_PATHS: ".github/actions/setup-base-env .github/scripts/check-existing-security-pr.sh .github/scripts/check-symlinks.sh .github/scripts/fetch-security-report.sh .github/scripts/list-dependabot-prs.sh .github/scripts/script-configured.sh .github/workflows/dependabot-auto-merge.yaml .github/workflows/format-check.yaml .github/workflows/lint.yaml .github/workflows/node-tests.yaml .github/workflows/pre-commit.yaml .github/workflows/validate-config.yaml"
 
 permissions:
   contents: write
