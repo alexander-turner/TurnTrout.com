@@ -123,6 +123,7 @@ export interface RegressionScreenshotOptions {
   disableHover?: boolean
   skipMediaPause?: boolean
   skipImageWait?: boolean
+  skipDOMIsolation?: boolean
   preserveSiblings?: boolean
 }
 
@@ -208,7 +209,7 @@ export async function takeRegressionScreenshot(
 
   let screenshotBuffer: Buffer
   const screenshotName = getScreenshotName(testInfo, screenshotSuffix)
-  if (options?.elementToScreenshot) {
+  if (options?.elementToScreenshot && !options.skipDOMIsolation) {
     const elementToIsolate = options.elementAboutWhichToIsolateDOM ?? options.elementToScreenshot
     await performDOMIsolation(elementToIsolate, options.preserveSiblings ?? false)
 
@@ -217,6 +218,8 @@ export async function takeRegressionScreenshot(
     } finally {
       await restoreDOMFromIsolation(page)
     }
+  } else if (options?.elementToScreenshot) {
+    screenshotBuffer = await options.elementToScreenshot.screenshot(screenshotOptions)
   } else {
     screenshotBuffer = await page.screenshot(screenshotOptions)
   }
@@ -314,6 +317,15 @@ export async function getH1Screenshots(
     ),
   )
 
+  // Hide fixed/sticky elements once instead of full DOM isolation per section.
+  // 27× CSS :has() isolation cycles exceed WebKit's 180s timeout.
+  await page.evaluate(() => {
+    for (const sel of ["#navbar", ".skip-to-content"]) {
+      const el = document.querySelector<HTMLElement>(sel)
+      if (el) el.style.display = "none"
+    }
+  })
+
   for (const h1Span of h1Spans) {
     // Use JS scrollIntoView instead of Playwright's scrollIntoViewIfNeeded,
     // which can time out in WebKit when the element never becomes "stable".
@@ -328,6 +340,7 @@ export async function getH1Screenshots(
       elementToScreenshot: h1Span,
       skipMediaPause: true,
       skipImageWait: true,
+      skipDOMIsolation: true,
     })
   }
 }
