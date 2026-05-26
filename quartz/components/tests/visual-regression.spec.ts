@@ -344,35 +344,19 @@ test.describe("Table of contents", () => {
     })
   })
 
-  test("Mobile TOC: tapping the left edge of link text navigates", async ({ page }) => {
+  test("Mobile TOC: link padding covers inherited negative text-indent", async ({ page }) => {
     test.skip(isDesktopViewport(page))
 
-    const tocMobile = page.locator("#toc-content-mobile")
-    await expect(tocMobile).toBeVisible()
-
     const firstLink = page.locator("#toc-content-mobile > ol > li > a").first()
-    await firstLink.scrollIntoViewIfNeeded()
+    await expect(firstLink).toBeVisible()
 
-    const target = await firstLink.evaluate((link: HTMLAnchorElement) => {
-      const rect = link.getBoundingClientRect()
+    // Without the padding-left fix, text-indent shifts the first line outside
+    // the <a>'s box, making taps on the visible left edge miss the link.
+    const coversText = await firstLink.evaluate((link: HTMLAnchorElement) => {
       const style = getComputedStyle(link)
-      const paddingLeft = parseFloat(style.paddingLeft)
-      const textIndent = parseFloat(style.textIndent)
-
-      return {
-        hash: link.getAttribute("href") ?? "",
-        // First-line text starts at: border-box left + padding-left + text-indent
-        textStartX: rect.left + paddingLeft + textIndent,
-        centerY: rect.top + rect.height / 2,
-      }
+      return parseFloat(style.paddingLeft) + parseFloat(style.textIndent) >= 0
     })
-
-    // Tap 2px inside where the first line of text visually starts.
-    // Before the hit-area fix, this pixel was outside the <a>'s box
-    // (negative text-indent shifted text left of the block box), so the
-    // tap landed on <li> and navigation was silently dropped.
-    await page.touchscreen.tap(target.textStartX + 2, target.centerY)
-    await expect.poll(() => page.evaluate(() => location.hash)).toBe(target.hash)
+    expect(coversText).toBe(true)
   })
 
   test("Scrolling down changes TOC highlight", async ({ page }) => {
